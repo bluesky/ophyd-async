@@ -12,10 +12,10 @@ int8a: [-128, 127]
 lessint: 42
 longstr: a string that is just longer than forty characters
 longstr2: a string that is just longer than forty characters
-my_bool: true
-my_float: 3.141
-my_int: 42
-my_str: hello
+a_bool: true
+a_float: 3.141
+a_int: 42
+a_str: hello
 partialint: 42
 stra:
 - five
@@ -23,15 +23,15 @@ stra:
 - seven
 subset_enum: Bbb
 table:
-  bool: [false, false, true, true]
-  enum:
+  a_bool: [false, false, true, true]
+  a_enum:
   - Aaa
   - Bbb
   - Aaa
   - Ccc
-  float: [1.8, 8.2, -6.0, 32.9887]
-  int: [1, 8, -9, 32]
-  str:
+  a_float: [1.8, 8.2, -6.0, 32.9887]
+  a_int: [1, 8, -9, 32]
+  a_str:
   - Hello
   - World
   - Foo

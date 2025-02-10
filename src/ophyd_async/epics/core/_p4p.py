@@ -335,6 +335,8 @@ def _pva_request_string(fields: Sequence[str]) -> str:
 
 
 class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
+    """Backend for a signal to interact with PVs over pva."""
+
     def __init__(
         self,
         datatype: type[SignalDatatypeT] | None,

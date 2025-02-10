@@ -5,7 +5,12 @@ from bluesky import RunEngine
 from ophyd_async.core import YamlSettingsProvider, init_devices
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
-from ophyd_async.fastcs.panda import CommonPandaBlocks, DataBlock, SeqTable, TimeUnits
+from ophyd_async.fastcs.panda import (
+    CommonPandaBlocks,
+    DataBlock,
+    PandaTimeUnits,
+    SeqTable,
+)
 from ophyd_async.plan_stubs import (
     apply_panda_settings,
     retrieve_settings,
@@ -63,8 +68,8 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
 
     assert parsed_yaml == {
         "phase_1_signal_units": 0,
-        "seq.1.prescale_units": TimeUnits("min"),
-        "seq.2.prescale_units": TimeUnits("min"),
+        "seq.1.prescale_units": PandaTimeUnits("min"),
+        "seq.2.prescale_units": PandaTimeUnits("min"),
         "data.capture": False,
         "data.capture_mode": "FIRST_N",
         "data.create_directory": 0,

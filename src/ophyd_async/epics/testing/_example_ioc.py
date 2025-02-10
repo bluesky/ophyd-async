@@ -15,32 +15,39 @@ PVA_RECORDS = Path(__file__).parent / "test_records_pva.db"
 
 
 class EpicsTestEnum(StrictEnum):
+    """For testing strict enum values in test IOCs."""
+
     A = "Aaa"
     B = "Bbb"
     C = "Ccc"
 
 
 class EpicsTestSubsetEnum(SubsetEnum):
+    """For testing subset enum values in test IOCs."""
+
     A = "Aaa"
     B = "Bbb"
 
 
 class EpicsTestTable(Table):
-    bool: Array1D[np.bool_]
-    int: Array1D[np.int32]
-    float: Array1D[np.float64]
-    str: Sequence[str]
-    enum: Sequence[EpicsTestEnum]
+    a_bool: Array1D[np.bool_]
+    a_int: Array1D[np.int32]
+    a_float: Array1D[np.float64]
+    a_str: Sequence[str]
+    a_enum: Sequence[EpicsTestEnum]
 
 
 class EpicsTestCaDevice(EpicsDevice):
-    my_int: A[SignalRW[int], PvSuffix("int")]
-    my_float: A[SignalRW[float], PvSuffix("float")]
+    """Device for use in a channel access test IOC."""
+
+    a_int: A[SignalRW[int], PvSuffix("int")]
+    """A thing"""
+    a_float: A[SignalRW[float], PvSuffix("float")]
     float_prec_0: A[SignalRW[int], PvSuffix("float_prec_0")]
-    my_str: A[SignalRW[str], PvSuffix("str")]
+    a_str: A[SignalRW[str], PvSuffix("str")]
     longstr: A[SignalRW[str], PvSuffix("longstr")]
     longstr2: A[SignalRW[str], PvSuffix("longstr2.VAL$")]
-    my_bool: A[SignalRW[bool], PvSuffix("bool")]
+    a_bool: A[SignalRW[bool], PvSuffix("bool")]
     enum: A[SignalRW[EpicsTestEnum], PvSuffix("enum")]
     enum2: A[SignalRW[EpicsTestEnum], PvSuffix("enum2")]
     subset_enum: A[SignalRW[EpicsTestSubsetEnum], PvSuffix("subset_enum")]
@@ -57,6 +64,8 @@ class EpicsTestCaDevice(EpicsDevice):
 
 
 class EpicsTestPvaDevice(EpicsTestCaDevice):
+    """Device for use in a pv access test IOC."""
+
     # pva can support all signal types that ca can
     int8a: A[SignalRW[Array1D[np.int8]], PvSuffix("int8a")]
     uint16a: A[SignalRW[Array1D[np.uint16]], PvSuffix("uint16a")]
@@ -68,6 +77,8 @@ class EpicsTestPvaDevice(EpicsTestCaDevice):
 
 
 class EpicsTestIocAndDevices:
+    """Test IOC with ca and pva devices."""
+
     def __init__(self):
         self.prefix = generate_random_pv_prefix()
         self.ioc = TestingIOC()

@@ -13,11 +13,11 @@ from ophyd_async.core import (
     Settings,
     SettingsProvider,
     SignalRW,
-    T,
     walk_rw_signals,
 )
 from ophyd_async.core._table import Table
 
+from ._utils import T
 from ._wait_for_awaitable import wait_for_awaitable
 
 
@@ -33,6 +33,8 @@ def _get_values_of_signals(
 
 @plan
 def get_current_settings(device: Device) -> MsgGenerator[Settings]:
+    """Get current settings on `Device`."""
+
     signals = walk_rw_signals(device)
     named_values = yield from _get_values_of_signals(signals)
     signal_values = {signals[name]: value for name, value in named_values.items()}

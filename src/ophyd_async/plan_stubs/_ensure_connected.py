@@ -12,6 +12,7 @@ def ensure_connected(
     timeout: float = DEFAULT_TIMEOUT,
     force_reconnect=False,
 ):
+    """Plan stub to ensure devices are connected with a given timeout."""
     device_names = [device.name for device in devices]
     non_unique = {
         device: device.name for device in devices if device_names.count(device.name) > 1

@@ -19,7 +19,6 @@ from ophyd_async.testing import (
     callback_on_mock_put,
     get_mock_put,
     mock_puts_blocked,
-    reset_mock_put_calls,
     set_mock_put_proceeds,
     set_mock_value,
     set_mock_values,
@@ -314,7 +313,7 @@ async def test_reset_mock_put_calls(mock_signals):
     signal1, _ = mock_signals
     await signal1.set("test_value", wait=True, timeout=1)
     get_mock_put(signal1).assert_called_with("test_value", wait=ANY)
-    reset_mock_put_calls(signal1)
+    get_mock_put(signal1).reset_mock()
     with pytest.raises(AssertionError) as exc:
         get_mock_put(signal1).assert_called_with("test_value", wait=ANY)
     # Replacing spaces because they change between runners

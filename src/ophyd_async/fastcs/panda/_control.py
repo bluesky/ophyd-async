@@ -10,6 +10,8 @@ from ._block import PcapBlock
 
 
 class PandaPcapController(DetectorController):
+    """For controlling a PCAP capture on the PandA."""
+
     def __init__(self, pcap: PcapBlock) -> None:
         self.pcap = pcap
         self._arm_status: AsyncStatus | None = None

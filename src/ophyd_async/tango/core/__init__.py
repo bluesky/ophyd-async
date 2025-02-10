@@ -1,4 +1,4 @@
-from ._base_device import TangoDevice, TangoPolling
+from ._base_device import TangoDevice, TangoDeviceConnector, TangoPolling
 from ._signal import (
     infer_python_type,
     infer_signal_type,
@@ -39,4 +39,5 @@ __all__ = [
     "TangoDevice",
     "TangoReadable",
     "TangoPolling",
+    "TangoDeviceConnector",
 ]

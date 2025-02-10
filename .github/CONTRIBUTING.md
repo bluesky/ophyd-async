@@ -1,4 +1,4 @@
-# Contribute to the project
+# How to contribute to the project
 
 Contributions and issues are most welcome! All issues and pull requests are
 handled through [GitHub](https://github.com/bluesky/ophyd-async/issues). Also, please check for any existing issues before

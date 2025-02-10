@@ -58,7 +58,7 @@ record(waveform, "$(device)table:bool")
     field(PINI, "YES")
     info(Q:group, {
         "$(device)table": {
-            "value.bool": {
+            "value.a_bool": {
                 "+type": "plain",
                 "+channel": "VAL",
                 "+putorder": 1
@@ -75,7 +75,7 @@ record(waveform, "$(device)table:int")
     field(PINI, "YES")
     info(Q:group, {
         "$(device)table": {
-            "value.int": {
+            "value.a_int": {
                 "+type": "plain",
                 "+channel": "VAL",
                 "+putorder": 2
@@ -92,7 +92,7 @@ record(waveform, "$(device)table:float")
     field(PINI, "YES")
     info(Q:group, {
         "$(device)table": {
-            "value.float": {
+            "value.a_float": {
                 "+type": "plain",
                 "+channel": "VAL",
                 "+putorder": 3
@@ -109,7 +109,7 @@ record(waveform, "$(device)table:str")
     field(PINI, "YES")
     info(Q:group, {
         "$(device)table": {
-            "value.str": {
+            "value.a_str": {
                 "+type": "plain",
                 "+channel": "VAL",
                 "+putorder": 4
@@ -126,7 +126,7 @@ record(waveform, "$(device)table:enum")
     field(PINI, "YES")
     info(Q:group, {
         "$(device)table": {
-            "value.enum": {
+            "value.a_enum": {
                 "+type": "plain",
                 "+channel": "VAL",
                 "+putorder": 5,

@@ -11,10 +11,10 @@ from unittest.mock import Mock
 import numpy as np
 
 T = TypeVar("T")
+V = TypeVar("V")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
 DEFAULT_TIMEOUT = 10.0
-ErrorText = str | Mapping[str, Exception]
 
 logger = logging.getLogger("ophyd_async")
 
@@ -73,14 +73,14 @@ class NotConnected(Exception):
 
     _indent_width = "    "
 
-    def __init__(self, errors: ErrorText):
+    def __init__(self, errors: str | Mapping[str, Exception]):
         """
         NotConnected holds a mapping of device/signal names to
         errors.
 
         Parameters
         ----------
-        errors: ErrorText
+        errors:
             Mapping of device name to Exception or another NotConnected.
             Alternatively a string with the signal error text.
         """
@@ -243,8 +243,12 @@ async def merge_gathered_dicts(
     return ret
 
 
-async def gather_list(coros: Iterable[Awaitable[T]]) -> list[T]:
-    return await asyncio.gather(*coros)
+async def gather_dict(coros: dict[T, Awaitable[V]]) -> dict[T, V]:
+    """Gathers given coroutines and returns a dictionary of coroutines
+    to return values."""
+
+    values = await asyncio.gather(*coros.values())
+    return dict(zip(coros, values, strict=True))
 
 
 def in_micros(t: float) -> int:
@@ -257,7 +261,7 @@ def in_micros(t: float) -> int:
     Raises:
         ValueError: if t < 0
     Returns:
-        t (int): A time in microseconds, rounded up to the nearest whole microsecond,
+        A time in microseconds, rounded up to the nearest whole microsecond,
     """
     if t < 0:
         raise ValueError(f"Expected a positive time in seconds, got {t!r}")

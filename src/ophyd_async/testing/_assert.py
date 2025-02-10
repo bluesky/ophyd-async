@@ -2,6 +2,7 @@ import asyncio
 import time
 from contextlib import AbstractContextManager
 from typing import Any
+from unittest.mock import Mock, call
 
 import pytest
 from bluesky.protocols import Reading
@@ -13,28 +14,33 @@ from ophyd_async.core import (
     SignalDatatypeT,
     SignalR,
     Table,
+    WatchableAsyncStatus,
+    Watcher,
 )
+
+from ._utils import T
 
 
 def approx_value(value: Any):
+    """Allow any value to be compared to another in tests.
+
+    This is needed because numpy arrays give a numpy array back when compared,
+    not a bool. This means that you can't ``assert array1==array2``. Numpy
+    arrays can be wrapped with `pytest.approx`, but this doesn't work for
+    `Table` instances: in this case we use `ApproxTable`.
+    """
     return ApproxTable(value) if isinstance(value, Table) else pytest.approx(value)
 
 
 async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
-    """Assert a signal's value and compare it an expected signal.
+    """Assert that a Signal has the given value.
 
     Parameters
     ----------
     signal:
-        signal with get_value.
+        Signal with get_value.
     value:
         The expected value from the signal.
-
-    Notes
-    -----
-    Example usage::
-        await assert_value(signal, value)
-
     """
     actual_value = await signal.get_value()
     assert approx_value(value) == actual_value
@@ -43,21 +49,14 @@ async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
 async def assert_reading(
     readable: AsyncReadable, expected_reading: dict[str, Reading]
 ) -> None:
-    """Assert readings from readable.
+    """Assert that a readable Device has the given reading.
 
     Parameters
     ----------
     readable:
-        Callable with readable.read function that generate readings.
-
+        Device with an async ``read()`` method to get the reading from.
     reading:
-        The expected readings from the readable.
-
-    Notes
-    -----
-    Example usage::
-        await assert_reading(readable, reading)
-
+        The expected reading from the readable.
     """
     actual_reading = await readable.read()
     approx_expected_reading = {
@@ -71,21 +70,15 @@ async def assert_configuration(
     configurable: AsyncConfigurable,
     configuration: dict[str, Reading],
 ) -> None:
-    """Assert readings from Configurable.
+    """Assert that a configurable Device has the given configuration.
 
     Parameters
     ----------
     configurable:
-        Configurable with Configurable.read function that generate readings.
-
+        Device with an async ``read_configuration()`` method to get the configuration
+        from.
     configuration:
-        The expected readings from configurable.
-
-    Notes
-    -----
-    Example usage::
-        await assert_configuration(configurable configuration)
-
+        The expected configuration from the configurable.
     """
     actual_configuration = await configurable.read_configuration()
     approx_expected_configuration = {
@@ -96,6 +89,8 @@ async def assert_configuration(
 
 
 async def assert_describe_signal(signal: SignalR, /, **metadata):
+    """Asserts the describe of a signal matches the expected metadata."""
+
     actual_describe = await signal.describe()
     assert list(actual_describe) == [signal.name]
     (actual_datakey,) = actual_describe.values()
@@ -108,15 +103,15 @@ def assert_emitted(docs: dict[str, list[dict]], **numbers: int):
 
     Parameters
     ----------
-    Doc:
-        A dictionary
-
+    docs:
+        A mapping of document type -> list of documents that have been emitted.
     numbers:
-        expected emission in kwarg from
+        The number of each document type expected.
 
-    Notes
-    -----
-    Example usage::
+    Examples
+    --------
+    .. code::
+
         docs = defaultdict(list)
         RE.subscribe(lambda name, doc: docs[name].append(doc))
         RE(my_plan())
@@ -128,6 +123,10 @@ def assert_emitted(docs: dict[str, list[dict]], **numbers: int):
 
 
 class ApproxTable:
+    """For approximating two tables are equivalent, up to some relative or
+    absolute difference.
+    """
+
     def __init__(self, expected: Table, rel=None, abs=None, nan_ok: bool = False):
         self.expected = expected
         self.rel = rel
@@ -144,6 +143,8 @@ class ApproxTable:
 
 
 class MonitorQueue(AbstractContextManager):
+    """Monitors a `Signal` and stores its updates."""
+
     def __init__(self, signal: SignalR):
         self.signal = signal
         self.updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
@@ -153,7 +154,7 @@ class MonitorQueue(AbstractContextManager):
         # Get an update, value and reading
         expected_type = type(expected_value)
         expected_value = approx_value(expected_value)
-        update = await self.updates.get()
+        update = await asyncio.wait_for(self.updates.get(), timeout=1)
         value = await self.signal.get_value()
         reading = await self.signal.read()
         # Check they match what we expected
@@ -174,3 +175,66 @@ class MonitorQueue(AbstractContextManager):
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.signal.clear_sub(self.updates.put_nowait)
+
+
+class StatusWatcher(Watcher[T]):
+    """Watches an `AsyncStatus`, storing the calls within."""
+
+    def __init__(self, status: WatchableAsyncStatus) -> None:
+        self._event = asyncio.Event()
+        self._mock = Mock()
+        status.watch(self)
+
+    def __call__(
+        self,
+        current: T | None = None,
+        initial: T | None = None,
+        target: T | None = None,
+        name: str | None = None,
+        unit: str | None = None,
+        precision: int | None = None,
+        fraction: float | None = None,
+        time_elapsed: float | None = None,
+        time_remaining: float | None = None,
+    ) -> Any:
+        self._mock(
+            current=current,
+            initial=initial,
+            target=target,
+            name=name,
+            unit=unit,
+            precision=precision,
+            fraction=fraction,
+            time_elapsed=time_elapsed,
+            time_remaining=time_remaining,
+        )
+        self._event.set()
+
+    async def wait_for_call(
+        self,
+        current: T | None = None,
+        initial: T | None = None,
+        target: T | None = None,
+        name: str | None = None,
+        unit: str | None = None,
+        precision: int | None = None,
+        fraction: float | None = None,
+        # Any so we can use pytest.approx
+        time_elapsed: float | Any = None,
+        time_remaining: float | Any = None,
+    ):
+        await asyncio.wait_for(self._event.wait(), timeout=1)
+        assert self._mock.call_count == 1
+        assert self._mock.call_args == call(
+            current=current,
+            initial=initial,
+            target=target,
+            name=name,
+            unit=unit,
+            precision=precision,
+            fraction=fraction,
+            time_elapsed=time_elapsed,
+            time_remaining=time_remaining,
+        )
+        self._mock.reset_mock()
+        self._event.clear()

@@ -375,22 +375,22 @@ async def test_assert_configuration_everything(
     await assert_configuration(
         one_of_everything_device,
         {
-            "everything-device-int": {
+            "everything-device-a_int": {
                 "value": 1,
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "everything-device-float": {
+            "everything-device-a_float": {
                 "value": 1.234,
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "everything-device-str": {
+            "everything-device-a_str": {
                 "value": "test_string",
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "everything-device-bool": {
+            "everything-device-a_bool": {
                 "value": True,
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -462,11 +462,11 @@ async def test_assert_configuration_everything(
             },
             "everything-device-table": {
                 "value": ExampleTable(
-                    bool=np.array([False, False, True, True]),
-                    int=np.array([1, 8, -9, 32], dtype=np.int32),
-                    float=np.array([1.8, 8.2, -6.0, 32.9887]),
-                    str=["Hello", "World", "Foo", "Bar"],
-                    enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
+                    a_bool=np.array([False, False, True, True]),
+                    a_int=np.array([1, 8, -9, 32], dtype=np.int32),
+                    a_float=np.array([1.8, 8.2, -6.0, 32.9887]),
+                    a_str=["Hello", "World", "Foo", "Bar"],
+                    a_enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
                 ),
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -485,13 +485,19 @@ async def test_assert_reading_everything(
 ):
     await assert_reading(one_of_everything_device, {})
     await assert_reading(
-        one_of_everything_device.int,
-        {"everything-device-int": {"value": 1, "timestamp": ANY, "alarm_severity": 0}},
+        one_of_everything_device.a_int,
+        {
+            "everything-device-a_int": {
+                "value": 1,
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
     )
     await assert_reading(
-        one_of_everything_device.float,
+        one_of_everything_device.a_float,
         {
-            "everything-device-float": {
+            "everything-device-a_float": {
                 "value": 1.234,
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -499,9 +505,9 @@ async def test_assert_reading_everything(
         },
     )
     await assert_reading(
-        one_of_everything_device.str,
+        one_of_everything_device.a_str,
         {
-            "everything-device-str": {
+            "everything-device-a_str": {
                 "value": "test_string",
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -509,9 +515,9 @@ async def test_assert_reading_everything(
         },
     )
     await assert_reading(
-        one_of_everything_device.bool,
+        one_of_everything_device.a_bool,
         {
-            "everything-device-bool": {
+            "everything-device-a_bool": {
                 "value": True,
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -653,11 +659,11 @@ async def test_assert_reading_everything(
         {
             "everything-device-table": {
                 "value": ExampleTable(
-                    bool=np.array([False, False, True, True], np.bool_),
-                    int=np.array([1, 8, -9, 32], np.int32),
-                    float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
-                    str=["Hello", "World", "Foo", "Bar"],
-                    enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
+                    a_bool=np.array([False, False, True, True], np.bool_),
+                    a_int=np.array([1, 8, -9, 32], np.int32),
+                    a_float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
+                    a_str=["Hello", "World", "Foo", "Bar"],
+                    a_enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
                 ),
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -735,10 +741,10 @@ async def test_assert_configuration(mock_readable: DummyReadableArray):
 async def test_assert_value_everything(
     one_of_everything_device: OneOfEverythingDevice,
 ):
-    await assert_value(one_of_everything_device.int, 1)
-    await assert_value(one_of_everything_device.float, 1.234)
-    await assert_value(one_of_everything_device.str, "test_string")
-    await assert_value(one_of_everything_device.bool, True)
+    await assert_value(one_of_everything_device.a_int, 1)
+    await assert_value(one_of_everything_device.a_float, 1.234)
+    await assert_value(one_of_everything_device.a_str, "test_string")
+    await assert_value(one_of_everything_device.a_bool, True)
     await assert_value(one_of_everything_device.enum, ExampleEnum.B)
     await assert_value(
         one_of_everything_device.int8a,
@@ -758,11 +764,11 @@ async def test_assert_value_everything(
     await assert_value(
         one_of_everything_device.table,
         ExampleTable(
-            bool=np.array([False, False, True, True], np.bool_),
-            int=np.array([1, 8, -9, 32], np.int32),
-            float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
-            str=["Hello", "World", "Foo", "Bar"],
-            enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
+            a_bool=np.array([False, False, True, True], np.bool_),
+            a_int=np.array([1, 8, -9, 32], np.int32),
+            a_float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
+            a_str=["Hello", "World", "Foo", "Bar"],
+            a_enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
         ),
     )
     await assert_value(
@@ -838,7 +844,7 @@ class SomeClass:
         (SomeClass, "Can't make converter for %s"),
         (object, "Can't make converter for %s"),
         (dict, "Can't make converter for %s"),
-        (npt.NDArray[np.float64], "Expected Array1D[dtype], got %s"),
+        (npt.NDArray[np.str_], "Expected Array1D[dtype], got %s"),
     ],
 )
 async def test_signal_unknown_datatype(datatype, err):

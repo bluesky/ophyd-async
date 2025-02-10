@@ -2,7 +2,9 @@ from ._core_detector import AreaDetector
 from ._core_io import (
     ADBaseDatasetDescriber,
     ADBaseIO,
-    DetectorState,
+    ADCallbacks,
+    ADCompression,
+    ADState,
     NDArrayBaseIO,
     NDFileHDFIO,
     NDFileIO,
@@ -28,8 +30,10 @@ from ._utils import (
 
 __all__ = [
     "ADBaseIO",
+    "ADCallbacks",
+    "ADCompression",
     "AreaDetector",
-    "DetectorState",
+    "ADState",
     "NDArrayBaseIO",
     "NDFileIO",
     "NDFileHDFIO",

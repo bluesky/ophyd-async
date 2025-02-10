@@ -20,6 +20,7 @@
                 "editor.codeActionsOnSave": {
                     "source.organizeImports": "explicit"
                 },
+                "remote.autoForwardPorts": false,
                 "[python]": {
                     "editor.defaultFormatter": "charliermarsh.ruff"
                 }
@@ -38,7 +39,7 @@
     },
     "features": {
         // add in eternal history and other bash features
-        "ghcr.io/diamondlightsource/devcontainer-features/bash-config:1.0.0": {}
+        "ghcr.io/diamondlightsource/devcontainer-features/bash-config:1": {}
     },
     // Create the config folder for the bash-config feature
     "initializeCommand": "mkdir -p ${localEnv:HOME}/.config/bash-config",

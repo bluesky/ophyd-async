@@ -9,6 +9,8 @@ class EigerTriggerMode(StrictEnum):
 
 
 class EigerDriverIO(Device):
+    """Contains signals for handling IO on the Eiger detector."""
+
     def __init__(self, prefix: str, name: str = "") -> None:
         self.bit_depth = epics_signal_r(int, f"{prefix}BitDepthReadout")
         self.stale_parameters = epics_signal_r(bool, f"{prefix}StaleParameters")

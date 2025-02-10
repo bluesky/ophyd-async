@@ -3,7 +3,8 @@ from collections.abc import Callable
 from functools import cached_property
 from unittest.mock import AsyncMock
 
-from bluesky.protocols import Descriptor, Reading
+from bluesky.protocols import Reading
+from event_model import DataKey
 
 from ._signal_backend import SignalBackend, SignalDatatypeT
 from ._soft_signal_backend import SoftSignalBackend
@@ -72,7 +73,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     async def get_setpoint(self) -> SignalDatatypeT:
         return await self.soft_backend.get_setpoint()
 
-    async def get_datakey(self, source: str) -> Descriptor:
+    async def get_datakey(self, source: str) -> DataKey:
         return await self.soft_backend.get_datakey(source)
 
     def set_callback(self, callback: Callback[Reading[SignalDatatypeT]] | None) -> None:
