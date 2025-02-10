@@ -1,0 +1,733 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ophyd_async.plan_stubs._fly &#8212; ophyd-async 0.9.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=39bb1c6d"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/plan_stubs/_fly';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.9.0';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.9.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.plan_stubs._fly</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for ophyd_async.plan_stubs._fly</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plan_stubs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bps</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">short_uid</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DetectorTrigger</span><span class="p">,</span>
+    <span class="n">StandardDetector</span><span class="p">,</span>
+    <span class="n">StandardFlyer</span><span class="p">,</span>
+    <span class="n">TriggerInfo</span><span class="p">,</span>
+    <span class="n">in_micros</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.fastcs.panda</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PcompDirection</span><span class="p">,</span>
+    <span class="n">PcompInfo</span><span class="p">,</span>
+    <span class="n">SeqTable</span><span class="p">,</span>
+    <span class="n">SeqTableInfo</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_static_pcomp_flyer_and_detectors</span><span class="p">(</span>
+    <span class="n">flyer</span><span class="p">:</span> <span class="n">StandardFlyer</span><span class="p">[</span><span class="n">PcompInfo</span><span class="p">],</span>
+    <span class="n">detectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StandardDetector</span><span class="p">],</span>
+    <span class="n">pcomp_info</span><span class="p">:</span> <span class="n">PcompInfo</span><span class="p">,</span>
+    <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare a hardware triggered flyable and one or more detectors.</span>
+
+<span class="sd">    Prepare a hardware triggered flyable and one or more detectors with the</span>
+<span class="sd">    same trigger.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s2">&quot;prep&quot;</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">flyer</span><span class="p">,</span> <span class="n">pcomp_info</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s2">&quot;prep&quot;</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">&quot;prep&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="prepare_static_seq_table_flyer_and_detectors_with_same_trigger">
+<a class="viewcode-back" href="../../../_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.prepare_static_seq_table_flyer_and_detectors_with_same_trigger">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prepare_static_seq_table_flyer_and_detectors_with_same_trigger</span><span class="p">(</span>
+    <span class="n">flyer</span><span class="p">:</span> <span class="n">StandardFlyer</span><span class="p">[</span><span class="n">SeqTableInfo</span><span class="p">],</span>
+    <span class="n">detectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StandardDetector</span><span class="p">],</span>
+    <span class="n">number_of_frames</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">shutter_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">repeats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">frame_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare a hardware triggered flyable and one or more detectors.</span>
+
+<span class="sd">    Prepare a hardware triggered flyable and one or more detectors with the</span>
+<span class="sd">    same trigger. This method constructs TriggerInfo and a static sequence</span>
+<span class="sd">    table from required parameters. The table is required to prepare the flyer,</span>
+<span class="sd">    and the TriggerInfo is required to prepare the detector(s).</span>
+
+<span class="sd">    This prepares all supplied detectors with the same trigger.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">detectors</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No detectors provided. There must be at least one.&quot;</span><span class="p">)</span>
+
+    <span class="n">deadtime</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span> <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">)</span>  <span class="c1"># noqa: SLF001</span>
+
+    <span class="n">trigger_info</span> <span class="o">=</span> <span class="n">TriggerInfo</span><span class="p">(</span>
+        <span class="n">number_of_triggers</span><span class="o">=</span><span class="n">number_of_frames</span> <span class="o">*</span> <span class="n">repeats</span><span class="p">,</span>
+        <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">CONSTANT_GATE</span><span class="p">,</span>
+        <span class="n">deadtime</span><span class="o">=</span><span class="n">deadtime</span><span class="p">,</span>
+        <span class="n">livetime</span><span class="o">=</span><span class="n">exposure</span><span class="p">,</span>
+        <span class="n">frame_timeout</span><span class="o">=</span><span class="n">frame_timeout</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">trigger_time</span> <span class="o">=</span> <span class="n">number_of_frames</span> <span class="o">*</span> <span class="p">(</span><span class="n">exposure</span> <span class="o">+</span> <span class="n">deadtime</span><span class="p">)</span>
+    <span class="n">pre_delay</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">period</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">shutter_time</span> <span class="o">-</span> <span class="n">trigger_time</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">table</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="c1"># Wait for pre-delay then open shutter</span>
+        <span class="n">SeqTable</span><span class="o">.</span><span class="n">row</span><span class="p">(</span>
+            <span class="n">time1</span><span class="o">=</span><span class="n">in_micros</span><span class="p">(</span><span class="n">pre_delay</span><span class="p">),</span>
+            <span class="n">time2</span><span class="o">=</span><span class="n">in_micros</span><span class="p">(</span><span class="n">shutter_time</span><span class="p">),</span>
+            <span class="n">outa2</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="o">+</span>
+        <span class="c1"># Keeping shutter open, do N triggers</span>
+        <span class="n">SeqTable</span><span class="o">.</span><span class="n">row</span><span class="p">(</span>
+            <span class="n">repeats</span><span class="o">=</span><span class="n">number_of_frames</span><span class="p">,</span>
+            <span class="n">time1</span><span class="o">=</span><span class="n">in_micros</span><span class="p">(</span><span class="n">exposure</span><span class="p">),</span>
+            <span class="n">outa1</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">outb1</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">time2</span><span class="o">=</span><span class="n">in_micros</span><span class="p">(</span><span class="n">deadtime</span><span class="p">),</span>
+            <span class="n">outa2</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="o">+</span>
+        <span class="c1"># Add the shutter close</span>
+        <span class="n">SeqTable</span><span class="o">.</span><span class="n">row</span><span class="p">(</span><span class="n">time2</span><span class="o">=</span><span class="n">in_micros</span><span class="p">(</span><span class="n">shutter_time</span><span class="p">))</span>
+    <span class="p">)</span>
+
+    <span class="n">table_info</span> <span class="o">=</span> <span class="n">SeqTableInfo</span><span class="p">(</span><span class="n">sequence_table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">repeats</span><span class="o">=</span><span class="n">repeats</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s2">&quot;prep&quot;</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">flyer</span><span class="p">,</span> <span class="n">table_info</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s2">&quot;prep&quot;</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="s2">&quot;prep&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="fly_and_collect">
+<a class="viewcode-back" href="../../../_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.fly_and_collect">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">fly_and_collect</span><span class="p">(</span>
+    <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">flyer</span><span class="p">:</span> <span class="n">StandardFlyer</span><span class="p">[</span><span class="n">SeqTableInfo</span><span class="p">]</span> <span class="o">|</span> <span class="n">StandardFlyer</span><span class="p">[</span><span class="n">PcompInfo</span><span class="p">],</span>
+    <span class="n">detectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StandardDetector</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kickoff, complete and collect with a flyer and multiple detectors.</span>
+
+<span class="sd">    This stub takes a flyer and one or more detectors that have been prepared. It</span>
+<span class="sd">    declares a stream for the detectors, then kicks off the detectors and the flyer.</span>
+<span class="sd">    The detectors are collected until the flyer and detectors have completed.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">declare_stream</span><span class="p">(</span><span class="o">*</span><span class="n">detectors</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">stream_name</span><span class="p">,</span> <span class="n">collect</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">kickoff</span><span class="p">(</span><span class="n">flyer</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">kickoff</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span>
+
+    <span class="c1"># collect_while_completing</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">short_uid</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">)</span>
+
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="n">flyer</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">detector</span> <span class="ow">in</span> <span class="n">detectors</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">complete</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+    <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">done</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">detectors</span><span class="p">,</span>
+            <span class="n">return_payload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">stream_name</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">fly_and_collect_with_static_pcomp</span><span class="p">(</span>
+    <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">flyer</span><span class="p">:</span> <span class="n">StandardFlyer</span><span class="p">[</span><span class="n">PcompInfo</span><span class="p">],</span>
+    <span class="n">detectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StandardDetector</span><span class="p">],</span>
+    <span class="n">number_of_pulses</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">pulse_width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">rising_edge_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">direction</span><span class="p">:</span> <span class="n">PcompDirection</span><span class="p">,</span>
+    <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="c1"># Set up scan and prepare trigger</span>
+    <span class="n">pcomp_info</span> <span class="o">=</span> <span class="n">PcompInfo</span><span class="p">(</span>
+        <span class="n">start_postion</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">pulse_width</span><span class="o">=</span><span class="n">pulse_width</span><span class="p">,</span>
+        <span class="n">rising_edge_step</span><span class="o">=</span><span class="n">rising_edge_step</span><span class="p">,</span>
+        <span class="n">number_of_pulses</span><span class="o">=</span><span class="n">number_of_pulses</span><span class="p">,</span>
+        <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">prepare_static_pcomp_flyer_and_detectors</span><span class="p">(</span>
+        <span class="n">flyer</span><span class="p">,</span> <span class="n">detectors</span><span class="p">,</span> <span class="n">pcomp_info</span><span class="p">,</span> <span class="n">trigger_info</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Run the fly scan</span>
+    <span class="k">yield from</span> <span class="n">fly_and_collect</span><span class="p">(</span><span class="n">stream_name</span><span class="p">,</span> <span class="n">flyer</span><span class="p">,</span> <span class="n">detectors</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="time_resolved_fly_and_collect_with_static_seq_table">
+<a class="viewcode-back" href="../../../_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.time_resolved_fly_and_collect_with_static_seq_table">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">time_resolved_fly_and_collect_with_static_seq_table</span><span class="p">(</span>
+    <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">flyer</span><span class="p">:</span> <span class="n">StandardFlyer</span><span class="p">[</span><span class="n">SeqTableInfo</span><span class="p">],</span>
+    <span class="n">detectors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">StandardDetector</span><span class="p">],</span>
+    <span class="n">number_of_frames</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">shutter_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">repeats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">frame_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run a scan wth a flyer and multiple detectors.</span>
+
+<span class="sd">    The stub demonstrates the standard basic flow for a flyscan:</span>
+
+<span class="sd">    - Prepare the flyer and detectors with a trigger</span>
+<span class="sd">    - Fly and collect:</span>
+<span class="sd">       - Declare the stream and kickoff the scan</span>
+<span class="sd">       - Collect while completing</span>
+
+<span class="sd">    This needs to be used in a plan that instantates detectors and a flyer,</span>
+<span class="sd">    stages/unstages the devices, and opens and closes the run.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Set up scan and prepare trigger</span>
+    <span class="k">yield from</span> <span class="n">prepare_static_seq_table_flyer_and_detectors_with_same_trigger</span><span class="p">(</span>
+        <span class="n">flyer</span><span class="p">,</span>
+        <span class="n">detectors</span><span class="p">,</span>
+        <span class="n">number_of_frames</span><span class="o">=</span><span class="n">number_of_frames</span><span class="p">,</span>
+        <span class="n">exposure</span><span class="o">=</span><span class="n">exposure</span><span class="p">,</span>
+        <span class="n">shutter_time</span><span class="o">=</span><span class="n">shutter_time</span><span class="p">,</span>
+        <span class="n">repeats</span><span class="o">=</span><span class="n">repeats</span><span class="p">,</span>
+        <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span>
+        <span class="n">frame_timeout</span><span class="o">=</span><span class="n">frame_timeout</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Run the fly scan</span>
+    <span class="k">yield from</span> <span class="n">fly_and_collect</span><span class="p">(</span><span class="n">stream_name</span><span class="p">,</span> <span class="n">flyer</span><span class="p">,</span> <span class="n">detectors</span><span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

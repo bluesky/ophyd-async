@@ -1,0 +1,1281 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; ophyd-async 0.9.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/autodoc_pydantic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=39bb1c6d"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=30646c52"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.9.0';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="#" />
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.9.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0 documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="_api/ophyd_async.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="_api/ophyd_async.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_api/ophyd_async.epics.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adandor.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adaravis.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adcore.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adkinetix.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adpilatus.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adsimdetector.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.advimba.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.eiger.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.eiger</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.motor.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.signal.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.sim.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.sim</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.testing.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.testing</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_api/ophyd_async.fastcs.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.fastcs.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.fastcs.odin.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.fastcs.panda.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="_api/ophyd_async.plan_stubs.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.plan_stubs</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="_api/ophyd_async.sim.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_api/ophyd_async.tango.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.tango.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.tango.sim.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango.sim</span></code></a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Index</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none"></div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+
+<h1 id="index">Index</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#_"><strong>_</strong></a>
+ | <a href="#A"><strong>A</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
+ | <a href="#E"><strong>E</strong></a>
+ | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
+ 
+</div>
+<h2 id="_">_</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.html#ophyd_async.__version__">__version__ (in module ophyd_async)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables">add_children_as_readables() (ophyd_async.core.StandardReadable method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_readables">add_readables() (ophyd_async.core.StandardReadable method)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2Detector">Andor2Detector (class in ophyd_async.epics.adandor)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2DriverIO">Andor2DriverIO (class in ophyd_async.epics.adandor)</a>
+</li>
+      <li><a href="_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_settings">apply_settings() (in module ophyd_async.plan_stubs)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_settings_if_different">apply_settings_if_different() (in module ophyd_async.plan_stubs)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisDetector">AravisDetector (class in ophyd_async.epics.adaravis)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisDriverIO">AravisDriverIO (class in ophyd_async.epics.adaravis)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisTriggerMode">AravisTriggerMode (class in ophyd_async.epics.adaravis)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorController.arm">arm() (ophyd_async.core.DetectorController method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.AsyncStatus">AsyncStatus (class in ophyd_async.core)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CHILD">CHILD (ophyd_async.core.StandardReadableFormat attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.clear_sub">clear_sub() (ophyd_async.core.SignalR method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.close">close() (ophyd_async.core.DetectorWriter method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.collect_stream_docs">collect_stream_docs() (ophyd_async.core.DetectorWriter method)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.complete">complete() (ophyd_async.epics.motor.Motor method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.config_ophyd_async_logging">config_ophyd_async_logging() (in module ophyd_async.core)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL">CONFIG_SIGNAL (ophyd_async.core.StandardReadableFormat attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Device.connect">connect() (ophyd_async.core.Device method)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.connect">(ophyd_async.core.SignalBackend method)</a>
+</li>
+      </ul></li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DeviceConnector.connect_real">connect_real() (ophyd_async.core.DeviceConnector method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger.CONSTANT_GATE">CONSTANT_GATE (ophyd_async.core.DetectorTrigger attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DeviceConnector.create_children_from_annotations">create_children_from_annotations() (ophyd_async.core.DeviceConnector method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.deadtime">deadtime (ophyd_async.core.TriggerInfo attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.describe">describe() (ophyd_async.core.SignalR method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorController">DetectorController (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.DetectorState">DetectorState (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger">DetectorTrigger (class in ophyd_async.core)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter">DetectorWriter (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Device">Device (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DeviceConnector">DeviceConnector (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DeviceVector">DeviceVector (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorController.disarm">disarm() (ophyd_async.core.DetectorController method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="E">E</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger.EDGE_TRIGGER">EDGE_TRIGGER (ophyd_async.core.DetectorTrigger attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.eiger.html#ophyd_async.epics.eiger.EigerDetector">EigerDetector (class in ophyd_async.epics.eiger)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.FlyMotorInfo.end_position">end_position (ophyd_async.epics.motor.FlyMotorInfo attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.EnergyMode">EnergyMode (class in ophyd_async.epics.sim)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.epics.core.html#ophyd_async.epics.core.epics_signal_r">epics_signal_r() (in module ophyd_async.epics.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.core.html#ophyd_async.epics.core.epics_signal_rw">epics_signal_rw() (in module ophyd_async.epics.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.core.html#ophyd_async.epics.core.epics_signal_rw_rbv">epics_signal_rw_rbv() (in module ophyd_async.epics.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.core.html#ophyd_async.epics.core.epics_signal_w">epics_signal_w() (in module ophyd_async.epics.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.core.html#ophyd_async.epics.core.epics_signal_x">epics_signal_x() (in module ophyd_async.epics.core)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.fly_and_collect">fly_and_collect() (in module ophyd_async.plan_stubs)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.frame_timeout">frame_timeout (ophyd_async.core.TriggerInfo attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_datakey">get_datakey() (ophyd_async.core.SignalBackend method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorController.get_deadtime">get_deadtime() (ophyd_async.core.DetectorController method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.get_dtype">get_dtype() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.get_enum_cls">get_enum_cls() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.get_indices_written">get_indices_written() (ophyd_async.core.DetectorWriter method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_reading">get_reading() (ophyd_async.core.SignalBackend method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_setpoint">get_setpoint() (ophyd_async.core.SignalBackend method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.get_unique">get_unique() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.get_value">get_value() (ophyd_async.core.SignalBackend method)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.get_value">(ophyd_async.core.SignalR method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.HDFDataset">HDFDataset (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.HDFFile">HDFFile (class in ophyd_async.core)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.EnergyMode.HIGH">HIGH (ophyd_async.epics.sim.EnergyMode attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.HINTED_SIGNAL">HINTED_SIGNAL (ophyd_async.core.StandardReadableFormat attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL">HINTED_UNCACHED_SIGNAL (ophyd_async.core.StandardReadableFormat attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.in_micros">in_micros() (in module ophyd_async.core)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.init_devices">init_devices() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger.INTERNAL">INTERNAL (ophyd_async.core.DetectorTrigger attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.kickoff">kickoff() (ophyd_async.epics.motor.Motor method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.epics.adkinetix.html#ophyd_async.epics.adkinetix.KinetixDetector">KinetixDetector (class in ophyd_async.epics.adkinetix)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adkinetix.html#ophyd_async.epics.adkinetix.KinetixDriverIO">KinetixDriverIO (class in ophyd_async.epics.adkinetix)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.LazyMock">LazyMock (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.livetime">livetime (ophyd_async.core.TriggerInfo attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalRW.locate">locate() (ophyd_async.core.SignalRW method)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.EnergyMode.LOW">LOW (ophyd_async.epics.sim.EnergyMode attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.MockSignalBackend">MockSignalBackend (class in ophyd_async.core)</a>
+</li>
+      <li>
+    module
+
+      <ul>
+        <li><a href="_api/ophyd_async.html#module-ophyd_async">ophyd_async</a>
+</li>
+        <li><a href="_api/ophyd_async.core.html#module-ophyd_async.core">ophyd_async.core</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.html#module-ophyd_async.epics">ophyd_async.epics</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.adandor.html#module-ophyd_async.epics.adandor">ophyd_async.epics.adandor</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.adaravis.html#module-ophyd_async.epics.adaravis">ophyd_async.epics.adaravis</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.adcore.html#module-ophyd_async.epics.adcore">ophyd_async.epics.adcore</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.adkinetix.html#module-ophyd_async.epics.adkinetix">ophyd_async.epics.adkinetix</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.adpilatus.html#module-ophyd_async.epics.adpilatus">ophyd_async.epics.adpilatus</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.adsimdetector.html#module-ophyd_async.epics.adsimdetector">ophyd_async.epics.adsimdetector</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.advimba.html#module-ophyd_async.epics.advimba">ophyd_async.epics.advimba</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.core.html#module-ophyd_async.epics.core">ophyd_async.epics.core</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.eiger.html#module-ophyd_async.epics.eiger">ophyd_async.epics.eiger</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.motor.html#module-ophyd_async.epics.motor">ophyd_async.epics.motor</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.signal.html#module-ophyd_async.epics.signal">ophyd_async.epics.signal</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.sim.html#module-ophyd_async.epics.sim">ophyd_async.epics.sim</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.testing.html#module-ophyd_async.epics.testing">ophyd_async.epics.testing</a>
+</li>
+        <li><a href="_api/ophyd_async.fastcs.html#module-ophyd_async.fastcs">ophyd_async.fastcs</a>
+</li>
+        <li><a href="_api/ophyd_async.fastcs.core.html#module-ophyd_async.fastcs.core">ophyd_async.fastcs.core</a>
+</li>
+        <li><a href="_api/ophyd_async.fastcs.odin.html#module-ophyd_async.fastcs.odin">ophyd_async.fastcs.odin</a>
+</li>
+        <li><a href="_api/ophyd_async.fastcs.panda.html#module-ophyd_async.fastcs.panda">ophyd_async.fastcs.panda</a>
+</li>
+        <li><a href="_api/ophyd_async.plan_stubs.html#module-ophyd_async.plan_stubs">ophyd_async.plan_stubs</a>
+</li>
+        <li><a href="_api/ophyd_async.sim.html#module-ophyd_async.sim">ophyd_async.sim</a>
+</li>
+        <li><a href="_api/ophyd_async.tango.html#module-ophyd_async.tango">ophyd_async.tango</a>
+</li>
+        <li><a href="_api/ophyd_async.tango.core.html#module-ophyd_async.tango.core">ophyd_async.tango.core</a>
+</li>
+        <li><a href="_api/ophyd_async.tango.sim.html#module-ophyd_async.tango.sim">ophyd_async.tango.sim</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor">Motor (class in ophyd_async.epics.motor)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.Mover">Mover (class in ophyd_async.epics.sim)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.multiplier">multiplier (ophyd_async.core.TriggerInfo attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Device.name">name (ophyd_async.core.Device property)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributeParam">NDAttributeParam (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributePv">NDAttributePv (class in ophyd_async.epics.adcore)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginStatsIO">NDPluginStatsIO (class in ophyd_async.epics.adcore)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.NotConnected">NotConnected</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.number_of_triggers">number_of_triggers (ophyd_async.core.TriggerInfo attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.numpy_dtype">numpy_dtype() (ophyd_async.core.Table method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.numpy_table">numpy_table() (ophyd_async.core.Table method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.observe_indices_written">observe_indices_written() (ophyd_async.core.DetectorWriter method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.observe_signals_value">observe_signals_value() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.observe_value">observe_value() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorWriter.open">open() (ophyd_async.core.DetectorWriter method)</a>
+</li>
+      <li>
+    ophyd_async
+
+      <ul>
+        <li><a href="_api/ophyd_async.html#module-ophyd_async">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.core
+
+      <ul>
+        <li><a href="_api/ophyd_async.core.html#module-ophyd_async.core">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.html#module-ophyd_async.epics">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.adandor
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.adandor.html#module-ophyd_async.epics.adandor">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.adaravis
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.adaravis.html#module-ophyd_async.epics.adaravis">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.adcore
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.adcore.html#module-ophyd_async.epics.adcore">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.adkinetix
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.adkinetix.html#module-ophyd_async.epics.adkinetix">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.adpilatus
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.adpilatus.html#module-ophyd_async.epics.adpilatus">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.adsimdetector
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.adsimdetector.html#module-ophyd_async.epics.adsimdetector">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.advimba
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.advimba.html#module-ophyd_async.epics.advimba">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.core
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.core.html#module-ophyd_async.epics.core">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.eiger
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.eiger.html#module-ophyd_async.epics.eiger">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    ophyd_async.epics.motor
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.motor.html#module-ophyd_async.epics.motor">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.signal
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.signal.html#module-ophyd_async.epics.signal">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.sim
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.sim.html#module-ophyd_async.epics.sim">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.epics.testing
+
+      <ul>
+        <li><a href="_api/ophyd_async.epics.testing.html#module-ophyd_async.epics.testing">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.fastcs
+
+      <ul>
+        <li><a href="_api/ophyd_async.fastcs.html#module-ophyd_async.fastcs">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.fastcs.core
+
+      <ul>
+        <li><a href="_api/ophyd_async.fastcs.core.html#module-ophyd_async.fastcs.core">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.fastcs.odin
+
+      <ul>
+        <li><a href="_api/ophyd_async.fastcs.odin.html#module-ophyd_async.fastcs.odin">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.fastcs.panda
+
+      <ul>
+        <li><a href="_api/ophyd_async.fastcs.panda.html#module-ophyd_async.fastcs.panda">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.plan_stubs
+
+      <ul>
+        <li><a href="_api/ophyd_async.plan_stubs.html#module-ophyd_async.plan_stubs">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.sim
+
+      <ul>
+        <li><a href="_api/ophyd_async.sim.html#module-ophyd_async.sim">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.tango
+
+      <ul>
+        <li><a href="_api/ophyd_async.tango.html#module-ophyd_async.tango">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.tango.core
+
+      <ul>
+        <li><a href="_api/ophyd_async.tango.core.html#module-ophyd_async.tango.core">module</a>
+</li>
+      </ul></li>
+      <li>
+    ophyd_async.tango.sim
+
+      <ul>
+        <li><a href="_api/ophyd_async.tango.sim.html#module-ophyd_async.tango.sim">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Device.parent">parent (ophyd_async.core.Device attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.PathInfo">PathInfo (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusDetector">PilatusDetector (class in ophyd_async.epics.adpilatus)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusDriverIO">PilatusDriverIO (class in ophyd_async.epics.adpilatus)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusReadoutTime">PilatusReadoutTime (class in ophyd_async.epics.adpilatus)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorController.prepare">prepare() (ophyd_async.core.DetectorController method)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardDetector.prepare">(ophyd_async.core.StandardDetector method)</a>
+</li>
+        <li><a href="_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.prepare">(ophyd_async.epics.motor.Motor method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.prepare_static_seq_table_flyer_and_detectors_with_same_trigger">prepare_static_seq_table_flyer_and_detectors_with_same_trigger() (in module ophyd_async.plan_stubs)</a>
+</li>
+      <li><a href="_api/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoReadable.proxy">proxy (ophyd_async.tango.core.TangoReadable attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.put">put() (ophyd_async.core.SignalBackend method)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix">PvSuffix (class in ophyd_async.epics.core)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.read">read() (ophyd_async.core.SignalR method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Reference">Reference (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.retrieve_settings">retrieve_settings() (in module ophyd_async.plan_stubs)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.SampleStage">SampleStage (class in ophyd_async.epics.sim)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.sim.html#ophyd_async.epics.sim.Sensor">Sensor (class in ophyd_async.epics.sim)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalW.set">set() (ophyd_async.core.SignalW method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_other_value">set_and_wait_for_other_value() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_value">set_and_wait_for_value() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.set_callback">set_callback() (ophyd_async.core.SignalBackend method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Device.set_name">set_name() (ophyd_async.core.Device method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Signal">Signal (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend">SignalBackend (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR">SignalR (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalRW">SignalRW (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalW">SignalW (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalX">SignalX (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.soft_signal_r_and_setter">soft_signal_r_and_setter() (in module ophyd_async.core)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.soft_signal_rw">soft_signal_rw() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SoftSignalBackend">SoftSignalBackend (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Signal.source">source (ophyd_async.core.Signal property)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalBackend.source">source() (ophyd_async.core.SignalBackend method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.stage">stage() (ophyd_async.core.SignalR method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardDetector">StandardDetector (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardReadable">StandardReadable (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat">StandardReadableFormat (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.FlyMotorInfo.start_position">start_position (ophyd_async.epics.motor.FlyMotorInfo attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.store_settings">store_settings() (in module ophyd_async.plan_stubs)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StrictEnum">StrictEnum (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe">subscribe() (ophyd_async.core.SignalR method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_value">subscribe_value() (ophyd_async.core.SignalR method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SubsetEnum">SubsetEnum (class in ophyd_async.core)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.tango.core.html#ophyd_async.tango.core.tango_signal_r">tango_signal_r() (in module ophyd_async.tango.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.tango.core.html#ophyd_async.tango.core.tango_signal_rw">tango_signal_rw() (in module ophyd_async.tango.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.tango.core.html#ophyd_async.tango.core.tango_signal_w">tango_signal_w() (in module ophyd_async.tango.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.tango.core.html#ophyd_async.tango.core.tango_signal_x">tango_signal_x() (in module ophyd_async.tango.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoDevice">TangoDevice (class in ophyd_async.tango.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoPolling">TangoPolling (class in ophyd_async.tango.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoReadable">TangoReadable (class in ophyd_async.tango.core)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.FlyMotorInfo.time_for_move">time_for_move (ophyd_async.epics.motor.FlyMotorInfo attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.time_resolved_fly_and_collect_with_static_seq_table">time_resolved_fly_and_collect_with_static_seq_table() (in module ophyd_async.plan_stubs)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.FlyMotorInfo.timeout">timeout (ophyd_async.epics.motor.FlyMotorInfo attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.total_number_of_triggers">total_number_of_triggers (ophyd_async.core.TriggerInfo property)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.TriggerInfo.trigger">trigger (ophyd_async.core.TriggerInfo attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalX.trigger">trigger() (ophyd_async.core.SignalX method)</a>
+</li>
+      <li><a href="_api/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoReadable.trl">trl (ophyd_async.tango.core.TangoReadable attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.UNCACHED_SIGNAL">UNCACHED_SIGNAL (ophyd_async.core.StandardReadableFormat attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.SignalR.unstage">unstage() (ophyd_async.core.SignalR method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.validate_array_dtypes">validate_array_dtypes() (ophyd_async.core.Table class method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.Table.validate_lengths">validate_lengths() (ophyd_async.core.Table method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorTrigger.VARIABLE_GATE">VARIABLE_GATE (ophyd_async.core.DetectorTrigger attribute)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaDetector">VimbaDetector (class in ophyd_async.epics.advimba)</a>
+</li>
+      <li><a href="_api/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaDriverIO">VimbaDriverIO (class in ophyd_async.epics.advimba)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.wait_for_connection">wait_for_connection() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.DetectorController.wait_for_idle">wait_for_idle() (ophyd_async.core.DetectorController method)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.wait_for_value">wait_for_value() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.walk_rw_signals">walk_rw_signals() (in module ophyd_async.core)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.WatchableAsyncStatus">WatchableAsyncStatus (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.WatcherUpdate">WatcherUpdate (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async.core.html#ophyd_async.core.AsyncStatus.wrap">wrap() (ophyd_async.core.AsyncStatus class method)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async.core.html#ophyd_async.core.WatchableAsyncStatus.wrap">(ophyd_async.core.WatchableAsyncStatus class method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
