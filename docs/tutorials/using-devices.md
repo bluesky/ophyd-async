@@ -21,12 +21,6 @@ In [1]:
 
 This has launched an ipython shell, told it to import and run the demo script packaged inside `ophyd_async.sim`, then return to an interactive prompt.
 
-[](#Device)
-
-<project:#Device>
-
-<#Device>
-
 ## Investigate the Devices
 
 We will look at the `stage.x` and `y` motors first. If we examine them we can see that they have a name:

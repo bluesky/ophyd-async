@@ -16,10 +16,10 @@ class ShortenedNamesRenderer(MystRenderer):
 
 
 class NapoleonParser(MystParser):
-    def parse(self, input_string: str, document: nodes.document) -> None:
+    def parse(self, inputstring: str, document: nodes.document) -> None:
         parsed_content = "```{eval-rst}\n"
         parsed_content += str(
-            docstring.GoogleDocstring(str(docstring.NumpyDocstring(input_string)))
+            docstring.GoogleDocstring(str(docstring.NumpyDocstring(inputstring)))
         )
         parsed_content += "\n```\n"
         return super().parse(parsed_content, document)
