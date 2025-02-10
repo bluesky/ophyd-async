@@ -28,7 +28,7 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 ca = ["aioca>=1.6"]
-pva = ["p4p"]
+pva = ["p4p>=4.2.0"]
 sim = ["h5py"]
 tango = ["pytango>=10.0.0"]
 dev = [
@@ -44,6 +44,7 @@ dev = [
     "myst-parser",
     "numpydoc",
     "ophyd",
+    "pickleshare",
     "pipdeptree",
     "pre-commit",
     "pydata-sphinx-theme>=0.12",
@@ -132,7 +133,6 @@ commands =
     tests: pytest --cov=ophyd_async --cov-report term --cov-report xml:cov.xml {posargs}
     docs: sphinx-{posargs:build -EW --keep-going} -T docs build/html
 """
-# TODO: make the above -EW so warnings are treated as errors
 
 [tool.ruff]
 src = ["src", "tests", "system_tests"]
