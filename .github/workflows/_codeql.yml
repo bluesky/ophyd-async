@@ -23,6 +23,8 @@ jobs:
         with:
           languages: python
           build-mode: none
+          queries: +security-and-quality
+          source-root: src/ophyd_async
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
