@@ -9,7 +9,7 @@ from ophyd_async.core import (
     in_micros,
 )
 from ophyd_async.fastcs.panda import (
-    PcompDirection,
+    PandaPcompDirection,
     PcompInfo,
     SeqTable,
     SeqTableInfo,
@@ -147,7 +147,7 @@ def fly_and_collect_with_static_pcomp(
     number_of_pulses: int,
     pulse_width: int,
     rising_edge_step: int,
-    direction: PcompDirection,
+    direction: PandaPcompDirection,
     trigger_info: TriggerInfo,
 ):
     # Set up scan and prepare trigger

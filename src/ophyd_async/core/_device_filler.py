@@ -53,6 +53,8 @@ class DeviceAnnotation(Protocol):
 
 
 class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
+    """For filling signals on introspected devices."""
+
     def __init__(
         self,
         device: Device,
@@ -138,6 +140,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 self._uncreated_devices[name] = origin
 
     def check_created(self):
+        """Check that all Signals and Devices declared in annotations are created."""
         uncreated = sorted(set(self._uncreated_signals).union(self._uncreated_devices))
         if uncreated:
             raise RuntimeError(
@@ -148,6 +151,26 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self,
         filled=True,
     ) -> Iterator[tuple[SignalBackendT, list[Any]]]:
+        """Create all Signals from annotations.
+
+        Parameters
+        ----------
+        filled
+            If True then the Signals created should be considered already filled
+            with connection data. If False then `fill_child_signal` needs
+            calling at device connection time before the signal can be
+            connected.
+
+        Yields
+        ------
+        (backend, extras):
+            The `SignalBackend` that has been created for this Signal, and the
+            list of extra annotations that could be used to customize it. For
+            example an `EpicsDeviceConnector` consumes `PvSuffix` extras to set the
+            write_pv of the backend. Any unhandled extras should be left on the
+            list so this class can handle them, e.g. `StandardReadableFormat`
+            instances.
+        """
         for name in list(self._uncreated_signals):
             child_type = self._uncreated_signals.pop(name)
             backend = self._signal_backend_factory(
@@ -167,6 +190,22 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self,
         filled=True,
     ) -> Iterator[tuple[DeviceConnectorT, list[Any]]]:
+        """Create all Signals from annotations.
+
+        Parameters
+        ----------
+        filled
+            If True then the Devices created should be considered already filled
+            with connection data. If False then `fill_child_device` needs
+            calling at parent device connection time before the child Device can
+            be connected.
+
+        Yields
+        ------
+        (connector, extras):
+            The `DeviceConnector` that has been created for this Signal, and the list of
+            extra annotations that could be used to customize it.
+        """
         for name in list(self._uncreated_devices):
             child_type = self._uncreated_devices.pop(name)
             connector = self._device_connector_factory()
@@ -181,6 +220,10 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             dest[_logical(name)] = connector
 
     def create_device_vector_entries_to_mock(self, num: int):
+        """Create num entries for each `DeviceVector`.
+
+        This is used when the Device is being connected in mock mode.
+        """
         for name, cls in self._vector_device_type.items():
             if not cls:
                 msg = "Malformed device vector"
@@ -194,6 +237,14 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                     self._raise(name, f"Can't make {cls}")
 
     def check_filled(self, source: str):
+        """Check that all the created Signals and Devices are filled
+
+        Parameters
+        ----------
+        source
+            The source of the data that should have done the filling, for
+            reporting as an error message
+        """
         unfilled = sorted(set(self._unfilled_connectors).union(self._unfilled_backends))
         if unfilled:
             raise RuntimeError(
@@ -216,6 +267,17 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         signal_type: type[Signal],
         vector_index: int | None = None,
     ) -> SignalBackendT:
+        """Mark a Signal as filled, and return its backend for filling.
+
+        Parameters
+        ----------
+        name:
+            The name without trailing underscore, the name in the control system
+        signal_type:
+            One of the types `SignalR`, `SignalW`, `SignalRW` or `SignalX`
+        vector_index:
+            If the child is in a `DeviceVector` then what index is it
+        """
         name = cast(LogicalName, name)
         if name in self._unfilled_backends:
             # We made it above
@@ -251,6 +313,17 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         device_type: type[Device] = Device,
         vector_index: int | None = None,
     ) -> DeviceConnectorT:
+        """Mark a Device as filled, and return its connector for filling.
+
+        Parameters
+        ----------
+        name:
+            The name without trailing underscore, the name in the control system
+        device_type:
+            The `Device` subclass to be created
+        vector_index:
+            If the child is in a `DeviceVector` then what index is it
+        """
         name = cast(LogicalName, name)
         if name in self._unfilled_connectors:
             # We made it above

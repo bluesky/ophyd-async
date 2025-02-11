@@ -1,3 +1,5 @@
+"""Plan stubs for connecting, setting up and flying devices."""
+
 from ._ensure_connected import ensure_connected
 from ._fly import (
     fly_and_collect,

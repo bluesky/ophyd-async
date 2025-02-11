@@ -17,10 +17,12 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._block import CaptureMode, DataBlock
+from ._block import DataBlock, PandaCaptureMode
 
 
 class PandaHDFWriter(DetectorWriter):
+    """For writing for PandA data from the `DataBlock`."""
+
     _ctxt: Context | None = None
 
     def __init__(
@@ -56,7 +58,7 @@ class PandaHDFWriter(DetectorWriter):
             self.panda_data_block.hdf_file_name.set(
                 f"{info.filename}.h5",
             ),
-            self.panda_data_block.capture_mode.set(CaptureMode.FOREVER),
+            self.panda_data_block.capture_mode.set(PandaCaptureMode.FOREVER),
         )
 
         # Make sure that directory exists or has been created.

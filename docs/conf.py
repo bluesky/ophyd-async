@@ -5,17 +5,44 @@ list see the documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
-import os
 import sys
 from pathlib import Path
 from subprocess import check_output
 
 import requests
+from sphinx import addnodes, application, environment
+from sphinx.ext import intersphinx
 
 import ophyd_async
 
-# -- General configuration ------------------------------------------------
-sys.path.insert(0, os.path.abspath("../../src"))
+
+# A custom handler for TypeVars and Unions
+def missing_reference_handler(
+    app: application.Sphinx,
+    env: environment.BuildEnvironment,
+    node: addnodes.pending_xref,
+    contnode,
+):
+    target = node["reftarget"]
+    if "." in target and node["reftype"] == "class":
+        # Try again as `obj` so we pick up Unions, TypeVars and other things
+        if target.startswith("ophyd_async"):
+            # Pick it up from our domain
+            domain = env.domains[node["refdomain"]]
+            refdoc = node.get("refdoc")
+            return domain.resolve_xref(
+                env, refdoc, app.builder, "obj", target, node, contnode
+            )
+        else:
+            # pass it to intersphinx with the right type
+            node["reftype"] = "obj"
+            return intersphinx.missing_reference(app, env, node, contnode)
+
+
+def setup(app: application.Sphinx):
+    app.connect("missing-reference", missing_reference_handler)
+
+
 # General information about the project.
 project = "ophyd-async"
 copyright = "2014, Brookhaven National Lab"
@@ -35,76 +62,110 @@ else:
 extensions = [
     # for diagrams
     "sphinxcontrib.mermaid",
-    # Used for BaseModel autodoc
-    "sphinxcontrib.autodoc_pydantic",
     # Use this for generating API docs
-    "sphinx.ext.autodoc",
-    # Not sure if this is still used?
-    "sphinx.ext.doctest",
-    # and making summary tables at the top of API docs
-    "sphinx.ext.autosummary",
-    # This can parse google style docstrings
-    "sphinx.ext.napoleon",
+    "autodoc2",
     # For linking to external sphinx documentation
     "sphinx.ext.intersphinx",
     # Add links to source code in API docs
     "sphinx.ext.viewcode",
-    # Adds the inheritance-diagram generation directive
-    "sphinx.ext.inheritance_diagram",
     # Add a copy button to each code block
     "sphinx_copybutton",
     # For the card element
     "sphinx_design",
-    "sphinx.ext.mathjax",
+    # To make .nojekyll
     "sphinx.ext.githubpages",
+    # To make the {ipython} directive
     "IPython.sphinxext.ipython_directive",
+    # To syntax highlight "ipython" language code blocks
     "IPython.sphinxext.ipython_console_highlighting",
+    # To embed matplotlib plots generated from code
     "matplotlib.sphinxext.plot_directive",
+    # To parse markdown
     "myst_parser",
-    "numpydoc",
 ]
 
-# So we can use the ::: syntax
-myst_enable_extensions = ["colon_fence"]
+# Which package to load and document
+autodoc2_packages = ["../src/ophyd_async"]
 
-napoleon_google_docstring = False
-napoleon_numpy_docstring = True
+# Put them in docs/_api which is git ignored
+autodoc2_output_dir = "_api"
+
+# Modules that should have an all...
+autodoc2_module_all_regexes = [
+    r"ophyd_async\.core",
+    r"ophyd_async\.sim",
+    r"ophyd_async\.epics\.[^\.]*",
+    r"ophyd_async\.tango\.[^\.]*",
+    r"ophyd_async\.fastcs\.[^\.]*",
+    r"ophyd_async\.plan_stubs",
+    r"ophyd_async\.testing",
+]
+
+# ... so should have their private modules ignored
+autodoc2_skip_module_regexes = [
+    x + r"\._.*" for x in autodoc2_module_all_regexes + ["ophyd_async"]
+]
+
+# parse using napoleon numpy docstrings
+autodoc2_docstring_parser_regexes = [(".*", "ophyd_async._docs_parser")]
+# Render with shortened names
+autodoc2_render_plugin = "ophyd_async._docs_parser.ShortenedNamesRenderer"
+
+# Don't document private things
+autodoc2_hidden_objects = {"private", "inherited", "dunder"}
+
+# We don't have any docstring for __init__, so by separating
+# them here we don't get the "Initilize" text that would otherwise be added
+autodoc2_class_docstring = "both"
+
+# For some reason annotations are not expanded, this will do here
+autodoc2_replace_annotations = [
+    ("~PvSuffix.rbv", "ophyd_async.epics.core.PvSuffix.rbv")
+]
+
+# So we can use the ::: syntax and the :param thing: syntax
+myst_enable_extensions = ["colon_fence", "fieldlist"]
 
 # If true, Sphinx will warn about all references where the target cannot
 # be found.
-# nitpicky = True
+nitpicky = True
 
 # A list of (type, target) tuples (by default empty) that should be ignored when
 # generating warnings in "nitpicky mode". Note that type should include the
 # domain name if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
-nitpick_ignore = [
-    # builtins
-    ("py:class", "NoneType"),
-    ("py:class", "'str'"),
-    ("py:class", "'float'"),
-    ("py:class", "'int'"),
-    ("py:class", "'bool'"),
-    ("py:class", "'object'"),
-    ("py:class", "'id'"),
-    # typing
-    ("py:class", "typing_extensions.Literal"),
+obj_ignore = [
+    "ophyd_async.core._detector.DetectorControllerT",
+    "ophyd_async.core._detector.DetectorWriterT",
+    "ophyd_async.core._device.DeviceT",
+    "ophyd_async.core._device_filler.SignalBackendT",
+    "ophyd_async.core._device_filler.DeviceConnectorT",
+    "ophyd_async.core._protocol.C",
+    "ophyd_async.core._signal_backend.SignalDatatypeV",
+    "ophyd_async.core._status.AsyncStatusBase",
+    "ophyd_async.core._utils.P",
+    "ophyd_async.core._utils.T",
+    "ophyd_async.core._utils.V",
+    "ophyd_async.epics.adcore._core_logic.ADBaseIOT",
+    "ophyd_async.epics.adcore._core_logic.ADBaseControllerT",
+    "ophyd_async.epics.adcore._core_writer.NDFileIOT",
+    "ophyd_async.epics.adcore._core_writer.ADWriterT",
+    "ophyd_async.tango.core._base_device.T",
+    "ophyd_async.tango.core._tango_transport.R",
+    "ophyd_async.tango.core._tango_transport.TangoProxy",
+    "ophyd_async.testing._utils.T",
+    "0.1",
+    "1.0",
 ]
-
-# Order the members by the order they appear in the source code
-autodoc_member_order = "bysource"
-
-# Don't inherit docstrings from baseclasses
-autodoc_inherit_docstrings = False
-
-# Add some more modules to the top level autosummary
-ophyd_async.__all__ += ["sim", "epics", "tango", "fastcs", "plan_stubs"]
-
-# Document only what is in __all__
-autosummary_ignore_module_all = False
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+nitpick_ignore = []
+for var in obj_ignore:
+    nitpick_ignore.append(("py:class", var))
+    nitpick_ignore.append(("py:obj", var))
+# Ignore classes in modules with no intersphinx
+nitpick_ignore_regex = [
+    (r"py:.*", r"pydantic\..*"),
+    (r"py:.*", r"tango\..*"),
+]
 
 # Output graphviz directive produced images in a scalable format
 graphviz_output_format = "svg"
@@ -127,7 +188,6 @@ exclude_patterns = ["_build"]
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
 
-
 # Example configuration for intersphinx: refer to the Python standard library.
 # This means you can link things like `str` and `asyncio` to the relevant
 # docs in the python documentation.
@@ -137,19 +197,11 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/devdocs/", None),
     "databroker": ("https://blueskyproject.io/databroker/", None),
     "event-model": ("https://blueskyproject.io/event-model/main", None),
+    "pytest": ("https://docs.pytest.org/en/stable/", None),
 }
 
 # A dictionary of graphviz graph attributes for inheritance diagrams.
 inheritance_graph_attrs = {"rankdir": "TB"}
-
-# Common links that should be available on every page
-rst_epilog = """
-.. _NSLS: https://www.bnl.gov/nsls2
-.. _black: https://github.com/psf/black
-.. _ruff: https://beta.ruff.rs/docs/
-.. _mypy: http://mypy-lang.org/
-.. _pre-commit: https://pre-commit.com/
-"""
 
 # Ignore localhost links for periodic check that links in docs are valid
 linkcheck_ignore = [r"http://localhost:\d+/"]
@@ -230,27 +282,9 @@ html_show_copyright = False
 html_logo = "images/ophyd-async-logo.svg"
 html_favicon = "images/ophyd-favicon.svg"
 
-# If False and a module has the __all__ attribute set, autosummary documents
-# every member listed in __all__ and no others. Default is True
-autosummary_ignore_module_all = False
-
-# Turn on sphinx.ext.autosummary
-autosummary_generate = True
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
-
-# Look for signatures in the first line of the docstring (used for C functions)
-autodoc_docstring_signature = True
-
-# numpydoc config
-numpydoc_show_class_members = False
-
-# Don't show config summary as it's not relevant
-autodoc_pydantic_model_show_config_summary = False
-
-# Show the fields in source order
-autodoc_pydantic_model_summary_list_order = "bysource"
+# Custom CSS
+html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 
 # Where to put Ipython savefigs
 ipython_savefig_dir = "../build/savefig"

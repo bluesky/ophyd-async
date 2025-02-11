@@ -27,6 +27,19 @@ You can now use `pip` to install the library and its dependencies:
 $ python3 -m pip install ophyd-async
 ```
 
+If you need to talk to a given control system, you will need to install
+the specific extra:
+- `ca` for EPICS Channel Access
+- `pva` for EPICS PVAccess
+- `tango` for Tango
+- `demo` for tutorial requirements like h5py and ipython
+- `testing` for testing requirements like pytest
+
+E.g.:
+```
+$ python3 -m pip install ophyd-async[ca,demo]
+```
+
 If you require a feature that is not currently released you can also install
 from github:
 
@@ -38,5 +51,5 @@ The library should now be installed and the commandline interface on your path.
 You can check the version that has been installed by typing:
 
 ```
-$ ophyd-async --version
+$ python -m ophyd_async --version
 ```

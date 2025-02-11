@@ -39,7 +39,7 @@ async def test_prepare_internal_trigger(standard_detector: StandardDetector) -> 
     trigger_info = TriggerInfo(
         number_of_triggers=1,
         trigger=DetectorTrigger.INTERNAL,
-        deadtime=None,
+        deadtime=0,
         livetime=None,
         frame_timeout=None,
     )
@@ -74,7 +74,7 @@ async def test_prepare_external_trigger_no_deadtime(
     trigger_info = TriggerInfo(
         number_of_triggers=1,
         trigger=DetectorTrigger.EDGE_TRIGGER,
-        deadtime=None,  # Less than the required 0.5 set in the fixture
+        deadtime=0,  # Less than the required 0.5 set in the fixture
         livetime=None,
         frame_timeout=None,
     )

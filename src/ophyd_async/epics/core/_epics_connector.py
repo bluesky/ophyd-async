@@ -10,6 +10,8 @@ from ._signal import EpicsSignalBackend, get_signal_backend_type, split_protocol
 
 @dataclass
 class PvSuffix:
+    """Define the PV suffix to be appended to the device prefix."""
+
     read_suffix: str
     write_suffix: str | None = None
 
@@ -36,6 +38,8 @@ def fill_backend_with_prefix(
 
 
 class EpicsDeviceConnector(DeviceConnector):
+    """Used for connecting signals to static EPICS pvs."""
+
     def __init__(self, prefix: str) -> None:
         self.prefix = prefix
 

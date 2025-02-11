@@ -2,6 +2,7 @@ import asyncio
 import time
 from enum import Enum, IntEnum
 from typing import Annotated as A
+from typing import TypeVar
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -10,10 +11,10 @@ import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import Array1D, SignalRW, T, init_devices
+from ophyd_async.core import Array1D, SignalRW, init_devices
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_python_type
-from ophyd_async.tango.sim import (
+from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
     TangoDetector,
@@ -30,6 +31,8 @@ from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
 from tango.test_context import MultiDeviceTestContext
 from tango.test_utils import assert_close
+
+T = TypeVar("T")
 
 
 class TestEnum(IntEnum):

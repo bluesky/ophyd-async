@@ -10,6 +10,8 @@ from ._signal_backend import SignalDatatypeT
 
 
 class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
+    """Used for supplying settings to signals."""
+
     def __init__(
         self, device: DeviceT, settings: MutableMapping[SignalRW, Any] | None = None
     ):
@@ -78,7 +80,9 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
 
         Returns
         -------
-            (where_true, where_false)
+        tuple
+            With the first element being the true settings and the second
+            being the false.
 
         For example::
 
@@ -93,6 +97,8 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
 
 
 class SettingsProvider:
+    """Base class for providing settings."""
+
     @abstractmethod
     async def store(self, name: str, data: dict[str, Any]):
         """Store the data, associating it with the given name."""

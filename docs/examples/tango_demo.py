@@ -4,7 +4,7 @@ import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 from bluesky import RunEngine
 
-from ophyd_async.tango.sim import (
+from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
     TangoDetector,

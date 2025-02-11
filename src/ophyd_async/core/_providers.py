@@ -25,18 +25,24 @@ class PathInfo:
 
 
 class FilenameProvider(Protocol):
+    """Base class for callable classes providing filenames."""
+
     @abstractmethod
     def __call__(self, device_name: str | None = None) -> str:
         """Get a filename to use for output data, w/o extension"""
 
 
 class PathProvider(Protocol):
+    """Abstract class that tells a detector where to write its data."""
+
     @abstractmethod
     def __call__(self, device_name: str | None = None) -> PathInfo:
         """Get the current directory to write files into"""
 
 
 class StaticFilenameProvider(FilenameProvider):
+    """Provides a constant filename on every call."""
+
     def __init__(self, filename: str):
         self._static_filename = filename
 
@@ -45,6 +51,8 @@ class StaticFilenameProvider(FilenameProvider):
 
 
 class UUIDFilenameProvider(FilenameProvider):
+    """Files will have a UUID as a filename."""
+
     def __init__(
         self,
         uuid_call_func: Callable = uuid.uuid4,
@@ -68,6 +76,8 @@ class UUIDFilenameProvider(FilenameProvider):
 
 
 class AutoIncrementFilenameProvider(FilenameProvider):
+    """Provides a new numerically incremented filename on each call."""
+
     def __init__(
         self,
         base_filename: str = "",
@@ -98,14 +108,16 @@ class AutoIncrementFilenameProvider(FilenameProvider):
 
 
 class StaticPathProvider(PathProvider):
+    """All files will be within a static directory."""
+
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        directory_path: Path,
+        directory_path: Path | str,
         create_dir_depth: int = 0,
     ) -> None:
         self._filename_provider = filename_provider
-        self._directory_path = directory_path
+        self._directory_path = Path(directory_path)
         self._create_dir_depth = create_dir_depth
 
     def __call__(self, device_name: str | None = None) -> PathInfo:
@@ -119,6 +131,8 @@ class StaticPathProvider(PathProvider):
 
 
 class AutoIncrementingPathProvider(PathProvider):
+    """Provides a new numerically incremented path on each call."""
+
     def __init__(
         self,
         filename_provider: FilenameProvider,
@@ -169,6 +183,8 @@ class AutoIncrementingPathProvider(PathProvider):
 
 
 class YMDPathProvider(PathProvider):
+    """Provides a path with the date included in the directory name."""
+
     def __init__(
         self,
         filename_provider: FilenameProvider,
@@ -206,12 +222,16 @@ class YMDPathProvider(PathProvider):
 
 
 class NameProvider(Protocol):
+    """Base class for callable classes providing data keys."""
+
     @abstractmethod
     def __call__(self) -> str:
         """Get the name to be used as a data_key in the descriptor document"""
 
 
 class DatasetDescriber(Protocol):
+    """For describing datasets in file writing."""
+
     @abstractmethod
     async def np_datatype(self) -> str:
         """Represents the numpy datatype"""
