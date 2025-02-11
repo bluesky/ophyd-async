@@ -32,6 +32,11 @@ def _get_signal_details(entry: Entry) -> tuple[type[Signal], str, str]:
 
 
 class PviDeviceConnector(DeviceConnector):
+    """
+    Used for connecting to PVI devices, where signals are be dynamically
+    defined at introspection.
+    """
+
     def __init__(self, prefix: str = "", error_hint: str = "") -> None:
         # TODO: what happens if we get a leading "pva://" here?
         self.prefix = prefix

@@ -1,13 +1,14 @@
 from ._block import (
-    BitMux,
     CommonPandaBlocks,
     DataBlock,
+    PandaBitMux,
+    PandaCaptureMode,
+    PandaPcompDirection,
+    PandaTimeUnits,
     PcapBlock,
     PcompBlock,
-    PcompDirection,
     PulseBlock,
     SeqBlock,
-    TimeUnits,
 )
 from ._control import PandaPcapController
 from ._hdf_panda import HDFPanda
@@ -28,13 +29,14 @@ from ._writer import PandaHDFWriter
 __all__ = [
     "CommonPandaBlocks",
     "DataBlock",
-    "BitMux",
+    "PandaBitMux",
+    "PandaCaptureMode",
     "PcapBlock",
     "PcompBlock",
-    "PcompDirection",
+    "PandaPcompDirection",
     "PulseBlock",
     "SeqBlock",
-    "TimeUnits",
+    "PandaTimeUnits",
     "HDFPanda",
     "PandaHDFWriter",
     "PandaPcapController",

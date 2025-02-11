@@ -10,14 +10,12 @@ from ophyd_async.core import (
     set_and_wait_for_value,
 )
 
-from ._core_io import ADBaseIO, DetectorState
+from ._core_io import ADBaseIO, ADState
 from ._utils import ImageMode, stop_busy_record
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
-DEFAULT_GOOD_STATES: frozenset[DetectorState] = frozenset(
-    [DetectorState.IDLE, DetectorState.ABORTED]
-)
+DEFAULT_GOOD_STATES: frozenset[ADState] = frozenset([ADState.IDLE, ADState.ABORTED])
 
 ADBaseIOT = TypeVar("ADBaseIOT", bound=ADBaseIO)
 ADBaseControllerT = TypeVar("ADBaseControllerT", bound="ADBaseController")
@@ -27,7 +25,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
     def __init__(
         self,
         driver: ADBaseIOT,
-        good_states: frozenset[DetectorState] = DEFAULT_GOOD_STATES,
+        good_states: frozenset[ADState] = DEFAULT_GOOD_STATES,
     ) -> None:
         self.driver = driver
         self.good_states = good_states

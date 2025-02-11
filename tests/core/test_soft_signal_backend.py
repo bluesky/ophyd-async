@@ -2,7 +2,7 @@ import asyncio
 import os
 import time
 from collections.abc import Callable, Sequence
-from typing import Any
+from typing import Any, TypeVar
 
 import numpy as np
 import pytest
@@ -13,9 +13,10 @@ from ophyd_async.core import (
     SignalBackend,
     SoftSignalBackend,
     StrictEnum,
-    T,
     soft_signal_rw,
 )
+
+T = TypeVar("T")
 
 
 class MyEnum(StrictEnum):
@@ -69,7 +70,7 @@ class MonitorQueue:
 
 
 # Can be removed once numpy >=2 is pinned.
-default_int_type = (
+scalar_int_dtype = (
     "<i4" if os.name == "nt" and np.version.version.startswith("1.") else "<i8"
 )
 
@@ -77,7 +78,7 @@ default_int_type = (
 @pytest.mark.parametrize(
     "datatype, initial_value, put_value, descriptor, dtype_numpy",
     [
-        (int, 0, 43, integer_d, default_int_type),
+        (int, 0, 43, integer_d, scalar_int_dtype),
         (float, 0.0, 43.5, number_d, "<f8"),
         (str, "", "goodbye", string_d, "|S40"),
         (MyEnum, MyEnum.A, MyEnum.C, enum_d, "|S40"),

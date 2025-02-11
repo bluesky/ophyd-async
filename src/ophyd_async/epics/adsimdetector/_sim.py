@@ -4,14 +4,19 @@ from ophyd_async.core import PathProvider, SignalR
 from ophyd_async.epics import adcore
 
 
-class SimDriverIO(adcore.ADBaseIO): ...
+class SimDriverIO(adcore.ADBaseIO):
+    """Base class for driving simulated Areadetector IO."""
+
+    pass
 
 
 class SimController(adcore.ADBaseController[SimDriverIO]):
+    """Controller for simulated Areadetector."""
+
     def __init__(
         self,
         driver: SimDriverIO,
-        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.ADState] = adcore.DEFAULT_GOOD_STATES,
     ) -> None:
         super().__init__(driver, good_states=good_states)
 
@@ -20,6 +25,8 @@ class SimController(adcore.ADBaseController[SimDriverIO]):
 
 
 class SimDetector(adcore.AreaDetector[SimController]):
+    """Detector for simulated Areadetector."""
+
     def __init__(
         self,
         prefix: str,

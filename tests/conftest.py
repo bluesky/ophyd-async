@@ -242,11 +242,8 @@ def static_path_provider(
 @pytest.fixture
 def one_shot_trigger_info() -> TriggerInfo:
     return TriggerInfo(
-        frame_timeout=None,
         number_of_triggers=1,
         trigger=DetectorTrigger.INTERNAL,
-        deadtime=None,
-        livetime=None,
     )
 
 

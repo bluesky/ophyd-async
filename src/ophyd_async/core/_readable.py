@@ -119,7 +119,7 @@ class StandardReadable(
         hints: Hints = {}
         for new_hint in self._has_hints:
             # Merge the existing and new hints, based on the type of the value.
-            # This avoids default dict merge behaviour that overrides the values;
+            # This avoids default dict merge behavior that overrides the values;
             # we want to combine them when they are Sequences, and ensure they are
             # identical when string values.
             for key, value in new_hint.hints.items():

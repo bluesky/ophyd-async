@@ -1,4 +1,4 @@
-from collections.abc import Awaitable, Callable, Iterable
+from collections.abc import Awaitable, Callable, Iterable, Iterator
 from contextlib import contextmanager
 from unittest.mock import AsyncMock, Mock
 
@@ -14,6 +14,10 @@ from ophyd_async.core import (
 
 
 def get_mock(device: Device | Signal) -> Mock:
+    """Return the mock (which may have child mocks attached) for a Device.
+
+    The device must have been connected in mock mode.
+    """
     mock = device._mock  # noqa: SLF001
     assert isinstance(mock, LazyMock), f"Device {device} not connected in mock mode"
     return mock()
@@ -34,36 +38,7 @@ def set_mock_value(signal: Signal[SignalDatatypeT], value: SignalDatatypeT):
     backend.set_value(value)
 
 
-def set_mock_put_proceeds(signal: Signal, proceeds: bool):
-    """Allow or block a put with wait=True from proceeding"""
-    backend = _get_mock_signal_backend(signal)
-
-    if proceeds:
-        backend.put_proceeds.set()
-    else:
-        backend.put_proceeds.clear()
-
-
-@contextmanager
-def mock_puts_blocked(*signals: Signal):
-    for signal in signals:
-        set_mock_put_proceeds(signal, False)
-    yield
-    for signal in signals:
-        set_mock_put_proceeds(signal, True)
-
-
-def get_mock_put(signal: Signal) -> AsyncMock:
-    """Get the mock associated with the put call on the signal."""
-    return _get_mock_signal_backend(signal).put_mock
-
-
-def reset_mock_put_calls(signal: Signal):
-    backend = _get_mock_signal_backend(signal)
-    backend.put_mock.reset_mock()
-
-
-class _SetValuesIterator:
+class _SetValuesIterator(Iterator[SignalDatatypeT]):
     # Garbage collected by the time __del__ is called unless we put it as a
     # global attrbute here.
     require_all_consumed: bool = False
@@ -78,13 +53,9 @@ class _SetValuesIterator:
         self.values = values
         self.require_all_consumed = require_all_consumed
         self.index = 0
-
         self.iterator = enumerate(values, start=1)
 
-    def __iter__(self):
-        return self
-
-    def __next__(self):
+    def __next__(self) -> SignalDatatypeT:
         # Will propogate StopIteration
         self.index, next_value = next(self.iterator)
         set_mock_value(self.signal, next_value)
@@ -113,33 +84,32 @@ def set_mock_values(
     signal: SignalR[SignalDatatypeT],
     values: Iterable[SignalDatatypeT],
     require_all_consumed: bool = False,
-) -> _SetValuesIterator:
+) -> Iterator[SignalDatatypeT]:
     """Iterator to set a signal to a sequence of values, optionally repeating the
     sequence.
 
     Parameters
     ----------
     signal:
-        A signal with a `MockSignalBackend` backend.
+        A signal connected in mock mode.
     values:
         An iterable of the values to set the signal to, on each iteration
-        the value will be set.
+        the next value will be set.
     require_all_consumed:
         If True, an AssertionError will be raised if the iterator is deleted before
         all values have been consumed.
 
-    Notes
-    -----
-    Example usage::
+    Examples
+    --------
+    .. code::
 
-           for value_set in set_mock_values(signal, [1, 2, 3]):
-                # do something
-
-            cm = set_mock_values(signal, 1, 2, 3, require_all_consumed=True):
-            next(cm)
+        for value_set in set_mock_values(signal, range(3)):
             # do something
-    """
 
+        cm = set_mock_values(signal, [1, 3, 8], require_all_consumed=True):
+        next(cm)
+        # do something
+    """
     return _SetValuesIterator(
         signal,
         values,
@@ -173,3 +143,28 @@ def callback_on_mock_put(
     backend = _get_mock_signal_backend(signal)
     backend.put_mock.side_effect = callback
     return _unset_side_effect_cm(backend.put_mock)
+
+
+def set_mock_put_proceeds(signal: Signal, proceeds: bool):
+    """Allow or block a put with wait=True from proceeding."""
+    backend = _get_mock_signal_backend(signal)
+
+    if proceeds:
+        backend.put_proceeds.set()
+    else:
+        backend.put_proceeds.clear()
+
+
+@contextmanager
+def mock_puts_blocked(*signals: Signal):
+    """Context manager to block puts at the start and unblock at the end."""
+    for signal in signals:
+        set_mock_put_proceeds(signal, False)
+    yield
+    for signal in signals:
+        set_mock_put_proceeds(signal, True)
+
+
+def get_mock_put(signal: Signal) -> AsyncMock:
+    """Get the mock associated with the put call on the signal."""
+    return _get_mock_signal_backend(signal).put_mock

@@ -19,6 +19,8 @@ EIGER_TRIGGER_MODE_MAP = {
 
 
 class EigerController(DetectorController):
+    """Controller for the Eiger detector."""
+
     def __init__(
         self,
         driver: EigerDriverIO,

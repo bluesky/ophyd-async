@@ -62,7 +62,7 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_uses_deadtime(
 async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
     controller: adsimdetector.SimController,
 ):
-    set_mock_value(controller.driver.detector_state, adcore.DetectorState.ERROR)
+    set_mock_value(controller.driver.detector_state, adcore.ADState.ERROR)
     acquiring = await controller.start_acquiring_driver_and_ensure_status()
     with pytest.raises(ValueError):
         await acquiring
@@ -77,13 +77,11 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
     Real world application; it takes some time to start acquiring, and during that time
     the detector gets itself into a bad state.
     """
-    set_mock_value(controller.driver.detector_state, adcore.DetectorState.IDLE)
+    set_mock_value(controller.driver.detector_state, adcore.ADState.IDLE)
 
     async def wait_then_fail():
         await asyncio.sleep(0)
-        set_mock_value(
-            controller.driver.detector_state, adcore.DetectorState.DISCONNECTED
-        )
+        set_mock_value(controller.driver.detector_state, adcore.ADState.DISCONNECTED)
 
     await wait_then_fail()
 

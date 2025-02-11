@@ -72,10 +72,11 @@ def config_ophyd_async_logging(
     ----------
     file : object with ``write`` method or filename string
         Default is ``sys.stdout``.
-    fmt : Overall logging format
-    datefmt : string
+    fmt : str
+        Overall logging format
+    datefmt : str
         Date format. Default is ``'%H:%M:%S'``.
-    color : boolean
+    color : bool
         Use ANSI color codes. True by default.
     level : str or int
         Python logging level, given as string or corresponding integer.

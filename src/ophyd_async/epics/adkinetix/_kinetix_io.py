@@ -4,6 +4,8 @@ from ophyd_async.epics.core import epics_signal_rw_rbv
 
 
 class KinetixTriggerMode(StrictEnum):
+    """Trigger mode for ADKinetix detector."""
+
     INTERNAL = "Internal"
     EDGE = "Rising Edge"
     GATE = "Exp. Gate"
@@ -27,4 +29,4 @@ class KinetixDriverIO(adcore.ADBaseIO):
         self.readout_port_idx = epics_signal_rw_rbv(
             KinetixReadoutMode, prefix + "ReadoutPortIdx"
         )
-        super().__init__(prefix, name)
+        super().__init__(prefix, name=name)
