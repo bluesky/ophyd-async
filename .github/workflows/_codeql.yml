@@ -28,8 +28,9 @@ jobs:
         with:
           category: "/language:python"
       - name: Debug SARIF File
-        run: cat results/python.sarif
+        run: cat /home/runner/work/ophyd-async/results/python.sarif
+
       - name: Upload CodeQL Analysis Results
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: results/python.sarif
+          sarif_file: /home/runner/work/ophyd-async/results/python.sarif
