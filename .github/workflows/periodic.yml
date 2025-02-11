@@ -11,3 +11,5 @@ jobs:
     uses: ./.github/workflows/_tox.yml
     with:
       tox: docs build -- -b linkcheck
+  codeql:
+    uses: ./.github/workflows/_codeql.yml
