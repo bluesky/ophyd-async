@@ -39,6 +39,8 @@ from tango.asyncio_executor import (
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
+from ._utils import get_device_trl_and_attr
+
 # time constant to wait for timeout
 A_BIT = 1e-5
 
@@ -597,7 +599,8 @@ async def get_tango_trl(
     """Get the tango resource locator."""
     if isinstance(device_proxy, TangoProxy):
         return device_proxy
-    device_trl, trl_name = full_trl.rsplit("/", 1)
+    device_trl, trl_name = get_device_trl_and_attr(full_trl)
+    # print(device_trl, trl_name, full_trl)
     trl_name = trl_name.lower()
     if device_proxy is None:
         device_proxy = await AsyncDeviceProxy(device_trl, timeout=timeout)

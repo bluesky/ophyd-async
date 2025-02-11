@@ -11,6 +11,7 @@ from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX
 from ophyd_async.tango.core import (
     TangoReadable,
     TangoSignalBackend,
+    get_full_attr_trl,
     tango_signal_r,
     tango_signal_rw,
     tango_signal_w,
@@ -122,7 +123,7 @@ async def assert_monitor_then_put(
     descriptor: dict,
     datatype: type[T] | None = None,
 ):
-    source = trl + "/" + pv
+    source = get_full_attr_trl(trl, pv)
     signal = tango_signal_rw(datatype, source)
     backend = signal._connector.backend
     await signal.connect()
@@ -177,7 +178,7 @@ async def assert_put_read(
     descriptor: dict,
     datatype: type[T] | None = None,
 ):
-    source = trl + "/" + pv
+    source = get_full_attr_trl(trl, pv)
     backend = await make_backend(datatype, source)
     # Make a monitor queue that will monitor for updates
     assert dict(source=source, **descriptor) == await backend.get_datakey("")
@@ -242,7 +243,7 @@ async def test_tango_signal_r(
             if "state" in attr_data.name:
                 print("skipping for now", attr_data.name)
                 continue
-            source = everything_device_trl + "/" + attr_data.name
+            source = get_full_attr_trl(everything_device_trl, attr_data.name)
             signal = tango_signal_r(
                 datatype=attr_data.py_type,
                 read_trl=source,
@@ -270,7 +271,7 @@ async def test_tango_signal_w(
             if "state" in attr_data.name:
                 print("skipping for now", attr_data.name)
                 continue
-            source = everything_device_trl + "/" + attr_data.name
+            source = get_full_attr_trl(everything_device_trl, attr_data.name)
             signal = tango_signal_w(
                 datatype=attr_data.py_type,
                 write_trl=source,
@@ -314,7 +315,7 @@ async def test_tango_signal_rw(
                 print("skipping for now", attr_data.name)
                 continue
 
-            source = everything_device_trl + "/" + attr_data.name
+            source = get_full_attr_trl(everything_device_trl, attr_data.name)
             signal = tango_signal_rw(
                 datatype=attr_data.py_type,
                 read_trl=source,
@@ -343,7 +344,7 @@ async def test_tango_signal_x(tango_test_device: str):
     for use_proxy in [True, False]:
         proxy = await DeviceProxy(tango_test_device) if use_proxy else None
         signal = tango_signal_x(
-            write_trl=tango_test_device + "/" + "clear",
+            write_trl=get_full_attr_trl(tango_test_device, "clear"),
             device_proxy=proxy,
             timeout=timeout,
             name="test_signal",
@@ -367,7 +368,7 @@ async def test_tango_signal_auto_attrs(
             await prepare_device(
                 everything_device_trl, attr_data.name, attr_data.initial_value
             )
-            source = everything_device_trl + "/" + attr_data.name
+            source = get_full_attr_trl(everything_device_trl, attr_data.name)
 
             async def _test_signal(dtype, proxy, source, initial_value, put_value):
                 signal = await __tango_signal_auto(
@@ -421,7 +422,7 @@ async def test_tango_signal_auto_cmds(
     proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
 
     for cmd_data in attribute_datas:
-        source = everything_device_trl + "/" + cmd_data.name + "_cmd"
+        source = get_full_attr_trl(everything_device_trl, cmd_data.name + "_cmd")
 
         async def _test_signal(dtype, proxy, source, put_value):
             signal = await __tango_signal_auto(
@@ -456,7 +457,7 @@ async def test_tango_signal_auto_cmds_void(tango_test_device: str, use_proxy: bo
         proxy = await DeviceProxy(tango_test_device) if use_proxy else None
         signal = await __tango_signal_auto(
             datatype=None,
-            trl=tango_test_device + "/" + "clear",
+            trl=get_full_attr_trl(tango_test_device, "clear"),
             device_proxy=proxy,
         )
         assert type(signal) is SignalX
@@ -473,7 +474,7 @@ async def test_tango_signal_auto_badtrl(tango_test_device: str):
     with pytest.raises(RuntimeError) as exc_info:
         await __tango_signal_auto(
             datatype=None,
-            trl=tango_test_device + "/" + "badtrl",
+            trl=get_full_attr_trl(tango_test_device, "badtrl"),
             device_proxy=proxy,
         )
     assert f"Cannot find badtrl in {tango_test_device}" in str(exc_info.value)
@@ -669,5 +670,6 @@ async def test_assert_val_reading_everything_tango(everything_device_trl):
 @pytest.fixture(autouse=True)
 async def reset_values(everything_device_trl):
     proxy = await DeviceProxy(everything_device_trl)
+    proxy.reset_values()  # todo make this less broken please!!
     yield
     proxy.reset_values()

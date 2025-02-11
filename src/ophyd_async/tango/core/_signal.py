@@ -27,6 +27,7 @@ from tango import (
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ._tango_transport import TangoSignalBackend, get_python_type
+from ._utils import get_device_trl_and_attr
 
 logger = logging.getLogger("ophyd_async")
 
@@ -153,7 +154,7 @@ async def infer_python_type(
 ) -> object | npt.NDArray | type[DevState] | IntEnum:
     """Infers the python type from the TRL."""
     # TODO: work out if this is still needed
-    device_trl, tr_name = trl.rsplit("/", 1)
+    device_trl, tr_name = get_device_trl_and_attr(trl)
     if proxy is None:
         dev_proxy = await AsyncDeviceProxy(device_trl)
     else:
@@ -182,7 +183,7 @@ async def infer_python_type(
 async def infer_signal_type(
     trl, proxy: DeviceProxy | None = None
 ) -> type[Signal] | None:
-    device_trl, tr_name = trl.rsplit("/", 1)
+    device_trl, tr_name = get_device_trl_and_attr(trl)
     if proxy is None:
         dev_proxy = await AsyncDeviceProxy(device_trl)
     else:

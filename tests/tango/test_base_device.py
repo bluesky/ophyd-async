@@ -13,7 +13,7 @@ from bluesky import RunEngine
 import tango
 from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoReadable, get_python_type
+from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
@@ -229,7 +229,7 @@ async def describe_class(fqtrl):
             )
 
         description[f"test_device-{name}"] = {
-            "source": f"{fqtrl}/{name}",  # type: ignore
+            "source": get_full_attr_trl(fqtrl, name),
             "dtype": "array" if is_array else descr,
             "shape": shape,
         }
