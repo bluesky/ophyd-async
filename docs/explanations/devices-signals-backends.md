@@ -4,6 +4,18 @@ The [](#bluesky.run_engine.RunEngine) facing interface is defined by the [bluesk
 
 ## Device and DeviceConnector
 
+```{mermaid}
+classDiagram
+Device *-- DeviceConnector
+Device : connect(mock)
+Device <|-- EpicsDevice
+Device <|-- TangoDevice
+EpicsDevice *-- EpicsDeviceConnector
+TangoDevice *-- TangoDeviceConnector
+DeviceConnector <|-- EpicsDeviceConnector
+DeviceConnector <|-- TangoDeviceConnector
+```
+
 The Device class is the base of all ophyd-async objects that are published to bluesky. It provides:
 - a [](#Device.name) read-only property to read it's name
 - a [](#Device.parent) read-write property to read it's parent Device if it exists
@@ -21,6 +33,28 @@ A DeviceConnector provides the ability to:
 The base DeviceConnector provides suitable methods for use with non-introspected Devices, but there are various control system specific connectors that handle filling annotations in [declarative Devices](./declarative-vs-procedural.md).
 
 ## Signal and SignalBackend
+
+```{mermaid}
+classDiagram
+Device <|-- Signal
+Signal : source
+Signal <|-- SignalR
+SignalR : read()
+SignalR : subscribe()
+SignalR : get_value()
+Signal <|-- SignalW
+SignalW : set()
+SignalR <|-- SignalRW
+SignalW <|-- SignalRW
+SignalRW : locate()
+Signal <|-- SignalX
+SignalX : trigger()
+Signal *-- SignalConnector
+SignalConnector *-- SignalBackend
+SignalBackend <|-- CaSignalConnector
+SignalBackend <|-- PvaSignalConnector
+SignalBackend <|-- TangoSignalConnector
+```
 
 If a Device with children is like a branch in a tree, a Signal is like a leaf. It has no children, but represents a single value or action in the control system. There are 4 types of signal:
 - [](#SignalR) is a signal with a read-only value that supports the [Readable](#bluesky.protocols.Readable) and [Subscribable](#bluesky.protocols.Subscribable) protocols. It also adds the [](#SignalR.get_value) and [](#SignalR.subscribe_value) methods that are used to interact with the Signal in the parent Device.
@@ -51,7 +85,18 @@ my_signal = my_cs_signal_r(int, "something")
 
 ## "Standard" Device subclasses
 
+```{mermaid}
+classDiagram
+Device <|-- StandardReadable
+Device <|-- StandardDetector
+Device <|-- StandardFlyer
+```
+
 There are also some Device subclasses that provide helpers when making Device subclasses, namely:
 - [](#StandardReadable) that supports the [Readable](#bluesky.protocols.Readable) protocol using the values of its children
 - [](#StandardDetector) that supports the [WritesStreamAssets](#bluesky.protocols.WritesStreamAssets) protocol using logic classes for the detector driver and writer
 - [](#StandardFlyer) that supports the [Flyable](#bluesky.protocols.Flyable) protocol for motion and trigger systems
+
+```{seealso}
+[](../how-to/choose-right-baseclass.md)
+```
