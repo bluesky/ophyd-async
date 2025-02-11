@@ -151,7 +151,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self,
         filled=True,
     ) -> Iterator[tuple[SignalBackendT, list[Any]]]:
-        """Create all Signals from annotations
+        """Create all Signals from annotations.
 
         Parameters
         ----------
@@ -190,7 +190,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self,
         filled=True,
     ) -> Iterator[tuple[DeviceConnectorT, list[Any]]]:
-        """Create all Signals from annotations
+        """Create all Signals from annotations.
 
         Parameters
         ----------
@@ -220,7 +220,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             dest[_logical(name)] = connector
 
     def create_device_vector_entries_to_mock(self, num: int):
-        """Create num entries for each `DeviceVector`
+        """Create num entries for each `DeviceVector`.
 
         This is used when the Device is being connected in mock mode.
         """

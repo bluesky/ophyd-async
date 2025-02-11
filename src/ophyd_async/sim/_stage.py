@@ -5,7 +5,7 @@ from ._motor import SimMotor
 
 
 class SimStage(StandardReadable):
-    """A simulated sample stage with X and Y movables"""
+    """A simulated sample stage with X and Y movables."""
 
     def __init__(self, pattern_generator: PatternGenerator, name="") -> None:
         # Define some child Devices

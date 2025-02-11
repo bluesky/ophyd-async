@@ -23,7 +23,7 @@ class AsyncReadable(HasName, Protocol):
 
     @abstractmethod
     async def read(self) -> dict[str, Reading]:
-        """Return an OrderedDict mapping string field name(s) to dictionaries
+        """Return a dict mapping string field name(s) to dictionaries
         of values and timestamps and optional per-point metadata.
 
         For example::
@@ -36,7 +36,7 @@ class AsyncReadable(HasName, Protocol):
 
     @abstractmethod
     async def describe(self) -> dict[str, DataKey]:
-        """Return an OrderedDict with exactly the same keys as the `read`
+        """Return a dict with exactly the same keys as the `read`
         method, here mapped to per-scan metadata about each field.
 
         For example::

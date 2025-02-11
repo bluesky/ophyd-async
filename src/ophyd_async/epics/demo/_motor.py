@@ -21,7 +21,7 @@ from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
 
 class DemoMotor(EpicsDevice, StandardReadable, Movable, Stoppable):
-    """A demo movable that moves based on velocity"""
+    """A demo movable that moves based on velocity."""
 
     # Whether set() should complete successfully or not
     _set_success = True

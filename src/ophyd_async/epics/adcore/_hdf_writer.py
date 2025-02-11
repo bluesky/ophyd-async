@@ -25,7 +25,7 @@ from ._utils import (
 
 
 class ADHDFWriter(ADWriter[NDFileHDFIO]):
-    """Allow `NDFileHDFIO` to be used within `StandardDetector`"""
+    """Allow `NDFileHDFIO` to be used within `StandardDetector`."""
 
     default_suffix: str = "HDF1:"
 

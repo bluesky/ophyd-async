@@ -146,7 +146,7 @@ def callback_on_mock_put(
 
 
 def set_mock_put_proceeds(signal: Signal, proceeds: bool):
-    """Allow or block a put with wait=True from proceeding"""
+    """Allow or block a put with wait=True from proceeding."""
     backend = _get_mock_signal_backend(signal)
 
     if proceeds:

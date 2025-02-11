@@ -6,7 +6,7 @@ from ophyd_async.epics.core import PvSuffix
 
 
 class AravisTriggerMode(StrictEnum):
-    """GigEVision GenICAM standard TriggerMode"""
+    """GigEVision GenICAM standard TriggerMode."""
 
     #: Use TriggerSource to trigger each frame
     ON = "On"
@@ -21,7 +21,7 @@ class AravisTriggerSource(SubsetEnum):
 
 
 class AravisDriverIO(adcore.ADBaseIO):
-    """Generic Driver supporting all GiGE cameras
+    """Generic Driver supporting all GiGE cameras.
 
     This mirrors the interface provided by ADAravis/db/aravisCamera.template.
     """

@@ -36,7 +36,7 @@ ADWriterT = TypeVar("ADWriterT", bound="ADWriter")
 
 
 class ADWriter(DetectorWriter, Generic[NDFileIOT]):
-    """Common behavior for all areaDetector writers"""
+    """Common behavior for all areaDetector writers."""
 
     default_suffix: str = "FILE1:"
 

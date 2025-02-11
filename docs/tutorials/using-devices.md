@@ -29,7 +29,7 @@ In [1]: stage.x.name
 Out[1]: 'stage-x'
 ```
 
-But if we try to call any of the other methods like `read()` we will see that it doesn't return the value, but a [coroutines](inv:python:std:label#coroutine):
+But if we try to call any of the other methods like `read()` we will see that it doesn't return the value, but a [coroutine](inv:python:std:label#coroutine):
 
 ```python
 In [2]: stage.x.read()
@@ -93,7 +93,7 @@ There is also a blob detector that produces a gaussian blob with intensity based
 ```
 
 :::{seealso}
-A more interactive scanning tutorial including live plotting of the data from file is in the process of being written in [the bluesky cookbook](https://github.com/bluesky/bluesky-cookbook/pull/22)
+A more interactive scanning tutorial including live plotting of the data from file is in the process of being written in [the bluesky cookbook](https://github.com/bluesky/bluesky-cookbook/pull/22).
 :::
 
 ## Examine the script
@@ -135,7 +135,7 @@ Next up is the path provider:
 :start-after: temporary directory
 :end-before: All Devices created within this block
 ```
-This is how we specify in which location file-writing detectors store their data. In this example we choose to write to a static temporary directory using the [](#StaticPathProvider), and to name each file within it with a unique UUID using the [](#UUIDFilenameProvider). [Other PathProviders](#PathProvider) allow this to be customized. In production we would chose a location on a filesystem that would be accessible by downstream consumers of the scan documents.
+This is how we specify in which location file-writing detectors store their data. In this example we choose to write to a static temporary directory using the [](#StaticPathProvider), and to name each file within it with a UUID using the [](#UUIDFilenameProvider). [Other PathProviders](#PathProvider) allow this to be customized. In production we would chose a location on a filesystem that would be accessible by downstream consumers of the scan documents.
 
 Finally we create and connect the Devices:
 ```{literalinclude} ../../src/ophyd_async/sim/__main__.py
