@@ -51,7 +51,7 @@ async for value in observe_value(signal2, done_status=status):
     # when signal.set() completes the loop will break out here
 ```
 
-You can pass `timeout` to specify how the maximum time to wait for a single update, and `done_timeout` to specify the maximum time to wait for `done_status`
+You can pass `timeout` to specify how the maximum time to wait for a single update, and `done_timeout` to specify the maximum time to wait for `done_status`.
 
 If you want to wait for multiple signals you can use [](#observe_signals_value):
 ```python
