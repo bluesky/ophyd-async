@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.9.1.dev2+g45e9f7f2 documentation</title>
+    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.9.1.dev3+g84e7b392 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=b4709533"></script>
+    <script src="../_static/documentation_options.js?v=9360a8c1"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -137,8 +137,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev2+g45e9f7f2 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev2+g45e9f7f2 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev3+g84e7b392 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev3+g84e7b392 documentation - Home"/>
   
   
 </a></div>
@@ -497,7 +497,7 @@ window.addEventListener("load", () => mermaid.run());
                   
   <section id="devices-signals-and-their-backends">
 <h1>Devices, Signals and their Backends<a class="headerlink" href="#devices-signals-and-their-backends" title="Link to this heading">#</a></h1>
-<p>The <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.run_engine.RunEngine.html#bluesky.run_engine.RunEngine" title="bluesky 1.13.1rc3.dev9+g943843eb"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.run_engine.RunEngine</span></code></a> facing interface is defined by the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html" title="bluesky 1.13.1rc3.dev9+g943843eb">bluesky protocols</a> that a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> implements, but to implement that interface ophyd-async uses some helper classes. This document details how those helper classes fit together to provide particular Device behavior.</p>
+<p>The <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.run_engine.RunEngine.html#bluesky.run_engine.RunEngine" title="bluesky 1.13.1rc3.dev9+g943843eb"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.run_engine.RunEngine</span></code></a> facing interface is defined by the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html" title="bluesky 1.13.1rc3.dev9+g943843eb">bluesky protocols</a> that a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> implements, but to implement that interface ophyd-async uses some helper classes. This document details how those helper classes fit together to provide particular <code class="docutils literal notranslate"><span class="pre">Device</span></code> behavior.</p>
 <section id="device-and-deviceconnector">
 <h2>Device and DeviceConnector<a class="headerlink" href="#device-and-deviceconnector" title="Link to this heading">#</a></h2>
 <pre  class="mermaid">
@@ -510,22 +510,23 @@ EpicsDevice *-- EpicsDeviceConnector
 TangoDevice *-- TangoDeviceConnector
 DeviceConnector &lt;|-- EpicsDeviceConnector
 DeviceConnector &lt;|-- TangoDeviceConnector
-    </pre><p>The Device class is the base of all ophyd-async objects that are published to bluesky. It provides:</p>
+    </pre><p>The <code class="docutils literal notranslate"><span class="pre">Device</span></code> class is the base of all ophyd-async objects that are published to bluesky. It provides:</p>
 <ul class="simple">
 <li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.name" title="ophyd_async.core.Device.name"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">Device.name</span></code></a> read-only property to read it’s name</p></li>
 <li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.parent" title="ophyd_async.core.Device.parent"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">Device.parent</span></code></a> read-write property to read it’s parent Device if it exists</p></li>
-<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.children" title="ophyd_async.core.Device.children"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.children</span></code></a> iterator to get the <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">child)</span></code> child Devices, populated when an attribute is set on the Device that is a Device</p></li>
-<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.set_name" title="ophyd_async.core.Device.set_name"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.set_name</span></code></a> method to set its name, and also set the names of its children</p></li>
+<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.children" title="ophyd_async.core.Device.children"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.children</span></code></a> to iterate through the Device attributes, yielding the <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">child)</span></code> child Devices</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">setattr</span></code> override that detects whether the attribute is also a Device and sets its parent</p></li>
+<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.set_name" title="ophyd_async.core.Device.set_name"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.set_name</span></code></a> method to set its name and also set the names of its children using the parent name as a prefix</p></li>
 <li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> method that connects it and its children</p></li>
 </ul>
-<p>All the above methods are concrete, but <code class="docutils literal notranslate"><span class="pre">connect()</span></code> calls out to a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core.DeviceConnector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceConnector</span></code></a> to actually do the connection, only handling caching itself. This enables plug-in behavior on connect (like the introspection of child Attributes in Tango or PVI, or the special case for Signal we will see later).</p>
-<p>A DeviceConnector provides the ability to:</p>
+<p>All the above methods are concrete, but <code class="docutils literal notranslate"><span class="pre">connect()</span></code> calls out to a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core.DeviceConnector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceConnector</span></code></a> to actually do the connection, only handling caching itself. This enables plug-in behavior on connect (like the introspection of child Attributes in Tango or PVI, or the special case for <code class="docutils literal notranslate"><span class="pre">Signal</span></code> we will see later).</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">DeviceConnector</span></code> provides the ability to:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector.create_children_from_annotations" title="ophyd_async.core.DeviceConnector.create_children_from_annotations"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DeviceConnector.create_children_from_annotations</span></code></a> that is called during <code class="docutils literal notranslate"><span class="pre">__init__</span></code> to turn annotations into concrete child Devices</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector.connect_mock" title="ophyd_async.core.DeviceConnector.connect_mock"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DeviceConnector.connect_mock</span></code></a> that is called if <code class="docutils literal notranslate"><span class="pre">connect(mock=True)</span></code> is called, and should connect the child Devices in mock mode for testing without a control system</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector.connect_real" title="ophyd_async.core.DeviceConnector.connect_real"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DeviceConnector.connect_real</span></code></a> that is called if <code class="docutils literal notranslate"><span class="pre">connect(mock=False)</span></code> is called, and should connect the child Devices to the control system in parallel</p></li>
 </ul>
-<p>The base DeviceConnector provides suitable methods for use with non-introspected Devices, but there are various control system specific connectors that handle filling annotations in <a class="reference internal" href="declarative-vs-procedural.html"><span class="std std-doc">declarative Devices</span></a>.</p>
+<p>The base <code class="docutils literal notranslate"><span class="pre">DeviceConnector</span></code> provides suitable methods for use with non-introspected Devices, but there are various control system specific connectors that handle filling annotations in <a class="reference internal" href="declarative-vs-procedural.html"><span class="std std-doc">declarative Devices</span></a>.</p>
 </section>
 <section id="signal-and-signalbackend">
 <h2>Signal and SignalBackend<a class="headerlink" href="#signal-and-signalbackend" title="Link to this heading">#</a></h2>
@@ -549,7 +550,7 @@ SignalConnector *-- SignalBackend
 SignalBackend &lt;|-- CaSignalConnector
 SignalBackend &lt;|-- PvaSignalConnector
 SignalBackend &lt;|-- TangoSignalConnector
-    </pre><p>If a Device with children is like a branch in a tree, a Signal is like a leaf. It has no children, but represents a single value or action in the control system. There are 4 types of signal:</p>
+    </pre><p>If a <code class="docutils literal notranslate"><span class="pre">Device</span></code> with children is like a branch in a tree, a <code class="docutils literal notranslate"><span class="pre">Signal</span></code> is like a leaf. It has no children, but represents a single value or action in the control system. There are 4 types of signal:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalR</span></code></a> is a signal with a read-only value that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="bluesky 1.13.1rc3.dev9+g943843eb"><span class="xref myst">Readable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Subscribable" title="bluesky 1.13.1rc3.dev9+g943843eb"><span class="xref myst">Subscribable</span></a> protocols. It also adds the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.get_value" title="ophyd_async.core.SignalR.get_value"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalR.get_value</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_value" title="ophyd_async.core.SignalR.subscribe_value"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalR.subscribe_value</span></code></a> methods that are used to interact with the Signal in the parent Device.</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW" title="ophyd_async.core.SignalW"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalW</span></code></a> is a signal with a write-only value that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.13.1rc3.dev9+g943843eb"><span class="xref myst">Movable</span></a> protocol.</p></li>
@@ -599,13 +600,13 @@ SignalBackend &lt;|-- TangoSignalConnector
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Observe changes to the current value, timestamp and severity&quot;&quot;&quot;</span>
 </pre></div>
 </div>
-<p>Each control system implements its own concrete SignalBackend subclass with those methods filled in. It is these subclasses that take control system specific parameters like EPICS PV or Tango TRL. The instance is passed to <code class="docutils literal notranslate"><span class="pre">Signal.__init__</span></code>, which passes it to a generic <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalConnector" title="ophyd_async.core.SignalConnector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalConnector</span></code></a>.</p>
-<p>At <code class="docutils literal notranslate"><span class="pre">connect()</span></code> time this SignalConnector does one of two things:</p>
+<p>Each control system implements its own concrete <code class="docutils literal notranslate"><span class="pre">SignalBackend</span></code> subclass with those methods filled in. It is these subclasses that take control system specific parameters like EPICS PV or Tango TRL. The instance is passed to <code class="docutils literal notranslate"><span class="pre">Signal.__init__</span></code>, which passes it to a generic <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalConnector" title="ophyd_async.core.SignalConnector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalConnector</span></code></a>.</p>
+<p>At <code class="docutils literal notranslate"><span class="pre">connect()</span></code> time this <code class="docutils literal notranslate"><span class="pre">SignalConnector</span></code> does one of two things:</p>
 <ul class="simple">
 <li><p>if <code class="docutils literal notranslate"><span class="pre">mock==False</span></code> then it calls <code class="docutils literal notranslate"><span class="pre">SignalBackend.connect</span></code> to connect it to the control system, and wires all the <code class="docutils literal notranslate"><span class="pre">Signal</span></code> methods to use it</p></li>
 <li><p>if <code class="docutils literal notranslate"><span class="pre">mock==True</span></code> then it creates a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend" title="ophyd_async.core.MockSignalBackend"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">MockSignalBackend</span></code></a> for test purposes and wires all the <code class="docutils literal notranslate"><span class="pre">Signal</span></code> methods to use it</p></li>
 </ul>
-<p>This means that to construct a Signal you need to do something like:</p>
+<p>This means that to construct a <code class="docutils literal notranslate"><span class="pre">Signal</span></code> you need to do something like:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_signal</span> <span class="o">=</span> <span class="n">SignalR</span><span class="p">(</span><span class="n">MyControlSystemBackend</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">cs_param</span><span class="o">=</span><span class="s2">&quot;something&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -621,7 +622,7 @@ SignalBackend &lt;|-- TangoSignalConnector
 Device &lt;|-- StandardReadable
 Device &lt;|-- StandardDetector
 Device &lt;|-- StandardFlyer
-    </pre><p>There are also some Device subclasses that provide helpers when making Device subclasses, namely:</p>
+    </pre><p>There are also some <code class="docutils literal notranslate"><span class="pre">Device</span></code> subclasses that provide helpers for implementing particular protocols, namely:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="bluesky 1.13.1rc3.dev9+g943843eb"><span class="xref myst">Readable</span></a> protocol using the values of its children</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.WritesStreamAssets" title="bluesky 1.13.1rc3.dev9+g943843eb"><span class="xref myst">WritesStreamAssets</span></a> protocol using logic classes for the detector driver and writer</p></li>
