@@ -1,5 +1,5 @@
 import asyncio
-import os
+import re
 from enum import Enum
 
 import numpy as np
@@ -20,6 +20,7 @@ from ophyd_async.tango.core import (
     TangoSignalBackend,
     ensure_proper_executor,
     get_dtype_extended,
+    get_full_attr_trl,
     get_python_type,
     get_tango_trl,
     get_trl_descriptor,
@@ -185,20 +186,24 @@ async def test_get_trl_descriptor(
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "trl, proxy_needed, expected_type, should_raise",
+    "attr_name, proxy_needed, expected_type, should_raise",
     [
-        ("test/device/1/justvalue", True, AttributeProxy, False),
-        ("test/device/1/justvalue", False, AttributeProxy, False),
-        ("test/device/1/clear", True, CommandProxy, False),
-        ("test/device/1/clear", False, CommandProxy, False),
-        ("test/device/1/nonexistent", True, None, True),
+        ("justvalue", True, AttributeProxy, False),
+        ("justvalue", False, AttributeProxy, False),
+        ("clear", True, CommandProxy, False),
+        ("clear", False, CommandProxy, False),
+        ("nonexistent", True, None, True),
     ],
 )
 async def test_get_tango_trl(
-    tango_test_device, trl, proxy_needed, expected_type, should_raise
+    tango_test_device, attr_name, proxy_needed, expected_type, should_raise
 ):
+    trl = get_full_attr_trl(tango_test_device, attr_name)
+    assert re.match(
+        r"tango://[a-zA-Z0-9\.-_:]*/test/device/1/" + attr_name + r"#dbase=no", trl
+    )
+    # tango_test_device is of form tango://127.0.0.1:<port>/test/device/1#dbase=no
     proxy = await DeviceProxy(tango_test_device) if proxy_needed else None
-    os.environ["TANGO_HOST"] = tango_test_device.split("/")[2]  # ugh
     if should_raise:
         with pytest.raises(RuntimeError):
             await get_tango_trl(trl, proxy, 1)
@@ -321,7 +326,7 @@ async def test_attribute_has_subscription(tango_test_device):
 @pytest.mark.asyncio
 async def test_attribute_subscribe_callback(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     backend = await make_backend(float, source)
     attr_proxy = backend.proxies[source]
     val = None
@@ -350,7 +355,7 @@ async def test_attribute_subscribe_callback(echo_device):
 @pytest.mark.asyncio
 async def test_attribute_unsubscribe_callback(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     backend = await make_backend(float, source)
     attr_proxy = backend.proxies[source]
 
@@ -583,7 +588,7 @@ async def test_command_set_polling(tango_test_device):
 @pytest.mark.asyncio
 async def test_tango_transport_init(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
     assert transport is not None
 
@@ -592,7 +597,7 @@ async def test_tango_transport_init(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_source(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source)
     transport_source = transport.source("", True)
     assert transport_source == source
@@ -602,7 +607,7 @@ async def test_tango_transport_source(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_datatype_allowed(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     backend = await make_backend(float, source)
 
     assert backend.datatype_allowed(int)
@@ -619,7 +624,7 @@ async def test_tango_transport_datatype_allowed(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_connect(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     backend = await make_backend(float, source, connect=False)
     assert backend is not None
     await backend.connect(1)
@@ -633,7 +638,7 @@ async def test_tango_transport_connect(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_connect_and_store_config(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
     await transport._connect_and_store_config(source, 1)
     assert transport.trl_configs[source] is not None
@@ -647,7 +652,7 @@ async def test_tango_transport_connect_and_store_config(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_put(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -665,7 +670,7 @@ async def test_tango_transport_put(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_get_datakey(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
     await transport.connect(1)
     datakey = await transport.get_datakey(source)
@@ -678,7 +683,7 @@ async def test_tango_transport_get_datakey(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_get_reading(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -694,7 +699,7 @@ async def test_tango_transport_get_reading(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_get_value(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -710,7 +715,7 @@ async def test_tango_transport_get_value(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_get_setpoint(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -728,7 +733,7 @@ async def test_tango_transport_get_setpoint(echo_device):
 @pytest.mark.asyncio
 async def test_set_callback(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
     with pytest.raises(NotConnected) as exc_info:
@@ -775,7 +780,7 @@ async def test_set_callback(echo_device):
 @pytest.mark.asyncio
 async def test_tango_transport_set_polling(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
     transport.set_polling(True, 0.1, 1, 0.1)
     assert transport._polling == (True, 0.1, 1, 0.1)
@@ -786,7 +791,7 @@ async def test_tango_transport_set_polling(echo_device):
 @pytest.mark.parametrize("allow", [True, False])
 async def test_tango_transport_allow_events(echo_device, allow):
     await prepare_device(echo_device, "float32", 1.0)
-    source = echo_device + "/" + "float32"
+    source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
     transport.allow_events(allow)
     assert transport.support_events == allow
@@ -797,8 +802,8 @@ async def test_tango_transport_allow_events(echo_device, allow):
 async def test_tango_transport_read_and_write_trl(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     # Must use a FQTRL, at least on windows.
-    read_trl = tango_test_device + "/" + "readback"
-    write_trl = tango_test_device + "/" + "setpoint"
+    read_trl = get_full_attr_trl(tango_test_device, "readback")
+    write_trl = get_full_attr_trl(tango_test_device, "setpoint")
 
     # Test with existing proxy
     transport = TangoSignalBackend(float, read_trl, write_trl, device_proxy)
@@ -825,8 +830,7 @@ async def test_tango_transport_read_and_write_trl(tango_test_device):
 @pytest.mark.asyncio
 async def test_tango_transport_read_only_trl(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
-    trl = device_proxy.dev_name()
-    read_trl = trl + "/" + "readonly"
+    read_trl = get_full_attr_trl(tango_test_device, "readonly")
 
     # Test with existing proxy
     transport = TangoSignalBackend(int, read_trl, read_trl, device_proxy)
@@ -840,8 +844,7 @@ async def test_tango_transport_read_only_trl(tango_test_device):
 @pytest.mark.asyncio
 async def test_tango_transport_nonexistent_trl(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
-    trl = device_proxy.dev_name()
-    nonexistent_trl = trl + "/" + "nonexistent"
+    nonexistent_trl = get_full_attr_trl(tango_test_device, "nonexistent")
 
     # Test with existing proxy
     transport = TangoSignalBackend(int, nonexistent_trl, nonexistent_trl, device_proxy)

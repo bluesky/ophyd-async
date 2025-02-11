@@ -8,6 +8,7 @@ from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
+from ._utils import get_full_attr_trl
 
 T = TypeVar("T")
 
@@ -108,7 +109,11 @@ class TangoDeviceConnector(DeviceConnector):
         if self.trl and self.proxy is None:
             self.proxy = await AsyncDeviceProxy(self.trl)
         elif self.proxy and not self.trl:
-            self.trl = self.proxy.name()
+            adm_name = self.proxy.adm_name()
+            server_addr = adm_name.rsplit("/", 3)[0]
+            self.trl = server_addr + "/" + self.proxy.name()
+            if "#" in adm_name:
+                self.trl += adm_name[adm_name.find("#") :]
         else:
             raise TypeError("Neither proxy nor trl supplied")
 
@@ -119,7 +124,7 @@ class TangoDeviceConnector(DeviceConnector):
         )
         for name in children:
             # TODO: strip attribute name
-            full_trl = f"{self.trl}/{name}"
+            full_trl = get_full_attr_trl(self.trl, name)
             signal_type = await infer_signal_type(full_trl, self.proxy)
             if signal_type:
                 backend = self.filler.fill_child_signal(name, signal_type)

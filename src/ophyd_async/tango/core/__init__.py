@@ -19,6 +19,7 @@ from ._tango_transport import (
     get_tango_trl,
     get_trl_descriptor,
 )
+from ._utils import get_device_trl_and_attr, get_full_attr_trl
 
 __all__ = [
     "AttributeProxy",
@@ -40,4 +41,6 @@ __all__ = [
     "TangoReadable",
     "TangoPolling",
     "TangoDeviceConnector",
+    "get_device_trl_and_attr",
+    "get_full_attr_trl",
 ]
