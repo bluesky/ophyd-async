@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title> &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title> &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -31,11 +31,10 @@
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -43,8 +42,8 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=30646c52"></script>
@@ -129,8 +128,8 @@
       
     
     
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -456,15 +455,16 @@
 </tbody>
 </table>
 </div>
-<p>Ophyd-async is a Python library for asynchronously interfacing with hardware, intended to
-be used as an abstraction layer that enables experiment orchestration and data acquisition code to operate above the specifics of particular devices and control
-systems.</p>
-<p>Both ophyd and ophyd-async are typically used with the <a class="reference external" href="http://blueskyproject.io/bluesky">Bluesky Run Engine</a> for experiment orchestration and data acquisition.</p>
-<p>While <a class="reference external" href="http://www.aps.anl.gov/epics/">EPICS</a> is the most common control system layer that ophyd-async can interface with, support for other control systems like <a class="reference external" href="https://www.tango-controls.org/">Tango</a> will be supported in the future. The focus of ophyd-async is:</p>
+<p>Ophyd-async is a Python library for asynchronously interfacing with hardware, intended to be used as an abstraction layer that enables experiment orchestration and data acquisition code to operate above the specifics of particular devices and control systems.</p>
+<p>Both ophyd sync and ophyd-async are typically used with the <a class="reference external" href="http://blueskyproject.io/bluesky">Bluesky Run Engine</a> for experiment orchestration and data acquisition.</p>
+<p>The main differences from ophyd sync are:</p>
 <ul class="simple">
-<li><p>Asynchronous signal access, opening the possibility for hardware-triggered scanning (also known as fly-scanning)</p></li>
-<li><p>Simpler instantiation of devices (groupings of signals) with less reliance upon complex class hierarchies</p></li>
+<li><p>Asynchronous Signal access, simplifying the parallel control of multiple Signals</p></li>
+<li><p>Support for <a class="reference external" href="http://www.aps.anl.gov/epics/">EPICS</a> PVA and <a class="reference external" href="https://www.tango-controls.org/">Tango</a> as well as the traditional EPICS CA</p></li>
+<li><p>Better library support for splitting the logic from the hardware interface to avoid complex class heirarchies</p></li>
 </ul>
+<p>It was written with the aim of implementing flyscanning in a generic and extensible way with highly customizable devices like PandABox and the Delta Tau PMAC products. Using async code makes it possible to do the “put 3 PVs in parallel, then get from another PV” logic that is common in flyscanning without the performance and complexity overhead of multiple threads.</p>
+<p>Devices from both ophyd sync and ophyd-async can be used in the same RunEngine and even in the same scan. This allows a per-device migration where devices are reimplemented in ophyd-async one by one.</p>
 <section id="how-the-documentation-is-structured">
 <h2>How the documentation is structured<a class="headerlink" href="#how-the-documentation-is-structured" title="Link to this heading">#</a></h2>
 <p>Documentation is split into <a class="reference external" href="https://diataxis.fr">four categories</a>, also accessible from links in the top bar.</p>
@@ -480,7 +480,9 @@ systems.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tutorials.html">Tutorials</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tutorials/installation.html">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/using-existing-devices.html">Using existing Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/using-devices.html">Using Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/implementing-devices.html">Implementing Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorials/writing-tests-for-devices.html">Writing Tests for Devices</a></li>
 </ul>
 </li>
 </ul>
@@ -499,13 +501,12 @@ systems.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="how-to.html">How-to Guides</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="how-to/choose-interfaces-for-devices.html">Decision Flowchart for Creating a New ophyd_async Device</a></li>
-<li class="toctree-l2"><a class="reference internal" href="how-to/compound-devices.html">Compound Devices Together</a></li>
-<li class="toctree-l2"><a class="reference internal" href="how-to/contribute.html">Contribute to the project</a></li>
-<li class="toctree-l2"><a class="reference internal" href="how-to/make-a-simple-device.html">Make a Simple Device</a></li>
-<li class="toctree-l2"><a class="reference internal" href="how-to/make-a-standard-detector.html">Make a StandardDetector</a></li>
-<li class="toctree-l2"><a class="reference internal" href="how-to/use_set_and_wait_for_other_value.html"><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="how-to/write-tests-for-devices.html">Write Tests for Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/choose-right-baseclass.html">How to choose the right base class when implementing a new Device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/contribute.html">How to contribute to the project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/implement-ad-detector.html">How to implement a Device for an EPICS areaDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/interact-with-signals.html">How to interact with signals while implementing bluesky verbs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/interact-with-signals.html#observe-every-value-change">Observe every value change</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-to/interact-with-signals.html#wait-for-the-value-to-match-some-expected-value">Wait for the value to match some expected value</a></li>
 </ul>
 </li>
 </ul>
@@ -525,9 +526,11 @@ systems.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="explanations.html">Explanations</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="explanations/decisions.html">Architectural Decision Records</a></li>
-<li class="toctree-l2"><a class="reference internal" href="explanations/design-goals.html">Design Goals</a></li>
-<li class="toctree-l2"><a class="reference internal" href="explanations/event-loop-choice.html">Device Collector Event-Loop Choice</a></li>
-<li class="toctree-l2"><a class="reference internal" href="explanations/flyscanning.html">Flyscanning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/declarative-vs-procedural.html">Declarative vs Procedural Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/design-goals.html">Design goals and differences with ophyd sync</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/device-connection-strategies.html">Device connection strategies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/devices-signals-backends.html">Devices, Signals and their Backends</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/where-device-logic.html">Where should Device logic live?</a></li>
 </ul>
 </li>
 </ul>
@@ -546,7 +549,7 @@ systems.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="_api/ophyd_async.html">API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_api/index.html">API</a></li>
 <li class="toctree-l2"><a class="reference internal" href="genindex.html">Index</a></li>
 <li class="toctree-l2"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
 </ul>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Contribute to the project &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>How to contribute to the project &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -31,11 +31,10 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -43,8 +42,8 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
@@ -60,8 +59,8 @@
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Make a Simple Device" href="make-a-simple-device.html" />
-    <link rel="prev" title="Compound Devices Together" href="compound-devices.html" />
+    <link rel="next" title="How to implement a Device for an EPICS areaDetector" href="implement-ad-detector.html" />
+    <link rel="prev" title="How to choose the right base class when implementing a new Device" href="choose-right-baseclass.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -130,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -411,13 +410,12 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="choose-interfaces-for-devices.html">Decision Flowchart for Creating a New ophyd_async Device</a></li>
-<li class="toctree-l1"><a class="reference internal" href="compound-devices.html">Compound Devices Together</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Contribute to the project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="make-a-simple-device.html">Make a Simple Device</a></li>
-<li class="toctree-l1"><a class="reference internal" href="make-a-standard-detector.html">Make a StandardDetector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="use_set_and_wait_for_other_value.html"><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="write-tests-for-devices.html">Write Tests for Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="choose-right-baseclass.html">How to choose the right base class when implementing a new Device</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to contribute to the project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="implement-ad-detector.html">How to implement a Device for an EPICS areaDetector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interact-with-signals.html">How to interact with signals while implementing bluesky verbs</a></li>
+
+
 </ul>
 </div>
 </nav></div>
@@ -461,7 +459,7 @@
     
     <li class="breadcrumb-item"><a href="../how-to.html" class="nav-link">How-to Guides</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Contribute to the project</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">How to contribute to the project</span></li>
   </ul>
 </nav>
 </div>
@@ -478,8 +476,8 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="contribute-to-the-project">
-<h1>Contribute to the project<a class="headerlink" href="#contribute-to-the-project" title="Link to this heading">#</a></h1>
+  <section id="how-to-contribute-to-the-project">
+<h1>How to contribute to the project<a class="headerlink" href="#how-to-contribute-to-the-project" title="Link to this heading">#</a></h1>
 <p>Contributions and issues are most welcome! All issues and pull requests are
 handled through <a class="reference external" href="https://github.com/bluesky/ophyd-async/issues">GitHub</a>. Also, please check for any existing issues before
 filing a new one. If you have a great idea but it involves big changes, please
@@ -516,20 +514,20 @@ same or is improved by a pull request!</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="compound-devices.html"
+       href="choose-right-baseclass.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Compound Devices Together</p>
+        <p class="prev-next-title">How to choose the right base class when implementing a new Device</p>
       </div>
     </a>
     <a class="right-next"
-       href="make-a-simple-device.html"
+       href="implement-ad-detector.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Make a Simple Device</p>
+        <p class="prev-next-title">How to implement a Device for an EPICS areaDetector</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

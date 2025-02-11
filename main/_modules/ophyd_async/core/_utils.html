@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._utils &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>ophyd_async.core._utils &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -30,11 +30,10 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -42,8 +41,8 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=30646c52"></script>
@@ -135,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -477,10 +476,10 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">)</span>
 <span class="n">P</span> <span class="o">=</span> <span class="n">ParamSpec</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
 <span class="n">Callback</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
 <span class="n">DEFAULT_TIMEOUT</span> <span class="o">=</span> <span class="mf">10.0</span>
-<span class="n">ErrorText</span> <span class="o">=</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ophyd_async&quot;</span><span class="p">)</span>
 
@@ -495,7 +494,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="StrictEnum">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.StrictEnum">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StrictEnum">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StrictEnum</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">StrictEnumMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;All members should exist in the Backend, and there will be no extras&quot;&quot;&quot;</span></div>
 
@@ -523,7 +522,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="SubsetEnum">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SubsetEnum">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SubsetEnum">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SubsetEnum</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">SubsetEnumMeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;All members should exist in the Backend, but there may be extras&quot;&quot;&quot;</span></div>
 
@@ -541,20 +540,20 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="NotConnected">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.NotConnected">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.NotConnected">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NotConnected</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception to be raised if a `Device.connect` is cancelled&quot;&quot;&quot;</span>
 
     <span class="n">_indent_width</span> <span class="o">=</span> <span class="s2">&quot;    &quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">errors</span><span class="p">:</span> <span class="n">ErrorText</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">errors</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        NotConnected holds a mapping of device/signal names to</span>
 <span class="sd">        errors.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        errors: ErrorText</span>
+<span class="sd">        errors:</span>
 <span class="sd">            Mapping of device name to Exception or another NotConnected.</span>
 <span class="sd">            Alternatively a string with the signal error text.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -581,6 +580,8 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">indent</span><span class="si">}{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">error_txt</span>
         <span class="k">return</span> <span class="n">string</span>
 
+<div class="viewcode-block" id="NotConnected.format_error_string">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.NotConnected.format_error_string">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">format_error_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
@@ -593,11 +594,14 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">string</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">error</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">string</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_sub_errors</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">string</span>
+        <span class="k">return</span> <span class="n">string</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_error_string</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
+<div class="viewcode-block" id="NotConnected.with_other_exceptions_logged">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.NotConnected.with_other_exceptions_logged">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">with_other_exceptions_logged</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">exceptions</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]</span>
@@ -610,11 +614,12 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">exc_info</span><span class="o">=</span><span class="n">exception</span><span class="p">,</span>
                 <span class="p">)</span>
         <span class="k">return</span> <span class="n">NotConnected</span><span class="p">(</span><span class="n">exceptions</span><span class="p">)</span></div>
+</div>
 
 
 
 <div class="viewcode-block" id="WatcherUpdate">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.WatcherUpdate">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.WatcherUpdate">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">WatcherUpdate</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A dataclass such that, when expanded, it provides the kwargs for a watcher&quot;&quot;&quot;</span>
@@ -632,7 +637,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="wait_for_connection">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.wait_for_connection">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.wait_for_connection">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_connection</span><span class="p">(</span><span class="o">**</span><span class="n">coros</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Call many underlying signals, accumulating exceptions and returning them</span>
 
@@ -659,7 +664,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="get_dtype">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.get_dtype">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_dtype">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_dtype</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the runtime dtype from a numpy ndarray type annotation</span>
 
@@ -677,7 +682,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="get_enum_cls">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.get_enum_cls">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_enum_cls">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_enum_cls</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">StrictEnum</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the runtime dtype from a numpy ndarray type annotation</span>
 
@@ -699,7 +704,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="get_unique">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.get_unique">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_unique">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_unique</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="n">types</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;If all values are the same, return that value, otherwise raise TypeError</span>
 
@@ -733,12 +738,19 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">return</span> <span class="n">ret</span>
 
 
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gather_list</span><span class="p">(</span><span class="n">coros</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
-    <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="p">)</span>
+<div class="viewcode-block" id="gather_dict">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.gather_dict">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gather_dict</span><span class="p">(</span><span class="n">coros</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">V</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gathers given coroutines and returns a dictionary of coroutines</span>
+<span class="sd">    to return values.&quot;&quot;&quot;</span>
+
+    <span class="n">values</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">coros</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
+
 
 
 <div class="viewcode-block" id="in_micros">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.in_micros">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.in_micros">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">in_micros</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Converts between a positive number of seconds and an equivalent</span>
@@ -749,7 +761,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: if t &lt; 0</span>
 <span class="sd">    Returns:</span>
-<span class="sd">        t (int): A time in microseconds, rounded up to the nearest whole microsecond,</span>
+<span class="sd">        A time in microseconds, rounded up to the nearest whole microsecond,</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected a positive time in seconds, got </span><span class="si">{</span><span class="n">t</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -764,7 +776,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="Reference">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.Reference">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Reference">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Reference</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Hide an object behind a reference.</span>
 
@@ -791,7 +803,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="LazyMock">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.LazyMock">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.LazyMock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LazyMock</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A lazily created Mock to be used when connecting in mock mode.</span>
 
@@ -816,8 +828,11 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span><span class="p">:</span> <span class="n">Mock</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
+<div class="viewcode-block" id="LazyMock.child">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.LazyMock.child">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LazyMock</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">LazyMock</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">LazyMock</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mock</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mock</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>

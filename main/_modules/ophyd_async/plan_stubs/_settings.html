@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.plan_stubs._settings &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>ophyd_async.plan_stubs._settings &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -30,11 +30,10 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -42,8 +41,8 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=30646c52"></script>
@@ -135,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -479,11 +478,11 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">Settings</span><span class="p">,</span>
     <span class="n">SettingsProvider</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
-    <span class="n">T</span><span class="p">,</span>
     <span class="n">walk_rw_signals</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">T</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._wait_for_awaitable</span><span class="w"> </span><span class="kn">import</span> <span class="n">wait_for_awaitable</span>
 
 
@@ -497,16 +496,21 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">return</span> <span class="n">named_values</span>
 
 
+<div class="viewcode-block" id="get_current_settings">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.get_current_settings">[docs]</a>
 <span class="nd">@plan</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_current_settings</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MsgGenerator</span><span class="p">[</span><span class="n">Settings</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get current settings on `Device`.&quot;&quot;&quot;</span>
+
     <span class="n">signals</span> <span class="o">=</span> <span class="n">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">named_values</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">_get_values_of_signals</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span>
     <span class="n">signal_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">signals</span><span class="p">[</span><span class="n">name</span><span class="p">]:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">named_values</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-    <span class="k">return</span> <span class="n">Settings</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">signal_values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Settings</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">signal_values</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="store_settings">
-<a class="viewcode-back" href="../../../_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.store_settings">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.store_settings">[docs]</a>
 <span class="nd">@plan</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">store_settings</span><span class="p">(</span>
     <span class="n">provider</span><span class="p">:</span> <span class="n">SettingsProvider</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span>
@@ -521,7 +525,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="retrieve_settings">
-<a class="viewcode-back" href="../../../_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.retrieve_settings">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.retrieve_settings">[docs]</a>
 <span class="nd">@plan</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">retrieve_settings</span><span class="p">(</span>
     <span class="n">provider</span><span class="p">:</span> <span class="n">SettingsProvider</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span>
@@ -538,7 +542,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="apply_settings">
-<a class="viewcode-back" href="../../../_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_settings">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_settings">[docs]</a>
 <span class="nd">@plan</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_settings</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">Settings</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MsgGenerator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set every SignalRW to the given value in Settings. If value is None ignore it.&quot;&quot;&quot;</span>
@@ -553,7 +557,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="apply_settings_if_different">
-<a class="viewcode-back" href="../../../_api/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_settings_if_different">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_settings_if_different">[docs]</a>
 <span class="nd">@plan</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_settings_if_different</span><span class="p">(</span>
     <span class="n">settings</span><span class="p">:</span> <span class="n">Settings</span><span class="p">,</span>

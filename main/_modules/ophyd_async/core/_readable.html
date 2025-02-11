@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._readable &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>ophyd_async.core._readable &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -30,11 +30,10 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -42,8 +41,8 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=30646c52"></script>
@@ -135,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -481,7 +480,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="StandardReadableFormat">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StandardReadableFormat</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Declare how a `Device` should contribute to the `StandardReadable` verbs.&quot;&quot;&quot;</span>
 
@@ -541,7 +540,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="StandardReadable">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StandardReadable</span><span class="p">(</span>
     <span class="n">Device</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">,</span> <span class="n">HasHints</span>
 <span class="p">):</span>
@@ -561,36 +560,54 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">_stageables</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">AsyncStageable</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
     <span class="n">_has_hints</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">HasHints</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
 
+<div class="viewcode-block" id="StandardReadable.stage">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.stage">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span><span class="p">:</span>
-            <span class="k">await</span> <span class="n">sig</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span><span class="o">.</span><span class="n">task</span>
+            <span class="k">await</span> <span class="n">sig</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span><span class="o">.</span><span class="n">task</span></div>
 
+
+<div class="viewcode-block" id="StandardReadable.unstage">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.unstage">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stageables</span><span class="p">:</span>
-            <span class="k">await</span> <span class="n">sig</span><span class="o">.</span><span class="n">unstage</span><span class="p">()</span><span class="o">.</span><span class="n">task</span>
+            <span class="k">await</span> <span class="n">sig</span><span class="o">.</span><span class="n">unstage</span><span class="p">()</span><span class="o">.</span><span class="n">task</span></div>
 
+
+<div class="viewcode-block" id="StandardReadable.describe_configuration">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.describe_configuration">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span>
             <span class="p">[</span><span class="n">func</span><span class="p">()</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_config_funcs</span><span class="p">]</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="StandardReadable.read_configuration">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.read_configuration">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">([</span><span class="n">func</span><span class="p">()</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_funcs</span><span class="p">])</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">([</span><span class="n">func</span><span class="p">()</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_config_funcs</span><span class="p">])</span></div>
 
+
+<div class="viewcode-block" id="StandardReadable.describe">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.describe">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">([</span><span class="n">func</span><span class="p">()</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span><span class="p">])</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">([</span><span class="n">func</span><span class="p">()</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe_funcs</span><span class="p">])</span></div>
 
+
+<div class="viewcode-block" id="StandardReadable.read">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.read">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">([</span><span class="n">func</span><span class="p">()</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span><span class="p">])</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">([</span><span class="n">func</span><span class="p">()</span> <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_funcs</span><span class="p">])</span></div>
+
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
         <span class="n">hints</span><span class="p">:</span> <span class="n">Hints</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">new_hint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_hints</span><span class="p">:</span>
             <span class="c1"># Merge the existing and new hints, based on the type of the value.</span>
-            <span class="c1"># This avoids default dict merge behaviour that overrides the values;</span>
+            <span class="c1"># This avoids default dict merge behavior that overrides the values;</span>
             <span class="c1"># we want to combine them when they are Sequences, and ensure they are</span>
             <span class="c1"># identical when string values.</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new_hint</span><span class="o">.</span><span class="n">hints</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -623,7 +640,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="n">hints</span>
 
 <div class="viewcode-block" id="StandardReadable.add_children_as_readables">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables">[docs]</a>
     <span class="nd">@contextmanager</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_children_as_readables</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -657,7 +674,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="StandardReadable.add_readables">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_readables">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_readables">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_readables</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">devices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Device</span><span class="p">],</span>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How-to Guides &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>How-to Guides &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -31,11 +31,10 @@
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -43,8 +42,8 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=30646c52"></script>
@@ -60,8 +59,8 @@
     <link rel="icon" href="_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Decision Flowchart for Creating a New ophyd_async Device" href="how-to/choose-interfaces-for-devices.html" />
-    <link rel="prev" title="Using existing Devices" href="tutorials/using-existing-devices.html" />
+    <link rel="next" title="How to choose the right base class when implementing a new Device" href="how-to/choose-right-baseclass.html" />
+    <link rel="prev" title="Writing Tests for Devices" href="tutorials/writing-tests-for-devices.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -130,8 +129,8 @@
       
     
     
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -411,13 +410,12 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="how-to/choose-interfaces-for-devices.html">Decision Flowchart for Creating a New ophyd_async Device</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/compound-devices.html">Compound Devices Together</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/contribute.html">Contribute to the project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/make-a-simple-device.html">Make a Simple Device</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/make-a-standard-detector.html">Make a StandardDetector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/use_set_and_wait_for_other_value.html"><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/write-tests-for-devices.html">Write Tests for Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/choose-right-baseclass.html">How to choose the right base class when implementing a new Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/contribute.html">How to contribute to the project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/implement-ad-detector.html">How to implement a Device for an EPICS areaDetector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/interact-with-signals.html">How to interact with signals while implementing bluesky verbs</a></li>
+
+
 </ul>
 </div>
 </nav></div>
@@ -480,13 +478,12 @@
 <p>Practical step-by-step guides for the more experienced user.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="how-to/choose-interfaces-for-devices.html">Decision Flowchart for Creating a New ophyd_async Device</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/compound-devices.html">Compound Devices Together</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/contribute.html">Contribute to the project</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/make-a-simple-device.html">Make a Simple Device</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/make-a-standard-detector.html">Make a StandardDetector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/use_set_and_wait_for_other_value.html"><code class="docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="how-to/write-tests-for-devices.html">Write Tests for Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/choose-right-baseclass.html">How to choose the right base class when implementing a new Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/contribute.html">How to contribute to the project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/implement-ad-detector.html">How to implement a Device for an EPICS areaDetector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/interact-with-signals.html">How to interact with signals while implementing bluesky verbs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/interact-with-signals.html#observe-every-value-change">Observe every value change</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-to/interact-with-signals.html#wait-for-the-value-to-match-some-expected-value">Wait for the value to match some expected value</a></li>
 </ul>
 </div>
 </section>
@@ -502,20 +499,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="tutorials/using-existing-devices.html"
+       href="tutorials/writing-tests-for-devices.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Using existing Devices</p>
+        <p class="prev-next-title">Writing Tests for Devices</p>
       </div>
     </a>
     <a class="right-next"
-       href="how-to/choose-interfaces-for-devices.html"
+       href="how-to/choose-right-baseclass.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Decision Flowchart for Creating a New ophyd_async Device</p>
+        <p class="prev-next-title">How to choose the right base class when implementing a new Device</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

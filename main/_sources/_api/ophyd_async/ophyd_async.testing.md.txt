@@ -1,0 +1,442 @@
+# {py:mod}`ophyd_async.testing`
+
+```{py:module} ophyd_async.testing
+```
+
+```{autodoc2-docstring} ophyd_async.testing
+:parser: ophyd_async._docs_parser
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`ExampleEnum <ophyd_async.testing._one_of_everything.ExampleEnum>`
+  - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`ExampleTable <ophyd_async.testing._one_of_everything.ExampleTable>`
+  -
+* - {py:obj}`OneOfEverythingDevice <ophyd_async.testing._one_of_everything.OneOfEverythingDevice>`
+  - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.OneOfEverythingDevice
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`ParentOfEverythingDevice <ophyd_async.testing._one_of_everything.ParentOfEverythingDevice>`
+  - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ParentOfEverythingDevice
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`MonitorQueue <ophyd_async.testing._assert.MonitorQueue>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.MonitorQueue
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`ApproxTable <ophyd_async.testing._assert.ApproxTable>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.ApproxTable
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`StatusWatcher <ophyd_async.testing._assert.StatusWatcher>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.StatusWatcher
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`approx_value <ophyd_async.testing._assert.approx_value>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.approx_value
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`assert_value <ophyd_async.testing._assert.assert_value>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_value
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`assert_reading <ophyd_async.testing._assert.assert_reading>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_reading
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`assert_configuration <ophyd_async.testing._assert.assert_configuration>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_configuration
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`assert_describe_signal <ophyd_async.testing._assert.assert_describe_signal>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_describe_signal
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`assert_emitted <ophyd_async.testing._assert.assert_emitted>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_emitted
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`get_mock <ophyd_async.testing._mock_signal_utils.get_mock>`
+  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`set_mock_value <ophyd_async.testing._mock_signal_utils.set_mock_value>`
+  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_value
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`set_mock_values <ophyd_async.testing._mock_signal_utils.set_mock_values>`
+  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_values
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`get_mock_put <ophyd_async.testing._mock_signal_utils.get_mock_put>`
+  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock_put
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`callback_on_mock_put <ophyd_async.testing._mock_signal_utils.callback_on_mock_put>`
+  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.callback_on_mock_put
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`mock_puts_blocked <ophyd_async.testing._mock_signal_utils.mock_puts_blocked>`
+  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.mock_puts_blocked
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`set_mock_put_proceeds <ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds>`
+  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`wait_for_pending_wakeups <ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups>`
+  - ```{autodoc2-docstring} ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} approx_value(value: ~typing.Any)
+:canonical: ophyd_async.testing._assert.approx_value
+
+```{autodoc2-docstring} ophyd_async.testing._assert.approx_value
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} assert_value(signal: ~ophyd_async.core.SignalR[~ophyd_async.core.SignalDatatypeT], value: ~typing.Any) -> None
+:canonical: ophyd_async.testing._assert.assert_value
+:async:
+
+```{autodoc2-docstring} ophyd_async.testing._assert.assert_value
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} assert_reading(readable: ~ophyd_async.core.AsyncReadable, expected_reading: dict[str, ~bluesky.protocols.Reading]) -> None
+:canonical: ophyd_async.testing._assert.assert_reading
+:async:
+
+```{autodoc2-docstring} ophyd_async.testing._assert.assert_reading
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} assert_configuration(configurable: ~ophyd_async.core.AsyncConfigurable, configuration: dict[str, ~bluesky.protocols.Reading]) -> None
+:canonical: ophyd_async.testing._assert.assert_configuration
+:async:
+
+```{autodoc2-docstring} ophyd_async.testing._assert.assert_configuration
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} assert_describe_signal(signal: ~ophyd_async.core.SignalR, /, **metadata)
+:canonical: ophyd_async.testing._assert.assert_describe_signal
+:async:
+
+```{autodoc2-docstring} ophyd_async.testing._assert.assert_describe_signal
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} assert_emitted(docs: dict[str, list[dict]], **numbers: int)
+:canonical: ophyd_async.testing._assert.assert_emitted
+
+```{autodoc2-docstring} ophyd_async.testing._assert.assert_emitted
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} get_mock(device: ~ophyd_async.core.Device | ~ophyd_async.core.Signal) -> ~unittest.mock.Mock
+:canonical: ophyd_async.testing._mock_signal_utils.get_mock
+
+```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} set_mock_value(signal: ~ophyd_async.core.Signal[~ophyd_async.core.SignalDatatypeT], value: ~ophyd_async.core.SignalDatatypeT)
+:canonical: ophyd_async.testing._mock_signal_utils.set_mock_value
+
+```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_value
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} set_mock_values(signal: ~ophyd_async.core.SignalR[~ophyd_async.core.SignalDatatypeT], values: ~collections.abc.Iterable[~ophyd_async.core.SignalDatatypeT], require_all_consumed: bool = False) -> ~collections.abc.Iterator[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.testing._mock_signal_utils.set_mock_values
+
+```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_values
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} get_mock_put(signal: ~ophyd_async.core.Signal) -> ~unittest.mock.AsyncMock
+:canonical: ophyd_async.testing._mock_signal_utils.get_mock_put
+
+```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock_put
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} callback_on_mock_put(signal: ~ophyd_async.core.Signal[~ophyd_async.core.SignalDatatypeT], callback: ~collections.abc.Callable[[~ophyd_async.core.SignalDatatypeT, bool], None] | ~collections.abc.Callable[[~ophyd_async.core.SignalDatatypeT, bool], ~collections.abc.Awaitable[None]])
+:canonical: ophyd_async.testing._mock_signal_utils.callback_on_mock_put
+
+```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.callback_on_mock_put
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} mock_puts_blocked(*signals: ~ophyd_async.core.Signal)
+:canonical: ophyd_async.testing._mock_signal_utils.mock_puts_blocked
+
+```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.mock_puts_blocked
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} set_mock_put_proceeds(signal: ~ophyd_async.core.Signal, proceeds: bool)
+:canonical: ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds
+
+```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds
+:parser: ophyd_async._docs_parser
+```
+````
+
+````{py:function} wait_for_pending_wakeups(max_yields=20, raise_if_exceeded=True)
+:canonical: ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups
+:async:
+
+```{autodoc2-docstring} ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups
+:parser: ophyd_async._docs_parser
+```
+````
+
+`````{py:class} ExampleEnum()
+:canonical: ophyd_async.testing._one_of_everything.ExampleEnum
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} A
+:canonical: ophyd_async.testing._one_of_everything.ExampleEnum.A
+:value: >
+   'Aaa'
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum.A
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} B
+:canonical: ophyd_async.testing._one_of_everything.ExampleEnum.B
+:value: >
+   'Bbb'
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum.B
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} C
+:canonical: ophyd_async.testing._one_of_everything.ExampleEnum.C
+:value: >
+   'Ccc'
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum.C
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} ExampleTable(**kwargs)
+:canonical: ophyd_async.testing._one_of_everything.ExampleTable
+
+Bases: {py:obj}`ophyd_async.core.Table`
+
+````{py:attribute} a_bool
+:canonical: ophyd_async.testing._one_of_everything.ExampleTable.a_bool
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_bool
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} a_int
+:canonical: ophyd_async.testing._one_of_everything.ExampleTable.a_int
+:type: ~ophyd_async.core.Array1D[~numpy.int32]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_int
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} a_float
+:canonical: ophyd_async.testing._one_of_everything.ExampleTable.a_float
+:type: ~ophyd_async.core.Array1D[~numpy.float64]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_float
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} a_str
+:canonical: ophyd_async.testing._one_of_everything.ExampleTable.a_str
+:type: ~collections.abc.Sequence[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_str
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} a_enum
+:canonical: ophyd_async.testing._one_of_everything.ExampleTable.a_enum
+:type: ~collections.abc.Sequence[~ophyd_async.testing._one_of_everything.ExampleEnum]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_enum
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+````{py:class} OneOfEverythingDevice(name='')
+:canonical: ophyd_async.testing._one_of_everything.OneOfEverythingDevice
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.OneOfEverythingDevice
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````{py:class} ParentOfEverythingDevice(name='')
+:canonical: ophyd_async.testing._one_of_everything.ParentOfEverythingDevice
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ParentOfEverythingDevice
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} get_signal_values()
+:canonical: ophyd_async.testing._one_of_everything.ParentOfEverythingDevice.get_signal_values
+:async:
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ParentOfEverythingDevice.get_signal_values
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} MonitorQueue(signal: ~ophyd_async.core.SignalR)
+:canonical: ophyd_async.testing._assert.MonitorQueue
+
+Bases: {py:obj}`contextlib.AbstractContextManager`
+
+```{autodoc2-docstring} ophyd_async.testing._assert.MonitorQueue
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} assert_updates(expected_value)
+:canonical: ophyd_async.testing._assert.MonitorQueue.assert_updates
+:async:
+
+```{autodoc2-docstring} ophyd_async.testing._assert.MonitorQueue.assert_updates
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+````{py:class} ApproxTable(expected: ~ophyd_async.core.Table, rel=None, abs=None, nan_ok: bool = False)
+:canonical: ophyd_async.testing._assert.ApproxTable
+
+```{autodoc2-docstring} ophyd_async.testing._assert.ApproxTable
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````{py:class} StatusWatcher(status: ~ophyd_async.core.WatchableAsyncStatus)
+:canonical: ophyd_async.testing._assert.StatusWatcher
+
+Bases: {py:obj}`ophyd_async.core.Watcher`\[{py:obj}`ophyd_async.testing._utils.T`\]
+
+```{autodoc2-docstring} ophyd_async.testing._assert.StatusWatcher
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} wait_for_call(current: ~ophyd_async.testing._utils.T | None = None, initial: ~ophyd_async.testing._utils.T | None = None, target: ~ophyd_async.testing._utils.T | None = None, name: str | None = None, unit: str | None = None, precision: int | None = None, fraction: float | None = None, time_elapsed: float | ~typing.Any = None, time_remaining: float | ~typing.Any = None)
+:canonical: ophyd_async.testing._assert.StatusWatcher.wait_for_call
+:async:
+
+```{autodoc2-docstring} ophyd_async.testing._assert.StatusWatcher.wait_for_call
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````

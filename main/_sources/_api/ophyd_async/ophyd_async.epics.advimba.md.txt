@@ -1,0 +1,249 @@
+# {py:mod}`ophyd_async.epics.advimba`
+
+```{py:module} ophyd_async.epics.advimba
+```
+
+```{autodoc2-docstring} ophyd_async.epics.advimba
+:parser: ophyd_async._docs_parser
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`VimbaDetector <ophyd_async.epics.advimba._vimba.VimbaDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba.VimbaDetector
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`VimbaController <ophyd_async.epics.advimba._vimba_controller.VimbaController>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_controller.VimbaController
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`VimbaDriverIO <ophyd_async.epics.advimba._vimba_io.VimbaDriverIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`VimbaExposeOutMode <ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`VimbaOnOff <ophyd_async.epics.advimba._vimba_io.VimbaOnOff>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOnOff
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`VimbaTriggerSource <ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} VimbaDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix: str = 'cam1:', writer_cls: type[~ophyd_async.epics.adcore.ADWriter] = adcore.ADHDFWriter, fileio_suffix: str | None = None, name: str = '', plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = ())
+:canonical: ophyd_async.epics.advimba._vimba.VimbaDetector
+
+Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.advimba._vimba_controller.VimbaController`\]
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba.VimbaDetector
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````{py:class} VimbaController(driver: ~ophyd_async.epics.advimba._vimba_io.VimbaDriverIO, good_states: frozenset[~ophyd_async.epics.adcore.ADState] = adcore.DEFAULT_GOOD_STATES)
+:canonical: ophyd_async.epics.advimba._vimba_controller.VimbaController
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async.epics.advimba._vimba_io.VimbaDriverIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_controller.VimbaController
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} get_deadtime(exposure: float | None) -> float
+:canonical: ophyd_async.epics.advimba._vimba_controller.VimbaController.get_deadtime
+
+````
+
+````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo)
+:canonical: ophyd_async.epics.advimba._vimba_controller.VimbaController.prepare
+:async:
+
+````
+
+`````
+
+````{py:class} VimbaDriverIO(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````{py:class} VimbaExposeOutMode()
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} TIMED
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode.TIMED
+:value: >
+   'Timed'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode.TIMED
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} TRIGGER_WIDTH
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode.TRIGGER_WIDTH
+:value: >
+   'TriggerWidth'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode.TRIGGER_WIDTH
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} VimbaOnOff()
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOnOff
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOnOff
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} ON
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOnOff.ON
+:value: >
+   'On'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOnOff.ON
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} OFF
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOnOff.OFF
+:value: >
+   'Off'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOnOff.OFF
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} VimbaTriggerSource()
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} FREERUN
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.FREERUN
+:value: >
+   'Freerun'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.FREERUN
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} LINE1
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.LINE1
+:value: >
+   'Line1'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.LINE1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} LINE2
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.LINE2
+:value: >
+   'Line2'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.LINE2
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} FIXED_RATE
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.FIXED_RATE
+:value: >
+   'FixedRate'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.FIXED_RATE
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} SOFTWARE
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.SOFTWARE
+:value: >
+   'Software'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.SOFTWARE
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} ACTION0
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.ACTION0
+:value: >
+   'Action0'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.ACTION0
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} ACTION1
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.ACTION1
+:value: >
+   'Action1'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.ACTION1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````

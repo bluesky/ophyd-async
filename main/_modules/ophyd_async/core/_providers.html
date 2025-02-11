@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._providers &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>ophyd_async.core._providers &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -30,11 +30,10 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -42,8 +41,8 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=30646c52"></script>
@@ -135,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -475,7 +474,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="PathInfo">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.PathInfo">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.PathInfo">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">PathInfo</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -493,27 +492,46 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
+<div class="viewcode-block" id="FilenameProvider">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.FilenameProvider">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FilenameProvider</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for callable classes providing filenames.&quot;&quot;&quot;</span>
+
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a filename to use for output data, w/o extension&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a filename to use for output data, w/o extension&quot;&quot;&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="PathProvider">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.PathProvider">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PathProvider</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract class that tells a detector where to write its data.&quot;&quot;&quot;</span>
+
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the current directory to write files into&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the current directory to write files into&quot;&quot;&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="StaticFilenameProvider">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StaticFilenameProvider">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StaticFilenameProvider</span><span class="p">(</span><span class="n">FilenameProvider</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides a constant filename on every call.&quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_static_filename</span> <span class="o">=</span> <span class="n">filename</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_filename</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_filename</span></div>
 
 
+
+<div class="viewcode-block" id="UUIDFilenameProvider">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.UUIDFilenameProvider">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">UUIDFilenameProvider</span><span class="p">(</span><span class="n">FilenameProvider</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Files will have a UUID as a filename.&quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">uuid_call_func</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">,</span>
@@ -533,10 +551,15 @@ window.addEventListener("load", () => mermaid.run());
             <span class="p">)</span>
 
         <span class="n">uuid_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_func</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid_call_args</span><span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid_str</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">uuid_str</span><span class="si">}</span><span class="s2">&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="AutoIncrementFilenameProvider">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AutoIncrementFilenameProvider">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AutoIncrementFilenameProvider</span><span class="p">(</span><span class="n">FilenameProvider</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides a new numerically incremented filename on each call.&quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">base_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -563,18 +586,23 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_filename</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">_inc_delimeter</span><span class="si">}{</span><span class="n">padded_counter</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_increment</span>
-        <span class="k">return</span> <span class="n">filename</span>
+        <span class="k">return</span> <span class="n">filename</span></div>
 
 
+
+<div class="viewcode-block" id="StaticPathProvider">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StaticPathProvider">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StaticPathProvider</span><span class="p">(</span><span class="n">PathProvider</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;All files will be within a static directory.&quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">filename_provider</span><span class="p">:</span> <span class="n">FilenameProvider</span><span class="p">,</span>
-        <span class="n">directory_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="n">directory_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">create_dir_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span> <span class="o">=</span> <span class="n">filename_provider</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_directory_path</span> <span class="o">=</span> <span class="n">directory_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_directory_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span> <span class="o">=</span> <span class="n">create_dir_depth</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
@@ -584,10 +612,15 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory_path</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="AutoIncrementingPathProvider">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AutoIncrementingPathProvider">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AutoIncrementingPathProvider</span><span class="p">(</span><span class="n">PathProvider</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides a new numerically incremented path on each call.&quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">filename_provider</span><span class="p">:</span> <span class="n">FilenameProvider</span><span class="p">,</span>
@@ -634,10 +667,15 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">/</span> <span class="n">auto_inc_dir_name</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="YMDPathProvider">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.YMDPathProvider">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">YMDPathProvider</span><span class="p">(</span><span class="n">PathProvider</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides a path with the date included in the directory name.&quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">filename_provider</span><span class="p">:</span> <span class="n">FilenameProvider</span><span class="p">,</span>
@@ -671,23 +709,40 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">/</span> <span class="n">ymd_dir_path</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="NameProvider">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.NameProvider">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NameProvider</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for callable classes providing data keys.&quot;&quot;&quot;</span>
+
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the name to be used as a data_key in the descriptor document&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the name to be used as a data_key in the descriptor document&quot;&quot;&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="DatasetDescriber">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DatasetDescriber">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DatasetDescriber</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For describing datasets in file writing.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DatasetDescriber.np_datatype">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DatasetDescriber.np_datatype">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">np_datatype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Represents the numpy datatype&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Represents the numpy datatype&quot;&quot;&quot;</span></div>
 
+
+<div class="viewcode-block" id="DatasetDescriber.shape">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DatasetDescriber.shape">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the shape of the data collection&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the shape of the data collection&quot;&quot;&quot;</span></div>
+</div>
+
 </pre></div>
 
                 </article>

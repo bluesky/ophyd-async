@@ -1,0 +1,208 @@
+# {py:mod}`ophyd_async.sim`
+
+```{py:module} ophyd_async.sim
+```
+
+```{autodoc2-docstring} ophyd_async.sim
+:parser: ophyd_async._docs_parser
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`SimMotor <ophyd_async.sim._motor.SimMotor>`
+  - ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`SimStage <ophyd_async.sim._stage.SimStage>`
+  - ```{autodoc2-docstring} ophyd_async.sim._stage.SimStage
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PatternGenerator <ophyd_async.sim._pattern_generator.PatternGenerator>`
+  - ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`SimPointDetector <ophyd_async.sim._point_detector.SimPointDetector>`
+  - ```{autodoc2-docstring} ophyd_async.sim._point_detector.SimPointDetector
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`SimBlobDetector <ophyd_async.sim._blob_detector.SimBlobDetector>`
+  - ```{autodoc2-docstring} ophyd_async.sim._blob_detector.SimBlobDetector
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+````
+
+### API
+
+`````{py:class} SimMotor(name='', instant=True)
+:canonical: ophyd_async.sim._motor.SimMotor
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Movable`, {py:obj}`bluesky.protocols.Stoppable`
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} set_name(name: str, *, child_name_separator: str | None = None) -> None
+:canonical: ophyd_async.sim._motor.SimMotor.set_name
+
+````
+
+````{py:method} set(value: float)
+:canonical: ophyd_async.sim._motor.SimMotor.set
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.set
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} stop(success=True)
+:canonical: ophyd_async.sim._motor.SimMotor.stop
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.stop
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+````{py:class} SimStage(pattern_generator: ~ophyd_async.sim._pattern_generator.PatternGenerator, name='')
+:canonical: ophyd_async.sim._stage.SimStage
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.sim._stage.SimStage
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````{py:class} PatternGenerator()
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} set_x(x: float)
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.set_x
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.set_x
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} set_y(y: float)
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.set_y
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.set_y
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} generate_point(channel: int = 1, high_energy: bool = False) -> float
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.generate_point
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.generate_point
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} open_file(path: ~pathlib.Path, width: int, height: int)
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.open_file
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.open_file
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} write_image_to_file(exposure: float)
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.write_image_to_file
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.write_image_to_file
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} observe_indices_written(timeout: float) -> ~collections.abc.AsyncGenerator[int]
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.observe_indices_written
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.observe_indices_written
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} get_last_index() -> int
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.get_last_index
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.get_last_index
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} close_file()
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.close_file
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.close_file
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} SimPointDetector(generator: ~ophyd_async.sim._pattern_generator.PatternGenerator, num_channels: int = 3, name: str = '')
+:canonical: ophyd_async.sim._point_detector.SimPointDetector
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.sim._point_detector.SimPointDetector
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} trigger()
+:canonical: ophyd_async.sim._point_detector.SimPointDetector.trigger
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._point_detector.SimPointDetector.trigger
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+````{py:class} SimBlobDetector(path_provider: ~ophyd_async.core.PathProvider, pattern_generator: ~ophyd_async.sim._pattern_generator.PatternGenerator | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+:canonical: ophyd_async.sim._blob_detector.SimBlobDetector
+
+Bases: {py:obj}`ophyd_async.core.StandardDetector`
+
+```{autodoc2-docstring} ophyd_async.sim._blob_detector.SimBlobDetector
+:parser: ophyd_async._docs_parser
+```
+
+````

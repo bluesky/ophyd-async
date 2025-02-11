@@ -1,0 +1,129 @@
+# {py:mod}`ophyd_async.epics.adkinetix`
+
+```{py:module} ophyd_async.epics.adkinetix
+```
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix
+:parser: ophyd_async._docs_parser
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`KinetixDetector <ophyd_async.epics.adkinetix._kinetix.KinetixDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix.KinetixDetector
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`KinetixController <ophyd_async.epics.adkinetix._kinetix_controller.KinetixController>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_controller.KinetixController
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`KinetixDriverIO <ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`KinetixTriggerMode <ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} KinetixDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix: str = 'cam1:', writer_cls: type[~ophyd_async.epics.adcore.ADWriter] = ADHDFWriter, fileio_suffix: str | None = None, name: str = '', plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = ())
+:canonical: ophyd_async.epics.adkinetix._kinetix.KinetixDetector
+
+Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adkinetix._kinetix_controller.KinetixController`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix.KinetixDetector
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````{py:class} KinetixController(driver: ~ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO, good_states: frozenset[~ophyd_async.epics.adcore.ADState] = adcore.DEFAULT_GOOD_STATES)
+:canonical: ophyd_async.epics.adkinetix._kinetix_controller.KinetixController
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_controller.KinetixController
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} get_deadtime(exposure: float | None) -> float
+:canonical: ophyd_async.epics.adkinetix._kinetix_controller.KinetixController.get_deadtime
+
+````
+
+````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo)
+:canonical: ophyd_async.epics.adkinetix._kinetix_controller.KinetixController.prepare
+:async:
+
+````
+
+`````
+
+````{py:class} KinetixDriverIO(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````{py:class} KinetixTriggerMode()
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} INTERNAL
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode.INTERNAL
+:value: >
+   'Internal'
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode.INTERNAL
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} EDGE
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode.EDGE
+:value: >
+   'Rising Edge'
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode.EDGE
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} GATE
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode.GATE
+:value: >
+   'Exp. Gate'
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode.GATE
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````

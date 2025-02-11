@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -30,11 +30,10 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -42,8 +41,8 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=30646c52"></script>
@@ -135,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -488,12 +487,21 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">epics_signal_r</span><span class="p">,</span> <span class="n">epics_signal_rw</span><span class="p">,</span> <span class="n">epics_signal_w</span>
 
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;MotorLimitsException&quot;</span><span class="p">,</span> <span class="s2">&quot;FlyMotorInfo&quot;</span><span class="p">,</span> <span class="s2">&quot;Motor&quot;</span><span class="p">]</span>
 
+
+<div class="viewcode-block" id="MotorLimitsException">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.MotorLimitsException">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MotorLimitsException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">pass</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception for invalid motor limits.&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">InvalidFlyMotorException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception for invalid motor.&quot;&quot;&quot;</span>
+
     <span class="k">pass</span>
 
 
@@ -502,7 +510,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="FlyMotorInfo">
-<a class="viewcode-back" href="../../../_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.FlyMotorInfo">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.FlyMotorInfo">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FlyMotorInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to fly a motor:&quot;&quot;&quot;</span>
 
@@ -525,7 +533,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="Motor">
-<a class="viewcode-back" href="../../../_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Locatable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that moves a motor record&quot;&quot;&quot;</span>
 
@@ -566,13 +574,16 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
+<div class="viewcode-block" id="Motor.set_name">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.set_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="o">=</span><span class="n">child_name_separator</span><span class="p">)</span>
         <span class="c1"># Readback should be named the same as its parent in read()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="Motor.prepare">
-<a class="viewcode-back" href="../../../_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.prepare">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.prepare">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">FlyMotorInfo</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate required velocity and run-up distance, then if motor limits aren&#39;t</span>
@@ -598,7 +609,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="Motor.kickoff">
-<a class="viewcode-back" href="../../../_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.kickoff">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.kickoff">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Begin moving motor from prepared position to final position.&quot;&quot;&quot;</span>
@@ -612,7 +623,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="Motor.complete">
-<a class="viewcode-back" href="../../../_api/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.complete">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.complete">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WatchableAsyncStatus</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Mark as complete once motor reaches completed position.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span>
@@ -621,6 +632,8 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span></div>
 
 
+<div class="viewcode-block" id="Motor.set">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.set">[docs]</a>
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">):</span>
         <span class="n">new_position</span> <span class="o">=</span> <span class="n">value</span>
@@ -663,13 +676,17 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Motor was stopped&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Motor was stopped&quot;</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="Motor.stop">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.stop">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="n">success</span>
         <span class="c1"># Put with completion will never complete as we are waiting for completion on</span>
         <span class="c1"># the move above, so need to pass wait=False</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_stop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">motor_stop</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_velocity</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">start_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">end_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">time_for_move</span><span class="p">:</span> <span class="nb">float</span>
@@ -687,12 +704,15 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_speed</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">fly_velocity</span>
 
+<div class="viewcode-block" id="Motor.locate">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.locate">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">locate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Location</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
         <span class="n">location</span><span class="p">:</span> <span class="n">Location</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;setpoint&quot;</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
             <span class="s2">&quot;readback&quot;</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
         <span class="p">}</span>
-        <span class="k">return</span> <span class="n">location</span>
+        <span class="k">return</span> <span class="n">location</span></div>
+
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_motor_path</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">fly_velocity</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">start_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">end_position</span><span class="p">:</span> <span class="nb">float</span>

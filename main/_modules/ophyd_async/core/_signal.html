@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -30,11 +30,10 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -42,8 +41,8 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=30646c52"></script>
@@ -135,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -476,6 +475,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">Locatable</span><span class="p">,</span>
     <span class="n">Location</span><span class="p">,</span>
     <span class="n">Movable</span><span class="p">,</span>
+    <span class="n">Reading</span><span class="p">,</span>
     <span class="n">Status</span><span class="p">,</span>
     <span class="n">Subscribable</span><span class="p">,</span>
 <span class="p">)</span>
@@ -483,16 +483,8 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._mock_signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">MockSignalBackend</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._protocol</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AsyncReadable</span><span class="p">,</span>
-    <span class="n">AsyncStageable</span><span class="p">,</span>
-    <span class="n">Reading</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SignalBackend</span><span class="p">,</span>
-    <span class="n">SignalDatatypeT</span><span class="p">,</span>
-    <span class="n">SignalDatatypeV</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncStageable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalBackend</span><span class="p">,</span> <span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">SignalDatatypeV</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._soft_signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SoftSignalBackend</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._status</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">completed_status</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -520,17 +512,28 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">return</span> <span class="n">wrapper</span>
 
 
+<div class="viewcode-block" id="SignalConnector">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalConnector">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for connecting signals with a given backend.&quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span> <span class="o">=</span> <span class="n">backend</span>
 
+<div class="viewcode-block" id="SignalConnector.connect_mock">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalConnector.connect_mock">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="n">LazyMock</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">MockSignalBackend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">MockSignalBackend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="SignalConnector.connect_real">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalConnector.connect_real">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_real</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span>
         <span class="n">device</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connecting to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span></div>
+</div>
+
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_ChildrenNotAllowed</span><span class="p">(</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">]):</span>
@@ -542,7 +545,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="Signal">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.Signal">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Signal">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Signal</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A Device with the concept of a value, with R, RW, W and X flavours&quot;&quot;&quot;</span>
 
@@ -560,7 +563,13 @@ window.addEventListener("load", () => mermaid.run());
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Like ca://PV_PREFIX:SIGNAL, or &quot;&quot; if not set&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the source of the signal.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            &quot;ca://PV_PREFIX:SIGNAL&quot;, or &quot;&quot; if not set</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
@@ -628,7 +637,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="SignalR">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalR</span><span class="p">(</span><span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">,</span> <span class="n">Subscribable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that can be read from and monitored&quot;&quot;&quot;</span>
 
@@ -660,7 +669,7 @@ window.addEventListener("load", () => mermaid.run());
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="SignalR.read">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.read">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.read">[docs]</a>
     <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cached</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a single item dict with the reading in it&quot;&quot;&quot;</span>
@@ -668,7 +677,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="SignalR.describe">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.describe">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.describe">[docs]</a>
     <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a single item dict with the descriptor in it&quot;&quot;&quot;</span>
@@ -676,7 +685,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="SignalR.get_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.get_value">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.get_value">[docs]</a>
     <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cached</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The current value&quot;&quot;&quot;</span>
@@ -686,28 +695,28 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="SignalR.subscribe_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_value">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">subscribe_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe to updates in value of a device&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">want_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SignalR.subscribe">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe to updates in the reading&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">want_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SignalR.clear_sub">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.clear_sub">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.clear_sub">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear_sub</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a subscription.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_del_cache</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">function</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="SignalR.stage">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.stage">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.stage">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Start caching this signal&quot;&quot;&quot;</span>
@@ -715,7 +724,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="SignalR.unstage">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalR.unstage">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.unstage">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop caching this signal&quot;&quot;&quot;</span>
@@ -725,12 +734,12 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="SignalW">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalW">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalW</span><span class="p">(</span><span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Movable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that can be set&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SignalW.set">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalW.set">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW.set">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -750,12 +759,12 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="SignalRW">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalRW">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalRW">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalRW</span><span class="p">(</span><span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Locatable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that can be both read and set&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SignalRW.locate">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalRW.locate">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalRW.locate">[docs]</a>
     <span class="nd">@_add_timeout</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">locate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Location</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the setpoint and readback.&quot;&quot;&quot;</span>
@@ -768,12 +777,12 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="SignalX">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalX">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalX">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SignalX</span><span class="p">(</span><span class="n">Signal</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Signal that puts the default value&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SignalX.trigger">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.SignalX.trigger">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalX.trigger">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trigger</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span>
@@ -790,7 +799,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="soft_signal_rw">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.soft_signal_rw">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.soft_signal_rw">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">soft_signal_rw</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">initial_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -808,7 +817,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="soft_signal_r_and_setter">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.soft_signal_r_and_setter">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.soft_signal_r_and_setter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">soft_signal_r_and_setter</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">initial_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -828,7 +837,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="observe_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.observe_value">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.observe_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">observe_value</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -883,7 +892,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="observe_signals_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.observe_signals_value">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.observe_signals_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">observe_signals_value</span><span class="p">(</span>
     <span class="o">*</span><span class="n">signals</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -982,12 +991,12 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="wait_for_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.wait_for_value">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.wait_for_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_value</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">match</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">):</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wait for a signal to have a matching value.</span>
 
 <span class="sd">    Parameters</span>
@@ -1020,7 +1029,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="set_and_wait_for_other_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_other_value">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_other_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set_and_wait_for_other_value</span><span class="p">(</span>
     <span class="n">set_signal</span><span class="p">:</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">set_value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
@@ -1089,7 +1098,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="set_and_wait_for_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_value">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_value">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set_and_wait_for_value</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
@@ -1142,7 +1151,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="walk_rw_signals">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.walk_rw_signals">[docs]</a>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_rw_signals">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve all SignalRWs from a device.</span>
 

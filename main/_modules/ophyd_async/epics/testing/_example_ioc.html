@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.testing._example_ioc &#8212; ophyd-async 0.9.0a2.dev6+g07dd570c documentation</title>
+    <title>ophyd_async.epics.testing._example_ioc &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -30,11 +30,10 @@
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -42,8 +41,8 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=4881ec4e"></script>
-    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=30646c52"></script>
@@ -135,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a2.dev6+g07dd570c documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -467,50 +466,68 @@ window.addEventListener("load", () => mermaid.run());
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Array1D</span><span class="p">,</span>
-    <span class="n">SignalRW</span><span class="p">,</span>
-    <span class="n">StrictEnum</span><span class="p">,</span>
-    <span class="n">Table</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">EpicsDevice</span><span class="p">,</span>
-    <span class="n">PvSuffix</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Array1D</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">,</span> <span class="n">Table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubsetEnum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">TestingIOC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">TestingIOC</span><span class="p">,</span> <span class="n">generate_random_pv_prefix</span>
 
-<span class="n">CA_PVA_RECORDS</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;test_records.db&quot;</span><span class="p">)</span>
-<span class="n">PVA_RECORDS</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;test_records_pva.db&quot;</span><span class="p">)</span>
+<span class="n">CA_PVA_RECORDS</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;test_records.db&quot;</span>
+<span class="n">PVA_RECORDS</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;test_records_pva.db&quot;</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">ExampleEnum</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<div class="viewcode-block" id="EpicsTestEnum">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestEnum">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestEnum</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For testing strict enum values in test IOCs.&quot;&quot;&quot;</span>
+
     <span class="n">A</span> <span class="o">=</span> <span class="s2">&quot;Aaa&quot;</span>
     <span class="n">B</span> <span class="o">=</span> <span class="s2">&quot;Bbb&quot;</span>
-    <span class="n">C</span> <span class="o">=</span> <span class="s2">&quot;Ccc&quot;</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="s2">&quot;Ccc&quot;</span></div>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">ExampleTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
-    <span class="nb">bool</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span>
-    <span class="nb">int</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
-    <span class="nb">float</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
-    <span class="nb">str</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">enum</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ExampleEnum</span><span class="p">]</span>
+
+<div class="viewcode-block" id="EpicsTestSubsetEnum">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestSubsetEnum">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestSubsetEnum</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For testing subset enum values in test IOCs.&quot;&quot;&quot;</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="s2">&quot;Aaa&quot;</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="s2">&quot;Bbb&quot;</span></div>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">ExampleCaDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
-    <span class="n">my_int</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)]</span>
-    <span class="n">my_float</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)]</span>
-    <span class="n">my_str</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;str&quot;</span><span class="p">)]</span>
+
+<div class="viewcode-block" id="EpicsTestTable">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestTable">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+    <span class="n">a_bool</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span>
+    <span class="n">a_int</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
+    <span class="n">a_float</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">a_str</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">a_enum</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">EpicsTestEnum</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="EpicsTestCaDevice">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestCaDevice">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestCaDevice</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Device for use in a channel access test IOC.&quot;&quot;&quot;</span>
+
+    <span class="n">a_int</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A thing&quot;&quot;&quot;</span>
+    <span class="n">a_float</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;float&quot;</span><span class="p">)]</span>
+    <span class="n">float_prec_0</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;float_prec_0&quot;</span><span class="p">)]</span>
+    <span class="n">a_str</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;str&quot;</span><span class="p">)]</span>
     <span class="n">longstr</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;longstr&quot;</span><span class="p">)]</span>
-    <span class="n">longstr2</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;longstr2&quot;</span><span class="p">)]</span>
-    <span class="n">my_bool</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;bool&quot;</span><span class="p">)]</span>
-    <span class="n">enum</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ExampleEnum</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;enum&quot;</span><span class="p">)]</span>
-    <span class="n">enum2</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ExampleEnum</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;enum2&quot;</span><span class="p">)]</span>
+    <span class="n">longstr2</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;longstr2.VAL$&quot;</span><span class="p">)]</span>
+    <span class="n">a_bool</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;bool&quot;</span><span class="p">)]</span>
+    <span class="n">enum</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EpicsTestEnum</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;enum&quot;</span><span class="p">)]</span>
+    <span class="n">enum2</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EpicsTestEnum</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;enum2&quot;</span><span class="p">)]</span>
+    <span class="n">subset_enum</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EpicsTestSubsetEnum</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;subset_enum&quot;</span><span class="p">)]</span>
+    <span class="n">enum_str_fallback</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;enum_str_fallback&quot;</span><span class="p">)]</span>
     <span class="n">bool_unnamed</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;bool_unnamed&quot;</span><span class="p">)]</span>
     <span class="n">partialint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;partialint&quot;</span><span class="p">)]</span>
     <span class="n">lessint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;lessint&quot;</span><span class="p">)]</span>
@@ -519,63 +536,61 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">int32a</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;int32a&quot;</span><span class="p">)]</span>
     <span class="n">float32a</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;float32a&quot;</span><span class="p">)]</span>
     <span class="n">float64a</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;float64a&quot;</span><span class="p">)]</span>
-    <span class="n">stra</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;stra&quot;</span><span class="p">)]</span>
+    <span class="n">stra</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;stra&quot;</span><span class="p">)]</span></div>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">ExamplePvaDevice</span><span class="p">(</span><span class="n">ExampleCaDevice</span><span class="p">):</span>  <span class="c1"># pva can support all signal types that ca can</span>
+
+<div class="viewcode-block" id="EpicsTestPvaDevice">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestPvaDevice">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestPvaDevice</span><span class="p">(</span><span class="n">EpicsTestCaDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Device for use in a pv access test IOC.&quot;&quot;&quot;</span>
+
+    <span class="c1"># pva can support all signal types that ca can</span>
     <span class="n">int8a</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;int8a&quot;</span><span class="p">)]</span>
     <span class="n">uint16a</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;uint16a&quot;</span><span class="p">)]</span>
     <span class="n">uint32a</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;uint32a&quot;</span><span class="p">)]</span>
     <span class="n">int64a</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;int64a&quot;</span><span class="p">)]</span>
     <span class="n">uint64a</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;uint64a&quot;</span><span class="p">)]</span>
-    <span class="n">table</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ExampleTable</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">)]</span>
-    <span class="n">ntndarray_data</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">]],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ntndarray:data&quot;</span><span class="p">)]</span>
-
-
-<div class="viewcode-block" id="connect_example_device">
-<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.testing.html#ophyd_async.epics.testing.connect_example_device">[docs]</a>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_example_device</span><span class="p">(</span>
-    <span class="n">ioc</span><span class="p">:</span> <span class="n">TestingIOC</span><span class="p">,</span> <span class="n">protocol</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;ca&quot;</span><span class="p">,</span> <span class="s2">&quot;pva&quot;</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExamplePvaDevice</span> <span class="o">|</span> <span class="n">ExampleCaDevice</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper function to return a connected example device.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-
-<span class="sd">    ioc: TestingIOC</span>
-<span class="sd">        TestingIOC configured to provide the records needed for the device</span>
-
-<span class="sd">    protocol: Literal[&quot;ca&quot;, &quot;pva&quot;]</span>
-<span class="sd">        The transport protocol of the device</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    ExamplePvaDevice | ExampleCaDevice</span>
-<span class="sd">        a connected EpicsDevice with signals of many EPICS record types</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">device_cls</span> <span class="o">=</span> <span class="n">ExamplePvaDevice</span> <span class="k">if</span> <span class="n">protocol</span> <span class="o">==</span> <span class="s2">&quot;pva&quot;</span> <span class="k">else</span> <span class="n">ExampleCaDevice</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="n">device_cls</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">protocol</span><span class="si">}</span><span class="s2">://</span><span class="si">{</span><span class="n">ioc</span><span class="o">.</span><span class="n">prefix_for</span><span class="p">(</span><span class="n">device_cls</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">device</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">device</span></div>
+    <span class="n">table</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EpicsTestTable</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">)]</span>
+    <span class="n">ntndarray</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ntndarray&quot;</span><span class="p">)]</span></div>
 
 
 
-<div class="viewcode-block" id="get_example_ioc">
-<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.testing.html#ophyd_async.epics.testing.get_example_ioc">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_example_ioc</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">TestingIOC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get TestingIOC instance with the example databases loaded.</span>
+<div class="viewcode-block" id="EpicsTestIocAndDevices">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestIocAndDevices">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsTestIocAndDevices</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test IOC with ca and pva devices.&quot;&quot;&quot;</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    TestingIOC</span>
-<span class="sd">        instance with test_records.db loaded for ExampleCaDevice and</span>
-<span class="sd">        test_records.db and test_records_pva.db loaded for ExamplePvaDevice.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ioc</span> <span class="o">=</span> <span class="n">TestingIOC</span><span class="p">()</span>
-    <span class="n">ioc</span><span class="o">.</span><span class="n">database_for</span><span class="p">(</span><span class="n">PVA_RECORDS</span><span class="p">,</span> <span class="n">ExamplePvaDevice</span><span class="p">)</span>
-    <span class="n">ioc</span><span class="o">.</span><span class="n">database_for</span><span class="p">(</span><span class="n">CA_PVA_RECORDS</span><span class="p">,</span> <span class="n">ExamplePvaDevice</span><span class="p">)</span>
-    <span class="n">ioc</span><span class="o">.</span><span class="n">database_for</span><span class="p">(</span><span class="n">CA_PVA_RECORDS</span><span class="p">,</span> <span class="n">ExampleCaDevice</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">ioc</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">generate_random_pv_prefix</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span> <span class="o">=</span> <span class="n">TestingIOC</span><span class="p">()</span>
+        <span class="c1"># Create supporting records and ExampleCaDevice</span>
+        <span class="n">ca_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">ca:&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span><span class="o">.</span><span class="n">add_database</span><span class="p">(</span><span class="n">CA_PVA_RECORDS</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">ca_prefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ca_device</span> <span class="o">=</span> <span class="n">EpicsTestCaDevice</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ca://</span><span class="si">{</span><span class="n">ca_prefix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Create supporting records and ExamplePvaDevice</span>
+        <span class="n">pva_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="si">}</span><span class="s2">pva:&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span><span class="o">.</span><span class="n">add_database</span><span class="p">(</span><span class="n">CA_PVA_RECORDS</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pva_prefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ioc</span><span class="o">.</span><span class="n">add_database</span><span class="p">(</span><span class="n">PVA_RECORDS</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">pva_prefix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pva_device</span> <span class="o">=</span> <span class="n">EpicsTestPvaDevice</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pva://</span><span class="si">{</span><span class="n">pva_prefix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EpicsTestIocAndDevices.get_device">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestIocAndDevices.get_device">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protocol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EpicsTestCaDevice</span> <span class="o">|</span> <span class="n">EpicsTestPvaDevice</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">protocol</span><span class="si">}</span><span class="s2">_device&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EpicsTestIocAndDevices.get_signal">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestIocAndDevices.get_signal">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protocol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_device</span><span class="p">(</span><span class="n">protocol</span><span class="p">),</span> <span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EpicsTestIocAndDevices.get_pv">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestIocAndDevices.get_pv">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protocol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">protocol</span><span class="si">}</span><span class="s2">://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="si">}{</span><span class="n">protocol</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span></div>
+</div>
 
 </pre></div>
 

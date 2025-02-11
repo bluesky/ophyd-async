@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adaravis._aravis &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>ophyd_async.epics.adaravis._aravis &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -30,11 +30,10 @@
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -42,8 +41,8 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=30646c52"></script>
@@ -135,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -466,8 +465,7 @@ window.addEventListener("load", () => mermaid.run());
   <h1>Source code for ophyd_async.epics.adaravis._aravis</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">PathProvider</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalR</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">PathProvider</span><span class="p">,</span> <span class="n">SignalR</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adcore</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._aravis_controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">AravisController</span>
@@ -475,10 +473,10 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="AravisDetector">
-<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisDetector">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adaravis.html#ophyd_async.epics.adaravis.AravisDetector">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AravisDetector</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">AreaDetector</span><span class="p">[</span><span class="n">AravisController</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Ophyd-async implementation of an ADAravis Detector.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implementation of an ADAravis Detector.</span>
+
 <span class="sd">    The detector may be configured for an external trigger on a GPIO port,</span>
 <span class="sd">    which must be done prior to preparing the detector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -491,13 +489,11 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">writer_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADWriter</span><span class="p">]</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ADHDFWriter</span><span class="p">,</span>
         <span class="n">fileio_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">gpio_number</span><span class="p">:</span> <span class="n">AravisController</span><span class="o">.</span><span class="n">GPIO_NUMBER</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">plugins</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">driver</span> <span class="o">=</span> <span class="n">AravisDriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">drv_suffix</span><span class="p">)</span>
-        <span class="n">controller</span> <span class="o">=</span> <span class="n">AravisController</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">gpio_number</span><span class="o">=</span><span class="n">gpio_number</span><span class="p">)</span>
-
+        <span class="n">controller</span> <span class="o">=</span> <span class="n">AravisController</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span>
         <span class="n">writer</span> <span class="o">=</span> <span class="n">writer_cls</span><span class="o">.</span><span class="n">with_io</span><span class="p">(</span>
             <span class="n">prefix</span><span class="p">,</span>
             <span class="n">path_provider</span><span class="p">,</span>
@@ -505,7 +501,6 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">fileio_suffix</span><span class="o">=</span><span class="n">fileio_suffix</span><span class="p">,</span>
             <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
         <span class="p">)</span>
-
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">controller</span><span class="o">=</span><span class="n">controller</span><span class="p">,</span>
             <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>

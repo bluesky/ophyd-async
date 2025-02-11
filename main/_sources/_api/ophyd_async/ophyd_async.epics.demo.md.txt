@@ -1,0 +1,323 @@
+# {py:mod}`ophyd_async.epics.demo`
+
+```{py:module} ophyd_async.epics.demo
+```
+
+```{autodoc2-docstring} ophyd_async.epics.demo
+:parser: ophyd_async._docs_parser
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`DemoMotor <ophyd_async.epics.demo._motor.DemoMotor>`
+  - ```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`DemoStage <ophyd_async.epics.demo._stage.DemoStage>`
+  - ```{autodoc2-docstring} ophyd_async.epics.demo._stage.DemoStage
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`EnergyMode <ophyd_async.epics.demo._point_detector_channel.EnergyMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.demo._point_detector_channel.EnergyMode
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`DemoPointDetectorChannel <ophyd_async.epics.demo._point_detector_channel.DemoPointDetectorChannel>`
+  - ```{autodoc2-docstring} ophyd_async.epics.demo._point_detector_channel.DemoPointDetectorChannel
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`DemoPointDetector <ophyd_async.epics.demo._point_detector.DemoPointDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.demo._point_detector.DemoPointDetector
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`start_ioc_subprocess <ophyd_async.epics.demo._ioc.start_ioc_subprocess>`
+  - ```{autodoc2-docstring} ophyd_async.epics.demo._ioc.start_ioc_subprocess
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+````
+
+### API
+
+`````{py:class} DemoMotor(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.demo._motor.DemoMotor
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Movable`, {py:obj}`bluesky.protocols.Stoppable`
+
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} readback
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.readback
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[float], PvSuffix('Readback'), ~ophyd_async.core.StandardReadableFormat.HINTED_SIGNAL]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.readback
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} velocity
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.velocity
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], PvSuffix('Velocity'), ~ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.velocity
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} units
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.units
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('~Readback.EGU'), ~ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.units
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} setpoint
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.setpoint
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], PvSuffix('Setpoint')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.setpoint
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} precision
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.precision
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('~Readback.PREC')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.precision
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} stop_
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.stop_
+:type: ~typing.Annotated[~ophyd_async.core.SignalX, PvSuffix('~Stop.PROC')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.stop_
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} set_name(name: str, *, child_name_separator: str | None = None) -> None
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.set_name
+
+````
+
+````{py:method} set(new_position: float, timeout: ~ophyd_async.core.CalculatableTimeout = CALCULATE_TIMEOUT)
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.set
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.set
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} stop(success=True)
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.stop
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.stop
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+````{py:class} DemoStage(prefix: str, name='')
+:canonical: ophyd_async.epics.demo._stage.DemoStage
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.epics.demo._stage.DemoStage
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````{py:class} EnergyMode()
+:canonical: ophyd_async.epics.demo._point_detector_channel.EnergyMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector_channel.EnergyMode
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} LOW
+:canonical: ophyd_async.epics.demo._point_detector_channel.EnergyMode.LOW
+:value: >
+   'Low Energy'
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector_channel.EnergyMode.LOW
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} HIGH
+:canonical: ophyd_async.epics.demo._point_detector_channel.EnergyMode.HIGH
+:value: >
+   'High Energy'
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector_channel.EnergyMode.HIGH
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} DemoPointDetectorChannel(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.epics.demo._point_detector_channel.DemoPointDetectorChannel
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector_channel.DemoPointDetectorChannel
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} value
+:canonical: ophyd_async.epics.demo._point_detector_channel.DemoPointDetectorChannel.value
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('Value'), ~ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector_channel.DemoPointDetectorChannel.value
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} mode
+:canonical: ophyd_async.epics.demo._point_detector_channel.DemoPointDetectorChannel.mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.demo._point_detector_channel.EnergyMode], PvSuffix('Mode'), ~ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector_channel.DemoPointDetectorChannel.mode
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} DemoPointDetector(prefix: str, num_channels: int = 3, name: str = '')
+:canonical: ophyd_async.epics.demo._point_detector.DemoPointDetector
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`bluesky.protocols.Triggerable`
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector.DemoPointDetector
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} acquire_time
+:canonical: ophyd_async.epics.demo._point_detector.DemoPointDetector.acquire_time
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], PvSuffix('AcquireTime'), ~ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector.DemoPointDetector.acquire_time
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} start
+:canonical: ophyd_async.epics.demo._point_detector.DemoPointDetector.start
+:type: ~typing.Annotated[~ophyd_async.core.SignalX, PvSuffix('~Start.PROC')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector.DemoPointDetector.start
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} acquiring
+:canonical: ophyd_async.epics.demo._point_detector.DemoPointDetector.acquiring
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[bool], PvSuffix('Acquiring')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector.DemoPointDetector.acquiring
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} reset
+:canonical: ophyd_async.epics.demo._point_detector.DemoPointDetector.reset
+:type: ~typing.Annotated[~ophyd_async.core.SignalX, PvSuffix('~Reset.PROC')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector.DemoPointDetector.reset
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} trigger()
+:canonical: ophyd_async.epics.demo._point_detector.DemoPointDetector.trigger
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.demo._point_detector.DemoPointDetector.trigger
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+````{py:function} start_ioc_subprocess(prefix: str, num_channels: int) -> ~ophyd_async.epics.testing.TestingIOC
+:canonical: ophyd_async.epics.demo._ioc.start_ioc_subprocess
+
+```{autodoc2-docstring} ophyd_async.epics.demo._ioc.start_ioc_subprocess
+:parser: ophyd_async._docs_parser
+```
+````

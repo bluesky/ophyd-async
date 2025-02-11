@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._utils &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>ophyd_async.epics.adcore._utils &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -30,11 +30,10 @@
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -42,8 +41,8 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../../_static/copybutton.js?v=30646c52"></script>
@@ -135,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -477,6 +476,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="p">)</span>
 
 
+<div class="viewcode-block" id="ADBaseDataType">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseDataType">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADBaseDataType</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
     <span class="n">INT8</span> <span class="o">=</span> <span class="s2">&quot;Int8&quot;</span>
     <span class="n">UINT8</span> <span class="o">=</span> <span class="s2">&quot;UInt8&quot;</span>
@@ -487,7 +488,8 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">INT64</span> <span class="o">=</span> <span class="s2">&quot;Int64&quot;</span>
     <span class="n">UINT64</span> <span class="o">=</span> <span class="s2">&quot;UInt64&quot;</span>
     <span class="n">FLOAT32</span> <span class="o">=</span> <span class="s2">&quot;Float32&quot;</span>
-    <span class="n">FLOAT64</span> <span class="o">=</span> <span class="s2">&quot;Float64&quot;</span>
+    <span class="n">FLOAT64</span> <span class="o">=</span> <span class="s2">&quot;Float64&quot;</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_ad_dtype_to_np</span><span class="p">(</span><span class="n">ad_dtype</span><span class="p">:</span> <span class="n">ADBaseDataType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -545,24 +547,35 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">return</span> <span class="n">np_datatype</span>
 
 
+<div class="viewcode-block" id="FileWriteMode">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.FileWriteMode">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileWriteMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
     <span class="n">SINGLE</span> <span class="o">=</span> <span class="s2">&quot;Single&quot;</span>
     <span class="n">CAPTURE</span> <span class="o">=</span> <span class="s2">&quot;Capture&quot;</span>
-    <span class="n">STREAM</span> <span class="o">=</span> <span class="s2">&quot;Stream&quot;</span>
+    <span class="n">STREAM</span> <span class="o">=</span> <span class="s2">&quot;Stream&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="ImageMode">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ImageMode">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ImageMode</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
     <span class="n">SINGLE</span> <span class="o">=</span> <span class="s2">&quot;Single&quot;</span>
     <span class="n">MULTIPLE</span> <span class="o">=</span> <span class="s2">&quot;Multiple&quot;</span>
-    <span class="n">CONTINUOUS</span> <span class="o">=</span> <span class="s2">&quot;Continuous&quot;</span>
+    <span class="n">CONTINUOUS</span> <span class="o">=</span> <span class="s2">&quot;Continuous&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="NDAttributeDataType">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributeDataType">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDAttributeDataType</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
     <span class="n">INT</span> <span class="o">=</span> <span class="s2">&quot;INT&quot;</span>
     <span class="n">DOUBLE</span> <span class="o">=</span> <span class="s2">&quot;DOUBLE&quot;</span>
-    <span class="n">STRING</span> <span class="o">=</span> <span class="s2">&quot;STRING&quot;</span>
+    <span class="n">STRING</span> <span class="o">=</span> <span class="s2">&quot;STRING&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="NDAttributePvDbrType">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributePvDbrType">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDAttributePvDbrType</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
     <span class="n">DBR_SHORT</span> <span class="o">=</span> <span class="s2">&quot;DBR_SHORT&quot;</span>
     <span class="n">DBR_ENUM</span> <span class="o">=</span> <span class="s2">&quot;DBR_ENUM&quot;</span>
@@ -571,11 +584,12 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">DBR_FLOAT</span> <span class="o">=</span> <span class="s2">&quot;DBR_FLOAT&quot;</span>
     <span class="n">DBR_DOUBLE</span> <span class="o">=</span> <span class="s2">&quot;DBR_DOUBLE&quot;</span>
     <span class="n">DBR_STRING</span> <span class="o">=</span> <span class="s2">&quot;DBR_STRING&quot;</span>
-    <span class="n">DBR_CHAR</span> <span class="o">=</span> <span class="s2">&quot;DBR_CHAR&quot;</span>
+    <span class="n">DBR_CHAR</span> <span class="o">=</span> <span class="s2">&quot;DBR_CHAR&quot;</span></div>
+
 
 
 <div class="viewcode-block" id="NDAttributePv">
-<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributePv">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributePv">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDAttributePv</span><span class="p">:</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># name of attribute stamped on array, also scientifically useful name</span>
@@ -587,7 +601,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="NDAttributeParam">
-<a class="viewcode-back" href="../../../../_api/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributeParam">[docs]</a>
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributeParam">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDAttributeParam</span><span class="p">:</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># name of attribute stamped on array, also scientifically useful name</span>
@@ -599,6 +613,8 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
+<div class="viewcode-block" id="stop_busy_record">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.stop_busy_record">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop_busy_record</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
@@ -606,7 +622,8 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">status_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">status_timeout</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
+
 </pre></div>
 
                 </article>

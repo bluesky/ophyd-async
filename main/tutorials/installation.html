@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Installation &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>Installation &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -31,11 +31,10 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -43,8 +42,8 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=30646c52"></script>
@@ -60,7 +59,7 @@
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Using existing Devices" href="using-existing-devices.html" />
+    <link rel="next" title="Using Devices" href="using-devices.html" />
     <link rel="prev" title="Tutorials" href="../tutorials.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -130,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -412,7 +411,9 @@
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="using-existing-devices.html">Using existing Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-devices.html">Using Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="implementing-devices.html">Implementing Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing-tests-for-devices.html">Writing Tests for Devices</a></li>
 </ul>
 </div>
 </nav></div>
@@ -498,6 +499,19 @@ $ source /path/to/venv/bin/activate
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m pip install ophyd-async
 </pre></div>
 </div>
+<p>If you need to talk to a given control system, you will need to install
+the specific extra:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ca</span></code> for EPICS Channel Access</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pva</span></code> for EPICS PVAccess</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tango</span></code> for Tango</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">demo</span></code> for tutorial requirements like h5py and ipython</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">testing</span></code> for testing requirements like pytest</p></li>
+</ul>
+<p>E.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m pip install ophyd-async[ca,demo]
+</pre></div>
+</div>
 <p>If you require a feature that is not currently released you can also install
 from github:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m pip install git+https://github.com/bluesky/ophyd-async.git
@@ -505,7 +519,7 @@ from github:</p>
 </div>
 <p>The library should now be installed and the commandline interface on your path.
 You can check the version that has been installed by typing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ophyd-async --version
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m ophyd_async --version
 </pre></div>
 </div>
 </section>
@@ -531,11 +545,11 @@ You can check the version that has been installed by typing:</p>
       </div>
     </a>
     <a class="right-next"
-       href="using-existing-devices.html"
+       href="using-devices.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Using existing Devices</p>
+        <p class="prev-next-title">Using Devices</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

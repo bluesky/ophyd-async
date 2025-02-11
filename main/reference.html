@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Reference &#8212; ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation</title>
+    <title>Reference &#8212; ophyd-async 0.9.1.dev1+g663ad9df documentation</title>
   
   
   
@@ -31,11 +31,10 @@
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
   <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
@@ -43,8 +42,8 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=39e7c6bf"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/documentation_options.js?v=83e26a6d"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="_static/copybutton.js?v=30646c52"></script>
@@ -60,8 +59,8 @@
     <link rel="icon" href="_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="ophyd_async" href="_api/ophyd_async.html" />
-    <link rel="prev" title="Flyscanning" href="explanations/flyscanning.html" />
+    <link rel="next" title="API Reference" href="_api/index.html" />
+    <link rel="prev" title="Where should Device logic live?" href="explanations/where-device-logic.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -130,8 +129,8 @@
       
     
     
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.0a3.dev3+ga69d4e28 documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev1+g663ad9df documentation - Home"/>
   
   
 </a></div>
@@ -411,35 +410,39 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="_api/ophyd_async.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="_api/ophyd_async.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="_api/ophyd_async.epics.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adandor.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adaravis.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adcore.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adkinetix.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adpilatus.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.adsimdetector.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.advimba.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.eiger.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.eiger</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.motor.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.signal.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.sim.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.sim</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.epics.testing.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.testing</span></code></a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="_api/index.html">API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_api/ophyd_async/ophyd_async.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="_api/ophyd_async/ophyd_async.tango.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.tango.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.tango.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
 </ul>
 </details></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="_api/ophyd_async.fastcs.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.fastcs.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.fastcs.odin.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.fastcs.panda.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async/ophyd_async.sim.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async/ophyd_async.plan_stubs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.plan_stubs</span></code></a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.adcore.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.adsimdetector.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.advimba.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.adkinetix.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.adandor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.testing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.adaravis.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.eiger.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.eiger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.adpilatus.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.motor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.epics.signal.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
 </ul>
 </details></li>
-<li class="toctree-l2"><a class="reference internal" href="_api/ophyd_async.plan_stubs.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.plan_stubs</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="_api/ophyd_async.sim.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="_api/ophyd_async.tango.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.tango.core.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async.tango.sim.html"><code class="docutils literal notranslate"><span class="pre">ophyd_async.tango.sim</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async/ophyd_async.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.testing</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="_api/ophyd_async/ophyd_async.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="_api/ophyd_async/ophyd_async.fastcs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.fastcs.odin.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.fastcs.panda.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="_api/ophyd_async/ophyd_async.fastcs.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 </ul>
@@ -508,7 +511,7 @@
 <p>Technical reference material including APIs and release notes.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="_api/ophyd_async.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_api/index.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
 </ul>
@@ -526,20 +529,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="explanations/flyscanning.html"
+       href="explanations/where-device-logic.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Flyscanning</p>
+        <p class="prev-next-title">Where should Device logic live?</p>
       </div>
     </a>
     <a class="right-next"
-       href="_api/ophyd_async.html"
+       href="_api/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="docutils literal notranslate"><span class="pre">ophyd_async</span></code></p>
+        <p class="prev-next-title">API Reference</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

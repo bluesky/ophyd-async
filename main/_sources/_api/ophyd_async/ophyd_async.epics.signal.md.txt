@@ -1,0 +1,9 @@
+# {py:mod}`ophyd_async.epics.signal`
+
+```{py:module} ophyd_async.epics.signal
+```
+
+```{autodoc2-docstring} ophyd_async.epics.signal
+:parser: ophyd_async._docs_parser
+:allowtitles:
+```

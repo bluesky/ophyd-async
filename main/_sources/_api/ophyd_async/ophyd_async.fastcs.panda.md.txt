@@ -1,0 +1,1503 @@
+# {py:mod}`ophyd_async.fastcs.panda`
+
+```{py:module} ophyd_async.fastcs.panda
+```
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda
+:parser: ophyd_async._docs_parser
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`CommonPandaBlocks <ophyd_async.fastcs.panda._block.CommonPandaBlocks>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.CommonPandaBlocks
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`DataBlock <ophyd_async.fastcs.panda._block.DataBlock>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PandaBitMux <ophyd_async.fastcs.panda._block.PandaBitMux>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaBitMux
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PandaCaptureMode <ophyd_async.fastcs.panda._block.PandaCaptureMode>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaCaptureMode
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PcapBlock <ophyd_async.fastcs.panda._block.PcapBlock>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcapBlock
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PcompBlock <ophyd_async.fastcs.panda._block.PcompBlock>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcompBlock
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PandaPcompDirection <ophyd_async.fastcs.panda._block.PandaPcompDirection>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaPcompDirection
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PulseBlock <ophyd_async.fastcs.panda._block.PulseBlock>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PulseBlock
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`SeqBlock <ophyd_async.fastcs.panda._block.SeqBlock>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PandaTimeUnits <ophyd_async.fastcs.panda._block.PandaTimeUnits>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaTimeUnits
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`HDFPanda <ophyd_async.fastcs.panda._hdf_panda.HDFPanda>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._hdf_panda.HDFPanda
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PandaHDFWriter <ophyd_async.fastcs.panda._writer.PandaHDFWriter>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._writer.PandaHDFWriter
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PandaPcapController <ophyd_async.fastcs.panda._control.PandaPcapController>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._control.PandaPcapController
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`DatasetTable <ophyd_async.fastcs.panda._table.DatasetTable>`
+  -
+* - {py:obj}`PandaHdf5DatasetType <ophyd_async.fastcs.panda._table.PandaHdf5DatasetType>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._table.PandaHdf5DatasetType
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`SeqTable <ophyd_async.fastcs.panda._table.SeqTable>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`SeqTrigger <ophyd_async.fastcs.panda._table.SeqTrigger>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`PcompInfo <ophyd_async.fastcs.panda._trigger.PcompInfo>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PcompInfo
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`SeqTableInfo <ophyd_async.fastcs.panda._trigger.SeqTableInfo>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.SeqTableInfo
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`StaticPcompTriggerLogic <ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+* - {py:obj}`StaticSeqTableTriggerLogic <ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+````
+
+### API
+
+`````{py:class} CommonPandaBlocks(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.fastcs.panda._block.CommonPandaBlocks
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.CommonPandaBlocks
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} pulse
+:canonical: ophyd_async.fastcs.panda._block.CommonPandaBlocks.pulse
+:type: ~ophyd_async.core.DeviceVector[~ophyd_async.fastcs.panda._block.PulseBlock]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.CommonPandaBlocks.pulse
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} seq
+:canonical: ophyd_async.fastcs.panda._block.CommonPandaBlocks.seq
+:type: ~ophyd_async.core.DeviceVector[~ophyd_async.fastcs.panda._block.SeqBlock]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.CommonPandaBlocks.seq
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} pcomp
+:canonical: ophyd_async.fastcs.panda._block.CommonPandaBlocks.pcomp
+:type: ~ophyd_async.core.DeviceVector[~ophyd_async.fastcs.panda._block.PcompBlock]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.CommonPandaBlocks.pcomp
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} pcap
+:canonical: ophyd_async.fastcs.panda._block.CommonPandaBlocks.pcap
+:type: ~ophyd_async.fastcs.panda._block.PcapBlock
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.CommonPandaBlocks.pcap
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} data
+:canonical: ophyd_async.fastcs.panda._block.CommonPandaBlocks.data
+:type: ~ophyd_async.fastcs.panda._block.DataBlock
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.CommonPandaBlocks.data
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} DataBlock(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.fastcs.panda._block.DataBlock
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} hdf_directory
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.hdf_directory
+:type: ~ophyd_async.core.SignalRW[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.hdf_directory
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} hdf_file_name
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.hdf_file_name
+:type: ~ophyd_async.core.SignalRW[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.hdf_file_name
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} num_capture
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.num_capture
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.num_capture
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} num_captured
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.num_captured
+:type: ~ophyd_async.core.SignalR[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.num_captured
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} create_directory
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.create_directory
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.create_directory
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} directory_exists
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.directory_exists
+:type: ~ophyd_async.core.SignalR[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.directory_exists
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} capture_mode
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.capture_mode
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.panda._block.PandaCaptureMode]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.capture_mode
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} capture
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.capture
+:type: ~ophyd_async.core.SignalRW[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.capture
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} flush_period
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.flush_period
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.flush_period
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} datasets
+:canonical: ophyd_async.fastcs.panda._block.DataBlock.datasets
+:type: ~ophyd_async.core.SignalR[~ophyd_async.fastcs.panda._table.DatasetTable]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.datasets
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} PandaBitMux()
+:canonical: ophyd_async.fastcs.panda._block.PandaBitMux
+
+Bases: {py:obj}`ophyd_async.core.SubsetEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaBitMux
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} ZERO
+:canonical: ophyd_async.fastcs.panda._block.PandaBitMux.ZERO
+:value: >
+   'ZERO'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaBitMux.ZERO
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} ONE
+:canonical: ophyd_async.fastcs.panda._block.PandaBitMux.ONE
+:value: >
+   'ONE'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaBitMux.ONE
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} PandaCaptureMode()
+:canonical: ophyd_async.fastcs.panda._block.PandaCaptureMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaCaptureMode
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} FIRST_N
+:canonical: ophyd_async.fastcs.panda._block.PandaCaptureMode.FIRST_N
+:value: >
+   'FIRST_N'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaCaptureMode.FIRST_N
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} LAST_N
+:canonical: ophyd_async.fastcs.panda._block.PandaCaptureMode.LAST_N
+:value: >
+   'LAST_N'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaCaptureMode.LAST_N
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} FOREVER
+:canonical: ophyd_async.fastcs.panda._block.PandaCaptureMode.FOREVER
+:value: >
+   'FOREVER'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaCaptureMode.FOREVER
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} PcapBlock(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.fastcs.panda._block.PcapBlock
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcapBlock
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} active
+:canonical: ophyd_async.fastcs.panda._block.PcapBlock.active
+:type: ~ophyd_async.core.SignalR[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcapBlock.active
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} arm
+:canonical: ophyd_async.fastcs.panda._block.PcapBlock.arm
+:type: ~ophyd_async.core.SignalRW[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcapBlock.arm
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} PcompBlock(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.fastcs.panda._block.PcompBlock
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcompBlock
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} active
+:canonical: ophyd_async.fastcs.panda._block.PcompBlock.active
+:type: ~ophyd_async.core.SignalR[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcompBlock.active
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} dir
+:canonical: ophyd_async.fastcs.panda._block.PcompBlock.dir
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.panda._block.PandaPcompDirection]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcompBlock.dir
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} enable
+:canonical: ophyd_async.fastcs.panda._block.PcompBlock.enable
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.panda._block.PandaBitMux]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcompBlock.enable
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} pulses
+:canonical: ophyd_async.fastcs.panda._block.PcompBlock.pulses
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcompBlock.pulses
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} start
+:canonical: ophyd_async.fastcs.panda._block.PcompBlock.start
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcompBlock.start
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} step
+:canonical: ophyd_async.fastcs.panda._block.PcompBlock.step
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcompBlock.step
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} width
+:canonical: ophyd_async.fastcs.panda._block.PcompBlock.width
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PcompBlock.width
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} PandaPcompDirection()
+:canonical: ophyd_async.fastcs.panda._block.PandaPcompDirection
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaPcompDirection
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} POSITIVE
+:canonical: ophyd_async.fastcs.panda._block.PandaPcompDirection.POSITIVE
+:value: >
+   'Positive'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaPcompDirection.POSITIVE
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} NEGATIVE
+:canonical: ophyd_async.fastcs.panda._block.PandaPcompDirection.NEGATIVE
+:value: >
+   'Negative'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaPcompDirection.NEGATIVE
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} EITHER
+:canonical: ophyd_async.fastcs.panda._block.PandaPcompDirection.EITHER
+:value: >
+   'Either'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaPcompDirection.EITHER
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} PulseBlock(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.fastcs.panda._block.PulseBlock
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PulseBlock
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} delay
+:canonical: ophyd_async.fastcs.panda._block.PulseBlock.delay
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PulseBlock.delay
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} width
+:canonical: ophyd_async.fastcs.panda._block.PulseBlock.width
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PulseBlock.width
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} SeqBlock(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.fastcs.panda._block.SeqBlock
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} table
+:canonical: ophyd_async.fastcs.panda._block.SeqBlock.table
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.panda._table.SeqTable]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock.table
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} active
+:canonical: ophyd_async.fastcs.panda._block.SeqBlock.active
+:type: ~ophyd_async.core.SignalR[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock.active
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} repeats
+:canonical: ophyd_async.fastcs.panda._block.SeqBlock.repeats
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock.repeats
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} prescale
+:canonical: ophyd_async.fastcs.panda._block.SeqBlock.prescale
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock.prescale
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} prescale_units
+:canonical: ophyd_async.fastcs.panda._block.SeqBlock.prescale_units
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.panda._block.PandaTimeUnits]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock.prescale_units
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} enable
+:canonical: ophyd_async.fastcs.panda._block.SeqBlock.enable
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.panda._block.PandaBitMux]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock.enable
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} PandaTimeUnits()
+:canonical: ophyd_async.fastcs.panda._block.PandaTimeUnits
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaTimeUnits
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} MIN
+:canonical: ophyd_async.fastcs.panda._block.PandaTimeUnits.MIN
+:value: >
+   'min'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaTimeUnits.MIN
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} S
+:canonical: ophyd_async.fastcs.panda._block.PandaTimeUnits.S
+:value: >
+   's'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaTimeUnits.S
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} MS
+:canonical: ophyd_async.fastcs.panda._block.PandaTimeUnits.MS
+:value: >
+   'ms'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaTimeUnits.MS
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} US
+:canonical: ophyd_async.fastcs.panda._block.PandaTimeUnits.US
+:value: >
+   'us'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaTimeUnits.US
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+````{py:class} HDFPanda(prefix: str, path_provider: ~ophyd_async.core.PathProvider, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+:canonical: ophyd_async.fastcs.panda._hdf_panda.HDFPanda
+
+Bases: {py:obj}`ophyd_async.fastcs.panda._block.CommonPandaBlocks`, {py:obj}`ophyd_async.core.StandardDetector`\[{py:obj}`ophyd_async.fastcs.panda._control.PandaPcapController`\, {py:obj}`ophyd_async.fastcs.panda._writer.PandaHDFWriter`\]
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._hdf_panda.HDFPanda
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````{py:class} PandaHDFWriter(path_provider: ~ophyd_async.core.PathProvider, name_provider: ~ophyd_async.core.NameProvider, panda_data_block: ~ophyd_async.fastcs.panda._block.DataBlock)
+:canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter
+
+Bases: {py:obj}`ophyd_async.core.DetectorWriter`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._writer.PandaHDFWriter
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} open(multiplier: int = 1) -> dict[str, ~event_model.DataKey]
+:canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.open
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._writer.PandaHDFWriter.open
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} wait_for_index(index: int, timeout: float | None = DEFAULT_TIMEOUT)
+:canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.wait_for_index
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._writer.PandaHDFWriter.wait_for_index
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} get_indices_written() -> int
+:canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.get_indices_written
+:async:
+
+````
+
+````{py:method} observe_indices_written(timeout=DEFAULT_TIMEOUT) -> ~collections.abc.AsyncGenerator[int, None]
+:canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.observe_indices_written
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._writer.PandaHDFWriter.observe_indices_written
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} collect_stream_docs(indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
+:canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.collect_stream_docs
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._writer.PandaHDFWriter.collect_stream_docs
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} close()
+:canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.close
+:async:
+
+````
+
+`````
+
+`````{py:class} PandaPcapController(pcap: ~ophyd_async.fastcs.panda._block.PcapBlock)
+:canonical: ophyd_async.fastcs.panda._control.PandaPcapController
+
+Bases: {py:obj}`ophyd_async.core.DetectorController`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._control.PandaPcapController
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} get_deadtime(exposure: float | None) -> float
+:canonical: ophyd_async.fastcs.panda._control.PandaPcapController.get_deadtime
+
+````
+
+````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo)
+:canonical: ophyd_async.fastcs.panda._control.PandaPcapController.prepare
+:async:
+
+````
+
+````{py:method} arm()
+:canonical: ophyd_async.fastcs.panda._control.PandaPcapController.arm
+:async:
+
+````
+
+````{py:method} wait_for_idle()
+:canonical: ophyd_async.fastcs.panda._control.PandaPcapController.wait_for_idle
+:async:
+
+````
+
+````{py:method} disarm()
+:canonical: ophyd_async.fastcs.panda._control.PandaPcapController.disarm
+:async:
+
+````
+
+`````
+
+`````{py:class} DatasetTable(**kwargs)
+:canonical: ophyd_async.fastcs.panda._table.DatasetTable
+
+Bases: {py:obj}`ophyd_async.core.Table`
+
+````{py:attribute} name
+:canonical: ophyd_async.fastcs.panda._table.DatasetTable.name
+:type: ~collections.abc.Sequence[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.DatasetTable.name
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} dtype
+:canonical: ophyd_async.fastcs.panda._table.DatasetTable.dtype
+:type: ~collections.abc.Sequence[~ophyd_async.fastcs.panda._table.PandaHdf5DatasetType]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.DatasetTable.dtype
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} PandaHdf5DatasetType()
+:canonical: ophyd_async.fastcs.panda._table.PandaHdf5DatasetType
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.PandaHdf5DatasetType
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} FLOAT_64
+:canonical: ophyd_async.fastcs.panda._table.PandaHdf5DatasetType.FLOAT_64
+:value: >
+   'float64'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.PandaHdf5DatasetType.FLOAT_64
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} UINT_32
+:canonical: ophyd_async.fastcs.panda._table.PandaHdf5DatasetType.UINT_32
+:value: >
+   'uint32'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.PandaHdf5DatasetType.UINT_32
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} SeqTable(**kwargs)
+:canonical: ophyd_async.fastcs.panda._table.SeqTable
+
+Bases: {py:obj}`ophyd_async.core.Table`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} repeats
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.repeats
+:type: ~ophyd_async.core.Array1D[~numpy.uint16]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.repeats
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} trigger
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.trigger
+:type: ~collections.abc.Sequence[~ophyd_async.fastcs.panda._table.SeqTrigger]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.trigger
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} position
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.position
+:type: ~ophyd_async.core.Array1D[~numpy.int32]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.position
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} time1
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.time1
+:type: ~ophyd_async.core.Array1D[~numpy.uint32]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.time1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outa1
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outa1
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outa1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outb1
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outb1
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outb1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outc1
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outc1
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outc1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outd1
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outd1
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outd1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} oute1
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.oute1
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.oute1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outf1
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outf1
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outf1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} time2
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.time2
+:type: ~ophyd_async.core.Array1D[~numpy.uint32]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.time2
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outa2
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outa2
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outa2
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outb2
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outb2
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outb2
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outc2
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outc2
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outc2
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outd2
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outd2
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outd2
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} oute2
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.oute2
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.oute2
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} outf2
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.outf2
+:type: ~ophyd_async.core.Array1D[~numpy.bool_]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.outf2
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} row(*, repeats: int = 1, trigger: str = SeqTrigger.IMMEDIATE, position: int = 0, time1: int = 0, outa1: bool = False, outb1: bool = False, outc1: bool = False, outd1: bool = False, oute1: bool = False, outf1: bool = False, time2: int = 0, outa2: bool = False, outb2: bool = False, outc2: bool = False, outd2: bool = False, oute2: bool = False, outf2: bool = False) -> ~ophyd_async.fastcs.panda._table.SeqTable
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.row
+:staticmethod:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.row
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:method} validate_max_length() -> ~ophyd_async.fastcs.panda._table.SeqTable
+:canonical: ophyd_async.fastcs.panda._table.SeqTable.validate_max_length
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTable.validate_max_length
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} SeqTrigger()
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} IMMEDIATE
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.IMMEDIATE
+:value: >
+   'Immediate'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.IMMEDIATE
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} BITA_0
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.BITA_0
+:value: >
+   'BITA=0'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.BITA_0
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} BITA_1
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.BITA_1
+:value: >
+   'BITA=1'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.BITA_1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} BITB_0
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.BITB_0
+:value: >
+   'BITB=0'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.BITB_0
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} BITB_1
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.BITB_1
+:value: >
+   'BITB=1'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.BITB_1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} BITC_0
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.BITC_0
+:value: >
+   'BITC=0'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.BITC_0
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} BITC_1
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.BITC_1
+:value: >
+   'BITC=1'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.BITC_1
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} POSA_GT
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.POSA_GT
+:value: >
+   'POSA>=POSITION'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.POSA_GT
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} POSA_LT
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.POSA_LT
+:value: >
+   'POSA<=POSITION'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.POSA_LT
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} POSB_GT
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.POSB_GT
+:value: >
+   'POSB>=POSITION'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.POSB_GT
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} POSB_LT
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.POSB_LT
+:value: >
+   'POSB<=POSITION'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.POSB_LT
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} POSC_GT
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.POSC_GT
+:value: >
+   'POSC>=POSITION'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.POSC_GT
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} POSC_LT
+:canonical: ophyd_async.fastcs.panda._table.SeqTrigger.POSC_LT
+:value: >
+   'POSC<=POSITION'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._table.SeqTrigger.POSC_LT
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} PcompInfo(/, **data: ~typing.Any)
+:canonical: ophyd_async.fastcs.panda._trigger.PcompInfo
+
+Bases: {py:obj}`pydantic.BaseModel`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PcompInfo
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} start_postion
+:canonical: ophyd_async.fastcs.panda._trigger.PcompInfo.start_postion
+:type: int
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PcompInfo.start_postion
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} pulse_width
+:canonical: ophyd_async.fastcs.panda._trigger.PcompInfo.pulse_width
+:type: int
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PcompInfo.pulse_width
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} rising_edge_step
+:canonical: ophyd_async.fastcs.panda._trigger.PcompInfo.rising_edge_step
+:type: int
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PcompInfo.rising_edge_step
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} number_of_pulses
+:canonical: ophyd_async.fastcs.panda._trigger.PcompInfo.number_of_pulses
+:type: int
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PcompInfo.number_of_pulses
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} direction
+:canonical: ophyd_async.fastcs.panda._trigger.PcompInfo.direction
+:type: ~ophyd_async.fastcs.panda._block.PandaPcompDirection
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PcompInfo.direction
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} SeqTableInfo(/, **data: ~typing.Any)
+:canonical: ophyd_async.fastcs.panda._trigger.SeqTableInfo
+
+Bases: {py:obj}`pydantic.BaseModel`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.SeqTableInfo
+:parser: ophyd_async._docs_parser
+```
+
+````{py:attribute} sequence_table
+:canonical: ophyd_async.fastcs.panda._trigger.SeqTableInfo.sequence_table
+:type: ~ophyd_async.fastcs.panda._table.SeqTable
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.SeqTableInfo.sequence_table
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} repeats
+:canonical: ophyd_async.fastcs.panda._trigger.SeqTableInfo.repeats
+:type: int
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.SeqTableInfo.repeats
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+````{py:attribute} prescale_as_us
+:canonical: ophyd_async.fastcs.panda._trigger.SeqTableInfo.prescale_as_us
+:type: float
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.SeqTableInfo.prescale_as_us
+:parser: ophyd_async._docs_parser
+```
+
+````
+
+`````
+
+`````{py:class} StaticPcompTriggerLogic(pcomp: ~ophyd_async.fastcs.panda._block.PcompBlock)
+:canonical: ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic
+
+Bases: {py:obj}`ophyd_async.core.FlyerController`\[{py:obj}`ophyd_async.fastcs.panda._trigger.PcompInfo`\]
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} prepare(value: ~ophyd_async.fastcs.panda._trigger.PcompInfo)
+:canonical: ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic.prepare
+:async:
+
+````
+
+````{py:method} kickoff() -> None
+:canonical: ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic.kickoff
+:async:
+
+````
+
+````{py:method} complete(timeout: float | None = None) -> None
+:canonical: ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic.complete
+:async:
+
+````
+
+````{py:method} stop()
+:canonical: ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic.stop
+:async:
+
+````
+
+`````
+
+`````{py:class} StaticSeqTableTriggerLogic(seq: ~ophyd_async.fastcs.panda._block.SeqBlock)
+:canonical: ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic
+
+Bases: {py:obj}`ophyd_async.core.FlyerController`\[{py:obj}`ophyd_async.fastcs.panda._trigger.SeqTableInfo`\]
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic
+:parser: ophyd_async._docs_parser
+```
+
+````{py:method} prepare(value: ~ophyd_async.fastcs.panda._trigger.SeqTableInfo)
+:canonical: ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic.prepare
+:async:
+
+````
+
+````{py:method} kickoff() -> None
+:canonical: ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic.kickoff
+:async:
+
+````
+
+````{py:method} complete() -> None
+:canonical: ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic.complete
+:async:
+
+````
+
+````{py:method} stop()
+:canonical: ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic.stop
+:async:
+
+````
+
+`````

@@ -1,0 +1,34 @@
+# {py:mod}`ophyd_async.fastcs.core`
+
+```{py:module} ophyd_async.fastcs.core
+```
+
+```{autodoc2-docstring} ophyd_async.fastcs.core
+:parser: ophyd_async._docs_parser
+:allowtitles:
+```
+
+## Module Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`fastcs_connector <ophyd_async.fastcs.core.fastcs_connector>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.core.fastcs_connector
+    :parser: ophyd_async._docs_parser
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} fastcs_connector(device: ~ophyd_async.core.Device, uri: str, error_hint: str = '') -> ~ophyd_async.core.DeviceConnector
+:canonical: ophyd_async.fastcs.core.fastcs_connector
+
+```{autodoc2-docstring} ophyd_async.fastcs.core.fastcs_connector
+:parser: ophyd_async._docs_parser
+```
+````
