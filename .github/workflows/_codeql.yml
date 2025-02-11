@@ -28,7 +28,3 @@ jobs:
         with:
           category: "/language:python"
 
-      - name: Upload CodeQL Analysis Results
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: /home/runner/work/ophyd-async/results/python.sarif
