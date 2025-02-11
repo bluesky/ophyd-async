@@ -22,7 +22,7 @@ from bluesky.protocols import (
     WritesStreamAssets,
 )
 from event_model import DataKey
-from pydantic import BaseModel, Field, NonNegativeInt, computed_field
+from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, computed_field
 
 from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
@@ -65,19 +65,21 @@ class TriggerInfo(BaseModel):
     livetime: float | None = Field(default=None, ge=0)
     #: What is the maximum timeout on waiting for a frame
     frame_timeout: float | None = Field(default=None, gt=0)
-    #: How many triggers make up a single StreamDatum index, to allow multiple frames
-    #: from a faster detector to be zipped with a single frame from a slow detector
-    #: e.g. if num=10 and multiplier=5 then the detector will take 10 frames,
-    #: but publish 2 indices, and describe() will show a shape of (5, h, w)
-    multiplier: int = 1
+    #: The number of triggers that are grouped into a single StreamDatum index.
+    #: A frames_per_event > 1 can be useful to have frames from a faster detector
+    #: able to be zipped with a single frame from a slower detector. E.g. if
+    #: number_of_triggers=10 and frames_per_event=5 then the detector will take
+    #: 10 frames, but publish 2 StreamDatum indices, and describe() will show a
+    #: shape of (5, h, w) for each.
+    frames_per_event: PositiveInt = 1
 
     @computed_field
     @cached_property
     def total_number_of_triggers(self) -> int:
         return (
-            sum(self.number_of_triggers)
+            sum(self.number_of_triggers) * self.frames_per_event
             if isinstance(self.number_of_triggers, list)
-            else self.number_of_triggers
+            else self.number_of_triggers * self.frames_per_event
         )
 
 
@@ -107,8 +109,8 @@ class DetectorController(ABC):
                 exposure time.
                 deadtime Defaults to None. This is the minimum deadtime between
                 triggers.
-                multiplier The number of triggers grouped into a single StreamDatum
-                index.
+                frames_per_event The number of triggers grouped into a single
+                StreamDatum index
         """
 
     @abstractmethod
@@ -133,13 +135,17 @@ class DetectorWriter(ABC):
     (e.g. an HDF5 file)"""
 
     @abstractmethod
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         """Open writer and wait for it to be ready for data.
 
         Args:
-            multiplier: Each StreamDatum index corresponds to this many
-                written exposures
-
+            frames_per_event: The number of triggers that are grouped into a single
+                StreamDatum index. A frames_per_event > 1 can be useful to have
+                frames from a faster detector able to be zipped with a single frame
+                from a slower detector. E.g. if number_of_triggers=10 and
+                frames_per_event=5 then the detector will take 10 frames, but publish
+                2 StreamDatum indices, and describe() will show a shape of (5, h, w)
+                for each.
         Returns:
             Output for ``describe()``
         """
@@ -148,7 +154,7 @@ class DetectorWriter(ABC):
     def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        """Yield the index of each frame (or equivalent data point) as it is written"""
+        """Yield the index of each frame (or batch of frames) as it is written"""
 
     @abstractmethod
     async def get_indices_written(self) -> int:
@@ -339,10 +345,12 @@ class StandardDetector(
             if isinstance(self._trigger_info.number_of_triggers, list)
             else [self._trigger_info.number_of_triggers]
         )
-        self._initial_frame = await self._writer.get_indices_written()
+        # Open the writer and prepare the controller.
         self._describe, _ = await asyncio.gather(
-            self._writer.open(value.multiplier), self._controller.prepare(value)
+            self._writer.open(value.frames_per_event), self._controller.prepare(value)
         )
+        # Get the initial frame index from the writer.
+        self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
             await self._controller.arm()
             self._fly_start = time.monotonic()

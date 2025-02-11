@@ -1,6 +1,6 @@
 from collections.abc import AsyncGenerator, AsyncIterator
 
-from event_model import DataKey
+from event_model import DataKey  # type: ignore
 
 from ophyd_async.core import DEFAULT_TIMEOUT, DetectorWriter, NameProvider, PathProvider
 
@@ -20,9 +20,10 @@ class PatternDetectorWriter(DetectorWriter):
         self.path_provider = path_provider
         self.name_provider = name_provider
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
+        self._frames_per_event = frames_per_event
         return await self.pattern_generator.open_file(
-            self.path_provider, self.name_provider(), multiplier
+            self.path_provider, self.name_provider(), frames_per_event
         )
 
     async def close(self) -> None:
@@ -35,7 +36,7 @@ class PatternDetectorWriter(DetectorWriter):
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         async for index in self.pattern_generator.observe_indices_written(timeout):
-            yield index
+            yield index // self._frames_per_event
 
     async def get_indices_written(self) -> int:
-        return self.pattern_generator.image_counter
+        return self.pattern_generator.image_counter // self._frames_per_event

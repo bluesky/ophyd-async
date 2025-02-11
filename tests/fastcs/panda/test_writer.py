@@ -149,11 +149,6 @@ async def test_open_sets_file_path_and_name(mock_writer: PandaHDFWriter, tmp_pat
     assert name == "data.h5"
 
 
-async def test_open_errors_when_multiplier_not_one(mock_writer: PandaHDFWriter):
-    with pytest.raises(ValueError):
-        await mock_writer.open(2)
-
-
 async def test_get_indices_written(mock_writer: PandaHDFWriter):
     await mock_writer.open()
     set_mock_value(mock_writer.panda_data_block.num_captured, 4)
@@ -161,11 +156,12 @@ async def test_get_indices_written(mock_writer: PandaHDFWriter):
     assert written == 4
 
 
-async def test_wait_for_index(mock_writer: PandaHDFWriter):
-    await mock_writer.open()
-    set_mock_value(mock_writer.panda_data_block.num_captured, 3)
+@pytest.mark.parametrize("frames_per_event", [1, 2, 11])
+async def test_wait_for_index(mock_writer: PandaHDFWriter, frames_per_event: int):
+    await mock_writer.open(frames_per_event=frames_per_event)
+    set_mock_value(mock_writer.panda_data_block.num_captured, 3 * frames_per_event)
     await mock_writer.wait_for_index(3, timeout=1)
-    set_mock_value(mock_writer.panda_data_block.num_captured, 2)
+    set_mock_value(mock_writer.panda_data_block.num_captured, 2 * frames_per_event)
     with pytest.raises(asyncio.TimeoutError):
         await mock_writer.wait_for_index(3, timeout=0.1)
 
@@ -191,7 +187,6 @@ async def test_collect_stream_docs(
             "parameters": {
                 "dataset": f"/{name}",
                 "swmr": False,
-                "multiplier": 1,
                 "chunk_shape": (1024,),
             },
         }
