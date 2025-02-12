@@ -1,7 +1,7 @@
 import textwrap
 from dataclasses import dataclass
 from random import choice
-from typing import Any, Generic
+from typing import Any, Generic, TypeVar
 
 import numpy as np
 
@@ -9,11 +9,12 @@ from ophyd_async.core import (
     Array1D,
     DTypeScalar_co,
     StrictEnum,
-    T,
 )
 from ophyd_async.testing import float_array_value, int_array_value
 from tango import AttrDataFormat, AttrWriteType, DevState
 from tango.server import Device, attribute, command
+
+T = TypeVar("T")
 
 
 class ExampleStrEnum(StrictEnum):
@@ -73,11 +74,10 @@ class ImageData(AttributeData):
         return array
 
 
-attribute_datas = []
+everything_signal_info = []
 
 
 def add_ads(
-    my_list: list[AttributeData],
     name: str,
     tango_type: str,
     py_type: type,
@@ -85,13 +85,15 @@ def add_ads(
     initial_spectrum,
     choices,
 ):
-    my_list.append(AttributeData(name, tango_type, py_type, initial_scalar, choices))
-    my_list.append(
+    everything_signal_info.append(
+        AttributeData(name, tango_type, py_type, initial_scalar, choices)
+    )
+    everything_signal_info.append(
         SpectrumData(
             f"{name}_spectrum", tango_type, Array1D[py_type], initial_spectrum, choices
         )
     )
-    my_list.append(
+    everything_signal_info.append(
         ImageData(
             f"{name}_image",
             tango_type,
@@ -103,7 +105,6 @@ def add_ads(
 
 
 add_ads(
-    attribute_datas,
     "str",
     "DevString",
     str,
@@ -112,7 +113,6 @@ add_ads(
     ("four", "five", "six"),
 )
 add_ads(
-    attribute_datas,
     "bool",
     "DevBoolean",
     bool,
@@ -120,83 +120,16 @@ add_ads(
     np.array([False, True], dtype=bool),
     (False, True),
 )
+add_ads("strenum", "DevEnum", StrictEnum, 1, np.array([0, 1, 2]), (0, 1, 2))
+add_ads("int8", "DevShort", int, 1, int_array_value(np.int8), (1, 2, 3, 4, 5))
+add_ads("uint8", "DevUChar", int, 1, int_array_value(np.uint8), (1, 2, 3, 4, 5))
+add_ads("int16", "DevShort", int, 1, int_array_value(np.int16), (1, 2, 3, 4, 5))
+add_ads("uint16", "DevUShort", int, 1, int_array_value(np.uint16), (1, 2, 3, 4, 5))
+add_ads("int32", "DevLong", int, 1, int_array_value(np.int32), (1, 2, 3, 4, 5))
+add_ads("uint32", "DevULong", int, 1, int_array_value(np.uint32), (1, 2, 3, 4, 5))
+add_ads("int64", "DevLong64", int, 1, int_array_value(np.int64), (1, 2, 3, 4, 5))
+add_ads("uint64", "DevULong64", int, 1, int_array_value(np.uint64), (1, 2, 3, 4, 5))
 add_ads(
-    attribute_datas, "strenum", "DevEnum", StrictEnum, 1, np.array([0, 1, 2]), (0, 1, 2)
-)  # right py_type?
-add_ads(
-    attribute_datas,
-    "int8",
-    "DevShort",
-    int,
-    1,
-    int_array_value(np.int8),
-    (1, 2, 3, 4, 5),
-)
-add_ads(
-    attribute_datas,
-    "uint8",
-    "DevUChar",
-    int,
-    1,
-    int_array_value(np.uint8),
-    (1, 2, 3, 4, 5),
-)
-add_ads(
-    attribute_datas,
-    "int16",
-    "DevShort",
-    int,
-    1,
-    int_array_value(np.int16),
-    (1, 2, 3, 4, 5),
-)
-add_ads(
-    attribute_datas,
-    "uint16",
-    "DevUShort",
-    int,
-    1,
-    int_array_value(np.uint16),
-    (1, 2, 3, 4, 5),
-)
-add_ads(
-    attribute_datas,
-    "int32",
-    "DevLong",
-    int,
-    1,
-    int_array_value(np.int32),
-    (1, 2, 3, 4, 5),
-)
-add_ads(
-    attribute_datas,
-    "uint32",
-    "DevULong",
-    int,
-    1,
-    int_array_value(np.uint32),
-    (1, 2, 3, 4, 5),
-)
-add_ads(
-    attribute_datas,
-    "int64",
-    "DevLong64",
-    int,
-    1,
-    int_array_value(np.int64),
-    (1, 2, 3, 4, 5),
-)
-add_ads(
-    attribute_datas,
-    "uint64",
-    "DevULong64",
-    int,
-    1,
-    int_array_value(np.uint64),
-    (1, 2, 3, 4, 5),
-)
-add_ads(
-    attribute_datas,
     "float32",
     "DevFloat",
     float,
@@ -205,7 +138,6 @@ add_ads(
     (1.234, 2.345, 3.456),
 )
 add_ads(
-    attribute_datas,
     "float64",
     "DevDouble",
     float,
@@ -214,7 +146,6 @@ add_ads(
     (1.234, 2.345, 3.456),
 )
 add_ads(
-    attribute_datas,
     "my_state",
     "DevState",
     DevState,
@@ -229,7 +160,7 @@ class OneOfEverythingTangoDevice(Device):
 
     def initialize_dynamic_attributes(self):
         self.reset_values()
-        for attr_data in attribute_datas:
+        for attr_data in everything_signal_info:
             attr = attribute(
                 name=attr_data.name,
                 dtype=attr_data.tango_type,
@@ -245,7 +176,6 @@ class OneOfEverythingTangoDevice(Device):
             )
             self.add_attribute(attr)
             self.set_change_event(attr.name, True, False)
-
             if (
                 attr_data.tango_type == "DevUChar"
                 or attr_data.dformat == AttrDataFormat.IMAGE
@@ -269,7 +199,7 @@ class OneOfEverythingTangoDevice(Device):
 
     @command
     def reset_values(self):
-        for attr_data in attribute_datas:
+        for attr_data in everything_signal_info:
             self.attr_values[attr_data.name] = attr_data.initial_value
 
     def read(self, attr):
@@ -288,6 +218,6 @@ class OneOfEverythingTangoDevice(Device):
             """
     )
 
-    for attr_data in attribute_datas:
+    for attr_data in everything_signal_info:
         if attr_data.dformat != AttrDataFormat.IMAGE:
             exec(echo_command_code.format(f"{attr_data.name}_cmd"))

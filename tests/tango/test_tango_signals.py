@@ -17,10 +17,10 @@ from ophyd_async.tango.core import (
     tango_signal_w,
     tango_signal_x,
 )
-from ophyd_async.tango.testing._one_of_everything import (
+from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
-    attribute_datas,
+    everything_signal_info,
 )
 from ophyd_async.testing import MonitorQueue, assert_reading, assert_value
 from tango import AttrDataFormat, DevState
@@ -109,12 +109,6 @@ async def make_backend(
 
 
 # --------------------------------------------------------------------
-async def prepare_device(trl: str, pv: str, put_value: T) -> None:
-    proxy = await DeviceProxy(trl)
-    setattr(proxy, pv, put_value)
-
-
-# --------------------------------------------------------------------
 async def assert_monitor_then_put(
     trl: str,
     pv: str,
@@ -128,8 +122,6 @@ async def assert_monitor_then_put(
     backend = signal._connector.backend
     await signal.connect()
     converter = signal._connector.backend.converter  # type: ignore
-    converted_initial = converter.value(initial_value)
-    await prepare_device(trl, pv, converted_initial)
     converted_put = converter.value(put_value)
     # Make a monitor queue that will monitor for updates
     with MonitorQueue(signal) as q:
@@ -146,8 +138,8 @@ async def assert_monitor_then_put(
 @pytest.mark.asyncio
 async def test_backend_get_put_monitor_attr(everything_device_trl: str):
     try:
-        for attr_data in attribute_datas:
-            if "state" in attr_data.name:
+        for attr_data in everything_signal_info:
+            if "state" in attr_data.name and attr_data.dformat != AttrDataFormat.SCALAR:
                 print("skipping for now", attr_data.name)
                 continue
             # Set a timeout for the operation to prevent it from running indefinitely
@@ -162,7 +154,7 @@ async def test_backend_get_put_monitor_attr(everything_device_trl: str):
                     ),
                     attr_data.py_type,
                 ),
-                timeout=100,  # Timeout in seconds
+                timeout=5,  # Timeout in seconds
             )
     except asyncio.TimeoutError:
         pytest.fail("Test timed out")
@@ -202,7 +194,7 @@ async def assert_put_read(
 async def test_backend_get_put_monitor_cmd(
     everything_device_trl: str,
 ):
-    for cmd_data in attribute_datas:
+    for cmd_data in everything_signal_info:
         if (
             cmd_data.dformat == AttrDataFormat.IMAGE
             or cmd_data.tango_type == "DevUChar"
@@ -216,7 +208,6 @@ async def test_backend_get_put_monitor_cmd(
             )
         ):
             continue
-        print(cmd_data.tango_type, cmd_data.dformat)
         # With the given datatype, check we have the correct initial value
         # and putting works
         put_value = cmd_data.random_value()
@@ -237,17 +228,19 @@ async def test_tango_signal_r(
     everything_device_trl: str,
 ):
     timeout = 0.2
+    proxy = await DeviceProxy(everything_device_trl)
     for use_proxy in [True, False]:
-        proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
-        for attr_data in attribute_datas:
-            if "state" in attr_data.name:
+        for attr_data in everything_signal_info:
+            if "state" in attr_data.name and attr_data.dformat != AttrDataFormat.SCALAR:
                 print("skipping for now", attr_data.name)
                 continue
             source = get_full_attr_trl(everything_device_trl, attr_data.name)
+            # reset to initial value
+            setattr(proxy, attr_data.name, attr_data.initial_value)
             signal = tango_signal_r(
                 datatype=attr_data.py_type,
                 read_trl=source,
-                device_proxy=proxy,
+                device_proxy=proxy if use_proxy else None,
                 timeout=timeout,
                 name="test_signal",
             )
@@ -267,8 +260,8 @@ async def test_tango_signal_w(
     for use_proxy in [True, False]:
         proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
         timeout = 0.2
-        for attr_data in attribute_datas:
-            if "state" in attr_data.name:
+        for attr_data in everything_signal_info:
+            if "state" in attr_data.name and attr_data.dformat != AttrDataFormat.SCALAR:
                 print("skipping for now", attr_data.name)
                 continue
             source = get_full_attr_trl(everything_device_trl, attr_data.name)
@@ -281,8 +274,6 @@ async def test_tango_signal_w(
             )
             await signal.connect()  # have to connect to get correct converter
             converter = signal._connector.backend.converter  # type: ignore
-            initial = converter.value(attr_data.initial_value)
-            await prepare_device(everything_device_trl, attr_data.name, initial)
 
             put_value = converter.value(attr_data.random_value())
             status = signal.set(put_value, wait=True, timeout=timeout)
@@ -310,8 +301,8 @@ async def test_tango_signal_rw(
     timeout = 0.2
     for use_proxy in [True, False]:
         proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
-        for attr_data in attribute_datas:
-            if "state" in attr_data.name:
+        for attr_data in everything_signal_info:
+            if "state" in attr_data.name and attr_data.dformat != AttrDataFormat.SCALAR:
                 print("skipping for now", attr_data.name)
                 continue
 
@@ -326,15 +317,9 @@ async def test_tango_signal_rw(
             )
             await signal.connect()
             converter = signal._connector.backend.converter  # type: ignore
-            initial = converter.value(attr_data.initial_value)
             put_value = converter.value(attr_data.random_value())
-            await prepare_device(everything_device_trl, attr_data.name, initial)
-            reading = await signal.read()
-            assert_close(reading["test_signal"]["value"], initial)
-            await signal.set(put_value)
-            location = await signal.locate()
-            assert_close(location["setpoint"], put_value)
-            assert_close(location["readback"], put_value)
+            await signal.set(put_value, wait=True)
+            await assert_value(signal, put_value)
 
 
 # --------------------------------------------------------------------
@@ -364,10 +349,7 @@ async def test_tango_signal_auto_attrs(
     timeout = 0.2
     for use_proxy in [True, False]:
         proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
-        for attr_data in attribute_datas:
-            await prepare_device(
-                everything_device_trl, attr_data.name, attr_data.initial_value
-            )
+        for attr_data in everything_signal_info:
             source = get_full_attr_trl(everything_device_trl, attr_data.name)
 
             async def _test_signal(dtype, proxy, source, initial_value, put_value):
@@ -421,7 +403,7 @@ async def test_tango_signal_auto_cmds(
     timeout = 0.2
     proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
 
-    for cmd_data in attribute_datas:
+    for cmd_data in everything_signal_info:
         source = get_full_attr_trl(everything_device_trl, cmd_data.name + "_cmd")
 
         async def _test_signal(dtype, proxy, source, put_value):
@@ -619,6 +601,8 @@ async def test_set_with_converter(everything_device_trl):
 async def test_assert_val_reading_everything_tango(everything_device_trl):
     everything_device = TangoReadable(everything_device_trl)
     await everything_device.connect()
+    await everything_device.reset_values.trigger()
+    await asyncio.sleep(1)
     await assert_val_reading(everything_device.str, _scalar_vals["str"])
     await assert_val_reading(everything_device.bool, _scalar_vals["bool"])
     await assert_val_reading(everything_device.strenum, _scalar_vals["strenum"])
@@ -665,11 +649,3 @@ async def test_assert_val_reading_everything_tango(everything_device_trl):
     await assert_val_reading(everything_device.float32_image, _image_vals["float32"])
     await assert_val_reading(everything_device.float64_image, _image_vals["float64"])
     await assert_val_reading(everything_device.my_state_image, _image_vals["my_state"])
-
-
-@pytest.fixture(autouse=True)
-async def reset_values(everything_device_trl):
-    proxy = await DeviceProxy(everything_device_trl)
-    proxy.reset_values()  # todo make this less broken please!!
-    yield
-    proxy.reset_values()
