@@ -25,15 +25,6 @@ def pytest_collection_modifyitems(config, items):
                         reason="Tango is currently not supported on Python 3.12: https://github.com/bluesky/ophyd-async/issues/681"
                     )
                 )
-            elif "win" in sys.platform:
-                item.add_marker(
-                    pytest.mark.skip(
-                        reason=(
-                            "Tango tests are currently not supported on Windows: "
-                            "https://github.com/bluesky/ophyd-async/issues/733"
-                        )
-                    )
-                )
 
 
 class TangoSubprocessHelper:
