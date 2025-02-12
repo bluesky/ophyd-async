@@ -17,8 +17,8 @@ For step two, we first need to decide the desired format of the stored data and 
 
 For example, running
 ```
-provider = YamlSettingsProvider(directory_to_save_yaml_to)
-RE(store_settings(provider, yaml_file_name, panda1))
+provider = YamlSettingsProvider("directory_to_save_yaml_to")
+RE(store_settings(provider, "yaml_file_name", panda1))
 ```
 using the [RunEngine](#bluesky.run_engine.RunEngine) with a connected PandA will output a yaml file mapping all of that PandA's SignalRWs to its values at the time of saving.
 
