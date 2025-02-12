@@ -376,25 +376,25 @@ async def test_assert_reading_optional_fields(
 ):
     # alarm_severity of 0 and timestamp of ANY supplied if none given
     await assert_reading(
-        one_of_everything_device.int, {"everything-device-int": {"value": 1}}
+        one_of_everything_device.a_int, {"everything-device-a_int": {"value": 1}}
     )
 
     with pytest.raises(AssertionError):
         await assert_reading(
-            one_of_everything_device.int,
-            {"everything-device-int": {"value": 1, "timestamp": -1}},
+            one_of_everything_device.a_int,
+            {"everything-device-a_int": {"value": 1, "timestamp": -1}},
         )
 
     with pytest.raises(AssertionError):
         await assert_reading(
-            one_of_everything_device.int,
-            {"everything-device-int": {"value": 1, "alarm_severity": 1}},
+            one_of_everything_device.a_int,
+            {"everything-device-a_int": {"value": 1, "alarm_severity": 1}},
         )
 
     await assert_reading(
-        one_of_everything_device.int,
+        one_of_everything_device.a_int,
         {
-            "everything-device-int": {
+            "everything-device-a_int": {
                 "value": 1,
                 "alarm_severity": 0,
                 "timestamp": time.monotonic(),
@@ -429,13 +429,13 @@ async def test_assert_configuration_everything(
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "everything-device-boola": {
-                "value": _array_vals["boola"],
+            "everything-device-a_enum": {
+                "value": "Bbb",
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "everything-device-enum": {
-                "value": "Bbb",
+            "everything-device-boola": {
+                "value": _array_vals["boola"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
@@ -574,9 +574,9 @@ async def test_assert_reading_everything(
         },
     )
     await assert_reading(
-        one_of_everything_device.enum,
+        one_of_everything_device.a_enum,
         {
-            "everything-device-enum": {
+            "everything-device-a_enum": {
                 "value": ExampleEnum.B,
                 "timestamp": ANY,
                 "alarm_severity": 0,

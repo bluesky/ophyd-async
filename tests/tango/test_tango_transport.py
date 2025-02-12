@@ -1,15 +1,13 @@
 import asyncio
 import re
 from enum import Enum
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 import pytest
 from test_base_device import TestDevice
-from test_tango_signals import (
-    make_backend,
-    prepare_device,
-)
+from test_tango_signals import make_backend
 
 from ophyd_async.core import (
     NotConnected,
@@ -35,6 +33,12 @@ from tango.asyncio_executor import (
     AsyncioExecutor,
     get_global_executor,
 )
+
+
+# --------------------------------------------------------------------
+async def prepare_device(trl: str, pv: str, put_value: Any) -> None:
+    proxy = await DeviceProxy(trl)
+    setattr(proxy, pv, put_value)
 
 
 # --------------------------------------------------------------------
