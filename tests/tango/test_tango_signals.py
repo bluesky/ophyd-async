@@ -9,6 +9,7 @@ from test_base_device import TestDevice
 
 from ophyd_async.core import SignalRW
 from ophyd_async.tango.core import (
+    DevStateEnum,
     TangoDevice,
     TangoSignalBackend,
     get_full_attr_trl,
@@ -23,7 +24,7 @@ from ophyd_async.tango.testing import (
     everything_signal_info,
 )
 from ophyd_async.testing import MonitorQueue, assert_reading, assert_value
-from tango import AttrDataFormat, DevState
+from tango import AttrDataFormat
 from tango.asyncio import DeviceProxy
 from tango.test_utils import assert_close
 
@@ -64,8 +65,8 @@ def everything_device_trl(subprocess_helper):
         yield context.trls["test/device/2"]
 
 
-@pytest.fixture
-def everything_device(everything_device_trl):
+@pytest.fixture()
+async def everything_device(everything_device_trl):
     return TangoDevice(everything_device_trl)
 
 
@@ -79,14 +80,8 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
         return {"dtype": "number", "shape": []}
     if python_type in [str]:
         return {"dtype": "string", "shape": []}
-    if issubclass(python_type, DevState):
-        return {"dtype": "string", "shape": []}
     if issubclass(python_type, Enum):
-        return {
-            "dtype": "string",
-            "shape": [],
-        }
-
+        return {"dtype": "string", "shape": []}
     return {
         "dtype": "array",
         "shape": [np.iinfo(np.int32).max] if is_cmd else list(np.array(value).shape),
@@ -116,7 +111,6 @@ async def assert_monitor_then_put(
     initial_value: T,
     put_value: T,
     descriptor: dict,
-    datatype: type[T] | None = None,
 ):
     backend = signal._connector.backend
     converter = signal._connector.backend.converter  # type: ignore
@@ -153,7 +147,6 @@ async def test_backend_get_put_monitor_attr(everything_device: TangoDevice):
                     get_test_descriptor(
                         attr_data.py_type, attr_data.initial_value, False
                     ),
-                    attr_data.py_type,
                 ),
                 timeout=10,  # Timeout in seconds
             )
@@ -230,12 +223,9 @@ async def test_tango_signal_r(
     proxy = await DeviceProxy(everything_device_trl)
     for use_proxy in [True, False]:
         for attr_data in everything_signal_info:
-            if "state" in attr_data.name and attr_data.dformat != AttrDataFormat.SCALAR:
-                print("skipping for now", attr_data.name)
-                continue
             source = get_full_attr_trl(everything_device_trl, attr_data.name)
             # reset to initial value
-            setattr(proxy, attr_data.name, attr_data.initial_value)
+            await proxy.write_attribute(attr_data.name, attr_data.initial_value)
             signal = tango_signal_r(
                 datatype=attr_data.py_type,
                 read_trl=source,
@@ -260,9 +250,6 @@ async def test_tango_signal_w(
         proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
         timeout = 0.2
         for attr_data in everything_signal_info:
-            if "state" in attr_data.name and attr_data.dformat != AttrDataFormat.SCALAR:
-                print("skipping for now", attr_data.name)
-                continue
             source = get_full_attr_trl(everything_device_trl, attr_data.name)
             signal = tango_signal_w(
                 datatype=attr_data.py_type,
@@ -301,10 +288,6 @@ async def test_tango_signal_rw(
     for use_proxy in [True, False]:
         proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
         for attr_data in everything_signal_info:
-            if "state" in attr_data.name and attr_data.dformat != AttrDataFormat.SCALAR:
-                print("skipping for now", attr_data.name)
-                continue
-
             source = get_full_attr_trl(everything_device_trl, attr_data.name)
             signal = tango_signal_rw(
                 datatype=attr_data.py_type,
@@ -353,7 +336,7 @@ _scalar_vals = {
     "uint64": 1,
     "float32": 1.234,
     "float64": 1.234,
-    "my_state": DevState.INIT,
+    "my_state": DevStateEnum.INIT,
 }
 _array_vals = {
     "int8": np.array([-128, 127, 0, 1, 2, 3, 4], dtype=np.int8),
@@ -400,8 +383,9 @@ _array_vals = {
     "str": ["one", "two", "three"],
     "bool": np.array([False, True]),
     "my_state": np.array(
-        [DevState.INIT, DevState.ON, DevState.MOVING]
-    ),  # fails if we specify dtype
+        [DevStateEnum.INIT.value, DevStateEnum.ON.value, DevStateEnum.MOVING.value],
+        dtype=str,
+    ),
 }
 
 _image_vals = {k: np.vstack((v, v)) for k, v in _array_vals.items()}
@@ -471,6 +455,19 @@ async def test_set_with_converter(everything_device_trl):
                 ],
             ],
             dtype=ExampleStrEnum,
+        )
+    )
+    await everything_device.my_state.set(DevStateEnum.EXTRACT)
+    await everything_device.my_state_spectrum.set(
+        [DevStateEnum.OPEN, DevStateEnum.CLOSE, DevStateEnum.MOVING]
+    )
+    await everything_device.my_state_image.set(
+        np.array(
+            [
+                [DevStateEnum.OPEN, DevStateEnum.CLOSE, DevStateEnum.MOVING],
+                [DevStateEnum.OPEN, DevStateEnum.CLOSE, DevStateEnum.MOVING],
+            ],
+            dtype=DevStateEnum,
         )
     )
 
