@@ -155,6 +155,7 @@ obj_ignore = [
     "ophyd_async.epics.adcore._core_writer.NDFileIOT",
     "ophyd_async.epics.adcore._core_writer.ADWriterT",
     "ophyd_async.tango.core._base_device.T",
+    "ophyd_async.tango.core._tango_transport.P",
     "ophyd_async.tango.core._tango_transport.R",
     "ophyd_async.tango.core._tango_transport.TangoProxy",
     "ophyd_async.testing._utils.T",
