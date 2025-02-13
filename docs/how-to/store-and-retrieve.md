@@ -7,7 +7,7 @@ Ophyd-async has the functionality to easily store the current values of all of a
 Then, within the experiment plan:
 
 3. Use [](#retrieve_settings) and [](#apply_settings) to set the Device back to its saved state.
-4. Use [standard Bluesky plan stubs](inv:bluesky#stub-plans) to change any SignalRW which vary from the loaded state and which may change each run.
+4. Use [standard Bluesky plan stubs](inv:bluesky#stub_plans) to change any SignalRW which vary from the loaded state and which may change each run.
 
 ## Saving a device (steps 1-2)
 
