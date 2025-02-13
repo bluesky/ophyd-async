@@ -124,8 +124,6 @@ class AsyncStatus(AsyncStatusBase):
                 name = None
             return cls(f(*args, **kwargs), name=name)
 
-        # type is actually functools._Wrapped[P, Awaitable, P, AS]
-        # but functools._Wrapped is not necessarily available
         return wrap_f
 
 

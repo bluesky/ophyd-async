@@ -4,7 +4,7 @@ import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
-from typing import Any, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -41,22 +41,23 @@ from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 # time constant to wait for timeout
 A_BIT = 1e-5
 
+P = ParamSpec("P")
 R = TypeVar("R")
 
 
 def ensure_proper_executor(
-    func: Callable[..., Coroutine[Any, Any, R]],
-) -> Callable[..., Coroutine[Any, Any, R]]:
+    func: Callable[P, Coroutine[Any, Any, R]],
+) -> Callable[P, Coroutine[Any, Any, R]]:
     """Ensure decorated method has a proper asyncio executor."""
 
     @functools.wraps(func)
-    async def wrapper(self: Any, *args: Any, **kwargs: Any) -> R:
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         current_executor: AsyncioExecutor = get_global_executor()  # type: ignore
         if not current_executor.in_executor_context():  # type: ignore
             set_global_executor(AsyncioExecutor())
-        return await func(self, *args, **kwargs)
+        return await func(*args, **kwargs)
 
-    return cast(Callable[..., Coroutine[Any, Any, R]], wrapper)
+    return wrapper
 
 
 def get_python_type(tango_type: CmdArgType) -> tuple[bool, object, str]:
@@ -171,17 +172,17 @@ class AttributeProxy(TangoProxy):
             pass
 
     @ensure_proper_executor
-    async def get(self) -> Coroutine[Any, Any, object]:
+    async def get(self) -> object:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         return attr.value
 
     @ensure_proper_executor
-    async def get_w_value(self) -> object:
+    async def get_w_value(self) -> object:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         return attr.w_value
 
     @ensure_proper_executor
-    async def put(
+    async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
         # TODO: remove the timeout from this as it is handled at the signal level
@@ -228,11 +229,11 @@ class AttributeProxy(TangoProxy):
             return AsyncStatus(wait_for_reply(rid, timeout))
 
     @ensure_proper_executor
-    async def get_config(self) -> AttributeInfoEx:
+    async def get_config(self) -> AttributeInfoEx:  # type: ignore
         return await self._proxy.get_attribute_config(self._name)
 
     @ensure_proper_executor
-    async def get_reading(self) -> Reading:
+    async def get_reading(self) -> Reading:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         reading = Reading(
             value=attr.value, timestamp=attr.time.totime(), alarm_severity=attr.quality
@@ -413,7 +414,7 @@ class CommandProxy(TangoProxy):
         pass
 
     @ensure_proper_executor
-    async def put(
+    async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
         if wait:
@@ -461,7 +462,7 @@ class CommandProxy(TangoProxy):
             return AsyncStatus(wait_for_reply(rid, timeout))
 
     @ensure_proper_executor
-    async def get_config(self) -> CommandInfo:
+    async def get_config(self) -> CommandInfo:  # type: ignore
         return await self._proxy.get_command_config(self._name)
 
     async def get_reading(self) -> Reading:
