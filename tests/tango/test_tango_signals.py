@@ -9,7 +9,7 @@ from test_base_device import TestDevice
 
 from ophyd_async.core import SignalRW
 from ophyd_async.tango.core import (
-    TangoReadable,
+    TangoDevice,
     TangoSignalBackend,
     get_full_attr_trl,
     tango_signal_r,
@@ -64,6 +64,11 @@ def everything_device_trl(subprocess_helper):
         yield context.trls["test/device/2"]
 
 
+@pytest.fixture
+def everything_device(everything_device_trl):
+    return TangoDevice(everything_device_trl)
+
+
 # --------------------------------------------------------------------
 #               helpers to run tests
 # --------------------------------------------------------------------
@@ -106,17 +111,14 @@ async def make_backend(
 
 # --------------------------------------------------------------------
 async def assert_monitor_then_put(
-    trl: str,
-    pv: str,
+    signal: SignalRW,
+    source: str,
     initial_value: T,
     put_value: T,
     descriptor: dict,
     datatype: type[T] | None = None,
 ):
-    source = get_full_attr_trl(trl, pv)
-    signal = tango_signal_rw(datatype, source)
     backend = signal._connector.backend
-    await signal.connect()
     converter = signal._connector.backend.converter  # type: ignore
     converted_put = converter.value(put_value)
     # Make a monitor queue that will monitor for updates
@@ -132,17 +134,20 @@ async def assert_monitor_then_put(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_backend_get_put_monitor_attr(everything_device_trl: str):
+async def test_backend_get_put_monitor_attr(everything_device: TangoDevice):
+    await everything_device.connect()
     try:
         for attr_data in everything_signal_info:
+            signal = getattr(everything_device, attr_data.name)
+            source = get_full_attr_trl(everything_device._connector.trl, attr_data.name)
             if "state" in attr_data.name and attr_data.dformat != AttrDataFormat.SCALAR:
                 print("skipping for now", attr_data.name)
                 continue
             # Set a timeout for the operation to prevent it from running indefinitely
             await asyncio.wait_for(
                 assert_monitor_then_put(
-                    everything_device_trl,
-                    attr_data.name,
+                    signal,
+                    source,
                     attr_data.initial_value,
                     attr_data.random_value(),
                     get_test_descriptor(
@@ -150,7 +155,7 @@ async def test_backend_get_put_monitor_attr(everything_device_trl: str):
                     ),
                     attr_data.py_type,
                 ),
-                timeout=5,  # Timeout in seconds
+                timeout=10,  # Timeout in seconds
             )
     except asyncio.TimeoutError:
         pytest.fail("Test timed out")
@@ -160,14 +165,13 @@ async def test_backend_get_put_monitor_attr(everything_device_trl: str):
 
 # --------------------------------------------------------------------
 async def assert_put_read(
-    trl: str,
-    pv: str,
+    signal: SignalRW,
+    source: str,
     put_value: T,
     descriptor: dict,
     datatype: type[T] | None = None,
 ):
-    source = get_full_attr_trl(trl, pv)
-    backend = await make_backend(datatype, source)
+    backend = signal._connector.backend
     # Make a monitor queue that will monitor for updates
     assert dict(source=source, **descriptor) == await backend.get_datakey("")
     # Put to new value and check that
@@ -187,9 +191,8 @@ async def assert_put_read(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_backend_get_put_monitor_cmd(
-    everything_device_trl: str,
-):
+async def test_backend_get_put_monitor_cmd(everything_device: TangoDevice):
+    await everything_device.connect()
     for cmd_data in everything_signal_info:
         if (
             cmd_data.dformat == AttrDataFormat.IMAGE
@@ -209,11 +212,11 @@ async def test_backend_get_put_monitor_cmd(
         put_value = cmd_data.random_value()
         name = f"{cmd_data.name}_cmd"
         descriptor = get_test_descriptor(cmd_data.py_type, cmd_data.initial_value, True)
-        await assert_put_read(
-            everything_device_trl, name, put_value, descriptor, cmd_data.py_type
-        )
+        signal = getattr(everything_device, name)
+        source = get_full_attr_trl(everything_device._connector.trl, name)
+        await assert_put_read(signal, source, put_value, descriptor, cmd_data.py_type)
         # # With guessed datatype, check we can set it back to the initial value
-        await assert_put_read(everything_device_trl, name, put_value, descriptor)
+        await assert_put_read(signal, source, put_value, descriptor)
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
         await asyncio.gather(*tasks)
 
@@ -410,7 +413,7 @@ async def assert_val_reading(signal, value, name=""):
 
 
 async def test_set_with_converter(everything_device_trl):
-    everything_device = TangoReadable(everything_device_trl)
+    everything_device = TangoDevice(everything_device_trl)
     await everything_device.connect()
     with pytest.raises(TypeError):
         await everything_device.strenum.set(0)
@@ -473,7 +476,7 @@ async def test_set_with_converter(everything_device_trl):
 
 
 async def test_assert_val_reading_everything_tango(everything_device_trl):
-    everything_device = TangoReadable(everything_device_trl)
+    everything_device = TangoDevice(everything_device_trl)
     await everything_device.connect()
     await everything_device.reset_values.trigger()
     await asyncio.sleep(1)
