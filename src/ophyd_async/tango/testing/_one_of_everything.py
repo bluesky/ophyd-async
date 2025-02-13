@@ -10,6 +10,7 @@ from ophyd_async.core import (
     DTypeScalar_co,
     StrictEnum,
 )
+from ophyd_async.tango.core import DevStateEnum
 from ophyd_async.testing import float_array_value, int_array_value
 from tango import AttrDataFormat, AttrWriteType, DevState
 from tango.server import Device, attribute, command
@@ -47,7 +48,6 @@ class AttributeData(Generic[T]):
     initial_value: T
     random_put_values: tuple[T, ...]
     dformat = AttrDataFormat.SCALAR
-    # initial_spectrum: Array1D[T]  # type: ignore
 
     def random_value(self):
         return choice(self.random_put_values)
@@ -148,7 +148,7 @@ add_ads(
 add_ads(
     "my_state",
     "DevState",
-    DevState,
+    DevStateEnum,
     DevState.INIT,
     np.array([DevState.INIT, DevState.ON, DevState.MOVING], dtype=DevState),
     (DevState.INIT, DevState.ON, DevState.MOVING),
@@ -179,11 +179,10 @@ class OneOfEverythingTangoDevice(Device):
             if (
                 attr_data.tango_type == "DevUChar"
                 or attr_data.dformat == AttrDataFormat.IMAGE
-            ):
-                continue  # TODO: refactor this
-            elif (
-                attr_data.tango_type in ["DevState", "DevEnum"]
-                and attr_data.dformat == AttrDataFormat.SPECTRUM
+                or (
+                    attr_data.tango_type in ["DevState", "DevEnum"]
+                    and attr_data.dformat == AttrDataFormat.SPECTRUM
+                )
             ):
                 continue
 

@@ -48,6 +48,23 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 
+class DevStateEnum(StrictEnum):
+    ON = "ON"
+    OFF = "OFF"
+    CLOSE = "CLOSE"
+    OPEN = "OPEN"
+    INSERT = "INSERT"
+    EXTRACT = "EXTRACT"
+    MOVING = "MOVING"
+    STANDBY = "STANDBY"
+    FAULT = "FAULT"
+    INIT = "INIT"
+    RUNNING = "RUNNING"
+    ALARM = "ALARM"
+    DISABLE = "DISABLE"
+    UNKNOWN = "UNKNOWN"
+
+
 def ensure_proper_executor(
     func: Callable[P, Coroutine[Any, Any, R]],
 ) -> Callable[P, Coroutine[Any, Any, R]]:
@@ -491,7 +508,7 @@ def get_dtype_extended(datatype) -> object | None:
     # DevState tango type does not have numpy equivalents
     dtype = get_dtype(datatype)
     if dtype == np.object_:
-        if datatype.__args__[1].__args__[0] == DevState:
+        if datatype.__args__[1].__args__[0] in [DevStateEnum, DevState]:
             dtype = CmdArgType.DevState
     return dtype
 
@@ -600,7 +617,6 @@ async def get_tango_trl(
     if isinstance(device_proxy, TangoProxy):
         return device_proxy
     device_trl, trl_name = get_device_trl_and_attr(full_trl)
-    # print(device_trl, trl_name, full_trl)
     trl_name = trl_name.lower()
     if device_proxy is None:
         device_proxy = await AsyncDeviceProxy(device_trl, timeout=timeout)
@@ -654,7 +670,7 @@ class TangoEnumConverter(TangoConverter):
 
 
 class TangoEnumSpectrumConverter(TangoEnumConverter):
-    def write_value(self, value: np.ndarray[Any, str | StrictEnum]):
+    def write_value(self, value: np.ndarray[Any, str]):
         # should return array of ints
         return np.array([self._labels.index(v) for v in value])
 
@@ -664,7 +680,7 @@ class TangoEnumSpectrumConverter(TangoEnumConverter):
 
 
 class TangoEnumImageConverter(TangoEnumConverter):
-    def write_value(self, value: np.ndarray[Any, str | StrictEnum]):
+    def write_value(self, value: np.ndarray[Any, str]):
         # should return array of ints
         return np.vstack([[self._labels.index(v) for v in row] for row in value])
 
@@ -673,15 +689,66 @@ class TangoEnumImageConverter(TangoEnumConverter):
         return np.vstack([[self._labels[v] for v in row] for row in value])
 
 
+class TangoDevStateConverter(TangoConverter):
+    _labels = [e.value for e in DevStateEnum]
+
+    def write_value(self, value: Any) -> Any:
+        idx = self._labels.index(value)
+        return DevState(idx)
+
+    def value(self, value: DevState) -> Any:
+        idx = int(value)
+        return self._labels[idx]
+
+
+class TangoDevStateSpectrumConverter(TangoDevStateConverter):
+    def write_value(self, value):
+        # should return array of tango `DevState`s
+        return np.array(
+            [DevState(self._labels.index(v)) for v in value], dtype=DevState
+        )
+
+    def value(self, value):
+        # should return array of strs
+        result = np.array([self._labels[int(v)] for v in value])
+        return result
+
+
+class TangoDevStateImageConverter(TangoDevStateConverter):
+    def write_value(self, value):
+        # should return array of tango `DevState`s
+        result = np.vstack(
+            [
+                np.array([DevState(self._labels.index(v)) for v in row], dtype=DevState)
+                for row in value
+            ],
+        )
+
+        return result
+
+    def value(self, value):
+        # should return array of strs
+        return np.vstack([[self._labels[int(v)] for v in row] for row in value])
+
+
 def make_converter(info: AttributeInfoEx | CommandInfo) -> TangoConverter:
     if isinstance(info, AttributeInfoEx):
-        if info.enum_labels:  # enum_labels should be discarded for non enum types
-            if info.data_format == AttrDataFormat.SCALAR:
-                return TangoEnumConverter(list(info.enum_labels))
-            elif info.data_format == AttrDataFormat.SPECTRUM:
-                return TangoEnumSpectrumConverter(list(info.enum_labels))
-            elif info.data_format == AttrDataFormat.IMAGE:
-                return TangoEnumImageConverter(list(info.enum_labels))
+        match info.data_type:
+            case CmdArgType.DevEnum:
+                labels = list(info.enum_labels)
+                if info.data_format == AttrDataFormat.SCALAR:
+                    return TangoEnumConverter(labels)
+                elif info.data_format == AttrDataFormat.SPECTRUM:
+                    return TangoEnumSpectrumConverter(labels)
+                elif info.data_format == AttrDataFormat.IMAGE:
+                    return TangoEnumImageConverter(labels)
+            case CmdArgType.DevState:
+                if info.data_format == AttrDataFormat.SCALAR:
+                    return TangoDevStateConverter()
+                elif info.data_format == AttrDataFormat.SPECTRUM:
+                    return TangoDevStateSpectrumConverter()
+                elif info.data_format == AttrDataFormat.IMAGE:
+                    return TangoDevStateImageConverter()
     # default case return trivial converter
     return TangoConverter()
 
@@ -718,7 +785,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
 
     @classmethod
     def datatype_allowed(cls, dtype: Any) -> bool:
-        return dtype in (int, float, str, bool, np.ndarray, Enum, DevState)
+        return dtype in (int, float, str, bool, np.ndarray, StrictEnum)
 
     def set_trl(self, read_trl: str = "", write_trl: str = ""):
         self.read_trl = read_trl

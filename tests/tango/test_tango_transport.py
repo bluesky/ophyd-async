@@ -11,6 +11,7 @@ from test_tango_signals import make_backend
 
 from ophyd_async.core import (
     NotConnected,
+    StrictEnum,
 )
 from ophyd_async.tango.core import (
     AttributeProxy,
@@ -619,8 +620,7 @@ async def test_tango_transport_datatype_allowed(echo_device):
     assert backend.datatype_allowed(str)
     assert backend.datatype_allowed(bool)
     assert backend.datatype_allowed(np.ndarray)
-    assert backend.datatype_allowed(Enum)
-    assert backend.datatype_allowed(DevState)
+    assert backend.datatype_allowed(StrictEnum)
     assert not backend.datatype_allowed(list)
 
 
