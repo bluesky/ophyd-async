@@ -4,6 +4,7 @@ from typing import Any
 from unittest.mock import ANY, Mock, call
 
 import pytest
+from bluesky.protocols import Reading
 from event_model import DataKey
 
 from ophyd_async.core import (
@@ -142,11 +143,11 @@ class MonitorQueue(AbstractContextManager):
 
     def __init__(self, signal: SignalR):
         self.signal = signal
-        self.updates: asyncio.Queue[dict[str, dict[str, Any]]] = asyncio.Queue()
+        self.updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
 
     async def assert_updates(self, expected_value):
         # Get an update, value and reading
-        update = await self.updates.get()
+        update = await asyncio.wait_for(self.updates.get(), timeout=1)
         await assert_value(self.signal, expected_value)
         expected_reading = {
             self.signal.name: {

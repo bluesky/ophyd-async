@@ -36,7 +36,7 @@ class TangoSubprocessHelper:
         self.sock.bind(("", 0))
         port = str(self.sock.getsockname()[1])
         self.sock.listen(1)
-        subprocess_path = str(Path(__file__).parent / "context_subprocess._py")
+        subprocess_path = str(Path(__file__).parent / "context_subprocess.py")
         self.process = subprocess.Popen([sys.executable, subprocess_path, port])
         self.conn, _ = self.sock.accept()
         self.conn.send(pickle.dumps(self._args))
