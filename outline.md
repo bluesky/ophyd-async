@@ -13,6 +13,7 @@
   - How to store and retrieve device settings
   - How to use settings to put devices back in their original state
   x How to implement a device for an EPICS areaDetector
+  - How to store and retrieve device settings
 - explanations
   x ADRs
   x design goals - differences to ophyd sync
