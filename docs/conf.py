@@ -16,13 +16,13 @@ from sphinx.ext import intersphinx
 import ophyd_async
 
 
-# A custom handler for TypeVars and Unions
 def missing_reference_handler(
     app: application.Sphinx,
     env: environment.BuildEnvironment,
     node: addnodes.pending_xref,
     contnode,
 ):
+    """Find refs for TypeVars and Unions."""
     target = node["reftarget"]
     if "." in target and node["reftype"] == "class":
         # Try again as `obj` so we pick up Unions, TypeVars and other things
@@ -40,6 +40,7 @@ def missing_reference_handler(
 
 
 def setup(app: application.Sphinx):
+    """Add the custom handler to the Sphinx app."""
     app.connect("missing-reference", missing_reference_handler)
 
 
@@ -85,7 +86,7 @@ extensions = [
 ]
 
 # Which package to load and document
-autodoc2_packages = ["../src/ophyd_async"]
+autodoc2_packages = [{"path": "../src/ophyd_async", "auto_mode": True}]
 
 # Put them in docs/_api which is git ignored
 autodoc2_output_dir = "_api"
@@ -106,13 +107,11 @@ autodoc2_skip_module_regexes = [
     x + r"\._.*" for x in autodoc2_module_all_regexes + ["ophyd_async"]
 ]
 
-# parse using napoleon numpy docstrings
-autodoc2_docstring_parser_regexes = [(".*", "ophyd_async._docs_parser")]
 # Render with shortened names
 autodoc2_render_plugin = "ophyd_async._docs_parser.ShortenedNamesRenderer"
 
 # Don't document private things
-autodoc2_hidden_objects = {"private", "inherited", "dunder"}
+autodoc2_hidden_objects = {"private", "dunder", "inherited"}
 
 # We don't have any docstring for __init__, so by separating
 # them here we don't get the "Initilize" text that would otherwise be added
@@ -120,8 +119,13 @@ autodoc2_class_docstring = "both"
 
 # For some reason annotations are not expanded, this will do here
 autodoc2_replace_annotations = [
-    ("~PvSuffix.rbv", "ophyd_async.epics.core.PvSuffix.rbv")
+    ("~PvSuffix.rbv", "ophyd_async.epics.core.PvSuffix.rbv"),
+    ("typing_extensions.Self", "typing.Self"),
 ]
+
+# Which objects to include docstrings for. ‘direct’ means only from objects
+# that are not inherited.
+autodoc2_docstrings = "all"
 
 # So we can use the ::: syntax and the :param thing: syntax
 myst_enable_extensions = ["colon_fence", "fieldlist"]
@@ -262,6 +266,7 @@ html_theme_options = {
         },
     ],
     "navigation_with_keys": False,
+    "show_toc_level": 3,
 }
 
 # A dictionary of values to pass into the template engine’s context for all pages

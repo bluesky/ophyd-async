@@ -47,7 +47,7 @@ R = TypeVar("R")
 def ensure_proper_executor(
     func: Callable[..., Coroutine[Any, Any, R]],
 ) -> Callable[..., Coroutine[Any, Any, R]]:
-    """Ensures decorated method has a proper asyncio executor."""
+    """Ensure decorated method has a proper asyncio executor."""
 
     @functools.wraps(func)
     async def wrapper(self: Any, *args: Any, **kwargs: Any) -> R:
@@ -93,42 +93,44 @@ class TangoProxy:
         self._name = name
 
     async def connect(self) -> None:
-        """perform actions after proxy is connected, e.g. checks if signal
-        can be subscribed"""
+        """Perform actions after proxy is connected.
+
+        e.g. check if signal can be subscribed.
+        """
 
     @abstractmethod
     async def get(self) -> object:
-        """Get value from TRL"""
+        """Get value from TRL."""
 
     @abstractmethod
     async def get_w_value(self) -> object:
-        """Get last written value from TRL"""
+        """Get last written value from TRL."""
 
     @abstractmethod
     async def put(
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
-        """Put value to TRL"""
+        """Put value to TRL."""
 
     @abstractmethod
     async def get_config(self) -> AttributeInfoEx | CommandInfo:
-        """Get TRL config async"""
+        """Get TRL config async."""
 
     @abstractmethod
     async def get_reading(self) -> Reading:
-        """Get reading from TRL"""
+        """Get reading from TRL."""
 
     @abstractmethod
     def has_subscription(self) -> bool:
-        """indicates, that this trl already subscribed"""
+        """Indicate that this trl already subscribed."""
 
     @abstractmethod
     def subscribe_callback(self, callback: Callback | None):
-        """subscribe tango CHANGE event to callback"""
+        """Subscribe tango CHANGE event to callback."""
 
     @abstractmethod
     def unsubscribe_callback(self):
-        """delete CHANGE event subscription"""
+        """Delete CHANGE event subscription."""
 
     @abstractmethod
     def set_polling(
@@ -138,7 +140,7 @@ class TangoProxy:
         abs_change=None,
         rel_change=None,
     ):
-        """Set polling parameters"""
+        """Set polling parameters."""
 
 
 class AttributeProxy(TangoProxy):
@@ -304,10 +306,11 @@ class AttributeProxy(TangoProxy):
                 self._callback(reading)
 
     async def poll(self):
-        """
-        Poll the attribute and call the callback if the value has changed by more
-        than the absolute or relative change. This function is used when an attribute
-        that does not support events is cached or a callback is passed to it.
+        """Poll the attribute and call the callback if the value has changed.
+
+        Only callback if value has changed by more than the absolute or relative
+        change. This function is used when an attribute that does not support
+        events is cached or a callback is passed to it.
         """
         try:
             last_reading = await self.get_reading()
@@ -382,9 +385,7 @@ class AttributeProxy(TangoProxy):
         abs_change: float | None = None,
         rel_change: float | None = 0.1,
     ):
-        """
-        Set the polling parameters.
-        """
+        """Set the polling parameters."""
         self._allow_polling = allow_polling
         self._polling_period = polling_period
         self._abs_change = abs_change
@@ -496,8 +497,7 @@ def get_trl_descriptor(
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
 ) -> DataKey:
-    """Creates a descriptor from a tango resource locator."""
-
+    """Create a descriptor from a tango resource locator."""
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
@@ -592,8 +592,7 @@ def get_trl_descriptor(
 async def get_tango_trl(
     full_trl: str, device_proxy: DeviceProxy | TangoProxy | None, timeout: float
 ) -> TangoProxy:
-    """Gets the tango resource locator."""
-
+    """Get the tango resource locator."""
     if isinstance(device_proxy, TangoProxy):
         return device_proxy
     device_trl, trl_name = full_trl.rsplit("/", 1)

@@ -17,7 +17,7 @@ from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
 #: (readout time) is 2.28 ms
 #: We provide an option to override for newer Pilatus models
 class PilatusReadoutTime(float, Enum):
-    """Pilatus readout time per model in ms"""
+    """Pilatus readout time per model in ms."""
 
     # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
     PILATUS2 = 2.28e-3

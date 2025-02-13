@@ -15,7 +15,7 @@ class AravisTriggerMode(StrictEnum):
 
 
 class AravisTriggerSource(SubsetEnum):
-    """Which trigger source to use when TriggerMode=On"""
+    """Which trigger source to use when TriggerMode=On."""
 
     LINE1 = "Line1"
 

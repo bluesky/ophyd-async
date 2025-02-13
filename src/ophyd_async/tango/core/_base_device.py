@@ -13,18 +13,15 @@ T = TypeVar("T")
 
 
 class TangoDevice(Device):
-    """
-    General class for TangoDevices. Extends Device to provide attributes for Tango
-    devices.
+    """General class for TangoDevices.
 
-    Parameters
-    ----------
-    trl: str
-        Tango resource locator, typically of the device server.
-    device_proxy:
-        Asynchronous or synchronous DeviceProxy object for the device. If not provided,
-        an asynchronous DeviceProxy object will be created using the trl and awaited
-        when the device is connected.
+    Extends Device to provide attributes for Tango devices.
+
+    :param trl: Tango resource locator, typically of the device server.
+    :param device_proxy:
+        Asynchronous or synchronous DeviceProxy object for the device. If not
+        provided, an asynchronous DeviceProxy object will be created using the
+        trl and awaited when the device is connected.
     """
 
     trl: str = ""

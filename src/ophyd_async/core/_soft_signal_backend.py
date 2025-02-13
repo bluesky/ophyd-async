@@ -114,7 +114,16 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
 
 
 class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
-    """An backend to a soft Signal, for test signals see ``MockSignalBackend``."""
+    """An backend to a soft Signal, for test signals see [](#MockSignalBackend).
+
+    :param datatype: The datatype of the signal, defaults to float if not given.
+    :param initial_value:
+        The initial value of the signal, defaults to the "empty", "zero" or
+        "default" value of the datatype if not given.
+    :param units: The units for numeric datatypes.
+    :param precision:
+        The number of digits after the decimal place to display for a float datatype.
+    """
 
     def __init__(
         self,
@@ -141,6 +150,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         super().__init__(datatype)
 
     def set_value(self, value: SignalDatatypeT):
+        """Set the current value, alarm and timestamp."""
         self.reading = Reading(
             value=self.converter.write_value(value),
             timestamp=time.monotonic(),

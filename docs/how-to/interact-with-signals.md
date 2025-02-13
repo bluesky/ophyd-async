@@ -1,3 +1,4 @@
+(interact-with-signals)=
 # How to interact with signals while implementing bluesky verbs
 
 To implement bluesky verbs, you typically need to interact with Signals. This guide will show you how to do the following operations on a Signal:

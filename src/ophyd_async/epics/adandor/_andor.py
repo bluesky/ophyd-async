@@ -9,8 +9,8 @@ from ._andor_io import Andor2DriverIO
 
 
 class Andor2Detector(adcore.AreaDetector[Andor2Controller]):
-    """
-    Andor 2 area detector device (CCD detector 56fps with full chip readout).
+    """Andor 2 area detector device (CCD detector 56fps with full chip readout).
+
     Andor model:DU897_BV.
     """
 
