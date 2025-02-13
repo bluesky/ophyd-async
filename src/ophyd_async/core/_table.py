@@ -35,7 +35,7 @@ class Table(BaseModel):
     >>> import numpy as np
     >>> from collections.abc import Sequence
     >>> class MyTable(Table):
-    ...     a: Array1D[np.int32]
+    ...     a: Array1D[np.int8]
     ...     b: Sequence[str]
     ...
     >>> t = MyTable(a=[1, 2], b=["x", "y"])
@@ -43,11 +43,11 @@ class Table(BaseModel):
     2
     >>> t2 = t + t  # adding tables together concatenates them
     >>> t2.a
-    array([1, 2, 1, 2], dtype=int32)
+    array([1, 2, 1, 2], dtype=int8)
     >>> t2.b
     ['x', 'y', 'x', 'y']
     >>> t2[1]  # slice a row
-    array([(2, b'y')], dtype=[('a', '<i4'), ('b', 'S40')])
+    array([(2, b'y')], dtype=[('a', 'i1'), ('b', 'S40')])
 
     ```
     """
