@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 from test_base_device import TestDevice
 
-from ophyd_async.core import SignalR, SignalRW, SignalW, SignalX
+from ophyd_async.core import SignalRW
 from ophyd_async.tango.core import (
     TangoReadable,
     TangoSignalBackend,
@@ -28,10 +28,6 @@ from tango.asyncio import DeviceProxy
 from tango.test_utils import assert_close
 
 T = TypeVar("T")
-
-
-def __tango_signal_auto(*args, **kwargs):
-    raise RuntimeError("Fix this later")
 
 
 # --------------------------------------------------------------------
@@ -338,128 +334,6 @@ async def test_tango_signal_x(tango_test_device: str):
         status = signal.trigger()
         await status
         assert status.done is True and status.success is True
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
-@pytest.mark.skip("Not sure if we need tango_signal_auto")
-async def test_tango_signal_auto_attrs(
-    everything_device_trl: str,
-):
-    timeout = 0.2
-    for use_proxy in [True, False]:
-        proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
-        for attr_data in everything_signal_info:
-            source = get_full_attr_trl(everything_device_trl, attr_data.name)
-
-            async def _test_signal(dtype, proxy, source, initial_value, put_value):
-                signal = await __tango_signal_auto(
-                    datatype=dtype,
-                    trl=source,
-                    device_proxy=proxy,
-                    timeout=timeout,
-                    name="test_signal",
-                )
-                assert type(signal) is SignalRW
-                await signal.connect()
-                reading = await signal.read()
-                value = reading["test_signal"]["value"]
-                if isinstance(value, np.ndarray):
-                    value = value.tolist()
-                assert_close(value, initial_value)
-
-                await signal.set(put_value, wait=True, timeout=timeout)
-                reading = await signal.read()
-                value = reading["test_signal"]["value"]
-                if isinstance(value, np.ndarray):
-                    value = value.tolist()
-                assert_close(value, put_value)
-
-            await _test_signal(
-                attr_data.py_type,
-                proxy,
-                source,
-                attr_data.initial_value,
-                attr_data.put_value,
-            )
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
-@pytest.mark.skip("Not sure if we need tango_signal_auto")
-@pytest.mark.parametrize(
-    "use_dtype, use_proxy",
-    [
-        (use_dtype, use_proxy)
-        for use_dtype in [True, False]
-        for use_proxy in [True, False]
-    ],
-)
-async def test_tango_signal_auto_cmds(
-    everything_device_trl: str,
-    use_dtype: bool,
-    use_proxy: bool,
-):
-    timeout = 0.2
-    proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
-
-    for cmd_data in everything_signal_info:
-        source = get_full_attr_trl(everything_device_trl, cmd_data.name + "_cmd")
-
-        async def _test_signal(dtype, proxy, source, put_value):
-            signal = await __tango_signal_auto(
-                datatype=dtype,
-                trl=source,
-                device_proxy=proxy,
-                name="test_signal",
-                timeout=timeout,
-            )
-            # Ophyd SignalX does not support types
-            assert type(signal) in [SignalR, SignalRW, SignalW]
-            await signal.connect()
-            assert signal
-            reading = await signal.read()
-            assert reading["test_signal"]["value"] is None
-            await signal.set(put_value, wait=True, timeout=0.1)
-            reading = await signal.read()
-            value = reading["test_signal"]["value"]
-            if isinstance(value, np.ndarray):
-                value = value.tolist()
-            assert_close(value, put_value)
-
-        dtype = cmd_data.py_type if use_dtype else None
-        await _test_signal(dtype, proxy, source, cmd_data.random_value())
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
-@pytest.mark.skip("Not sure if we need tango_signal_auto")
-async def test_tango_signal_auto_cmds_void(tango_test_device: str, use_proxy: bool):
-    for use_proxy in [True, False]:
-        proxy = await DeviceProxy(tango_test_device) if use_proxy else None
-        signal = await __tango_signal_auto(
-            datatype=None,
-            trl=get_full_attr_trl(tango_test_device, "clear"),
-            device_proxy=proxy,
-        )
-        assert type(signal) is SignalX
-        await signal.connect()
-        assert signal
-        await signal.trigger(wait=True)
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
-@pytest.mark.skip("Not sure if we need tango_signal_auto")
-async def test_tango_signal_auto_badtrl(tango_test_device: str):
-    proxy = await DeviceProxy(tango_test_device)
-    with pytest.raises(RuntimeError) as exc_info:
-        await __tango_signal_auto(
-            datatype=None,
-            trl=get_full_attr_trl(tango_test_device, "badtrl"),
-            device_proxy=proxy,
-        )
-    assert f"Cannot find badtrl in {tango_test_device}" in str(exc_info.value)
 
 
 _scalar_vals = {
