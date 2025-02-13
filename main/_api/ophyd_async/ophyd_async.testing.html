@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.testing &#8212; ophyd-async 0.9.1.dev3+g84e7b392 documentation</title>
+    <title>ophyd_async.testing &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=9360a8c1"></script>
+    <script src="../../_static/documentation_options.js?v=66a4b7a8"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,8 +59,8 @@
     <link rel="icon" href="../../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="ophyd_async.core" href="ophyd_async.core.html" />
-    <link rel="prev" title="ophyd_async.epics.signal" href="ophyd_async.epics.signal.html" />
+    <link rel="next" title="ophyd_async.tango" href="ophyd_async.tango.html" />
+    <link rel="prev" title="ophyd_async.sim" href="ophyd_async.sim.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev3+g84e7b392 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev3+g84e7b392 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
   
   
 </a></div>
@@ -412,31 +412,31 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.sim.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.testing</span></code></a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.tango.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></li>
 </ul>
 </details></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.sim.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.plan_stubs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.plan_stubs</span></code></a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adsimdetector.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.testing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adandor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.advimba.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adkinetix.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adandor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.testing</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adsimdetector.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.eiger.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.eiger</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
 </ul>
 </details></li>
-<li class="toctree-l3 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.testing</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.plan_stubs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.plan_stubs</span></code></a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.fastcs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.odin.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a></li>
@@ -629,7 +629,7 @@ arrays can be wrapped with <a class="reference external" href="https://docs.pyte
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.testing.assert_reading">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">assert_reading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">readable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncReadable" title="ophyd_async.core.AsyncReadable"><span class="pre">AsyncReadable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_reading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Reading" title="(in bluesky v1.13.1rc3.dev9+g943843eb)"><span class="pre">Reading</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#assert_reading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.assert_reading" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">assert_reading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">readable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncReadable" title="ophyd_async.core.AsyncReadable"><span class="pre">AsyncReadable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_reading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Reading" title="(in bluesky v1.13.1rc3.dev11+g541c4e8f)"><span class="pre">Reading</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#assert_reading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.assert_reading" title="Link to this definition">#</a></dt>
 <dd><p>Assert that a readable Device has the given reading.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -643,7 +643,7 @@ arrays can be wrapped with <a class="reference external" href="https://docs.pyte
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.testing.assert_configuration">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">assert_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configurable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncConfigurable" title="ophyd_async.core.AsyncConfigurable"><span class="pre">AsyncConfigurable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Reading" title="(in bluesky v1.13.1rc3.dev9+g943843eb)"><span class="pre">Reading</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#assert_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.assert_configuration" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">assert_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configurable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncConfigurable" title="ophyd_async.core.AsyncConfigurable"><span class="pre">AsyncConfigurable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Reading" title="(in bluesky v1.13.1rc3.dev11+g541c4e8f)"><span class="pre">Reading</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#assert_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.assert_configuration" title="Link to this definition">#</a></dt>
 <dd><p>Assert that a configurable Device has the given configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -896,20 +896,20 @@ absolute difference.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.epics.signal.html"
+       href="ophyd_async.sim.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.core.html"
+       href="ophyd_async.tango.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
