@@ -39,4 +39,6 @@ class EigerDetector(StandardDetector):
     @AsyncStatus.wrap
     async def prepare(self, value: EigerTriggerInfo) -> None:  # type: ignore
         await self._controller.set_energy(value.energy_ev)
+        bit_depth = await self.drv.bit_depth.get_value()
+        await self.odin.data_type.set(f"UInt{bit_depth}")
         await super().prepare(value)
