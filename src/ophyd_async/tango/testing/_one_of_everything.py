@@ -48,6 +48,7 @@ class AttributeData(Generic[T]):
     initial_value: T
     random_put_values: tuple[T, ...]
     dformat = AttrDataFormat.SCALAR
+    cmd_name: str | None
 
     def random_value(self):
         return choice(self.random_put_values)
@@ -65,6 +66,7 @@ class SpectrumData(AttributeData):
 
 class ImageData(AttributeData):
     dformat = AttrDataFormat.IMAGE
+    cmd_name = None
 
     def random_value(self):
         array = self.initial_value.copy()
@@ -85,12 +87,23 @@ def add_ads(
     initial_spectrum,
     choices,
 ):
+    scalar_cmd = f"{name}_cmd" if tango_type != "DevUChar" else None
     everything_signal_info.append(
-        AttributeData(name, tango_type, py_type, initial_scalar, choices)
+        AttributeData(name, tango_type, py_type, initial_scalar, choices, scalar_cmd)
+    )
+    spectrum_cmd = (
+        f"{name}_spectrum_cmd"
+        if tango_type not in ["DevUChar", "DevState", "DevEnum"]
+        else None
     )
     everything_signal_info.append(
         SpectrumData(
-            f"{name}_spectrum", tango_type, Array1D[py_type], initial_spectrum, choices
+            f"{name}_spectrum",
+            tango_type,
+            Array1D[py_type],
+            initial_spectrum,
+            choices,
+            spectrum_cmd,
         )
     )
     everything_signal_info.append(
@@ -100,6 +113,7 @@ def add_ads(
             np.ndarray[Any, np.dtype[py_type]],
             np.vstack((initial_spectrum, initial_spectrum)),
             choices,
+            None,
         )
     )
 
@@ -176,25 +190,16 @@ class OneOfEverythingTangoDevice(Device):
             )
             self.add_attribute(attr)
             self.set_change_event(attr.name, True, False)
-            if (
-                attr_data.tango_type == "DevUChar"
-                or attr_data.dformat == AttrDataFormat.IMAGE
-                or (
-                    attr_data.tango_type in ["DevState", "DevEnum"]
-                    and attr_data.dformat == AttrDataFormat.SPECTRUM
+            if attr_data.cmd_name:
+                self.add_command(
+                    command(
+                        f=getattr(self, attr_data.cmd_name),
+                        dtype_in=attr_data.tango_type,
+                        dtype_out=attr_data.tango_type,
+                        dformat_in=attr_data.dformat,
+                        dformat_out=attr_data.dformat,
+                    )
                 )
-            ):
-                continue
-
-            self.add_command(
-                command(
-                    f=getattr(self, f"{attr_data.name}_cmd"),
-                    dtype_in=attr_data.tango_type,
-                    dtype_out=attr_data.tango_type,
-                    dformat_in=attr_data.dformat,
-                    dformat_out=attr_data.dformat,
-                )
-            )
 
     @command
     def reset_values(self):
