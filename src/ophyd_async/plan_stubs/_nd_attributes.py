@@ -52,7 +52,6 @@ def setup_ndattributes(
 
 def setup_ndstats_sum(detector: Device):
     """Set up nd stats for a detector."""
-
     hdf = getattr(detector, "fileio", None)
     if not isinstance(hdf, NDFileHDFIO):
         msg = (

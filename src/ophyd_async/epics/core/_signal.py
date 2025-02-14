@@ -1,4 +1,4 @@
-"""EPICS Signals over CA or PVA"""
+"""EPICS Signals over CA or PVA."""
 
 from __future__ import annotations
 
@@ -92,16 +92,11 @@ def epics_signal_rw(
     write_pv: str | None = None,
     name: str = "",
 ) -> SignalRW[SignalDatatypeT]:
-    """Create a `SignalRW` backed by 1 or 2 EPICS PVs
+    """Create a `SignalRW` backed by 1 or 2 EPICS PVs.
 
-    Parameters
-    ----------
-    datatype:
-        Check that the PV is of this type
-    read_pv:
-        The PV to read and monitor
-    write_pv:
-        If given, use this PV to write to, otherwise use read_pv
+    :param datatype: Check that the PV is of this type
+    :param read_pv: The PV to read and monitor
+    :param write_pv: If given, use this PV to write to, otherwise use read_pv
     """
     backend = _epics_signal_backend(datatype, read_pv, write_pv or read_pv)
     return SignalRW(backend, name=name)
@@ -113,18 +108,12 @@ def epics_signal_rw_rbv(
     read_suffix: str = "_RBV",
     name: str = "",
 ) -> SignalRW[SignalDatatypeT]:
-    """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv
+    """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv.
 
-    Parameters
-    ----------
-    datatype:
-        Check that the PV is of this type
-    write_pv:
-        The PV to write to
-    read_suffix:
-        Append this suffix to the write pv to create the readback pv
+    :param datatype: Check that the PV is of this type
+    :param write_pv: The PV to write to
+    :param read_suffix: Append this suffix to the write pv to create the readback pv
     """
-
     base_pv, field = get_pv_basename_and_field(write_pv)
     if field is not None:
         read_pv = f"{base_pv}{read_suffix}.{field}"
@@ -137,14 +126,10 @@ def epics_signal_rw_rbv(
 def epics_signal_r(
     datatype: type[SignalDatatypeT], read_pv: str, name: str = ""
 ) -> SignalR[SignalDatatypeT]:
-    """Create a `SignalR` backed by 1 EPICS PV
+    """Create a `SignalR` backed by 1 EPICS PV.
 
-    Parameters
-    ----------
-    datatype
-        Check that the PV is of this type
-    read_pv:
-        The PV to read and monitor
+    :param datatype: Check that the PV is of this type
+    :param read_pv: The PV to read from
     """
     backend = _epics_signal_backend(datatype, read_pv, read_pv)
     return SignalR(backend, name=name)
@@ -153,26 +138,20 @@ def epics_signal_r(
 def epics_signal_w(
     datatype: type[SignalDatatypeT], write_pv: str, name: str = ""
 ) -> SignalW[SignalDatatypeT]:
-    """Create a `SignalW` backed by 1 EPICS PVs
+    """Create a `SignalW` backed by 1 EPICS PVs.
 
-    Parameters
-    ----------
-    datatype:
-        Check that the PV is of this type
-    write_pv:
-        The PV to write to
+    :param datatype: Check that the PV is of this type
+    :param write_pv: The PV to write to
     """
     backend = _epics_signal_backend(datatype, write_pv, write_pv)
     return SignalW(backend, name=name)
 
 
 def epics_signal_x(write_pv: str, name: str = "") -> SignalX:
-    """Create a `SignalX` backed by 1 EPICS PVs
+    """Create a `SignalX` backed by 1 EPICS PVs.
 
-    Parameters
-    ----------
-    write_pv:
-        The PV to write its initial value to on trigger
+    :param write_pv: The PV to write its initial value to on trigger
+    :param name: The name of the signal
     """
     backend = _epics_signal_backend(None, write_pv, write_pv)
     return SignalX(backend, name=name)

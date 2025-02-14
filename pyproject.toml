@@ -148,21 +148,26 @@ lint.select = [
     "SLF",     # self - https://docs.astral.sh/ruff/settings/#lintflake8-self
     "PLC2701", # private import - https://docs.astral.sh/ruff/rules/import-private-name/
     "LOG015",  # root logger call - https://docs.astral.sh/ruff/rules/root-logger-call/
-    "S101",    # assert = https://docs.astral.sh/ruff/rules/assert/
+    "S101",    # assert - https://docs.astral.sh/ruff/rules/assert/
+    "D",       # docstring - https://docs.astral.sh/ruff/rules/#pydocstyle-d
 ]
 lint.ignore = [
     "B901", # Return in a generator is needed for plans
+    "D107", # We squash __init__ docstrings into the class docstring
+    "D104", # TODO: remove this after https://github.com/bluesky/ophyd-async/issues/754
 ]
 lint.preview = true # so that preview mode PLC2701 is enabled
+
+[tool.ruff.lint.pydocstyle]
+convention = "google" # not really, but close enough...
 
 [tool.ruff.lint.per-file-ignores]
 # By default, private member access is allowed in tests
 # See https://github.com/DiamondLightSource/python-copier-template/issues/154
 # Remove this line to forbid private member access in tests
-"tests/**/*" = ["SLF001", "S101"]
+"tests/**/*" = ["SLF001", "S101", "D"]
 "src/ophyd_async/testing/**/*" = ["SLF001", "S101"]
-"system_tests/**/*" = ["SLF001", "S101"]
-"docs/examples/**/*" = ["SLF001", "S101"]
+"system_tests/**/*" = ["SLF001", "S101", "D"]
 
 
 [tool.importlinter]

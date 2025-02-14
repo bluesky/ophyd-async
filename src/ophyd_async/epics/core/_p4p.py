@@ -328,8 +328,9 @@ async def pvget_with_timeout(pv: str, timeout: float) -> Any:
 
 
 def _pva_request_string(fields: Sequence[str]) -> str:
-    """Converts a list of requested fields into a PVA request string which can be
-    passed to p4p.
+    """Convert a list of requested fields into a PVA request string.
+
+    This can be passed to p4p.
     """
     return f"field({','.join(fields)})"
 

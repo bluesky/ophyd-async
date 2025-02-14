@@ -64,17 +64,16 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         exposure: float | None = None,
         timeout: float = DEFAULT_TIMEOUT,
     ) -> None:
-        """
-        Sets the exposure time if it is not None and the acquire period to the
-        exposure time plus the deadtime. This is expected behavior for most
-        AreaDetectors, but some may require more specialized handling.
+        """Set the exposure time and acquire period.
 
-        Parameters
-        ----------
-        exposure:
-            Desired exposure time, this is a noop if it is None.
-        timeout:
-            How long to wait for the exposure time and acquire period to be set.
+        If exposure is not None, this sets the acquire time to the exposure time
+        and sets the acquire period to the exposure time plus the deadtime. This
+        is expected behavior for most AreaDetectors, but some may require more
+        specialized handling.
+
+        :param exposure: Desired exposure time, this is a noop if it is None.
+        :type exposure: How long to wait for the exposure time and acquire
+            period to be set.
         """
         if exposure is not None:
             full_frame_time = exposure + self.get_deadtime(exposure)
@@ -84,20 +83,16 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
             )
 
     async def start_acquiring_driver_and_ensure_status(self) -> AsyncStatus:
-        """
-        Start acquiring driver, raising ValueError if the detector is in a bad state.
+        """Start acquiring driver, raising ValueError if the detector is in a bad state.
 
         This sets driver.acquire to True, and waits for it to be True up to a timeout.
         Then, it checks that the DetectorState PV is in DEFAULT_GOOD_STATES,
         and otherwise raises a ValueError.
 
-        Returns
-        -------
-        AsyncStatus:
+        :returns AsyncStatus:
             An AsyncStatus that can be awaited to set driver.acquire to True and perform
             subsequent raising (if applicable) due to detector state.
         """
-
         status = await set_and_wait_for_value(
             self.driver.acquire,
             True,
@@ -106,8 +101,8 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         )
 
         async def complete_acquisition() -> None:
-            """NOTE: possible race condition here between the callback from
-            set_and_wait_for_value and the detector state updating."""
+            # NOTE: possible race condition here between the callback from
+            # set_and_wait_for_value and the detector state updating.
             await status
             state = await self.driver.detector_state.get_value()
             if state not in self.good_states:
