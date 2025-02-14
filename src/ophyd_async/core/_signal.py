@@ -416,8 +416,8 @@ async def observe_signals_value(
 ) -> AsyncGenerator[tuple[SignalR[SignalDatatypeT], SignalDatatypeT], None]:
     """Subscribe to a set of signals so they can be iterated from.
 
-    The first value yielded in the iterator will be the current value of the
-    Signal, and subsequent updates from the control system will result in that
+    The first values yielded in the iterator will be the current values of the
+    Signals, and subsequent updates from the control system will result in that
     value being yielded, even if it is the same as the previous value.
 
     :param signals:
