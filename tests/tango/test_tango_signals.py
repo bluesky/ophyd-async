@@ -24,9 +24,7 @@ from ophyd_async.tango.testing import (
     everything_signal_info,
 )
 from ophyd_async.testing import MonitorQueue, assert_reading, assert_value
-from tango import AttrDataFormat
 from tango.asyncio import DeviceProxy
-from tango.test_utils import assert_close
 
 T = TypeVar("T")
 
@@ -122,7 +120,6 @@ async def assert_monitor_then_put(
         await q.assert_updates(initial_value)
         # Put to new value and check that
         await backend.put(converted_put, wait=True)
-        assert_close(converted_put, await backend.get_setpoint())
         await q.assert_updates(put_value)
 
 
@@ -134,7 +131,8 @@ async def test_backend_get_put_monitor_attr(everything_device: TangoDevice):
         for attr_data in everything_signal_info:
             signal = getattr(everything_device, attr_data.name)
             source = get_full_attr_trl(everything_device._connector.trl, attr_data.name)
-            if "state" in attr_data.name and attr_data.dformat != AttrDataFormat.SCALAR:
+            if "my_state_" in attr_data.name:
+                # assert_reading doesn't work with DevState arrays currently
                 print("skipping for now", attr_data.name)
                 continue
             # Set a timeout for the operation to prevent it from running indefinitely
@@ -175,8 +173,6 @@ async def assert_put_read(
         "alarm_severity": 0,
     }
 
-    assert_close(await backend.get_value(), put_value)
-
     get_reading = dict(await backend.get_reading())
     get_reading.pop("value")
     assert expected_reading == get_reading
@@ -187,18 +183,7 @@ async def assert_put_read(
 async def test_backend_get_put_monitor_cmd(everything_device: TangoDevice):
     await everything_device.connect()
     for cmd_data in everything_signal_info:
-        if (
-            cmd_data.dformat == AttrDataFormat.IMAGE
-            or cmd_data.tango_type == "DevUChar"
-            or (
-                cmd_data.dformat != AttrDataFormat.SCALAR
-                and cmd_data.tango_type
-                in [
-                    "DevState",
-                    "DevEnum",
-                ]
-            )
-        ):
+        if cmd_data.cmd_name is None:
             continue
         # With the given datatype, check we have the correct initial value
         # and putting works

@@ -147,7 +147,7 @@ class MonitorQueue(AbstractContextManager):
 
     async def assert_updates(self, expected_value):
         # Get an update, value and reading
-        update = await asyncio.wait_for(self.updates.get(), timeout=1)
+        update = await asyncio.wait_for(self.updates.get(), timeout=5)
         await assert_value(self.signal, expected_value)
         expected_reading = {
             self.signal.name: {

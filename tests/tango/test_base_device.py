@@ -19,6 +19,7 @@ from ophyd_async.tango.demo import (
     DemoMover,
     TangoDetector,
 )
+from ophyd_async.testing import assert_reading
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -28,7 +29,6 @@ from tango import (
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.server import Device, attribute, command
-from tango.test_utils import assert_close
 
 T = TypeVar("T")
 
@@ -293,24 +293,15 @@ def sim_test_context_trls(subprocess_helper):
 
 
 # --------------------------------------------------------------------
-def compare_values(expected, received):
-    assert set(expected.keys()) == set(received.keys())
-    for k, v in expected.items():
-        for _k, _v in v.items():
-            assert_close(_v, received[k][_k])
-
-
-# --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)
-
     async with init_devices():
         test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
     assert description == await test_device.describe()
-    compare_values(values, await test_device.read())
+    await assert_reading(test_device, values)
 
 
 # --------------------------------------------------------------------
@@ -324,7 +315,7 @@ async def test_set_trl(tango_test_device):
 
     assert test_device.name == "test_device"
     assert description == await test_device.describe()
-    compare_values(values, await test_device.read())
+    await assert_reading(test_device, values)
 
 
 # --------------------------------------------------------------------
