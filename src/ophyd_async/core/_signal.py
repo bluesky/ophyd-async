@@ -364,6 +364,10 @@ async def observe_value(
 ) -> AsyncGenerator[SignalDatatypeT, None]:
     """Subscribe to the value of a signal so it can be iterated from.
 
+    The first value yielded in the iterator will be the current value of the
+    Signal, and subsequent updates from the control system will result in that
+    value being yielded, even if it is the same as the previous value.
+
     :param signal:
         Call subscribe_value on this at the start, and clear_sub on it at the end.
     :param timeout:
@@ -411,6 +415,10 @@ async def observe_signals_value(
     done_timeout: float | None = None,
 ) -> AsyncGenerator[tuple[SignalR[SignalDatatypeT], SignalDatatypeT], None]:
     """Subscribe to the value of a signal so it can be iterated from.
+
+    The first value yielded in the iterator will be the current value of the
+    Signal, and subsequent updates from the control system will result in that
+    value being yielded, even if it is the same as the previous value.
 
     :param signals:
         Call subscribe_value on all the signals at the start, and clear_sub on
