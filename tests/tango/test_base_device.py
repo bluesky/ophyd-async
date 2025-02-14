@@ -320,21 +320,15 @@ async def test_set_trl(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize("proxy", [True, False, None])
-async def test_connect_proxy(tango_test_device, proxy: bool | None):
-    if proxy is None:
+@pytest.mark.parametrize("use_trl", [True, False])
+async def test_connect_proxy(tango_test_device, use_trl: str | None):
+    if use_trl:
         test_device = TestTangoReadable(trl=tango_test_device)
         test_device.proxy = None
         await test_device.connect()
         assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
-    elif proxy:
-        proxy = await AsyncDeviceProxy(tango_test_device)
-        test_device = TestTangoReadable(device_proxy=proxy)
-        await test_device.connect()
-        assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
     else:
-        proxy = None
-        test_device = TestTangoReadable(device_proxy=proxy)
+        test_device = TestTangoReadable()
         assert test_device
 
 

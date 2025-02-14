@@ -36,16 +36,14 @@ def make_backend(
     datatype: type[SignalDatatypeT] | None,
     read_trl: str = "",
     write_trl: str = "",
-    device_proxy: DeviceProxy | None = None,
 ) -> TangoSignalBackend:
-    return TangoSignalBackend(datatype, read_trl, write_trl, device_proxy)
+    return TangoSignalBackend(datatype, read_trl, write_trl)
 
 
 def tango_signal_rw(
     datatype: type[SignalDatatypeT],
     read_trl: str,
     write_trl: str = "",
-    device_proxy: DeviceProxy | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalRW[SignalDatatypeT]:
@@ -59,22 +57,19 @@ def tango_signal_rw(
         The Attribute/Command to read and monitor
     write_trl:
         If given, use this Attribute/Command to write to, otherwise use read_trl
-    device_proxy:
-        If given, this DeviceProxy will be used
     timeout:
         The timeout for the read and write operations
     name:
         The name of the Signal
 
     """
-    backend = make_backend(datatype, read_trl, write_trl or read_trl, device_proxy)
+    backend = make_backend(datatype, read_trl, write_trl or read_trl)
     return SignalRW(backend, timeout=timeout, name=name)
 
 
 def tango_signal_r(
     datatype: type[SignalDatatypeT],
     read_trl: str,
-    device_proxy: DeviceProxy | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalR[SignalDatatypeT]:
@@ -86,22 +81,19 @@ def tango_signal_r(
         Check that the Attribute/Command is of this type
     read_trl:
         The Attribute/Command to read and monitor
-    device_proxy:
-        If given, this DeviceProxy will be used
     timeout:
         The timeout for the read operation
     name:
         The name of the Signal
 
     """
-    backend = make_backend(datatype, read_trl, read_trl, device_proxy)
+    backend = make_backend(datatype, read_trl, read_trl)
     return SignalR(backend, timeout=timeout, name=name)
 
 
 def tango_signal_w(
     datatype: type[SignalDatatypeT],
     write_trl: str,
-    device_proxy: DeviceProxy | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalW[SignalDatatypeT]:
@@ -113,21 +105,18 @@ def tango_signal_w(
         Check that the Attribute/Command is of this type
     write_trl:
         The Attribute/Command to write to
-    device_proxy:
-        If given, this DeviceProxy will be used
     timeout:
         The timeout for the write operation
     name:
         The name of the Signal
 
     """
-    backend = make_backend(datatype, write_trl, write_trl, device_proxy)
+    backend = make_backend(datatype, write_trl, write_trl)
     return SignalW(backend, timeout=timeout, name=name)
 
 
 def tango_signal_x(
     write_trl: str,
-    device_proxy: DeviceProxy | None = None,
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalX:
@@ -137,15 +126,13 @@ def tango_signal_x(
     ----------
     write_trl:
         The Attribute/Command to write its initial value to on execute
-    device_proxy:
-        If given, this DeviceProxy will be used
     timeout:
         The timeout for the command operation
     name:
         The name of the Signal
 
     """
-    backend = make_backend(None, write_trl, write_trl, device_proxy)
+    backend = make_backend(None, write_trl, write_trl)
     return SignalX(backend, timeout=timeout, name=name)
 
 

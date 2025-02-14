@@ -19,9 +19,7 @@ class TangoDevice(Device):
     Extends Device to provide attributes for Tango devices.
 
     :param trl: Tango resource locator, typically of the device server.
-    :param device_proxy:
-        Asynchronous or synchronous DeviceProxy object for the device. If not
-        provided, an asynchronous DeviceProxy object will be created using the
+        An asynchronous DeviceProxy object will be created using the
         trl and awaited when the device is connected.
     """
 
@@ -30,15 +28,13 @@ class TangoDevice(Device):
 
     def __init__(
         self,
-        trl: str | None = None,
-        device_proxy: DeviceProxy | None = None,
+        trl: str | None,
         support_events: bool = False,
         name: str = "",
         auto_fill_signals: bool = True,
     ) -> None:
         connector = TangoDeviceConnector(
             trl=trl,
-            device_proxy=device_proxy,
             support_events=support_events,
             auto_fill_signals=auto_fill_signals,
         )
@@ -76,12 +72,10 @@ class TangoDeviceConnector(DeviceConnector):
     def __init__(
         self,
         trl: str | None,
-        device_proxy: DeviceProxy | None,
         support_events: bool,
         auto_fill_signals: bool = True,
     ) -> None:
         self.trl = trl
-        self.proxy = device_proxy
         self._support_events = support_events
         self._auto_fill_signals = auto_fill_signals
 
@@ -91,7 +85,7 @@ class TangoDeviceConnector(DeviceConnector):
                 device=device,
                 signal_backend_factory=TangoSignalBackend,
                 device_connector_factory=lambda: TangoDeviceConnector(
-                    None, None, self._support_events
+                    None, self._support_events
                 ),
             )
             list(self.filler.create_devices_from_annotations(filled=False))
@@ -109,17 +103,9 @@ class TangoDeviceConnector(DeviceConnector):
         return await super().connect_mock(device, mock)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
-        if self.trl and self.proxy is None:
-            self.proxy = await AsyncDeviceProxy(self.trl)
-        elif self.proxy and not self.trl:
-            adm_name = self.proxy.adm_name()
-            server_addr = adm_name.rsplit("/", 3)[0]
-            self.trl = server_addr + "/" + self.proxy.name()
-            if "#" in adm_name:
-                self.trl += adm_name[adm_name.find("#") :]
-        else:
-            raise TypeError("Neither proxy nor trl supplied")
-
+        if not self.trl:
+            raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
+        self.proxy = await AsyncDeviceProxy(self.trl)
         children = sorted(
             set()
             .union(self.proxy.get_attribute_list())
