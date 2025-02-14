@@ -92,7 +92,7 @@ def apply_settings_if_different(
     :param apply_plan:
         A device specific plan which takes the Settings to apply and applies them to
         the Device. Used to add device specific ordering to setting the signals.
-    :current_settings:
+    :param current_settings:
         If given, should be a superset of settings containing the current value of
         the Settings in the Device. If not given it will be created by reading just
         the signals given in settings.
