@@ -61,7 +61,7 @@ class AsyncConfigurable(HasName, Protocol):
 
     @abstractmethod
     async def describe_configuration(self) -> dict[str, DataKey]:
-        """Return per-scan metadata for each field name in [](#AsyncConfigurable.read_configuration)."""
+        """Return per-scan metadata for each field name in `read_configuration()`."""
 
 
 @runtime_checkable
