@@ -23,9 +23,7 @@ class Andor2DataType(SubsetEnum):
 
 
 class Andor2DriverIO(ADBaseIO):
-    """
-    Epics pv for andor model:DU897_BV as deployed on p99
-    """
+    """Epics pv for andor model:DU897_BV as deployed on p99."""
 
     def __init__(self, prefix: str, name: str = "") -> None:
         super().__init__(prefix, name=name)

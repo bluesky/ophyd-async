@@ -7,8 +7,10 @@ HERE = Path(__file__).absolute().parent
 
 
 def start_ioc_subprocess(prefix: str, num_channels: int) -> TestingIOC:
-    """Start an IOC subprocess with EPICS database for sample stage and sensor
-    with the same pv prefix
+    """Start an IOC subprocess for sample stage and sensor.
+
+    :param prefix: The prefix for the IOC PVs.
+    :param num_channels: The number of point detector channels to create.
     """
     ioc = TestingIOC()
     # Create X and Y motors

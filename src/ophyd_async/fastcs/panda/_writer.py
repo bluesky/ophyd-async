@@ -40,8 +40,7 @@ class PandaHDFWriter(DetectorWriter):
 
     # Triggered on PCAP arm
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
-        """Retrieve and get descriptor of all PandA signals marked for capture"""
-
+        """Retrieve and get descriptor of all PandA signals marked for capture."""
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
@@ -78,10 +77,7 @@ class PandaHDFWriter(DetectorWriter):
         return await self._describe()
 
     async def _describe(self) -> dict[str, DataKey]:
-        """
-        Return a describe based on the datasets PV
-        """
-
+        """Return a describe based on the datasets PV."""
         await self._update_datasets()
         describe = {
             ds.data_key: DataKey(
@@ -97,11 +93,8 @@ class PandaHDFWriter(DetectorWriter):
         return describe
 
     async def _update_datasets(self) -> None:
-        """
-        Load data from the datasets PV on the panda, update internal
-        representation of datasets that the panda will write.
-        """
-
+        # Load data from the datasets PV on the panda, update internal
+        # representation of datasets that the panda will write.
         capture_table = await self.panda_data_block.datasets.get_value()
         self._datasets = [
             # TODO: Update chunk size to read signal once available in IOC
@@ -139,7 +132,7 @@ class PandaHDFWriter(DetectorWriter):
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        """Wait until a specific index is ready to be collected"""
+        """Wait until a specific index is ready to be collected."""
         async for num_captured in observe_value(
             self.panda_data_block.num_captured, timeout
         ):

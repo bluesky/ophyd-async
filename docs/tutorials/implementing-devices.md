@@ -214,7 +214,7 @@ We also have a [](#DeviceVector) called `channel` with `DemoPointDetectorChannel
 Finally, we need to communicate to bluesky that it has to `trigger()` and acquisition before it can `read()` from the underlying channels. We do this by implementing the [`Triggerable`](#bluesky.protocols.Triggerable) protocol. This involves writing a `trigger()` method with the logic that must be run, calling [](#SignalX.trigger), [](#SignalW.set) and [](#SignalR.get_value) to manipulate the values of the underlying Signals, returning when complete. This is wrapped in an [](#AsyncStatus), which is used by bluesky to run this operation in the background and know when it is complete.
 
 ```{seealso}
-[](#../how-to/interact-with-signals)
+[](../how-to/interact-with-signals)
 ```
 
 ::::{tab-set}
@@ -247,7 +247,7 @@ TODO
 ::::
 
 ```{seealso}
-For more information on when to construct Devices declaratively using type hints, and when to construct them procedurally with an `__init__` method, see [](#../explanations/declarative-vs-procedural)
+For more information on when to construct Devices declaratively using type hints, and when to construct them procedurally with an `__init__` method, see [](../explanations/declarative-vs-procedural)
 ```
 
 ### `DemoMotor`

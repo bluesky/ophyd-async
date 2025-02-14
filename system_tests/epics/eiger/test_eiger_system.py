@@ -20,7 +20,8 @@ SAVE_PATH = "/tmp"
 
 class SetupDevice(Device):
     """Holds PVs that we would either expect to be initially set and
-    never change or to be externally set in prod."""
+    never change or to be externally set in prod.
+    """
 
     def __init__(self, eiger_prefix: str, odin_prefix: str) -> None:
         self.trigger = epics_signal_rw(int, f"{eiger_prefix}Trigger")

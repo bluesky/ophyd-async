@@ -21,11 +21,10 @@ class SimMotor(StandardReadable, Movable, Stoppable):
     """For usage when simulating a motor."""
 
     def __init__(self, name="", instant=True) -> None:
-        """Simulation of a motor, with optional velocity
+        """Simulate a motor, with optional velocity.
 
-        Args:
-        - name: name of device
-        - instant: whether to move instantly or calculate move time using velocity
+        :param name: name of device
+        :param instant: whether to move instantly or calculate move time using velocity
         """
         # Define some signals
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
@@ -67,9 +66,7 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
     @WatchableAsyncStatus.wrap
     async def set(self, value: float):
-        """
-        Asynchronously move the motor to a new position.
-        """
+        """Asynchronously move the motor to a new position."""
         start = time.time()
         new_position = value
         # Make sure any existing move tasks are stopped
@@ -104,9 +101,7 @@ class SimMotor(StandardReadable, Movable, Stoppable):
             raise RuntimeError("Motor was stopped")
 
     async def stop(self, success=True):
-        """
-        Stop the motor if it is moving
-        """
+        """Stop the motor if it is moving."""
         self._set_success = success
         if self._move_status:
             self._move_status.task.cancel()

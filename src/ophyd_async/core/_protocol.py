@@ -19,14 +19,13 @@ if TYPE_CHECKING:
 
 @runtime_checkable
 class AsyncReadable(HasName, Protocol):
-    """For async implementations of the bluesky sync `bluesky.protocols.Readable`."""
+    """Async implementations of the sync [](#bluesky.protocols.Readable)."""
 
     @abstractmethod
     async def read(self) -> dict[str, Reading]:
-        """Return a dict mapping string field name(s) to dictionaries
-        of values and timestamps and optional per-point metadata.
+        """Return value, timestamp, optional per-point metadata for each field name.
 
-        For example::
+        For example:
 
             {
                 "channel1": {"value": 5, "timestamp": 1472493713.271991},
@@ -36,10 +35,9 @@ class AsyncReadable(HasName, Protocol):
 
     @abstractmethod
     async def describe(self) -> dict[str, DataKey]:
-        """Return a dict with exactly the same keys as the `read`
-        method, here mapped to per-scan metadata about each field.
+        """Return per-scan metadata for each field name in `read()`.
 
-        For example::
+        For example:
 
             {
                 "channel1": {"source": "SOME_PV1", "dtype": "number", "shape": []},
@@ -50,26 +48,25 @@ class AsyncReadable(HasName, Protocol):
 
 @runtime_checkable
 class AsyncConfigurable(HasName, Protocol):
-    """For async implementations of the bluesky sync
-    `bluesky.protocols.Configurable`."""
+    """Async implementation of the sync [](#bluesky.protocols.Configurable)."""
 
     @abstractmethod
     async def read_configuration(self) -> dict[str, Reading]:
-        """Same API as `AsyncReadable.read` but for slow-changing fields related to
+        """Return value, timestamp, optional per-point metadata for each field name.
+
+        Same API as [](#AsyncReadable.read) but for slow-changing fields related to
         configuration. e.g., exposure time. These will typically be read only
         once per run.
         """
 
     @abstractmethod
     async def describe_configuration(self) -> dict[str, DataKey]:
-        """Same API as ``describe``, but corresponding to the keys in
-        ``read_configuration``.
-        """
+        """Return per-scan metadata for each field name in `read_configuration()`."""
 
 
 @runtime_checkable
 class AsyncPausable(Protocol):
-    """For async implementations of the bluesky sync `bluesky.protocols.Pausable`."""
+    """Async implementation of the sync [](#bluesky.protocols.Pausable)."""
 
     @abstractmethod
     async def pause(self) -> None:
@@ -82,22 +79,20 @@ class AsyncPausable(Protocol):
 
 @runtime_checkable
 class AsyncStageable(Protocol):
-    """For async implementations of the bluesky sync `bluesky.protocols.Stageable`."""
+    """Async implementation of the sync [](#bluesky.protocols.Stageable)."""
 
     @abstractmethod
     def stage(self) -> AsyncStatus:
-        """An optional hook for "setting up" the device for acquisition.
+        """Set up the device for acquisition.
 
-        It should return a ``Status`` that is marked done when the device is
-        done staging.
+        :return: An `AsyncStatus` that is marked done when the device is done staging.
         """
 
     @abstractmethod
     def unstage(self) -> AsyncStatus:
-        """A hook for "cleaning up" the device after acquisition.
+        """Clean up the device after acquisition.
 
-        It should return a ``Status`` that is marked done when the device is finished
-        unstaging.
+        :return: An `AsyncStatus` that is marked done when the device is done unstaging.
         """
 
 

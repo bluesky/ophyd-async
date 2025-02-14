@@ -82,12 +82,9 @@ class SeqTable(Table):
         return SeqTable(**{k: [v] for k, v in locals().items()})  # type: ignore
 
     @model_validator(mode="after")
-    def validate_max_length(self) -> "SeqTable":
-        """
-        Used to check max_length. Unfortunately trying the ``max_length`` arg in
-        the pydantic field doesn't work
-        """
-
+    def _validate_max_length(self) -> "SeqTable":
+        # Used to check max_length. Unfortunately trying the ``max_length`` arg in
+        # the pydantic field doesn't work.
         first_length = len(self)
         max_length = 4096
         if first_length > max_length:

@@ -1,3 +1,5 @@
+"""Used for tutorial `Using Devices`."""
+
 # Import bluesky and ophyd
 from tempfile import mkdtemp
 

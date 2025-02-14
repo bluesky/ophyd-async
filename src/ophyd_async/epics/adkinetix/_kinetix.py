@@ -13,9 +13,9 @@ from ._kinetix_io import KinetixDriverIO
 
 
 class KinetixDetector(AreaDetector[KinetixController]):
-    """
-    Ophyd-async implementation of an ADKinetix Detector.
-    https://github.com/NSLS-II/ADKinetix
+    """Ophyd-async implementation of an ADKinetix Detector.
+
+    https://github.com/NSLS-II/ADKinetix.
     """
 
     def __init__(

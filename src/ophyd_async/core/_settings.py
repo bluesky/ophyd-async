@@ -10,7 +10,27 @@ from ._signal_backend import SignalDatatypeT
 
 
 class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
-    """Used for supplying settings to signals."""
+    """Used for supplying settings to signals.
+
+    :param device: The device that the settings are for.
+    :param settings: A dictionary of settings to start with.
+
+    :example:
+    ```python
+    # Settings are created from a dict of signals to values
+    settings1 = Settings(device, {device.sig1: 1, device.sig2: 2})
+    settings2 = Settings(device, {device.sig1: 10, device.sig3: 3})
+    # They act like a dictionaries
+    assert settings1[device.sig1] == 1
+    # Including the ability to "or" two settings together
+    settings = settings1 | settings2
+    assert dict(settings) == {
+        device.sig1: 10,
+        device.sig2: 2,
+        device.sig3: 3,
+    }
+    ```
+    """
 
     def __init__(
         self, device: DeviceT, settings: MutableMapping[SignalRW, Any] | None = None
@@ -50,19 +70,7 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
         return len(self._settings)
 
     def __or__(self, other: MutableMapping[SignalRW, Any]) -> Settings[DeviceT]:
-        """Create a new Settings that is the union of self overridden by other.
-
-        For example::
-
-            settings1 = Settings(device, {device.sig1: 1, device.sig2: 2})
-            settings2 = Settings(device, {device.sig1: 10, device.sig3: 3})
-            settings = settings1 | settings2
-            assert dict(settings) == {
-                device.sig1: 10,
-                device.sig2: 2,
-                device.sig3: 3,
-            }
-        """
+        """Create a new Settings that is the union of self overridden by other."""
         if isinstance(other, Settings) and not self._is_in_device(other.device):
             raise ValueError(f"{other.device} is not a child of {self.device}")
         return Settings(self.device, self._settings | dict(other))
@@ -72,22 +80,19 @@ class Settings(MutableMapping[SignalRW[Any], Any], Generic[DeviceT]):
     ) -> tuple[Settings[DeviceT], Settings[DeviceT]]:
         """Partition into two Settings based on a predicate.
 
-        Parameters
-        ----------
-        predicate
+        :param predicate:
             Callable that takes each signal, and returns a boolean to say if it
             should be in the first returned Settings
+        :returns:
+            `(where_true, where_false)` where each is a Settings object.
+            The first contains the signals for which the predicate returned True,
+            and the second contains the signals for which the predicate returned False.
 
-        Returns
-        -------
-        tuple
-            With the first element being the true settings and the second
-            being the false.
-
-        For example::
-
-            settings = Settings(device, {device.special: 1, device.sig: 2})
-            specials, others = settings.partition(lambda sig: "special" in sig.name)
+        :example:
+        ```python
+        settings = Settings(device, {device.special: 1, device.sig: 2})
+        specials, others = settings.partition(lambda sig: "special" in sig.name)
+        ```
         """
         where_true, where_false = Settings(self.device), Settings(self.device)
         for signal, value in self.items():
@@ -102,9 +107,7 @@ class SettingsProvider:
     @abstractmethod
     async def store(self, name: str, data: dict[str, Any]):
         """Store the data, associating it with the given name."""
-        ...
 
     @abstractmethod
     async def retrieve(self, name: str) -> dict[str, Any]:
         """Retrieve the data associated with the given name."""
-        ...

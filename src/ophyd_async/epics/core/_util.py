@@ -13,12 +13,12 @@ from ophyd_async.core import (
 
 
 def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
-    """Simple utility function for extracting base pv name without field"""
-
+    """Split PV into record name and field."""
     if "." in pv:
-        return (pv.split(".", -1)[0], pv.split(".", -1)[1])
+        record, field = pv.split(".", maxsplit=1)
     else:
-        return (pv, None)
+        record, field = pv, None
+    return (record, field)
 
 
 def get_supported_values(

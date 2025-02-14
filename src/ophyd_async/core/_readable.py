@@ -17,25 +17,34 @@ from ._utils import merge_gathered_dicts
 class StandardReadableFormat(Enum):
     """Declare how a `Device` should contribute to the `StandardReadable` verbs."""
 
-    #: Detect which verbs the child supports and contribute to:
-    #:
-    #: - ``read()``, ``describe()`` if it is `bluesky.protocols.Readable`
-    #: - ``read_configuration()``, ``describe_configuration()`` if it is
-    #:   `bluesky.protocols.Configurable`
-    #: - ``stage()``, ``unstage()`` if it is `bluesky.protocols.Stageable`
-    #: - ``hints`` if it `bluesky.protocols.HasHints`
     CHILD = "CHILD"
-    #: Contribute the `Signal` value to ``read_configuration()`` and
-    #: ``describe_configuration()``
+    """Detect which verbs the child supports and contribute to:
+
+    - `read()`, `describe()` if it is [](#bluesky.protocols.Readable)
+    - `read_configuration()`, `describe_configuration()` if it is
+      [](#bluesky.protocols.Configurable)
+    - `stage()`, `unstage()` if it is [](#bluesky.protocols.Stageable)
+    - `hints` if it [](#bluesky.protocols.HasHints)
+    """
+
     CONFIG_SIGNAL = "CONFIG_SIGNAL"
-    #: Contribute the monitored `Signal` value to ``read()`` and ``describe()``` and
-    #: put the signal name in ``hints``
+    """Contribute the `Signal` value to `read_configuration()` and
+    `describe_configuration()`
+    """
+
     HINTED_SIGNAL = "HINTED_SIGNAL"
-    #: Contribute the uncached `Signal` value to ``read()`` and ``describe()```
+    """Contribute the monitored `Signal` value to `read()` and `describe()` and
+    put the signal name in `hints`
+    """
+
     UNCACHED_SIGNAL = "UNCACHED_SIGNAL"
-    #: Contribute the uncached `Signal` value to ``read()`` and ``describe()``` and
-    #: put the signal name in ``hints``
+    """Contribute the uncached `Signal` value to `read()` and `describe()`
+    """
+
     HINTED_UNCACHED_SIGNAL = "HINTED_UNCACHED_SIGNAL"
+    """Contribute the uncached `Signal` value to `read()` and `describe()` and
+    put the signal name in `hints`
+    """
 
     def __call__(self, parent: Device, child: Device):
         if not isinstance(parent, StandardReadable):
@@ -74,11 +83,15 @@ HintedSignal.uncached = _compat_format(
 class StandardReadable(
     Device, AsyncReadable, AsyncConfigurable, AsyncStageable, HasHints
 ):
-    """Device that owns its children and provides useful default behavior.
+    """Device that provides selected child Device values in `read()`.
 
-    - When its name is set it renames child Devices
-    - Signals can be registered for read() and read_configuration()
-    - These signals will be subscribed for read() between stage() and unstage()
+    Provides the ability for children to be registered to:
+    - Participate in `stage()` and `unstage()`
+    - Provide their value in `read()` and `describe()
+    - Provide their value in `read_configuration()` and `describe_configuration()
+    - Select a value to appear in `hints`
+
+    The behavior is customized with a [](#StandardReadableFormat)
     """
 
     # These must be immutable types to avoid accidental sharing between
@@ -156,13 +169,12 @@ class StandardReadable(
         self,
         format: StandardReadableFormat = StandardReadableFormat.CHILD,
     ) -> Generator[None, None, None]:
-        """Context manager that calls `add_readables` on child Devices added within.
+        """Context manager that calls [](#add_readables) on child Devices added within.
 
-        Scans ``self.children()`` on entry and exit to context manager, and calls
-        `add_readables` on any that are added with the provided
+        Scans `self.children()` on entry and exit to context manager, and calls
+        `add_readables()` on any that are added with the provided
         `StandardReadableFormat`.
         """
-
         dict_copy = dict(self.children())
 
         yield
@@ -192,18 +204,15 @@ class StandardReadable(
         Use output from the given devices to contribute to the verbs of the following
         interfaces:
 
-        - `bluesky.protocols.Readable`
-        - `bluesky.protocols.Configurable`
-        - `bluesky.protocols.Stageable`
-        - `bluesky.protocols.HasHints`
+        - [](#bluesky.protocols.Readable)
+        - [](#bluesky.protocols.Configurable)
+        - [](#bluesky.protocols.Stageable)
+        - [](#bluesky.protocols.HasHints)
 
-        Parameters
-        ----------
-        devices:
-            The devices to be added
-        format:
-            Determines which of the devices functions are added to which verb as per the
-            `StandardReadableFormat` documentation
+        :param devices: The devices to be added
+        :param format:
+            Determines which of the devices functions are added to which verb as
+            per the [](#StandardReadableFormat) documentation
         """
 
         def assert_device_is_signalr(device: Device) -> SignalR:

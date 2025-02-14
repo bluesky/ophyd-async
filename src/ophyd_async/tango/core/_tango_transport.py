@@ -4,7 +4,7 @@ import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
-from typing import Any, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -41,22 +41,23 @@ from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 # time constant to wait for timeout
 A_BIT = 1e-5
 
+P = ParamSpec("P")
 R = TypeVar("R")
 
 
 def ensure_proper_executor(
-    func: Callable[..., Coroutine[Any, Any, R]],
-) -> Callable[..., Coroutine[Any, Any, R]]:
-    """Ensures decorated method has a proper asyncio executor."""
+    func: Callable[P, Coroutine[Any, Any, R]],
+) -> Callable[P, Coroutine[Any, Any, R]]:
+    """Ensure decorated method has a proper asyncio executor."""
 
     @functools.wraps(func)
-    async def wrapper(self: Any, *args: Any, **kwargs: Any) -> R:
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         current_executor: AsyncioExecutor = get_global_executor()  # type: ignore
         if not current_executor.in_executor_context():  # type: ignore
             set_global_executor(AsyncioExecutor())
-        return await func(self, *args, **kwargs)
+        return await func(*args, **kwargs)
 
-    return cast(Callable[..., Coroutine[Any, Any, R]], wrapper)
+    return wrapper
 
 
 def get_python_type(tango_type: CmdArgType) -> tuple[bool, object, str]:
@@ -93,42 +94,44 @@ class TangoProxy:
         self._name = name
 
     async def connect(self) -> None:
-        """perform actions after proxy is connected, e.g. checks if signal
-        can be subscribed"""
+        """Perform actions after proxy is connected.
+
+        e.g. check if signal can be subscribed.
+        """
 
     @abstractmethod
     async def get(self) -> object:
-        """Get value from TRL"""
+        """Get value from TRL."""
 
     @abstractmethod
     async def get_w_value(self) -> object:
-        """Get last written value from TRL"""
+        """Get last written value from TRL."""
 
     @abstractmethod
     async def put(
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
-        """Put value to TRL"""
+        """Put value to TRL."""
 
     @abstractmethod
     async def get_config(self) -> AttributeInfoEx | CommandInfo:
-        """Get TRL config async"""
+        """Get TRL config async."""
 
     @abstractmethod
     async def get_reading(self) -> Reading:
-        """Get reading from TRL"""
+        """Get reading from TRL."""
 
     @abstractmethod
     def has_subscription(self) -> bool:
-        """indicates, that this trl already subscribed"""
+        """Indicate that this trl already subscribed."""
 
     @abstractmethod
     def subscribe_callback(self, callback: Callback | None):
-        """subscribe tango CHANGE event to callback"""
+        """Subscribe tango CHANGE event to callback."""
 
     @abstractmethod
     def unsubscribe_callback(self):
-        """delete CHANGE event subscription"""
+        """Delete CHANGE event subscription."""
 
     @abstractmethod
     def set_polling(
@@ -138,7 +141,7 @@ class TangoProxy:
         abs_change=None,
         rel_change=None,
     ):
-        """Set polling parameters"""
+        """Set polling parameters."""
 
 
 class AttributeProxy(TangoProxy):
@@ -169,17 +172,17 @@ class AttributeProxy(TangoProxy):
             pass
 
     @ensure_proper_executor
-    async def get(self) -> Coroutine[Any, Any, object]:
+    async def get(self) -> object:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         return attr.value
 
     @ensure_proper_executor
-    async def get_w_value(self) -> object:
+    async def get_w_value(self) -> object:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         return attr.w_value
 
     @ensure_proper_executor
-    async def put(
+    async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
         # TODO: remove the timeout from this as it is handled at the signal level
@@ -226,11 +229,11 @@ class AttributeProxy(TangoProxy):
             return AsyncStatus(wait_for_reply(rid, timeout))
 
     @ensure_proper_executor
-    async def get_config(self) -> AttributeInfoEx:
+    async def get_config(self) -> AttributeInfoEx:  # type: ignore
         return await self._proxy.get_attribute_config(self._name)
 
     @ensure_proper_executor
-    async def get_reading(self) -> Reading:
+    async def get_reading(self) -> Reading:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         reading = Reading(
             value=attr.value, timestamp=attr.time.totime(), alarm_severity=attr.quality
@@ -304,10 +307,11 @@ class AttributeProxy(TangoProxy):
                 self._callback(reading)
 
     async def poll(self):
-        """
-        Poll the attribute and call the callback if the value has changed by more
-        than the absolute or relative change. This function is used when an attribute
-        that does not support events is cached or a callback is passed to it.
+        """Poll the attribute and call the callback if the value has changed.
+
+        Only callback if value has changed by more than the absolute or relative
+        change. This function is used when an attribute that does not support
+        events is cached or a callback is passed to it.
         """
         try:
             last_reading = await self.get_reading()
@@ -382,9 +386,7 @@ class AttributeProxy(TangoProxy):
         abs_change: float | None = None,
         rel_change: float | None = 0.1,
     ):
-        """
-        Set the polling parameters.
-        """
+        """Set the polling parameters."""
         self._allow_polling = allow_polling
         self._polling_period = polling_period
         self._abs_change = abs_change
@@ -412,7 +414,7 @@ class CommandProxy(TangoProxy):
         pass
 
     @ensure_proper_executor
-    async def put(
+    async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
         if wait:
@@ -460,7 +462,7 @@ class CommandProxy(TangoProxy):
             return AsyncStatus(wait_for_reply(rid, timeout))
 
     @ensure_proper_executor
-    async def get_config(self) -> CommandInfo:
+    async def get_config(self) -> CommandInfo:  # type: ignore
         return await self._proxy.get_command_config(self._name)
 
     async def get_reading(self) -> Reading:
@@ -496,8 +498,7 @@ def get_trl_descriptor(
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
 ) -> DataKey:
-    """Creates a descriptor from a tango resource locator."""
-
+    """Create a descriptor from a tango resource locator."""
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
@@ -592,8 +593,7 @@ def get_trl_descriptor(
 async def get_tango_trl(
     full_trl: str, device_proxy: DeviceProxy | TangoProxy | None, timeout: float
 ) -> TangoProxy:
-    """Gets the tango resource locator."""
-
+    """Get the tango resource locator."""
     if isinstance(device_proxy, TangoProxy):
         return device_proxy
     device_trl, trl_name = full_trl.rsplit("/", 1)
