@@ -50,6 +50,7 @@ class Odin(Device):
         self.image_height = epics_signal_rw_rbv(int, f"{prefix}DatasetDataDims0")
         self.image_width = epics_signal_rw_rbv(int, f"{prefix}DatasetDataDims1")
 
+        self.num_frames_chunks = epics_signal_rw_rbv(int, f"{prefix}DatasetDataChunks0")
         self.num_row_chunks = epics_signal_rw_rbv(int, f"{prefix}DatasetDataChunks1")
         self.num_col_chunks = epics_signal_rw_rbv(int, f"{prefix}DatasetDataChunks2")
 

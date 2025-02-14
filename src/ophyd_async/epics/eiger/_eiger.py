@@ -17,7 +17,7 @@ class EigerDetector(StandardDetector):
     """
 
     _controller: EigerController
-    _writer: Odin
+    _writer: OdinWriter
 
     def __init__(
         self,
