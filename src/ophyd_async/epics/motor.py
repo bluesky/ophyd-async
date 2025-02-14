@@ -49,21 +49,21 @@ DEFAULT_WATCHER_UPDATE_FREQUENCY = 0.2
 class FlyMotorInfo(BaseModel):
     """Minimal set of information required to fly a motor."""
 
-    #: Absolute position of the motor once it finishes accelerating to desired
-    #: velocity, in motor EGUs
     start_position: float = Field(frozen=True)
+    """Absolute position of the motor once it finishes accelerating to desired
+    velocity, in motor EGUs"""
 
-    #: Absolute position of the motor once it begins decelerating from desired
-    #: velocity, in EGUs
     end_position: float = Field(frozen=True)
+    """Absolute position of the motor once it begins decelerating from desired
+    velocity, in EGUs"""
 
-    #: Time taken for the motor to get from start_position to end_position, excluding
-    #: run-up and run-down, in seconds.
     time_for_move: float = Field(frozen=True, gt=0)
+    """Time taken for the motor to get from start_position to end_position, excluding
+    run-up and run-down, in seconds."""
 
-    #: Maximum time for the complete motor move, including run up and run down.
-    #: Defaults to `time_for_move` + run up and run down times + 10s.
     timeout: CalculatableTimeout = Field(frozen=True, default=CALCULATE_TIMEOUT)
+    """Maximum time for the complete motor move, including run up and run down.
+    Defaults to `time_for_move` + run up and run down times + 10s."""
 
 
 class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):

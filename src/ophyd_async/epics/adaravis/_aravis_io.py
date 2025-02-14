@@ -8,10 +8,11 @@ from ophyd_async.epics.core import PvSuffix
 class AravisTriggerMode(StrictEnum):
     """GigEVision GenICAM standard TriggerMode."""
 
-    #: Use TriggerSource to trigger each frame
     ON = "On"
-    #: Just trigger as fast as you can
+    """Use TriggerSource to trigger each frame"""
+
     OFF = "Off"
+    """Just trigger as fast as you can"""
 
 
 class AravisTriggerSource(SubsetEnum):
