@@ -114,14 +114,15 @@ class SimMotor(StandardReadable, Movable, Stoppable):
     async def _move(self, old_position: float, new_position: float, velocity: float):
         start = time.monotonic()
         acceleration_time = abs(await self.acceleration_time.get_value())
-        velocity = abs(velocity) * np.sign(new_position - old_position)
+        sign = np.sign(new_position - old_position)
+        velocity = abs(velocity) * sign
         # The total distance to move, and the part of it that is ramp up and down
         total_distance = new_position - old_position
         ramp_distance = velocity * acceleration_time / 2
         if abs(ramp_distance * 2) >= abs(total_distance):
             # All time is ramp up and down
-            max_velocity = total_distance / ramp_distance * 2 * velocity
-            ramp_time = ramp_distance / max_velocity
+            max_velocity = np.sqrt(total_distance * velocity / acceleration_time) * sign
+            ramp_time = total_distance / max_velocity
             move_time = 2 * ramp_time
         else:
             # Middle segments of constant velocity

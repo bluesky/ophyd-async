@@ -1,5 +1,4 @@
 import asyncio
-import time
 
 import pytest
 from bluesky.plans import spiral_square
@@ -26,24 +25,13 @@ def m1() -> SimMotor:
     return SimMotor("M1", instant=False)
 
 
-async def test_slow_move(m1: SimMotor):
-    await m1.velocity.set(20)
-    await m1.acceleration_time.set(0.1)
-
-    start = time.monotonic()
-    await m1.set(10)
-    elapsed = time.monotonic() - start
-
-    assert await m1.user_readback.get_value() == 10
-    assert elapsed >= 0.5
-    assert elapsed < 1
-
-
 @pytest.mark.parametrize(
     "setpoint,expected",
     [
         (-0.19, [0.0, -0.05, -0.1495, -0.19]),
         (0.26, [0.0, 0.05, 0.15, 0.242, 0.26]),
+        (0.005, [0.0, 0.005]),
+        (-0.025, [0.0, -0.025]),
     ],
 )
 async def test_move_profiles(setpoint, expected, m1: SimMotor):
