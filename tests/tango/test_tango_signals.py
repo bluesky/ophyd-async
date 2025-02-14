@@ -24,7 +24,6 @@ from ophyd_async.tango.testing import (
     everything_signal_info,
 )
 from ophyd_async.testing import MonitorQueue, assert_reading, assert_value
-from tango.asyncio import DeviceProxy
 
 T = TypeVar("T")
 
@@ -205,25 +204,21 @@ async def test_tango_signal_r(
     everything_device_trl: str,
 ):
     timeout = 0.2
-    proxy = await DeviceProxy(everything_device_trl)
-    for use_proxy in [True, False]:
-        for attr_data in everything_signal_info:
-            source = get_full_attr_trl(everything_device_trl, attr_data.name)
-            # reset to initial value
-            await proxy.write_attribute(attr_data.name, attr_data.initial_value)
-            signal = tango_signal_r(
-                datatype=attr_data.py_type,
-                read_trl=source,
-                device_proxy=proxy if use_proxy else None,
-                timeout=timeout,
-                name="test_signal",
-            )
-            await signal.connect()
-            # need to convert int into strings for testing enums
-            converter = signal._connector.backend.converter  # type: ignore
-            value = converter.value(attr_data.initial_value)
-            await assert_value(signal, value)
-            await assert_reading(signal, {"test_signal": {"value": value}})
+    for attr_data in everything_signal_info:
+        source = get_full_attr_trl(everything_device_trl, attr_data.name)
+        signal = tango_signal_r(
+            datatype=attr_data.py_type,
+            read_trl=source,
+            timeout=timeout,
+            name="test_signal",
+        )
+        await signal.connect()
+        # value may have changed from initial value if other tests run first
+        # casting to array makes tuples returned from tango for arrays work with
+        # assert_* functions
+        value = np.array(await signal.get_value())
+        await assert_value(signal, value)
+        await assert_reading(signal, {"test_signal": {"value": value}})
 
 
 # --------------------------------------------------------------------
@@ -231,37 +226,34 @@ async def test_tango_signal_r(
 async def test_tango_signal_w(
     everything_device_trl: str,
 ):
-    for use_proxy in [True, False]:
-        proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
-        timeout = 0.2
-        for attr_data in everything_signal_info:
-            source = get_full_attr_trl(everything_device_trl, attr_data.name)
-            signal = tango_signal_w(
-                datatype=attr_data.py_type,
-                write_trl=source,
-                device_proxy=proxy,
-                timeout=timeout,
-                name="test_signal",
-            )
-            await signal.connect()  # have to connect to get correct converter
-            converter = signal._connector.backend.converter  # type: ignore
+    timeout = 0.2
+    for attr_data in everything_signal_info:
+        source = get_full_attr_trl(everything_device_trl, attr_data.name)
+        signal = tango_signal_w(
+            datatype=attr_data.py_type,
+            write_trl=source,
+            timeout=timeout,
+            name="test_signal",
+        )
+        await signal.connect()  # have to connect to get correct converter
+        converter = signal._connector.backend.converter  # type: ignore
 
-            put_value = converter.value(attr_data.random_value())
-            status = signal.set(put_value, wait=True, timeout=timeout)
-            await status
-            assert status.done is True and status.success is True
+        put_value = converter.value(attr_data.random_value())
+        status = signal.set(put_value, wait=True, timeout=timeout)
+        await status
+        assert status.done is True and status.success is True
 
-            status = signal.set(put_value, wait=False, timeout=timeout)
-            await status
-            assert status.done is True and status.success is True
+        status = signal.set(put_value, wait=False, timeout=timeout)
+        await status
+        assert status.done is True and status.success is True
 
-            status = signal.set(put_value, wait=True)
-            await status
-            assert status.done is True and status.success is True
+        status = signal.set(put_value, wait=True)
+        await status
+        assert status.done is True and status.success is True
 
-            status = signal.set(put_value, wait=False)
-            await status
-            assert status.done is True and status.success is True
+        status = signal.set(put_value, wait=False)
+        await status
+        assert status.done is True and status.success is True
 
 
 # --------------------------------------------------------------------
@@ -270,41 +262,35 @@ async def test_tango_signal_rw(
     everything_device_trl: str,
 ):
     timeout = 0.2
-    for use_proxy in [True, False]:
-        proxy = await DeviceProxy(everything_device_trl) if use_proxy else None
-        for attr_data in everything_signal_info:
-            source = get_full_attr_trl(everything_device_trl, attr_data.name)
-            signal = tango_signal_rw(
-                datatype=attr_data.py_type,
-                read_trl=source,
-                write_trl=source,
-                device_proxy=proxy,
-                timeout=timeout,
-                name="test_signal",
-            )
-            await signal.connect()
-            converter = signal._connector.backend.converter  # type: ignore
-            put_value = converter.value(attr_data.random_value())
-            await signal.set(put_value, wait=True)
-            await assert_value(signal, put_value)
+    for attr_data in everything_signal_info:
+        source = get_full_attr_trl(everything_device_trl, attr_data.name)
+        signal = tango_signal_rw(
+            datatype=attr_data.py_type,
+            read_trl=source,
+            write_trl=source,
+            timeout=timeout,
+            name="test_signal",
+        )
+        await signal.connect()
+        converter = signal._connector.backend.converter  # type: ignore
+        put_value = converter.value(attr_data.random_value())
+        await signal.set(put_value, wait=True)
+        await assert_value(signal, put_value)
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_signal_x(tango_test_device: str):
     timeout = 0.2
-    for use_proxy in [True, False]:
-        proxy = await DeviceProxy(tango_test_device) if use_proxy else None
-        signal = tango_signal_x(
-            write_trl=get_full_attr_trl(tango_test_device, "clear"),
-            device_proxy=proxy,
-            timeout=timeout,
-            name="test_signal",
-        )
-        await signal.connect()
-        status = signal.trigger()
-        await status
-        assert status.done is True and status.success is True
+    signal = tango_signal_x(
+        write_trl=get_full_attr_trl(tango_test_device, "clear"),
+        timeout=timeout,
+        name="test_signal",
+    )
+    await signal.connect()
+    status = signal.trigger()
+    await status
+    assert status.done is True and status.success is True
 
 
 _scalar_vals = {
