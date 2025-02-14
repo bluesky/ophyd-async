@@ -78,6 +78,7 @@ _array_vals = {
         ],
         dtype=np.float64,
     ),
+    "boola": np.array([False, False, True]),
 }
 
 
@@ -369,6 +370,38 @@ async def test_assert_reading(mock_readable: DummyReadableArray):
     await assert_reading(mock_readable, dummy_reading)
 
 
+async def test_assert_reading_optional_fields(
+    one_of_everything_device: OneOfEverythingDevice,
+):
+    # alarm_severity of 0 and timestamp of ANY supplied if none given
+    await assert_reading(
+        one_of_everything_device.a_int, {"everything-device-a_int": {"value": 1}}
+    )
+
+    with pytest.raises(AssertionError):
+        await assert_reading(
+            one_of_everything_device.a_int,
+            {"everything-device-a_int": {"value": 1, "timestamp": -1}},
+        )
+
+    with pytest.raises(AssertionError):
+        await assert_reading(
+            one_of_everything_device.a_int,
+            {"everything-device-a_int": {"value": 1, "alarm_severity": 1}},
+        )
+
+    await assert_reading(
+        one_of_everything_device.a_int,
+        {
+            "everything-device-a_int": {
+                "value": 1,
+                "alarm_severity": 0,
+                "timestamp": time.monotonic(),
+            }
+        },
+    )
+
+
 async def test_assert_configuration_everything(
     one_of_everything_device: OneOfEverythingDevice,
 ):
@@ -395,8 +428,13 @@ async def test_assert_configuration_everything(
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
-            "everything-device-enum": {
+            "everything-device-a_enum": {
                 "value": "Bbb",
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            },
+            "everything-device-boola": {
+                "value": _array_vals["boola"],
                 "timestamp": ANY,
                 "alarm_severity": 0,
             },
@@ -525,9 +563,19 @@ async def test_assert_reading_everything(
         },
     )
     await assert_reading(
-        one_of_everything_device.enum,
+        one_of_everything_device.boola,
         {
-            "everything-device-enum": {
+            "everything-device-boola": {
+                "value": _array_vals["boola"],
+                "timestamp": ANY,
+                "alarm_severity": 0,
+            }
+        },
+    )
+    await assert_reading(
+        one_of_everything_device.a_enum,
+        {
+            "everything-device-a_enum": {
                 "value": ExampleEnum.B,
                 "timestamp": ANY,
                 "alarm_severity": 0,
@@ -745,7 +793,9 @@ async def test_assert_value_everything(
     await assert_value(one_of_everything_device.a_float, 1.234)
     await assert_value(one_of_everything_device.a_str, "test_string")
     await assert_value(one_of_everything_device.a_bool, True)
-    await assert_value(one_of_everything_device.enum, ExampleEnum.B)
+    # for bools we must provide an array not a list for approx comparison to work
+    await assert_value(one_of_everything_device.a_enum, ExampleEnum.B)
+    await assert_value(one_of_everything_device.boola, _array_vals["boola"])
     await assert_value(
         one_of_everything_device.int8a,
         _array_vals["int8a"],

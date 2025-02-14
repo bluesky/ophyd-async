@@ -4,7 +4,7 @@ import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
-from typing import Any, TypeVar, cast
+from typing import Any, Generic, TypeVar, cast
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -16,6 +16,7 @@ from ophyd_async.core import (
     NotConnected,
     SignalBackend,
     SignalDatatypeT,
+    StrictEnum,
     get_dtype,
     get_unique,
     wait_for_connection,
@@ -38,10 +39,29 @@ from tango.asyncio_executor import (
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
+from ._utils import get_device_trl_and_attr
+
 # time constant to wait for timeout
 A_BIT = 1e-5
 
 R = TypeVar("R")
+
+
+class DevStateEnum(StrictEnum):
+    ON = "ON"
+    OFF = "OFF"
+    CLOSE = "CLOSE"
+    OPEN = "OPEN"
+    INSERT = "INSERT"
+    EXTRACT = "EXTRACT"
+    MOVING = "MOVING"
+    STANDBY = "STANDBY"
+    FAULT = "FAULT"
+    INIT = "INIT"
+    RUNNING = "RUNNING"
+    ALARM = "ALARM"
+    DISABLE = "DISABLE"
+    UNKNOWN = "UNKNOWN"
 
 
 def ensure_proper_executor(
@@ -486,7 +506,7 @@ def get_dtype_extended(datatype) -> object | None:
     # DevState tango type does not have numpy equivalents
     dtype = get_dtype(datatype)
     if dtype == np.object_:
-        if datatype.__args__[1].__args__[0] == DevState:
+        if datatype.__args__[1].__args__[0] in [DevStateEnum, DevState]:
             dtype = CmdArgType.DevState
     return dtype
 
@@ -596,7 +616,7 @@ async def get_tango_trl(
 
     if isinstance(device_proxy, TangoProxy):
         return device_proxy
-    device_trl, trl_name = full_trl.rsplit("/", 1)
+    device_trl, trl_name = get_device_trl_and_attr(full_trl)
     trl_name = trl_name.lower()
     if device_proxy is None:
         device_proxy = await AsyncDeviceProxy(device_trl, timeout=timeout)
@@ -628,6 +648,111 @@ async def get_tango_trl(
     raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
 
 
+class TangoConverter(Generic[SignalDatatypeT]):
+    def write_value(self, value: Any) -> Any:
+        return value
+
+    def value(self, value: Any) -> Any:
+        return value
+
+
+class TangoEnumConverter(TangoConverter):
+    def __init__(self, labels: list[str]):
+        self._labels = labels
+
+    def write_value(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError("TangoEnumConverter expects str value")
+        return self._labels.index(value)
+
+    def value(self, value: int):
+        return self._labels[value]
+
+
+class TangoEnumSpectrumConverter(TangoEnumConverter):
+    def write_value(self, value: np.ndarray[Any, str]):
+        # should return array of ints
+        return np.array([self._labels.index(v) for v in value])
+
+    def value(self, value: np.ndarray[Any, int]):
+        # should return array of strs
+        return np.array([self._labels[v] for v in value])
+
+
+class TangoEnumImageConverter(TangoEnumConverter):
+    def write_value(self, value: np.ndarray[Any, str]):
+        # should return array of ints
+        return np.vstack([[self._labels.index(v) for v in row] for row in value])
+
+    def value(self, value: np.ndarray[Any, int]):
+        # should return array of strs
+        return np.vstack([[self._labels[v] for v in row] for row in value])
+
+
+class TangoDevStateConverter(TangoConverter):
+    _labels = [e.value for e in DevStateEnum]
+
+    def write_value(self, value: Any) -> Any:
+        idx = self._labels.index(value)
+        return DevState(idx)
+
+    def value(self, value: DevState) -> Any:
+        idx = int(value)
+        return self._labels[idx]
+
+
+class TangoDevStateSpectrumConverter(TangoDevStateConverter):
+    def write_value(self, value):
+        # should return array of tango `DevState`s
+        return np.array(
+            [DevState(self._labels.index(v)) for v in value], dtype=DevState
+        )
+
+    def value(self, value):
+        # should return array of strs
+        result = np.array([self._labels[int(v)] for v in value])
+        return result
+
+
+class TangoDevStateImageConverter(TangoDevStateConverter):
+    def write_value(self, value):
+        # should return array of tango `DevState`s
+        result = np.vstack(
+            [
+                np.array([DevState(self._labels.index(v)) for v in row], dtype=DevState)
+                for row in value
+            ],
+        )
+
+        return result
+
+    def value(self, value):
+        # should return array of strs
+        return np.vstack([[self._labels[int(v)] for v in row] for row in value])
+
+
+def make_converter(info: AttributeInfoEx | CommandInfo) -> TangoConverter:
+    if isinstance(info, AttributeInfoEx):
+        match info.data_type:
+            case CmdArgType.DevEnum:
+                labels = list(info.enum_labels)
+                if info.data_format == AttrDataFormat.SCALAR:
+                    return TangoEnumConverter(labels)
+                elif info.data_format == AttrDataFormat.SPECTRUM:
+                    return TangoEnumSpectrumConverter(labels)
+                elif info.data_format == AttrDataFormat.IMAGE:
+                    return TangoEnumImageConverter(labels)
+            case CmdArgType.DevState:
+                if info.data_format == AttrDataFormat.SCALAR:
+                    return TangoDevStateConverter()
+                elif info.data_format == AttrDataFormat.SPECTRUM:
+                    return TangoDevStateSpectrumConverter()
+                elif info.data_format == AttrDataFormat.IMAGE:
+                    return TangoDevStateImageConverter()
+    # default case return trivial converter
+    return TangoConverter()
+
+
 class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
     """Tango backend to connect signals over tango."""
 
@@ -655,11 +780,12 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         )
         self.support_events: bool = True
         self.status: AsyncStatus | None = None
+        self.converter = TangoConverter()  # gets replaced at connect
         super().__init__(datatype)
 
     @classmethod
     def datatype_allowed(cls, dtype: Any) -> bool:
-        return dtype in (int, float, str, bool, np.ndarray, Enum, DevState)
+        return dtype in (int, float, str, bool, np.ndarray, StrictEnum)
 
     def set_trl(self, read_trl: str = "", write_trl: str = ""):
         self.read_trl = read_trl
@@ -700,11 +826,13 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             # The same, so only need to connect one
             await self._connect_and_store_config(self.read_trl, timeout)
         self.proxies[self.read_trl].set_polling(*self._polling)  # type: ignore
+        self.converter = make_converter(self.trl_configs[self.read_trl])
         self.descriptor = get_trl_descriptor(
             self.datatype, self.read_trl, self.trl_configs
         )
 
     async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None) -> None:
+        value = self.converter.write_value(value)
         if self.proxies[self.write_trl] is None:
             raise NotConnected(f"Not connected to {self.write_trl}")
         self.status = None
@@ -717,7 +845,9 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
     async def get_reading(self) -> Reading[SignalDatatypeT]:
         if self.proxies[self.read_trl] is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
-        return await self.proxies[self.read_trl].get_reading()  # type: ignore
+        reading = await self.proxies[self.read_trl].get_reading()  # type: ignore
+        reading["value"] = self.converter.value(reading["value"])
+        return reading
 
     async def get_value(self) -> SignalDatatypeT:
         if self.proxies[self.read_trl] is None:
@@ -725,7 +855,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         proxy = self.proxies[self.read_trl]
         if proxy is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
-        return cast(SignalDatatypeT, await proxy.get())
+        value = await proxy.get()
+        return cast(SignalDatatypeT, self.converter.value(value))
 
     async def get_setpoint(self) -> SignalDatatypeT:
         if self.proxies[self.write_trl] is None:
@@ -733,7 +864,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         proxy = self.proxies[self.write_trl]
         if proxy is None:
             raise NotConnected(f"Not connected to {self.write_trl}")
-        return cast(SignalDatatypeT, await proxy.get_w_value())
+        w_value = await proxy.get_w_value()
+        return cast(SignalDatatypeT, self.converter.value(w_value))
 
     def set_callback(self, callback: Callback | None) -> None:
         if self.proxies[self.read_trl] is None:

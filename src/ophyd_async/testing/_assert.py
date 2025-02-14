@@ -1,8 +1,7 @@
 import asyncio
-import time
 from contextlib import AbstractContextManager
 from typing import Any
-from unittest.mock import Mock, call
+from unittest.mock import ANY, Mock, call
 
 import pytest
 from bluesky.protocols import Reading
@@ -47,7 +46,8 @@ async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
 
 
 async def assert_reading(
-    readable: AsyncReadable, expected_reading: dict[str, Reading]
+    readable: AsyncReadable,
+    expected_reading: dict[str, dict[str, Any]],
 ) -> None:
     """Assert that a readable Device has the given reading.
 
@@ -59,16 +59,25 @@ async def assert_reading(
         The expected reading from the readable.
     """
     actual_reading = await readable.read()
+    _assert_readings_approx_equal(expected_reading, actual_reading)
+
+
+def _assert_readings_approx_equal(expected, actual):
     approx_expected_reading = {
-        k: dict(v, value=approx_value(expected_reading[k]["value"]))
-        for k, v in expected_reading.items()
+        k: dict(
+            v,
+            value=approx_value(expected[k]["value"]),
+            timestamp=pytest.approx(expected[k].get("timestamp", ANY), rel=0.1),
+            alarm_severity=pytest.approx(expected[k].get("alarm_severity", ANY)),
+        )
+        for k, v in expected.items()
     }
-    assert actual_reading == approx_expected_reading
+    assert actual == approx_expected_reading
 
 
 async def assert_configuration(
     configurable: AsyncConfigurable,
-    configuration: dict[str, Reading],
+    configuration: dict[str, dict[str, Any]],
 ) -> None:
     """Assert that a configurable Device has the given configuration.
 
@@ -81,11 +90,7 @@ async def assert_configuration(
         The expected configuration from the configurable.
     """
     actual_configuration = await configurable.read_configuration()
-    approx_expected_configuration = {
-        k: dict(v, value=approx_value(configuration[k]["value"]))
-        for k, v in configuration.items()
-    }
-    assert actual_configuration == approx_expected_configuration
+    _assert_readings_approx_equal(configuration, actual_configuration)
 
 
 async def assert_describe_signal(signal: SignalR, /, **metadata):
@@ -148,26 +153,18 @@ class MonitorQueue(AbstractContextManager):
     def __init__(self, signal: SignalR):
         self.signal = signal
         self.updates: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
-        self.signal.subscribe(self.updates.put_nowait)
 
     async def assert_updates(self, expected_value):
         # Get an update, value and reading
-        expected_type = type(expected_value)
-        expected_value = approx_value(expected_value)
-        update = await asyncio.wait_for(self.updates.get(), timeout=1)
-        value = await self.signal.get_value()
-        reading = await self.signal.read()
-        # Check they match what we expected
-        assert value == expected_value
-        assert type(value) is expected_type
+        update = await asyncio.wait_for(self.updates.get(), timeout=5)
+        await assert_value(self.signal, expected_value)
         expected_reading = {
             self.signal.name: {
                 "value": expected_value,
-                "timestamp": pytest.approx(time.time(), rel=0.1),
-                "alarm_severity": 0,
             }
         }
-        assert reading == update == expected_reading
+        await assert_reading(self.signal, expected_reading)
+        _assert_readings_approx_equal(expected_reading, update)
 
     def __enter__(self):
         self.signal.subscribe(self.updates.put_nowait)

@@ -8,6 +8,7 @@ from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
+from ._utils import get_full_attr_trl
 
 T = TypeVar("T")
 
@@ -21,9 +22,7 @@ class TangoDevice(Device):
     ----------
     trl: str
         Tango resource locator, typically of the device server.
-    device_proxy:
-        Asynchronous or synchronous DeviceProxy object for the device. If not provided,
-        an asynchronous DeviceProxy object will be created using the trl and awaited
+        An asynchronous DeviceProxy object will be created using the trl and awaited
         when the device is connected.
     """
 
@@ -32,14 +31,11 @@ class TangoDevice(Device):
 
     def __init__(
         self,
-        trl: str | None = None,
-        device_proxy: DeviceProxy | None = None,
+        trl: str | None,
         support_events: bool = False,
         name: str = "",
     ) -> None:
-        connector = TangoDeviceConnector(
-            trl=trl, device_proxy=device_proxy, support_events=support_events
-        )
+        connector = TangoDeviceConnector(trl=trl, support_events=support_events)
         super().__init__(name=name, connector=connector)
 
 
@@ -74,11 +70,9 @@ class TangoDeviceConnector(DeviceConnector):
     def __init__(
         self,
         trl: str | None,
-        device_proxy: DeviceProxy | None,
         support_events: bool,
     ) -> None:
         self.trl = trl
-        self.proxy = device_proxy
         self._support_events = support_events
 
     def create_children_from_annotations(self, device: Device):
@@ -87,7 +81,7 @@ class TangoDeviceConnector(DeviceConnector):
                 device=device,
                 signal_backend_factory=TangoSignalBackend,
                 device_connector_factory=lambda: TangoDeviceConnector(
-                    None, None, self._support_events
+                    None, self._support_events
                 ),
             )
             list(self.filler.create_devices_from_annotations(filled=False))
@@ -105,13 +99,9 @@ class TangoDeviceConnector(DeviceConnector):
         return await super().connect_mock(device, mock)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
-        if self.trl and self.proxy is None:
-            self.proxy = await AsyncDeviceProxy(self.trl)
-        elif self.proxy and not self.trl:
-            self.trl = self.proxy.name()
-        else:
-            raise TypeError("Neither proxy nor trl supplied")
-
+        if not self.trl:
+            raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
+        self.proxy = await AsyncDeviceProxy(self.trl)
         children = sorted(
             set()
             .union(self.proxy.get_attribute_list())
@@ -119,7 +109,7 @@ class TangoDeviceConnector(DeviceConnector):
         )
         for name in children:
             # TODO: strip attribute name
-            full_trl = f"{self.trl}/{name}"
+            full_trl = get_full_attr_trl(self.trl, name)
             signal_type = await infer_signal_type(full_trl, self.proxy)
             if signal_type:
                 backend = self.filler.fill_child_signal(name, signal_type)
