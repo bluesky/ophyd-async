@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._settings &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.core._settings &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -477,7 +477,27 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="Settings">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Settings">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">(</span><span class="n">MutableMapping</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">DeviceT</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for supplying settings to signals.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for supplying settings to signals.</span>
+
+<span class="sd">    :param device: The device that the settings are for.</span>
+<span class="sd">    :param settings: A dictionary of settings to start with.</span>
+
+<span class="sd">    :example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    # Settings are created from a dict of signals to values</span>
+<span class="sd">    settings1 = Settings(device, {device.sig1: 1, device.sig2: 2})</span>
+<span class="sd">    settings2 = Settings(device, {device.sig1: 10, device.sig3: 3})</span>
+<span class="sd">    # They act like a dictionaries</span>
+<span class="sd">    assert settings1[device.sig1] == 1</span>
+<span class="sd">    # Including the ability to &quot;or&quot; two settings together</span>
+<span class="sd">    settings = settings1 | settings2</span>
+<span class="sd">    assert dict(settings) == {</span>
+<span class="sd">        device.sig1: 10,</span>
+<span class="sd">        device.sig2: 2,</span>
+<span class="sd">        device.sig3: 3,</span>
+<span class="sd">    }</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">DeviceT</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -517,19 +537,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Settings</span><span class="p">[</span><span class="n">DeviceT</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new Settings that is the union of self overridden by other.</span>
-
-<span class="sd">        For example::</span>
-
-<span class="sd">            settings1 = Settings(device, {device.sig1: 1, device.sig2: 2})</span>
-<span class="sd">            settings2 = Settings(device, {device.sig1: 10, device.sig3: 3})</span>
-<span class="sd">            settings = settings1 | settings2</span>
-<span class="sd">            assert dict(settings) == {</span>
-<span class="sd">                device.sig1: 10,</span>
-<span class="sd">                device.sig2: 2,</span>
-<span class="sd">                device.sig3: 3,</span>
-<span class="sd">            }</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new Settings that is the union of self overridden by other.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Settings</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_in_device</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2"> is not a child of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
@@ -541,22 +549,19 @@ window.addEventListener("load", () => mermaid.run());
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Settings</span><span class="p">[</span><span class="n">DeviceT</span><span class="p">],</span> <span class="n">Settings</span><span class="p">[</span><span class="n">DeviceT</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Partition into two Settings based on a predicate.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        predicate</span>
+<span class="sd">        :param predicate:</span>
 <span class="sd">            Callable that takes each signal, and returns a boolean to say if it</span>
 <span class="sd">            should be in the first returned Settings</span>
+<span class="sd">        :returns:</span>
+<span class="sd">            `(where_true, where_false)` where each is a Settings object.</span>
+<span class="sd">            The first contains the signals for which the predicate returned True,</span>
+<span class="sd">            and the second contains the signals for which the predicate returned False.</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        tuple</span>
-<span class="sd">            With the first element being the true settings and the second</span>
-<span class="sd">            being the false.</span>
-
-<span class="sd">        For example::</span>
-
-<span class="sd">            settings = Settings(device, {device.special: 1, device.sig: 2})</span>
-<span class="sd">            specials, others = settings.partition(lambda sig: &quot;special&quot; in sig.name)</span>
+<span class="sd">        :example:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        settings = Settings(device, {device.special: 1, device.sig: 2})</span>
+<span class="sd">        specials, others = settings.partition(lambda sig: &quot;special&quot; in sig.name)</span>
+<span class="sd">        ```</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">where_true</span><span class="p">,</span> <span class="n">where_false</span> <span class="o">=</span> <span class="n">Settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">Settings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">signal</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -576,16 +581,14 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SettingsProvider.store">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store the data, associating it with the given name.&quot;&quot;&quot;</span>
-        <span class="o">...</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store the data, associating it with the given name.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="SettingsProvider.retrieve">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SettingsProvider.retrieve">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the data associated with the given name.&quot;&quot;&quot;</span>
-        <span class="o">...</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve the data associated with the given name.&quot;&quot;&quot;</span></div>
 </div>
 
 </pre></div>

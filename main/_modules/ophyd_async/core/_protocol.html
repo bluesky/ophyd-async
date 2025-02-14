@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._protocol &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.core._protocol &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -486,16 +486,15 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncReadable">[docs]</a>
 <span class="nd">@runtime_checkable</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">AsyncReadable</span><span class="p">(</span><span class="n">HasName</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For async implementations of the bluesky sync `bluesky.protocols.Readable`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Async implementations of the sync [](#bluesky.protocols.Readable).&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AsyncReadable.read">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncReadable.read">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict mapping string field name(s) to dictionaries</span>
-<span class="sd">        of values and timestamps and optional per-point metadata.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return value, timestamp, optional per-point metadata for each field name.</span>
 
-<span class="sd">        For example::</span>
+<span class="sd">        For example:</span>
 
 <span class="sd">            {</span>
 <span class="sd">                &quot;channel1&quot;: {&quot;value&quot;: 5, &quot;timestamp&quot;: 1472493713.271991},</span>
@@ -508,10 +507,9 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncReadable.describe">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dict with exactly the same keys as the `read`</span>
-<span class="sd">        method, here mapped to per-scan metadata about each field.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return per-scan metadata for each field name in `read()`.</span>
 
-<span class="sd">        For example::</span>
+<span class="sd">        For example:</span>
 
 <span class="sd">            {</span>
 <span class="sd">                &quot;channel1&quot;: {&quot;source&quot;: &quot;SOME_PV1&quot;, &quot;dtype&quot;: &quot;number&quot;, &quot;shape&quot;: []},</span>
@@ -526,14 +524,15 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncConfigurable">[docs]</a>
 <span class="nd">@runtime_checkable</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">AsyncConfigurable</span><span class="p">(</span><span class="n">HasName</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For async implementations of the bluesky sync</span>
-<span class="sd">    `bluesky.protocols.Configurable`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Async implementation of the sync [](#bluesky.protocols.Configurable).&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AsyncConfigurable.read_configuration">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncConfigurable.read_configuration">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Same API as `AsyncReadable.read` but for slow-changing fields related to</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return value, timestamp, optional per-point metadata for each field name.</span>
+
+<span class="sd">        Same API as [](#AsyncReadable.read) but for slow-changing fields related to</span>
 <span class="sd">        configuration. e.g., exposure time. These will typically be read only</span>
 <span class="sd">        once per run.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
@@ -543,16 +542,14 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncConfigurable.describe_configuration">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Same API as ``describe``, but corresponding to the keys in</span>
-<span class="sd">        ``read_configuration``.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return per-scan metadata for each field name in `read_configuration()`.&quot;&quot;&quot;</span></div>
 </div>
 
 
 
 <span class="nd">@runtime_checkable</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">AsyncPausable</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For async implementations of the bluesky sync `bluesky.protocols.Pausable`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Async implementation of the sync [](#bluesky.protocols.Pausable).&quot;&quot;&quot;</span>
 
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -567,16 +564,15 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncStageable">[docs]</a>
 <span class="nd">@runtime_checkable</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">AsyncStageable</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For async implementations of the bluesky sync `bluesky.protocols.Stageable`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Async implementation of the sync [](#bluesky.protocols.Stageable).&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AsyncStageable.stage">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncStageable.stage">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;An optional hook for &quot;setting up&quot; the device for acquisition.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up the device for acquisition.</span>
 
-<span class="sd">        It should return a ``Status`` that is marked done when the device is</span>
-<span class="sd">        done staging.</span>
+<span class="sd">        :return: An `AsyncStatus` that is marked done when the device is done staging.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 
@@ -584,10 +580,9 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncStageable.unstage">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A hook for &quot;cleaning up&quot; the device after acquisition.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up the device after acquisition.</span>
 
-<span class="sd">        It should return a ``Status`` that is marked done when the device is finished</span>
-<span class="sd">        unstaging.</span>
+<span class="sd">        :return: An `AsyncStatus` that is marked done when the device is done unstaging.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 </div>
 

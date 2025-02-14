@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -545,17 +545,16 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the exposure time if it is not None and the acquire period to the</span>
-<span class="sd">        exposure time plus the deadtime. This is expected behavior for most</span>
-<span class="sd">        AreaDetectors, but some may require more specialized handling.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the exposure time and acquire period.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        exposure:</span>
-<span class="sd">            Desired exposure time, this is a noop if it is None.</span>
-<span class="sd">        timeout:</span>
-<span class="sd">            How long to wait for the exposure time and acquire period to be set.</span>
+<span class="sd">        If exposure is not None, this sets the acquire time to the exposure time</span>
+<span class="sd">        and sets the acquire period to the exposure time plus the deadtime. This</span>
+<span class="sd">        is expected behavior for most AreaDetectors, but some may require more</span>
+<span class="sd">        specialized handling.</span>
+
+<span class="sd">        :param exposure: Desired exposure time, this is a noop if it is None.</span>
+<span class="sd">        :type exposure: How long to wait for the exposure time and acquire</span>
+<span class="sd">            period to be set.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">exposure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">full_frame_time</span> <span class="o">=</span> <span class="n">exposure</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span>
@@ -568,20 +567,16 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="ADBaseController.start_acquiring_driver_and_ensure_status">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseController.start_acquiring_driver_and_ensure_status">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_acquiring_driver_and_ensure_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Start acquiring driver, raising ValueError if the detector is in a bad state.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start acquiring driver, raising ValueError if the detector is in a bad state.</span>
 
 <span class="sd">        This sets driver.acquire to True, and waits for it to be True up to a timeout.</span>
 <span class="sd">        Then, it checks that the DetectorState PV is in DEFAULT_GOOD_STATES,</span>
 <span class="sd">        and otherwise raises a ValueError.</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        AsyncStatus:</span>
+<span class="sd">        :returns AsyncStatus:</span>
 <span class="sd">            An AsyncStatus that can be awaited to set driver.acquire to True and perform</span>
 <span class="sd">            subsequent raising (if applicable) due to detector state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span>
             <span class="kc">True</span><span class="p">,</span>
@@ -590,8 +585,8 @@ window.addEventListener("load", () => mermaid.run());
         <span class="p">)</span>
 
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete_acquisition</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;NOTE: possible race condition here between the callback from</span>
-<span class="sd">            set_and_wait_for_value and the detector state updating.&quot;&quot;&quot;</span>
+            <span class="c1"># NOTE: possible race condition here between the callback from</span>
+            <span class="c1"># set_and_wait_for_value and the detector state updating.</span>
             <span class="k">await</span> <span class="n">status</span>
             <span class="n">state</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">detector_state</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">good_states</span><span class="p">:</span>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.plan_stubs._settings &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.plan_stubs._settings &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -501,7 +501,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="nd">@plan</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_current_settings</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MsgGenerator</span><span class="p">[</span><span class="n">Settings</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get current settings on `Device`.&quot;&quot;&quot;</span>
-
     <span class="n">signals</span> <span class="o">=</span> <span class="n">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">named_values</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">_get_values_of_signals</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span>
     <span class="n">signal_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">signals</span><span class="p">[</span><span class="n">name</span><span class="p">]:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">named_values</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
@@ -515,8 +514,11 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">def</span><span class="w"> </span><span class="nf">store_settings</span><span class="p">(</span>
     <span class="n">provider</span><span class="p">:</span> <span class="n">SettingsProvider</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MsgGenerator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Walk a Device for SignalRWs and store their values with a provider associated</span>
-<span class="sd">    with the given name.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Walk a Device for SignalRWs and store their values.</span>
+
+<span class="sd">    :param provider: The provider to store the settings with.</span>
+<span class="sd">    :param name: The name to store the settings under.</span>
+<span class="sd">    :param device: The Device to walk for SignalRWs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">signals</span> <span class="o">=</span> <span class="n">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">named_values</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">_get_values_of_signals</span><span class="p">(</span><span class="n">signals</span><span class="p">)</span>
@@ -564,15 +566,12 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">apply_plan</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Settings</span><span class="p">],</span> <span class="n">MsgGenerator</span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span>
     <span class="n">current_settings</span><span class="p">:</span> <span class="n">Settings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MsgGenerator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set every SignalRW in settings to its given value if it is different to the</span>
-<span class="sd">    current value.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set every SignalRW in settings, only if it is different to the current value.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    apply_plan:</span>
+<span class="sd">    :param apply_plan:</span>
 <span class="sd">        A device specific plan which takes the Settings to apply and applies them to</span>
 <span class="sd">        the Device. Used to add device specific ordering to setting the signals.</span>
-<span class="sd">    current_settings:</span>
+<span class="sd">    :param current_settings:</span>
 <span class="sd">        If given, should be a superset of settings containing the current value of</span>
 <span class="sd">        the Settings in the Device. If not given it will be created by reading just</span>
 <span class="sd">        the signals given in settings.</span>

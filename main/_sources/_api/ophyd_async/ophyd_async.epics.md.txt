@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.epics
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 

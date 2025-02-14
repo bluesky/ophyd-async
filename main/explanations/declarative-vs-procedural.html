@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Design goals and differences with ophyd sync" href="design-goals.html" />
-    <link rel="prev" title="9. Procedural vs Declarative Devices" href="decisions/0009-procedural-vs-declarative-devices.html" />
+    <link rel="prev" title="10. Decide on docstring format" href="decisions/0010-docstring-format.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -420,6 +420,7 @@
 <li class="toctree-l2"><a class="reference internal" href="decisions/0007-subpackage-structure.html">7. Sub-package Structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="decisions/0008-signal-types.html">8. Settle on Signal Types</a></li>
 <li class="toctree-l2"><a class="reference internal" href="decisions/0009-procedural-vs-declarative-devices.html">9. Procedural vs Declarative Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0010-docstring-format.html">10. Decide on docstring format</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Declarative vs Procedural Devices</a></li>
@@ -496,11 +497,10 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="sd">&quot;&quot;&quot;For usage when simulating a motor.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">instant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulation of a motor, with optional velocity</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulate a motor, with optional velocity.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">        - name: name of device</span>
-<span class="sd">        - instant: whether to move instantly or calculate move time using velocity</span>
+<span class="sd">        :param name: name of device</span>
+<span class="sd">        :param instant: whether to move instantly or calculate move time using velocity</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Define some signals</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">):</span>
@@ -578,12 +578,12 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="decisions/0009-procedural-vs-declarative-devices.html"
+       href="decisions/0010-docstring-format.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">9. Procedural vs Declarative Devices</p>
+        <p class="prev-next-title">10. Decide on docstring format</p>
       </div>
     </a>
     <a class="right-next"

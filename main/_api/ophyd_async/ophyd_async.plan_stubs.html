@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.plan_stubs &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.plan_stubs &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -549,18 +549,16 @@
 <td><p>Set every SignalRW to the given value in Settings. If value is None ignore it.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.apply_settings_if_different" title="ophyd_async.plan_stubs._settings.apply_settings_if_different"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_settings_if_different</span></code></a></p></td>
-<td><p>Set every SignalRW in settings to its given value if it is different to the
-current value.</p></td>
+<td><p>Set every SignalRW in settings, only if it is different to the current value.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.get_current_settings" title="ophyd_async.plan_stubs._settings.get_current_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_current_settings</span></code></a></p></td>
-<td><p>Get current settings on <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Device</span></code></a>.</p></td>
+<td><p>Get current settings on <code class="docutils literal notranslate"><span class="pre">Device</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.retrieve_settings" title="ophyd_async.plan_stubs._settings.retrieve_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">retrieve_settings</span></code></a></p></td>
 <td><p>Retrieve named Settings for a Device from a provider.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.store_settings" title="ophyd_async.plan_stubs._settings.store_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_settings</span></code></a></p></td>
-<td><p>Walk a Device for SignalRWs and store their values with a provider associated
-with the given name.</p></td>
+<td><p>Walk a Device for SignalRWs and store their values.</p></td>
 </tr>
 </tbody>
 </table>
@@ -595,13 +593,11 @@ and the TriggerInfo is required to prepare the detector(s).</p>
 <p>The stub demonstrates the standard basic flow for a flyscan:</p>
 <ul class="simple">
 <li><p>Prepare the flyer and detectors with a trigger</p></li>
-<li><dl class="simple">
-<dt>Fly and collect:</dt><dd><ul>
+<li><p>Fly and collect:</p>
+<ul>
 <li><p>Declare the stream and kickoff the scan</p></li>
 <li><p>Collect while completing</p></li>
 </ul>
-</dd>
-</dl>
 </li>
 </ul>
 <p>This needs to be used in a plan that instantates detectors and a flyer,
@@ -641,9 +637,8 @@ stages/unstages the devices, and opens and closes the run.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.plan_stubs.apply_settings_if_different">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">apply_settings_if_different</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Settings" title="ophyd_async.core.Settings"><span class="pre">Settings</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Settings" title="ophyd_async.core.Settings"><span class="pre">Settings</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.utils.MsgGenerator.html#bluesky.utils.MsgGenerator" title="(in bluesky v1.13.1rc3.dev11+g541c4e8f)"><span class="pre">MsgGenerator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Settings" title="ophyd_async.core.Settings"><span class="pre">Settings</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.utils.MsgGenerator.html#bluesky.utils.MsgGenerator" title="(in bluesky v1.13.1rc3.dev11+g541c4e8f)"><span class="pre">MsgGenerator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_settings.html#apply_settings_if_different"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.apply_settings_if_different" title="Link to this definition">#</a></dt>
-<dd><p>Set every SignalRW in settings to its given value if it is different to the
-current value.</p>
-<dl class="field-list simple">
+<dd><p>Set every SignalRW in settings, only if it is different to the current value.</p>
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>apply_plan</strong> – A device specific plan which takes the Settings to apply and applies them to
@@ -659,7 +654,7 @@ the signals given in settings.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.plan_stubs.get_current_settings">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">get_current_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><span class="pre">Device</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.utils.MsgGenerator.html#bluesky.utils.MsgGenerator" title="(in bluesky v1.13.1rc3.dev11+g541c4e8f)"><span class="pre">MsgGenerator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Settings" title="ophyd_async.core.Settings"><span class="pre">Settings</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_settings.html#get_current_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.get_current_settings" title="Link to this definition">#</a></dt>
-<dd><p>Get current settings on <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Device</span></code></a>.</p>
+<dd><p>Get current settings on <code class="docutils literal notranslate"><span class="pre">Device</span></code>.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -671,8 +666,16 @@ the signals given in settings.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.plan_stubs.store_settings">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">store_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SettingsProvider" title="ophyd_async.core.SettingsProvider"><span class="pre">SettingsProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><span class="pre">Device</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.utils.MsgGenerator.html#bluesky.utils.MsgGenerator" title="(in bluesky v1.13.1rc3.dev11+g541c4e8f)"><span class="pre">MsgGenerator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_settings.html#store_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.store_settings" title="Link to this definition">#</a></dt>
-<dd><p>Walk a Device for SignalRWs and store their values with a provider associated
-with the given name.</p>
+<dd><p>Walk a Device for SignalRWs and store their values.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>provider</strong> – The provider to store the settings with.</p></li>
+<li><p><strong>name</strong> – The name to store the settings under.</p></li>
+<li><p><strong>device</strong> – The Device to walk for SignalRWs.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -726,9 +729,9 @@ with the given name.</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.fly_and_collect"><code class="docutils literal notranslate"><span class="pre">fly_and_collect()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.prepare_static_seq_table_flyer_and_detectors_with_same_trigger"><code class="docutils literal notranslate"><span class="pre">prepare_static_seq_table_flyer_and_detectors_with_same_trigger()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.time_resolved_fly_and_collect_with_static_seq_table"><code class="docutils literal notranslate"><span class="pre">time_resolved_fly_and_collect_with_static_seq_table()</span></code></a></li>

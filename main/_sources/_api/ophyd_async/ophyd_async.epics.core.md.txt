@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.epics.core
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 
@@ -18,22 +17,18 @@
 
 * - {py:obj}`PviDeviceConnector <ophyd_async.epics.core._pvi_connector.PviDeviceConnector>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`EpicsDeviceConnector <ophyd_async.epics.core._epics_connector.EpicsDeviceConnector>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.EpicsDeviceConnector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`PvSuffix <ophyd_async.epics.core._epics_connector.PvSuffix>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`EpicsDevice <ophyd_async.epics.core._epics_device.EpicsDevice>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._epics_device.EpicsDevice
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -46,27 +41,22 @@
 
 * - {py:obj}`epics_signal_r <ophyd_async.epics.core._signal.epics_signal_r>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_r
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`epics_signal_rw <ophyd_async.epics.core._signal.epics_signal_rw>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`epics_signal_rw_rbv <ophyd_async.epics.core._signal.epics_signal_rw_rbv>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw_rbv
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`epics_signal_w <ophyd_async.epics.core._signal.epics_signal_w>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_w
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`epics_signal_x <ophyd_async.epics.core._signal.epics_signal_x>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_x
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -79,11 +69,13 @@
 Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 
 ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device)
 :canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.create_children_from_annotations
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.create_children_from_annotations
+```
 
 ````
 
@@ -91,11 +83,17 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 :canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_mock
 :async:
 
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_mock
+```
+
 ````
 
 ````{py:method} connect_real(device: ~ophyd_async.core.Device, timeout: float, force_reconnect: bool) -> None
 :canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_real
 :async:
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_real
+```
 
 ````
 
@@ -107,11 +105,13 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 
 ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.EpicsDeviceConnector
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device)
 :canonical: ophyd_async.epics.core._epics_connector.EpicsDeviceConnector.create_children_from_annotations
+
+```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.EpicsDeviceConnector.create_children_from_annotations
+```
 
 ````
 
@@ -121,7 +121,6 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 :canonical: ophyd_async.epics.core._epics_connector.PvSuffix
 
 ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} read_suffix
@@ -131,7 +130,6 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix.read_suffix
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -143,7 +141,6 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix.write_suffix
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -153,7 +150,6 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 :classmethod:
 
 ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix.rbv
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -166,7 +162,6 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 Bases: {py:obj}`ophyd_async.core.Device`
 
 ```{autodoc2-docstring} ophyd_async.epics.core._epics_device.EpicsDevice
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -175,7 +170,6 @@ Bases: {py:obj}`ophyd_async.core.Device`
 :canonical: ophyd_async.epics.core._signal.epics_signal_r
 
 ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_r
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -183,7 +177,6 @@ Bases: {py:obj}`ophyd_async.core.Device`
 :canonical: ophyd_async.epics.core._signal.epics_signal_rw
 
 ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -191,7 +184,6 @@ Bases: {py:obj}`ophyd_async.core.Device`
 :canonical: ophyd_async.epics.core._signal.epics_signal_rw_rbv
 
 ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw_rbv
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -199,7 +191,6 @@ Bases: {py:obj}`ophyd_async.core.Device`
 :canonical: ophyd_async.epics.core._signal.epics_signal_w
 
 ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_w
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -207,6 +198,5 @@ Bases: {py:obj}`ophyd_async.core.Device`
 :canonical: ophyd_async.epics.core._signal.epics_signal_x
 
 ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_x
-:parser: ophyd_async._docs_parser
 ```
 ````

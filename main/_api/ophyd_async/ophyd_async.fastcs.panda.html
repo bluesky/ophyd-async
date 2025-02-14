@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.fastcs.panda &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.fastcs.panda &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -536,7 +536,7 @@
 <td><p>Bit input with configurable delay in the PandA.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaCaptureMode" title="ophyd_async.fastcs.panda._block.PandaCaptureMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaCaptureMode</span></code></a></p></td>
-<td><p>Capture mode for the <a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock" title="ophyd_async.fastcs.panda.DataBlock"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DataBlock</span></code></a> on the PandA.</p></td>
+<td><p>Capture mode for the <code class="docutils literal notranslate"><span class="pre">DataBlock</span></code> on the PandA.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PcapBlock" title="ophyd_async.fastcs.panda._block.PcapBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PcapBlock</span></code></a></p></td>
 <td><p>Position capture block in the PandA.</p></td>
@@ -560,13 +560,13 @@
 <td><p>PandA with common blocks for standard HDF writing.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaHDFWriter" title="ophyd_async.fastcs.panda._writer.PandaHDFWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaHDFWriter</span></code></a></p></td>
-<td><p>For writing for PandA data from the <a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock" title="ophyd_async.fastcs.panda.DataBlock"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DataBlock</span></code></a>.</p></td>
+<td><p>For writing for PandA data from the <code class="docutils literal notranslate"><span class="pre">DataBlock</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaPcapController" title="ophyd_async.fastcs.panda._control.PandaPcapController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaPcapController</span></code></a></p></td>
 <td><p>For controlling a PCAP capture on the PandA.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.DatasetTable" title="ophyd_async.fastcs.panda._table.DatasetTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatasetTable</span></code></a></p></td>
-<td></td>
+<td><p>An abstraction of a Table where each field is a column.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaHdf5DatasetType" title="ophyd_async.fastcs.panda._table.PandaHdf5DatasetType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaHdf5DatasetType</span></code></a></p></td>
 <td><p>Dataset options for HDF capture.</p></td>
@@ -578,16 +578,16 @@
 <td><p>Trigger options for the SeqTable.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PcompInfo" title="ophyd_async.fastcs.panda._trigger.PcompInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PcompInfo</span></code></a></p></td>
-<td><p>Info for the PandA <a class="reference internal" href="#ophyd_async.fastcs.panda.PcompBlock" title="ophyd_async.fastcs.panda.PcompBlock"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PcompBlock</span></code></a> for flyscanning.</p></td>
+<td><p>Info for the PandA <code class="docutils literal notranslate"><span class="pre">PcompBlock</span></code> for flyscanning.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTableInfo" title="ophyd_async.fastcs.panda._trigger.SeqTableInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SeqTableInfo</span></code></a></p></td>
-<td><p>Info for the PandA <a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda.SeqTable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SeqTable</span></code></a> for flyscanning.</p></td>
+<td><p>Info for the PandA <code class="docutils literal notranslate"><span class="pre">SeqTable</span></code> for flyscanning.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic" title="ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StaticPcompTriggerLogic</span></code></a></p></td>
-<td><p>For controlling the PandA <a class="reference internal" href="#ophyd_async.fastcs.panda.PcompBlock" title="ophyd_async.fastcs.panda.PcompBlock"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PcompBlock</span></code></a> when flyscanning.</p></td>
+<td><p>For controlling the PandA <code class="docutils literal notranslate"><span class="pre">PcompBlock</span></code> when flyscanning.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic" title="ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StaticSeqTableTriggerLogic</span></code></a></p></td>
-<td><p>For controlling the PandA <a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda.SeqTable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SeqTable</span></code></a> when flyscanning.</p></td>
+<td><p>For controlling the PandA <code class="docutils literal notranslate"><span class="pre">SeqTable</span></code> when flyscanning.</p></td>
 </tr>
 </tbody>
 </table>
@@ -722,7 +722,7 @@
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaCaptureMode">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PandaCaptureMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#PandaCaptureMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaCaptureMode" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
-<p>Capture mode for the <a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock" title="ophyd_async.fastcs.panda.DataBlock"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DataBlock</span></code></a> on the PandA.</p>
+<p>Capture mode for the <code class="docutils literal notranslate"><span class="pre">DataBlock</span></code> on the PandA.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaCaptureMode.FIRST_N">
 <span class="sig-name descname"><span class="pre">FIRST_N</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaCaptureMode.FIRST_N" title="Link to this definition">#</a></dt>
@@ -940,11 +940,11 @@
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PandaHDFWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.PathProvider" title="ophyd_async.core.PathProvider"><span class="pre">PathProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.NameProvider" title="ophyd_async.core.NameProvider"><span class="pre">NameProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">panda_data_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock" title="ophyd_async.fastcs.panda._block.DataBlock"><span class="pre">DataBlock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.DetectorWriter</span></code></a></p>
-<p>For writing for PandA data from the <a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock" title="ophyd_async.fastcs.panda.DataBlock"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DataBlock</span></code></a>.</p>
+<p>For writing for PandA data from the <code class="docutils literal notranslate"><span class="pre">DataBlock</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.open">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">multiplier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.DataKey" title="(in event-model vmain)"><span class="pre">DataKey</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.open" title="Link to this definition">#</a></dt>
-<dd><p>Retrieve and get descriptor of all PandA signals marked for capture</p>
+<dd><p>Retrieve and get descriptor of all PandA signals marked for capture.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -955,12 +955,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.get_indices_written">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_indices_written</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.get_indices_written"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.get_indices_written" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Get the number of indices written.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.observe_indices_written">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observe_indices_written</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator" title="(in Python v3.13)"><span class="pre">AsyncGenerator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.observe_indices_written"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.observe_indices_written" title="Link to this definition">#</a></dt>
-<dd><p>Wait until a specific index is ready to be collected</p>
+<dd><p>Wait until a specific index is ready to be collected.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -971,7 +972,8 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.close">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.close" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Close writer, blocks until I/O is complete.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -983,27 +985,37 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.get_deadtime">
 <span class="sig-name descname"><span class="pre">get_deadtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.get_deadtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.get_deadtime" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>For a given exposure, how long should the time between exposures be.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.prepare">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trigger_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><span class="pre">TriggerInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.prepare" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Do all necessary steps to prepare the detector for triggers.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trigger_info</strong> – The sort of triggers to expect.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.arm">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.arm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.arm" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Arm the detector.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.wait_for_idle">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wait_for_idle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.wait_for_idle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.wait_for_idle" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Wait on the internal _arm_status and wait for it to get disarmed/idle.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.disarm">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disarm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.disarm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.disarm" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Disarm the detector, return detector to an idle state.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1011,6 +1023,28 @@
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DatasetTable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">DatasetTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_table.html#DatasetTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.DatasetTable" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Table" title="ophyd_async.core.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Table</span></code></a></p>
+<p>An abstraction of a Table where each field is a column.</p>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Array1D</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">a</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">MyTable</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">b</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># the length is the number of rows</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span> <span class="o">=</span> <span class="n">t</span> <span class="o">+</span> <span class="n">t</span>  <span class="c1"># adding tables together concatenates them</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="o">.</span><span class="n">a</span>
+<span class="go">array([1, 2, 1, 2], dtype=int8)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="o">.</span><span class="n">b</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;, &#39;x&#39;, &#39;y&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># slice a row</span>
+<span class="go">array([(2, b&#39;y&#39;)], dtype=[(&#39;a&#39;, &#39;i1&#39;), (&#39;b&#39;, &#39;S40&#39;)])</span>
+
+</pre></div>
+</div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DatasetTable.name">
 <span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DatasetTable.name" title="Link to this definition">#</a></dt>
@@ -1156,13 +1190,6 @@
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trigger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">SeqTrigger.IMMEDIATE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outa1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outb1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outc1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outd1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oute1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outf1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outa2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outb2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outc2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outd2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oute2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outf2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda._table.SeqTable"><span class="pre">SeqTable</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_table.html#SeqTable.row"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.row" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.validate_max_length">
-<span class="sig-name descname"><span class="pre">validate_max_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda._table.SeqTable"><span class="pre">SeqTable</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_table.html#SeqTable.validate_max_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.validate_max_length" title="Link to this definition">#</a></dt>
-<dd><p>Used to check max_length. Unfortunately trying the <code class="docutils literal notranslate"><span class="pre">max_length</span></code> arg in
-the pydantic field doesn’t work</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -1254,7 +1281,7 @@ the pydantic field doesn’t work</p>
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompInfo">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PcompInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#PcompInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompInfo" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
-<p>Info for the PandA <a class="reference internal" href="#ophyd_async.fastcs.panda.PcompBlock" title="ophyd_async.fastcs.panda.PcompBlock"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PcompBlock</span></code></a> for flyscanning.</p>
+<p>Info for the PandA <code class="docutils literal notranslate"><span class="pre">PcompBlock</span></code> for flyscanning.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompInfo.start_postion">
 <span class="sig-name descname"><span class="pre">start_postion</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompInfo.start_postion" title="Link to this definition">#</a></dt>
@@ -1291,7 +1318,7 @@ the pydantic field doesn’t work</p>
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTableInfo">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">SeqTableInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#SeqTableInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTableInfo" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
-<p>Info for the PandA <a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda.SeqTable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SeqTable</span></code></a> for flyscanning.</p>
+<p>Info for the PandA <code class="docutils literal notranslate"><span class="pre">SeqTable</span></code> for flyscanning.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTableInfo.sequence_table">
 <span class="sig-name descname"><span class="pre">sequence_table</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda._table.SeqTable"><span class="pre">SeqTable</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTableInfo.sequence_table" title="Link to this definition">#</a></dt>
@@ -1316,26 +1343,30 @@ the pydantic field doesn’t work</p>
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">StaticPcompTriggerLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pcomp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.PcompBlock" title="ophyd_async.fastcs.panda._block.PcompBlock"><span class="pre">PcompBlock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.FlyerController" title="ophyd_async.core.FlyerController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.FlyerController</span></code></a>[<a class="reference internal" href="#ophyd_async.fastcs.panda.PcompInfo" title="ophyd_async.fastcs.panda._trigger.PcompInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda._trigger.PcompInfo</span></code></a>]</p>
-<p>For controlling the PandA <a class="reference internal" href="#ophyd_async.fastcs.panda.PcompBlock" title="ophyd_async.fastcs.panda.PcompBlock"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PcompBlock</span></code></a> when flyscanning.</p>
+<p>For controlling the PandA <code class="docutils literal notranslate"><span class="pre">PcompBlock</span></code> when flyscanning.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.prepare">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.PcompInfo" title="ophyd_async.fastcs.panda._trigger.PcompInfo"><span class="pre">PcompInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.prepare" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Move to the start of the flyscan.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.kickoff">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kickoff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic.kickoff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.kickoff" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Start the flyscan.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.complete">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic.complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.complete" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Block until the flyscan is done.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.stop">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.stop" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Stop flying and wait everything to be stopped.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1343,26 +1374,30 @@ the pydantic field doesn’t work</p>
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">StaticSeqTableTriggerLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqBlock" title="ophyd_async.fastcs.panda._block.SeqBlock"><span class="pre">SeqBlock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.FlyerController" title="ophyd_async.core.FlyerController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.FlyerController</span></code></a>[<a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTableInfo" title="ophyd_async.fastcs.panda._trigger.SeqTableInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda._trigger.SeqTableInfo</span></code></a>]</p>
-<p>For controlling the PandA <a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda.SeqTable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SeqTable</span></code></a> when flyscanning.</p>
+<p>For controlling the PandA <code class="docutils literal notranslate"><span class="pre">SeqTable</span></code> when flyscanning.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.prepare">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTableInfo" title="ophyd_async.fastcs.panda._trigger.SeqTableInfo"><span class="pre">SeqTableInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.prepare" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Move to the start of the flyscan.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.kickoff">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kickoff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic.kickoff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.kickoff" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Start the flyscan.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.complete">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic.complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.complete" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Block until the flyscan is done.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.stop">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.stop" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Stop flying and wait everything to be stopped.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -1417,9 +1452,9 @@ the pydantic field doesn’t work</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.CommonPandaBlocks"><code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.pulse"><code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks.pulse</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.seq"><code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks.seq</span></code></a></li>
@@ -1541,7 +1576,6 @@ the pydantic field doesn’t work</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.oute2"><code class="docutils literal notranslate"><span class="pre">SeqTable.oute2</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outf2"><code class="docutils literal notranslate"><span class="pre">SeqTable.outf2</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.row"><code class="docutils literal notranslate"><span class="pre">SeqTable.row()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.validate_max_length"><code class="docutils literal notranslate"><span class="pre">SeqTable.validate_max_length()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger"><code class="docutils literal notranslate"><span class="pre">SeqTrigger</span></code></a><ul class="nav section-nav flex-column">

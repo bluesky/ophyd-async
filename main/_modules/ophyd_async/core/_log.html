@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._log &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.core._log &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -530,32 +530,23 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">color</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">level</span><span class="o">=</span><span class="s2">&quot;WARNING&quot;</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Set a new handler on the ``logging.getLogger(&#39;ophyd_async&#39;)`` logger.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a new handler on the ``logging.getLogger(&#39;ophyd_async&#39;)`` logger.</span>
+
 <span class="sd">    If this is called more than once, the handler from the previous invocation</span>
 <span class="sd">    is removed (if still present) and replaced.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    file : object with ``write`` method or filename string</span>
-<span class="sd">        Default is ``sys.stdout``.</span>
-<span class="sd">    fmt : str</span>
-<span class="sd">        Overall logging format</span>
-<span class="sd">    datefmt : str</span>
-<span class="sd">        Date format. Default is ``&#39;%H:%M:%S&#39;``.</span>
-<span class="sd">    color : bool</span>
-<span class="sd">        Use ANSI color codes. True by default.</span>
-<span class="sd">    level : str or int</span>
-<span class="sd">        Python logging level, given as string or corresponding integer.</span>
-<span class="sd">        Default is &#39;WARNING&#39;.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    handler : logging.Handler</span>
-<span class="sd">        The handler, which has already been added to the &#39;ophyd_async&#39; logger.</span>
+<span class="sd">    :param file:</span>
+<span class="sd">        object with ``write`` method or filename string. Default is `sys.stdout`.</span>
+<span class="sd">    :param fmt: str Overall logging format</span>
+<span class="sd">    :param datefmt: str Date format. Default is `&#39;%H:%M:%S&#39;`.</span>
+<span class="sd">    :param color: bool Use ANSI color codes. True by default.</span>
+<span class="sd">    :param level: str or int Python logging level, given as string or</span>
+<span class="sd">        corresponding integer. Default is &#39;WARNING&#39;.</span>
 
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
+<span class="sd">    :returns: The handler, which has already been added to the &#39;ophyd_async&#39; logger.</span>
+
+<span class="sd">    :examples:</span>
 <span class="sd">    Log to a file.</span>
 
 <span class="sd">        config_ophyd_async_logging(file=&#39;/tmp/what_is_happening.txt&#39;)</span>
@@ -572,7 +563,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    Increase verbosity: show level DEBUG or higher.</span>
 
 <span class="sd">        config_ophyd_async_logging(level=&#39;DEBUG&#39;)</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">current_handler</span>
 

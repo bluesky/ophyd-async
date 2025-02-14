@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.sim
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 
@@ -18,27 +17,22 @@
 
 * - {py:obj}`SimMotor <ophyd_async.sim._motor.SimMotor>`
   - ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SimStage <ophyd_async.sim._stage.SimStage>`
   - ```{autodoc2-docstring} ophyd_async.sim._stage.SimStage
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`PatternGenerator <ophyd_async.sim._pattern_generator.PatternGenerator>`
   - ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SimPointDetector <ophyd_async.sim._point_detector.SimPointDetector>`
   - ```{autodoc2-docstring} ophyd_async.sim._point_detector.SimPointDetector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SimBlobDetector <ophyd_async.sim._blob_detector.SimBlobDetector>`
   - ```{autodoc2-docstring} ophyd_async.sim._blob_detector.SimBlobDetector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -51,11 +45,13 @@
 Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Movable`, {py:obj}`bluesky.protocols.Stoppable`
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} set_name(name: str, *, child_name_separator: str | None = None) -> None
 :canonical: ophyd_async.sim._motor.SimMotor.set_name
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.set_name
+```
 
 ````
 
@@ -64,7 +60,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.M
 :async:
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.set
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -74,7 +69,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.M
 :async:
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.stop
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -87,7 +81,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.M
 Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ```{autodoc2-docstring} ophyd_async.sim._stage.SimStage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -96,14 +89,12 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} set_x(x: float)
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator.set_x
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.set_x
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -112,7 +103,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator.set_y
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.set_y
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -121,7 +111,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator.generate_point
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.generate_point
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -130,7 +119,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator.open_file
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.open_file
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -139,7 +127,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator.write_image_to_file
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.write_image_to_file
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -149,7 +136,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.observe_indices_written
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -159,7 +145,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.get_last_index
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -168,7 +153,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator.close_file
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.close_file
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -181,7 +165,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ```{autodoc2-docstring} ophyd_async.sim._point_detector.SimPointDetector
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} trigger()
@@ -189,7 +172,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.sim._point_detector.SimPointDetector.trigger
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -202,7 +184,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 Bases: {py:obj}`ophyd_async.core.StandardDetector`
 
 ```{autodoc2-docstring} ophyd_async.sim._blob_detector.SimBlobDetector
-:parser: ophyd_async._docs_parser
 ```
 
 ````

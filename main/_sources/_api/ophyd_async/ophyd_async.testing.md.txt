@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.testing
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 
@@ -18,34 +17,30 @@
 
 * - {py:obj}`ExampleEnum <ophyd_async.testing._one_of_everything.ExampleEnum>`
   - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`ExampleTable <ophyd_async.testing._one_of_everything.ExampleTable>`
-  -
+  - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable
+    :summary:
+    ```
 * - {py:obj}`OneOfEverythingDevice <ophyd_async.testing._one_of_everything.OneOfEverythingDevice>`
   - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.OneOfEverythingDevice
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`ParentOfEverythingDevice <ophyd_async.testing._one_of_everything.ParentOfEverythingDevice>`
   - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ParentOfEverythingDevice
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`MonitorQueue <ophyd_async.testing._assert.MonitorQueue>`
   - ```{autodoc2-docstring} ophyd_async.testing._assert.MonitorQueue
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`ApproxTable <ophyd_async.testing._assert.ApproxTable>`
   - ```{autodoc2-docstring} ophyd_async.testing._assert.ApproxTable
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`StatusWatcher <ophyd_async.testing._assert.StatusWatcher>`
   - ```{autodoc2-docstring} ophyd_async.testing._assert.StatusWatcher
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -58,72 +53,58 @@
 
 * - {py:obj}`approx_value <ophyd_async.testing._assert.approx_value>`
   - ```{autodoc2-docstring} ophyd_async.testing._assert.approx_value
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`assert_value <ophyd_async.testing._assert.assert_value>`
   - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_value
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`assert_reading <ophyd_async.testing._assert.assert_reading>`
   - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_reading
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`assert_configuration <ophyd_async.testing._assert.assert_configuration>`
   - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_configuration
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`assert_describe_signal <ophyd_async.testing._assert.assert_describe_signal>`
   - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_describe_signal
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`assert_emitted <ophyd_async.testing._assert.assert_emitted>`
   - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_emitted
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`get_mock <ophyd_async.testing._mock_signal_utils.get_mock>`
   - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`set_mock_value <ophyd_async.testing._mock_signal_utils.set_mock_value>`
   - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_value
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`set_mock_values <ophyd_async.testing._mock_signal_utils.set_mock_values>`
   - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_values
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`get_mock_put <ophyd_async.testing._mock_signal_utils.get_mock_put>`
   - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock_put
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`callback_on_mock_put <ophyd_async.testing._mock_signal_utils.callback_on_mock_put>`
   - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.callback_on_mock_put
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`mock_puts_blocked <ophyd_async.testing._mock_signal_utils.mock_puts_blocked>`
   - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.mock_puts_blocked
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`set_mock_put_proceeds <ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds>`
   - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`wait_for_pending_wakeups <ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups>`
   - ```{autodoc2-docstring} ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -134,7 +115,6 @@
 :canonical: ophyd_async.testing._assert.approx_value
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.approx_value
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -143,7 +123,6 @@
 :async:
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.assert_value
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -152,7 +131,6 @@
 :async:
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.assert_reading
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -161,7 +139,6 @@
 :async:
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.assert_configuration
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -170,7 +147,6 @@
 :async:
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.assert_describe_signal
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -178,7 +154,6 @@
 :canonical: ophyd_async.testing._assert.assert_emitted
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.assert_emitted
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -186,7 +161,6 @@
 :canonical: ophyd_async.testing._mock_signal_utils.get_mock
 
 ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -194,7 +168,6 @@
 :canonical: ophyd_async.testing._mock_signal_utils.set_mock_value
 
 ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_value
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -202,7 +175,6 @@
 :canonical: ophyd_async.testing._mock_signal_utils.set_mock_values
 
 ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_values
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -210,7 +182,6 @@
 :canonical: ophyd_async.testing._mock_signal_utils.get_mock_put
 
 ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock_put
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -218,7 +189,6 @@
 :canonical: ophyd_async.testing._mock_signal_utils.callback_on_mock_put
 
 ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.callback_on_mock_put
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -226,7 +196,6 @@
 :canonical: ophyd_async.testing._mock_signal_utils.mock_puts_blocked
 
 ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.mock_puts_blocked
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -234,7 +203,6 @@
 :canonical: ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds
 
 ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -243,7 +211,6 @@
 :async:
 
 ```{autodoc2-docstring} ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -253,7 +220,6 @@
 Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} A
@@ -262,7 +228,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Aaa'
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum.A
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -273,7 +238,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Bbb'
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum.B
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -284,7 +248,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Ccc'
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleEnum.C
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -296,6 +259,9 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 Bases: {py:obj}`ophyd_async.core.Table`
 
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable
+```
+
 ````{py:attribute} a_bool
 :canonical: ophyd_async.testing._one_of_everything.ExampleTable.a_bool
 :type: ~ophyd_async.core.Array1D[~numpy.bool_]
@@ -303,7 +269,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_bool
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -315,7 +280,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_int
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -327,7 +291,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_float
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -339,7 +302,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_str
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -351,7 +313,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ExampleTable.a_enum
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -364,7 +325,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
 Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.OneOfEverythingDevice
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -375,7 +335,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 Bases: {py:obj}`ophyd_async.core.Device`
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ParentOfEverythingDevice
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} get_signal_values()
@@ -383,7 +342,6 @@ Bases: {py:obj}`ophyd_async.core.Device`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.ParentOfEverythingDevice.get_signal_values
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -396,7 +354,6 @@ Bases: {py:obj}`ophyd_async.core.Device`
 Bases: {py:obj}`contextlib.AbstractContextManager`
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.MonitorQueue
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} assert_updates(expected_value)
@@ -404,7 +361,6 @@ Bases: {py:obj}`contextlib.AbstractContextManager`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.MonitorQueue.assert_updates
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -415,7 +371,6 @@ Bases: {py:obj}`contextlib.AbstractContextManager`
 :canonical: ophyd_async.testing._assert.ApproxTable
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.ApproxTable
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -426,7 +381,6 @@ Bases: {py:obj}`contextlib.AbstractContextManager`
 Bases: {py:obj}`ophyd_async.core.Watcher`\[{py:obj}`ophyd_async.testing._utils.T`\]
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.StatusWatcher
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} wait_for_call(current: ~ophyd_async.testing._utils.T | None = None, initial: ~ophyd_async.testing._utils.T | None = None, target: ~ophyd_async.testing._utils.T | None = None, name: str | None = None, unit: str | None = None, precision: int | None = None, fraction: float | None = None, time_elapsed: float | ~typing.Any = None, time_remaining: float | ~typing.Any = None)
@@ -434,7 +388,6 @@ Bases: {py:obj}`ophyd_async.core.Watcher`\[{py:obj}`ophyd_async.testing._utils.T
 :async:
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.StatusWatcher.wait_for_call
-:parser: ophyd_async._docs_parser
 ```
 
 ````

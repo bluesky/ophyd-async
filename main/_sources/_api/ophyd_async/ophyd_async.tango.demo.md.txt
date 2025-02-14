@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.tango.demo
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 
@@ -18,17 +17,14 @@
 
 * - {py:obj}`TangoCounter <ophyd_async.tango.demo._counter.TangoCounter>`
   - ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`TangoMover <ophyd_async.tango.demo._mover.TangoMover>`
   - ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`TangoDetector <ophyd_async.tango.demo._detector.TangoDetector>`
   - ```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -41,7 +37,6 @@
 Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} counts
@@ -51,7 +46,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
    None
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.counts
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -63,7 +57,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
    None
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.sample_time
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -75,7 +68,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
    None
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.start
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -87,7 +79,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
    None
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.reset_
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -97,7 +88,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.trigger
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -107,7 +97,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.reset
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -120,7 +109,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
 Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`, {py:obj}`bluesky.protocols.Movable`, {py:obj}`bluesky.protocols.Stoppable`
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} position
@@ -130,7 +118,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`, {py:obj}`bluesky.protocol
    None
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.position
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -142,7 +129,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`, {py:obj}`bluesky.protocol
    None
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.velocity
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -154,7 +140,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`, {py:obj}`bluesky.protocol
    None
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.state
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -166,7 +151,6 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`, {py:obj}`bluesky.protocol
    None
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.stop_
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -176,13 +160,15 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`, {py:obj}`bluesky.protocol
 :async:
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.set
-:parser: ophyd_async._docs_parser
 ```
 
 ````
 
 ````{py:method} stop(success: bool = True) -> ~ophyd_async.core.AsyncStatus
 :canonical: ophyd_async.tango.demo._mover.TangoMover.stop
+
+```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.stop
+```
 
 ````
 
@@ -194,14 +180,12 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`, {py:obj}`bluesky.protocol
 Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} set(value)
 :canonical: ophyd_async.tango.demo._detector.TangoDetector.set
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector.set
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -210,7 +194,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :canonical: ophyd_async.tango.demo._detector.TangoDetector.stop
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector.stop
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -220,7 +203,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector.trigger
-:parser: ophyd_async._docs_parser
 ```
 
 ````

@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 
@@ -18,62 +17,50 @@
 
 * - {py:obj}`fly_and_collect <ophyd_async.plan_stubs._fly.fly_and_collect>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._fly.fly_and_collect
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`prepare_static_seq_table_flyer_and_detectors_with_same_trigger <ophyd_async.plan_stubs._fly.prepare_static_seq_table_flyer_and_detectors_with_same_trigger>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._fly.prepare_static_seq_table_flyer_and_detectors_with_same_trigger
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`time_resolved_fly_and_collect_with_static_seq_table <ophyd_async.plan_stubs._fly.time_resolved_fly_and_collect_with_static_seq_table>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._fly.time_resolved_fly_and_collect_with_static_seq_table
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`ensure_connected <ophyd_async.plan_stubs._ensure_connected.ensure_connected>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._ensure_connected.ensure_connected
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`setup_ndattributes <ophyd_async.plan_stubs._nd_attributes.setup_ndattributes>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndattributes
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`setup_ndstats_sum <ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`apply_panda_settings <ophyd_async.plan_stubs._panda.apply_panda_settings>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._panda.apply_panda_settings
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`apply_settings <ophyd_async.plan_stubs._settings.apply_settings>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.apply_settings
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`apply_settings_if_different <ophyd_async.plan_stubs._settings.apply_settings_if_different>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.apply_settings_if_different
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`get_current_settings <ophyd_async.plan_stubs._settings.get_current_settings>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.get_current_settings
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`retrieve_settings <ophyd_async.plan_stubs._settings.retrieve_settings>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.retrieve_settings
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`store_settings <ophyd_async.plan_stubs._settings.store_settings>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.store_settings
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -84,7 +71,6 @@
 :canonical: ophyd_async.plan_stubs._fly.fly_and_collect
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._fly.fly_and_collect
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -92,7 +78,6 @@
 :canonical: ophyd_async.plan_stubs._fly.prepare_static_seq_table_flyer_and_detectors_with_same_trigger
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._fly.prepare_static_seq_table_flyer_and_detectors_with_same_trigger
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -100,7 +85,6 @@
 :canonical: ophyd_async.plan_stubs._fly.time_resolved_fly_and_collect_with_static_seq_table
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._fly.time_resolved_fly_and_collect_with_static_seq_table
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -108,7 +92,6 @@
 :canonical: ophyd_async.plan_stubs._ensure_connected.ensure_connected
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._ensure_connected.ensure_connected
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -116,7 +99,6 @@
 :canonical: ophyd_async.plan_stubs._nd_attributes.setup_ndattributes
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndattributes
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -124,7 +106,6 @@
 :canonical: ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -132,7 +113,6 @@
 :canonical: ophyd_async.plan_stubs._panda.apply_panda_settings
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._panda.apply_panda_settings
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -140,7 +120,6 @@
 :canonical: ophyd_async.plan_stubs._settings.apply_settings
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.apply_settings
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -148,7 +127,6 @@
 :canonical: ophyd_async.plan_stubs._settings.apply_settings_if_different
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.apply_settings_if_different
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -156,7 +134,6 @@
 :canonical: ophyd_async.plan_stubs._settings.get_current_settings
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.get_current_settings
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -164,7 +141,6 @@
 :canonical: ophyd_async.plan_stubs._settings.retrieve_settings
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.retrieve_settings
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -172,6 +148,5 @@
 :canonical: ophyd_async.plan_stubs._settings.store_settings
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.store_settings
-:parser: ophyd_async._docs_parser
 ```
 ````

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -463,7 +463,12 @@ window.addEventListener("load", () => mermaid.run());
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.epics.motor</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span></span><span class="sd">&quot;&quot;&quot;Support for EPICS motor record.</span>
+
+<span class="sd">https://github.com/epics-modules/motor</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Flyable</span><span class="p">,</span>
@@ -512,30 +517,30 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="FlyMotorInfo">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.FlyMotorInfo">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FlyMotorInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to fly a motor:&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to fly a motor.&quot;&quot;&quot;</span>
 
-    <span class="c1">#: Absolute position of the motor once it finishes accelerating to desired</span>
-    <span class="c1">#: velocity, in motor EGUs</span>
     <span class="n">start_position</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Absolute position of the motor once it finishes accelerating to desired</span>
+<span class="sd">    velocity, in motor EGUs&quot;&quot;&quot;</span>
 
-    <span class="c1">#: Absolute position of the motor once it begins decelerating from desired</span>
-    <span class="c1">#: velocity, in EGUs</span>
     <span class="n">end_position</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Absolute position of the motor once it begins decelerating from desired</span>
+<span class="sd">    velocity, in EGUs&quot;&quot;&quot;</span>
 
-    <span class="c1">#: Time taken for the motor to get from start_position to end_position, excluding</span>
-    <span class="c1">#: run-up and run-down, in seconds.</span>
     <span class="n">time_for_move</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Time taken for the motor to get from start_position to end_position, excluding</span>
+<span class="sd">    run-up and run-down, in seconds.&quot;&quot;&quot;</span>
 
-    <span class="c1">#: Maximum time for the complete motor move, including run up and run down.</span>
-    <span class="c1">#: Defaults to `time_for_move` + run up and run down times + 10s.</span>
-    <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">CALCULATE_TIMEOUT</span><span class="p">)</span></div>
+    <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">CALCULATE_TIMEOUT</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Maximum time for the complete motor move, including run up and run down.</span>
+<span class="sd">    Defaults to `time_for_move` + run up and run down times + 10s.&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="Motor">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Locatable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that moves a motor record&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that moves a motor record.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Define some signals</span>
@@ -577,6 +582,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="Motor.set_name">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.set_name">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set name of the motor and its children.&quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="o">=</span><span class="n">child_name_separator</span><span class="p">)</span>
         <span class="c1"># Readback should be named the same as its parent in read()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
@@ -586,9 +592,7 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.prepare">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">FlyMotorInfo</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate required velocity and run-up distance, then if motor limits aren&#39;t</span>
-<span class="sd">        breached, move to start position minus run-up distance&quot;&quot;&quot;</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move to the beginning of a suitable run-up distance ready for a flyscan.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_timeout</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">timeout</span>
 
         <span class="c1"># Velocity, at which motor travels from start_position to end_position, in motor</span>
@@ -635,8 +639,10 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="Motor.set">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.set">[docs]</a>
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">):</span>
-        <span class="n">new_position</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move motor to the given value.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="p">(</span>
             <span class="n">old_position</span><span class="p">,</span>
@@ -682,6 +688,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="Motor.stop">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.stop">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Request to stop moving and return immediately.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="n">success</span>
         <span class="c1"># Put with completion will never complete as we are waiting for completion on</span>
         <span class="c1"># the move above, so need to pass wait=False</span>
@@ -707,6 +714,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="Motor.locate">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.locate">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">locate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Location</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the current setpoint and readback of the motor.&quot;&quot;&quot;</span>
         <span class="n">location</span><span class="p">:</span> <span class="n">Location</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;setpoint&quot;</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
             <span class="s2">&quot;readback&quot;</span><span class="p">:</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>

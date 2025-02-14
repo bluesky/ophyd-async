@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -137,8 +137,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -570,7 +570,9 @@ FastCS</label><div class="sd-tab-content docutils">
 <input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
 <label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-6">
 EPICS</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import bluesky and ophyd</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Used for tutorial `Implementing Devices`.&quot;&quot;&quot;</span>
+
+<span class="c1"># Import bluesky and ophyd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plan_stubs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bps</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plans</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bp</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.callbacks.best_effort</span><span class="w"> </span><span class="kn">import</span> <span class="n">BestEffortCallback</span>
@@ -585,9 +587,9 @@ EPICS</label><div class="sd-tab-content docutils">
 
 <span class="c1"># Add a callback for plotting</span>
 <span class="n">bec</span> <span class="o">=</span> <span class="n">BestEffortCallback</span><span class="p">()</span>
-<span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">)</span>
-
-<span class="hll"><span class="c1"># Start IOC with demo pvs in subprocess</span>
+<span class="hll"><span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">)</span>
+</span><span class="hll">
+</span><span class="hll"><span class="c1"># Start IOC with demo pvs in subprocess</span>
 </span><span class="hll"><span class="n">prefix</span> <span class="o">=</span> <span class="n">testing</span><span class="o">.</span><span class="n">generate_random_pv_prefix</span><span class="p">()</span>
 </span><span class="hll"><span class="n">ioc</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">start_ioc_subprocess</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </span><span class="hll">
@@ -660,10 +662,11 @@ EPICS</label><div class="sd-tab-content docutils">
 <span class="k">class</span><span class="w"> </span><span class="nc">EnergyMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Energy mode for `DemoPointDetectorChannel`.&quot;&quot;&quot;</span>
 
-    <span class="c1">#: Low energy mode</span>
     <span class="n">LOW</span> <span class="o">=</span> <span class="s2">&quot;Low Energy&quot;</span>
-    <span class="c1">#: High energy mode</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Low energy mode&quot;&quot;&quot;</span>
+
     <span class="n">HIGH</span> <span class="o">=</span> <span class="s2">&quot;High Energy&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;High energy mode&quot;&quot;&quot;</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DemoPointDetectorChannel</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
@@ -984,7 +987,7 @@ FastCS</label><div class="sd-tab-content docutils">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pick-your-control-system">Pick your control system</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-the-demo">Run the demo</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-how-devices-are-instantiated">See how Devices are instantiated</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#look-at-the-device-implementations">Look at the Device implementations</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#look-at-the-device-implementations">Look at the Device implementations</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#demopointdetectorchannel"><code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#demopointdetector"><code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#demomotor"><code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code></a></li>

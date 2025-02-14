@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._utils &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.core._utils &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -496,14 +496,14 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="StrictEnum">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StrictEnum">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StrictEnum</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">StrictEnumMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;All members should exist in the Backend, and there will be no extras&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;All members should exist in the Backend, and there will be no extras.&quot;&quot;&quot;</span></div>
 
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">SubsetEnumMeta</span><span class="p">(</span><span class="n">StrictEnumMeta</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns given value if it is a string and not a member of the enum.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return given value if it is a string and not a member of the enum.</span>
+
 <span class="sd">        If the value is not a string or is an enum member, default enum behavior</span>
 <span class="sd">        is applied. Type checking will complain if provided arbitrary string.</span>
 
@@ -515,6 +515,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If the value is not a string and cannot be converted to an enum</span>
 <span class="sd">            member.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">value</span>
@@ -524,7 +525,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="SubsetEnum">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SubsetEnum">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SubsetEnum</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">SubsetEnumMeta</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;All members should exist in the Backend, but there may be extras&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;All members should exist in the Backend, but there may be extras.&quot;&quot;&quot;</span></div>
 
 
 
@@ -542,22 +543,16 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="NotConnected">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.NotConnected">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NotConnected</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception to be raised if a `Device.connect` is cancelled&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exception to be raised if a `Device.connect` is cancelled.</span>
+
+<span class="sd">    :param errors:</span>
+<span class="sd">        Mapping of device name to Exception or another NotConnected.</span>
+<span class="sd">        Alternatively a string with the signal error text.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">_indent_width</span> <span class="o">=</span> <span class="s2">&quot;    &quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">errors</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        NotConnected holds a mapping of device/signal names to</span>
-<span class="sd">        errors.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        errors:</span>
-<span class="sd">            Mapping of device name to Exception or another NotConnected.</span>
-<span class="sd">            Alternatively a string with the signal error text.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_errors</span> <span class="o">=</span> <span class="n">errors</span>
 
     <span class="nd">@property</span>
@@ -622,24 +617,41 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.WatcherUpdate">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">WatcherUpdate</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A dataclass such that, when expanded, it provides the kwargs for a watcher&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A dataclass such that, when expanded, it provides the kwargs for a watcher.&quot;&quot;&quot;</span>
 
     <span class="n">current</span><span class="p">:</span> <span class="n">T</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The current value, where it currently is.&quot;&quot;&quot;</span>
+
     <span class="n">initial</span><span class="p">:</span> <span class="n">T</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The initial value, where it was when it started.&quot;&quot;&quot;</span>
+
     <span class="n">target</span><span class="p">:</span> <span class="n">T</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The target value, where it will be when it finishes.&quot;&quot;&quot;</span>
+
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An optional name for the device, if available.&quot;&quot;&quot;</span>
+
     <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Units of the value, if applicable.&quot;&quot;&quot;</span>
+
     <span class="n">precision</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;How many decimal places the value should be displayed to.&quot;&quot;&quot;</span>
+
     <span class="n">fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The fraction of the way between initial and target.&quot;&quot;&quot;</span>
+
     <span class="n">time_elapsed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">time_remaining</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The time elapsed since the start of the operation.&quot;&quot;&quot;</span>
+
+    <span class="n">time_remaining</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The time remaining until the operation completes.&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="wait_for_connection">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.wait_for_connection">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_connection</span><span class="p">(</span><span class="o">**</span><span class="n">coros</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call many underlying signals, accumulating exceptions and returning them</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Call many underlying signals, accumulating exceptions and returning them.</span>
 
 <span class="sd">    Expected kwargs should be a mapping of names to coroutine tasks to execute.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -666,12 +678,15 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="get_dtype">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_dtype">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_dtype</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the runtime dtype from a numpy ndarray type annotation</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the runtime dtype from a numpy ndarray type annotation.</span>
 
+<span class="sd">    ```python</span>
 <span class="sd">    &gt;&gt;&gt; from ophyd_async.core import Array1D</span>
 <span class="sd">    &gt;&gt;&gt; import numpy as np</span>
 <span class="sd">    &gt;&gt;&gt; get_dtype(Array1D[np.int8])</span>
 <span class="sd">    dtype(&#39;int8&#39;)</span>
+
+<span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected Array1D[dtype], got </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -684,12 +699,21 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="get_enum_cls">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_enum_cls">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_enum_cls</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">StrictEnum</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the runtime dtype from a numpy ndarray type annotation</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the enum class from a datatype.</span>
 
-<span class="sd">    &gt;&gt;&gt; import numpy.typing as npt</span>
-<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
-<span class="sd">    &gt;&gt;&gt; get_dtype(npt.NDArray[np.int8])</span>
-<span class="sd">    dtype(&#39;int8&#39;)</span>
+<span class="sd">    :raises TypeError: if type is not a [](#StrictEnum) or [](#SubsetEnum) subclass</span>
+<span class="sd">    ```python</span>
+<span class="sd">    &gt;&gt;&gt; from ophyd_async.core import StrictEnum</span>
+<span class="sd">    &gt;&gt;&gt; from collections.abc import Sequence</span>
+<span class="sd">    &gt;&gt;&gt; class MyEnum(StrictEnum):</span>
+<span class="sd">    ...     A = &quot;A value&quot;</span>
+<span class="sd">    &gt;&gt;&gt; get_enum_cls(str)</span>
+<span class="sd">    &gt;&gt;&gt; get_enum_cls(MyEnum)</span>
+<span class="sd">    &lt;enum &#39;MyEnum&#39;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; get_enum_cls(Sequence[MyEnum])</span>
+<span class="sd">    &lt;enum &#39;MyEnum&#39;&gt;</span>
+
+<span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sequence</span><span class="p">:</span>
         <span class="n">datatype</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -706,14 +730,17 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="get_unique">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_unique">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_unique</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="n">types</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;If all values are the same, return that value, otherwise raise TypeError</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;If all values are the same, return that value, otherwise raise TypeError.</span>
 
+<span class="sd">    ```python</span>
 <span class="sd">    &gt;&gt;&gt; get_unique({&quot;a&quot;: 1, &quot;b&quot;: 1}, &quot;integers&quot;)</span>
 <span class="sd">    1</span>
 <span class="sd">    &gt;&gt;&gt; get_unique({&quot;a&quot;: 1, &quot;b&quot;: 2}, &quot;integers&quot;)</span>
 <span class="sd">    Traceback (most recent call last):</span>
 <span class="sd">     ...</span>
 <span class="sd">    TypeError: Differing integers: a has 1, b has 2</span>
+
+<span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">set_values</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">set_values</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
@@ -728,9 +755,12 @@ window.addEventListener("load", () => mermaid.run());
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge dictionaries produced by a sequence of coroutines.</span>
 
-<span class="sd">    Can be used for merging ``read()`` or ``describe``. For instance::</span>
+<span class="sd">    Can be used for merging `read()` or `describe()`.</span>
 
-<span class="sd">        combined_read = await merge_gathered_dicts(s.read() for s in signals)</span>
+<span class="sd">    :example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    combined_read = await merge_gathered_dicts(s.read() for s in signals)</span>
+<span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ret</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="p">):</span>
@@ -741,9 +771,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="gather_dict">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.gather_dict">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gather_dict</span><span class="p">(</span><span class="n">coros</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">V</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gathers given coroutines and returns a dictionary of coroutines</span>
-<span class="sd">    to return values.&quot;&quot;&quot;</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Take named coros and return a dict of their name to their return value.&quot;&quot;&quot;</span>
     <span class="n">values</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">coros</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
 
@@ -752,16 +780,11 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="in_micros">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.in_micros">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">in_micros</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Converts between a positive number of seconds and an equivalent</span>
-<span class="sd">    number of microseconds.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert between a seconds and microseconds.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        t (float): A time in seconds</span>
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: if t &lt; 0</span>
-<span class="sd">    Returns:</span>
-<span class="sd">        A time in microseconds, rounded up to the nearest whole microsecond,</span>
+<span class="sd">    :param t: A time in seconds</span>
+<span class="sd">    :return: A time in microseconds, rounded up to the nearest whole microsecond</span>
+<span class="sd">    :raises ValueError: if t &lt; 0</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected a positive time in seconds, got </span><span class="si">{</span><span class="n">t</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -782,16 +805,16 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="sd">    Used to opt out of the naming/parent-child relationship of `Device`.</span>
 
-<span class="sd">    For example::</span>
+<span class="sd">    :example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    class DeviceWithRefToSignal(Device):</span>
+<span class="sd">        def __init__(self, signal: SignalRW[int]):</span>
+<span class="sd">            self.signal_ref = Reference(signal)</span>
+<span class="sd">            super().__init__()</span>
 
-<span class="sd">        class DeviceWithRefToSignal(Device):</span>
-<span class="sd">            def __init__(self, signal: SignalRW[int]):</span>
-<span class="sd">                self.signal_ref = Reference(signal)</span>
-<span class="sd">                super().__init__()</span>
-
-<span class="sd">            def set(self, value) -&gt; AsyncStatus:</span>
-<span class="sd">                return self.signal_ref().set(value + 1)</span>
-
+<span class="sd">        def set(self, value) -&gt; AsyncStatus:</span>
+<span class="sd">            return self.signal_ref().set(value + 1)</span>
+<span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">T</span><span class="p">):</span>
@@ -813,6 +836,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    constructed so that when the leaf is created, so are its parents.</span>
 <span class="sd">    Any calls to the child are then accessible from the parent mock.</span>
 
+<span class="sd">    ```python</span>
 <span class="sd">    &gt;&gt;&gt; parent = LazyMock()</span>
 <span class="sd">    &gt;&gt;&gt; child = parent.child(&quot;child&quot;)</span>
 <span class="sd">    &gt;&gt;&gt; child_mock = child()</span>
@@ -821,6 +845,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    &gt;&gt;&gt; parent_mock = parent()</span>
 <span class="sd">    &gt;&gt;&gt; parent_mock.mock_calls</span>
 <span class="sd">    [call.child()]</span>
+
+<span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">LazyMock</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -831,6 +857,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="LazyMock.child">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.LazyMock.child">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">child</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LazyMock</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a child of this LazyMock with the given name.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">LazyMock</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
 
 

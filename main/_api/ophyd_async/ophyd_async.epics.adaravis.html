@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adaravis &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.epics.adaravis &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -521,7 +521,7 @@
   <section id="module-ophyd_async.epics.adaravis">
 <span id="ophyd-async-epics-adaravis"></span><h1><a class="reference internal" href="#module-ophyd_async.epics.adaravis" title="ophyd_async.epics.adaravis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a><a class="headerlink" href="#module-ophyd_async.epics.adaravis" title="Link to this heading">#</a></h1>
 <p>Support for the ADAravis areaDetector driver.</p>
-<p><a class="github reference external" href="https://github.com/areaDetector/ADAravis">areaDetector/ADAravis</a></p>
+<p>https://github.com/areaDetector/ADAravis</p>
 <section id="package-contents">
 <h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
 <section id="classes">
@@ -532,7 +532,7 @@
 <td><p>Implementation of an ADAravis Detector.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adaravis.AravisController" title="ophyd_async.epics.adaravis._aravis_controller.AravisController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AravisController</span></code></a></p></td>
-<td><p><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core.DetectorController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorController</span></code></a> for an <a class="reference internal" href="#ophyd_async.epics.adaravis.AravisDriverIO" title="ophyd_async.epics.adaravis.AravisDriverIO"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AravisDriverIO</span></code></a>.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">DetectorController</span></code> for an <code class="docutils literal notranslate"><span class="pre">AravisDriverIO</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adaravis.AravisDriverIO" title="ophyd_async.epics.adaravis._aravis_io.AravisDriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AravisDriverIO</span></code></a></p></td>
 <td><p>Generic Driver supporting all GiGE cameras.</p></td>
@@ -541,7 +541,7 @@
 <td><p>GigEVision GenICAM standard TriggerMode.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adaravis.AravisTriggerSource" title="ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AravisTriggerSource</span></code></a></p></td>
-<td><p>Which trigger source to use when TriggerMode=On</p></td>
+<td><p>Which trigger source to use when TriggerMode=On.</p></td>
 </tr>
 </tbody>
 </table>
@@ -562,16 +562,23 @@ which must be done prior to preparing the detector</p>
 <dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisController">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adaravis.</span></span><span class="sig-name descname"><span class="pre">AravisController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ADBaseIOT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">good_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#frozenset" title="(in Python v3.13)"><span class="pre">frozenset</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState" title="ophyd_async.epics.adcore._core_io.ADState"><span class="pre">ADState</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_GOOD_STATES</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adaravis/_aravis_controller.html#AravisController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisController" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseController" title="ophyd_async.epics.adcore.ADBaseController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore.ADBaseController</span></code></a>[<a class="reference internal" href="#ophyd_async.epics.adaravis.AravisDriverIO" title="ophyd_async.epics.adaravis._aravis_io.AravisDriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis._aravis_io.AravisDriverIO</span></code></a>]</p>
-<p><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core.DetectorController"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DetectorController</span></code></a> for an <a class="reference internal" href="#ophyd_async.epics.adaravis.AravisDriverIO" title="ophyd_async.epics.adaravis.AravisDriverIO"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AravisDriverIO</span></code></a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DetectorController</span></code> for an <code class="docutils literal notranslate"><span class="pre">AravisDriverIO</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisController.get_deadtime">
 <span class="sig-name descname"><span class="pre">get_deadtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adaravis/_aravis_controller.html#AravisController.get_deadtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisController.get_deadtime" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>For a given exposure, how long should the time between exposures be.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisController.prepare">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trigger_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><span class="pre">TriggerInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adaravis/_aravis_controller.html#AravisController.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisController.prepare" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Do all necessary steps to prepare the detector for triggers.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trigger_info</strong> – The sort of triggers to expect.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -604,12 +611,14 @@ which must be done prior to preparing the detector</p>
 <dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisTriggerMode.ON">
 <span class="sig-name descname"><span class="pre">ON</span></span><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisTriggerMode.ON" title="Link to this definition">#</a></dt>
 <dd><p>‘On’</p>
+<p>Use TriggerSource to trigger each frame</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisTriggerMode.OFF">
 <span class="sig-name descname"><span class="pre">OFF</span></span><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisTriggerMode.OFF" title="Link to this definition">#</a></dt>
 <dd><p>‘Off’</p>
+<p>Just trigger as fast as you can</p>
 </dd></dl>
 
 </dd></dl>
@@ -618,7 +627,7 @@ which must be done prior to preparing the detector</p>
 <dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisTriggerSource">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adaravis.</span></span><span class="sig-name descname"><span class="pre">AravisTriggerSource</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adaravis/_aravis_io.html#AravisTriggerSource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisTriggerSource" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.SubsetEnum</span></code></a></p>
-<p>Which trigger source to use when TriggerMode=On</p>
+<p>Which trigger source to use when TriggerMode=On.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisTriggerSource.LINE1">
 <span class="sig-name descname"><span class="pre">LINE1</span></span><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisTriggerSource.LINE1" title="Link to this definition">#</a></dt>
@@ -678,9 +687,9 @@ which must be done prior to preparing the detector</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisDetector"><code class="docutils literal notranslate"><span class="pre">AravisDetector</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisController"><code class="docutils literal notranslate"><span class="pre">AravisController</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisController.get_deadtime"><code class="docutils literal notranslate"><span class="pre">AravisController.get_deadtime()</span></code></a></li>

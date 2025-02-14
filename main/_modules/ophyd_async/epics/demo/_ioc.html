@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.demo._ioc &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.epics.demo._ioc &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -474,8 +474,10 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="start_ioc_subprocess">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.start_ioc_subprocess">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">start_ioc_subprocess</span><span class="p">(</span><span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TestingIOC</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start an IOC subprocess with EPICS database for sample stage and sensor</span>
-<span class="sd">    with the same pv prefix</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start an IOC subprocess for sample stage and sensor.</span>
+
+<span class="sd">    :param prefix: The prefix for the IOC PVs.</span>
+<span class="sd">    :param num_channels: The number of point detector channels to create.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ioc</span> <span class="o">=</span> <span class="n">TestingIOC</span><span class="p">()</span>
     <span class="c1"># Create X and Y motors</span>

@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 
@@ -18,27 +17,22 @@
 
 * - {py:obj}`PilatusDetector <ophyd_async.epics.adpilatus._pilatus.PilatusDetector>`
   - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus.PilatusDetector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`PilatusReadoutTime <ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime>`
   - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`PilatusController <ophyd_async.epics.adpilatus._pilatus_controller.PilatusController>`
   - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`PilatusDriverIO <ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO>`
   - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`PilatusTriggerMode <ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode>`
   - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -51,7 +45,6 @@
 Bases: {py:obj}`ophyd_async.epics.adcore._core_detector.AreaDetector`\[{py:obj}`ophyd_async.epics.adpilatus._pilatus_controller.PilatusController`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus.PilatusDetector
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -62,7 +55,6 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_detector.AreaDetector`\[{py:obj}`
 Bases: {py:obj}`float`, {py:obj}`enum.Enum`
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} PILATUS2
@@ -71,7 +63,6 @@ Bases: {py:obj}`float`, {py:obj}`enum.Enum`
    0.00228
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime.PILATUS2
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -82,7 +73,6 @@ Bases: {py:obj}`float`, {py:obj}`enum.Enum`
    0.00095
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime.PILATUS3
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -95,11 +85,13 @@ Bases: {py:obj}`float`, {py:obj}`enum.Enum`
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} get_deadtime(exposure: float | None) -> float
 :canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.get_deadtime
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.get_deadtime
+```
 
 ````
 
@@ -107,11 +99,17 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async
 :canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.prepare
 :async:
 
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.prepare
+```
+
 ````
 
 ````{py:method} arm()
 :canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.arm
 :async:
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.arm
+```
 
 ````
 
@@ -123,7 +121,6 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -134,7 +131,6 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} INTERNAL
@@ -143,7 +139,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Internal'
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.INTERNAL
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -154,7 +149,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Ext. Enable'
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.EXT_ENABLE
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -165,7 +159,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Ext. Trigger'
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.EXT_TRIGGER
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -176,7 +169,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Mult. Trigger'
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.MULT_TRIGGER
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -187,7 +179,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Alignment'
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.ALIGNMENT
-:parser: ophyd_async._docs_parser
 ```
 
 ````

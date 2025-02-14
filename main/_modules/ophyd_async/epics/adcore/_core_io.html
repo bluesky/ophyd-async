@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -534,9 +534,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="NDPluginStatsIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginStatsIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDPluginStatsIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Plugin for computing statistics from an image or region of interest within an image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for computing statistics from an image or ROI within an image.&quot;&quot;&quot;</span>
 
     <span class="c1"># Basic statistics</span>
     <span class="n">compute_statistics</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ComputeStatistics&quot;</span><span class="p">)]</span>
@@ -562,9 +560,9 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="ADState">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADState</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Default set of states of an AreaDetector driver.</span>
-<span class="sd">    See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Default set of states of an AreaDetector driver.</span>
+
+<span class="sd">    See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">IDLE</span> <span class="o">=</span> <span class="s2">&quot;Idle&quot;</span>

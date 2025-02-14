@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.core
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 
@@ -18,257 +17,206 @@
 
 * - {py:obj}`Device <ophyd_async.core._device.Device>`
   - ```{autodoc2-docstring} ophyd_async.core._device.Device
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`DeviceConnector <ophyd_async.core._device.DeviceConnector>`
   - ```{autodoc2-docstring} ophyd_async.core._device.DeviceConnector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`DeviceFiller <ophyd_async.core._device_filler.DeviceFiller>`
   - ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`DeviceVector <ophyd_async.core._device.DeviceVector>`
   - ```{autodoc2-docstring} ophyd_async.core._device.DeviceVector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`AsyncReadable <ophyd_async.core._protocol.AsyncReadable>`
   - ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncReadable
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`AsyncConfigurable <ophyd_async.core._protocol.AsyncConfigurable>`
   - ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncConfigurable
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`AsyncStageable <ophyd_async.core._protocol.AsyncStageable>`
   - ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncStageable
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`Watcher <ophyd_async.core._protocol.Watcher>`
   - ```{autodoc2-docstring} ophyd_async.core._protocol.Watcher
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`AsyncStatus <ophyd_async.core._status.AsyncStatus>`
   - ```{autodoc2-docstring} ophyd_async.core._status.AsyncStatus
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`WatchableAsyncStatus <ophyd_async.core._status.WatchableAsyncStatus>`
   - ```{autodoc2-docstring} ophyd_async.core._status.WatchableAsyncStatus
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`WatcherUpdate <ophyd_async.core._utils.WatcherUpdate>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`Signal <ophyd_async.core._signal.Signal>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.Signal
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SignalR <ophyd_async.core._signal.SignalR>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.SignalR
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SignalW <ophyd_async.core._signal.SignalW>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.SignalW
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SignalRW <ophyd_async.core._signal.SignalRW>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.SignalRW
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SignalX <ophyd_async.core._signal.SignalX>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.SignalX
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SignalBackend <ophyd_async.core._signal_backend.SignalBackend>`
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SignalConnector <ophyd_async.core._signal.SignalConnector>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.SignalConnector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`StrictEnum <ophyd_async.core._utils.StrictEnum>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.StrictEnum
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SubsetEnum <ophyd_async.core._utils.SubsetEnum>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.SubsetEnum
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`Table <ophyd_async.core._table.Table>`
   - ```{autodoc2-docstring} ophyd_async.core._table.Table
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SignalMetadata <ophyd_async.core._signal_backend.SignalMetadata>`
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalMetadata
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SoftSignalBackend <ophyd_async.core._soft_signal_backend.SoftSignalBackend>`
   - ```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`LazyMock <ophyd_async.core._utils.LazyMock>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.LazyMock
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`MockSignalBackend <ophyd_async.core._mock_signal_backend.MockSignalBackend>`
   - ```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`StandardReadable <ophyd_async.core._readable.StandardReadable>`
   - ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`StandardReadableFormat <ophyd_async.core._readable.StandardReadableFormat>`
   - ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadableFormat
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`StandardDetector <ophyd_async.core._detector.StandardDetector>`
   - ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`TriggerInfo <ophyd_async.core._detector.TriggerInfo>`
   - ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`DetectorTrigger <ophyd_async.core._detector.DetectorTrigger>`
   - ```{autodoc2-docstring} ophyd_async.core._detector.DetectorTrigger
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`DetectorController <ophyd_async.core._detector.DetectorController>`
   - ```{autodoc2-docstring} ophyd_async.core._detector.DetectorController
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`DetectorWriter <ophyd_async.core._detector.DetectorWriter>`
   - ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`PathInfo <ophyd_async.core._providers.PathInfo>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.PathInfo
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`PathProvider <ophyd_async.core._providers.PathProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.PathProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`StaticPathProvider <ophyd_async.core._providers.StaticPathProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.StaticPathProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`AutoIncrementingPathProvider <ophyd_async.core._providers.AutoIncrementingPathProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.AutoIncrementingPathProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`YMDPathProvider <ophyd_async.core._providers.YMDPathProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.YMDPathProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`FilenameProvider <ophyd_async.core._providers.FilenameProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.FilenameProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`StaticFilenameProvider <ophyd_async.core._providers.StaticFilenameProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.StaticFilenameProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`AutoIncrementFilenameProvider <ophyd_async.core._providers.AutoIncrementFilenameProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.AutoIncrementFilenameProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`UUIDFilenameProvider <ophyd_async.core._providers.UUIDFilenameProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.UUIDFilenameProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`NameProvider <ophyd_async.core._providers.NameProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.NameProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`DatasetDescriber <ophyd_async.core._providers.DatasetDescriber>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.DatasetDescriber
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`HDFDataset <ophyd_async.core._hdf_dataset.HDFDataset>`
   - ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`HDFFile <ophyd_async.core._hdf_dataset.HDFFile>`
   - ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFFile
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`StandardFlyer <ophyd_async.core._flyer.StandardFlyer>`
   - ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`FlyerController <ophyd_async.core._flyer.FlyerController>`
   - ```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`Settings <ophyd_async.core._settings.Settings>`
   - ```{autodoc2-docstring} ophyd_async.core._settings.Settings
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SettingsProvider <ophyd_async.core._settings.SettingsProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._settings.SettingsProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`YamlSettingsProvider <ophyd_async.core._yaml_settings.YamlSettingsProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._yaml_settings.YamlSettingsProvider
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`Reference <ophyd_async.core._utils.Reference>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.Reference
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -281,92 +229,74 @@
 
 * - {py:obj}`init_devices <ophyd_async.core._device.init_devices>`
   - ```{autodoc2-docstring} ophyd_async.core._device.init_devices
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`completed_status <ophyd_async.core._status.completed_status>`
   - ```{autodoc2-docstring} ophyd_async.core._status.completed_status
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`soft_signal_r_and_setter <ophyd_async.core._signal.soft_signal_r_and_setter>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.soft_signal_r_and_setter
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`soft_signal_rw <ophyd_async.core._signal.soft_signal_rw>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.soft_signal_rw
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`observe_value <ophyd_async.core._signal.observe_value>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.observe_value
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`observe_signals_value <ophyd_async.core._signal.observe_signals_value>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.observe_signals_value
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`wait_for_value <ophyd_async.core._signal.wait_for_value>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.wait_for_value
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`set_and_wait_for_value <ophyd_async.core._signal.set_and_wait_for_value>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.set_and_wait_for_value
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`set_and_wait_for_other_value <ophyd_async.core._signal.set_and_wait_for_other_value>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.set_and_wait_for_other_value
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`walk_rw_signals <ophyd_async.core._signal.walk_rw_signals>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.walk_rw_signals
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`config_ophyd_async_logging <ophyd_async.core._log.config_ophyd_async_logging>`
   - ```{autodoc2-docstring} ophyd_async.core._log.config_ophyd_async_logging
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`gather_dict <ophyd_async.core._utils.gather_dict>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.gather_dict
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`get_dtype <ophyd_async.core._utils.get_dtype>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.get_dtype
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`get_enum_cls <ophyd_async.core._utils.get_enum_cls>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.get_enum_cls
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`get_unique <ophyd_async.core._utils.get_unique>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.get_unique
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`in_micros <ophyd_async.core._utils.in_micros>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.in_micros
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`make_datakey <ophyd_async.core._signal_backend.make_datakey>`
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.make_datakey
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`wait_for_connection <ophyd_async.core._utils.wait_for_connection>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.wait_for_connection
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -379,52 +309,42 @@
 
 * - {py:obj}`SignalDatatype <ophyd_async.core._signal_backend.SignalDatatype>`
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalDatatype
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`SignalDatatypeT <ophyd_async.core._signal_backend.SignalDatatypeT>`
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalDatatypeT
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`DTypeScalar_co <ophyd_async.core._signal_backend.DTypeScalar_co>`
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.DTypeScalar_co
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`Array1D <ophyd_async.core._signal_backend.Array1D>`
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.Array1D
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`CALCULATE_TIMEOUT <ophyd_async.core._utils.CALCULATE_TIMEOUT>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.CALCULATE_TIMEOUT
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`CalculatableTimeout <ophyd_async.core._utils.CalculatableTimeout>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.CalculatableTimeout
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`DEFAULT_TIMEOUT <ophyd_async.core._utils.DEFAULT_TIMEOUT>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.DEFAULT_TIMEOUT
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`Callback <ophyd_async.core._utils.Callback>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.Callback
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`ConfigSignal <ophyd_async.core._readable.ConfigSignal>`
   - ```{autodoc2-docstring} ophyd_async.core._readable.ConfigSignal
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`HintedSignal <ophyd_async.core._readable.HintedSignal>`
   - ```{autodoc2-docstring} ophyd_async.core._readable.HintedSignal
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -437,7 +357,6 @@
 Bases: {py:obj}`bluesky.protocols.HasName`
 
 ```{autodoc2-docstring} ophyd_async.core._device.Device
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} parent
@@ -447,7 +366,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._device.Device.parent
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -457,7 +375,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 :type: str
 
 ```{autodoc2-docstring} ophyd_async.core._device.Device.name
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -466,7 +383,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 :canonical: ophyd_async.core._device.Device.children
 
 ```{autodoc2-docstring} ophyd_async.core._device.Device.children
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -475,7 +391,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 :canonical: ophyd_async.core._device.Device.log
 
 ```{autodoc2-docstring} ophyd_async.core._device.Device.log
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -484,7 +399,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 :canonical: ophyd_async.core._device.Device.set_name
 
 ```{autodoc2-docstring} ophyd_async.core._device.Device.set_name
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -494,7 +408,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._device.Device.connect
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -505,14 +418,12 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 :canonical: ophyd_async.core._device.DeviceConnector
 
 ```{autodoc2-docstring} ophyd_async.core._device.DeviceConnector
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} create_children_from_annotations(device: ~ophyd_async.core._device.Device)
 :canonical: ophyd_async.core._device.DeviceConnector.create_children_from_annotations
 
 ```{autodoc2-docstring} ophyd_async.core._device.DeviceConnector.create_children_from_annotations
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -522,7 +433,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._device.DeviceConnector.connect_mock
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -532,7 +442,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._device.DeviceConnector.connect_real
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -545,14 +454,12 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.SignalBackendT`\, {py:obj}`ophyd_async.core._device_filler.DeviceConnectorT`\]
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} check_created()
 :canonical: ophyd_async.core._device_filler.DeviceFiller.check_created
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.check_created
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -561,7 +468,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 :canonical: ophyd_async.core._device_filler.DeviceFiller.create_signals_from_annotations
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.create_signals_from_annotations
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -570,7 +476,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 :canonical: ophyd_async.core._device_filler.DeviceFiller.create_devices_from_annotations
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.create_devices_from_annotations
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -579,7 +484,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 :canonical: ophyd_async.core._device_filler.DeviceFiller.create_device_vector_entries_to_mock
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.create_device_vector_entries_to_mock
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -588,7 +492,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 :canonical: ophyd_async.core._device_filler.DeviceFiller.check_filled
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.check_filled
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -597,7 +500,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 :canonical: ophyd_async.core._device_filler.DeviceFiller.fill_child_signal
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.fill_child_signal
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -606,7 +508,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 :canonical: ophyd_async.core._device_filler.DeviceFiller.fill_child_device
 
 ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller.fill_child_device
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -619,14 +520,12 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`int`\, {py:obj}`ophyd_async.core._device.DeviceT`\], {py:obj}`ophyd_async.core._device.Device`
 
 ```{autodoc2-docstring} ophyd_async.core._device.DeviceVector
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} children() -> ~collections.abc.Iterator[tuple[str, ~ophyd_async.core._device.Device]]
 :canonical: ophyd_async.core._device.DeviceVector.children
 
 ```{autodoc2-docstring} ophyd_async.core._device.DeviceVector.children
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -637,7 +536,6 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`int`\, {py:obj}`ophyd_
 :canonical: ophyd_async.core._device.init_devices
 
 ```{autodoc2-docstring} ophyd_async.core._device.init_devices
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -647,7 +545,6 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`int`\, {py:obj}`ophyd_
 Bases: {py:obj}`bluesky.protocols.HasName`, {py:obj}`typing.Protocol`
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncReadable
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} read() -> dict[str, ~bluesky.protocols.Reading]
@@ -656,7 +553,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`, {py:obj}`typing.Protocol`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncReadable.read
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -667,7 +563,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`, {py:obj}`typing.Protocol`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncReadable.describe
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -680,7 +575,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`, {py:obj}`typing.Protocol`
 Bases: {py:obj}`bluesky.protocols.HasName`, {py:obj}`typing.Protocol`
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncConfigurable
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} read_configuration() -> dict[str, ~bluesky.protocols.Reading]
@@ -689,7 +583,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`, {py:obj}`typing.Protocol`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncConfigurable.read_configuration
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -700,7 +593,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`, {py:obj}`typing.Protocol`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncConfigurable.describe_configuration
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -713,7 +605,6 @@ Bases: {py:obj}`bluesky.protocols.HasName`, {py:obj}`typing.Protocol`
 Bases: {py:obj}`typing.Protocol`
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncStageable
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} stage() -> ~ophyd_async.core._status.AsyncStatus
@@ -721,7 +612,6 @@ Bases: {py:obj}`typing.Protocol`
 :abstractmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncStageable.stage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -731,7 +621,6 @@ Bases: {py:obj}`typing.Protocol`
 :abstractmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncStageable.unstage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -744,7 +633,6 @@ Bases: {py:obj}`typing.Protocol`
 Bases: {py:obj}`typing.Protocol`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._protocol.C`\]
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.Watcher
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -755,7 +643,6 @@ Bases: {py:obj}`typing.Protocol`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async
 Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`
 
 ```{autodoc2-docstring} ophyd_async.core._status.AsyncStatus
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} wrap(f: ~collections.abc.Callable[~ophyd_async.core._utils.P, ~collections.abc.Coroutine]) -> ~collections.abc.Callable[~ophyd_async.core._utils.P, ~ophyd_async.core._status.AsyncStatus]
@@ -763,7 +650,6 @@ Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`
 :classmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._status.AsyncStatus.wrap
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -776,14 +662,12 @@ Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`
 Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 
 ```{autodoc2-docstring} ophyd_async.core._status.WatchableAsyncStatus
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} watch(watcher: ~ophyd_async.core._protocol.Watcher)
 :canonical: ophyd_async.core._status.WatchableAsyncStatus.watch
 
 ```{autodoc2-docstring} ophyd_async.core._status.WatchableAsyncStatus.watch
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -793,7 +677,6 @@ Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`, {py:obj}`typing.Gener
 :classmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._status.WatchableAsyncStatus.wrap
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -806,7 +689,6 @@ Bases: {py:obj}`ophyd_async.core._status.AsyncStatusBase`, {py:obj}`typing.Gener
 Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} current
@@ -816,7 +698,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate.current
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -828,7 +709,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate.initial
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -840,7 +720,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate.target
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -852,7 +731,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate.name
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -864,7 +742,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate.unit
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -876,7 +753,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate.precision
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -888,7 +764,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate.fraction
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -900,7 +775,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate.time_elapsed
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -912,7 +786,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.WatcherUpdate.time_remaining
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -924,7 +797,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._status.completed_status
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -934,7 +806,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\]
 
 ```{autodoc2-docstring} ophyd_async.core._signal.Signal
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:property} source
@@ -942,7 +813,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`typing.Generic`\[{py:
 :type: str
 
 ```{autodoc2-docstring} ophyd_async.core._signal.Signal.source
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -955,7 +825,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`typing.Generic`\[{py:
 Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`ophyd_async.core._protocol.AsyncReadable`, {py:obj}`ophyd_async.core._protocol.AsyncStageable`, {py:obj}`bluesky.protocols.Subscribable`
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} read(cached: bool | None = None) -> dict[str, ~bluesky.protocols.Reading]
@@ -963,7 +832,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.read
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -973,7 +841,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.describe
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -983,7 +850,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.get_value
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -992,7 +858,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 :canonical: ophyd_async.core._signal.SignalR.subscribe_value
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.subscribe_value
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1001,7 +866,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 :canonical: ophyd_async.core._signal.SignalR.subscribe
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.subscribe
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1010,7 +874,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 :canonical: ophyd_async.core._signal.SignalR.clear_sub
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.clear_sub
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1020,7 +883,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.stage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1030,7 +892,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.unstage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1043,7 +904,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`bluesky.protocols.Movable`
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalW
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} set(value: ~ophyd_async.core._signal_backend.SignalDatatypeT, wait=True, timeout: ~ophyd_async.core._utils.CalculatableTimeout = CALCULATE_TIMEOUT) -> None
@@ -1051,7 +911,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalW.set
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1064,7 +923,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 Bases: {py:obj}`ophyd_async.core._signal.SignalR`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`ophyd_async.core._signal.SignalW`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`bluesky.protocols.Locatable`
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalRW
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} locate() -> ~bluesky.protocols.Location
@@ -1072,7 +930,6 @@ Bases: {py:obj}`ophyd_async.core._signal.SignalR`\[{py:obj}`ophyd_async.core._si
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalRW.locate
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1085,7 +942,6 @@ Bases: {py:obj}`ophyd_async.core._signal.SignalR`\[{py:obj}`ophyd_async.core._si
 Bases: {py:obj}`ophyd_async.core._signal.Signal`
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalX
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} trigger(wait=True, timeout: ~ophyd_async.core._utils.CalculatableTimeout = CALCULATE_TIMEOUT) -> None
@@ -1093,7 +949,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalX.trigger
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1106,7 +961,6 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`
 Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\]
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} source(name: str, read: bool) -> str
@@ -1114,7 +968,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 :abstractmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.source
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1125,7 +978,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.connect
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1136,7 +988,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.put
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1147,7 +998,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.get_datakey
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1158,7 +1008,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.get_reading
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1169,7 +1018,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.get_value
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1180,7 +1028,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.get_setpoint
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1190,7 +1037,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 :abstractmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalBackend.set_callback
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1203,18 +1049,23 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalConnector
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} connect_mock(device: ~ophyd_async.core._device.Device, mock: ~ophyd_async.core._utils.LazyMock)
 :canonical: ophyd_async.core._signal.SignalConnector.connect_mock
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._signal.SignalConnector.connect_mock
+```
+
 ````
 
 ````{py:method} connect_real(device: ~ophyd_async.core._device.Device, timeout: float, force_reconnect: bool)
 :canonical: ophyd_async.core._signal.SignalConnector.connect_real
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._signal.SignalConnector.connect_real
+```
 
 ````
 
@@ -1226,7 +1077,6 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalDatatype
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1237,7 +1087,6 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
    'TypeVar(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalDatatypeT
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1248,7 +1097,6 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
    'TypeVar(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.DTypeScalar_co
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1259,7 +1107,6 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.Array1D
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1270,7 +1117,6 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
 Bases: {py:obj}`str`, {py:obj}`enum.Enum`
 
 ```{autodoc2-docstring} ophyd_async.core._utils.StrictEnum
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1281,7 +1127,6 @@ Bases: {py:obj}`str`, {py:obj}`enum.Enum`
 Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
 
 ```{autodoc2-docstring} ophyd_async.core._utils.SubsetEnum
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1292,7 +1137,6 @@ Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
 Bases: {py:obj}`pydantic.BaseModel`
 
 ```{autodoc2-docstring} ophyd_async.core._table.Table
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} model_config
@@ -1301,7 +1145,6 @@ Bases: {py:obj}`pydantic.BaseModel`
    'ConfigDict(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._table.Table.model_config
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1310,7 +1153,6 @@ Bases: {py:obj}`pydantic.BaseModel`
 :canonical: ophyd_async.core._table.Table.numpy_dtype
 
 ```{autodoc2-docstring} ophyd_async.core._table.Table.numpy_dtype
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1319,26 +1161,6 @@ Bases: {py:obj}`pydantic.BaseModel`
 :canonical: ophyd_async.core._table.Table.numpy_table
 
 ```{autodoc2-docstring} ophyd_async.core._table.Table.numpy_table
-:parser: ophyd_async._docs_parser
-```
-
-````
-
-````{py:method} validate_array_dtypes(data: ~typing.Any) -> ~typing.Any
-:canonical: ophyd_async.core._table.Table.validate_array_dtypes
-:classmethod:
-
-```{autodoc2-docstring} ophyd_async.core._table.Table.validate_array_dtypes
-:parser: ophyd_async._docs_parser
-```
-
-````
-
-````{py:method} validate_lengths() -> ~ophyd_async.core._table.Table
-:canonical: ophyd_async.core._table.Table.validate_lengths
-
-```{autodoc2-docstring} ophyd_async.core._table.Table.validate_lengths
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1351,7 +1173,6 @@ Bases: {py:obj}`pydantic.BaseModel`
 Bases: {py:obj}`typing.TypedDict`
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalMetadata
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} limits
@@ -1361,7 +1182,6 @@ Bases: {py:obj}`typing.TypedDict`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalMetadata.limits
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1373,7 +1193,6 @@ Bases: {py:obj}`typing.TypedDict`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalMetadata.choices
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1385,7 +1204,6 @@ Bases: {py:obj}`typing.TypedDict`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalMetadata.precision
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1397,7 +1215,6 @@ Bases: {py:obj}`typing.TypedDict`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalMetadata.units
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1410,14 +1227,12 @@ Bases: {py:obj}`typing.TypedDict`
 Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\]
 
 ```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} set_value(value: ~ophyd_async.core._signal_backend.SignalDatatypeT)
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.set_value
 
 ```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.set_value
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1425,11 +1240,17 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ````{py:method} source(name: str, read: bool) -> str
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.source
 
+```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.source
+```
+
 ````
 
 ````{py:method} connect(timeout: float)
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.connect
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.connect
+```
 
 ````
 
@@ -1437,11 +1258,17 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.put
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.put
+```
+
 ````
 
 ````{py:method} get_datakey(source: str) -> ~event_model.DataKey
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_datakey
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_datakey
+```
 
 ````
 
@@ -1449,11 +1276,17 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_reading
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_reading
+```
+
 ````
 
 ````{py:method} get_value() -> ~ophyd_async.core._signal_backend.SignalDatatypeT
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_value
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_value
+```
 
 ````
 
@@ -1461,10 +1294,16 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_setpoint
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.get_setpoint
+```
+
 ````
 
 ````{py:method} set_callback(callback: ~ophyd_async.core._utils.Callback[~bluesky.protocols.Reading[~ophyd_async.core._signal_backend.SignalDatatypeT]] | None) -> None
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.set_callback
+
+```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend.set_callback
+```
 
 ````
 
@@ -1474,7 +1313,6 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._signal.soft_signal_r_and_setter
 
 ```{autodoc2-docstring} ophyd_async.core._signal.soft_signal_r_and_setter
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -1482,7 +1320,6 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._signal.soft_signal_rw
 
 ```{autodoc2-docstring} ophyd_async.core._signal.soft_signal_rw
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -1490,14 +1327,12 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._utils.LazyMock
 
 ```{autodoc2-docstring} ophyd_async.core._utils.LazyMock
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} child(name: str) -> ~ophyd_async.core._utils.LazyMock
 :canonical: ophyd_async.core._utils.LazyMock.child
 
 ```{autodoc2-docstring} ophyd_async.core._utils.LazyMock.child
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1510,14 +1345,12 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\]
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} put_mock() -> ~unittest.mock.AsyncMock
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.put_mock
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.put_mock
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1526,7 +1359,6 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.set_value
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.set_value
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1534,11 +1366,17 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ````{py:method} source(name: str, read: bool) -> str
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.source
 
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.source
+```
+
 ````
 
 ````{py:method} connect(timeout: float) -> None
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.connect
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.connect
+```
 
 ````
 
@@ -1546,7 +1384,6 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.put_proceeds
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.put_proceeds
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1555,11 +1392,17 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.put
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.put
+```
+
 ````
 
 ````{py:method} get_reading() -> ~bluesky.protocols.Reading
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.get_reading
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.get_reading
+```
 
 ````
 
@@ -1567,11 +1410,17 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.get_value
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.get_value
+```
+
 ````
 
 ````{py:method} get_setpoint() -> ~ophyd_async.core._signal_backend.SignalDatatypeT
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.get_setpoint
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.get_setpoint
+```
 
 ````
 
@@ -1579,10 +1428,16 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.get_datakey
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.get_datakey
+```
+
 ````
 
 ````{py:method} set_callback(callback: ~ophyd_async.core._utils.Callback[~bluesky.protocols.Reading[~ophyd_async.core._signal_backend.SignalDatatypeT]] | None) -> None
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.set_callback
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.set_callback
+```
 
 ````
 
@@ -1593,7 +1448,6 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.observe_value
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -1602,7 +1456,6 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.observe_signals_value
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -1611,16 +1464,14 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.wait_for_value
-:parser: ophyd_async._docs_parser
 ```
 ````
 
-````{py:function} set_and_wait_for_value(signal: ~ophyd_async.core._signal.SignalRW[~ophyd_async.core._signal_backend.SignalDatatypeT], value: ~ophyd_async.core._signal_backend.SignalDatatypeT, match_value: ~ophyd_async.core._signal_backend.SignalDatatypeT | ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], bool] | None = None, timeout: float = DEFAULT_TIMEOUT, status_timeout: float | None = None, wait_for_set_completion: bool = True) -> ~ophyd_async.core._status.AsyncStatus
+````{py:function} set_and_wait_for_value(signal: ~ophyd_async.core._signal.SignalRW[~ophyd_async.core._signal_backend.SignalDatatypeT], value: ~ophyd_async.core._signal_backend.SignalDatatypeT, match_value: ~ophyd_async.core._signal_backend.SignalDatatypeT | ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], bool] | None = None, timeout: float = DEFAULT_TIMEOUT, set_timeout: float | None = None, wait_for_set_completion: bool = True) -> ~ophyd_async.core._status.AsyncStatus
 :canonical: ophyd_async.core._signal.set_and_wait_for_value
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.set_and_wait_for_value
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -1629,7 +1480,6 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._signal.set_and_wait_for_other_value
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -1637,7 +1487,6 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._signal.walk_rw_signals
 
 ```{autodoc2-docstring} ophyd_async.core._signal.walk_rw_signals
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -1647,7 +1496,6 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`ophyd_async.core._protocol.AsyncReadable`, {py:obj}`ophyd_async.core._protocol.AsyncConfigurable`, {py:obj}`ophyd_async.core._protocol.AsyncStageable`, {py:obj}`bluesky.protocols.HasHints`
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} stage() -> None
@@ -1655,7 +1503,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`ophyd_async.core._pro
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.stage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1665,7 +1512,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`ophyd_async.core._pro
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.unstage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1674,11 +1520,17 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`ophyd_async.core._pro
 :canonical: ophyd_async.core._readable.StandardReadable.describe_configuration
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.describe_configuration
+```
+
 ````
 
 ````{py:method} read_configuration() -> dict[str, ~bluesky.protocols.Reading]
 :canonical: ophyd_async.core._readable.StandardReadable.read_configuration
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.read_configuration
+```
 
 ````
 
@@ -1686,11 +1538,17 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`ophyd_async.core._pro
 :canonical: ophyd_async.core._readable.StandardReadable.describe
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.describe
+```
+
 ````
 
 ````{py:method} read() -> dict[str, ~bluesky.protocols.Reading]
 :canonical: ophyd_async.core._readable.StandardReadable.read
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.read
+```
 
 ````
 
@@ -1698,13 +1556,15 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`ophyd_async.core._pro
 :canonical: ophyd_async.core._readable.StandardReadable.hints
 :type: ~bluesky.protocols.Hints
 
+```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.hints
+```
+
 ````
 
 ````{py:method} add_children_as_readables(format: ~ophyd_async.core._readable.StandardReadableFormat = StandardReadableFormat.CHILD) -> ~collections.abc.Generator[None, None, None]
 :canonical: ophyd_async.core._readable.StandardReadable.add_children_as_readables
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.add_children_as_readables
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1713,7 +1573,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`ophyd_async.core._pro
 :canonical: ophyd_async.core._readable.StandardReadable.add_readables
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadable.add_readables
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1726,7 +1585,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`ophyd_async.core._pro
 Bases: {py:obj}`enum.Enum`
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadableFormat
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} CHILD
@@ -1735,7 +1593,6 @@ Bases: {py:obj}`enum.Enum`
    'CHILD'
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadableFormat.CHILD
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1746,7 +1603,6 @@ Bases: {py:obj}`enum.Enum`
    'CONFIG_SIGNAL'
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadableFormat.CONFIG_SIGNAL
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1757,7 +1613,6 @@ Bases: {py:obj}`enum.Enum`
    'HINTED_SIGNAL'
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadableFormat.HINTED_SIGNAL
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1768,7 +1623,6 @@ Bases: {py:obj}`enum.Enum`
    'UNCACHED_SIGNAL'
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadableFormat.UNCACHED_SIGNAL
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1779,7 +1633,6 @@ Bases: {py:obj}`enum.Enum`
    'HINTED_UNCACHED_SIGNAL'
 
 ```{autodoc2-docstring} ophyd_async.core._readable.StandardReadableFormat.HINTED_UNCACHED_SIGNAL
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1792,7 +1645,6 @@ Bases: {py:obj}`enum.Enum`
 Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Stageable`, {py:obj}`ophyd_async.core._protocol.AsyncConfigurable`, {py:obj}`ophyd_async.core._protocol.AsyncReadable`, {py:obj}`bluesky.protocols.Triggerable`, {py:obj}`bluesky.protocols.Preparable`, {py:obj}`bluesky.protocols.Flyable`, {py:obj}`bluesky.protocols.Collectable`, {py:obj}`bluesky.protocols.WritesStreamAssets`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._detector.DetectorControllerT`\, {py:obj}`ophyd_async.core._detector.DetectorWriterT`\]
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} stage() -> None
@@ -1800,7 +1652,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.stage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1810,7 +1661,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.unstage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1819,11 +1669,17 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :canonical: ophyd_async.core._detector.StandardDetector.read_configuration
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.read_configuration
+```
+
 ````
 
 ````{py:method} describe_configuration() -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.core._detector.StandardDetector.describe_configuration
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.describe_configuration
+```
 
 ````
 
@@ -1831,11 +1687,17 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :canonical: ophyd_async.core._detector.StandardDetector.read
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.read
+```
+
 ````
 
 ````{py:method} describe() -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.core._detector.StandardDetector.describe
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.describe
+```
 
 ````
 
@@ -1844,7 +1706,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.trigger
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1854,7 +1715,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.prepare
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1864,7 +1724,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.kickoff
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1874,7 +1733,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.complete
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1884,7 +1742,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.describe_collect
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1894,7 +1751,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.collect_asset_docs
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1904,7 +1760,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.get_index
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1914,7 +1769,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :type: ~bluesky.protocols.Hints
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.hints
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1927,7 +1781,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 Bases: {py:obj}`pydantic.BaseModel`
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} number_of_triggers
@@ -1937,7 +1790,6 @@ Bases: {py:obj}`pydantic.BaseModel`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.number_of_triggers
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1949,7 +1801,6 @@ Bases: {py:obj}`pydantic.BaseModel`
    'Field(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.trigger
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1961,7 +1812,6 @@ Bases: {py:obj}`pydantic.BaseModel`
    'Field(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.deadtime
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1973,7 +1823,6 @@ Bases: {py:obj}`pydantic.BaseModel`
    'Field(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.livetime
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1985,7 +1834,6 @@ Bases: {py:obj}`pydantic.BaseModel`
    'Field(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.frame_timeout
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -1997,7 +1845,6 @@ Bases: {py:obj}`pydantic.BaseModel`
    1
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.multiplier
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2006,7 +1853,6 @@ Bases: {py:obj}`pydantic.BaseModel`
 :canonical: ophyd_async.core._detector.TriggerInfo.total_number_of_triggers
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.total_number_of_triggers
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2019,7 +1865,6 @@ Bases: {py:obj}`pydantic.BaseModel`
 Bases: {py:obj}`enum.Enum`
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorTrigger
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} INTERNAL
@@ -2028,7 +1873,6 @@ Bases: {py:obj}`enum.Enum`
    'INTERNAL'
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorTrigger.INTERNAL
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2039,7 +1883,6 @@ Bases: {py:obj}`enum.Enum`
    'EDGE_TRIGGER'
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorTrigger.EDGE_TRIGGER
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2050,7 +1893,6 @@ Bases: {py:obj}`enum.Enum`
    'CONSTANT_GATE'
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorTrigger.CONSTANT_GATE
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2061,7 +1903,6 @@ Bases: {py:obj}`enum.Enum`
    'VARIABLE_GATE'
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorTrigger.VARIABLE_GATE
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2074,7 +1915,6 @@ Bases: {py:obj}`enum.Enum`
 Bases: {py:obj}`abc.ABC`
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorController
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} get_deadtime(exposure: float | None) -> float
@@ -2082,7 +1922,6 @@ Bases: {py:obj}`abc.ABC`
 :abstractmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorController.get_deadtime
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2093,7 +1932,6 @@ Bases: {py:obj}`abc.ABC`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorController.prepare
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2104,7 +1942,6 @@ Bases: {py:obj}`abc.ABC`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorController.arm
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2115,7 +1952,6 @@ Bases: {py:obj}`abc.ABC`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorController.wait_for_idle
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2126,7 +1962,6 @@ Bases: {py:obj}`abc.ABC`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorController.disarm
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2139,7 +1974,6 @@ Bases: {py:obj}`abc.ABC`
 Bases: {py:obj}`abc.ABC`
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} open(multiplier: int = 1) -> dict[str, ~event_model.DataKey]
@@ -2148,7 +1982,6 @@ Bases: {py:obj}`abc.ABC`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.open
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2158,7 +1991,6 @@ Bases: {py:obj}`abc.ABC`
 :abstractmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.observe_indices_written
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2169,7 +2001,6 @@ Bases: {py:obj}`abc.ABC`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.get_indices_written
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2179,7 +2010,6 @@ Bases: {py:obj}`abc.ABC`
 :abstractmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.collect_stream_docs
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2190,7 +2020,6 @@ Bases: {py:obj}`abc.ABC`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.close
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2200,7 +2029,6 @@ Bases: {py:obj}`abc.ABC`
 :type: ~bluesky.protocols.Hints
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.hints
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2211,7 +2039,6 @@ Bases: {py:obj}`abc.ABC`
 :canonical: ophyd_async.core._providers.PathInfo
 
 ```{autodoc2-docstring} ophyd_async.core._providers.PathInfo
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} directory_path
@@ -2221,7 +2048,6 @@ Bases: {py:obj}`abc.ABC`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._providers.PathInfo.directory_path
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2233,7 +2059,6 @@ Bases: {py:obj}`abc.ABC`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._providers.PathInfo.filename
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2245,7 +2070,6 @@ Bases: {py:obj}`abc.ABC`
    0
 
 ```{autodoc2-docstring} ophyd_async.core._providers.PathInfo.create_dir_depth
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2258,7 +2082,6 @@ Bases: {py:obj}`abc.ABC`
 Bases: {py:obj}`typing.Protocol`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.PathProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2269,7 +2092,6 @@ Bases: {py:obj}`typing.Protocol`
 Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.StaticPathProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2280,7 +2102,6 @@ Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
 Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.AutoIncrementingPathProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2291,7 +2112,6 @@ Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
 Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.YMDPathProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2302,7 +2122,6 @@ Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
 Bases: {py:obj}`typing.Protocol`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.FilenameProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2313,7 +2132,6 @@ Bases: {py:obj}`typing.Protocol`
 Bases: {py:obj}`ophyd_async.core._providers.FilenameProvider`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.StaticFilenameProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2324,7 +2142,6 @@ Bases: {py:obj}`ophyd_async.core._providers.FilenameProvider`
 Bases: {py:obj}`ophyd_async.core._providers.FilenameProvider`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.AutoIncrementFilenameProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2335,7 +2152,6 @@ Bases: {py:obj}`ophyd_async.core._providers.FilenameProvider`
 Bases: {py:obj}`ophyd_async.core._providers.FilenameProvider`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.UUIDFilenameProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2346,7 +2162,6 @@ Bases: {py:obj}`ophyd_async.core._providers.FilenameProvider`
 Bases: {py:obj}`typing.Protocol`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.NameProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2357,7 +2172,6 @@ Bases: {py:obj}`typing.Protocol`
 Bases: {py:obj}`typing.Protocol`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.DatasetDescriber
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} np_datatype() -> str
@@ -2366,7 +2180,6 @@ Bases: {py:obj}`typing.Protocol`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._providers.DatasetDescriber.np_datatype
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2377,7 +2190,6 @@ Bases: {py:obj}`typing.Protocol`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._providers.DatasetDescriber.shape
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2388,7 +2200,6 @@ Bases: {py:obj}`typing.Protocol`
 :canonical: ophyd_async.core._hdf_dataset.HDFDataset
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} data_key
@@ -2398,7 +2209,6 @@ Bases: {py:obj}`typing.Protocol`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.data_key
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2410,7 +2220,6 @@ Bases: {py:obj}`typing.Protocol`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.dataset
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2422,7 +2231,6 @@ Bases: {py:obj}`typing.Protocol`
    'field(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.shape
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2433,7 +2241,6 @@ Bases: {py:obj}`typing.Protocol`
 :value: <Multiline-String>
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.dtype_numpy
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2445,7 +2252,6 @@ Bases: {py:obj}`typing.Protocol`
    1
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.multiplier
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2457,7 +2263,6 @@ Bases: {py:obj}`typing.Protocol`
    False
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.swmr
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2469,7 +2274,6 @@ Bases: {py:obj}`typing.Protocol`
    ()
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.chunk_shape
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2480,14 +2284,12 @@ Bases: {py:obj}`typing.Protocol`
 :canonical: ophyd_async.core._hdf_dataset.HDFFile
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFFile
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} stream_resources() -> ~collections.abc.Iterator[~event_model.StreamResource]
 :canonical: ophyd_async.core._hdf_dataset.HDFFile.stream_resources
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFFile.stream_resources
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2496,7 +2298,6 @@ Bases: {py:obj}`typing.Protocol`
 :canonical: ophyd_async.core._hdf_dataset.HDFFile.stream_data
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFFile.stream_data
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2509,7 +2310,6 @@ Bases: {py:obj}`typing.Protocol`
 Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Stageable`, {py:obj}`bluesky.protocols.Preparable`, {py:obj}`bluesky.protocols.Flyable`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:property} trigger_logic
@@ -2517,7 +2317,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :type: ~ophyd_async.core._flyer.FlyerController[~ophyd_async.core._utils.T]
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.trigger_logic
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2527,7 +2326,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.stage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2537,7 +2335,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.unstage
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2546,7 +2343,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :canonical: ophyd_async.core._flyer.StandardFlyer.prepare
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.prepare
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2556,7 +2352,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.kickoff
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2566,7 +2361,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.complete
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2579,7 +2373,6 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 Bases: {py:obj}`abc.ABC`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} prepare(value: ~ophyd_async.core._utils.T) -> ~typing.Any
@@ -2588,7 +2381,6 @@ Bases: {py:obj}`abc.ABC`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._u
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController.prepare
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2599,7 +2391,6 @@ Bases: {py:obj}`abc.ABC`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._u
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController.kickoff
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2610,7 +2401,6 @@ Bases: {py:obj}`abc.ABC`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._u
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController.complete
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2621,7 +2411,6 @@ Bases: {py:obj}`abc.ABC`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._u
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController.stop
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2634,14 +2423,12 @@ Bases: {py:obj}`abc.ABC`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._u
 Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`ophyd_async.core._signal.SignalRW`\[{py:obj}`typing.Any`\]\, {py:obj}`typing.Any`\], {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device.DeviceT`\]
 
 ```{autodoc2-docstring} ophyd_async.core._settings.Settings
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} partition(predicate: ~collections.abc.Callable[[~ophyd_async.core._signal.SignalRW], bool]) -> tuple[~ophyd_async.core._settings.Settings[~ophyd_async.core._device.DeviceT], ~ophyd_async.core._settings.Settings[~ophyd_async.core._device.DeviceT]]
 :canonical: ophyd_async.core._settings.Settings.partition
 
 ```{autodoc2-docstring} ophyd_async.core._settings.Settings.partition
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2652,7 +2439,6 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`ophyd_async.core._sign
 :canonical: ophyd_async.core._settings.SettingsProvider
 
 ```{autodoc2-docstring} ophyd_async.core._settings.SettingsProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} store(name: str, data: dict[str, ~typing.Any])
@@ -2661,7 +2447,6 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`ophyd_async.core._sign
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._settings.SettingsProvider.store
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2672,7 +2457,6 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`ophyd_async.core._sign
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._settings.SettingsProvider.retrieve
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2685,18 +2469,23 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`ophyd_async.core._sign
 Bases: {py:obj}`ophyd_async.core._settings.SettingsProvider`
 
 ```{autodoc2-docstring} ophyd_async.core._yaml_settings.YamlSettingsProvider
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} store(name: str, data: dict[str, ~typing.Any])
 :canonical: ophyd_async.core._yaml_settings.YamlSettingsProvider.store
 :async:
 
+```{autodoc2-docstring} ophyd_async.core._yaml_settings.YamlSettingsProvider.store
+```
+
 ````
 
 ````{py:method} retrieve(name: str) -> dict[str, ~typing.Any]
 :canonical: ophyd_async.core._yaml_settings.YamlSettingsProvider.retrieve
 :async:
+
+```{autodoc2-docstring} ophyd_async.core._yaml_settings.YamlSettingsProvider.retrieve
+```
 
 ````
 
@@ -2706,7 +2495,6 @@ Bases: {py:obj}`ophyd_async.core._settings.SettingsProvider`
 :canonical: ophyd_async.core._log.config_ophyd_async_logging
 
 ```{autodoc2-docstring} ophyd_async.core._log.config_ophyd_async_logging
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -2716,7 +2504,6 @@ Bases: {py:obj}`ophyd_async.core._settings.SettingsProvider`
    'CALCULATE_TIMEOUT'
 
 ```{autodoc2-docstring} ophyd_async.core._utils.CALCULATE_TIMEOUT
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2727,7 +2514,6 @@ Bases: {py:obj}`ophyd_async.core._settings.SettingsProvider`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.CalculatableTimeout
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2738,7 +2524,6 @@ Bases: {py:obj}`ophyd_async.core._settings.SettingsProvider`
    10.0
 
 ```{autodoc2-docstring} ophyd_async.core._utils.DEFAULT_TIMEOUT
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2749,7 +2534,6 @@ Bases: {py:obj}`ophyd_async.core._settings.SettingsProvider`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._utils.Callback
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2760,7 +2544,6 @@ Bases: {py:obj}`ophyd_async.core._settings.SettingsProvider`
 Bases: {py:obj}`Exception`
 
 ```{autodoc2-docstring} ophyd_async.core._utils.NotConnected
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:property} sub_errors
@@ -2768,7 +2551,6 @@ Bases: {py:obj}`Exception`
 :type: ~collections.abc.Mapping[str, Exception]
 
 ```{autodoc2-docstring} ophyd_async.core._utils.NotConnected.sub_errors
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2777,7 +2559,6 @@ Bases: {py:obj}`Exception`
 :canonical: ophyd_async.core._utils.NotConnected.format_error_string
 
 ```{autodoc2-docstring} ophyd_async.core._utils.NotConnected.format_error_string
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2787,7 +2568,6 @@ Bases: {py:obj}`Exception`
 :classmethod:
 
 ```{autodoc2-docstring} ophyd_async.core._utils.NotConnected.with_other_exceptions_logged
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2800,7 +2580,6 @@ Bases: {py:obj}`Exception`
 Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 
 ```{autodoc2-docstring} ophyd_async.core._utils.Reference
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2810,7 +2589,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._utils.gather_dict
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -2818,7 +2596,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :canonical: ophyd_async.core._utils.get_dtype
 
 ```{autodoc2-docstring} ophyd_async.core._utils.get_dtype
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -2826,7 +2603,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :canonical: ophyd_async.core._utils.get_enum_cls
 
 ```{autodoc2-docstring} ophyd_async.core._utils.get_enum_cls
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -2834,7 +2610,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :canonical: ophyd_async.core._utils.get_unique
 
 ```{autodoc2-docstring} ophyd_async.core._utils.get_unique
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -2842,7 +2617,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :canonical: ophyd_async.core._utils.in_micros
 
 ```{autodoc2-docstring} ophyd_async.core._utils.in_micros
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -2850,7 +2624,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :canonical: ophyd_async.core._signal_backend.make_datakey
 
 ```{autodoc2-docstring} ophyd_async.core._signal_backend.make_datakey
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -2859,7 +2632,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._utils.wait_for_connection
-:parser: ophyd_async._docs_parser
 ```
 ````
 
@@ -2869,7 +2641,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    '_compat_format(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._readable.ConfigSignal
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -2881,7 +2652,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    '_compat_format(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._readable.HintedSignal
-:parser: ophyd_async._docs_parser
 ```
 
 ````

@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.epics.testing
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 
@@ -18,34 +17,30 @@
 
 * - {py:obj}`EpicsTestCaDevice <ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`EpicsTestEnum <ophyd_async.epics.testing._example_ioc.EpicsTestEnum>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`EpicsTestSubsetEnum <ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`EpicsTestPvaDevice <ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`EpicsTestTable <ophyd_async.epics.testing._example_ioc.EpicsTestTable>`
-  -
+  - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable
+    :summary:
+    ```
 * - {py:obj}`EpicsTestIocAndDevices <ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`TestingIOC <ophyd_async.epics.testing._utils.TestingIOC>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -58,7 +53,6 @@
 
 * - {py:obj}`generate_random_pv_prefix <ophyd_async.epics.testing._utils.generate_random_pv_prefix>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._utils.generate_random_pv_prefix
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -71,12 +65,10 @@
 
 * - {py:obj}`CA_PVA_RECORDS <ophyd_async.epics.testing._example_ioc.CA_PVA_RECORDS>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.CA_PVA_RECORDS
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`PVA_RECORDS <ophyd_async.epics.testing._example_ioc.PVA_RECORDS>`
   - ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.PVA_RECORDS
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -89,7 +81,6 @@
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.CA_PVA_RECORDS
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -100,7 +91,6 @@
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.PVA_RECORDS
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -111,7 +101,6 @@
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} a_int
@@ -121,7 +110,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_int
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -133,7 +121,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_float
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -145,7 +132,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.float_prec_0
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -157,7 +143,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_str
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -169,7 +154,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.longstr
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -181,7 +165,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.longstr2
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -193,7 +176,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.a_bool
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -205,7 +187,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -217,7 +198,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum2
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -229,7 +209,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.subset_enum
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -241,7 +220,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum_str_fallback
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -253,7 +231,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.bool_unnamed
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -265,7 +242,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.partialint
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -277,7 +253,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.lessint
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -289,7 +264,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.uint8a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -301,7 +275,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.int16a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -313,7 +286,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.int32a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -325,7 +297,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.float32a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -337,7 +308,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.float64a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -349,7 +319,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.stra
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -362,7 +331,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} A
@@ -371,7 +339,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Aaa'
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum.A
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -382,7 +349,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Bbb'
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum.B
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -393,7 +359,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Ccc'
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestEnum.C
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -406,7 +371,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 Bases: {py:obj}`ophyd_async.core._utils.SubsetEnum`
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} A
@@ -415,7 +379,6 @@ Bases: {py:obj}`ophyd_async.core._utils.SubsetEnum`
    'Aaa'
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum.A
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -426,7 +389,6 @@ Bases: {py:obj}`ophyd_async.core._utils.SubsetEnum`
    'Bbb'
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum.B
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -439,7 +401,6 @@ Bases: {py:obj}`ophyd_async.core._utils.SubsetEnum`
 Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:attribute} int8a
@@ -449,7 +410,6 @@ Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.int8a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -461,7 +421,6 @@ Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.uint16a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -473,7 +432,6 @@ Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.uint32a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -485,7 +443,6 @@ Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.int64a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -497,7 +454,6 @@ Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.uint64a
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -509,7 +465,6 @@ Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.table
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -521,7 +476,6 @@ Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice.ntndarray
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -533,6 +487,9 @@ Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
 
 Bases: {py:obj}`ophyd_async.core.Table`
 
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable
+```
+
 ````{py:attribute} a_bool
 :canonical: ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_bool
 :type: ~ophyd_async.core.Array1D[~numpy.bool_]
@@ -540,7 +497,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_bool
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -552,7 +508,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_int
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -564,7 +519,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_float
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -576,7 +530,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_str
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -588,7 +541,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestTable.a_enum
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -599,14 +551,12 @@ Bases: {py:obj}`ophyd_async.core.Table`
 :canonical: ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} get_device(protocol: str) -> ~ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice | ~ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice
 :canonical: ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_device
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_device
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -615,7 +565,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
 :canonical: ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_signal
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_signal
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -624,7 +573,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
 :canonical: ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_pv
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestIocAndDevices.get_pv
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -635,14 +583,12 @@ Bases: {py:obj}`ophyd_async.core.Table`
 :canonical: ophyd_async.epics.testing._utils.TestingIOC
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} add_database(db: ~pathlib.Path | str, /, **macros: str)
 :canonical: ophyd_async.epics.testing._utils.TestingIOC.add_database
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC.add_database
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -651,7 +597,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
 :canonical: ophyd_async.epics.testing._utils.TestingIOC.start
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC.start
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -660,7 +605,6 @@ Bases: {py:obj}`ophyd_async.core.Table`
 :canonical: ophyd_async.epics.testing._utils.TestingIOC.stop
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._utils.TestingIOC.stop
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -671,6 +615,5 @@ Bases: {py:obj}`ophyd_async.core.Table`
 :canonical: ophyd_async.epics.testing._utils.generate_random_pv_prefix
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._utils.generate_random_pv_prefix
-:parser: ophyd_async._docs_parser
 ```
 ````

@@ -4,7 +4,6 @@
 ```
 
 ```{autodoc2-docstring} ophyd_async.epics.adandor
-:parser: ophyd_async._docs_parser
 :allowtitles:
 ```
 
@@ -18,17 +17,14 @@
 
 * - {py:obj}`Andor2Detector <ophyd_async.epics.adandor._andor.Andor2Detector>`
   - ```{autodoc2-docstring} ophyd_async.epics.adandor._andor.Andor2Detector
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`Andor2Controller <ophyd_async.epics.adandor._andor_controller.Andor2Controller>`
   - ```{autodoc2-docstring} ophyd_async.epics.adandor._andor_controller.Andor2Controller
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 * - {py:obj}`Andor2DriverIO <ophyd_async.epics.adandor._andor_io.Andor2DriverIO>`
   - ```{autodoc2-docstring} ophyd_async.epics.adandor._andor_io.Andor2DriverIO
-    :parser: ophyd_async._docs_parser
     :summary:
     ```
 ````
@@ -41,7 +37,6 @@
 Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adandor._andor_controller.Andor2Controller`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.adandor._andor.Andor2Detector
-:parser: ophyd_async._docs_parser
 ```
 
 ````
@@ -52,17 +47,22 @@ Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epi
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async.epics.adandor._andor_io.Andor2DriverIO`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.adandor._andor_controller.Andor2Controller
-:parser: ophyd_async._docs_parser
 ```
 
 ````{py:method} get_deadtime(exposure: float | None) -> float
 :canonical: ophyd_async.epics.adandor._andor_controller.Andor2Controller.get_deadtime
+
+```{autodoc2-docstring} ophyd_async.epics.adandor._andor_controller.Andor2Controller.get_deadtime
+```
 
 ````
 
 ````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo)
 :canonical: ophyd_async.epics.adandor._andor_controller.Andor2Controller.prepare
 :async:
+
+```{autodoc2-docstring} ophyd_async.epics.adandor._andor_controller.Andor2Controller.prepare
+```
 
 ````
 
@@ -74,7 +74,6 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 ```{autodoc2-docstring} ophyd_async.epics.adandor._andor_io.Andor2DriverIO
-:parser: ophyd_async._docs_parser
 ```
 
 ````

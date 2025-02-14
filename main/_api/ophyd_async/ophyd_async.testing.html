@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.testing &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.testing &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -528,7 +528,7 @@
 <td><p>Example of a strict Enum datatype.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ExampleTable" title="ophyd_async.testing._one_of_everything.ExampleTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExampleTable</span></code></a></p></td>
-<td></td>
+<td><p>An abstraction of a Table where each field is a column.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.OneOfEverythingDevice" title="ophyd_async.testing._one_of_everything.OneOfEverythingDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OneOfEverythingDevice</span></code></a></p></td>
 <td><p>A device with one of every datatype allowed on signals.</p></td>
@@ -537,14 +537,13 @@
 <td><p>Device containing subdevices with one of every datatype allowed on signals.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.MonitorQueue" title="ophyd_async.testing._assert.MonitorQueue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MonitorQueue</span></code></a></p></td>
-<td><p>Monitors a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> and stores its updates.</p></td>
+<td><p>Monitors a <code class="docutils literal notranslate"><span class="pre">Signal</span></code> and stores its updates.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.ApproxTable" title="ophyd_async.testing._assert.ApproxTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ApproxTable</span></code></a></p></td>
-<td><p>For approximating two tables are equivalent, up to some relative or
-absolute difference.</p></td>
+<td><p>For approximating two tables are equivalent.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.StatusWatcher" title="ophyd_async.testing._assert.StatusWatcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StatusWatcher</span></code></a></p></td>
-<td><p>Watches an <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a>, storing the calls within.</p></td>
+<td><p>Watches an <code class="docutils literal notranslate"><span class="pre">AsyncStatus</span></code>, storing the calls within.</p></td>
 </tr>
 </tbody>
 </table>
@@ -567,10 +566,10 @@ absolute difference.</p></td>
 <td><p>Assert that a configurable Device has the given configuration.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.assert_describe_signal" title="ophyd_async.testing._assert.assert_describe_signal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assert_describe_signal</span></code></a></p></td>
-<td><p>Asserts the describe of a signal matches the expected metadata.</p></td>
+<td><p>Assert the describe of a signal matches the expected metadata.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.assert_emitted" title="ophyd_async.testing._assert.assert_emitted"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assert_emitted</span></code></a></p></td>
-<td><p>Assert emitted document generated by running a Bluesky plan</p></td>
+<td><p>Assert emitted document generated by running a Bluesky plan.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.get_mock" title="ophyd_async.testing._mock_signal_utils.get_mock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mock</span></code></a></p></td>
 <td><p>Return the mock (which may have child mocks attached) for a Device.</p></td>
@@ -579,8 +578,7 @@ absolute difference.</p></td>
 <td><p>Set the value of a signal that is in mock mode.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.set_mock_values" title="ophyd_async.testing._mock_signal_utils.set_mock_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mock_values</span></code></a></p></td>
-<td><p>Iterator to set a signal to a sequence of values, optionally repeating the
-sequence.</p></td>
+<td><p>Set a signal to a sequence of values, optionally repeating.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.get_mock_put" title="ophyd_async.testing._mock_signal_utils.get_mock_put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mock_put</span></code></a></p></td>
 <td><p>Get the mock associated with the put call on the signal.</p></td>
@@ -609,15 +607,15 @@ sequence.</p></td>
 <dd><p>Allow any value to be compared to another in tests.</p>
 <p>This is needed because numpy arrays give a numpy array back when compared,
 not a bool. This means that you can’t <code class="docutils literal notranslate"><span class="pre">assert</span> <span class="pre">array1==array2</span></code>. Numpy
-arrays can be wrapped with <a class="reference external" href="https://docs.pytest.org/en/stable/reference/reference.html#pytest.approx" title="(in pytest v8.3.4)"><code class="xref any docutils literal notranslate"><span class="pre">pytest.approx</span></code></a>, but this doesn’t work for
-<a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Table" title="ophyd_async.core.Table"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> instances: in this case we use <a class="reference internal" href="#ophyd_async.testing.ApproxTable" title="ophyd_async.testing.ApproxTable"><code class="xref any py py-class docutils literal notranslate"><span class="pre">ApproxTable</span></code></a>.</p>
+arrays can be wrapped with <code class="docutils literal notranslate"><span class="pre">pytest.approx</span></code>, but this doesn’t work for
+<code class="docutils literal notranslate"><span class="pre">Table</span></code> instances: in this case we use <code class="docutils literal notranslate"><span class="pre">ApproxTable</span></code>.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.testing.assert_value">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">assert_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#assert_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.assert_value" title="Link to this definition">#</a></dt>
 <dd><p>Assert that a Signal has the given value.</p>
-<dl class="field-list simple">
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>signal</strong> – Signal with get_value.</p></li>
@@ -631,11 +629,11 @@ arrays can be wrapped with <a class="reference external" href="https://docs.pyte
 <dt class="sig sig-object py" id="ophyd_async.testing.assert_reading">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">assert_reading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">readable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncReadable" title="ophyd_async.core.AsyncReadable"><span class="pre">AsyncReadable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_reading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Reading" title="(in bluesky v1.13.1rc3.dev11+g541c4e8f)"><span class="pre">Reading</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#assert_reading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.assert_reading" title="Link to this definition">#</a></dt>
 <dd><p>Assert that a readable Device has the given reading.</p>
-<dl class="field-list simple">
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>readable</strong> – Device with an async <code class="docutils literal notranslate"><span class="pre">read()</span></code> method to get the reading from.</p></li>
-<li><p><strong>reading</strong> – The expected reading from the readable.</p></li>
+<li><p><strong>expected_reading</strong> – The expected reading from the readable.</p></li>
 </ul>
 </dd>
 </dl>
@@ -645,11 +643,11 @@ arrays can be wrapped with <a class="reference external" href="https://docs.pyte
 <dt class="sig sig-object py" id="ophyd_async.testing.assert_configuration">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">assert_configuration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configurable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncConfigurable" title="ophyd_async.core.AsyncConfigurable"><span class="pre">AsyncConfigurable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Reading" title="(in bluesky v1.13.1rc3.dev11+g541c4e8f)"><span class="pre">Reading</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#assert_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.assert_configuration" title="Link to this definition">#</a></dt>
 <dd><p>Assert that a configurable Device has the given configuration.</p>
-<dl class="field-list simple">
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>configurable</strong> – Device with an async <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code> method to get the configuration
-from.</p></li>
+<li><p><strong>configurable</strong> – Device with an async <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code> method to get the
+configuration from.</p></li>
 <li><p><strong>configuration</strong> – The expected configuration from the configurable.</p></li>
 </ul>
 </dd>
@@ -659,23 +657,32 @@ from.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.testing.assert_describe_signal">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">assert_describe_signal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">metadata</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#assert_describe_signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.assert_describe_signal" title="Link to this definition">#</a></dt>
-<dd><p>Asserts the describe of a signal matches the expected metadata.</p>
+<dd><p>Assert the describe of a signal matches the expected metadata.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> – The signal to describe.</p></li>
+<li><p><strong>metadata</strong> – The expected metadata.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.testing.assert_emitted">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">assert_emitted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">docs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">numbers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#assert_emitted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.assert_emitted" title="Link to this definition">#</a></dt>
-<dd><p>Assert emitted document generated by running a Bluesky plan</p>
-<dl class="field-list simple">
+<dd><p>Assert emitted document generated by running a Bluesky plan.</p>
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>docs</strong> – A mapping of document type -&gt; list of documents that have been emitted.</p></li>
 <li><p><strong>numbers</strong> – The number of each document type expected.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
 </dl>
-<p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docs</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">docs</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="k">lambda</span> <span class="n">name</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="n">docs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doc</span><span class="p">))</span>
 <span class="n">RE</span><span class="p">(</span><span class="n">my_plan</span><span class="p">())</span>
 <span class="n">assert_emitted</span><span class="p">(</span><span class="n">docs</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -699,26 +706,25 @@ from.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.testing.set_mock_values">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">set_mock_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.13)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_all_consumed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.13)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_mock_signal_utils.html#set_mock_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.set_mock_values" title="Link to this definition">#</a></dt>
-<dd><p>Iterator to set a signal to a sequence of values, optionally repeating the
-sequence.</p>
-<dl class="field-list simple">
+<dd><p>Set a signal to a sequence of values, optionally repeating.</p>
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>signal</strong> – A signal connected in mock mode.</p></li>
-<li><p><strong>values</strong> – An iterable of the values to set the signal to, on each iteration
-the next value will be set.</p></li>
-<li><p><strong>require_all_consumed</strong> – If True, an AssertionError will be raised if the iterator is deleted before
-all values have been consumed.</p></li>
+<li><p><strong>values</strong> – An iterable of the values to set the signal to, on each iteration the
+next value will be set.</p></li>
+<li><p><strong>require_all_consumed</strong> – If True, an AssertionError will be raised if the iterator is deleted
+before all values have been consumed.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
 </dl>
-<p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">value_set</span> <span class="ow">in</span> <span class="n">set_mock_values</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">value_set</span> <span class="ow">in</span> <span class="n">set_mock_values</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)):</span>
     <span class="c1"># do something</span>
 
 <span class="n">cm</span> <span class="o">=</span> <span class="n">set_mock_values</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="n">require_all_consumed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="nb">next</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
-<span class="c1"># do something</span>
+<span class="nb">next</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span> <span class="c1"># do something</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -733,13 +739,14 @@ all values have been consumed.</p></li>
 <dt class="sig sig-object py" id="ophyd_async.testing.callback_on_mock_put">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">callback_on_mock_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><span class="pre">Signal</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable" title="(in Python v3.13)"><span class="pre">Awaitable</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_mock_signal_utils.html#callback_on_mock_put"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.callback_on_mock_put" title="Link to this definition">#</a></dt>
 <dd><p>For setting a callback when a backend is put to.</p>
-<p>Can either be used in a context, with the callback being
-unset on exit, or as an ordinary function.</p>
-<dl class="field-list simple">
+<p>Can either be used in a context, with the callback being unset on exit, or
+as an ordinary function.</p>
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal</strong> – A signal with a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.MockSignalBackend" title="ophyd_async.core.MockSignalBackend"><code class="xref any py py-class docutils literal notranslate"><span class="pre">MockSignalBackend</span></code></a> backend.</p></li>
-<li><p><strong>callback</strong> – The callback to call when the backend is put to during the context.</p></li>
+<li><p><strong>signal</strong> – A signal with a <code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code> backend.</p></li>
+<li><p><strong>callback</strong> – The callback to call when the backend is put to during the
+context.</p></li>
 </ul>
 </dd>
 </dl>
@@ -765,7 +772,7 @@ unset on exit, or as an ordinary function.</p>
 <ul class="simple">
 <li><p>Tests to allow tasks like <code class="docutils literal notranslate"><span class="pre">set()</span></code> to start so that signal
 puts can be tested</p></li>
-<li><p><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.observe_value" title="ophyd_async.core.observe_value"><code class="xref any py py-func docutils literal notranslate"><span class="pre">observe_value</span></code></a> to allow it to be wrapped in <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.wait_for" title="(in Python v3.13)"><code class="xref any docutils literal notranslate"><span class="pre">asyncio.wait_for</span></code></a>
+<li><p><code class="docutils literal notranslate"><span class="pre">observe_value</span></code> to allow it to be wrapped in <code class="docutils literal notranslate"><span class="pre">asyncio.wait_for</span></code>
 with a timeout</p></li>
 </ul>
 </dd></dl>
@@ -799,6 +806,28 @@ with a timeout</p></li>
 <dt class="sig sig-object py" id="ophyd_async.testing.ExampleTable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">ExampleTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_one_of_everything.html#ExampleTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.ExampleTable" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Table" title="ophyd_async.core.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Table</span></code></a></p>
+<p>An abstraction of a Table where each field is a column.</p>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Array1D</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">a</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">MyTable</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">b</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># the length is the number of rows</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span> <span class="o">=</span> <span class="n">t</span> <span class="o">+</span> <span class="n">t</span>  <span class="c1"># adding tables together concatenates them</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="o">.</span><span class="n">a</span>
+<span class="go">array([1, 2, 1, 2], dtype=int8)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="o">.</span><span class="n">b</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;, &#39;x&#39;, &#39;y&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># slice a row</span>
+<span class="go">array([(2, b&#39;y&#39;)], dtype=[(&#39;a&#39;, &#39;i1&#39;), (&#39;b&#39;, &#39;S40&#39;)])</span>
+
+</pre></div>
+</div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.testing.ExampleTable.a_bool">
 <span class="sig-name descname"><span class="pre">a_bool</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.3.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.testing.ExampleTable.a_bool" title="Link to this definition">#</a></dt>
@@ -854,7 +883,7 @@ with a timeout</p></li>
 <dt class="sig sig-object py" id="ophyd_async.testing.MonitorQueue">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">MonitorQueue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#MonitorQueue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.MonitorQueue" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/contextlib.html#contextlib.AbstractContextManager" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contextlib.AbstractContextManager</span></code></a></p>
-<p>Monitors a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Signal" title="ophyd_async.core.Signal"><code class="xref any py py-class docutils literal notranslate"><span class="pre">Signal</span></code></a> and stores its updates.</p>
+<p>Monitors a <code class="docutils literal notranslate"><span class="pre">Signal</span></code> and stores its updates.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.testing.MonitorQueue.assert_updates">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">assert_updates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expected_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#MonitorQueue.assert_updates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.MonitorQueue.assert_updates" title="Link to this definition">#</a></dt>
@@ -865,15 +894,24 @@ with a timeout</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.testing.ApproxTable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">ApproxTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expected</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Table" title="ophyd_async.core.Table"><span class="pre">Table</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nan_ok</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#ApproxTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.ApproxTable" title="Link to this definition">#</a></dt>
-<dd><p>For approximating two tables are equivalent, up to some relative or
-absolute difference.</p>
+<dd><p>For approximating two tables are equivalent.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expected</strong> – The expected table.</p></li>
+<li><p><strong>rel</strong> – The relative tolerance.</p></li>
+<li><p><strong>abs</strong> – The absolute tolerance.</p></li>
+<li><p><strong>nan_ok</strong> – Whether NaNs are allowed.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.testing.StatusWatcher">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">StatusWatcher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.WatchableAsyncStatus" title="ophyd_async.core.WatchableAsyncStatus"><span class="pre">WatchableAsyncStatus</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#StatusWatcher"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.StatusWatcher" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Watcher" title="ophyd_async.core.Watcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Watcher</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.testing._utils.T</span></code>]</p>
-<p>Watches an <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref any py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a>, storing the calls within.</p>
+<p>Watches an <code class="docutils literal notranslate"><span class="pre">AsyncStatus</span></code>, storing the calls within.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.testing.StatusWatcher.wait_for_call">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wait_for_call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fraction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_elapsed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_remaining</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_assert.html#StatusWatcher.wait_for_call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.StatusWatcher.wait_for_call" title="Link to this definition">#</a></dt>
@@ -932,10 +970,10 @@ absolute difference.</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.approx_value"><code class="docutils literal notranslate"><span class="pre">approx_value()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.assert_value"><code class="docutils literal notranslate"><span class="pre">assert_value()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.assert_reading"><code class="docutils literal notranslate"><span class="pre">assert_reading()</span></code></a></li>

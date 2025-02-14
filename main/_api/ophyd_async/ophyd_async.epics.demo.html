@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.demo &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.epics.demo &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -520,7 +520,7 @@
                   
   <section id="module-ophyd_async.epics.demo">
 <span id="ophyd-async-epics-demo"></span><h1><a class="reference internal" href="#module-ophyd_async.epics.demo" title="ophyd_async.epics.demo"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code></a><a class="headerlink" href="#module-ophyd_async.epics.demo" title="Link to this heading">#</a></h1>
-<p>Demo EPICS Devices for the tutorial</p>
+<p>Demo EPICS Devices for the tutorial.</p>
 <section id="package-contents">
 <h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
 <section id="classes">
@@ -534,10 +534,10 @@
 <td><p>A simulated sample stage with X and Y movables.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.demo.EnergyMode" title="ophyd_async.epics.demo._point_detector_channel.EnergyMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnergyMode</span></code></a></p></td>
-<td><p>Energy mode for <a class="reference internal" href="#ophyd_async.epics.demo.DemoPointDetectorChannel" title="ophyd_async.epics.demo.DemoPointDetectorChannel"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code></a>.</p></td>
+<td><p>Energy mode for <code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.demo.DemoPointDetectorChannel" title="ophyd_async.epics.demo._point_detector_channel.DemoPointDetectorChannel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code></a></p></td>
-<td><p>A channel for <a class="reference internal" href="#ophyd_async.epics.demo.DemoPointDetector" title="ophyd_async.epics.demo.DemoPointDetector"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DemoPointDetector</span></code></a> with int value based on X and Y Motors.</p></td>
+<td><p>A channel for <code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code> with int value based on X and Y Motors.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.demo.DemoPointDetector" title="ophyd_async.epics.demo._point_detector.DemoPointDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DemoPointDetector</span></code></a></p></td>
 <td><p>A demo detector that produces a point values based on X and Y motors.</p></td>
@@ -551,8 +551,7 @@
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.demo.start_ioc_subprocess" title="ophyd_async.epics.demo._ioc.start_ioc_subprocess"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_ioc_subprocess</span></code></a></p></td>
-<td><p>Start an IOC subprocess with EPICS database for sample stage and sensor
-with the same pv prefix</p></td>
+<td><p>Start an IOC subprocess for sample stage and sensor.</p></td>
 </tr>
 </tbody>
 </table>
@@ -604,7 +603,17 @@ with the same pv prefix</p></td>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.demo.DemoMotor.set_name">
 <span class="sig-name descname"><span class="pre">set_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_name_separator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/demo/_motor.html#DemoMotor.set_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.demo.DemoMotor.set_name" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Set <code class="docutils literal notranslate"><span class="pre">self.name=name</span></code> and each <code class="docutils literal notranslate"><span class="pre">self.child.name=name+&quot;-child&quot;</span></code>.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – New name to set.</p></li>
+<li><p><strong>child_name_separator</strong> – Use this as a separator instead of “-”. Use “_” instead to make the
+same names as the equivalent ophyd sync device.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.demo.DemoMotor.set">
@@ -629,17 +638,19 @@ with the same pv prefix</p></td>
 <dt class="sig sig-object py" id="ophyd_async.epics.demo.EnergyMode">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.demo.</span></span><span class="sig-name descname"><span class="pre">EnergyMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/demo/_point_detector_channel.html#EnergyMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.demo.EnergyMode" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
-<p>Energy mode for <a class="reference internal" href="#ophyd_async.epics.demo.DemoPointDetectorChannel" title="ophyd_async.epics.demo.DemoPointDetectorChannel"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code></a>.</p>
+<p>Energy mode for <code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code>.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.demo.EnergyMode.LOW">
 <span class="sig-name descname"><span class="pre">LOW</span></span><a class="headerlink" href="#ophyd_async.epics.demo.EnergyMode.LOW" title="Link to this definition">#</a></dt>
 <dd><p>‘Low Energy’</p>
+<p>Low energy mode</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.demo.EnergyMode.HIGH">
 <span class="sig-name descname"><span class="pre">HIGH</span></span><a class="headerlink" href="#ophyd_async.epics.demo.EnergyMode.HIGH" title="Link to this definition">#</a></dt>
 <dd><p>‘High Energy’</p>
+<p>High energy mode</p>
 </dd></dl>
 
 </dd></dl>
@@ -648,7 +659,7 @@ with the same pv prefix</p></td>
 <dt class="sig sig-object py" id="ophyd_async.epics.demo.DemoPointDetectorChannel">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.demo.</span></span><span class="sig-name descname"><span class="pre">DemoPointDetectorChannel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/demo/_point_detector_channel.html#DemoPointDetectorChannel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.demo.DemoPointDetectorChannel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StandardReadable</span></code></a>, <a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.core.EpicsDevice</span></code></a></p>
-<p>A channel for <a class="reference internal" href="#ophyd_async.epics.demo.DemoPointDetector" title="ophyd_async.epics.demo.DemoPointDetector"><code class="xref any py py-class docutils literal notranslate"><span class="pre">DemoPointDetector</span></code></a> with int value based on X and Y Motors.</p>
+<p>A channel for <code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code> with int value based on X and Y Motors.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.demo.DemoPointDetectorChannel.value">
 <span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'Value'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL" title="ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL"><span class="pre">HINTED_UNCACHED_SIGNAL</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.demo.DemoPointDetectorChannel.value" title="Link to this definition">#</a></dt>
@@ -702,8 +713,15 @@ with the same pv prefix</p></td>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.epics.demo.start_ioc_subprocess">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.demo.</span></span><span class="sig-name descname"><span class="pre">start_ioc_subprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.epics.testing.html#ophyd_async.epics.testing.TestingIOC" title="ophyd_async.epics.testing.TestingIOC"><span class="pre">TestingIOC</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/demo/_ioc.html#start_ioc_subprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.demo.start_ioc_subprocess" title="Link to this definition">#</a></dt>
-<dd><p>Start an IOC subprocess with EPICS database for sample stage and sensor
-with the same pv prefix</p>
+<dd><p>Start an IOC subprocess for sample stage and sensor.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prefix</strong> – The prefix for the IOC PVs.</p></li>
+<li><p><strong>num_channels</strong> – The number of point detector channels to create.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -757,10 +775,10 @@ with the same pv prefix</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.demo.DemoMotor"><code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.demo.DemoMotor.readback"><code class="docutils literal notranslate"><span class="pre">DemoMotor.readback</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.demo.DemoMotor.velocity"><code class="docutils literal notranslate"><span class="pre">DemoMotor.velocity</span></code></a></li>

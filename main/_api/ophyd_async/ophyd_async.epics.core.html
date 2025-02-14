@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.core &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.epics.core &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -527,8 +527,7 @@
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.core.PviDeviceConnector" title="ophyd_async.epics.core._pvi_connector.PviDeviceConnector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PviDeviceConnector</span></code></a></p></td>
-<td><p>Used for connecting to PVI devices, where signals are be dynamically
-defined at introspection.</p></td>
+<td><p>Connect to PVI structure served over PVA.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.core.EpicsDeviceConnector" title="ophyd_async.epics.core._epics_connector.EpicsDeviceConnector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EpicsDeviceConnector</span></code></a></p></td>
 <td><p>Used for connecting signals to static EPICS pvs.</p></td>
@@ -548,19 +547,19 @@ defined at introspection.</p></td>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.core.epics_signal_r" title="ophyd_async.epics.core._signal.epics_signal_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epics_signal_r</span></code></a></p></td>
-<td><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalR</span></code></a> backed by 1 EPICS PV</p></td>
+<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalR</span></code> backed by 1 EPICS PV.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.core.epics_signal_rw" title="ophyd_async.epics.core._signal.epics_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epics_signal_rw</span></code></a></p></td>
-<td><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalRW</span></code></a> backed by 1 or 2 EPICS PVs</p></td>
+<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalRW</span></code> backed by 1 or 2 EPICS PVs.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.core.epics_signal_rw_rbv" title="ophyd_async.epics.core._signal.epics_signal_rw_rbv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epics_signal_rw_rbv</span></code></a></p></td>
-<td><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalRW</span></code></a> backed by 1 or 2 EPICS PVs, with a suffix on the readback pv</p></td>
+<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalRW</span></code> backed by 1 or 2 EPICS PVs, with a suffix on the readback pv.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.core.epics_signal_w" title="ophyd_async.epics.core._signal.epics_signal_w"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epics_signal_w</span></code></a></p></td>
-<td><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalW" title="ophyd_async.core.SignalW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalW</span></code></a> backed by 1 EPICS PVs</p></td>
+<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalW</span></code> backed by 1 EPICS PVs.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.core.epics_signal_x" title="ophyd_async.epics.core._signal.epics_signal_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epics_signal_x</span></code></a></p></td>
-<td><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalX</span></code></a> backed by 1 EPICS PVs</p></td>
+<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalX</span></code> backed by 1 EPICS PVs.</p></td>
 </tr>
 </tbody>
 </table>
@@ -572,22 +571,52 @@ defined at introspection.</p></td>
 <dt class="sig sig-object py" id="ophyd_async.epics.core.PviDeviceConnector">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.core.</span></span><span class="sig-name descname"><span class="pre">PviDeviceConnector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_hint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_pvi_connector.html#PviDeviceConnector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.PviDeviceConnector" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core.DeviceConnector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.DeviceConnector</span></code></a></p>
-<p>Used for connecting to PVI devices, where signals are be dynamically
-defined at introspection.</p>
+<p>Connect to PVI structure served over PVA.</p>
+<p>At init, fill in all the type hinted signals. At connection check their
+types and fill in any extra signals.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prefix</strong> – The PV prefix of the device, “PVI” will be appended to it to get the PVI
+PV.</p></li>
+<li><p><strong>error_hint</strong> – If given, this will be appended to the error message if any of they type
+hinted Signals are not present.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.PviDeviceConnector.create_children_from_annotations">
 <span class="sig-name descname"><span class="pre">create_children_from_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><span class="pre">Device</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_pvi_connector.html#PviDeviceConnector.create_children_from_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.PviDeviceConnector.create_children_from_annotations" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Use when children can be created from introspecting the hardware.</p>
+<p>Some control systems allow introspection of a device to determine what
+children it has. To allow this to work nicely with typing we add these
+hints to the Device like so::</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>my_signal: SignalRW[int]
+my_device: MyDevice
+</pre></div>
+</div>
+<p>This method will be run during <code class="docutils literal notranslate"><span class="pre">Device.__init__</span></code>, and is responsible
+for turning all of those type hints into real Signal and Device instances.</p>
+<p>Subsequent runs of this function should do nothing, to allow it to be
+called early in Devices that need to pass references to their children
+during <code class="docutils literal notranslate"><span class="pre">__init__</span></code>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.PviDeviceConnector.connect_mock">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect_mock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_pvi_connector.html#PviDeviceConnector.connect_mock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.PviDeviceConnector.connect_mock" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Use during <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> with <code class="docutils literal notranslate"><span class="pre">mock=True</span></code>.</p>
+<p>This is called when there is no cached connect done in <code class="docutils literal notranslate"><span class="pre">mock=True</span></code>
+mode. It connects the Device and all its children in mock mode.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.PviDeviceConnector.connect_real">
 <em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect_real</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_pvi_connector.html#PviDeviceConnector.connect_real"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.PviDeviceConnector.connect_real" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Use during <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> with <code class="docutils literal notranslate"><span class="pre">mock=False</span></code>.</p>
+<p>This is called when there is no cached connect done in <code class="docutils literal notranslate"><span class="pre">mock=False</span></code>
+mode. It connects the Device and all its children in real mode in parallel.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -599,7 +628,20 @@ defined at introspection.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.EpicsDeviceConnector.create_children_from_annotations">
 <span class="sig-name descname"><span class="pre">create_children_from_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><span class="pre">Device</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_epics_connector.html#EpicsDeviceConnector.create_children_from_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.EpicsDeviceConnector.create_children_from_annotations" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Use when children can be created from introspecting the hardware.</p>
+<p>Some control systems allow introspection of a device to determine what
+children it has. To allow this to work nicely with typing we add these
+hints to the Device like so::</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>my_signal: SignalRW[int]
+my_device: MyDevice
+</pre></div>
+</div>
+<p>This method will be run during <code class="docutils literal notranslate"><span class="pre">Device.__init__</span></code>, and is responsible
+for turning all of those type hints into real Signal and Device instances.</p>
+<p>Subsequent runs of this function should do nothing, to allow it to be
+called early in Devices that need to pass references to their children
+during <code class="docutils literal notranslate"><span class="pre">__init__</span></code>.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -636,12 +678,12 @@ defined at introspection.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.epics_signal_r">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.core.</span></span><span class="sig-name descname"><span class="pre">epics_signal_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_pv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_signal.html#epics_signal_r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.epics_signal_r" title="Link to this definition">#</a></dt>
-<dd><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalR</span></code></a> backed by 1 EPICS PV</p>
-<dl class="field-list simple">
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalR</span></code> backed by 1 EPICS PV.</p>
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>datatype</strong> – Check that the PV is of this type</p></li>
-<li><p><strong>read_pv</strong> – The PV to read and monitor</p></li>
+<li><p><strong>read_pv</strong> – The PV to read from</p></li>
 </ul>
 </dd>
 </dl>
@@ -650,8 +692,8 @@ defined at introspection.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.epics_signal_rw">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.core.</span></span><span class="sig-name descname"><span class="pre">epics_signal_rw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_pv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_pv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_signal.html#epics_signal_rw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.epics_signal_rw" title="Link to this definition">#</a></dt>
-<dd><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalRW</span></code></a> backed by 1 or 2 EPICS PVs</p>
-<dl class="field-list simple">
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalRW</span></code> backed by 1 or 2 EPICS PVs.</p>
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>datatype</strong> – Check that the PV is of this type</p></li>
@@ -665,8 +707,8 @@ defined at introspection.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.epics_signal_rw_rbv">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.core.</span></span><span class="sig-name descname"><span class="pre">epics_signal_rw_rbv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_pv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'_RBV'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_signal.html#epics_signal_rw_rbv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.epics_signal_rw_rbv" title="Link to this definition">#</a></dt>
-<dd><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalRW</span></code></a> backed by 1 or 2 EPICS PVs, with a suffix on the readback pv</p>
-<dl class="field-list simple">
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalRW</span></code> backed by 1 or 2 EPICS PVs, with a suffix on the readback pv.</p>
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>datatype</strong> – Check that the PV is of this type</p></li>
@@ -680,8 +722,8 @@ defined at introspection.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.epics_signal_w">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.core.</span></span><span class="sig-name descname"><span class="pre">epics_signal_w</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_pv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalW" title="ophyd_async.core.SignalW"><span class="pre">SignalW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_signal.html#epics_signal_w"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.epics_signal_w" title="Link to this definition">#</a></dt>
-<dd><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalW" title="ophyd_async.core.SignalW"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalW</span></code></a> backed by 1 EPICS PVs</p>
-<dl class="field-list simple">
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalW</span></code> backed by 1 EPICS PVs.</p>
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>datatype</strong> – Check that the PV is of this type</p></li>
@@ -694,10 +736,13 @@ defined at introspection.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.epics_signal_x">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.core.</span></span><span class="sig-name descname"><span class="pre">epics_signal_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">write_pv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><span class="pre">SignalX</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_signal.html#epics_signal_x"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.epics_signal_x" title="Link to this definition">#</a></dt>
-<dd><p>Create a <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><code class="xref any py py-class docutils literal notranslate"><span class="pre">SignalX</span></code></a> backed by 1 EPICS PVs</p>
-<dl class="field-list simple">
+<dd><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalX</span></code> backed by 1 EPICS PVs.</p>
+<dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>write_pv</strong> – The PV to write its initial value to on trigger</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>write_pv</strong> – The PV to write its initial value to on trigger</p></li>
+<li><p><strong>name</strong> – The name of the signal</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -753,10 +798,10 @@ defined at introspection.</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.core.PviDeviceConnector"><code class="docutils literal notranslate"><span class="pre">PviDeviceConnector</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.core.PviDeviceConnector.create_children_from_annotations"><code class="docutils literal notranslate"><span class="pre">PviDeviceConnector.create_children_from_annotations()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.core.PviDeviceConnector.connect_mock"><code class="docutils literal notranslate"><span class="pre">PviDeviceConnector.connect_mock()</span></code></a></li>

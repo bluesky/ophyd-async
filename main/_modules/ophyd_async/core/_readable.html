@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._readable &#8212; ophyd-async 0.9.1.dev4+g7b8ec0bb documentation</title>
+    <title>ophyd_async.core._readable &#8212; ophyd-async 0.9.1.dev5+g1ea67ef6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=66a4b7a8"></script>
+    <script src="../../../_static/documentation_options.js?v=c0158e2a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev4+g7b8ec0bb documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev5+g1ea67ef6 documentation - Home"/>
   
   
 </a></div>
@@ -484,25 +484,34 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">class</span><span class="w"> </span><span class="nc">StandardReadableFormat</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Declare how a `Device` should contribute to the `StandardReadable` verbs.&quot;&quot;&quot;</span>
 
-    <span class="c1">#: Detect which verbs the child supports and contribute to:</span>
-    <span class="c1">#:</span>
-    <span class="c1">#: - ``read()``, ``describe()`` if it is `bluesky.protocols.Readable`</span>
-    <span class="c1">#: - ``read_configuration()``, ``describe_configuration()`` if it is</span>
-    <span class="c1">#:   `bluesky.protocols.Configurable`</span>
-    <span class="c1">#: - ``stage()``, ``unstage()`` if it is `bluesky.protocols.Stageable`</span>
-    <span class="c1">#: - ``hints`` if it `bluesky.protocols.HasHints`</span>
     <span class="n">CHILD</span> <span class="o">=</span> <span class="s2">&quot;CHILD&quot;</span>
-    <span class="c1">#: Contribute the `Signal` value to ``read_configuration()`` and</span>
-    <span class="c1">#: ``describe_configuration()``</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect which verbs the child supports and contribute to:</span>
+
+<span class="sd">    - `read()`, `describe()` if it is [](#bluesky.protocols.Readable)</span>
+<span class="sd">    - `read_configuration()`, `describe_configuration()` if it is</span>
+<span class="sd">      [](#bluesky.protocols.Configurable)</span>
+<span class="sd">    - `stage()`, `unstage()` if it is [](#bluesky.protocols.Stageable)</span>
+<span class="sd">    - `hints` if it [](#bluesky.protocols.HasHints)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">CONFIG_SIGNAL</span> <span class="o">=</span> <span class="s2">&quot;CONFIG_SIGNAL&quot;</span>
-    <span class="c1">#: Contribute the monitored `Signal` value to ``read()`` and ``describe()``` and</span>
-    <span class="c1">#: put the signal name in ``hints``</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contribute the `Signal` value to `read_configuration()` and</span>
+<span class="sd">    `describe_configuration()`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">HINTED_SIGNAL</span> <span class="o">=</span> <span class="s2">&quot;HINTED_SIGNAL&quot;</span>
-    <span class="c1">#: Contribute the uncached `Signal` value to ``read()`` and ``describe()```</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contribute the monitored `Signal` value to `read()` and `describe()` and</span>
+<span class="sd">    put the signal name in `hints`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">UNCACHED_SIGNAL</span> <span class="o">=</span> <span class="s2">&quot;UNCACHED_SIGNAL&quot;</span>
-    <span class="c1">#: Contribute the uncached `Signal` value to ``read()`` and ``describe()``` and</span>
-    <span class="c1">#: put the signal name in ``hints``</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contribute the uncached `Signal` value to `read()` and `describe()`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">HINTED_UNCACHED_SIGNAL</span> <span class="o">=</span> <span class="s2">&quot;HINTED_UNCACHED_SIGNAL&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Contribute the uncached `Signal` value to `read()` and `describe()` and</span>
+<span class="sd">    put the signal name in `hints`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">Device</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">):</span>
@@ -544,11 +553,15 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">class</span><span class="w"> </span><span class="nc">StandardReadable</span><span class="p">(</span>
     <span class="n">Device</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">,</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncStageable</span><span class="p">,</span> <span class="n">HasHints</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that owns its children and provides useful default behavior.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that provides selected child Device values in `read()`.</span>
 
-<span class="sd">    - When its name is set it renames child Devices</span>
-<span class="sd">    - Signals can be registered for read() and read_configuration()</span>
-<span class="sd">    - These signals will be subscribed for read() between stage() and unstage()</span>
+<span class="sd">    Provides the ability for children to be registered to:</span>
+<span class="sd">    - Participate in `stage()` and `unstage()`</span>
+<span class="sd">    - Provide their value in `read()` and `describe()</span>
+<span class="sd">    - Provide their value in `read_configuration()` and `describe_configuration()</span>
+<span class="sd">    - Select a value to appear in `hints`</span>
+
+<span class="sd">    The behavior is customized with a [](#StandardReadableFormat)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># These must be immutable types to avoid accidental sharing between</span>
@@ -646,13 +659,12 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="p">,</span>
         <span class="nb">format</span><span class="p">:</span> <span class="n">StandardReadableFormat</span> <span class="o">=</span> <span class="n">StandardReadableFormat</span><span class="o">.</span><span class="n">CHILD</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Context manager that calls `add_readables` on child Devices added within.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Context manager that calls [](#add_readables) on child Devices added within.</span>
 
-<span class="sd">        Scans ``self.children()`` on entry and exit to context manager, and calls</span>
-<span class="sd">        `add_readables` on any that are added with the provided</span>
+<span class="sd">        Scans `self.children()` on entry and exit to context manager, and calls</span>
+<span class="sd">        `add_readables()` on any that are added with the provided</span>
 <span class="sd">        `StandardReadableFormat`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">dict_copy</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">())</span>
 
         <span class="k">yield</span>
@@ -685,18 +697,15 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        Use output from the given devices to contribute to the verbs of the following</span>
 <span class="sd">        interfaces:</span>
 
-<span class="sd">        - `bluesky.protocols.Readable`</span>
-<span class="sd">        - `bluesky.protocols.Configurable`</span>
-<span class="sd">        - `bluesky.protocols.Stageable`</span>
-<span class="sd">        - `bluesky.protocols.HasHints`</span>
+<span class="sd">        - [](#bluesky.protocols.Readable)</span>
+<span class="sd">        - [](#bluesky.protocols.Configurable)</span>
+<span class="sd">        - [](#bluesky.protocols.Stageable)</span>
+<span class="sd">        - [](#bluesky.protocols.HasHints)</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        devices:</span>
-<span class="sd">            The devices to be added</span>
-<span class="sd">        format:</span>
-<span class="sd">            Determines which of the devices functions are added to which verb as per the</span>
-<span class="sd">            `StandardReadableFormat` documentation</span>
+<span class="sd">        :param devices: The devices to be added</span>
+<span class="sd">        :param format:</span>
+<span class="sd">            Determines which of the devices functions are added to which verb as</span>
+<span class="sd">            per the [](#StandardReadableFormat) documentation</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">assert_device_is_signalr</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalR</span><span class="p">:</span>
