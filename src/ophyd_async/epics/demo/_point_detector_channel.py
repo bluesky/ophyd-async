@@ -8,10 +8,11 @@ from ophyd_async.epics.core import EpicsDevice, PvSuffix
 class EnergyMode(StrictEnum):
     """Energy mode for `DemoPointDetectorChannel`."""
 
-    #: Low energy mode
     LOW = "Low Energy"
-    #: High energy mode
+    """Low energy mode"""
+
     HIGH = "High Energy"
+    """High energy mode"""
 
 
 class DemoPointDetectorChannel(StandardReadable, EpicsDevice):

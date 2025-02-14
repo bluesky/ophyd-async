@@ -1,4 +1,5 @@
-# back compat
+"""Back compat."""
+
 import warnings
 
 from .core import *  # noqa: F403

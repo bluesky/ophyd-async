@@ -15,7 +15,7 @@ SUM_PATH = "/entry/sum"
 
 
 def generate_gaussian_blob(height: int, width: int) -> np.ndarray:
-    """Make a Gaussian Blob with float values in range 0..1"""
+    """Make a Gaussian Blob with float values in range 0..1."""
     x, y = np.meshgrid(np.linspace(-1, 1, width), np.linspace(-1, 1, height))
     d = np.sqrt(x * x + y * y)
     blob = np.exp(-(d**2))
@@ -25,8 +25,9 @@ def generate_gaussian_blob(height: int, width: int) -> np.ndarray:
 def generate_interesting_pattern(
     x: float, y: float, channel: int, offset: float
 ) -> float:
-    """This function is interesting in x and y in range -10..10, returning
-    a float value in range 0..1
+    """Return a float value in range 0..1.
+
+    Interesting in x and y in range -10..10
     """
     return (np.sin(x) ** channel + np.cos(x * y + offset) + 2) / 4
 
@@ -85,7 +86,7 @@ class PatternGenerator:
         self._y = y
 
     def generate_point(self, channel: int = 1, high_energy: bool = False) -> float:
-        """Make a point between 0 and 1 based on x and y"""
+        """Make a point between 0 and 1 based on x and y."""
         offset = 100 if high_energy else 10
         return generate_interesting_pattern(self._x, self._y, channel, offset)
 

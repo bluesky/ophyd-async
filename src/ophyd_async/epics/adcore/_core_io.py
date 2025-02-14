@@ -49,9 +49,7 @@ class NDPluginBaseIO(NDArrayBaseIO):
 
 
 class NDPluginStatsIO(NDPluginBaseIO):
-    """
-    Plugin for computing statistics from an image or region of interest within an image.
-    """
+    """Plugin for computing statistics from an image or ROI within an image."""
 
     # Basic statistics
     compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
@@ -74,9 +72,9 @@ class NDPluginStatsIO(NDPluginBaseIO):
 
 
 class ADState(StrictEnum):
-    """
-    Default set of states of an AreaDetector driver.
-    See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore
+    """Default set of states of an AreaDetector driver.
+
+    See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore.
     """
 
     IDLE = "Idle"

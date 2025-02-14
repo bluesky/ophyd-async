@@ -1,4 +1,4 @@
-"""Demo EPICS Devices for the tutorial"""
+"""Demo EPICS Devices for the tutorial."""
 
 from ._ioc import start_ioc_subprocess
 from ._motor import DemoMotor
