@@ -52,6 +52,8 @@ jobs:
       id-token: write
 
   codeql:
+    needs: check
+    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_codeql.yml
 
   release:
