@@ -1,5 +1,6 @@
 import logging
 import sys
+import typing
 from collections.abc import Sequence
 from math import isnan, nan
 from typing import Any, Generic, cast
@@ -181,6 +182,9 @@ def make_converter(
         Dbr, get_unique({k: v.datatype for k, v in values.items()}, "datatypes")
     )
     is_array = bool([v for v in values.values() if v.element_count > 1])
+    # Make the datatype canonical for the inference below
+    if datatype == typing.Sequence[str]:
+        datatype = Sequence[str]
     # Infer a datatype and converter from the dbr
     inferred_datatype, converter_cls = _datatype_converter_from_dbr[(pv_dbr, is_array)]
     # Some override cases

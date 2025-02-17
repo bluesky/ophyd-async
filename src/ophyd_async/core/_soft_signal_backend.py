@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import typing
 from abc import abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -94,9 +95,9 @@ class TableSoftConverter(SoftConverter[TableT]):
 @lru_cache
 def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     enum_cls = get_enum_cls(datatype)
-    if datatype == Sequence[str]:
+    if datatype in (Sequence[str], typing.Sequence[str]):
         return SequenceStrSoftConverter()
-    elif get_origin(datatype) == Sequence and enum_cls:
+    elif get_origin(datatype) in (Sequence, typing.Sequence) and enum_cls:
         return SequenceEnumSoftConverter(enum_cls)
     elif datatype is np.ndarray:
         return NDArraySoftConverter()
