@@ -1,3 +1,5 @@
+"""Used for tutorial `Implementing Devices`."""
+
 # Import bluesky and ophyd
 import bluesky.plan_stubs as bps  # noqa: F401
 import bluesky.plans as bp  # noqa: F401

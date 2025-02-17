@@ -1,4 +1,4 @@
-"""Tango Signals over Pytango"""
+"""Tango Signals over Pytango."""
 
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ def tango_signal_rw(
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalRW[SignalDatatypeT]:
-    """Create a `SignalRW` backed by 1 or 2 Tango Attribute/Command
+    """Create a `SignalRW` backed by 1 or 2 Tango Attribute/Command.
 
     Parameters
     ----------
@@ -64,6 +64,7 @@ def tango_signal_rw(
         The timeout for the read and write operations
     name:
         The name of the Signal
+
     """
     backend = make_backend(datatype, read_trl, write_trl or read_trl, device_proxy)
     return SignalRW(backend, timeout=timeout, name=name)
@@ -76,7 +77,7 @@ def tango_signal_r(
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalR[SignalDatatypeT]:
-    """Create a `SignalR` backed by 1 Tango Attribute/Command
+    """Create a `SignalR` backed by 1 Tango Attribute/Command.
 
     Parameters
     ----------
@@ -90,6 +91,7 @@ def tango_signal_r(
         The timeout for the read operation
     name:
         The name of the Signal
+
     """
     backend = make_backend(datatype, read_trl, read_trl, device_proxy)
     return SignalR(backend, timeout=timeout, name=name)
@@ -102,7 +104,7 @@ def tango_signal_w(
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalW[SignalDatatypeT]:
-    """Create a `SignalW` backed by 1 Tango Attribute/Command
+    """Create a `SignalW` backed by 1 Tango Attribute/Command.
 
     Parameters
     ----------
@@ -116,6 +118,7 @@ def tango_signal_w(
         The timeout for the write operation
     name:
         The name of the Signal
+
     """
     backend = make_backend(datatype, write_trl, write_trl, device_proxy)
     return SignalW(backend, timeout=timeout, name=name)
@@ -127,7 +130,7 @@ def tango_signal_x(
     timeout: float = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> SignalX:
-    """Create a `SignalX` backed by 1 Tango Attribute/Command
+    """Create a `SignalX` backed by 1 Tango Attribute/Command.
 
     Parameters
     ----------
@@ -139,6 +142,7 @@ def tango_signal_x(
         The timeout for the command operation
     name:
         The name of the Signal
+
     """
     backend = make_backend(None, write_trl, write_trl, device_proxy)
     return SignalX(backend, timeout=timeout, name=name)
@@ -148,7 +152,6 @@ async def infer_python_type(
     trl: str = "", proxy: DeviceProxy | None = None
 ) -> object | npt.NDArray | type[DevState] | IntEnum:
     """Infers the python type from the TRL."""
-
     # TODO: work out if this is still needed
     device_trl, tr_name = trl.rsplit("/", 1)
     if proxy is None:
