@@ -51,6 +51,9 @@ jobs:
     permissions:
       id-token: write
 
+  codeql:
+    uses: ./.github/workflows/_codeql.yml
+
   release:
     if: github.ref_type == 'tag'
     needs: [dist, docs]
