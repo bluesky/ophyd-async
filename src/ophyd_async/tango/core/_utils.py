@@ -30,7 +30,9 @@ def get_full_attr_trl(device_trl: str, attr_name: str):
 
 
 def get_device_trl_and_attr(name: str):
-    # TODO put example of what the attr_name could look like here...
+    # trl can have form:
+    #   <protocol://><server:host/>domain/family/member/attr_name<#dbase=no>
+    # e.g. tango://127.0.0.1:8888/test/nodb/test#dbase=no
     re_str = (
         r"([\.a-zA-Z0-9_-]*://)?([\.a-zA-Z0-9_-]+:[0-9]+/)?"
         r"([^#/]+/[^#/]+/[^#/]+/)([^#/]+)(#dbase=[a-z]+)?"

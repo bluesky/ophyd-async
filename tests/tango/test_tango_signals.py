@@ -21,7 +21,6 @@ from ophyd_async.tango.core import (
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
-    everything_signal_info,
 )
 from ophyd_async.testing import MonitorQueue, assert_reading, assert_value
 
@@ -110,39 +109,33 @@ async def assert_monitor_then_put(
     descriptor: dict,
 ):
     backend = signal._connector.backend
-    converter = signal._connector.backend.converter  # type: ignore
-    converted_put = converter.value(put_value)
     # Make a monitor queue that will monitor for updates
     with MonitorQueue(signal) as q:
         assert dict(source=source, **descriptor) == await backend.get_datakey("")
         # Check initial value
         await q.assert_updates(initial_value)
         # Put to new value and check that
-        await backend.put(converted_put)
-        await q.assert_updates(converted_put)
+        await backend.put(put_value)
+        await q.assert_updates(put_value)
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_backend_get_put_monitor_attr(everything_device: TangoDevice):
+async def test_backend_get_put_monitor_attr(
+    everything_device: TangoDevice, everything_signal_info
+):
     await everything_device.connect()
     try:
-        for attr_data in everything_signal_info:
+        for attr_data in everything_signal_info.values():
             signal = getattr(everything_device, attr_data.name)
             source = get_full_attr_trl(everything_device._connector.trl, attr_data.name)
-            initial = attr_data.initial_value
-            if "my_state" in attr_data.name or "strenum" in attr_data.name:
-                # signal_info initial_values use datatype that works on server backend
-                initial = signal._connector.backend.converter.value(initial)
             await asyncio.wait_for(
                 assert_monitor_then_put(
                     signal,
                     source,
-                    initial,
+                    attr_data.initial,
                     attr_data.random_value(),
-                    get_test_descriptor(
-                        attr_data.py_type, attr_data.initial_value, False
-                    ),
+                    get_test_descriptor(attr_data.py_type, attr_data.initial, False),
                 ),
                 timeout=10,  # Timeout in seconds
             )
@@ -158,7 +151,7 @@ async def assert_put_read(
     source: str,
     put_value: T,
     descriptor: dict,
-    datatype: type[T] | None = None,
+    datatype: type[T] | None = None,  # TODO reimplement this
 ):
     backend = signal._connector.backend
     # Make a monitor queue that will monitor for updates
@@ -178,18 +171,22 @@ async def assert_put_read(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_backend_get_put_monitor_cmd(everything_device: TangoDevice):
+async def test_backend_get_put_monitor_cmd(
+    everything_device: TangoDevice, everything_signal_info
+):
     await everything_device.connect()
-    for cmd_data in everything_signal_info:
+    for cmd_data in everything_signal_info.values():
         if cmd_data.cmd_name is None:
             continue
-        # With the given datatype, check we have the correct initial value
-        # and putting works
         put_value = cmd_data.random_value()
-        name = f"{cmd_data.name}_cmd"
-        descriptor = get_test_descriptor(cmd_data.py_type, cmd_data.initial_value, True)
-        signal = getattr(everything_device, name)
-        source = get_full_attr_trl(everything_device._connector.trl, name)
+        # With the given datatype, check we have the correct initial value
+        if "strenum" in cmd_data.cmd_name:
+            # enum commands do not provide labels so we have to send the int index
+            put_value = [e.value for e in ExampleStrEnum].index(put_value)
+        # and putting works
+        descriptor = get_test_descriptor(cmd_data.py_type, cmd_data.initial, True)
+        signal = getattr(everything_device, cmd_data.cmd_name)
+        source = get_full_attr_trl(everything_device._connector.trl, cmd_data.cmd_name)
         await assert_put_read(signal, source, put_value, descriptor, cmd_data.py_type)
         # # With guessed datatype, check we can set it back to the initial value
         await assert_put_read(signal, source, put_value, descriptor)
@@ -199,11 +196,9 @@ async def test_backend_get_put_monitor_cmd(everything_device: TangoDevice):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_signal_r(
-    everything_device_trl: str,
-):
+async def test_tango_signal_r(everything_device_trl: str, everything_signal_info):
     timeout = 0.2
-    for attr_data in everything_signal_info:
+    for attr_data in everything_signal_info.values():
         source = get_full_attr_trl(everything_device_trl, attr_data.name)
         signal = tango_signal_r(
             datatype=attr_data.py_type,
@@ -222,11 +217,9 @@ async def test_tango_signal_r(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_signal_w(
-    everything_device_trl: str,
-):
+async def test_tango_signal_w(everything_device_trl: str, everything_signal_info):
     timeout = 0.2
-    for attr_data in everything_signal_info:
+    for attr_data in everything_signal_info.values():
         source = get_full_attr_trl(everything_device_trl, attr_data.name)
         signal = tango_signal_w(
             datatype=attr_data.py_type,
@@ -235,13 +228,12 @@ async def test_tango_signal_w(
             name="test_signal",
         )
         await signal.connect()  # have to connect to get correct converter
-        converter = signal._connector.backend.converter  # type: ignore
 
-        put_value = converter.value(attr_data.random_value())
+        put_value = attr_data.random_value()
+
         status = signal.set(put_value, wait=True, timeout=timeout)
         await status
         assert status.done is True and status.success is True
-
         status = signal.set(put_value, wait=False, timeout=timeout)
         await status
         assert status.done is True and status.success is True
@@ -257,11 +249,9 @@ async def test_tango_signal_w(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_signal_rw(
-    everything_device_trl: str,
-):
+async def test_tango_signal_rw(everything_device_trl: str, everything_signal_info):
     timeout = 0.2
-    for attr_data in everything_signal_info:
+    for attr_data in everything_signal_info.values():
         source = get_full_attr_trl(everything_device_trl, attr_data.name)
         signal = tango_signal_rw(
             datatype=attr_data.py_type,
@@ -271,8 +261,7 @@ async def test_tango_signal_rw(
             name="test_signal",
         )
         await signal.connect()
-        converter = signal._connector.backend.converter  # type: ignore
-        put_value = converter.value(attr_data.random_value())
+        put_value = attr_data.random_value()
         await signal.set(put_value, wait=True)
         await assert_value(signal, put_value)
 
@@ -290,75 +279,6 @@ async def test_tango_signal_x(tango_test_device: str):
     status = signal.trigger()
     await status
     assert status.done is True and status.success is True
-
-
-_scalar_vals = {
-    "str": "test_string",
-    "bool": True,
-    "strenum": ExampleStrEnum.B,
-    "int8": 1,
-    "uint8": 1,
-    "int16": 1,
-    "uint16": 1,
-    "int32": 1,
-    "uint32": 1,
-    "int64": 1,
-    "uint64": 1,
-    "float32": 1.234,
-    "float64": 1.234,
-    "my_state": DevStateEnum.INIT,
-}
-_array_vals = {
-    "int8": np.array([-128, 127, 0, 1, 2, 3, 4], dtype=np.int8),
-    "uint8": np.array([0, 255, 0, 1, 2, 3, 4], dtype=np.uint8),
-    "int16": np.array([-32768, 32767, 0, 1, 2, 3, 4], dtype=np.int16),
-    "uint16": np.array([0, 65535, 0, 1, 2, 3, 4], dtype=np.uint16),
-    "int32": np.array([-2147483648, 2147483647, 0, 1, 2, 3, 4], dtype=np.int32),
-    "uint32": np.array([0, 4294967295, 0, 1, 2, 3, 4], dtype=np.uint32),
-    "int64": np.array(
-        [-9223372036854775808, 9223372036854775807, 0, 1, 2, 3, 4],
-        dtype=np.int64,
-    ),
-    "uint64": np.array([0, 18446744073709551615, 0, 1, 2, 3, 4], dtype=np.uint64),
-    "float32": np.array(
-        [
-            -3.4028235e38,
-            3.4028235e38,
-            1.1754944e-38,
-            1.4012985e-45,
-            0,
-            1.234,
-            2.34e5,
-            3.45e-6,
-        ],
-        dtype=np.float32,
-    ),
-    "float64": np.array(
-        [
-            -1.79769313e308,
-            1.79769313e308,
-            2.22507386e-308,
-            4.94065646e-324,
-            0,
-            1.234,
-            2.34e5,
-            3.45e-6,
-        ],
-        dtype=np.float64,
-    ),
-    "strenum": np.array(
-        [ExampleStrEnum.A.value, ExampleStrEnum.B.value, ExampleStrEnum.C.value],
-        dtype=str,
-    ),
-    "str": ["one", "two", "three"],
-    "bool": np.array([False, True]),
-    "my_state": np.array(
-        [DevStateEnum.INIT.value, DevStateEnum.ON.value, DevStateEnum.MOVING.value],
-        dtype=str,
-    ),
-}
-
-_image_vals = {k: np.vstack((v, v)) for k, v in _array_vals.items()}
 
 
 async def assert_val_reading(signal, value, name=""):
@@ -442,54 +362,97 @@ async def test_set_with_converter(everything_device_trl):
     )
 
 
-async def test_assert_val_reading_everything_tango(everything_device_trl):
+async def test_assert_val_reading_everything_tango(
+    everything_device_trl, everything_signal_info
+):
+    esi = everything_signal_info
     everything_device = TangoDevice(everything_device_trl)
     await everything_device.connect()
     await everything_device.reset_values.trigger()
     await asyncio.sleep(1)
-    await assert_val_reading(everything_device.str, _scalar_vals["str"])
-    await assert_val_reading(everything_device.bool, _scalar_vals["bool"])
-    await assert_val_reading(everything_device.strenum, _scalar_vals["strenum"])
-    await assert_val_reading(everything_device.int8, _scalar_vals["int8"])
-    await assert_val_reading(everything_device.uint8, _scalar_vals["uint8"])
-    await assert_val_reading(everything_device.int16, _scalar_vals["int16"])
-    await assert_val_reading(everything_device.uint16, _scalar_vals["uint16"])
-    await assert_val_reading(everything_device.int32, _scalar_vals["int32"])
-    await assert_val_reading(everything_device.uint32, _scalar_vals["uint32"])
-    await assert_val_reading(everything_device.int64, _scalar_vals["int64"])
-    await assert_val_reading(everything_device.uint64, _scalar_vals["uint64"])
-    await assert_val_reading(everything_device.float32, _scalar_vals["float32"])
-    await assert_val_reading(everything_device.float64, _scalar_vals["float64"])
-    await assert_val_reading(everything_device.my_state, _scalar_vals["my_state"])
+    await assert_val_reading(everything_device.str, esi["str"].initial)
+    await assert_val_reading(everything_device.bool, esi["bool"].initial)
+    await assert_val_reading(everything_device.strenum, esi["strenum"].initial)
+    await assert_val_reading(everything_device.int8, esi["int8"].initial)
+    await assert_val_reading(everything_device.uint8, esi["uint8"].initial)
+    await assert_val_reading(everything_device.int16, esi["int16"].initial)
+    await assert_val_reading(everything_device.uint16, esi["uint16"].initial)
+    await assert_val_reading(everything_device.int32, esi["int32"].initial)
+    await assert_val_reading(everything_device.uint32, esi["uint32"].initial)
+    await assert_val_reading(everything_device.int64, esi["int64"].initial)
+    await assert_val_reading(everything_device.uint64, esi["uint64"].initial)
+    await assert_val_reading(everything_device.float32, esi["float32"].initial)
+    await assert_val_reading(everything_device.float64, esi["float64"].initial)
+    await assert_val_reading(everything_device.my_state, esi["my_state"].initial)
 
-    await assert_val_reading(everything_device.str_spectrum, _array_vals["str"])
-    await assert_val_reading(everything_device.bool_spectrum, _array_vals["bool"])
-    await assert_val_reading(everything_device.strenum_spectrum, _array_vals["strenum"])
-    await assert_val_reading(everything_device.int8_spectrum, _array_vals["int8"])
-    await assert_val_reading(everything_device.uint8_spectrum, _array_vals["uint8"])
-    await assert_val_reading(everything_device.int16_spectrum, _array_vals["int16"])
-    await assert_val_reading(everything_device.uint16_spectrum, _array_vals["uint16"])
-    await assert_val_reading(everything_device.int32_spectrum, _array_vals["int32"])
-    await assert_val_reading(everything_device.uint32_spectrum, _array_vals["uint32"])
-    await assert_val_reading(everything_device.int64_spectrum, _array_vals["int64"])
-    await assert_val_reading(everything_device.uint64_spectrum, _array_vals["uint64"])
-    await assert_val_reading(everything_device.float32_spectrum, _array_vals["float32"])
-    await assert_val_reading(everything_device.float64_spectrum, _array_vals["float64"])
     await assert_val_reading(
-        everything_device.my_state_spectrum, _array_vals["my_state"]
+        everything_device.str_spectrum, esi["str_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.bool_spectrum, esi["bool_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.strenum_spectrum, esi["strenum_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.int8_spectrum, esi["int8_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.uint8_spectrum, esi["uint8_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.int16_spectrum, esi["int16_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.uint16_spectrum, esi["uint16_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.int32_spectrum, esi["int32_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.uint32_spectrum, esi["uint32_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.int64_spectrum, esi["int64_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.uint64_spectrum, esi["uint64_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.float32_spectrum, esi["float32_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.float64_spectrum, esi["float64_spectrum"].initial
+    )
+    await assert_val_reading(
+        everything_device.my_state_spectrum, esi["my_state_spectrum"].initial
     )
 
-    await assert_val_reading(everything_device.str_image, _image_vals["str"])
-    await assert_val_reading(everything_device.bool_image, _image_vals["bool"])
-    await assert_val_reading(everything_device.strenum_image, _image_vals["strenum"])
-    await assert_val_reading(everything_device.int8_image, _image_vals["int8"])
-    await assert_val_reading(everything_device.uint8_image, _image_vals["uint8"])
-    await assert_val_reading(everything_device.int16_image, _image_vals["int16"])
-    await assert_val_reading(everything_device.uint16_image, _image_vals["uint16"])
-    await assert_val_reading(everything_device.int32_image, _image_vals["int32"])
-    await assert_val_reading(everything_device.uint32_image, _image_vals["uint32"])
-    await assert_val_reading(everything_device.int64_image, _image_vals["int64"])
-    await assert_val_reading(everything_device.uint64_image, _image_vals["uint64"])
-    await assert_val_reading(everything_device.float32_image, _image_vals["float32"])
-    await assert_val_reading(everything_device.float64_image, _image_vals["float64"])
-    await assert_val_reading(everything_device.my_state_image, _image_vals["my_state"])
+    await assert_val_reading(everything_device.str_image, esi["str_image"].initial)
+    await assert_val_reading(everything_device.bool_image, esi["bool_image"].initial)
+    await assert_val_reading(
+        everything_device.strenum_image, esi["strenum_image"].initial
+    )
+    await assert_val_reading(everything_device.int8_image, esi["int8_image"].initial)
+    await assert_val_reading(everything_device.uint8_image, esi["uint8_image"].initial)
+    await assert_val_reading(everything_device.int16_image, esi["int16_image"].initial)
+    await assert_val_reading(
+        everything_device.uint16_image, esi["uint16_image"].initial
+    )
+    await assert_val_reading(everything_device.int32_image, esi["int32_image"].initial)
+    await assert_val_reading(
+        everything_device.uint32_image, esi["uint32_image"].initial
+    )
+    await assert_val_reading(everything_device.int64_image, esi["int64_image"].initial)
+    await assert_val_reading(
+        everything_device.uint64_image, esi["uint64_image"].initial
+    )
+    await assert_val_reading(
+        everything_device.float32_image, esi["float32_image"].initial
+    )
+    await assert_val_reading(
+        everything_device.float64_image, esi["float64_image"].initial
+    )
+    await assert_val_reading(
+        everything_device.my_state_image, esi["my_state_image"].initial
+    )

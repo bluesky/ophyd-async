@@ -671,6 +671,10 @@ def make_converter(info: AttributeInfoEx | CommandInfo) -> TangoConverter:
                     return TangoDevStateSpectrumConverter()
                 elif info.data_format == AttrDataFormat.IMAGE:
                     return TangoDevStateImageConverter()
+    else:  # command info
+        match info.in_type:
+            case CmdArgType.DevState:
+                return TangoDevStateConverter()
     # default case return trivial converter
     return TangoConverter()
 
