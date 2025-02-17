@@ -5,6 +5,7 @@ from bluesky.plans import spiral_square
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.sim import FlySimMotorInfo, SimMotor
+from ophyd_async.testing import StatusWatcher
 
 
 async def test_move_sim_in_plan():
@@ -37,21 +38,29 @@ def m1() -> SimMotor:
 async def test_move_profiles(setpoint, expected, m1: SimMotor):
     await m1.acceleration_time.set(0.1)
     status = m1.set(setpoint)
-    updates = []
-    status.watch(lambda **kwargs: updates.append(kwargs))
+    watcher = StatusWatcher(status)
+    for i, v in enumerate(expected):
+        await watcher.wait_for_call(
+            current=pytest.approx(v),
+            initial=0.0,
+            name="M1",
+            target=setpoint,
+            time_elapsed=pytest.approx(i * 0.1, abs=0.05),
+            unit="mm",
+        )
     await status
+    watcher.mock.assert_not_called()
     assert await m1.user_readback.get_value() == setpoint
-    assert updates == [
-        {
-            "current": pytest.approx(v),
-            "initial": 0.0,
-            "name": "M1",
-            "target": setpoint,
-            "time_elapsed": pytest.approx(i * 0.1, abs=0.05),
-            "unit": "mm",
-        }
-        for i, v in enumerate(expected)
-    ]
+
+
+async def test_short_move_is_exactly_move_time(m1: SimMotor):
+    status = m1.set(0.0032)
+    watcher = StatusWatcher(status)
+    await status
+    assert watcher.mock.call_count == 2
+    assert watcher.mock.call_args_list[-1][1]["time_elapsed"] == pytest.approx(
+        0.08, abs=0.02
+    )
 
 
 async def test_stop(m1: SimMotor):

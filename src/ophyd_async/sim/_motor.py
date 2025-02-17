@@ -19,7 +19,7 @@ from ophyd_async.core import StandardReadableFormat as Format
 
 
 class FlySimMotorInfo(BaseModel):
-    """Minimal set of information required to fly a motor:"""
+    """Minimal set of information required to fly a [](#SimMotor)."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -86,8 +86,7 @@ class SimMotor(StandardReadable, Movable, Stoppable):
 
     @AsyncStatus.wrap
     async def prepare(self, value: FlySimMotorInfo):
-        """Calculate required velocity and run-up distance, then if motor limits aren't
-        breached, move to start position minus run-up distance"""
+        """Calculate run-up and move there, setting fly velocity when there."""
         self._fly_info = value
         # Move to start as fast as we can
         await self.velocity.set(0)
@@ -116,18 +115,31 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         acceleration_time = abs(await self.acceleration_time.get_value())
         sign = np.sign(new_position - old_position)
         velocity = abs(velocity) * sign
-        # The total distance to move, and the part of it that is ramp up and down
+        # The total distance to move
         total_distance = new_position - old_position
-        ramp_distance = velocity * acceleration_time / 2
+        # The ramp distance is the distance taken to ramp up (the same distance
+        # is taken to ramp down). This is the area under the triangle of the
+        # velocity ramp up (base * height / 2)
+        ramp_distance = acceleration_time * velocity / 2
         if abs(ramp_distance * 2) >= abs(total_distance):
-            # All time is ramp up and down
+            # All time is ramp up and down, so recalculate the maximum velocity
+            # we get to. We know the area under the ramp up triangle is half the
+            # total distance, and we also know the ratio of velocity over
+            # acceleration_time is the same as the ration of max_velocity over
+            # ramp_time, so solve the simultaneous equations to get
+            # max_velocity and ramp_time.
             max_velocity = np.sqrt(total_distance * velocity / acceleration_time) * sign
             ramp_time = total_distance / max_velocity
+            # So move time is just the ramp up and ramp down with no constant
+            # velocity section
             move_time = 2 * ramp_time
         else:
             # Middle segments of constant velocity
             max_velocity = velocity
+            # Ramp up and down time is exactly the requested acceleration time
             ramp_time = acceleration_time
+            # So move time is twice this, plus the time taken to move the
+            # remaining distance at constant velocity
             move_time = ramp_time * 2 + (total_distance - ramp_distance * 2) / velocity
         # Make an array of relative update times at 10Hz intervals
         update_times = list(np.arange(0.1, move_time, 0.1, dtype=float))
