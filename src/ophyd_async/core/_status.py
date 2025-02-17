@@ -17,7 +17,7 @@ from ._utils import Callback, P, T, WatcherUpdate
 
 
 class AsyncStatusBase(Status, Awaitable[None]):
-    """Convert asyncio awaitable to bluesky Status interface"""
+    """Convert asyncio awaitable to bluesky Status interface."""
 
     def __init__(self, awaitable: Coroutine | asyncio.Task, name: str | None = None):
         if isinstance(awaitable, asyncio.Task):
