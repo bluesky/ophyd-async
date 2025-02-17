@@ -95,7 +95,7 @@ def num_occurrences(substring: str, string: str) -> int:
 def test_cannot_add_child_to_signal():
     signal = soft_signal_rw(str)
     with pytest.raises(
-        AttributeError,
+        KeyError,
         match="Cannot add Device or Signal child foo=<.*> of Signal, "
         "make a subclass of Device instead",
     ):
