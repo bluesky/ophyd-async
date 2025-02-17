@@ -749,7 +749,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             await self._connect_and_store_config(self.read_trl, timeout)
         self.proxies[self.read_trl].set_polling(*self._polling)  # type: ignore
         self.converter = make_converter(self.trl_configs[self.read_trl])
-        self.proxies[self.read_trl].set_converter(self.converter)
+        self.proxies[self.read_trl].set_converter(self.converter)  # type: ignore
         self.descriptor = get_trl_descriptor(
             self.datatype, self.read_trl, self.trl_configs
         )
