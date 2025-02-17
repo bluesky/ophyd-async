@@ -102,7 +102,6 @@ class DetectorController(ABC):
     @abstractmethod
     def get_deadtime(self, exposure: float | None) -> float:
         """For a given exposure, how long should the time between exposures be."""
-        ...
 
     @abstractmethod
     async def prepare(self, trigger_info: TriggerInfo) -> None:

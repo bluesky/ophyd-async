@@ -28,6 +28,7 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.core._signal import _SignalCache  # noqa: PLC2701
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
+from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
 from ophyd_async.testing import (
     ExampleEnum,
     ExampleTable,
@@ -907,3 +908,8 @@ async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
             signal_cache._notify(function, want_value=True),  # type: ignore
             timeout=1.0,
         )
+
+
+def test_signal_backend_throws_type_error() -> None:
+    with pytest.raises(TypeError, match="Unsupported protocol: XYZ"):
+        get_signal_backend_type("XYZ")  # type: ignore
