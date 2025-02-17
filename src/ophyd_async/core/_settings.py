@@ -102,9 +102,7 @@ class SettingsProvider:
     @abstractmethod
     async def store(self, name: str, data: dict[str, Any]):
         """Store the data, associating it with the given name."""
-        ...
 
     @abstractmethod
     async def retrieve(self, name: str) -> dict[str, Any]:
         """Retrieve the data associated with the given name."""
-        ...

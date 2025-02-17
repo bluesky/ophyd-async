@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import functools
 import time
-from collections.abc import AsyncIterator, Callable, Coroutine
+from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
 from dataclasses import asdict, replace
 from typing import Generic
 
@@ -16,7 +16,7 @@ from ._protocol import Watcher
 from ._utils import Callback, P, T, WatcherUpdate
 
 
-class AsyncStatusBase(Status):
+class AsyncStatusBase(Status, Awaitable[None]):
     """Convert asyncio awaitable to bluesky Status interface"""
 
     def __init__(self, awaitable: Coroutine | asyncio.Task, name: str | None = None):

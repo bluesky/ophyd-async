@@ -35,6 +35,7 @@ logger = logging.getLogger("ophyd_async")
 
 
 def _limits_from_value(value: Any) -> Limits:
+
     def get_limits(
         substucture_name: str, low_name: str = "limitLow", high_name: str = "limitHigh"
     ) -> LimitsRange | None:
@@ -46,6 +47,7 @@ def _limits_from_value(value: Any) -> Limits:
                 low=None if isnan(low) else low,
                 high=None if isnan(high) else high,
             )
+        return None
 
     limits = Limits()
     if limits_range := get_limits("valueAlarm", "lowAlarmLimit", "highAlarmLimit"):

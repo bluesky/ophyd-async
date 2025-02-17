@@ -73,6 +73,7 @@ def get_signal_backend_type(protocol: EpicsProtocol) -> type[EpicsSignalBackend]
             return CaSignalBackend
         case EpicsProtocol.PVA:
             return PvaSignalBackend
+    raise TypeError(f"Unsupported protocol: {protocol}")
 
 
 def _epics_signal_backend(
