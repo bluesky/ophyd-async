@@ -1,7 +1,7 @@
 import asyncio
 from contextlib import AbstractContextManager
 from typing import Any
-from unittest.mock import ANY, Mock, call
+from unittest.mock import Mock, call
 
 import pytest
 from bluesky.protocols import Reading
@@ -55,12 +55,15 @@ async def assert_reading(
 
 
 def _assert_readings_approx_equal(expected, actual):
+    assert expected.keys() == actual.keys()
     approx_expected_reading = {
         k: dict(
             v,
-            value=approx_value(expected[k]["value"]),
-            timestamp=pytest.approx(expected[k].get("timestamp", ANY), rel=0.1),
-            alarm_severity=pytest.approx(expected[k].get("alarm_severity", ANY)),
+            value=approx_value(v["value"]),
+            timestamp=pytest.approx(v["timestamp"], rel=0.1)
+            if "timestamp" in v
+            else actual[k]["timestamp"],
+            alarm_severity=v.get("alarm_severity", actual[k]["alarm_severity"]),
         )
         for k, v in expected.items()
     }
