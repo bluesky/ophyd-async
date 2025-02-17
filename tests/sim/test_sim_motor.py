@@ -1,4 +1,5 @@
 import asyncio
+from unittest.mock import patch
 
 import pytest
 from bluesky.plans import spiral_square
@@ -54,13 +55,9 @@ async def test_move_profiles(setpoint, expected, m1: SimMotor):
 
 
 async def test_short_move_is_exactly_move_time(m1: SimMotor):
-    status = m1.set(0.0032)
-    watcher = StatusWatcher(status)
-    await status
-    assert watcher.mock.call_count == 2
-    assert watcher.mock.call_args_list[-1][1]["time_elapsed"] == pytest.approx(
-        0.08, abs=0.02
-    )
+    with patch("asyncio.sleep") as mock_sleep:
+        await m1.set(0.0032)
+    mock_sleep.assert_called_once_with(pytest.approx(0.08, abs=0.02))
 
 
 async def test_stop(m1: SimMotor):
