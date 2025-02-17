@@ -118,8 +118,8 @@ async def assert_monitor_then_put(
         # Check initial value
         await q.assert_updates(initial_value)
         # Put to new value and check that
-        await backend.put(converted_put, wait=True)
-        await q.assert_updates(put_value)
+        await backend.put(converted_put)
+        await q.assert_updates(converted_put)
 
 
 # --------------------------------------------------------------------
@@ -130,16 +130,15 @@ async def test_backend_get_put_monitor_attr(everything_device: TangoDevice):
         for attr_data in everything_signal_info:
             signal = getattr(everything_device, attr_data.name)
             source = get_full_attr_trl(everything_device._connector.trl, attr_data.name)
-            if "my_state_" in attr_data.name:
-                # assert_reading doesn't work with DevState arrays currently
-                print("skipping for now", attr_data.name)
-                continue
-            # Set a timeout for the operation to prevent it from running indefinitely
+            initial = attr_data.initial_value
+            if "my_state" in attr_data.name or "strenum" in attr_data.name:
+                # signal_info initial_values use datatype that works on server backend
+                initial = signal._connector.backend.converter.value(initial)
             await asyncio.wait_for(
                 assert_monitor_then_put(
                     signal,
                     source,
-                    attr_data.initial_value,
+                    initial,
                     attr_data.random_value(),
                     get_test_descriptor(
                         attr_data.py_type, attr_data.initial_value, False

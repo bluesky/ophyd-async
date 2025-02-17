@@ -1,5 +1,24 @@
 import re
 
+from ophyd_async.core import StrictEnum
+
+
+class DevStateEnum(StrictEnum):
+    ON = "ON"
+    OFF = "OFF"
+    CLOSE = "CLOSE"
+    OPEN = "OPEN"
+    INSERT = "INSERT"
+    EXTRACT = "EXTRACT"
+    MOVING = "MOVING"
+    STANDBY = "STANDBY"
+    FAULT = "FAULT"
+    INIT = "INIT"
+    RUNNING = "RUNNING"
+    ALARM = "ALARM"
+    DISABLE = "DISABLE"
+    UNKNOWN = "UNKNOWN"
+
 
 def get_full_attr_trl(device_trl: str, attr_name: str):
     device_parts = device_trl.split("#", 1)
