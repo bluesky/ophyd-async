@@ -173,7 +173,8 @@ class StatusWatcher(Watcher[T]):
 
     def __init__(self, status: WatchableAsyncStatus) -> None:
         self._event = asyncio.Event()
-        self._mock = Mock()
+        self.mock = Mock()
+        """Mock that stores watcher updates from the status."""
         status.watch(self)
 
     def __call__(
@@ -188,7 +189,7 @@ class StatusWatcher(Watcher[T]):
         time_elapsed: float | None = None,
         time_remaining: float | None = None,
     ) -> Any:
-        self._mock(
+        self.mock(
             current=current,
             initial=initial,
             target=target,
@@ -215,8 +216,8 @@ class StatusWatcher(Watcher[T]):
         time_remaining: float | Any = None,
     ):
         await asyncio.wait_for(self._event.wait(), timeout=1)
-        assert self._mock.call_count == 1
-        assert self._mock.call_args == call(
+        assert self.mock.call_count == 1
+        assert self.mock.call_args == call(
             current=current,
             initial=initial,
             target=target,
@@ -227,5 +228,5 @@ class StatusWatcher(Watcher[T]):
             time_elapsed=time_elapsed,
             time_remaining=time_remaining,
         )
-        self._mock.reset_mock()
+        self.mock.reset_mock()
         self._event.clear()
