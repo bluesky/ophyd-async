@@ -383,6 +383,16 @@ Bases: {py:obj}`ophyd_async.core.Watcher`\[{py:obj}`ophyd_async.testing._utils.T
 ```{autodoc2-docstring} ophyd_async.testing._assert.StatusWatcher
 ```
 
+````{py:attribute} mock
+:canonical: ophyd_async.testing._assert.StatusWatcher.mock
+:value: >
+   'Mock(...)'
+
+```{autodoc2-docstring} ophyd_async.testing._assert.StatusWatcher.mock
+```
+
+````
+
 ````{py:method} wait_for_call(current: ~ophyd_async.testing._utils.T | None = None, initial: ~ophyd_async.testing._utils.T | None = None, target: ~ophyd_async.testing._utils.T | None = None, name: str | None = None, unit: str | None = None, precision: int | None = None, fraction: float | None = None, time_elapsed: float | ~typing.Any = None, time_remaining: float | ~typing.Any = None)
 :canonical: ophyd_async.testing._assert.StatusWatcher.wait_for_call
 :async:

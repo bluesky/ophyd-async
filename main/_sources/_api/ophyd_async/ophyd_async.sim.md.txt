@@ -19,6 +19,10 @@
   - ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor
     :summary:
     ```
+* - {py:obj}`FlySimMotorInfo <ophyd_async.sim._motor.FlySimMotorInfo>`
+  - ```{autodoc2-docstring} ophyd_async.sim._motor.FlySimMotorInfo
+    :summary:
+    ```
 * - {py:obj}`SimStage <ophyd_async.sim._stage.SimStage>`
   - ```{autodoc2-docstring} ophyd_async.sim._stage.SimStage
     :summary:
@@ -55,6 +59,32 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.M
 
 ````
 
+````{py:method} prepare(value: ~ophyd_async.sim._motor.FlySimMotorInfo)
+:canonical: ophyd_async.sim._motor.SimMotor.prepare
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.prepare
+```
+
+````
+
+````{py:method} kickoff()
+:canonical: ophyd_async.sim._motor.SimMotor.kickoff
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.kickoff
+```
+
+````
+
+````{py:method} complete() -> ~ophyd_async.core.WatchableAsyncStatus
+:canonical: ophyd_async.sim._motor.SimMotor.complete
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.complete
+```
+
+````
+
 ````{py:method} set(value: float)
 :canonical: ophyd_async.sim._motor.SimMotor.set
 :async:
@@ -69,6 +99,84 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.M
 :async:
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.stop
+```
+
+````
+
+`````
+
+`````{py:class} FlySimMotorInfo(/, **data: ~typing.Any)
+:canonical: ophyd_async.sim._motor.FlySimMotorInfo
+
+Bases: {py:obj}`pydantic.BaseModel`
+
+```{autodoc2-docstring} ophyd_async.sim._motor.FlySimMotorInfo
+```
+
+````{py:attribute} model_config
+:canonical: ophyd_async.sim._motor.FlySimMotorInfo.model_config
+:value: >
+   'ConfigDict(...)'
+
+```{autodoc2-docstring} ophyd_async.sim._motor.FlySimMotorInfo.model_config
+```
+
+````
+
+````{py:attribute} cv_start
+:canonical: ophyd_async.sim._motor.FlySimMotorInfo.cv_start
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.sim._motor.FlySimMotorInfo.cv_start
+```
+
+````
+
+````{py:attribute} cv_end
+:canonical: ophyd_async.sim._motor.FlySimMotorInfo.cv_end
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.sim._motor.FlySimMotorInfo.cv_end
+```
+
+````
+
+````{py:attribute} cv_time
+:canonical: ophyd_async.sim._motor.FlySimMotorInfo.cv_time
+:type: float
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.sim._motor.FlySimMotorInfo.cv_time
+```
+
+````
+
+````{py:property} velocity
+:canonical: ophyd_async.sim._motor.FlySimMotorInfo.velocity
+:type: float
+
+```{autodoc2-docstring} ophyd_async.sim._motor.FlySimMotorInfo.velocity
+```
+
+````
+
+````{py:method} start_position(acceleration_time: float) -> float
+:canonical: ophyd_async.sim._motor.FlySimMotorInfo.start_position
+
+```{autodoc2-docstring} ophyd_async.sim._motor.FlySimMotorInfo.start_position
+```
+
+````
+
+````{py:method} end_position(acceleration_time: float) -> float
+:canonical: ophyd_async.sim._motor.FlySimMotorInfo.end_position
+
+```{autodoc2-docstring} ophyd_async.sim._motor.FlySimMotorInfo.end_position
 ```
 
 ````

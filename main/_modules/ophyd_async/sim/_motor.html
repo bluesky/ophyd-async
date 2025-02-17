@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.sim._motor &#8212; ophyd-async 0.9.1.dev6+gef0d36d0 documentation</title>
+    <title>ophyd_async.sim._motor &#8212; ophyd-async 0.9.1.dev7+gf8cf187f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=e2c181f6"></script>
+    <script src="../../../_static/documentation_options.js?v=73335717"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev6+gef0d36d0 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev6+gef0d36d0 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev7+gf8cf187f documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev7+gf8cf187f documentation - Home"/>
   
   
 </a></div>
@@ -469,6 +469,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">ConfigDict</span><span class="p">,</span> <span class="n">Field</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
@@ -480,6 +481,46 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">soft_signal_rw</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
+
+
+<div class="viewcode-block" id="FlySimMotorInfo">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.FlySimMotorInfo">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FlySimMotorInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to fly a [](#SimMotor).&quot;&quot;&quot;</span>
+
+    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">cv_start</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Absolute position of the motor once it finishes accelerating to desired</span>
+<span class="sd">    velocity, in motor EGUs&quot;&quot;&quot;</span>
+
+    <span class="n">cv_end</span><span class="p">:</span> <span class="nb">float</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Absolute position of the motor once it begins decelerating from desired</span>
+<span class="sd">    velocity, in EGUs&quot;&quot;&quot;</span>
+
+    <span class="n">cv_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Time taken for the motor to get from start_position to end_position, excluding</span>
+<span class="sd">    run-up and run-down, in seconds.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">velocity</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the velocity of the constant velocity phase.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_start</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_time</span>
+
+<div class="viewcode-block" id="FlySimMotorInfo.start_position">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.FlySimMotorInfo.start_position">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acceleration_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the start position with run-up distance added on.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_start</span> <span class="o">-</span> <span class="n">acceleration_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">/</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="FlySimMotorInfo.end_position">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.FlySimMotorInfo.end_position">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">end_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acceleration_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the end position with run-down distance added on.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_end</span> <span class="o">+</span> <span class="n">acceleration_time</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">/</span> <span class="mi">2</span></div>
+</div>
+
 
 
 <div class="viewcode-block" id="SimMotor">
@@ -500,12 +541,17 @@ window.addEventListener("load", () => mermaid.run());
             <span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">instant</span> <span class="k">else</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># Whether set() should complete successfully or not</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_move_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Stored in prepare</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_info</span><span class="p">:</span> <span class="n">FlySimMotorInfo</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Set on kickoff(), complete when motor reaches end position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">WatchableAsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
@@ -517,29 +563,104 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">move_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<div class="viewcode-block" id="SimMotor.prepare">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.prepare">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">FlySimMotorInfo</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate run-up and move there, setting fly velocity when there.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_info</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="c1"># Move to start as fast as we can</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">start_position</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">()))</span>
+        <span class="c1"># Set the velocity for the actual move</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">velocity</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimMotor.kickoff">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.kickoff">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Begin moving motor from prepared position to final position.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_info</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Motor must be prepared before attempting to kickoff&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">acceleration_time</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fly_info</span><span class="o">.</span><span class="n">end_position</span><span class="p">(</span><span class="n">acceleration_time</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SimMotor.complete">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.complete">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WatchableAsyncStatus</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mark as complete once motor reaches completed position.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;kickoff not called&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">velocity</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="n">acceleration_time</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
+        <span class="n">sign</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span><span class="p">)</span>
+        <span class="n">velocity</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">velocity</span><span class="p">)</span> <span class="o">*</span> <span class="n">sign</span>
+        <span class="c1"># The total distance to move</span>
+        <span class="n">total_distance</span> <span class="o">=</span> <span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span>
+        <span class="c1"># The ramp distance is the distance taken to ramp up (the same distance</span>
+        <span class="c1"># is taken to ramp down). This is the area under the triangle of the</span>
+        <span class="c1"># velocity ramp up (base * height / 2)</span>
+        <span class="n">ramp_distance</span> <span class="o">=</span> <span class="n">acceleration_time</span> <span class="o">*</span> <span class="n">velocity</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ramp_distance</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">total_distance</span><span class="p">):</span>
+            <span class="c1"># All time is ramp up and down, so recalculate the maximum velocity</span>
+            <span class="c1"># we get to. We know the area under the ramp up triangle is half the</span>
+            <span class="c1"># total distance, and we also know the ratio of velocity over</span>
+            <span class="c1"># acceleration_time is the same as the ration of max_velocity over</span>
+            <span class="c1"># ramp_time, so solve the simultaneous equations to get</span>
+            <span class="c1"># max_velocity and ramp_time.</span>
+            <span class="n">max_velocity</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">total_distance</span> <span class="o">*</span> <span class="n">velocity</span> <span class="o">/</span> <span class="n">acceleration_time</span><span class="p">)</span> <span class="o">*</span> <span class="n">sign</span>
+            <span class="n">ramp_time</span> <span class="o">=</span> <span class="n">total_distance</span> <span class="o">/</span> <span class="n">max_velocity</span>
+            <span class="c1"># So move time is just the ramp up and ramp down with no constant</span>
+            <span class="c1"># velocity section</span>
+            <span class="n">move_time</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">ramp_time</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Middle segments of constant velocity</span>
+            <span class="n">max_velocity</span> <span class="o">=</span> <span class="n">velocity</span>
+            <span class="c1"># Ramp up and down time is exactly the requested acceleration time</span>
+            <span class="n">ramp_time</span> <span class="o">=</span> <span class="n">acceleration_time</span>
+            <span class="c1"># So move time is twice this, plus the time taken to move the</span>
+            <span class="c1"># remaining distance at constant velocity</span>
+            <span class="n">move_time</span> <span class="o">=</span> <span class="n">ramp_time</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">total_distance</span> <span class="o">-</span> <span class="n">ramp_distance</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">velocity</span>
         <span class="c1"># Make an array of relative update times at 10Hz intervals</span>
-        <span class="n">update_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">move_time</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">update_times</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">move_time</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
         <span class="c1"># With the end position appended</span>
-        <span class="n">update_times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">update_times</span><span class="p">,</span> <span class="p">[</span><span class="n">move_time</span><span class="p">]))</span>
-        <span class="c1"># Interpolate the [old, new] position array with those update times</span>
-        <span class="n">new_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
-            <span class="n">update_times</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">move_time</span><span class="p">],</span> <span class="p">[</span><span class="n">old_position</span><span class="p">,</span> <span class="n">new_position</span><span class="p">]</span>
-        <span class="p">)</span>
-        <span class="k">for</span> <span class="n">update_time</span><span class="p">,</span> <span class="n">new_position</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">update_times</span><span class="p">,</span> <span class="n">new_positions</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">update_times</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">update_times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">move_time</span><span class="p">):</span>
+            <span class="n">update_times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">move_time</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">update_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">move_time</span><span class="p">)</span>
+        <span class="c1"># Iterate through the update times, calculating new position for each</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">update_times</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;=</span> <span class="n">ramp_time</span><span class="p">:</span>
+                <span class="c1"># Ramp up phase, calculate area under the ramp up triangle</span>
+                <span class="n">current_velocity</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">ramp_time</span> <span class="o">*</span> <span class="n">max_velocity</span>
+                <span class="n">position</span> <span class="o">=</span> <span class="n">old_position</span> <span class="o">+</span> <span class="n">current_velocity</span> <span class="o">*</span> <span class="n">t</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="k">elif</span> <span class="n">t</span> <span class="o">&gt;=</span> <span class="n">move_time</span> <span class="o">-</span> <span class="n">ramp_time</span><span class="p">:</span>
+                <span class="c1"># Ramp down phase, subtract area under the ramp down triangle</span>
+                <span class="n">time_left</span> <span class="o">=</span> <span class="n">move_time</span> <span class="o">-</span> <span class="n">t</span>
+                <span class="n">current_velocity</span> <span class="o">=</span> <span class="n">time_left</span> <span class="o">/</span> <span class="n">ramp_time</span> <span class="o">*</span> <span class="n">max_velocity</span>
+                <span class="n">position</span> <span class="o">=</span> <span class="n">new_position</span> <span class="o">-</span> <span class="n">current_velocity</span> <span class="o">*</span> <span class="n">time_left</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Constant velocity phase</span>
+                <span class="n">position</span> <span class="o">=</span> <span class="n">old_position</span> <span class="o">+</span> <span class="n">ramp_distance</span> <span class="o">+</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">ramp_time</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_velocity</span>
             <span class="c1"># Calculate how long to wait to get there</span>
             <span class="n">relative_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
-            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">update_time</span> <span class="o">-</span> <span class="n">relative_time</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">relative_time</span><span class="p">)</span>
             <span class="c1"># Update the readback position</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_user_readback_set</span><span class="p">(</span><span class="n">new_position</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user_readback_set</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SimMotor.set">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.set">[docs]</a>
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Asynchronously move the motor to a new position.&quot;&quot;&quot;</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">new_position</span> <span class="o">=</span> <span class="n">value</span>
         <span class="c1"># Make sure any existing move tasks are stopped</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
@@ -552,9 +673,8 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">if</span> <span class="n">velocity</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_user_readback_set</span><span class="p">(</span><span class="n">new_position</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">move_time</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">velocity</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_move_status</span> <span class="o">=</span> <span class="n">AsyncStatus</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_move</span><span class="p">(</span><span class="n">old_position</span><span class="p">,</span> <span class="n">new_position</span><span class="p">,</span> <span class="n">move_time</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_move</span><span class="p">(</span><span class="n">old_position</span><span class="p">,</span> <span class="n">new_position</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="c1"># If stop is called then this will raise a CancelledError, ignore it</span>
             <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">):</span>
@@ -568,7 +688,6 @@ window.addEventListener("load", () => mermaid.run());
                         <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                         <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
                     <span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Move took&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Motor was stopped&quot;</span><span class="p">)</span></div>
 
