@@ -34,28 +34,19 @@ class TangoEnumConverter(TangoConverter):
         return self._labels[value]
 
 
-class TangoEnumSpectrumConverter(TangoConverter):
+class TangoEnumArrayConverter(TangoConverter):
     def __init__(self, labels: list[str]):
         self._labels = labels
 
     def write_value(self, value: NDArray[np.str_]) -> NDArray[np.integer]:
-        # should return array of ints
-        return np.array([self._labels.index(v) for v in value])
+        vfunc = np.vectorize(self._labels.index)
+        new_array = vfunc(value)
+        return new_array
 
-    def value(self, value) -> NDArray[np.str_]:
-        # should return array of strs
-        return np.array([self._labels[v] for v in value])
-
-
-class TangoEnumImageConverter(TangoConverter):
-    def __init__(self, labels: list[str]):
-        self._labels = labels
-
-    def write_value(self, value: NDArray[np.str_]) -> NDArray[np.integer]:
-        return np.vstack([[self._labels.index(v) for v in row] for row in value])
-
-    def value(self, value) -> NDArray[np.str_]:
-        return np.vstack([[self._labels[v] for v in row] for row in value])
+    def value(self, value: NDArray[np.integer]) -> NDArray[np.str_]:
+        vfunc = np.vectorize(self._labels.__getitem__)
+        new_array = vfunc(value)
+        return new_array
 
 
 class TangoDevStateConverter(TangoConverter):
@@ -70,31 +61,21 @@ class TangoDevStateConverter(TangoConverter):
         return self._labels[idx]
 
 
-class TangoDevStateSpectrumConverter(TangoConverter):
+class TangoDevStateArrayConverter(TangoConverter):
     _labels = [e.value for e in DevStateEnum]
 
-    def write_value(self, value: NDArray[np.str_]) -> NDArray[DevState]:
-        return np.array(
-            [DevState(self._labels.index(v)) for v in value], dtype=DevState
-        )
+    def _write_convert(self, value):
+        return DevState(self._labels.index(value))
 
-    def value(self, value: NDArray[DevState]) -> NDArray[np.str_]:
-        result = np.array([self._labels[int(v)] for v in value])
-        return result
-
-
-class TangoDevStateImageConverter(TangoConverter):
-    _labels = [e.value for e in DevStateEnum]
+    def _convert(self, value):
+        return self._labels[int(value)]
 
     def write_value(self, value: NDArray[np.str_]) -> NDArray[DevState]:
-        result = np.vstack(
-            [
-                np.array([DevState(self._labels.index(v)) for v in row], dtype=DevState)
-                for row in value
-            ],
-        )
-
-        return result
+        vfunc = np.vectorize(self._write_convert, otypes=[DevState])
+        new_array = vfunc(value)
+        return new_array
 
     def value(self, value: NDArray[DevState]) -> NDArray[np.str_]:
-        return np.vstack([[self._labels[int(v)] for v in row] for row in value])
+        vfunc = np.vectorize(self._convert)
+        new_array = vfunc(value)
+        return new_array

@@ -79,22 +79,11 @@ class AttributeData(Generic[T]):
         return choice(self.random_put_values)
 
 
-class SpectrumData(AttributeData):
+class ArrayData(AttributeData):
     def random_value(self):
         array = self.initial.copy()
-        for idx in range(len(array)):
+        for idx in np.ndindex(array.shape):
             array[idx] = choice(self.random_put_values)
-        return array
-
-
-class ImageData(AttributeData):
-    cmd_name = None
-
-    def random_value(self):
-        array = self.initial.copy()
-        for idx in range(array.shape[1]):
-            array[0, idx] = choice(self.random_put_values)
-            array[1, idx] = choice(self.random_put_values)
         return array
 
 
@@ -119,14 +108,14 @@ def everything_signal_info():
             if tango_type not in ["DevUChar", "DevState", "DevEnum"]
             else None
         )
-        signal_info[f"{name}_spectrum"] = SpectrumData(
+        signal_info[f"{name}_spectrum"] = ArrayData(
             f"{name}_spectrum",
             Array1D[py_type],
             initial_spectrum,
             choices,
             spectrum_cmd,
         )
-        signal_info[f"{name}_image"] = ImageData(
+        signal_info[f"{name}_image"] = ArrayData(
             f"{name}_image",
             np.ndarray[Any, np.dtype[py_type]],
             np.vstack((initial_spectrum, initial_spectrum)),

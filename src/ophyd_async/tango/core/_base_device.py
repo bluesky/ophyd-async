@@ -127,7 +127,9 @@ class TangoDeviceConnector(DeviceConnector):
                 signal_type = await infer_signal_type(full_trl, self.proxy)
                 if signal_type:
                     backend = self.filler.fill_child_signal(name, signal_type)
-                    backend.datatype = await infer_python_type(full_trl, self.proxy)
+                    # don't overlaod datatype if provided by annotation
+                    if backend.datatype is None:
+                        backend.datatype = await infer_python_type(full_trl, self.proxy)
                     backend.set_trl(full_trl)
 
         # Check that all the requested children have been filled

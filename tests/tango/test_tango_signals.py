@@ -1,13 +1,15 @@
 import asyncio
 import time
 from enum import Enum
+from typing import Annotated as A
 from typing import TypeVar
 
 import numpy as np
 import pytest
 from test_base_device import TestDevice
 
-from ophyd_async.core import SignalRW
+from ophyd_async.core import SignalRW, StandardReadable
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import (
     DevStateEnum,
     TangoDevice,
@@ -61,9 +63,14 @@ def everything_device_trl(subprocess_helper):
         yield context.trls["test/device/2"]
 
 
+class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
+    # datatype of enum commands must be explicitly hinted
+    strenum_cmd: A[SignalRW[ExampleStrEnum], Format.HINTED_UNCACHED_SIGNAL]
+
+
 @pytest.fixture()
 async def everything_device(everything_device_trl):
-    return TangoDevice(everything_device_trl)
+    return TangoEverythingOphydDevice(everything_device_trl)
 
 
 # --------------------------------------------------------------------
@@ -180,9 +187,6 @@ async def test_backend_get_put_monitor_cmd(
             continue
         put_value = cmd_data.random_value()
         # With the given datatype, check we have the correct initial value
-        if "strenum" in cmd_data.cmd_name:
-            # enum commands do not provide labels so we have to send the int index
-            put_value = [e.value for e in ExampleStrEnum].index(put_value)
         # and putting works
         descriptor = get_test_descriptor(cmd_data.py_type, cmd_data.initial, True)
         signal = getattr(everything_device, cmd_data.cmd_name)
@@ -296,14 +300,13 @@ async def test_set_with_converter(everything_device_trl):
     await everything_device.strenum.set("AAA")
     await everything_device.strenum.set(ExampleStrEnum.B)
     await everything_device.strenum.set(ExampleStrEnum.C.value)
-
     # setting enum spectrum works with lists and arrays
     await everything_device.strenum_spectrum.set(["AAA", "BBB"])
     await everything_device.strenum_spectrum.set(np.array(["BBB", "CCC"]))
     await everything_device.strenum_spectrum.set(
         [
-            ExampleStrEnum.B,
-            ExampleStrEnum.C,
+            ExampleStrEnum.B.value,
+            ExampleStrEnum.C.value,
         ]
     )
     await everything_device.strenum_spectrum.set(
@@ -312,7 +315,9 @@ async def test_set_with_converter(everything_device_trl):
                 ExampleStrEnum.A,
                 ExampleStrEnum.B,
             ],
-            dtype=ExampleStrEnum,  # doesn't work when dtype is str
+            dtype=ExampleStrEnum,
+            # when using enum instances, must use array with correct dtype
+            # passing this as a list will cast the strings incorrectly
         )
     )
 
@@ -323,12 +328,12 @@ async def test_set_with_converter(everything_device_trl):
     await everything_device.strenum_image.set(
         [
             [
-                ExampleStrEnum.B,
-                ExampleStrEnum.C,
+                ExampleStrEnum.B.value,
+                ExampleStrEnum.C.value,
             ],
             [
-                ExampleStrEnum.B,
-                ExampleStrEnum.C,
+                ExampleStrEnum.B.value,
+                ExampleStrEnum.C.value,
             ],
         ]
     )
@@ -349,7 +354,14 @@ async def test_set_with_converter(everything_device_trl):
     )
     await everything_device.my_state.set(DevStateEnum.EXTRACT)
     await everything_device.my_state_spectrum.set(
-        [DevStateEnum.OPEN, DevStateEnum.CLOSE, DevStateEnum.MOVING]
+        np.array(
+            [
+                DevStateEnum.OPEN,
+                DevStateEnum.CLOSE,
+                DevStateEnum.MOVING,
+            ],
+            dtype=DevStateEnum,
+        )
     )
     await everything_device.my_state_image.set(
         np.array(

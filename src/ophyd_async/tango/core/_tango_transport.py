@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import logging
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
@@ -41,14 +42,14 @@ from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
 from ._converters import (
     TangoConverter,
+    TangoDevStateArrayConverter,
     TangoDevStateConverter,
-    TangoDevStateImageConverter,
-    TangoDevStateSpectrumConverter,
+    TangoEnumArrayConverter,
     TangoEnumConverter,
-    TangoEnumImageConverter,
-    TangoEnumSpectrumConverter,
 )
 from ._utils import DevStateEnum, get_device_trl_and_attr
+
+logger = logging.getLogger("ophyd_async")
 
 # time constant to wait for timeout
 A_BIT = 1e-5
@@ -430,7 +431,6 @@ class CommandProxy(TangoProxy):
         return self._last_reading["value"]
 
     async def connect(self) -> None:
-        # TODO this would probably be the place to set converter
         pass
 
     @ensure_proper_executor
@@ -653,28 +653,41 @@ async def get_tango_trl(
     raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
 
 
-def make_converter(info: AttributeInfoEx | CommandInfo) -> TangoConverter:
+def make_converter(info: AttributeInfoEx | CommandInfo, datatype) -> TangoConverter:
     if isinstance(info, AttributeInfoEx):
         match info.data_type:
             case CmdArgType.DevEnum:
-                labels = list(info.enum_labels)
+                if datatype and issubclass(datatype, StrictEnum):
+                    labels = [e.value for e in datatype]
+                else:  # get from enum_labels metadata
+                    labels = list(info.enum_labels)
                 if info.data_format == AttrDataFormat.SCALAR:
                     return TangoEnumConverter(labels)
-                elif info.data_format == AttrDataFormat.SPECTRUM:
-                    return TangoEnumSpectrumConverter(labels)
-                elif info.data_format == AttrDataFormat.IMAGE:
-                    return TangoEnumImageConverter(labels)
+                elif info.data_format in [
+                    AttrDataFormat.SPECTRUM,
+                    AttrDataFormat.IMAGE,
+                ]:
+                    return TangoEnumArrayConverter(labels)
             case CmdArgType.DevState:
                 if info.data_format == AttrDataFormat.SCALAR:
                     return TangoDevStateConverter()
-                elif info.data_format == AttrDataFormat.SPECTRUM:
-                    return TangoDevStateSpectrumConverter()
-                elif info.data_format == AttrDataFormat.IMAGE:
-                    return TangoDevStateImageConverter()
+                elif info.data_format in [
+                    AttrDataFormat.SPECTRUM,
+                    AttrDataFormat.IMAGE,
+                ]:
+                    return TangoDevStateArrayConverter()
     else:  # command info
         match info.in_type:
             case CmdArgType.DevState:
                 return TangoDevStateConverter()
+            case CmdArgType.DevEnum:
+                if datatype and issubclass(datatype, StrictEnum):
+                    labels = [e.value for e in datatype]
+                    return TangoEnumConverter(labels)
+                else:
+                    logger.warning(
+                        "No override enum class provided for Tango enum command"
+                    )
     # default case return trivial converter
     return TangoConverter()
 
@@ -752,7 +765,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             # The same, so only need to connect one
             await self._connect_and_store_config(self.read_trl, timeout)
         self.proxies[self.read_trl].set_polling(*self._polling)  # type: ignore
-        self.converter = make_converter(self.trl_configs[self.read_trl])
+        self.converter = make_converter(self.trl_configs[self.read_trl], self.datatype)
         self.proxies[self.read_trl].set_converter(self.converter)  # type: ignore
         self.descriptor = get_trl_descriptor(
             self.datatype, self.read_trl, self.trl_configs
