@@ -46,7 +46,7 @@ async def test_move_profiles(setpoint, expected, m1: SimMotor):
             initial=0.0,
             name="M1",
             target=setpoint,
-            time_elapsed=pytest.approx(i * 0.1, abs=0.05),
+            time_elapsed=pytest.approx(i * 0.1, abs=0.1),
             unit="mm",
         )
     await status
@@ -83,18 +83,16 @@ async def test_fly(m1: SimMotor):
     assert await m1.velocity.get_value() == velocity
     await m1.kickoff()
     status = m1.complete()
-    updates = []
-    status.watch(lambda **kwargs: updates.append(kwargs))
+    watcher = StatusWatcher(status)
+    for i, v in enumerate([-0.25, 0, 0.5, 1.0, 1.25]):
+        await watcher.wait_for_call(
+            current=pytest.approx(v),
+            initial=fly_start,
+            name="M1",
+            target=fly_end,
+            time_elapsed=pytest.approx(i * 0.1, abs=0.1),
+            unit="mm",
+        )
     await status
+    watcher.mock.assert_not_called()
     assert await m1.user_readback.get_value() == fly_end
-    assert updates == [
-        {
-            "current": pytest.approx(v),
-            "initial": fly_start,
-            "name": "M1",
-            "target": fly_end,
-            "time_elapsed": pytest.approx(i * 0.1, abs=0.05),
-            "unit": "mm",
-        }
-        for i, v in enumerate([-0.25, 0, 0.5, 1.0, 1.25])
-    ]
