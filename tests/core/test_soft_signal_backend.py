@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+import typing
 from collections.abc import Callable, Sequence
 from typing import Any, TypeVar
 
@@ -43,6 +44,10 @@ def enum_d(value):
 
 def waveform_d(value):
     return {"dtype": "array", "shape": [len(value)]}
+
+
+def enumwf_d(value):
+    return {"dtype": "array", "shape": [len(value)], "choices": ["Aaa", "Bbb", "Ccc"]}
 
 
 class MonitorQueue:
@@ -93,6 +98,9 @@ scalar_int_dtype = (
         (Array1D[np.float32], [], [1.0], waveform_d, "<f4"),
         (Array1D[np.float64], [], [0.2], waveform_d, "<f8"),
         (Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
+        (Sequence[MyEnum], [], [MyEnum.A, MyEnum.B], enumwf_d, "|S40"),
+        (typing.Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
+        (typing.Sequence[MyEnum], [], [MyEnum.A, MyEnum.B], enumwf_d, "|S40"),
     ],
 )
 async def test_soft_signal_backend_get_put_monitor(

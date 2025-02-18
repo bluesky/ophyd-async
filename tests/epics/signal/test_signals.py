@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+import typing
 from collections.abc import Awaitable, Callable
 from enum import Enum
 from pathlib import Path
@@ -417,6 +418,16 @@ async def test_invalid_enum_choice_raises_valueerror(
     assert "ca:enum_str_fallback, valid choices: ['Aaa', 'Bbb', 'Ccc']" in str(
         exc.value
     )
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_typing_sequence_str_signal_connects(
+    ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+):
+    # Explicitly test that we can connect to a typing.Sequence[str] signal
+    # rather than a collections.abc.Sequence[str] which is more normal
+    signal = epics_signal_rw(typing.Sequence[str], ioc_devices.get_pv(protocol, "stra"))
+    await signal.connect()
 
 
 @pytest.mark.parametrize("protocol", get_args(Protocol))
