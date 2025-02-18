@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import atexit
 import logging
+import typing
 from collections.abc import Mapping, Sequence
 from math import isnan, nan
 from typing import Any, Generic
@@ -245,6 +246,9 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
         {k: _get_specifier(v) for k, v in values.items()},
         "value type specifiers",
     )
+    # Make the datatype canonical for the inference below
+    if datatype == typing.Sequence[str]:
+        datatype = Sequence[str]
     # Infer a datatype and converter from the typeid and specifier
     inferred_datatype, converter_cls = _datatype_converter_from_typeid[
         (typeid, specifier)
