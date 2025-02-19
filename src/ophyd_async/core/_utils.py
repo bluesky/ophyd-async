@@ -233,6 +233,7 @@ def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
                 "or ophyd_async.core.StrictEnum"
             )
         return datatype
+    return None
 
 
 def get_unique(values: dict[str, T], types: str) -> T:
@@ -295,6 +296,7 @@ def get_origin_class(annotatation: Any) -> type | None:
     origin = get_origin(annotatation) or annotatation
     if isinstance(origin, type):
         return origin
+    return None
 
 
 class Reference(Generic[T]):

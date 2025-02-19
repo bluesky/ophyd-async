@@ -64,7 +64,7 @@ class SignalConnector(DeviceConnector):
 
 class _ChildrenNotAllowed(dict[str, Device]):
     def __setitem__(self, key: str, value: Device) -> None:
-        raise AttributeError(
+        raise KeyError(
             f"Cannot add Device or Signal child {key}={value} of Signal, "
             "make a subclass of Device instead"
         )
