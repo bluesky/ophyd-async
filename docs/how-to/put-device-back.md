@@ -1,6 +1,6 @@
 # How to use settings to put devices back in their original state
 
-[](./interact-with-signals.md) describes how to:
+[](./store-and-retrieve.md) describes how to:
 - Save the state of a Device when it is in a known good state
 - Restore that state during a plan, possibly only setting the Signals that are different from the saved state
 
