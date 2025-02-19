@@ -43,7 +43,3 @@ def load_panda(panda1: HDFPanda):
     settings = yield from retrieve_settings(provider, "yaml_file_name", panda1)
     yield from apply_settings_if_different(settings, apply_panda_settings)
 ```
-
-
-## Miscellaneous
- - To get a Settings object without storing anything, you can use [](#get_current_settings).
