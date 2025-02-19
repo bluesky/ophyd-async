@@ -33,6 +33,7 @@ def _get_datatype(annotation: Any) -> type | None:
     args = get_args(annotation)
     if len(args) == 1 and get_origin_class(args[0]):
         return args[0]
+    return None
 
 
 def _logical(name: UniqueName) -> LogicalName:

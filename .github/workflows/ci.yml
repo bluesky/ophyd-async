@@ -51,6 +51,11 @@ jobs:
     permissions:
       id-token: write
 
+  codeql:
+    needs: check
+    if: needs.check.outputs.branch-pr == ''
+    uses: ./.github/workflows/_codeql.yml
+
   release:
     if: github.ref_type == 'tag'
     needs: [dist, docs]

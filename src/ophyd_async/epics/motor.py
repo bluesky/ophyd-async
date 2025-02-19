@@ -36,16 +36,6 @@ class MotorLimitsException(Exception):
     pass
 
 
-class InvalidFlyMotorException(Exception):
-    """Exception for invalid motor."""
-
-    pass
-
-
-DEFAULT_MOTOR_FLY_TIMEOUT = 60
-DEFAULT_WATCHER_UPDATE_FREQUENCY = 0.2
-
-
 class FlyMotorInfo(BaseModel):
     """Minimal set of information required to fly a motor."""
 
