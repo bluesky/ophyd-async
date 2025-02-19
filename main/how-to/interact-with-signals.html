@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to interact with signals while implementing bluesky verbs &#8212; ophyd-async 0.9.1.dev10+gd68af17a documentation</title>
+    <title>How to interact with signals while implementing bluesky verbs &#8212; ophyd-async 0.9.1.dev11+g8a4982a4 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=c2cc3aa7"></script>
+    <script src="../_static/documentation_options.js?v=388d6ca6"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,7 +59,7 @@
     <link rel="icon" href="../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="How to store and retrieve device settings" href="store-and-retrieve.html" />
+    <link rel="next" title="How to use settings to put devices back in their original state" href="put-device-back.html" />
     <link rel="prev" title="How to implement a Device for an EPICS areaDetector" href="implement-ad-detector.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev10+gd68af17a documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev10+gd68af17a documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev11+g8a4982a4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev11+g8a4982a4 documentation - Home"/>
   
   
 </a></div>
@@ -414,8 +414,7 @@
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">How to contribute to the project</a></li>
 <li class="toctree-l1"><a class="reference internal" href="implement-ad-detector.html">How to implement a Device for an EPICS areaDetector</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">How to interact with signals while implementing bluesky verbs</a></li>
-
-
+<li class="toctree-l1"><a class="reference internal" href="put-device-back.html">How to use settings to put devices back in their original state</a></li>
 <li class="toctree-l1"><a class="reference internal" href="store-and-retrieve.html">How to store and retrieve device settings</a></li>
 </ul>
 </div>
@@ -514,9 +513,8 @@
 </pre></div>
 </div>
 </section>
-</section>
 <section id="observe-every-value-change">
-<h1>Observe every value change<a class="headerlink" href="#observe-every-value-change" title="Link to this heading">#</a></h1>
+<h2>Observe every value change<a class="headerlink" href="#observe-every-value-change" title="Link to this heading">#</a></h2>
 <p>To observe every value change and run a function on that value you can use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.observe_value" title="ophyd_async.core.observe_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">observe_value</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">signal</span><span class="p">):</span>
     <span class="n">do_something_with</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
@@ -540,7 +538,7 @@
 </div>
 </section>
 <section id="wait-for-the-value-to-match-some-expected-value">
-<h1>Wait for the value to match some expected value<a class="headerlink" href="#wait-for-the-value-to-match-some-expected-value" title="Link to this heading">#</a></h1>
+<h2>Wait for the value to match some expected value<a class="headerlink" href="#wait-for-the-value-to-match-some-expected-value" title="Link to this heading">#</a></h2>
 <p>If you don’t need to run code for every signal update, but just want to wait until the signal matches some expected value, you can use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.wait_for_value" title="ophyd_async.core.wait_for_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">wait_for_value</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">acquiring</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
@@ -598,6 +596,7 @@ The function returns at <strong>1</strong> (see diagram below), which occurs whe
 The function returns at <strong>2</strong>, which occurs when the <code class="docutils literal notranslate"><span class="pre">match_signal</span></code> reaches the <code class="docutils literal notranslate"><span class="pre">match_value</span></code>.</p></li>
 </ul>
 </section>
+</section>
 
 
                 </article>
@@ -619,11 +618,11 @@ The function returns at <strong>2</strong>, which occurs when the <code class="d
       </div>
     </a>
     <a class="right-next"
-       href="store-and-retrieve.html"
+       href="put-device-back.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">How to store and retrieve device settings</p>
+        <p class="prev-next-title">How to use settings to put devices back in their original state</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -646,15 +645,11 @@ The function returns at <strong>2</strong>, which occurs when the <code class="d
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">How to interact with signals while implementing bluesky verbs</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-the-value">Get the value</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#set-the-value">Set the value</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#observe-every-value-change">Observe every value change</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wait-for-the-value-to-match-some-expected-value">Wait for the value to match some expected value</a></li>
 </ul>
-</li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#observe-every-value-change">Observe every value change</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#wait-for-the-value-to-match-some-expected-value">Wait for the value to match some expected value</a></li>
-</ul>
-
   </nav></div>
 
   <div class="sidebar-secondary-item">

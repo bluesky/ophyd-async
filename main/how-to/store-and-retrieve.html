@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to store and retrieve device settings &#8212; ophyd-async 0.9.1.dev10+gd68af17a documentation</title>
+    <title>How to store and retrieve device settings &#8212; ophyd-async 0.9.1.dev11+g8a4982a4 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=c2cc3aa7"></script>
+    <script src="../_static/documentation_options.js?v=388d6ca6"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Explanations" href="../explanations.html" />
-    <link rel="prev" title="How to interact with signals while implementing bluesky verbs" href="interact-with-signals.html" />
+    <link rel="prev" title="How to use settings to put devices back in their original state" href="put-device-back.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev10+gd68af17a documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev10+gd68af17a documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev11+g8a4982a4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev11+g8a4982a4 documentation - Home"/>
   
   
 </a></div>
@@ -414,8 +414,7 @@
 <li class="toctree-l1"><a class="reference internal" href="contribute.html">How to contribute to the project</a></li>
 <li class="toctree-l1"><a class="reference internal" href="implement-ad-detector.html">How to implement a Device for an EPICS areaDetector</a></li>
 <li class="toctree-l1"><a class="reference internal" href="interact-with-signals.html">How to interact with signals while implementing bluesky verbs</a></li>
-
-
+<li class="toctree-l1"><a class="reference internal" href="put-device-back.html">How to use settings to put devices back in their original state</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">How to store and retrieve device settings</a></li>
 </ul>
 </div>
@@ -519,12 +518,6 @@
 </pre></div>
 </div>
 </section>
-<section id="miscellaneous">
-<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Link to this heading">#</a></h2>
-<ul class="simple">
-<li><p>To get a Settings object without storing anything, you can use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.get_current_settings" title="ophyd_async.plan_stubs.get_current_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">get_current_settings</span></code></a>.</p></li>
-</ul>
-</section>
 </section>
 
 
@@ -538,12 +531,12 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="interact-with-signals.html"
+       href="put-device-back.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">How to interact with signals while implementing bluesky verbs</p>
+        <p class="prev-next-title">How to use settings to put devices back in their original state</p>
       </div>
     </a>
     <a class="right-next"
@@ -576,7 +569,6 @@
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saving-a-device-steps-1-2">Saving a device (steps 1-2)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-a-device-to-its-stored-state-step-3">Loading a device to its stored state (step 3)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#miscellaneous">Miscellaneous</a></li>
 </ul>
   </nav></div>
 
