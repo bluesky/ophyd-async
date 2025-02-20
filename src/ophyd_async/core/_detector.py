@@ -1,9 +1,10 @@
-"""Module which defines abstract classes to work with detectors"""
+"""Module which defines abstract classes to work with detectors."""
 
 import asyncio
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, Sequence
+from enum import Enum
 from functools import cached_property
 from typing import (
     Generic,
@@ -28,50 +29,64 @@ from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, StrictEnum, WatcherUpdate, merge_gathered_dicts
+from ._utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
 
 
-class DetectorTrigger(StrictEnum):
-    """Type of mechanism for triggering a detector to take frames"""
+class DetectorTrigger(Enum):
+    """Type of mechanism for triggering a detector to take frames."""
 
-    #: Detector generates internal trigger for given rate
-    INTERNAL = "internal"
-    #: Expect a series of arbitrary length trigger signals
-    EDGE_TRIGGER = "edge_trigger"
-    #: Expect a series of constant width external gate signals
-    CONSTANT_GATE = "constant_gate"
-    #: Expect a series of variable width external gate signals
-    VARIABLE_GATE = "variable_gate"
+    INTERNAL = "INTERNAL"
+    """Detector generates internal trigger for given rate"""
+
+    EDGE_TRIGGER = "EDGE_TRIGGER"
+    """Expect a series of arbitrary length trigger signals"""
+
+    CONSTANT_GATE = "CONSTANT_GATE"
+    """Expect a series of constant width external gate signals"""
+
+    VARIABLE_GATE = "VARIABLE_GATE"
+    """Expect a series of variable width external gate signals"""
 
 
 class TriggerInfo(BaseModel):
-    """Minimal set of information required to setup triggering on a detector"""
+    """Minimal set of information required to setup triggering on a detector."""
 
-    #: Number of triggers that will be sent, (0 means infinite) Can be:
-    #  - A single integer or
-    #  - A list of integers for multiple triggers
-    # Example for tomography: TriggerInfo(number=[2,3,100,3])
-    #:     This would trigger:
-    #:     - 2 times for dark field images
-    #:     - 3 times for initial flat field images
-    #:     - 100 times for projections
-    #:     - 3 times for final flat field images
     number_of_triggers: NonNegativeInt | list[NonNegativeInt]
-    #: Sort of triggers that will be sent
+    """Number of triggers that will be sent, (0 means infinite).
+
+    Can be:
+    - A single integer or
+    - A list of integers for multiple triggers
+
+    Example for tomography: ``TriggerInfo(number=[2,3,100,3])``.
+    This would trigger:
+
+    - 2 times for dark field images
+    - 3 times for initial flat field images
+    - 100 times for projections
+    - 3 times for final flat field images
+    """
+
     trigger: DetectorTrigger = Field(default=DetectorTrigger.INTERNAL)
-    #: What is the minimum deadtime between triggers
-    deadtime: float | None = Field(default=None, ge=0)
-    #: What is the maximum high time of the triggers
+    """Sort of triggers that will be sent"""
+
+    deadtime: float = Field(default=0.0, ge=0)
+    """What is the minimum deadtime between triggers"""
+
     livetime: float | None = Field(default=None, ge=0)
-    #: What is the maximum timeout on waiting for a frame
+    """What is the maximum high time of the triggers"""
+
     frame_timeout: float | None = Field(default=None, gt=0)
-    #: The number of triggers that are grouped into a single StreamDatum index.
-    #: A frames_per_event > 1 can be useful to have frames from a faster detector
-    #: able to be zipped with a single frame from a slower detector. E.g. if
-    #: number_of_triggers=10 and frames_per_event=5 then the detector will take
-    #: 10 frames, but publish 2 StreamDatum indices, and describe() will show a
-    #: shape of (5, h, w) for each.
+    """What is the maximum timeout on waiting for a frame"""
+
     frames_per_event: PositiveInt = 1
+    """The number of triggers that are grouped into a single StreamDatum index.
+    A frames_per_event > 1 can be useful to have frames from a faster detector
+    able to be zipped with a single frame from a slower detector. E.g. if
+    number_of_triggers=10 and frames_per_event=5 then the detector will take
+    10 frames, but publish 2 StreamDatum indices, and describe() will show a
+    shape of (5, h, w) for each.
+    """
 
     @computed_field
     @cached_property
@@ -84,92 +99,65 @@ class TriggerInfo(BaseModel):
 
 
 class DetectorController(ABC):
-    """
-    Classes implementing this interface should hold the logic for
-    arming and disarming a detector
-    """
+    """Detector logic for arming and disarming the detector."""
 
     @abstractmethod
     def get_deadtime(self, exposure: float | None) -> float:
-        """For a given exposure, how long should the time between exposures be"""
+        """For a given exposure, how long should the time between exposures be."""
 
     @abstractmethod
     async def prepare(self, trigger_info: TriggerInfo) -> None:
-        """
-        Do all necessary steps to prepare the detector for triggers.
+        """Do all necessary steps to prepare the detector for triggers.
 
-        Args:
-            trigger_info: This is a Pydantic model which contains
-                number Expected number of frames.
-                trigger Type of trigger for which to prepare the detector. Defaults
-                to DetectorTrigger.internal.
-                livetime Livetime / Exposure time with which to set up the detector.
-                Defaults to None
-                if not applicable or the detector is expected to use its previously-set
-                exposure time.
-                deadtime Defaults to None. This is the minimum deadtime between
-                triggers.
-                frames_per_event The number of triggers grouped into a single
-                StreamDatum index
+        :param trigger_info: The sort of triggers to expect.
         """
 
     @abstractmethod
     async def arm(self) -> None:
-        """
-        Arm the detector
-        """
+        """Arm the detector."""
 
     @abstractmethod
     async def wait_for_idle(self):
-        """
-        This will wait on the internal _arm_status and wait for it to get disarmed/idle
-        """
+        """Wait on the internal _arm_status and wait for it to get disarmed/idle."""
 
     @abstractmethod
     async def disarm(self):
-        """Disarm the detector, return detector to an idle state"""
+        """Disarm the detector, return detector to an idle state."""
 
 
 class DetectorWriter(ABC):
-    """Logic for making a detector write data to somewhere persistent
-    (e.g. an HDF5 file)"""
+    """Logic for making detector write data to somewhere persistent (e.g. HDF5 file)."""
 
     @abstractmethod
     async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         """Open writer and wait for it to be ready for data.
 
-        Args:
-            frames_per_event: The number of triggers that are grouped into a single
-                StreamDatum index. A frames_per_event > 1 can be useful to have
-                frames from a faster detector able to be zipped with a single frame
-                from a slower detector. E.g. if number_of_triggers=10 and
-                frames_per_event=5 then the detector will take 10 frames, but publish
-                2 StreamDatum indices, and describe() will show a shape of (5, h, w)
-                for each.
-        Returns:
-            Output for ``describe()``
+        :param frames_per_event:
+            Each StreamDatum index corresponds to this many written exposures
+        :return: Output for ``describe()``
         """
 
     @abstractmethod
     def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        """Yield the index of each frame (or batch of frames) as it is written"""
+        """Yield the index of each frame (or equivalent data point) as it is written."""
 
     @abstractmethod
     async def get_indices_written(self) -> int:
-        """Get the number of indices written"""
+        """Get the number of indices written."""
 
     @abstractmethod
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
-        """Create Stream docs up to given number written"""
+        """Create Stream docs up to given number written."""
 
     @abstractmethod
     async def close(self) -> None:
-        """Close writer, blocks until I/O is complete"""
+        """Close writer, blocks until I/O is complete."""
 
     @property
     def hints(self) -> Hints:
+        """The hints to be used for the detector."""
         return {}
 
 
@@ -198,9 +186,14 @@ class StandardDetector(
     WritesStreamAssets,
     Generic[DetectorControllerT, DetectorWriterT],
 ):
-    """
-    Useful detector base class for step and fly scanning detectors.
+    """Detector base class for step and fly scanning detectors.
+
     Aggregates controller and writer logic together.
+
+    :param controller: Logic for arming and disarming the detector
+    :param writer: Logic for making the detector write persistent data
+    :param config_sigs: Signals to read when describe and read configuration are called
+    :param name: Device name
     """
 
     def __init__(
@@ -211,16 +204,6 @@ class StandardDetector(
         name: str = "",
         connector: DeviceConnector | None = None,
     ) -> None:
-        """
-        Constructor
-
-        Args:
-            controller: Logic for arming and disarming the detector
-            writer: Logic for making the detector write persistent data
-            config_sigs: Signals to read when describe and read
-            configuration are called. Defaults to ().
-            name: Device name. Defaults to "".
-        """
         self._controller = controller
         self._writer = writer
         self._describe: dict[str, DataKey] = {}
@@ -242,13 +225,13 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
-        # Disarm the detector, stop file writing.
+        """Make sure the detector is idle and ready to be used."""
         await self._check_config_sigs()
         await asyncio.gather(self._writer.close(), self._controller.disarm())
         self._trigger_info = None
 
     async def _check_config_sigs(self):
-        """Checks configuration signals are named and connected."""
+        """Check configuration signals are named and connected."""
         for signal in self._config_sigs:
             if signal.name == "":
                 raise Exception(
@@ -264,7 +247,7 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
-        # Stop data writing.
+        """Disarm the detector and stop file writing."""
         await asyncio.gather(self._writer.close(), self._controller.disarm())
 
     async def read_configuration(self) -> dict[str, Reading]:
@@ -274,6 +257,7 @@ class StandardDetector(
         return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
 
     async def read(self) -> dict[str, Reading]:
+        """There is no data to be placed in events, so this is empty."""
         # All data is in StreamResources, not Events, so nothing to output here
         return {}
 
@@ -287,9 +271,6 @@ class StandardDetector(
                 TriggerInfo(
                     number_of_triggers=1,
                     trigger=DetectorTrigger.INTERNAL,
-                    deadtime=None,
-                    livetime=None,
-                    frame_timeout=None,
                 )
             )
 
@@ -307,26 +288,19 @@ class StandardDetector(
         async for index in self._writer.observe_indices_written(
             DEFAULT_TIMEOUT
             + (self._trigger_info.livetime or 0)
-            + (self._trigger_info.deadtime or 0)
+            + self._trigger_info.deadtime
         ):
             if index >= end_observation:
                 break
 
     @AsyncStatus.wrap
     async def prepare(self, value: TriggerInfo) -> None:
-        """
-        Arm detector.
+        """Arm detector.
 
         Prepare the detector with trigger information. This is determined at and passed
         in from the plan level.
 
-        This currently only prepares detectors for flyscans and stepscans just use the
-        trigger information determined in trigger.
-
-        To do: Unify prepare to be use for both fly and step scans.
-
-        Args:
-            value: TriggerInfo describing how to trigger the detector
+        :param value: TriggerInfo describing how to trigger the detector
         """
         if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
             msg = "Deadtime must be supplied when in externally triggered mode"
@@ -338,18 +312,17 @@ class StandardDetector(
                 f"deadtime, but trigger logic provides only {value.deadtime}s"
             )
             raise ValueError(msg)
-
+        elif not value.deadtime:
+            value.deadtime = self._controller.get_deadtime(value.livetime)
         self._trigger_info = value
         self._number_of_triggers_iter = iter(
             self._trigger_info.number_of_triggers
             if isinstance(self._trigger_info.number_of_triggers, list)
             else [self._trigger_info.number_of_triggers]
         )
-        # Open the writer and prepare the controller.
         self._describe, _ = await asyncio.gather(
             self._writer.open(value.frames_per_event), self._controller.prepare(value)
         )
-        # Get the initial frame index from the writer.
         self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
             await self._controller.arm()

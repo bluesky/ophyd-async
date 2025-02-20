@@ -16,6 +16,7 @@ from ophyd_async.epics.adcore import (
 def setup_ndattributes(
     device: NDArrayBaseIO, ndattributes: Sequence[NDAttributePv | NDAttributeParam]
 ):
+    """Set up attributes on NdArray devices."""
     root = ET.Element("Attributes")
 
     for ndattribute in ndattributes:
@@ -50,6 +51,7 @@ def setup_ndattributes(
 
 
 def setup_ndstats_sum(detector: Device):
+    """Set up nd stats for a detector."""
     hdf = getattr(detector, "fileio", None)
     if not isinstance(hdf, NDFileHDFIO):
         msg = (

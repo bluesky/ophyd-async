@@ -1,46 +1,31 @@
-from ophyd_async.core import StrictEnum, SubsetEnum
+from typing import Annotated as A
+
+from ophyd_async.core import SignalRW, StrictEnum, SubsetEnum
 from ophyd_async.epics import adcore
-from ophyd_async.epics.core import epics_signal_rw_rbv
+from ophyd_async.epics.core import PvSuffix
 
 
 class AravisTriggerMode(StrictEnum):
-    """GigEVision GenICAM standard: on=externally triggered"""
+    """GigEVision GenICAM standard TriggerMode."""
 
     ON = "On"
+    """Use TriggerSource to trigger each frame"""
+
     OFF = "Off"
-
-
-"""A minimal set of TriggerSources that must be supported by the underlying record.
-    To enable hardware triggered scanning, line_N must support each N in GPIO_NUMBER.
-    To enable software triggered scanning, freerun must be supported.
-    Other enumerated values may or may not be preset.
-    To prevent requiring one Enum class per possible configuration, we set as this Enum
-    but read from the underlying signal as a str.
-    """
+    """Just trigger as fast as you can"""
 
 
 class AravisTriggerSource(SubsetEnum):
-    FREERUN = "Freerun"
+    """Which trigger source to use when TriggerMode=On."""
+
     LINE1 = "Line1"
 
 
 class AravisDriverIO(adcore.ADBaseIO):
-    # If instantiating a new instance, ensure it is supported in the _deadtimes dict
-    """Generic Driver supporting the Manta and Mako drivers.
-    Fetches deadtime prior to use in a Streaming scan.
-
-    Requires driver firmware up to date:
-    - Model_RBV must be of the form "^(Mako|Manta) (model)$"
+    """Generic Driver supporting all GiGE cameras.
 
     This mirrors the interface provided by ADAravis/db/aravisCamera.template.
     """
 
-    def __init__(self, prefix: str, name: str = "") -> None:
-        self.trigger_mode = epics_signal_rw_rbv(
-            AravisTriggerMode, prefix + "TriggerMode"
-        )
-        self.trigger_source = epics_signal_rw_rbv(
-            AravisTriggerSource,  # type: ignore
-            prefix + "TriggerSource",
-        )
-        super().__init__(prefix, name=name)
+    trigger_mode: A[SignalRW[AravisTriggerMode], PvSuffix.rbv("TriggerMode")]
+    trigger_source: A[SignalRW[AravisTriggerSource], PvSuffix.rbv("TriggerSource")]

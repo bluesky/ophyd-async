@@ -17,10 +17,12 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._block import CaptureMode, DataBlock
+from ._block import DataBlock, PandaCaptureMode
 
 
 class PandaHDFWriter(DetectorWriter):
+    """For writing for PandA data from the `DataBlock`."""
+
     _ctxt: Context | None = None
 
     def __init__(
@@ -39,7 +41,6 @@ class PandaHDFWriter(DetectorWriter):
     async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture"""
         self._frames_per_event = frames_per_event
-
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
@@ -56,7 +57,7 @@ class PandaHDFWriter(DetectorWriter):
             self.panda_data_block.hdf_file_name.set(
                 f"{info.filename}.h5",
             ),
-            self.panda_data_block.capture_mode.set(CaptureMode.FOREVER),
+            self.panda_data_block.capture_mode.set(PandaCaptureMode.FOREVER),
         )
 
         # Make sure that directory exists or has been created.
@@ -72,10 +73,7 @@ class PandaHDFWriter(DetectorWriter):
         return await self._describe()
 
     async def _describe(self) -> dict[str, DataKey]:
-        """
-        Return a describe based on the datasets PV
-        """
-
+        """Return a describe based on the datasets PV."""
         await self._update_datasets()
         describe = {
             ds.data_key: DataKey(
@@ -91,11 +89,8 @@ class PandaHDFWriter(DetectorWriter):
         return describe
 
     async def _update_datasets(self) -> None:
-        """
-        Load data from the datasets PV on the panda, update internal
-        representation of datasets that the panda will write.
-        """
-
+        # Load data from the datasets PV on the panda, update internal
+        # representation of datasets that the panda will write.
         capture_table = await self.panda_data_block.datasets.get_value()
         self._datasets = [
             # TODO: Update chunk size to read signal once available in IOC
@@ -141,7 +136,7 @@ class PandaHDFWriter(DetectorWriter):
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        """Wait until a specific index is ready to be collected"""
+        """Wait until a specific index is ready to be collected."""
         async for num_captured in observe_value(
             self.panda_data_block.num_captured, timeout
         ):

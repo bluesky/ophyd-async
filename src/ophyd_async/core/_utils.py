@@ -11,10 +11,10 @@ from unittest.mock import Mock
 import numpy as np
 
 T = TypeVar("T")
+V = TypeVar("V")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
 DEFAULT_TIMEOUT = 10.0
-ErrorText = str | Mapping[str, Exception]
 
 logger = logging.getLogger("ophyd_async")
 
@@ -29,18 +29,33 @@ class StrictEnumMeta(EnumMeta):
 
 
 class StrictEnum(str, Enum, metaclass=StrictEnumMeta):
-    """All members should exist in the Backend, and there will be no extras"""
+    """All members should exist in the Backend, and there will be no extras."""
 
 
 class SubsetEnumMeta(StrictEnumMeta):
     def __call__(self, value, *args, **kwargs):  # type: ignore
+        """Return given value if it is a string and not a member of the enum.
+
+        If the value is not a string or is an enum member, default enum behavior
+        is applied. Type checking will complain if provided arbitrary string.
+
+        Returns:
+            Union[str, SubsetEnum]: If the value is a string and not a member of the
+            enum, the string is returned as is. Otherwise, the corresponding enum
+            member is returned.
+
+        Raises:
+            ValueError: If the value is not a string and cannot be converted to an enum
+            member.
+
+        """
         if isinstance(value, str) and not isinstance(value, self):
             return value
         return super().__call__(value, *args, **kwargs)
 
 
 class SubsetEnum(StrictEnum, metaclass=SubsetEnumMeta):
-    """All members should exist in the Backend, but there may be extras"""
+    """All members should exist in the Backend, but there may be extras."""
 
 
 CALCULATE_TIMEOUT = "CALCULATE_TIMEOUT"
@@ -55,22 +70,16 @@ CalculatableTimeout = float | None | Literal["CALCULATE_TIMEOUT"]
 
 
 class NotConnected(Exception):
-    """Exception to be raised if a `Device.connect` is cancelled"""
+    """Exception to be raised if a `Device.connect` is cancelled.
+
+    :param errors:
+        Mapping of device name to Exception or another NotConnected.
+        Alternatively a string with the signal error text.
+    """
 
     _indent_width = "    "
 
-    def __init__(self, errors: ErrorText):
-        """
-        NotConnected holds a mapping of device/signal names to
-        errors.
-
-        Parameters
-        ----------
-        errors: ErrorText
-            Mapping of device name to Exception or another NotConnected.
-            Alternatively a string with the signal error text.
-        """
-
+    def __init__(self, errors: str | Mapping[str, Exception]):
         self._errors = errors
 
     @property
@@ -126,21 +135,38 @@ class NotConnected(Exception):
 
 @dataclass(frozen=True)
 class WatcherUpdate(Generic[T]):
-    """A dataclass such that, when expanded, it provides the kwargs for a watcher"""
+    """A dataclass such that, when expanded, it provides the kwargs for a watcher."""
 
     current: T
+    """The current value, where it currently is."""
+
     initial: T
+    """The initial value, where it was when it started."""
+
     target: T
+    """The target value, where it will be when it finishes."""
+
     name: str | None = None
+    """An optional name for the device, if available."""
+
     unit: str | None = None
+    """Units of the value, if applicable."""
+
     precision: float | None = None
+    """How many decimal places the value should be displayed to."""
+
     fraction: float | None = None
+    """The fraction of the way between initial and target."""
+
     time_elapsed: float | None = None
+    """The time elapsed since the start of the operation."""
+
     time_remaining: float | None = None
+    """The time remaining until the operation completes."""
 
 
 async def wait_for_connection(**coros: Awaitable[None]):
-    """Call many underlying signals, accumulating exceptions and returning them
+    """Call many underlying signals, accumulating exceptions and returning them.
 
     Expected kwargs should be a mapping of names to coroutine tasks to execute.
     """
@@ -164,12 +190,15 @@ async def wait_for_connection(**coros: Awaitable[None]):
 
 
 def get_dtype(datatype: type) -> np.dtype:
-    """Get the runtime dtype from a numpy ndarray type annotation
+    """Get the runtime dtype from a numpy ndarray type annotation.
 
+    ```python
     >>> from ophyd_async.core import Array1D
     >>> import numpy as np
     >>> get_dtype(Array1D[np.int8])
     dtype('int8')
+
+    ```
     """
     if not get_origin(datatype) == np.ndarray:
         raise TypeError(f"Expected Array1D[dtype], got {datatype}")
@@ -179,12 +208,21 @@ def get_dtype(datatype: type) -> np.dtype:
 
 
 def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
-    """Get the runtime dtype from a numpy ndarray type annotation
+    """Get the enum class from a datatype.
 
-    >>> import numpy.typing as npt
-    >>> import numpy as np
-    >>> get_dtype(npt.NDArray[np.int8])
-    dtype('int8')
+    :raises TypeError: if type is not a [](#StrictEnum) or [](#SubsetEnum) subclass
+    ```python
+    >>> from ophyd_async.core import StrictEnum
+    >>> from collections.abc import Sequence
+    >>> class MyEnum(StrictEnum):
+    ...     A = "A value"
+    >>> get_enum_cls(str)
+    >>> get_enum_cls(MyEnum)
+    <enum 'MyEnum'>
+    >>> get_enum_cls(Sequence[MyEnum])
+    <enum 'MyEnum'>
+
+    ```
     """
     if get_origin(datatype) is Sequence:
         datatype = get_args(datatype)[0]
@@ -195,17 +233,21 @@ def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
                 "or ophyd_async.core.StrictEnum"
             )
         return datatype
+    return None
 
 
 def get_unique(values: dict[str, T], types: str) -> T:
-    """If all values are the same, return that value, otherwise raise TypeError
+    """If all values are the same, return that value, otherwise raise TypeError.
 
+    ```python
     >>> get_unique({"a": 1, "b": 1}, "integers")
     1
     >>> get_unique({"a": 1, "b": 2}, "integers")
     Traceback (most recent call last):
      ...
     TypeError: Differing integers: a has 1, b has 2
+
+    ```
     """
     set_values = set(values.values())
     if len(set_values) != 1:
@@ -219,9 +261,12 @@ async def merge_gathered_dicts(
 ) -> dict[str, T]:
     """Merge dictionaries produced by a sequence of coroutines.
 
-    Can be used for merging ``read()`` or ``describe``. For instance::
+    Can be used for merging `read()` or `describe()`.
 
-        combined_read = await merge_gathered_dicts(s.read() for s in signals)
+    :example:
+    ```python
+    combined_read = await merge_gathered_dicts(s.read() for s in signals)
+    ```
     """
     ret: dict[str, T] = {}
     for result in await asyncio.gather(*coros):
@@ -229,21 +274,18 @@ async def merge_gathered_dicts(
     return ret
 
 
-async def gather_list(coros: Iterable[Awaitable[T]]) -> list[T]:
-    return await asyncio.gather(*coros)
+async def gather_dict(coros: dict[T, Awaitable[V]]) -> dict[T, V]:
+    """Take named coros and return a dict of their name to their return value."""
+    values = await asyncio.gather(*coros.values())
+    return dict(zip(coros, values, strict=True))
 
 
 def in_micros(t: float) -> int:
-    """
-    Converts between a positive number of seconds and an equivalent
-    number of microseconds.
+    """Convert between a seconds and microseconds.
 
-    Args:
-        t (float): A time in seconds
-    Raises:
-        ValueError: if t < 0
-    Returns:
-        t (int): A time in microseconds, rounded up to the nearest whole microsecond,
+    :param t: A time in seconds
+    :return: A time in microseconds, rounded up to the nearest whole microsecond
+    :raises ValueError: if t < 0
     """
     if t < 0:
         raise ValueError(f"Expected a positive time in seconds, got {t!r}")
@@ -254,6 +296,7 @@ def get_origin_class(annotatation: Any) -> type | None:
     origin = get_origin(annotatation) or annotatation
     if isinstance(origin, type):
         return origin
+    return None
 
 
 class Reference(Generic[T]):
@@ -261,16 +304,16 @@ class Reference(Generic[T]):
 
     Used to opt out of the naming/parent-child relationship of `Device`.
 
-    For example::
+    :example:
+    ```python
+    class DeviceWithRefToSignal(Device):
+        def __init__(self, signal: SignalRW[int]):
+            self.signal_ref = Reference(signal)
+            super().__init__()
 
-        class DeviceWithRefToSignal(Device):
-            def __init__(self, signal: SignalRW[int]):
-                self.signal_ref = Reference(signal)
-                super().__init__()
-
-            def set(self, value) -> AsyncStatus:
-                return self.signal_ref().set(value + 1)
-
+        def set(self, value) -> AsyncStatus:
+            return self.signal_ref().set(value + 1)
+    ```
     """
 
     def __init__(self, obj: T):
@@ -289,6 +332,7 @@ class LazyMock:
     constructed so that when the leaf is created, so are its parents.
     Any calls to the child are then accessible from the parent mock.
 
+    ```python
     >>> parent = LazyMock()
     >>> child = parent.child("child")
     >>> child_mock = child()
@@ -297,6 +341,8 @@ class LazyMock:
     >>> parent_mock = parent()
     >>> parent_mock.mock_calls
     [call.child()]
+
+    ```
     """
 
     def __init__(self, name: str = "", parent: LazyMock | None = None) -> None:
@@ -305,6 +351,7 @@ class LazyMock:
         self._mock: Mock | None = None
 
     def child(self, name: str) -> LazyMock:
+        """Return a child of this LazyMock with the given name."""
         return LazyMock(name, self)
 
     def __call__(self) -> Mock:

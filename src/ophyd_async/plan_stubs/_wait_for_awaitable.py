@@ -3,7 +3,7 @@ from collections.abc import Awaitable
 import bluesky.plan_stubs as bps
 from bluesky.utils import MsgGenerator, plan
 
-from ophyd_async.core import T
+from ._utils import T
 
 
 @plan

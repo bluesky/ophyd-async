@@ -25,6 +25,8 @@ from ._utils import (
 
 
 class ADHDFWriter(ADWriter[NDFileHDFIO]):
+    """Allow `NDFileHDFIO` to be used within `StandardDetector`."""
+
     default_suffix: str = "HDF1:"
 
     def __init__(
@@ -46,7 +48,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         )
         self._datasets: list[HDFDataset] = []
         self._file: HDFFile | None = None
-        self._include_file_number = False
+        self._filename_template = "%s%s"
 
     async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         self._file = None
@@ -62,11 +64,6 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             self.fileio.swmr_mode.set(True),
             self.fileio.xml_file_name.set(""),
         )
-
-        # By default, don't add file number to filename
-        self._filename_template = "%s%s"
-        if self._include_file_number:
-            self._filename_template += "_%6.6d"
 
         # Set common AD file plugin params, begin capturing
         await self.begin_capture()

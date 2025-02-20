@@ -14,6 +14,8 @@ from event_model import (  # type: ignore
 
 @dataclass
 class HDFDataset:
+    """TODO."""
+
     data_key: str
     dataset: str
     shape: Sequence[int] = field(default_factory=tuple)
@@ -27,7 +29,8 @@ SLICE_NAME = "AD_HDF5_SWMR_SLICE"
 
 
 class HDFFile:
-    """
+    """TODO.
+
     :param full_file_name: Absolute path to the file to be written
     :param datasets: Datasets to write into the file
     """

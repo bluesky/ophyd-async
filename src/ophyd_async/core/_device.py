@@ -17,7 +17,7 @@ class DeviceConnector:
     """Defines how a `Device` should be connected and type hints processed."""
 
     def create_children_from_annotations(self, device: Device):
-        """Used when children can be created from introspecting the hardware.
+        """Use when children can be created from introspecting the hardware.
 
         Some control systems allow introspection of a device to determine what
         children it has. To allow this to work nicely with typing we add these
@@ -26,15 +26,20 @@ class DeviceConnector:
             my_signal: SignalRW[int]
             my_device: MyDevice
 
-        This method will be run during ``Device.__init__``, and is responsible
+        This method will be run during `Device.__init__`, and is responsible
         for turning all of those type hints into real Signal and Device instances.
 
         Subsequent runs of this function should do nothing, to allow it to be
         called early in Devices that need to pass references to their children
-        during ``__init__``.
+        during `__init__`.
         """
 
     async def connect_mock(self, device: Device, mock: LazyMock):
+        """Use during [](#Device.connect) with `mock=True`.
+
+        This is called when there is no cached connect done in `mock=True`
+        mode. It connects the Device and all its children in mock mode.
+        """
         # Connect serially, no errors to gather up as in mock mode
         exceptions: dict[str, Exception] = {}
         for name, child_device in device.children():
@@ -46,11 +51,10 @@ class DeviceConnector:
             raise NotConnected.with_other_exceptions_logged(exceptions)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
-        """Used during ``Device.connect``.
+        """Use during [](#Device.connect) with `mock=False`.
 
-        This is called when a previous connect has not been done, or has been
-        done in a different mock more. It should connect the Device and all its
-        children.
+        This is called when there is no cached connect done in `mock=False`
+        mode. It connects the Device and all its children in real mode in parallel.
         """
         # Connect in parallel, gathering up NotConnected errors
         coros = {
@@ -61,11 +65,15 @@ class DeviceConnector:
 
 
 class Device(HasName):
-    """Common base class for all Ophyd Async Devices."""
+    """Common base class for all Ophyd Async Devices.
 
-    _name: str = ""
-    #: The parent Device if it exists
+    :param name: Optional name of the Device
+    :param connector: Optional DeviceConnector instance to use at connect()
+    """
+
     parent: Device | None = None
+    """The parent Device if it exists"""
+    _name: str = ""
     # None if connect hasn't started, a Task if it has
     _connect_task: asyncio.Task | None = None
     # The mock if we have connected in mock mode
@@ -83,7 +91,7 @@ class Device(HasName):
 
     @property
     def name(self) -> str:
-        """Return the name of the Device"""
+        """Return the name of the Device."""
         return self._name
 
     @cached_property
@@ -91,24 +99,26 @@ class Device(HasName):
         return {}
 
     def children(self) -> Iterator[tuple[str, Device]]:
+        """For each attribute that is a Device, yield the name and Device.
+
+        :yields: `(attr_name, attr)` for each child attribute that is a Device.
+        """
         yield from self._child_devices.items()
 
     @cached_property
     def log(self) -> LoggerAdapter:
+        """Return a logger configured with the device name."""
         return LoggerAdapter(
             getLogger("ophyd_async.devices"), {"ophyd_async_device_name": self.name}
         )
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
-        """Set ``self.name=name`` and each ``self.child.name=name+"-child"``.
+        """Set `self.name=name` and each `self.child.name=name+"-child"`.
 
-        Parameters
-        ----------
-        name:
-            New name to set
-        child_name_separator:
-            Use this as a separator instead of "-". Use "_" instead to make the same
-            names as the equivalent ophyd sync device.
+        :param name: New name to set.
+        :param child_name_separator:
+            Use this as a separator instead of "-". Use "_" instead to make the
+            same names as the equivalent ophyd sync device.
         """
         self._name = name
         if child_name_separator:
@@ -147,16 +157,19 @@ class Device(HasName):
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ) -> None:
-        """Connect self and all child Devices.
+        """Connect the device and all child devices.
 
-        Contains a timeout that gets propagated to child.connect methods.
+        Successful connects will be cached so subsequent calls will return
+        immediately. Contains a timeout that gets propagated to child.connect
+        methods.
 
-        Parameters
-        ----------
-        mock:
-            If True then use ``MockSignalBackend`` for all Signals
-        timeout:
-            Time to wait before failing with a TimeoutError.
+        :param mock:
+            If True then use [](#MockSignalBackend) for all Signals. If passed a
+            [](#LazyMock) then pass this down for use within the Signals,
+            otherwise create one.
+        :param timeout: Time to wait before failing with a TimeoutError.
+        :param force_reconnect:
+            If True, force a reconnect even if the last connect succeeded.
         """
         if not hasattr(self, "_connector"):
             msg = (
@@ -205,12 +218,9 @@ DeviceT = TypeVar("DeviceT", bound=Device)
 
 
 class DeviceVector(MutableMapping[int, DeviceT], Device):
-    """
-    Defines device components with indices.
+    """Defines a dictionary of Device children with arbitrary integer keys.
 
-    In the below example, foos becomes a dictionary on the parent device
-    at runtime, so parent.foos[2] returns a FooDevice. For example usage see
-    :class:`~ophyd_async.epics.sim.DynamicSensorGroup`
+    :see-also: [](#implementing-devices) for examples of how to use this class.
     """
 
     def __init__(
@@ -274,7 +284,7 @@ class DeviceProcessor:
         self._locals_on_exit: dict[str, Any] = {}
 
     def _caller_locals(self) -> dict[str, Any]:
-        """Walk up until we find a stack frame that doesn't have us as self"""
+        """Walk up until we find a stack frame that doesn't have us as self."""
         try:
             raise ValueError
         except ValueError:
@@ -341,33 +351,29 @@ def init_devices(
     connect=True,
     mock=False,
     timeout: float = 10.0,
-) -> DeviceProcessor:
-    """Auto initialise top level Device instances to be used as a context manager
+):
+    """Auto initialize top level Device instances: to be used as a context manager.
 
-    Parameters
-    ----------
-    set_name:
-        If True, call ``device.set_name(variable_name)`` on all Devices
-        created within the context manager that have an empty ``name``
-    child_name_separator:
-        Use this as a separator if we call ``set_name``.
-    connect:
-        If True, call ``device.connect(mock, timeout)`` in parallel on all
-        Devices created within the context manager
-    mock:
-        If True, connect Signals in mock mode
-    timeout:
-        How long to wait for connect before logging an exception
+    :param set_name:
+        If True, call `device.set_name(variable_name)` on all Devices created
+        within the context manager that have an empty `name`.
+    :param child_name_separator: Separator for child names if `set_name` is True.
+    :param connect:
+        If True, call `device.connect(mock, timeout)` in parallel on all Devices
+        created within the context manager.
+    :param mock: If True, connect Signals in mock mode.
+    :param timeout: How long to wait for connect before logging an exception.
+    :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
+    :raises NotConnected: If devices could not be connected.
 
-    Notes
-    -----
-    Example usage::
-
-        [async] with init_devices():
-            t1x = motor.Motor("BLxxI-MO-TABLE-01:X")
-            t1y = motor.Motor("pva://BLxxI-MO-TABLE-01:Y")
-            # Names and connects devices here
-        assert t1x.name == "t1x"
+    For example, to connect and name 2 motors in parallel:
+    ```python
+    [async] with init_devices():
+        t1x = motor.Motor("BLxxI-MO-TABLE-01:X")
+        t1y = motor.Motor("pva://BLxxI-MO-TABLE-01:Y")
+        # Names and connects devices here
+    assert t1x.name == "t1x"
+    ```
     """
 
     async def process_devices(devices: dict[str, Device]):

@@ -24,7 +24,7 @@ from ophyd_async.core._utils import DEFAULT_TIMEOUT
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
 from ._core_io import (
     ADBaseDatasetDescriber,
-    Callback,
+    ADCallbacks,
     NDArrayBaseIO,
     NDFileIO,
     NDPluginBaseIO,
@@ -36,6 +36,8 @@ ADWriterT = TypeVar("ADWriterT", bound="ADWriter")
 
 
 class ADWriter(DetectorWriter, Generic[NDFileIOT]):
+    """Common behavior for all areaDetector writers."""
+
     default_suffix: str = "FILE1:"
 
     def __init__(
@@ -91,7 +93,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     async def begin_capture(self) -> None:
         info = self._path_provider(device_name=self._name_provider())
 
-        await self.fileio.enable_callbacks.set(Callback.ENABLE)
+        await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
@@ -145,7 +147,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        """Wait until a specific index is ready to be collected"""
+        """Wait until a specific index is ready to be collected."""
         async for num_captured in observe_value(self.fileio.num_captured, timeout):
             yield num_captured // self._frames_per_event
 

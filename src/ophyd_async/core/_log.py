@@ -63,31 +63,23 @@ def config_ophyd_async_logging(
     color=True,
     level="WARNING",
 ):
-    """
-    Set a new handler on the ``logging.getLogger('ophyd_async')`` logger.
+    """Set a new handler on the ``logging.getLogger('ophyd_async')`` logger.
+
     If this is called more than once, the handler from the previous invocation
     is removed (if still present) and replaced.
 
-    Parameters
-    ----------
-    file : object with ``write`` method or filename string
-        Default is ``sys.stdout``.
-    fmt : Overall logging format
-    datefmt : string
-        Date format. Default is ``'%H:%M:%S'``.
-    color : boolean
-        Use ANSI color codes. True by default.
-    level : str or int
-        Python logging level, given as string or corresponding integer.
-        Default is 'WARNING'.
 
-    Returns
-    -------
-    handler : logging.Handler
-        The handler, which has already been added to the 'ophyd_async' logger.
+    :param file:
+        object with ``write`` method or filename string. Default is `sys.stdout`.
+    :param fmt: str Overall logging format
+    :param datefmt: str Date format. Default is `'%H:%M:%S'`.
+    :param color: bool Use ANSI color codes. True by default.
+    :param level: str or int Python logging level, given as string or
+        corresponding integer. Default is 'WARNING'.
 
-    Examples
-    --------
+    :returns: The handler, which has already been added to the 'ophyd_async' logger.
+
+    :examples:
     Log to a file.
 
         config_ophyd_async_logging(file='/tmp/what_is_happening.txt')
@@ -104,7 +96,6 @@ def config_ophyd_async_logging(
     Increase verbosity: show level DEBUG or higher.
 
         config_ophyd_async_logging(level='DEBUG')
-
     """
     global current_handler
 

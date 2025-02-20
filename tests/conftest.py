@@ -245,10 +245,8 @@ def one_shot_trigger_info(request: FixtureRequest) -> TriggerInfo:
     # otherwise use 1
     param = getattr(request, "param", 1)
     return TriggerInfo(
-        frame_timeout=None,
         number_of_triggers=1,
         trigger=DetectorTrigger.INTERNAL,
-        deadtime=None,
         livetime=None,
         frames_per_event=param if isinstance(param, int) else 1,
     )

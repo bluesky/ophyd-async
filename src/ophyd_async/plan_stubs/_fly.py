@@ -9,7 +9,7 @@ from ophyd_async.core import (
     in_micros,
 )
 from ophyd_async.fastcs.panda import (
-    PcompDirection,
+    PandaPcompDirection,
     PcompInfo,
     SeqTable,
     SeqTableInfo,
@@ -28,7 +28,6 @@ def prepare_static_pcomp_flyer_and_detectors(
     same trigger.
 
     """
-
     for det in detectors:
         yield from bps.prepare(det, trigger_info, wait=False, group="prep")
     yield from bps.prepare(flyer, pcomp_info, wait=False, group="prep")
@@ -147,7 +146,7 @@ def fly_and_collect_with_static_pcomp(
     number_of_pulses: int,
     pulse_width: int,
     rising_edge_step: int,
-    direction: PcompDirection,
+    direction: PandaPcompDirection,
     trigger_info: TriggerInfo,
 ):
     # Set up scan and prepare trigger
@@ -190,7 +189,6 @@ def time_resolved_fly_and_collect_with_static_seq_table(
     stages/unstages the devices, and opens and closes the run.
 
     """
-
     # Set up scan and prepare trigger
     yield from prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
         flyer,

@@ -7,6 +7,8 @@ from ophyd_async.core import Array1D, StrictEnum, Table
 
 
 class PandaHdf5DatasetType(StrictEnum):
+    """Dataset options for HDF capture."""
+
     FLOAT_64 = "float64"
     UINT_32 = "uint32"
 
@@ -17,6 +19,8 @@ class DatasetTable(Table):
 
 
 class SeqTrigger(StrictEnum):
+    """Trigger options for the SeqTable."""
+
     IMMEDIATE = "Immediate"
     BITA_0 = "BITA=0"
     BITA_1 = "BITA=1"
@@ -33,6 +37,8 @@ class SeqTrigger(StrictEnum):
 
 
 class SeqTable(Table):
+    """Data type for the panda seq table."""
+
     repeats: Array1D[np.uint16]
     trigger: Sequence[SeqTrigger]
     position: Array1D[np.int32]
@@ -76,12 +82,9 @@ class SeqTable(Table):
         return SeqTable(**{k: [v] for k, v in locals().items()})  # type: ignore
 
     @model_validator(mode="after")
-    def validate_max_length(self) -> "SeqTable":
-        """
-        Used to check max_length. Unfortunately trying the `max_length` arg in
-        the pydantic field doesn't work
-        """
-
+    def _validate_max_length(self) -> "SeqTable":
+        # Used to check max_length. Unfortunately trying the ``max_length`` arg in
+        # the pydantic field doesn't work.
         first_length = len(self)
         max_length = 4096
         if first_length > max_length:

@@ -1,4 +1,5 @@
-# back compat
+"""Back compat."""
+
 import warnings
 
 from .core import *  # noqa: F403
@@ -9,3 +10,5 @@ warnings.warn(
     ),
     stacklevel=2,
 )
+
+__all__ = []

@@ -19,6 +19,8 @@ EIGER_TRIGGER_MODE_MAP = {
 
 
 class EigerController(DetectorController):
+    """Controller for the Eiger detector."""
+
     def __init__(
         self,
         driver: EigerDriverIO,
@@ -30,8 +32,10 @@ class EigerController(DetectorController):
         return 0.0001
 
     async def set_energy(self, energy: float, tolerance: float = 0.1):
-        """Changing photon energy takes some time so only do so if the current energy is
-        outside the tolerance."""
+        """Change photon energy if outside tolerance.
+
+        It takes some time so don't do it unless it is outside tolerance.
+        """
         current_energy = await self._drv.photon_energy.get_value()
         if abs(current_energy - energy) > tolerance:
             await self._drv.photon_energy.set(energy)

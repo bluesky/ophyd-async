@@ -17,10 +17,12 @@ KINETIX_TRIGGER_MODE_MAP = {
 
 
 class KinetixController(adcore.ADBaseController[KinetixDriverIO]):
+    """Controller for adkinetix detector."""
+
     def __init__(
         self,
         driver: KinetixDriverIO,
-        good_states: frozenset[adcore.DetectorState] = adcore.DEFAULT_GOOD_STATES,
+        good_states: frozenset[adcore.ADState] = adcore.DEFAULT_GOOD_STATES,
     ) -> None:
         super().__init__(driver, good_states=good_states)
 

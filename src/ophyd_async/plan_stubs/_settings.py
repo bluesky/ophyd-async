@@ -13,11 +13,11 @@ from ophyd_async.core import (
     Settings,
     SettingsProvider,
     SignalRW,
-    T,
     walk_rw_signals,
 )
 from ophyd_async.core._table import Table
 
+from ._utils import T
 from ._wait_for_awaitable import wait_for_awaitable
 
 
@@ -33,6 +33,7 @@ def _get_values_of_signals(
 
 @plan
 def get_current_settings(device: Device) -> MsgGenerator[Settings]:
+    """Get current settings on `Device`."""
     signals = walk_rw_signals(device)
     named_values = yield from _get_values_of_signals(signals)
     signal_values = {signals[name]: value for name, value in named_values.items()}
@@ -43,8 +44,11 @@ def get_current_settings(device: Device) -> MsgGenerator[Settings]:
 def store_settings(
     provider: SettingsProvider, name: str, device: Device
 ) -> MsgGenerator[None]:
-    """Walk a Device for SignalRWs and store their values with a provider associated
-    with the given name.
+    """Walk a Device for SignalRWs and store their values.
+
+    :param provider: The provider to store the settings with.
+    :param name: The name to store the settings under.
+    :param device: The Device to walk for SignalRWs.
     """
     signals = walk_rw_signals(device)
     named_values = yield from _get_values_of_signals(signals)
@@ -83,15 +87,12 @@ def apply_settings_if_different(
     apply_plan: Callable[[Settings], MsgGenerator[None]],
     current_settings: Settings | None = None,
 ) -> MsgGenerator[None]:
-    """Set every SignalRW in settings to its given value if it is different to the
-    current value.
+    """Set every SignalRW in settings, only if it is different to the current value.
 
-    Parameters
-    ----------
-    apply_plan:
+    :param apply_plan:
         A device specific plan which takes the Settings to apply and applies them to
         the Device. Used to add device specific ordering to setting the signals.
-    current_settings:
+    :param current_settings:
         If given, should be a superset of settings containing the current value of
         the Settings in the Device. If not given it will be created by reading just
         the signals given in settings.

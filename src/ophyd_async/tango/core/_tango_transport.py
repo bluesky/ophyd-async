@@ -4,10 +4,11 @@ import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
-from typing import Any, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
-from bluesky.protocols import Descriptor, Reading
+from bluesky.protocols import Reading
+from event_model import DataKey
 
 from ophyd_async.core import (
     AsyncStatus,
@@ -40,23 +41,27 @@ from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 # time constant to wait for timeout
 A_BIT = 1e-5
 
+P = ParamSpec("P")
 R = TypeVar("R")
 
 
 def ensure_proper_executor(
-    func: Callable[..., Coroutine[Any, Any, R]],
-) -> Callable[..., Coroutine[Any, Any, R]]:
+    func: Callable[P, Coroutine[Any, Any, R]],
+) -> Callable[P, Coroutine[Any, Any, R]]:
+    """Ensure decorated method has a proper asyncio executor."""
+
     @functools.wraps(func)
-    async def wrapper(self: Any, *args: Any, **kwargs: Any) -> R:
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         current_executor: AsyncioExecutor = get_global_executor()  # type: ignore
         if not current_executor.in_executor_context():  # type: ignore
             set_global_executor(AsyncioExecutor())
-        return await func(self, *args, **kwargs)
+        return await func(*args, **kwargs)
 
-    return cast(Callable[..., Coroutine[Any, Any, R]], wrapper)
+    return wrapper
 
 
 def get_python_type(tango_type: CmdArgType) -> tuple[bool, object, str]:
+    """For converting between recieved tango types and python primatives."""
     array = is_array(tango_type)
     if is_int(tango_type, True):
         return array, int, "integer"
@@ -89,42 +94,44 @@ class TangoProxy:
         self._name = name
 
     async def connect(self) -> None:
-        """perform actions after proxy is connected, e.g. checks if signal
-        can be subscribed"""
+        """Perform actions after proxy is connected.
+
+        e.g. check if signal can be subscribed.
+        """
 
     @abstractmethod
     async def get(self) -> object:
-        """Get value from TRL"""
+        """Get value from TRL."""
 
     @abstractmethod
     async def get_w_value(self) -> object:
-        """Get last written value from TRL"""
+        """Get last written value from TRL."""
 
     @abstractmethod
     async def put(
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
-        """Put value to TRL"""
+        """Put value to TRL."""
 
     @abstractmethod
     async def get_config(self) -> AttributeInfoEx | CommandInfo:
-        """Get TRL config async"""
+        """Get TRL config async."""
 
     @abstractmethod
     async def get_reading(self) -> Reading:
-        """Get reading from TRL"""
+        """Get reading from TRL."""
 
     @abstractmethod
     def has_subscription(self) -> bool:
-        """indicates, that this trl already subscribed"""
+        """Indicate that this trl already subscribed."""
 
     @abstractmethod
     def subscribe_callback(self, callback: Callback | None):
-        """subscribe tango CHANGE event to callback"""
+        """Subscribe tango CHANGE event to callback."""
 
     @abstractmethod
     def unsubscribe_callback(self):
-        """delete CHANGE event subscription"""
+        """Delete CHANGE event subscription."""
 
     @abstractmethod
     def set_polling(
@@ -134,10 +141,12 @@ class TangoProxy:
         abs_change=None,
         rel_change=None,
     ):
-        """Set polling parameters"""
+        """Set polling parameters."""
 
 
 class AttributeProxy(TangoProxy):
+    """Used by the tango transport."""
+
     _callback: Callback | None = None
     _eid: int | None = None
     _poll_task: asyncio.Task | None = None
@@ -163,17 +172,17 @@ class AttributeProxy(TangoProxy):
             pass
 
     @ensure_proper_executor
-    async def get(self) -> Coroutine[Any, Any, object]:
+    async def get(self) -> object:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         return attr.value
 
     @ensure_proper_executor
-    async def get_w_value(self) -> object:
+    async def get_w_value(self) -> object:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         return attr.w_value
 
     @ensure_proper_executor
-    async def put(
+    async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
         # TODO: remove the timeout from this as it is handled at the signal level
@@ -220,11 +229,11 @@ class AttributeProxy(TangoProxy):
             return AsyncStatus(wait_for_reply(rid, timeout))
 
     @ensure_proper_executor
-    async def get_config(self) -> AttributeInfoEx:
+    async def get_config(self) -> AttributeInfoEx:  # type: ignore
         return await self._proxy.get_attribute_config(self._name)
 
     @ensure_proper_executor
-    async def get_reading(self) -> Reading:
+    async def get_reading(self) -> Reading:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         reading = Reading(
             value=attr.value, timestamp=attr.time.totime(), alarm_severity=attr.quality
@@ -298,10 +307,11 @@ class AttributeProxy(TangoProxy):
                 self._callback(reading)
 
     async def poll(self):
-        """
-        Poll the attribute and call the callback if the value has changed by more
-        than the absolute or relative change. This function is used when an attribute
-        that does not support events is cached or a callback is passed to it.
+        """Poll the attribute and call the callback if the value has changed.
+
+        Only callback if value has changed by more than the absolute or relative
+        change. This function is used when an attribute that does not support
+        events is cached or a callback is passed to it.
         """
         try:
             last_reading = await self.get_reading()
@@ -376,9 +386,7 @@ class AttributeProxy(TangoProxy):
         abs_change: float | None = None,
         rel_change: float | None = 0.1,
     ):
-        """
-        Set the polling parameters.
-        """
+        """Set the polling parameters."""
         self._allow_polling = allow_polling
         self._polling_period = polling_period
         self._abs_change = abs_change
@@ -386,6 +394,8 @@ class AttributeProxy(TangoProxy):
 
 
 class CommandProxy(TangoProxy):
+    """Tango proxy for commands."""
+
     _last_reading: Reading = Reading(value=None, timestamp=0, alarm_severity=0)
 
     def subscribe_callback(self, callback: Callback | None) -> None:
@@ -404,7 +414,7 @@ class CommandProxy(TangoProxy):
         pass
 
     @ensure_proper_executor
-    async def put(
+    async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
         if wait:
@@ -452,7 +462,7 @@ class CommandProxy(TangoProxy):
             return AsyncStatus(wait_for_reply(rid, timeout))
 
     @ensure_proper_executor
-    async def get_config(self) -> CommandInfo:
+    async def get_config(self) -> CommandInfo:  # type: ignore
         return await self._proxy.get_command_config(self._name)
 
     async def get_reading(self) -> Reading:
@@ -474,6 +484,7 @@ class CommandProxy(TangoProxy):
 
 
 def get_dtype_extended(datatype) -> object | None:
+    """For converting tango types to numpy datatype formats."""
     # DevState tango type does not have numpy equivalents
     dtype = get_dtype(datatype)
     if dtype == np.object_:
@@ -486,7 +497,8 @@ def get_trl_descriptor(
     datatype: type | None,
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
-) -> Descriptor:
+) -> DataKey:
+    """Create a descriptor from a tango resource locator."""
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
@@ -544,11 +556,9 @@ def get_trl_descriptor(
                 raise TypeError(f"{tango_resource} has type [{tr_dtype}] not [{dtype}]")
 
         if tr_format == AttrDataFormat.SPECTRUM:
-            return Descriptor(source=tango_resource, dtype="array", shape=[max_x])
+            return DataKey(source=tango_resource, dtype="array", shape=[max_x])
         elif tr_format == AttrDataFormat.IMAGE:
-            return Descriptor(
-                source=tango_resource, dtype="array", shape=[max_y, max_x]
-            )
+            return DataKey(source=tango_resource, dtype="array", shape=[max_y, max_x])
 
     else:
         if tr_dtype in (Enum, CmdArgType.DevState):
@@ -568,14 +578,14 @@ def get_trl_descriptor(
                 #                 f"{tango_resource} has choices {trl_choices} "
                 #                 f"not {choices}"
                 #             )
-            return Descriptor(source=tango_resource, dtype="string", shape=[])
+            return DataKey(source=tango_resource, dtype="string", shape=[])
         else:
             if datatype and not issubclass(tr_dtype, datatype):
                 raise TypeError(
                     f"{tango_resource} has type {tr_dtype.__name__} "
                     f"not {datatype.__name__}"
                 )
-            return Descriptor(source=tango_resource, dtype=tr_dtype_desc, shape=[])
+            return DataKey(source=tango_resource, dtype=tr_dtype_desc, shape=[])
 
     raise RuntimeError(f"Error getting descriptor for {tango_resource}")
 
@@ -583,6 +593,7 @@ def get_trl_descriptor(
 async def get_tango_trl(
     full_trl: str, device_proxy: DeviceProxy | TangoProxy | None, timeout: float
 ) -> TangoProxy:
+    """Get the tango resource locator."""
     if isinstance(device_proxy, TangoProxy):
         return device_proxy
     device_trl, trl_name = full_trl.rsplit("/", 1)
@@ -618,6 +629,8 @@ async def get_tango_trl(
 
 
 class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
+    """Tango backend to connect signals over tango."""
+
     def __init__(
         self,
         datatype: type[SignalDatatypeT] | None,
@@ -633,7 +646,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             write_trl: self.device_proxy,
         }
         self.trl_configs: dict[str, AttributeInfoEx] = {}
-        self.descriptor: Descriptor = {}  # type: ignore
+        self.descriptor: DataKey = {}  # type: ignore
         self._polling: tuple[bool, float, float | None, float | None] = (
             False,
             0.1,
@@ -698,7 +711,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         put_status = await self.proxies[self.write_trl].put(value, wait, timeout)  # type: ignore
         self.status = put_status
 
-    async def get_datakey(self, source: str) -> Descriptor:
+    async def get_datakey(self, source: str) -> DataKey:
         return self.descriptor
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:

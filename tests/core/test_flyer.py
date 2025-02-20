@@ -377,7 +377,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         (
             {
                 "number_of_triggers": 1,
-                "trigger": "constant_gate",
+                "trigger": "CONSTANT_GATE",
                 "deadtime": 2,
                 "livetime": -1,
             },
@@ -403,13 +403,13 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
                 "livetime": 1,
                 "frame_timeout": None,
             },
-            "Input should be 'internal', 'edge_trigger', 'constant_gate' or "
-            "'variable_gate' [type=enum, input_value='not_in_enum', input_type=str]",
+            "Input should be 'INTERNAL', 'EDGE_TRIGGER', 'CONSTANT_GATE' or "
+            "'VARIABLE_GATE' [type=enum, input_value='not_in_enum', input_type=str]",
         ),
         (
             {
                 "number_of_triggers": -100,
-                "trigger": "constant_gate",
+                "trigger": "CONSTANT_GATE",
                 "deadtime": 2,
                 "livetime": 1,
             },
@@ -419,7 +419,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         (
             {
                 "number_of_triggers": [1, 1, 1, 1, -100],
-                "trigger": "constant_gate",
+                "trigger": "CONSTANT_GATE",
                 "deadtime": 2,
                 "livetime": 1,
             },

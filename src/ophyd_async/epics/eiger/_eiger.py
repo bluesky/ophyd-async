@@ -12,9 +12,7 @@ class EigerTriggerInfo(TriggerInfo):
 
 
 class EigerDetector(StandardDetector):
-    """
-    Ophyd-async implementation of an Eiger Detector.
-    """
+    """Ophyd-async implementation of an Eiger Detector."""
 
     _controller: EigerController
     _writer: Odin

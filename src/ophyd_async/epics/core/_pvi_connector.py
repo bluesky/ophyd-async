@@ -32,6 +32,19 @@ def _get_signal_details(entry: Entry) -> tuple[type[Signal], str, str]:
 
 
 class PviDeviceConnector(DeviceConnector):
+    """Connect to PVI structure served over PVA.
+
+    At init, fill in all the type hinted signals. At connection check their
+    types and fill in any extra signals.
+
+    :param prefix:
+        The PV prefix of the device, "PVI" will be appended to it to get the PVI
+        PV.
+    :param error_hint:
+        If given, this will be appended to the error message if any of they type
+        hinted Signals are not present.
+    """
+
     def __init__(self, prefix: str = "", error_hint: str = "") -> None:
         # TODO: what happens if we get a leading "pva://" here?
         self.prefix = prefix

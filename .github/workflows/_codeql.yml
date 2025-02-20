@@ -1,0 +1,32 @@
+name: "CodeQL"
+
+on:
+  workflow_call:
+
+jobs:
+  analyze:
+    name: Analyze (python)
+    # Runner size impacts CodeQL analysis time. To learn more, please see:
+    #   - https://gh.io/using-larger-runners (GitHub.com only)
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 120
+    permissions:
+      # required for all workflows
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          build-mode: none
+          queries: +security-and-quality
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"

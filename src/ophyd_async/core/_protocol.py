@@ -19,58 +19,55 @@ if TYPE_CHECKING:
 
 @runtime_checkable
 class AsyncReadable(HasName, Protocol):
+    """Async implementations of the sync [](#bluesky.protocols.Readable)."""
+
     @abstractmethod
     async def read(self) -> dict[str, Reading]:
-        """Return an OrderedDict mapping string field name(s) to dictionaries
-        of values and timestamps and optional per-point metadata.
+        """Return value, timestamp, optional per-point metadata for each field name.
 
-        Example return value:
+        For example:
 
-        .. code-block:: python
-
-            OrderedDict(('channel1',
-                         {'value': 5, 'timestamp': 1472493713.271991}),
-                         ('channel2',
-                         {'value': 16, 'timestamp': 1472493713.539238}))
+            {
+                "channel1": {"value": 5, "timestamp": 1472493713.271991},
+                "channel2": {"value": 16, "timestamp": 1472493713.539238},
+            }
         """
 
     @abstractmethod
     async def describe(self) -> dict[str, DataKey]:
-        """Return an OrderedDict with exactly the same keys as the ``read``
-        method, here mapped to per-scan metadata about each field.
+        """Return per-scan metadata for each field name in `read()`.
 
-        Example return value:
+        For example:
 
-        .. code-block:: python
-
-            OrderedDict(('channel1',
-                         {'source': 'XF23-ID:SOME_PV_NAME',
-                          'dtype': 'number',
-                          'shape': []}),
-                        ('channel2',
-                         {'source': 'XF23-ID:SOME_PV_NAME',
-                          'dtype': 'number',
-                          'shape': []}))
+            {
+                "channel1": {"source": "SOME_PV1", "dtype": "number", "shape": []},
+                "channel2": {"source": "SOME_PV2", "dtype": "number", "shape": []},
+            }
         """
 
 
 @runtime_checkable
 class AsyncConfigurable(HasName, Protocol):
+    """Async implementation of the sync [](#bluesky.protocols.Configurable)."""
+
     @abstractmethod
     async def read_configuration(self) -> dict[str, Reading]:
-        """Same API as ``read`` but for slow-changing fields related to configuration.
-        e.g., exposure time. These will typically be read only once per run.
+        """Return value, timestamp, optional per-point metadata for each field name.
+
+        Same API as [](#AsyncReadable.read) but for slow-changing fields related to
+        configuration. e.g., exposure time. These will typically be read only
+        once per run.
         """
 
     @abstractmethod
     async def describe_configuration(self) -> dict[str, DataKey]:
-        """Same API as ``describe``, but corresponding to the keys in
-        ``read_configuration``.
-        """
+        """Return per-scan metadata for each field name in `read_configuration()`."""
 
 
 @runtime_checkable
 class AsyncPausable(Protocol):
+    """Async implementation of the sync [](#bluesky.protocols.Pausable)."""
+
     @abstractmethod
     async def pause(self) -> None:
         """Perform device-specific work when the RunEngine pauses."""
@@ -82,20 +79,20 @@ class AsyncPausable(Protocol):
 
 @runtime_checkable
 class AsyncStageable(Protocol):
+    """Async implementation of the sync [](#bluesky.protocols.Stageable)."""
+
     @abstractmethod
     def stage(self) -> AsyncStatus:
-        """An optional hook for "setting up" the device for acquisition.
+        """Set up the device for acquisition.
 
-        It should return a ``Status`` that is marked done when the device is
-        done staging.
+        :return: An `AsyncStatus` that is marked done when the device is done staging.
         """
 
     @abstractmethod
     def unstage(self) -> AsyncStatus:
-        """A hook for "cleaning up" the device after acquisition.
+        """Clean up the device after acquisition.
 
-        It should return a ``Status`` that is marked done when the device is finished
-        unstaging.
+        :return: An `AsyncStatus` that is marked done when the device is done unstaging.
         """
 
 
@@ -103,16 +100,17 @@ C = TypeVar("C", contravariant=True)
 
 
 class Watcher(Protocol, Generic[C]):
-    @staticmethod
+    """Protocol for watching changes in values."""
+
     def __call__(
-        *,
-        current: C,
-        initial: C,
-        target: C,
-        name: str | None,
-        unit: str | None,
-        precision: float | None,
-        fraction: float | None,
-        time_elapsed: float | None,
-        time_remaining: float | None,
+        self,
+        current: C | None = None,
+        initial: C | None = None,
+        target: C | None = None,
+        name: str | None = None,
+        unit: str | None = None,
+        precision: int | None = None,
+        fraction: float | None = None,
+        time_elapsed: float | None = None,
+        time_remaining: float | None = None,
     ) -> Any: ...

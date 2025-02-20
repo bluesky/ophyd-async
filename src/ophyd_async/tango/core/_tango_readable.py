@@ -7,22 +7,6 @@ from ._base_device import TangoDevice
 
 
 class TangoReadable(TangoDevice, StandardReadable):
-    """
-    General class for readable TangoDevices. Extends StandardReadable to provide
-    attributes for Tango devices.
-
-    Usage: to proper signals mount should be awaited:
-    new_device = await TangoDevice(<tango_device>)
-
-    Attributes
-    ----------
-    trl : str
-        Tango resource locator, typically of the device server.
-    proxy : AsyncDeviceProxy
-        AsyncDeviceProxy object for the device. This is created when the
-        device is connected.
-    """
-
     def __init__(
         self,
         trl: str | None = None,

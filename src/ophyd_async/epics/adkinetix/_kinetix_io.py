@@ -4,6 +4,8 @@ from ophyd_async.epics.core import epics_signal_rw_rbv
 
 
 class KinetixTriggerMode(StrictEnum):
+    """Trigger mode for ADKinetix detector."""
+
     INTERNAL = "Internal"
     EDGE = "Rising Edge"
     GATE = "Exp. Gate"
@@ -17,7 +19,7 @@ class KinetixReadoutMode(StrictEnum):
 
 
 class KinetixDriverIO(adcore.ADBaseIO):
-    """This mirrors the interface provided by ADKinetix/db/ADKinetix.template."""
+    """Mirrors the interface provided by ADKinetix/db/ADKinetix.template."""
 
     def __init__(self, prefix: str, name: str = "") -> None:
         # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
@@ -27,4 +29,4 @@ class KinetixDriverIO(adcore.ADBaseIO):
         self.readout_port_idx = epics_signal_rw_rbv(
             KinetixReadoutMode, prefix + "ReadoutPortIdx"
         )
-        super().__init__(prefix, name)
+        super().__init__(prefix, name=name)

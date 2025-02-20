@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import atexit
 import logging
+import typing
 from collections.abc import Mapping, Sequence
 from math import isnan, nan
 from typing import Any, Generic
@@ -46,6 +47,7 @@ def _limits_from_value(value: Any) -> Limits:
                 low=None if isnan(low) else low,
                 high=None if isnan(high) else high,
             )
+        return None
 
     limits = Limits()
     if limits_range := get_limits("valueAlarm", "lowAlarmLimit", "highAlarmLimit"):
@@ -245,6 +247,9 @@ def make_converter(datatype: type | None, values: dict[str, Any]) -> PvaConverte
         {k: _get_specifier(v) for k, v in values.items()},
         "value type specifiers",
     )
+    # Make the datatype canonical for the inference below
+    if datatype == typing.Sequence[str]:
+        datatype = Sequence[str]
     # Infer a datatype and converter from the typeid and specifier
     inferred_datatype, converter_cls = _datatype_converter_from_typeid[
         (typeid, specifier)
@@ -328,13 +333,16 @@ async def pvget_with_timeout(pv: str, timeout: float) -> Any:
 
 
 def _pva_request_string(fields: Sequence[str]) -> str:
-    """Converts a list of requested fields into a PVA request string which can be
-    passed to p4p.
+    """Convert a list of requested fields into a PVA request string.
+
+    This can be passed to p4p.
     """
     return f"field({','.join(fields)})"
 
 
 class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
+    """Backend for a signal to interact with PVs over pva."""
+
     def __init__(
         self,
         datatype: type[SignalDatatypeT] | None,

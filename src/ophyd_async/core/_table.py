@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import Annotated, Any, TypeVar, get_origin
+from typing import Annotated, Any, TypeVar, get_origin, get_type_hints
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -27,7 +27,30 @@ def _make_default_factory(dtype: np.dtype) -> Callable[[], np.ndarray]:
 
 
 class Table(BaseModel):
-    """An abstraction of a Table of str to numpy array."""
+    """An abstraction of a Table where each field is a column.
+
+    For example:
+    ```python
+    >>> from ophyd_async.core import Table, Array1D
+    >>> import numpy as np
+    >>> from collections.abc import Sequence
+    >>> class MyTable(Table):
+    ...     a: Array1D[np.int8]
+    ...     b: Sequence[str]
+    ...
+    >>> t = MyTable(a=[1, 2], b=["x", "y"])
+    >>> len(t)  # the length is the number of rows
+    2
+    >>> t2 = t + t  # adding tables together concatenates them
+    >>> t2.a
+    array([1, 2, 1, 2], dtype=int8)
+    >>> t2.b
+    ['x', 'y', 'x', 'y']
+    >>> t2[1]  # slice a row
+    array([(2, b'y')], dtype=[('a', 'i1'), ('b', 'S40')])
+
+    ```
+    """
 
     # You can use Table in 2 ways:
     # 1. Table(**whatever_pva_gives_us) when pvi adds a Signal to a Device that is not
@@ -40,16 +63,19 @@ class Table(BaseModel):
     model_config = ConfigDict(extra="allow")
 
     # Add an init method to match the above model config, otherwise the type
-    # checker will not think we can pass arbitrary kwargs into the base class init
+    # checker will not think we can pass arbitrary kwargs into the base class init...
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     @classmethod
     def __init_subclass__(cls):
-        # But forbit extra in subclasses so it gets validated
+        # ...but forbid extra in subclasses so it gets validated
         cls.model_config = ConfigDict(validate_assignment=True, extra="forbid")
         # Change fields to have the correct annotations
-        for k, anno in cls.__annotations__.items():
+        # TODO: refactor so we don't need this to break circular imports
+        from ._signal_backend import Array1D
+
+        for k, anno in get_type_hints(cls, localns={"Array1D": Array1D}).items():
             if get_origin(anno) is np.ndarray:
                 dtype = get_dtype(anno)
                 new_anno = Annotated[
@@ -67,7 +93,6 @@ class Table(BaseModel):
 
     def __add__(self, right: TableSubclass) -> TableSubclass:
         """Concatenate the arrays in field values."""
-
         if type(right) is not type(self):
             raise RuntimeError(
                 f"{right} is not a `Table`, or is not the same "
@@ -84,6 +109,7 @@ class Table(BaseModel):
         )
 
     def numpy_dtype(self) -> np.dtype:
+        """Return a numpy dtype for a single row."""
         dtype = []
         for k, v in self:
             if isinstance(v, np.ndarray):
@@ -95,6 +121,7 @@ class Table(BaseModel):
         return np.dtype(dtype)
 
     def numpy_table(self, selection: slice | None = None) -> np.ndarray:
+        """Return a numpy array of the whole table."""
         array = None
         for k, v in self:
             if selection:
@@ -109,7 +136,9 @@ class Table(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def validate_array_dtypes(cls, data: Any) -> Any:
+    def _validate_array_dtypes(cls, data: Any) -> Any:
+        # Validates that array datatypes given in the table are of the
+        # correct format.
         if isinstance(data, dict):
             data_dict = data
         elif isinstance(data, Table):
@@ -137,7 +166,7 @@ class Table(BaseModel):
         return data_dict
 
     @model_validator(mode="after")
-    def validate_lengths(self) -> Table:
+    def _validate_lengths(self) -> Table:
         lengths: dict[int, set[str]] = {}
         for field_name, field_value in self:
             lengths.setdefault(len(field_value), set()).add(field_name)

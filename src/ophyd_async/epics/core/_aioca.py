@@ -1,6 +1,8 @@
 import logging
 import sys
+import typing
 from collections.abc import Sequence
+from functools import cache
 from math import isnan, nan
 from typing import Any, Generic, cast
 
@@ -47,6 +49,7 @@ def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
                 low=None if isnan(low) else low,
                 high=None if isnan(high) else high,
             )
+        return None
 
     limits = Limits()
     if limits_range := get_limits("alarm"):
@@ -181,6 +184,9 @@ def make_converter(
         Dbr, get_unique({k: v.datatype for k, v in values.items()}, "datatypes")
     )
     is_array = bool([v for v in values.values() if v.element_count > 1])
+    # Make the datatype canonical for the inference below
+    if datatype == typing.Sequence[str]:
+        datatype = Sequence[str]
     # Infer a datatype and converter from the dbr
     inferred_datatype, converter_cls = _datatype_converter_from_dbr[(pv_dbr, is_array)]
     # Some override cases
@@ -227,19 +233,18 @@ def make_converter(
     )
 
 
-_tried_pyepics = False
-
-
+# Cached call to avoid repeated initialization attempts
+@cache
 def _use_pyepics_context_if_imported():
-    global _tried_pyepics
-    if not _tried_pyepics:
-        ca = sys.modules.get("epics.ca", None)
-        if ca:
-            ca.use_initial_context()
-        _tried_pyepics = True
+    """Sets up the pyepics context if the module is imported."""
+    ca = sys.modules.get("epics.ca", None)
+    if ca:
+        ca.use_initial_context()
 
 
 class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
+    """Backend for a signal to interact with PVs over channel access."""
+
     def __init__(
         self,
         datatype: type[SignalDatatypeT] | None,
