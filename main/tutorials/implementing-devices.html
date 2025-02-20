@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.9.1.dev11+g8a4982a4 documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.9.1.dev12+g016b1ffd documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=388d6ca6"></script>
+    <script src="../_static/documentation_options.js?v=1cb721a5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -137,8 +137,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev11+g8a4982a4 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev11+g8a4982a4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev12+g016b1ffd documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev12+g016b1ffd documentation - Home"/>
   
   
 </a></div>
@@ -647,7 +647,7 @@ FastCS</label><div class="sd-tab-content docutils">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">SignalDatatypeT</span></code></a> defines the list of all possible datatypes you can use for Signals</p>
 </div>
-<p>We also <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="Python 3.13"><span class="xref myst">annotate</span></a> this type hint with some additional information, like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat" title="ophyd_async.core.StandardReadableFormat"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">Format</span></code></span></a>. This will tell the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> baseclass which Signals are important in a plan like <code class="docutils literal notranslate"><span class="pre">bp.grid_scan</span></code>. In this case we specify that <code class="docutils literal notranslate"><span class="pre">mode</span></code> should be reported as a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL" title="ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL"><span class="xref myst py py-attr">configuration parameter</span></a> once at the start of the scan, and <code class="docutils literal notranslate"><span class="pre">value</span></code> should be <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL" title="ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL"><span class="xref myst py py-attr">fetched without caching and plotted</span></a> at each point of the scan.</p>
+<p>We can optionally <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="Python 3.13"><span class="xref myst">annotate</span></a> this type hint with some additional information, like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat" title="ophyd_async.core.StandardReadableFormat"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">Format</span></code></span></a>. This will tell the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> baseclass which Signals are important in a plan like <code class="docutils literal notranslate"><span class="pre">bp.grid_scan</span></code>. In this case we specify that <code class="docutils literal notranslate"><span class="pre">mode</span></code> should be reported as a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL" title="ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL"><span class="xref myst py py-attr">configuration parameter</span></a> once at the start of the scan, and <code class="docutils literal notranslate"><span class="pre">value</span></code> should be <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL" title="ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL"><span class="xref myst py py-attr">fetched without caching and plotted</span></a> at each point of the scan.</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-9" name="sd-tab-set-3" type="radio">
 <label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-9">
