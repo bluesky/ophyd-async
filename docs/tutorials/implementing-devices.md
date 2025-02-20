@@ -170,7 +170,7 @@ We specify to the Device baseclass that we would like a Signal of a given type (
 [](#SignalDatatypeT) defines the list of all possible datatypes you can use for Signals
 ```
 
-We also [annotate](#typing.Annotated) this type hint with some additional information, like [`Format`](#StandardReadableFormat). This will tell the [](#StandardReadable) baseclass which Signals are important in a plan like `bp.grid_scan`. In this case we specify that `mode` should be reported as a [configuration parameter](#StandardReadableFormat.CONFIG_SIGNAL) once at the start of the scan, and `value` should be [fetched without caching and plotted](#StandardReadableFormat.HINTED_UNCACHED_SIGNAL) at each point of the scan.
+We can optionally [annotate](#typing.Annotated) this type hint with some additional information, like [`Format`](#StandardReadableFormat). This will tell the [](#StandardReadable) baseclass which Signals are important in a plan like `bp.grid_scan`. In this case we specify that `mode` should be reported as a [configuration parameter](#StandardReadableFormat.CONFIG_SIGNAL) once at the start of the scan, and `value` should be [fetched without caching and plotted](#StandardReadableFormat.HINTED_UNCACHED_SIGNAL) at each point of the scan.
 
 ::::{tab-set}
 :sync-group: cs
