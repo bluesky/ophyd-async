@@ -42,14 +42,14 @@ async def test_sim_blob_detector(
     assert docs["descriptor"][0]["data_keys"] == {
         "det": {
             "source": "sim://pattern-generator-hdf-file",
-            "shape": [240, 320],
+            "shape": [1, 240, 320],
             "dtype": "array",
             "object_name": "det",
             "external": "STREAM:",
         },
         "det-sum": {
             "source": "sim://pattern-generator-hdf-file",
-            "shape": [],
+            "shape": [1,],
             "dtype": "number",
             "object_name": "det",
             "external": "STREAM:",

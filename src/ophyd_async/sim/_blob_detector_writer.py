@@ -51,7 +51,7 @@ class BlobDetectorWriter(DetectorWriter):
             ds.data_key: DataKey(
                 source="sim://pattern-generator-hdf-file",
                 shape=list(ds.shape),
-                dtype="array" if ds.shape else "number",
+                dtype="array" if len(ds.shape) > 1 else "number",
                 external="STREAM:",
             )
             for ds in self.datasets
