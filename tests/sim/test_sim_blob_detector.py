@@ -49,7 +49,9 @@ async def test_sim_blob_detector(
         },
         "det-sum": {
             "source": "sim://pattern-generator-hdf-file",
-            "shape": [1,],
+            "shape": [
+                1,
+            ],
             "dtype": "number",
             "object_name": "det",
             "external": "STREAM:",
