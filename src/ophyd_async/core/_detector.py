@@ -122,6 +122,10 @@ class DetectorController(ABC):
     async def disarm(self):
         """Disarm the detector, return detector to an idle state."""
 
+    @abstractmethod
+    def is_armed(self) -> bool:
+        """Return True if the detector is armed, False otherwise."""
+
 
 class DetectorWriter(ABC):
     """Logic for making detector write data to somewhere persistent (e.g. HDF5 file)."""
@@ -152,6 +156,10 @@ class DetectorWriter(ABC):
     @abstractmethod
     async def close(self) -> None:
         """Close writer, blocks until I/O is complete."""
+
+    @abstractmethod
+    def is_open(self) -> bool:
+        """Return True if the writer is open, False otherwise."""
 
     @property
     def hints(self) -> Hints:
@@ -225,7 +233,16 @@ class StandardDetector(
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
         await self._check_config_sigs()
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
+
+        # Check to see if we need to disarm the detector or close the writer
+        coros_to_await = []
+        if self._writer.is_open():
+            coros_to_await.append(self._writer.close)
+        if self._controller.is_armed():
+            coros_to_await.append(self._controller.disarm)
+
+        await asyncio.gather(*[coro() for coro in coros_to_await])
+
         self._trigger_info = None
 
     async def _check_config_sigs(self):
@@ -246,7 +263,13 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         """Disarm the detector and stop file writing."""
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
+        coros_to_await = []
+        if self._writer.is_open():
+            coros_to_await.append(self._writer.close)
+        if self._controller.is_armed():
+            coros_to_await.append(self._controller.disarm)
+
+        await asyncio.gather(*[coro() for coro in coros_to_await])
 
     async def read_configuration(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)

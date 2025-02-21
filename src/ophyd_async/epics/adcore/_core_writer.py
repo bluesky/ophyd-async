@@ -145,6 +145,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         }
         return describe
 
+    def is_open(self):
+        return False if self._capture_status is None else not self._capture_status.done
+
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:

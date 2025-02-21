@@ -59,6 +59,9 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         # 2 or they will deadlock
         await stop_busy_record(self.driver.acquire, False, timeout=1)
 
+    def is_armed(self) -> bool:
+        return False if self._arm_status is None else not self._arm_status.done
+
     async def set_exposure_time_and_acquire_period_if_supplied(
         self,
         exposure: float | None = None,

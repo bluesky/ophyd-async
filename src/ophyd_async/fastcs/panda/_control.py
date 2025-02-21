@@ -34,6 +34,9 @@ class PandaPcapController(DetectorController):
         self._arm_status = self.pcap.arm.set(True)
         await wait_for_value(self.pcap.active, True, timeout=1)
 
+    def is_armed(self) -> bool:
+        return False if self._arm_status is None else not self._arm_status.done
+
     async def wait_for_idle(self):
         pass
 
