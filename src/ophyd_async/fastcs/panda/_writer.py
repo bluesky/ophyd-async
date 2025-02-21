@@ -3,8 +3,8 @@ from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
 
 from bluesky.protocols import StreamAsset
-from event_model import DataKey
-from p4p.client.thread import Context
+from event_model import DataKey  # type: ignore
+from p4p.client.thread import Context  # type: ignore
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -36,11 +36,11 @@ class PandaHDFWriter(DetectorWriter):
         self._name_provider = name_provider
         self._datasets: list[HDFDataset] = []
         self._file: HDFFile | None = None
-        self._multiplier = 1
 
     # Triggered on PCAP arm
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture."""
+        self._frames_per_event = frames_per_event
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
@@ -69,10 +69,6 @@ class PandaHDFWriter(DetectorWriter):
 
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.panda_data_block.capture.set(True)
-        if multiplier > 1:
-            raise ValueError(
-                "All PandA datasets should be scalar, multiplier should be 1"
-            )
 
         return await self._describe()
 
@@ -83,7 +79,7 @@ class PandaHDFWriter(DetectorWriter):
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
                 shape=list(ds.shape),
-                dtype="array" if ds.shape != [1] else "number",
+                dtype="array" if len(ds.shape) > 1 else "number",
                 # PandA data should always be written as Float64
                 dtype_numpy="<f8",
                 external="STREAM:",
@@ -100,7 +96,10 @@ class PandaHDFWriter(DetectorWriter):
             # TODO: Update chunk size to read signal once available in IOC
             # Currently PandA IOC sets chunk size to 1024 points per chunk
             HDFDataset(
-                dataset_name, "/" + dataset_name, [1], multiplier=1, chunk_shape=(1024,)
+                dataset_name,
+                "/" + dataset_name,
+                shape=(self._frames_per_event,),
+                chunk_shape=(1024,),
             )
             for dataset_name in capture_table.name
         ]
@@ -119,7 +118,9 @@ class PandaHDFWriter(DetectorWriter):
     # StandardDetector behavior
     async def wait_for_index(self, index: int, timeout: float | None = DEFAULT_TIMEOUT):
         def matcher(value: int) -> bool:
-            return value >= index
+            # Index is already divided by frames_per_event, so we need to also
+            # divide the value by frames_per_event to get the correct index
+            return value // self._frames_per_event >= index
 
         matcher.__name__ = f"index_at_least_{index}"
         await wait_for_value(
@@ -127,7 +128,10 @@ class PandaHDFWriter(DetectorWriter):
         )
 
     async def get_indices_written(self) -> int:
-        return await self.panda_data_block.num_captured.get_value()
+        return (
+            await self.panda_data_block.num_captured.get_value()
+            // self._frames_per_event
+        )
 
     async def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
@@ -136,7 +140,7 @@ class PandaHDFWriter(DetectorWriter):
         async for num_captured in observe_value(
             self.panda_data_block.num_captured, timeout
         ):
-            yield num_captured // self._multiplier
+            yield num_captured // self._frames_per_event
 
     async def collect_stream_docs(
         self, indices_written: int

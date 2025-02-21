@@ -4,7 +4,7 @@ from pathlib import Path
 from xml.etree import ElementTree as ET
 
 from bluesky.protocols import Hints, StreamAsset
-from event_model import DataKey
+from event_model import DataKey  # type: ignore
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -50,7 +50,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self._file: HDFFile | None = None
         self._filename_template = "%s%s"
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
         self._file = None
 
         # Setting HDF writer specific signals
@@ -71,8 +71,9 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         name = self._name_provider()
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()
-        self._multiplier = multiplier
-        outer_shape = (multiplier,) if multiplier > 1 else ()
+
+        # Used by the base class
+        self._frames_per_event = frames_per_event
 
         # Determine number of frames that will be saved per HDF chunk
         frames_per_chunk = await self.fileio.num_frames_chunks.get_value()
@@ -82,9 +83,8 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             HDFDataset(
                 data_key=name,
                 dataset="/entry/data/data",
-                shape=detector_shape,
+                shape=(frames_per_event, *detector_shape),
                 dtype_numpy=np_dtype,
-                multiplier=multiplier,
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
@@ -109,9 +109,8 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                         HDFDataset(
                             datakey,
                             f"/entry/instrument/NDAttributes/{datakey}",
-                            (),
+                            (frames_per_event,),
                             np_datatype,
-                            multiplier,
                             # NDAttributes appear to always be configured with
                             # this chunk size
                             chunk_shape=(16384,),
@@ -121,8 +120,8 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         describe = {
             ds.data_key: DataKey(
                 source=self.fileio.full_file_name.source,
-                shape=list(outer_shape + tuple(ds.shape)),
-                dtype="array" if ds.shape else "number",
+                shape=list(ds.shape),
+                dtype="array" if len(ds.shape) > 1 else "number",
                 dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
