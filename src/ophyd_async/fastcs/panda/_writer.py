@@ -165,5 +165,9 @@ class PandaHDFWriter(DetectorWriter):
     # Could put this function as default for StandardDetector
     async def close(self):
         await self.panda_data_block.capture.set(
-            False, wait=True, timeout=DEFAULT_TIMEOUT
+            False, wait = False
         )
+        await wait_for_value(self.panda_data_block.capture, False, timeout=DEFAULT_TIMEOUT)
+        if self._capture_status:
+            # We kicked off an open, so wait for it to return
+            await self._capture_status
