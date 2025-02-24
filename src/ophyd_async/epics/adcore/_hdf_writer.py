@@ -3,17 +3,15 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from bluesky.protocols import Hints, StreamAsset
+from bluesky.protocols import StreamAsset
 from event_model import DataKey
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     DatasetDescriber,
     HDFDataset,
     HDFFile,
     NameProvider,
     PathProvider,
-    wait_for_value,
 )
 
 from ._core_io import NDFileHDFIO, NDPluginBaseIO
@@ -151,15 +149,3 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                     yield "stream_resource", doc
             for doc in self._file.stream_data(indices_written):
                 yield "stream_datum", doc
-
-    async def close(self):
-        # Already done a caput callback in _capture_status, so can't do one here
-        await self.fileio.capture.set(False, wait=False)
-        await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
-        if self._capture_status:
-            # We kicked off an open, so wait for it to return
-            await self._capture_status
-
-    @property
-    def hints(self) -> Hints:
-        return {"fields": [self._name_provider()]}
