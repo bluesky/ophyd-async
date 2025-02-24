@@ -62,6 +62,11 @@ class OffsetMode(StrictEnum):
     FROZEN = "Frozen"
 
 
+class UseSetMode(StrictEnum):
+    USE = "Use"
+    SET = "Set"
+
+
 class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
     """Device that moves a motor record."""
 
@@ -86,6 +91,7 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self.offset_freeze_switch = epics_signal_rw(OffsetMode, prefix + ".FOFF")
         self.high_limit_switch = epics_signal_r(float, prefix + ".HLS")
         self.low_limit_switch = epics_signal_r(float, prefix + ".LLS")
+        self.set_use_switch = epics_signal_rw(UseSetMode, prefix + ".SET")
 
         # Note:cannot use epics_signal_x here, as the motor record specifies that
         # we must write 1 to stop the motor. Simply processing the record is not
