@@ -20,6 +20,7 @@ from ophyd_async.core import (
     AsyncStatus,
     CalculatableTimeout,
     StandardReadable,
+    StrictEnum,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
@@ -56,6 +57,11 @@ class FlyMotorInfo(BaseModel):
     Defaults to `time_for_move` + run up and run down times + 10s."""
 
 
+class OffsetMode(StrictEnum):
+    VARIABLE = "Variable"
+    FROZEN = "Frozen"
+
+
 class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
     """Device that moves a motor record."""
 
@@ -77,6 +83,7 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self.motor_done_move = epics_signal_r(int, prefix + ".DMOV")
         self.low_limit_travel = epics_signal_rw(float, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
+        self.offset_mode = epics_signal_rw(OffsetMode, prefix + ".FOFF")
 
         # Note:cannot use epics_signal_x here, as the motor record specifies that
         # we must write 1 to stop the motor. Simply processing the record is not
