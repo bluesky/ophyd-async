@@ -1306,24 +1306,6 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} close()
-:canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.close
-:async:
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.close
-```
-
-````
-
-````{py:property} hints
-:canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.hints
-:type: ~bluesky.protocols.Hints
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.hints
-```
-
-````
-
 `````
 
 `````{py:class} ADTIFFWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileIO, path_provider: ~ophyd_async.core.PathProvider, name_provider: ~ophyd_async.core.NameProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
