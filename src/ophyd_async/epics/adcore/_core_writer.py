@@ -212,9 +212,10 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         # Already done a caput callback in _capture_status, so can't do one here
         await self.fileio.capture.set(False, wait=False)
         await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
-        if self._capture_status:
+        if self._capture_status and not self._capture_status.done:
             # We kicked off an open, so wait for it to return
             await self._capture_status
+        self._capture_status = None
 
     @property
     def hints(self) -> Hints:
