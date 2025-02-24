@@ -83,22 +83,14 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self.motor_done_move = epics_signal_r(int, prefix + ".DMOV")
         self.low_limit_travel = epics_signal_rw(float, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
-        self.offset_mode = epics_signal_rw(OffsetMode, prefix + ".FOFF")
+        self.offset_freeze_switch = epics_signal_rw(OffsetMode, prefix + ".FOFF")
         self.high_limit_switch = epics_signal_r(float, prefix + ".HLS")
         self.low_limit_switch = epics_signal_r(float, prefix + ".LLS")
-        self.direction_of_travel = epics_signal_r(float, prefix + ".TDIR")
 
-        # You probably don't want to use this in most cases - .DMOV is
-        # probably more definitive. You might wish to use it if you use SPMG
-        # or have some settle time before a motor can move where MOVN and DMOV == 0.
-        self.motor_is_moving = epics_signal_r(int, prefix + ".MOVN")
-
-        # Note:cannot use epics_signal_x for these, as the motor record specifies that
+        # Note:cannot use epics_signal_x here, as the motor record specifies that
         # we must write 1 to stop the motor. Simply processing the record is not
         # sufficient.
         self.motor_stop = epics_signal_w(int, prefix + ".STOP")
-        self.forward_home = epics_signal_rw(float, prefix + ".HOMF")
-        self.reverse_home = epics_signal_rw(float, prefix + ".HOMR")
 
         # Whether set() should complete successfully or not
         self._set_success = True
