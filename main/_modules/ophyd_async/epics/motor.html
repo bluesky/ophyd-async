@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.9.1.dev15+gdf10ebd5 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.9.1.dev16+gf9f985a5 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=8f9be5c7"></script>
+    <script src="../../../_static/documentation_options.js?v=fcf8fd5f"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev15+gdf10ebd5 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev15+gdf10ebd5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev16+gf9f985a5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev16+gf9f985a5 documentation - Home"/>
   
   
 </a></div>
@@ -528,6 +528,11 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">OffsetMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">VARIABLE</span> <span class="o">=</span> <span class="s2">&quot;Variable&quot;</span>
+    <span class="n">FROZEN</span> <span class="o">=</span> <span class="s2">&quot;Frozen&quot;</span>
+
+
 <span class="k">class</span><span class="w"> </span><span class="nc">UseSetMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
     <span class="n">USE</span> <span class="o">=</span> <span class="s2">&quot;Use&quot;</span>
     <span class="n">SET</span> <span class="o">=</span> <span class="s2">&quot;Set&quot;</span>
@@ -556,12 +561,16 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">motor_done_move</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.DMOV&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">low_limit_travel</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.LLM&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">high_limit_travel</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.HLM&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset_freeze_switch</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">OffsetMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.FOFF&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high_limit_switch</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.HLS&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">low_limit_switch</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.LLS&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_use_switch</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">UseSetMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.SET&quot;</span><span class="p">)</span>
 
         <span class="c1"># Note:cannot use epics_signal_x here, as the motor record specifies that</span>
         <span class="c1"># we must write 1 to stop the motor. Simply processing the record is not</span>
         <span class="c1"># sufficient.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">motor_stop</span> <span class="o">=</span> <span class="n">epics_signal_w</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.STOP&quot;</span><span class="p">)</span>
+
         <span class="c1"># Whether set() should complete successfully or not</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
 
