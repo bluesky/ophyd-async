@@ -89,8 +89,8 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self.low_limit_travel = epics_signal_rw(float, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
         self.offset_freeze_switch = epics_signal_rw(OffsetMode, prefix + ".FOFF")
-        self.high_limit_switch = epics_signal_r(float, prefix + ".HLS")
-        self.low_limit_switch = epics_signal_r(float, prefix + ".LLS")
+        self.high_limit_switch = epics_signal_r(int, prefix + ".HLS")
+        self.low_limit_switch = epics_signal_r(int, prefix + ".LLS")
         self.set_use_switch = epics_signal_rw(UseSetMode, prefix + ".SET")
 
         # Note:cannot use epics_signal_x here, as the motor record specifies that
