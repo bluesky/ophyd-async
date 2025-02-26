@@ -10,7 +10,13 @@ from ophyd_async.core import (
     set_and_wait_for_value,
 )
 
-from ._core_io import ADBaseIO, ADState
+from ._core_io import (
+    ADBaseIO,
+    ADCallbacks,
+    ADState,
+    NDCBFlushOnSoftTrgMode,
+    NDPluginCBIO,
+)
 from ._utils import ImageMode, stop_busy_record
 
 # Default set of states that we should consider "good" i.e. the acquisition
@@ -19,6 +25,9 @@ DEFAULT_GOOD_STATES: frozenset[ADState] = frozenset([ADState.IDLE, ADState.ABORT
 
 ADBaseIOT = TypeVar("ADBaseIOT", bound=ADBaseIO)
 ADBaseControllerT = TypeVar("ADBaseControllerT", bound="ADBaseController")
+ADBaseContAcqControllerT = TypeVar(
+    "ADBaseContAcqControllerT", bound="ADBaseContAcqController"
+)
 
 
 class ADBaseController(DetectorController, Generic[ADBaseIOT]):
@@ -112,3 +121,65 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                 )
 
         return AsyncStatus(complete_acquisition())
+
+
+class ADBaseContAcqController(DetectorController, Generic[ADBaseIOT]):
+    def __init__(self, cb_plugin_prefix: str, driver: ADBaseIOT) -> None:
+        self.driver = driver
+        self.cb_plugin = NDPluginCBIO(cb_plugin_prefix)
+        self._arm_status: AsyncStatus | None = None
+
+    def get_deadtime(self, exposure: float | None) -> float:
+        return 0.001
+
+    async def prepare(self, trigger_info: TriggerInfo) -> None:
+        if trigger_info.trigger != DetectorTrigger.INTERNAL:
+            msg = "The continuous acq interface only supports internal triggering."
+            raise TypeError(msg)
+
+        # Make sure we are in continuous mode & acquiring
+        image_mode = await self.driver.image_mode.get_value()
+        acquiring = await self.driver.acquire.get_value()
+
+        # For now, expect that the detector is in cont mode and acquiring with
+        # specified exposure time/framerate, because we can't guarantee that a detector
+        # will allow for switching exposure time/framerate while in continuous mode.
+        # If your detector can do this, you can override this method in the controller
+        # subclass, and set the exposure time/framerate here.
+        if image_mode != ImageMode.CONTINUOUS or not acquiring:
+            raise RuntimeError(
+                "Driver must be in continuous mode and acquiring to use the "
+                "continuous acquisition interface"
+            )
+
+        # Configure the CB plugin to collect the correct number of triggers
+        await asyncio.gather(
+            self.cb_plugin.enable_callbacks.set(ADCallbacks.ENABLE),
+            self.cb_plugin.pre_count.set(0),
+            self.cb_plugin.post_count.set(trigger_info.total_number_of_triggers),
+            self.cb_plugin.preset_trigger_count.set(1),
+            self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
+        )
+
+    async def arm(self) -> None:
+        # Start the CB plugin's capture, and cache it in the arm status attr
+        self._arm_status = await set_and_wait_for_value(
+            self.cb_plugin.capture,
+            True,
+            timeout=DEFAULT_TIMEOUT,
+            wait_for_set_completion=False,
+        )
+
+        # Send the trigger to begin acquisition
+        await self.cb_plugin.trigger.set(True, wait=False)
+
+    async def wait_for_idle(self) -> None:
+        if self._arm_status and not self._arm_status.done:
+            await self._arm_status
+        self._arm_status = None
+
+    async def disarm(self) -> None:
+        await stop_busy_record(self.cb_plugin.capture, False, timeout=1)
+        if self._arm_status and not self._arm_status.done:
+            await self._arm_status
+        self._arm_status = None
