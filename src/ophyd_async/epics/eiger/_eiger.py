@@ -1,10 +1,12 @@
 from pydantic import Field
 
+from dodal.devices.eiger_odin import EigerOdin as ADOdin
+
 from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector, TriggerInfo
 
 from ._eiger_controller import EigerController
 from ._eiger_io import EigerDriverIO
-from ._odin_io import Odin, OdinWriter
+from ._odin_io import OdinWriter
 
 
 class EigerTriggerInfo(TriggerInfo):
@@ -28,7 +30,8 @@ class EigerDetector(StandardDetector):
         name="",
     ):
         self.drv = EigerDriverIO(prefix + drv_suffix)
-        self.odin = Odin(prefix + hdf_suffix + "FP:")
+        # self.odin = Odin(prefix + hdf_suffix + "FP:")
+        self.odin = ADOdin(prefix + drv_suffix)
 
         super().__init__(
             EigerController(self.drv),
