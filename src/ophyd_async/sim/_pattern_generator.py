@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from collections.abc import AsyncGenerator
 from pathlib import Path
 
@@ -64,8 +65,8 @@ class PatternFile:
             dset.resize(self.image_counter + 1, axis=0)
             dset[self.image_counter] = value
             dset.flush()
-        self.q.put_nowait(self.image_counter)
         self.image_counter += 1
+        self.q.put_nowait(self.image_counter)
 
     def close(self):
         self.file.close()
@@ -98,8 +99,17 @@ class PatternGenerator:
             raise RuntimeError("open_file not run")
         return self._file
 
-    def write_image_to_file(self, exposure: float):
-        self._get_file().write_image_to_file(self.generate_point() * exposure)
+    async def write_images_to_file(
+        self, exposure: float, period: float, number_of_frames: int
+    ):
+        file = self._get_file()
+        start = time.monotonic()
+        for i in range(1, number_of_frames + 1):
+            intensity = self.generate_point() * exposure
+            deadline = start + i * period
+            timeout = deadline - time.monotonic()
+            await asyncio.sleep(timeout)
+            file.write_image_to_file(intensity)
 
     async def observe_indices_written(self, timeout: float) -> AsyncGenerator[int]:
         file = self._get_file()
