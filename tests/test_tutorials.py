@@ -29,18 +29,19 @@ def expected_scan_output():
 
 @pytest.mark.parametrize("module", ["ophyd_async.sim", "ophyd_async.epics.demo"])
 def test_implementing_devices(module, capsys, expected_scan_output):
-    with patch("bluesky.run_engine.autoawait_in_bluesky_event_loop") as autoawait:
-        main = importlib.import_module(f"{module}.__main__")
-        autoawait.assert_called_once_with()
-    # We want the text output of the best effort callback, but the plotting takes
-    # too much time for CI, even if headless, so disable it
-    main.bec._set_up_plots = lambda *args, **kwargs: None
-    RE: RunEngine = main.RE
-    for motor in [main.stage.x, main.stage.y]:
-        RE(main.bps.mv(motor.velocity, 1000))
-    start = time.monotonic()
-    RE(main.bp.grid_scan([main.pdet], main.stage.x, 1, 2, 3, main.stage.y, 2, 3, 3))
-    assert time.monotonic() - start == pytest.approx(2.5, abs=2.0)
-    captured = capsys.readouterr()
-    assert captured.err == ""
-    assert SCAN_LINE.findall(captured.out) == expected_scan_output
+    with patch("matplotlib.get_backend"):
+        with patch("bluesky.run_engine.autoawait_in_bluesky_event_loop") as autoawait:
+            main = importlib.import_module(f"{module}.__main__")
+            autoawait.assert_called_once_with()
+        # We want the text output of the best effort callback, but the plotting takes
+        # too much time for CI, even if headless, so disable it
+        main.bec._set_up_plots = lambda *args, **kwargs: None
+        RE: RunEngine = main.RE
+        for motor in [main.stage.x, main.stage.y]:
+            RE(main.bps.mv(motor.velocity, 1000))
+        start = time.monotonic()
+        RE(main.bp.grid_scan([main.pdet], main.stage.x, 1, 2, 3, main.stage.y, 2, 3, 3))
+        assert time.monotonic() - start == pytest.approx(2.5, abs=2.0)
+        captured = capsys.readouterr()
+        assert captured.err == ""
+        assert SCAN_LINE.findall(captured.out) == expected_scan_output

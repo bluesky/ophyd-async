@@ -8,8 +8,8 @@ from event_model import DataKey
 
 from ophyd_async.core import (
     DatasetDescriber,
-    HDFDataset,
-    HDFFile,
+    HDFDatasetDescription,
+    HDFDocumentComposer,
     NameProvider,
     PathProvider,
 )
@@ -44,12 +44,12 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             file_extension=".h5",
             mimetype="application/x-hdf5",
         )
-        self._datasets: list[HDFDataset] = []
-        self._file: HDFFile | None = None
+        self._datasets: list[HDFDatasetDescription] = []
+        self._composer: HDFDocumentComposer | None = None
         self._filename_template = "%s%s"
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
-        self._file = None
+        self._composer = None
 
         # Setting HDF writer specific signals
 
@@ -77,7 +77,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
 
         # Add the main data
         self._datasets = [
-            HDFDataset(
+            HDFDatasetDescription(
                 data_key=name,
                 dataset="/entry/data/data",
                 shape=detector_shape,
@@ -94,7 +94,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             if "<Attributes>" in maybe_xml:
                 root = ET.fromstring(maybe_xml)
                 for child in root:
-                    datakey = child.attrib["name"]
+                    data_key = child.attrib["name"]
                     if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
                         np_datatype = convert_pv_dtype_to_np(
                             child.attrib.get("dbrtype", "DBR_NATIVE")
@@ -104,15 +104,15 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                             child.attrib.get("datatype", "INT")
                         )
                     self._datasets.append(
-                        HDFDataset(
-                            datakey,
-                            f"/entry/instrument/NDAttributes/{datakey}",
-                            (),
-                            np_datatype,
-                            multiplier,
+                        HDFDatasetDescription(
+                            data_key=data_key,
+                            dataset=f"/entry/instrument/NDAttributes/{data_key}",
+                            shape=(),
+                            dtype_numpy=np_datatype,
                             # NDAttributes appear to always be configured with
                             # this chunk size
                             chunk_shape=(16384,),
+                            multiplier=multiplier,
                         )
                     )
 
@@ -134,9 +134,9 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         # TODO: fail if we get dropped frames
         await self.fileio.flush_now.set(True)
         if indices_written:
-            if not self._file:
+            if not self._composer:
                 path = Path(await self.fileio.full_file_name.get_value())
-                self._file = HDFFile(
+                self._composer = HDFDocumentComposer(
                     # See https://github.com/bluesky/ophyd-async/issues/122
                     path,
                     self._datasets,
@@ -145,7 +145,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                 # stream datum says "here are N frames in that stream resource",
                 # you get one stream resource and many stream datums per scan
 
-                for doc in self._file.stream_resources():
+                for doc in self._composer.stream_resources():
                     yield "stream_resource", doc
-            for doc in self._file.stream_data(indices_written):
+            for doc in self._composer.stream_data(indices_written):
                 yield "stream_datum", doc

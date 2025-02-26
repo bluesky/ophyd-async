@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 from typing import Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -69,7 +69,7 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
         hdf,
         static_path_provider,
         lambda: "test",
-        AsyncMock(),
+        adcore.ADBaseDatasetDescriber(hdf),
         {},
     )
 
