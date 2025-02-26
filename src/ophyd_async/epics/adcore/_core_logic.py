@@ -129,9 +129,6 @@ class ADBaseContAcqController(DetectorController, Generic[ADBaseIOT]):
         self.cb_plugin = NDPluginCBIO(cb_plugin_prefix)
         self._arm_status: AsyncStatus | None = None
 
-    def get_deadtime(self, exposure: float | None) -> float:
-        return 0.001
-
     async def prepare(self, trigger_info: TriggerInfo) -> None:
         if trigger_info.trigger != DetectorTrigger.INTERNAL:
             msg = "The continuous acq interface only supports internal triggering."

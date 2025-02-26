@@ -68,6 +68,9 @@ class ContAcqSimController(adcore.ADBaseContAcqController[SimDriverIO]):
     ):
         super().__init__(cb_plugin_prefix, driver)
 
+    def get_deadtime(self, exposure: float | None) -> float:
+        return 0.001
+
 
 class ContAcqSimDetector(adcore.ContAcqAreaDetector[ContAcqSimController]):
     """Detector for simulated Areadetector in continuous acquisition mode."""
