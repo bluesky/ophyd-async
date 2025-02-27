@@ -9,8 +9,8 @@ from p4p.client.thread import Context
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorWriter,
-    HDFDataset,
-    HDFFile,
+    HDFDatasetDescription,
+    HDFDocumentComposer,
     NameProvider,
     PathProvider,
     observe_value,
@@ -34,8 +34,8 @@ class PandaHDFWriter(DetectorWriter):
         self.panda_data_block = panda_data_block
         self._path_provider = path_provider
         self._name_provider = name_provider
-        self._datasets: list[HDFDataset] = []
-        self._file: HDFFile | None = None
+        self._datasets: list[HDFDatasetDescription] = []
+        self._composer: HDFDocumentComposer | None = None
         self._multiplier = 1
 
     # Triggered on PCAP arm
@@ -44,7 +44,7 @@ class PandaHDFWriter(DetectorWriter):
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
-        self._file = None
+        self._composer = None
         info = self._path_provider(device_name=self._name_provider())
 
         # Set create dir depth first to guarantee that callback when setting
@@ -83,9 +83,9 @@ class PandaHDFWriter(DetectorWriter):
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
                 shape=list(ds.shape),
-                dtype="array" if ds.shape != [1] else "number",
+                dtype="number",
                 # PandA data should always be written as Float64
-                dtype_numpy="<f8",
+                dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
             for ds in self._datasets
@@ -99,8 +99,13 @@ class PandaHDFWriter(DetectorWriter):
         self._datasets = [
             # TODO: Update chunk size to read signal once available in IOC
             # Currently PandA IOC sets chunk size to 1024 points per chunk
-            HDFDataset(
-                dataset_name, "/" + dataset_name, [1], multiplier=1, chunk_shape=(1024,)
+            HDFDatasetDescription(
+                data_key=dataset_name,
+                dataset="/" + dataset_name,
+                shape=(),
+                dtype_numpy="<f8",
+                multiplier=1,
+                chunk_shape=(1024,),
             )
             for dataset_name in capture_table.name
         ]
@@ -143,15 +148,15 @@ class PandaHDFWriter(DetectorWriter):
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
         if indices_written:
-            if not self._file:
-                self._file = HDFFile(
+            if not self._composer:
+                self._composer = HDFDocumentComposer(
                     Path(await self.panda_data_block.hdf_directory.get_value())
                     / Path(await self.panda_data_block.hdf_file_name.get_value()),
                     self._datasets,
                 )
-                for doc in self._file.stream_resources():
+                for doc in self._composer.stream_resources():
                     yield "stream_resource", doc
-            for doc in self._file.stream_data(indices_written):
+            for doc in self._composer.stream_data(indices_written):
                 yield "stream_datum", doc
 
     # Could put this function as default for StandardDetector
