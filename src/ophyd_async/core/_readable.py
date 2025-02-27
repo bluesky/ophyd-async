@@ -289,7 +289,7 @@ async def walk_config_signals(device: StandardReadable, path_prefix: str = "") -
         signal itself.
     """
     signals: dict[str, SignalRW[Any]] = {}
-    
+    config_names: list[str] = []
     if isinstance(device, StandardReadable):
         configuration = await device.read_configuration()
         config_names = list(configuration.keys())
