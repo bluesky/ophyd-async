@@ -5,6 +5,7 @@ from xml.etree import ElementTree as ET
 
 from bluesky.protocols import StreamAsset
 from event_model import DataKey
+from pydantic import PositiveInt
 
 from ophyd_async.core import (
     DatasetDescriber,
@@ -48,7 +49,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self._file: HDFFile | None = None
         self._filename_template = "%s%s"
 
-    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
+    async def open(self, exposures_per_event: PositiveInt = 1) -> dict[str, DataKey]:
         self._file = None
 
         # Setting HDF writer specific signals
@@ -71,7 +72,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         np_dtype = await self._dataset_describer.np_datatype()
 
         # Used by the base class
-        self._frames_per_event = frames_per_event
+        self._exposures_per_event = exposures_per_event
 
         # Determine number of frames that will be saved per HDF chunk
         frames_per_chunk = await self.fileio.num_frames_chunks.get_value()
@@ -81,7 +82,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             HDFDataset(
                 data_key=name,
                 dataset="/entry/data/data",
-                shape=(frames_per_event, *detector_shape),
+                shape=(exposures_per_event, *detector_shape),
                 dtype_numpy=np_dtype,
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
@@ -107,7 +108,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                         HDFDataset(
                             datakey,
                             f"/entry/instrument/NDAttributes/{datakey}",
-                            (frames_per_event,),
+                            (exposures_per_event,),
                             np_datatype,
                             # NDAttributes appear to always be configured with
                             # this chunk size

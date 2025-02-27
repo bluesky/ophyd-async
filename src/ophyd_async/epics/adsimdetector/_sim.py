@@ -38,8 +38,8 @@ class SimDetector(adcore.AreaDetector[SimController]):
         config_sigs: Sequence[SignalR] = (),
         plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
     ):
-        driver = SimDriverIO(prefix + drv_suffix)
-        controller = SimController(driver)
+        driver: SimDriverIO = SimDriverIO(prefix + drv_suffix)
+        controller: SimController = SimController(driver)
 
         writer = writer_cls.with_io(
             prefix,

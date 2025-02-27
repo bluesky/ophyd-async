@@ -66,12 +66,12 @@ class DummyWriter(DetectorWriter):
         self._last_emitted = 0
         self.index = 0
 
-    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
-        self._frames_per_event = frames_per_event
+    async def open(self, exposures_per_event: int = 1) -> dict[str, DataKey]:
+        self._exposures_per_event = exposures_per_event
         return {
             self._name: DataKey(
                 source="soft://some-source",
-                shape=[frames_per_event, *self._shape],
+                shape=[exposures_per_event, *self._shape],
                 dtype="number",
                 dtype_numpy="<u2",
                 external="STREAM:",
@@ -83,10 +83,10 @@ class DummyWriter(DetectorWriter):
     ) -> AsyncGenerator[int, None]:
         num_captured: int
         async for num_captured in observe_value(self.dummy_signal, timeout):
-            yield num_captured // self._frames_per_event
+            yield num_captured // self._exposures_per_event
 
     async def get_indices_written(self) -> int:
-        return self.index // self._frames_per_event
+        return self.index // self._exposures_per_event
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -170,7 +170,7 @@ async def test_hardware_triggered_flyable(
             yield from bps.prepare(
                 detector,
                 TriggerInfo(
-                    number_of_triggers=number_of_triggers,
+                    number_of_events=number_of_triggers,
                     trigger=DetectorTrigger.CONSTANT_GATE,
                     deadtime=2,
                     livetime=2,
@@ -280,7 +280,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
     trigger_logic = DummyTriggerLogic()
     flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
-        number_of_triggers=number_of_triggers,
+        number_of_events=number_of_triggers,
         trigger=DetectorTrigger.CONSTANT_GATE,
         deadtime=2,
         livetime=2,
@@ -320,9 +320,9 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         # Manually increment the index as if a frame was taken
         for detector in detectors:
             yield from bps.abs_set(
-                detector._writer.dummy_signal, trigger_info.total_number_of_triggers
+                detector._writer.dummy_signal, trigger_info.total_number_of_exposures
             )
-            detector._writer.index = trigger_info.total_number_of_triggers
+            detector._writer.index = trigger_info.total_number_of_exposures
 
         yield from bps.wait(group="complete")
 
@@ -337,7 +337,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
             # make sure it gets reset on complete
             assert detector._completable_frames == 0
             assert detector._frames_to_complete == 0
-            assert detector._number_of_triggers_iter is None
+            assert detector._number_of_events_iter is None
             assert detector._controller.wait_for_idle.called  # type: ignore
 
             # This is an additional kickoff
@@ -365,18 +365,18 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
     [
         (
             {
-                "number_of_triggers": 1,
+                "number_of_events": 1,
                 "trigger": DetectorTrigger.CONSTANT_GATE,
                 "deadtime": 2,
                 "livetime": 2,
-                "frame_timeout": "a",
+                "exposure_timeout": "a",
             },
             "Input should be a valid number, unable to parse string as a number "
             "[type=float_parsing, input_value='a', input_type=str]",
         ),
         (
             {
-                "number_of_triggers": 1,
+                "number_of_events": 1,
                 "trigger": "CONSTANT_GATE",
                 "deadtime": 2,
                 "livetime": -1,
@@ -386,44 +386,44 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         ),
         (
             {
-                "number_of_triggers": 1,
+                "number_of_events": 1,
                 "trigger": DetectorTrigger.INTERNAL,
                 "deadtime": 2,
                 "livetime": 1,
-                "frame_timeout": -1,
+                "exposure_timeout": -1,
             },
             "Input should be greater than 0 "
             "[type=greater_than, input_value=-1, input_type=int]",
         ),
         (
             {
-                "number_of_triggers": 1,
+                "number_of_events": 1,
                 "trigger": "not_in_enum",
                 "deadtime": 2,
                 "livetime": 1,
-                "frame_timeout": None,
+                "exposure_timeout": None,
             },
             "Input should be 'INTERNAL', 'EDGE_TRIGGER', 'CONSTANT_GATE' or "
             "'VARIABLE_GATE' [type=enum, input_value='not_in_enum', input_type=str]",
         ),
         (
             {
-                "number_of_triggers": -100,
+                "number_of_events": -100,
                 "trigger": "CONSTANT_GATE",
                 "deadtime": 2,
                 "livetime": 1,
             },
-            "number_of_triggers.constrained-int\n  Input should be greater than or "
+            "number_of_events.constrained-int\n  Input should be greater than or "
             "equal to 0 [type=greater_than_equal, input_value=-100, input_type=int]",
         ),
         (
             {
-                "number_of_triggers": [1, 1, 1, 1, -100],
+                "number_of_events": [1, 1, 1, 1, -100],
                 "trigger": "CONSTANT_GATE",
                 "deadtime": 2,
                 "livetime": 1,
             },
-            "number_of_triggers.list[constrained-int].4\n"
+            "number_of_events.list[constrained-int].4\n"
             "  Input should be greater than or equal to 0 [type=greater_than_equal,"
             " input_value=-100, input_type=int]\n",
         ),

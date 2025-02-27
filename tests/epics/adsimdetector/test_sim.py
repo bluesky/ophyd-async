@@ -11,6 +11,7 @@ import bluesky.plan_stubs as bps
 import bluesky.preprocessors as bpp
 import pytest
 from bluesky.run_engine import RunEngine
+from bluesky.utils import FailedStatus
 
 import ophyd_async.plan_stubs as ops
 from ophyd_async.core import (
@@ -60,13 +61,14 @@ def count_sim(dets: Sequence[adsimdetector.SimDetector], times: int = 1):
             yield from bps.trigger(det, wait=False, group="wait_for_trigger")
 
         yield from bps.sleep(1.0)
-        [
+
+        # Assume that the number of images configured is the number of images captured
+        for det in dets:
+            num_images = yield from bps.rd(det.driver.num_images)
             set_mock_value(
                 det._writer.fileio.num_captured,
-                read_values[det] + 1,
+                read_values[det] + num_images,
             )
-            for det in dets
-        ]
 
         yield from bps.wait(group="wait_for_trigger")
         yield from bps.create()
@@ -80,12 +82,152 @@ def count_sim(dets: Sequence[adsimdetector.SimDetector], times: int = 1):
     yield from bps.unstage_all(*dets)
 
 
+async def test_detector_count_failure(
+    test_adsimdetector: adsimdetector.SimDetector,
+    RE: RunEngine,
+):
+    """Preparing a step scan to use more than one event fails.
+
+    Step scans always produce one event.
+    """
+    trigger_info = TriggerInfo(
+        number_of_events=10,
+        trigger=DetectorTrigger.INTERNAL,
+        exposures_per_event=5,
+    )
+    RE(bps.prepare(test_adsimdetector, trigger_info, wait=True))
+    try:
+        with pytest.raises(FailedStatus) as exc:
+            RE(count_sim([test_adsimdetector], times=1))
+        assert isinstance(exc.value.__cause__, ValueError)
+    finally:
+        RE(bps.unstage(test_adsimdetector, wait=True))
+
+
+@pytest.mark.parametrize("exposures_per_event", [1, 5])
+async def test_detector_count(
+    test_adsimdetector: adsimdetector.SimDetector,
+    RE: RunEngine,
+    exposures_per_event: int,
+):
+    docs = defaultdict(list)
+    RE.subscribe(lambda name, doc: docs[name].append(doc))
+    trigger_info = TriggerInfo(
+        number_of_events=1,
+        trigger=DetectorTrigger.INTERNAL,
+        exposures_per_event=exposures_per_event,
+    )
+    RE(bps.prepare(test_adsimdetector, trigger_info, wait=True))
+    RE(count_sim([test_adsimdetector], times=5))
+
+    assert_emitted(
+        docs,
+        start=1,
+        descriptor=1,
+        stream_resource=1,
+        stream_datum=5,
+        event=5,
+        stop=1,
+    )
+
+
+@pytest.mark.parametrize("exposures_per_event", [1, 5, 15])
+async def test_detector_fly(
+    test_adsimdetector: adsimdetector.SimDetector,
+    RE: RunEngine,
+    exposures_per_event: int,
+):
+    trigger_info = TriggerInfo(
+        number_of_events=15,
+        trigger=DetectorTrigger.INTERNAL,
+        exposures_per_event=exposures_per_event,
+    )
+    docs = defaultdict(list)
+    RE.subscribe(lambda name, doc: docs[name].append(doc))
+
+    def assert_n_stream_datums(
+        n: int, start: int | None = None, stop: int | None = None
+    ):
+        if n == 0:
+            assert "stream_datum" not in docs
+        else:
+            assert len(docs["stream_datum"]) == n
+            # check both detectors have the correct start/stop
+            seq_nums = docs["stream_datum"][n - 1]["seq_nums"]
+            assert seq_nums["start"] == start
+            assert seq_nums["stop"] == stop
+
+    @bpp.stage_decorator([test_adsimdetector])
+    @bpp.run_decorator()
+    def fly_plan():
+        yield from bps.prepare(test_adsimdetector, trigger_info, wait=True)
+        yield from bps.declare_stream(test_adsimdetector, name="primary")
+        yield from bps.kickoff(test_adsimdetector, wait=True)
+        yield from bps.complete(test_adsimdetector, wait=False, group="complete_fly")
+
+        # Don't process a full event yet and ensure no stream datum is emitted
+        set_mock_value(
+            test_adsimdetector.fileio.num_captured, trigger_info.exposures_per_event - 1
+        )
+        yield from bps.collect(test_adsimdetector)
+        assert_n_stream_datums(0)
+
+        # Process a full event and emit a stream datum
+        set_mock_value(
+            test_adsimdetector.fileio.num_captured, trigger_info.exposures_per_event
+        )
+        yield from bps.collect(test_adsimdetector)
+        assert_n_stream_datums(1, 1, 2)
+
+        if trigger_info.exposures_per_event > 1:
+            # Process a full event + 1 exposure and make sure no stream datum is emitted
+            set_mock_value(
+                test_adsimdetector.fileio.num_captured, trigger_info.exposures_per_event
+            )
+            yield from bps.collect(test_adsimdetector)
+            assert_n_stream_datums(1, 1, 2)
+
+        # Process three full events and emit three stream data
+        set_mock_value(
+            test_adsimdetector.fileio.num_captured, 3 * trigger_info.exposures_per_event
+        )
+        yield from bps.collect(test_adsimdetector)
+        assert_n_stream_datums(2, 2, 4)
+
+        set_mock_value(
+            test_adsimdetector.fileio.num_captured, 5 * trigger_info.exposures_per_event
+        )
+        yield from bps.collect(test_adsimdetector)
+        assert_n_stream_datums(3, 4, 6)
+
+        set_mock_value(
+            test_adsimdetector.fileio.num_captured, 7 * trigger_info.exposures_per_event
+        )
+        yield from bps.collect(test_adsimdetector)
+        assert_n_stream_datums(4, 6, 8)
+
+        set_mock_value(
+            test_adsimdetector.fileio.num_captured,
+            15 * trigger_info.exposures_per_event,
+        )
+        yield from bps.collect(test_adsimdetector)
+        assert_n_stream_datums(5, 8, 16)
+
+        yield from bps.wait(group="complete_fly")
+
+    RE(fly_plan())
+    assert_emitted(
+        docs, start=1, descriptor=1, stream_resource=1, stream_datum=5, stop=1
+    )
+
+
 async def test_two_detectors_fly_different_rate(
     two_test_adsimdetectors: Sequence[adsimdetector.SimDetector], RE: RunEngine
 ):
     trigger_info = TriggerInfo(
-        number_of_triggers=15,
+        number_of_events=15,
         trigger=DetectorTrigger.INTERNAL,
+        exposures_per_event=1,
     )
     docs = defaultdict(list)
     RE.subscribe(lambda name, doc: docs[name].append(doc))
@@ -111,7 +253,9 @@ async def test_two_detectors_fly_different_rate(
         yield from bps.declare_stream(*two_test_adsimdetectors, name="primary")
 
         for det in two_test_adsimdetectors:
-            yield from bps.trigger(det, wait=False, group="trigger_cleanup")
+            yield from bps.kickoff(det, wait=True)
+        for det in two_test_adsimdetectors:
+            yield from bps.complete(det, wait=False, group="complete_cleanup")
 
         # det[0] captures 5 frames, but we do not emit a StreamDatum as det[1] has not
         set_mock_value(two_test_adsimdetectors[0].fileio.num_captured, 5)
@@ -386,7 +530,7 @@ async def test_ad_sim_controller(test_adsimdetector: adsimdetector.SimDetector):
     ad = test_adsimdetector._controller
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         await ad.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.INTERNAL)
+            TriggerInfo(number_of_events=1, trigger=DetectorTrigger.INTERNAL)
         )
         await ad.arm()
         await ad.wait_for_idle()

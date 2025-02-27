@@ -38,9 +38,9 @@ class PandaHDFWriter(DetectorWriter):
         self._file: HDFFile | None = None
 
     # Triggered on PCAP arm
-    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
+    async def open(self, exposures_per_event: int = 1) -> dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture."""
-        self._frames_per_event = frames_per_event
+        self._exposures_per_event = exposures_per_event
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
@@ -98,7 +98,7 @@ class PandaHDFWriter(DetectorWriter):
             HDFDataset(
                 dataset_name,
                 "/" + dataset_name,
-                shape=(self._frames_per_event,),
+                shape=(self._exposures_per_event,),
                 chunk_shape=(1024,),
             )
             for dataset_name in capture_table.name
@@ -118,9 +118,9 @@ class PandaHDFWriter(DetectorWriter):
     # StandardDetector behavior
     async def wait_for_index(self, index: int, timeout: float | None = DEFAULT_TIMEOUT):
         def matcher(value: int) -> bool:
-            # Index is already divided by frames_per_event, so we need to also
-            # divide the value by frames_per_event to get the correct index
-            return value // self._frames_per_event >= index
+            # Index is already divided by exposures_per_event, so we need to also
+            # divide the value by exposures_per_event to get the correct index
+            return value // self._exposures_per_event >= index
 
         matcher.__name__ = f"index_at_least_{index}"
         await wait_for_value(
@@ -130,7 +130,7 @@ class PandaHDFWriter(DetectorWriter):
     async def get_indices_written(self) -> int:
         return (
             await self.panda_data_block.num_captured.get_value()
-            // self._frames_per_event
+            // self._exposures_per_event
         )
 
     async def observe_indices_written(
@@ -140,7 +140,7 @@ class PandaHDFWriter(DetectorWriter):
         async for num_captured in observe_value(
             self.panda_data_block.num_captured, timeout
         ):
-            yield num_captured // self._frames_per_event
+            yield num_captured // self._exposures_per_event
 
     async def collect_stream_docs(
         self, indices_written: int

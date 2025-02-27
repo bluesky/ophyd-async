@@ -51,51 +51,52 @@ class DetectorTrigger(Enum):
 class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector."""
 
-    number_of_triggers: NonNegativeInt | list[NonNegativeInt]
-    """Number of triggers that will be sent, (0 means infinite).
+    number_of_events: NonNegativeInt | list[NonNegativeInt]
+    """Number of events that will be processed, (0 means infinite).
 
     Can be:
     - A single integer or
-    - A list of integers for multiple triggers
+    - A list of integers for multiple events
 
-    Example for tomography: ``TriggerInfo(number=[2,3,100,3])``.
-    This would trigger:
+    Example for tomography: ``TriggerInfo(number_of_events=[2,3,100,3])``.
+    This would process:
 
-    - 2 times for dark field images
-    - 3 times for initial flat field images
-    - 100 times for projections
-    - 3 times for final flat field images
+    - 2 events for dark field images
+    - 3 events for initial flat field images
+    - 100 events for projections
+    - 3 events for final flat field images
     """
 
     trigger: DetectorTrigger = Field(default=DetectorTrigger.INTERNAL)
     """Sort of triggers that will be sent"""
 
     deadtime: float = Field(default=0.0, ge=0)
-    """What is the minimum deadtime between triggers"""
+    """What is the minimum deadtime between exposures"""
 
     livetime: float | None = Field(default=None, ge=0)
-    """What is the maximum high time of the triggers"""
+    """What is the maximum high time of the exposures"""
 
-    frame_timeout: float | None = Field(default=None, gt=0)
-    """What is the maximum timeout on waiting for a frame"""
+    exposure_timeout: float | None = Field(default=None, gt=0)
+    """What is the maximum timeout on waiting for an exposure"""
 
-    frames_per_event: PositiveInt = 1
-    """The number of triggers that are grouped into a single StreamDatum index.
-    A frames_per_event > 1 can be useful to have frames from a faster detector
-    able to be zipped with a single frame from a slower detector. E.g. if
-    number_of_triggers=10 and frames_per_event=5 then the detector will take
-    10 frames, but publish 2 StreamDatum indices, and describe() will show a
+    exposures_per_event: PositiveInt = 1
+    """The number of exposures that are grouped into a single StreamDatum index.
+    A exposures_per_event > 1 can be useful to have exposures from a faster detector
+    able to be zipped with a single exposure from a slower detector. E.g. if
+    number_of_events=10 and exposures_per_event=5 then the detector will take
+    10 exposures, but publish 2 StreamDatum indices, and describe() will show a
     shape of (5, h, w) for each.
+    Default is 1.
     """
 
     @computed_field
     @cached_property
-    def total_number_of_triggers(self) -> int:
+    def total_number_of_exposures(self) -> int:
         return (
-            sum(self.number_of_triggers) * self.frames_per_event
-            if isinstance(self.number_of_triggers, list)
-            else self.number_of_triggers * self.frames_per_event
-        )
+            sum(self.number_of_events)
+            if isinstance(self.number_of_events, list)
+            else self.number_of_events
+        ) * self.exposures_per_event
 
 
 class DetectorController(ABC):
@@ -129,10 +130,10 @@ class DetectorWriter(ABC):
     """Logic for making detector write data to somewhere persistent (e.g. HDF5 file)."""
 
     @abstractmethod
-    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
+    async def open(self, exposures_per_event: PositiveInt = 1) -> dict[str, DataKey]:
         """Open writer and wait for it to be ready for data.
 
-        :param frames_per_event:
+        :param exposures_per_event:
             Each StreamDatum index corresponds to this many written exposures
         :return: Output for ``describe()``
         """
@@ -141,7 +142,7 @@ class DetectorWriter(ABC):
     def observe_indices_written(
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
-        """Yield the index of each frame (or equivalent data point) as it is written."""
+        """Yield the index of each exposure (or data point) as it is written."""
 
     @abstractmethod
     async def get_indices_written(self) -> int:
@@ -219,7 +220,7 @@ class StandardDetector(
         # Represents the total number of frames that will have been completed at the
         # end of the next `complete`.
         self._completable_frames: int = 0
-        self._number_of_triggers_iter: Iterator[int] | None = None
+        self._number_of_events_iter: Iterator[int] | None = None
         self._initial_frame: int = 0
         super().__init__(name, connector=connector)
 
@@ -228,7 +229,7 @@ class StandardDetector(
         """Make sure the detector is idle and ready to be used."""
         await self._check_config_sigs()
         await asyncio.gather(self._writer.close(), self._controller.disarm())
-        self._trigger_info = None
+        # self._trigger_info = None
 
     async def _check_config_sigs(self):
         """Check configuration signals are named and connected."""
@@ -269,7 +270,7 @@ class StandardDetector(
         if self._trigger_info is None:
             await self.prepare(
                 TriggerInfo(
-                    number_of_triggers=1,
+                    number_of_events=1,
                     trigger=DetectorTrigger.INTERNAL,
                 )
             )
@@ -278,6 +279,11 @@ class StandardDetector(
         if self._trigger_info.trigger is not DetectorTrigger.INTERNAL:
             msg = "The trigger method can only be called with INTERNAL triggering"
             raise ValueError(msg)
+        if self._trigger_info.number_of_events != 1:
+            raise ValueError(
+                "Triggering is not supported for multiple events, the detector was "
+                f"prepared with number_of_events={self._trigger_info.number_of_events}."
+            )
 
         # Arm the detector and wait for it to finish.
         indices_written = await self._writer.get_indices_written()
@@ -315,13 +321,14 @@ class StandardDetector(
         elif not value.deadtime:
             value.deadtime = self._controller.get_deadtime(value.livetime)
         self._trigger_info = value
-        self._number_of_triggers_iter = iter(
-            self._trigger_info.number_of_triggers
-            if isinstance(self._trigger_info.number_of_triggers, list)
-            else [self._trigger_info.number_of_triggers]
+        self._number_of_events_iter = iter(
+            value.number_of_events
+            if isinstance(value.number_of_events, list)
+            else [value.number_of_events]
         )
         self._describe, _ = await asyncio.gather(
-            self._writer.open(value.frames_per_event), self._controller.prepare(value)
+            self._writer.open(value.exposures_per_event),
+            self._controller.prepare(value),
         )
         self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
@@ -330,22 +337,22 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        if self._trigger_info is None or self._number_of_triggers_iter is None:
+        if self._trigger_info is None or self._number_of_events_iter is None:
             raise RuntimeError("Prepare must be called before kickoff!")
         try:
-            self._frames_to_complete = next(self._number_of_triggers_iter)
+            self._frames_to_complete = next(self._number_of_events_iter)
             self._completable_frames += self._frames_to_complete
         except StopIteration as err:
             raise RuntimeError(
                 f"Kickoff called more than the configured number of "
-                f"{self._trigger_info.total_number_of_triggers} iteration(s)!"
+                f"{self._trigger_info.total_number_of_exposures} iteration(s)!"
             ) from err
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
         self._trigger_info = _ensure_trigger_info_exists(self._trigger_info)
         indices_written = self._writer.observe_indices_written(
-            self._trigger_info.frame_timeout
+            self._trigger_info.exposure_timeout
             or (
                 DEFAULT_TIMEOUT
                 + (self._trigger_info.livetime or 0)
@@ -369,10 +376,10 @@ class StandardDetector(
                     break
         finally:
             await indices_written.aclose()
-            if self._completable_frames >= self._trigger_info.total_number_of_triggers:
+            if self._completable_frames >= self._trigger_info.total_number_of_exposures:
                 self._completable_frames = 0
                 self._frames_to_complete = 0
-                self._number_of_triggers_iter = None
+                self._number_of_events_iter = None
                 await self._controller.wait_for_idle()
 
     async def describe_collect(self) -> dict[str, DataKey]:

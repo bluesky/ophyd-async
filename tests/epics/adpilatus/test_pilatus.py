@@ -51,7 +51,7 @@ async def test_trigger_mode_set(
     async def trigger_and_complete():
         set_mock_value(test_adpilatus.driver.armed, True)
         await test_adpilatus._controller.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=detector_trigger)
+            TriggerInfo(number_of_events=1, trigger=detector_trigger)
         )
         await test_adpilatus._controller.arm()
         await test_adpilatus._controller.wait_for_idle()
@@ -64,7 +64,7 @@ async def test_trigger_mode_set_without_armed_pv(
 ):
     async def trigger_and_complete():
         await test_adpilatus._controller.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.INTERNAL)
+            TriggerInfo(number_of_events=1, trigger=DetectorTrigger.INTERNAL)
         )
         await test_adpilatus._controller.arm()
         await test_adpilatus._controller.wait_for_idle()
@@ -114,7 +114,7 @@ async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDete
         ):
             await test_adpilatus.prepare(
                 TriggerInfo(
-                    number_of_triggers=1,
+                    number_of_events=1,
                     trigger=DetectorTrigger.EDGE_TRIGGER,
                     deadtime=1.0,
                     livetime=1.0,
@@ -129,7 +129,7 @@ async def test_exposure_time_and_acquire_period_set(
     set_mock_value(test_adpilatus.driver.armed, True)
     await test_adpilatus.prepare(
         TriggerInfo(
-            number_of_triggers=1,
+            number_of_events=1,
             trigger=DetectorTrigger.INTERNAL,
             deadtime=1.0,
             livetime=1.0,
@@ -144,7 +144,7 @@ async def test_pilatus_controller(test_adpilatus: adpilatus.PilatusDetector):
     pilatus_driver = cast(adpilatus.PilatusDriverIO, test_adpilatus.driver)
     set_mock_value(pilatus_driver.armed, True)
     await pilatus.prepare(
-        TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.CONSTANT_GATE)
+        TriggerInfo(number_of_events=1, trigger=DetectorTrigger.CONSTANT_GATE)
     )
     await pilatus.arm()
     await pilatus.wait_for_idle()

@@ -37,7 +37,7 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_advimba._controller.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=trig_mode)
+            TriggerInfo(number_of_events=1, trigger=trig_mode)
         )
         await test_advimba._controller.arm()
         await test_advimba._controller.wait_for_idle()
@@ -138,7 +138,7 @@ async def test_can_decribe_collect(
     assert (await test_advimba.describe_collect()) == {
         "test_advimba1": {
             "source": "mock+ca://VIMBA1:HDF1:FullFileName_RBV",
-            "shape": [one_shot_trigger_info.frames_per_event, 10, 10],
+            "shape": [one_shot_trigger_info.exposures_per_event, 10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
