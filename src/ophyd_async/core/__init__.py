@@ -32,6 +32,7 @@ from ._readable import (
     HintedSignal,
     StandardReadable,
     StandardReadableFormat,
+    walk_config_signals
 )
 from ._settings import Settings, SettingsProvider
 from ._signal import (
@@ -130,6 +131,7 @@ __all__ = [
     "set_and_wait_for_value",
     "set_and_wait_for_other_value",
     "walk_rw_signals",
+    "walk_config_signals",
     # Readable
     "StandardReadable",
     "StandardReadableFormat",
