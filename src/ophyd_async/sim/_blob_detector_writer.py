@@ -27,37 +27,35 @@ class BlobDetectorWriter(DetectorWriter):
         self.composer: HDFDocumentComposer | None = None
         self.datasets: list[HDFDatasetDescription] = []
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, exposures_per_event: int = 1) -> dict[str, DataKey]:
         name = self.name_provider()
         path_info = self.path_provider(name)
         self.path = path_info.directory_path / f"{path_info.filename}.h5"
         self.pattern_generator.open_file(self.path, WIDTH, HEIGHT)
+        self.exposures_per_event = exposures_per_event
         # We know it will write data and sum, so emit those
         self.datasets = [
             HDFDatasetDescription(
                 data_key=name,
                 dataset=DATA_PATH,
-                shape=(HEIGHT, WIDTH),
+                shape=(exposures_per_event, HEIGHT, WIDTH),
                 dtype_numpy="|u1",
                 chunk_shape=(HEIGHT, WIDTH),
-                multiplier=multiplier,
             ),
             HDFDatasetDescription(
                 data_key=f"{name}-sum",
                 dataset=SUM_PATH,
-                shape=(),
+                shape=(exposures_per_event,),
                 dtype_numpy="<i8",
-                multiplier=multiplier,
                 chunk_shape=(1024,),
             ),
         ]
         self.composer = None
-        outer_shape = (multiplier,) if multiplier > 1 else ()
         describe = {
             ds.data_key: DataKey(
                 source="sim://pattern-generator-hdf-file",
-                shape=list(outer_shape) + list(ds.shape),
-                dtype="array" if ds.shape else "number",
+                shape=list(ds.shape),
+                dtype="array" if len(ds.shape) > 1 else "number",
                 external="STREAM:",
             )
             for ds in self.datasets
@@ -87,7 +85,7 @@ class BlobDetectorWriter(DetectorWriter):
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         async for index in self.pattern_generator.observe_indices_written(timeout):
-            yield index
+            yield index // self.exposures_per_event
 
     async def get_indices_written(self) -> int:
-        return await self.pattern_generator.get_last_index()
+        return await self.pattern_generator.get_last_index() // self.exposures_per_event
