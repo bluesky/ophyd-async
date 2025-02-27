@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._hdf_dataset &#8212; ophyd-async 0.9.1.dev16+gf9f985a5 documentation</title>
+    <title>ophyd_async.core._hdf_dataset &#8212; ophyd-async 0.9.1.dev17+g0aa9e5a0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=fcf8fd5f"></script>
+    <script src="../../../_static/documentation_options.js?v=bec7118a"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev16+gf9f985a5 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev16+gf9f985a5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev17+g0aa9e5a0 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev17+g0aa9e5a0 documentation - Home"/>
   
   
 </a></div>
@@ -463,8 +463,7 @@ window.addEventListener("load", () => mermaid.run());
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.core._hdf_dataset</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlunparse</span>
 
@@ -475,52 +474,58 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">StreamRange</span><span class="p">,</span>
     <span class="n">StreamResource</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
 
 
-<div class="viewcode-block" id="HDFDataset">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.HDFDataset">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">HDFDataset</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;TODO.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="HDFDatasetDescription">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.HDFDatasetDescription">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HDFDatasetDescription</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A description of the type and shape of a dataset in an HDF file.&quot;&quot;&quot;</span>
 
     <span class="n">data_key</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The data_key that will appear in the event descriptor,</span>
+<span class="sd">    e.g. det or det.data&quot;&quot;&quot;</span>
+
     <span class="n">dataset</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">shape</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">tuple</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The dataset name within the HDF file,</span>
+<span class="sd">    e.g. /entry/data/data or /entry/instrument/NDAttributes/sum&quot;&quot;&quot;</span>
+
+    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">tuple</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The shape of a single event&#39;s data in the HDF file,</span>
+<span class="sd">    e.g. (1, 768, 1024) for arrays or () for scalars&quot;&quot;&quot;</span>
+
     <span class="n">dtype_numpy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The numpy dtype for this field,</span>
+<span class="sd">    e.g. &lt;i2 or &lt;f8&quot;&quot;&quot;</span>
+
+    <span class="n">chunk_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The explicit chunk size written to disk&quot;&quot;&quot;</span>
+
     <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">swmr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="c1"># Represents explicit chunk size written to disk.</span>
-    <span class="n">chunk_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Won&#39;t be used soon.&quot;&quot;&quot;</span></div>
 
 
 
 <span class="n">SLICE_NAME</span> <span class="o">=</span> <span class="s2">&quot;AD_HDF5_SWMR_SLICE&quot;</span>
 
 
-<div class="viewcode-block" id="HDFFile">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.HDFFile">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">HDFFile</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;TODO.</span>
+<div class="viewcode-block" id="HDFDocumentComposer">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.HDFDocumentComposer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HDFDocumentComposer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A helper class to make stream resource and datums for HDF datasets.</span>
 
-<span class="sd">    :param full_file_name: Absolute path to the file to be written</span>
-<span class="sd">    :param datasets: Datasets to write into the file</span>
+<span class="sd">    :param full_file_name: Absolute path to the file that has been written</span>
+<span class="sd">    :param datasets: Descriptions of each of the datasets that will appear in the file</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">full_file_name</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
-        <span class="n">datasets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HDFDataset</span><span class="p">],</span>
+        <span class="n">datasets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HDFDatasetDescription</span><span class="p">],</span>
         <span class="n">hostname</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_emitted</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_hostname</span> <span class="o">=</span> <span class="n">hostname</span>
-
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-        <span class="n">bundler_composer</span> <span class="o">=</span> <span class="n">ComposeStreamResource</span><span class="p">()</span>
-
         <span class="n">uri</span> <span class="o">=</span> <span class="n">urlunparse</span><span class="p">(</span>
             <span class="p">(</span>
                 <span class="s2">&quot;file&quot;</span><span class="p">,</span>
@@ -531,7 +536,7 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span>
-
+        <span class="n">bundler_composer</span> <span class="o">=</span> <span class="n">ComposeStreamResource</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ComposeStreamResourceBundle</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">bundler_composer</span><span class="p">(</span>
                 <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;application/x-hdf5&quot;</span><span class="p">,</span>
@@ -539,7 +544,6 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="n">data_key</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">data_key</span><span class="p">,</span>
                 <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
                     <span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
-                    <span class="s2">&quot;swmr&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="o">.</span><span class="n">swmr</span><span class="p">,</span>
                     <span class="s2">&quot;multiplier&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="o">.</span><span class="n">multiplier</span><span class="p">,</span>
                     <span class="s2">&quot;chunk_shape&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="o">.</span><span class="n">chunk_shape</span><span class="p">,</span>
                 <span class="p">},</span>
@@ -549,15 +553,15 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="n">datasets</span>
         <span class="p">]</span>
 
-<div class="viewcode-block" id="HDFFile.stream_resources">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.HDFFile.stream_resources">[docs]</a>
+<div class="viewcode-block" id="HDFDocumentComposer.stream_resources">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.HDFDocumentComposer.stream_resources">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">stream_resources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">StreamResource</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">bundle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bundles</span><span class="p">:</span>
             <span class="k">yield</span> <span class="n">bundle</span><span class="o">.</span><span class="n">stream_resource_doc</span></div>
 
 
-<div class="viewcode-block" id="HDFFile.stream_data">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.HDFFile.stream_data">[docs]</a>
+<div class="viewcode-block" id="HDFDocumentComposer.stream_data">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.HDFDocumentComposer.stream_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">stream_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">StreamDatum</span><span class="p">]:</span>
         <span class="c1"># Indices are relative to resource</span>
         <span class="k">if</span> <span class="n">indices_written</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_emitted</span><span class="p">:</span>

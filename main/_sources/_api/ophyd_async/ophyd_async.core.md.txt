@@ -187,12 +187,12 @@
   - ```{autodoc2-docstring} ophyd_async.core._providers.DatasetDescriber
     :summary:
     ```
-* - {py:obj}`HDFDataset <ophyd_async.core._hdf_dataset.HDFDataset>`
-  - ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset
+* - {py:obj}`HDFDatasetDescription <ophyd_async.core._hdf_dataset.HDFDatasetDescription>`
+  - ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription
     :summary:
     ```
-* - {py:obj}`HDFFile <ophyd_async.core._hdf_dataset.HDFFile>`
-  - ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFFile
+* - {py:obj}`HDFDocumentComposer <ophyd_async.core._hdf_dataset.HDFDocumentComposer>`
+  - ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDocumentComposer
     :summary:
     ```
 * - {py:obj}`StandardFlyer <ophyd_async.core._flyer.StandardFlyer>`
@@ -2196,108 +2196,99 @@ Bases: {py:obj}`typing.Protocol`
 
 `````
 
-`````{py:class} HDFDataset
-:canonical: ophyd_async.core._hdf_dataset.HDFDataset
+`````{py:class} HDFDatasetDescription(/, **data: ~typing.Any)
+:canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset
+Bases: {py:obj}`pydantic.BaseModel`
+
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription
 ```
 
 ````{py:attribute} data_key
-:canonical: ophyd_async.core._hdf_dataset.HDFDataset.data_key
+:canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription.data_key
 :type: str
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.data_key
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription.data_key
 ```
 
 ````
 
 ````{py:attribute} dataset
-:canonical: ophyd_async.core._hdf_dataset.HDFDataset.dataset
+:canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription.dataset
 :type: str
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.dataset
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription.dataset
 ```
 
 ````
 
 ````{py:attribute} shape
-:canonical: ophyd_async.core._hdf_dataset.HDFDataset.shape
-:type: ~collections.abc.Sequence[int]
+:canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription.shape
+:type: tuple[int, ...]
 :value: >
-   'field(...)'
+   'Field(...)'
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.shape
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription.shape
 ```
 
 ````
 
 ````{py:attribute} dtype_numpy
-:canonical: ophyd_async.core._hdf_dataset.HDFDataset.dtype_numpy
+:canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription.dtype_numpy
 :type: str
 :value: <Multiline-String>
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.dtype_numpy
-```
-
-````
-
-````{py:attribute} multiplier
-:canonical: ophyd_async.core._hdf_dataset.HDFDataset.multiplier
-:type: int
-:value: >
-   1
-
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.multiplier
-```
-
-````
-
-````{py:attribute} swmr
-:canonical: ophyd_async.core._hdf_dataset.HDFDataset.swmr
-:type: bool
-:value: >
-   False
-
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.swmr
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription.dtype_numpy
 ```
 
 ````
 
 ````{py:attribute} chunk_shape
-:canonical: ophyd_async.core._hdf_dataset.HDFDataset.chunk_shape
+:canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription.chunk_shape
 :type: tuple[int, ...]
 :value: >
-   ()
+   None
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDataset.chunk_shape
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription.chunk_shape
+```
+
+````
+
+````{py:attribute} multiplier
+:canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription.multiplier
+:type: int
+:value: >
+   1
+
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription.multiplier
 ```
 
 ````
 
 `````
 
-`````{py:class} HDFFile(full_file_name: ~pathlib.Path, datasets: list[~ophyd_async.core._hdf_dataset.HDFDataset], hostname: str = 'localhost')
-:canonical: ophyd_async.core._hdf_dataset.HDFFile
+`````{py:class} HDFDocumentComposer(full_file_name: ~pathlib.Path, datasets: list[~ophyd_async.core._hdf_dataset.HDFDatasetDescription], hostname: str = 'localhost')
+:canonical: ophyd_async.core._hdf_dataset.HDFDocumentComposer
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFFile
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDocumentComposer
 ```
 
 ````{py:method} stream_resources() -> ~collections.abc.Iterator[~event_model.StreamResource]
-:canonical: ophyd_async.core._hdf_dataset.HDFFile.stream_resources
+:canonical: ophyd_async.core._hdf_dataset.HDFDocumentComposer.stream_resources
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFFile.stream_resources
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDocumentComposer.stream_resources
 ```
 
 ````
 
 ````{py:method} stream_data(indices_written: int) -> ~collections.abc.Iterator[~event_model.StreamDatum]
-:canonical: ophyd_async.core._hdf_dataset.HDFFile.stream_data
+:canonical: ophyd_async.core._hdf_dataset.HDFDocumentComposer.stream_data
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFFile.stream_data
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDocumentComposer.stream_data
 ```
 
 ````

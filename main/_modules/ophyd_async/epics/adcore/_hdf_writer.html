@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.9.1.dev16+gf9f985a5 documentation</title>
+    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.9.1.dev17+g0aa9e5a0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=fcf8fd5f"></script>
+    <script src="../../../../_static/documentation_options.js?v=bec7118a"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev16+gf9f985a5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev16+gf9f985a5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev17+g0aa9e5a0 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev17+g0aa9e5a0 documentation - Home"/>
   
   
 </a></div>
@@ -473,8 +473,8 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DatasetDescriber</span><span class="p">,</span>
-    <span class="n">HDFDataset</span><span class="p">,</span>
-    <span class="n">HDFFile</span><span class="p">,</span>
+    <span class="n">HDFDatasetDescription</span><span class="p">,</span>
+    <span class="n">HDFDocumentComposer</span><span class="p">,</span>
     <span class="n">NameProvider</span><span class="p">,</span>
     <span class="n">PathProvider</span><span class="p">,</span>
 <span class="p">)</span>
@@ -511,14 +511,14 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">file_extension</span><span class="o">=</span><span class="s2">&quot;.h5&quot;</span><span class="p">,</span>
             <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;application/x-hdf5&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HDFDataset</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span> <span class="n">HDFFile</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HDFDatasetDescription</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_composer</span><span class="p">:</span> <span class="n">HDFDocumentComposer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename_template</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span>
 
 <div class="viewcode-block" id="ADHDFWriter.open">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADHDFWriter.open">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_composer</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Setting HDF writer specific signals</span>
 
@@ -546,7 +546,7 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="c1"># Add the main data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">HDFDataset</span><span class="p">(</span>
+            <span class="n">HDFDatasetDescription</span><span class="p">(</span>
                 <span class="n">data_key</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;/entry/data/data&quot;</span><span class="p">,</span>
                 <span class="n">shape</span><span class="o">=</span><span class="n">detector_shape</span><span class="p">,</span>
@@ -563,7 +563,7 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">if</span> <span class="s2">&quot;&lt;Attributes&gt;&quot;</span> <span class="ow">in</span> <span class="n">maybe_xml</span><span class="p">:</span>
                 <span class="n">root</span> <span class="o">=</span> <span class="n">ET</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">maybe_xml</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">root</span><span class="p">:</span>
-                    <span class="n">datakey</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+                    <span class="n">data_key</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;EPICS_PV&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;EPICS_PV&quot;</span><span class="p">:</span>
                         <span class="n">np_datatype</span> <span class="o">=</span> <span class="n">convert_pv_dtype_to_np</span><span class="p">(</span>
                             <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dbrtype&quot;</span><span class="p">,</span> <span class="s2">&quot;DBR_NATIVE&quot;</span><span class="p">)</span>
@@ -573,15 +573,15 @@ window.addEventListener("load", () => mermaid.run());
                             <span class="n">child</span><span class="o">.</span><span class="n">attrib</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;datatype&quot;</span><span class="p">,</span> <span class="s2">&quot;INT&quot;</span><span class="p">)</span>
                         <span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="n">HDFDataset</span><span class="p">(</span>
-                            <span class="n">datakey</span><span class="p">,</span>
-                            <span class="sa">f</span><span class="s2">&quot;/entry/instrument/NDAttributes/</span><span class="si">{</span><span class="n">datakey</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                            <span class="p">(),</span>
-                            <span class="n">np_datatype</span><span class="p">,</span>
-                            <span class="n">multiplier</span><span class="p">,</span>
+                        <span class="n">HDFDatasetDescription</span><span class="p">(</span>
+                            <span class="n">data_key</span><span class="o">=</span><span class="n">data_key</span><span class="p">,</span>
+                            <span class="n">dataset</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/entry/instrument/NDAttributes/</span><span class="si">{</span><span class="n">data_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="n">shape</span><span class="o">=</span><span class="p">(),</span>
+                            <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">np_datatype</span><span class="p">,</span>
                             <span class="c1"># NDAttributes appear to always be configured with</span>
                             <span class="c1"># this chunk size</span>
                             <span class="n">chunk_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">16384</span><span class="p">,),</span>
+                            <span class="n">multiplier</span><span class="o">=</span><span class="n">multiplier</span><span class="p">,</span>
                         <span class="p">)</span>
                     <span class="p">)</span>
 
@@ -606,9 +606,9 @@ window.addEventListener("load", () => mermaid.run());
         <span class="c1"># TODO: fail if we get dropped frames</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileio</span><span class="o">.</span><span class="n">flush_now</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">indices_written</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_composer</span><span class="p">:</span>
                 <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileio</span><span class="o">.</span><span class="n">full_file_name</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_file</span> <span class="o">=</span> <span class="n">HDFFile</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_composer</span> <span class="o">=</span> <span class="n">HDFDocumentComposer</span><span class="p">(</span>
                     <span class="c1"># See https://github.com/bluesky/ophyd-async/issues/122</span>
                     <span class="n">path</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span><span class="p">,</span>
@@ -617,9 +617,9 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="c1"># stream datum says &quot;here are N frames in that stream resource&quot;,</span>
                 <span class="c1"># you get one stream resource and many stream datums per scan</span>
 
-                <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="o">.</span><span class="n">stream_resources</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_composer</span><span class="o">.</span><span class="n">stream_resources</span><span class="p">():</span>
                     <span class="k">yield</span> <span class="s2">&quot;stream_resource&quot;</span><span class="p">,</span> <span class="n">doc</span>
-            <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file</span><span class="o">.</span><span class="n">stream_data</span><span class="p">(</span><span class="n">indices_written</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_composer</span><span class="o">.</span><span class="n">stream_data</span><span class="p">(</span><span class="n">indices_written</span><span class="p">):</span>
                 <span class="k">yield</span> <span class="s2">&quot;stream_datum&quot;</span><span class="p">,</span> <span class="n">doc</span></div>
 </div>
 
