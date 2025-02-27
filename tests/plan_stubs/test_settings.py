@@ -12,8 +12,14 @@ from ophyd_async.plan_stubs import (
     get_current_settings,
     retrieve_settings,
     store_settings,
+    store_config_settings,
 )
-from ophyd_async.testing import ExampleTable, ParentOfEverythingDevice, get_mock
+from ophyd_async.testing import (
+    ExampleTable,
+    ParentOfEverythingDevice,
+    get_mock,
+    OneOfEverythingDevice
+)
 
 TEST_DATA = Path(__file__).absolute().parent.parent / "test_data"
 
@@ -46,6 +52,16 @@ async def test_store_settings(RE, parent_device: ParentOfEverythingDevice, tmp_p
 
     RE(my_plan())
 
+async def test_store_config_settings(RE, parent_device: OneOfEverythingDevice, tmp_path):
+    provider = YamlSettingsProvider(tmp_path)
+
+    def my_plan():
+        yield from store_config_settings(provider, "test_file", parent_device)
+        with open(tmp_path / "test_file.yaml") as actual_file:
+            with open(TEST_DATA / "test_yaml_save.yaml") as expected_file:
+                assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
+
+    RE(my_plan())
 
 async def test_retrieve_and_apply_settings(RE, parent_device: ParentOfEverythingDevice):
     provider = YamlSettingsProvider(TEST_DATA)

@@ -19,6 +19,7 @@ from event_model import DataKey
 from ._device import Device, DeviceConnector
 from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncReadable, AsyncStageable
+from ._readable import StandardReadable
 from ._signal_backend import SignalBackend, SignalDatatypeT, SignalDatatypeV
 from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus, completed_status
@@ -674,5 +675,31 @@ def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW
         if type(attr) is SignalRW:
             signals[dot_path] = attr
         attr_signals = walk_rw_signals(attr, path_prefix=dot_path + ".")
+        signals.update(attr_signals)
+    return signals
+
+async def walk_config_signals(device: StandardReadable, path_prefix: str = "") -> dict[str, SignalRW[Any]]:
+    """Retrieve all configuration signals from a device.
+
+    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
+    part of saving and loading a device.
+
+    :param device: Device to retrieve configuration signals from.
+    :param path_prefix: For internal use, leave blank when calling the method.
+    :return:
+        A dictionary matching the string attribute path of a SignalRW with the
+        signal itself.
+    """
+    signals: dict[str, SignalRW[Any]] = {}
+    
+    if isinstance(device, StandardReadable):
+        configuration = await device.read_configuration()
+        config_names = list(configuration.keys())
+    
+    for attr_name, attr in device.children():
+        dot_path = f"{path_prefix}{attr_name}"
+        if attr.name in config_names:
+            signals[dot_path] = attr
+        attr_signals = await walk_config_signals(attr, path_prefix=dot_path + ".")
         signals.update(attr_signals)
     return signals

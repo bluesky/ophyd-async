@@ -14,6 +14,7 @@ from ._settings import (
     get_current_settings,
     retrieve_settings,
     store_settings,
+    store_config_settings
 )
 
 __all__ = [
@@ -29,4 +30,5 @@ __all__ = [
     "get_current_settings",
     "retrieve_settings",
     "store_settings",
+    "store_config_settings",
 ]
