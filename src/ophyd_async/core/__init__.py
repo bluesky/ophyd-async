@@ -10,7 +10,7 @@ from ._detector import (
 from ._device import Device, DeviceConnector, DeviceVector, init_devices
 from ._device_filler import DeviceFiller
 from ._flyer import FlyerController, StandardFlyer
-from ._hdf_dataset import HDFDataset, HDFFile
+from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable, Watcher
@@ -152,8 +152,8 @@ __all__ = [
     # Datatset
     "NameProvider",
     "DatasetDescriber",
-    "HDFDataset",
-    "HDFFile",
+    "HDFDatasetDescription",
+    "HDFDocumentComposer",
     # Flyer
     "StandardFlyer",
     "FlyerController",

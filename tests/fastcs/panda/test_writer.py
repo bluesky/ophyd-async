@@ -8,7 +8,7 @@ import pytest
 
 from ophyd_async.core import (
     Device,
-    HDFFile,
+    HDFDocumentComposer,
     SignalR,
     StaticFilenameProvider,
     StaticPathProvider,
@@ -186,18 +186,17 @@ async def test_collect_stream_docs(
             + str(tmp_path / "mock_panda" / "data.h5").lstrip("/"),
             "parameters": {
                 "dataset": f"/{name}",
-                "swmr": False,
                 "chunk_shape": (1024,),
             },
         }
         assert os.path.join("mock_panda", "data.h5") in resource_doc["uri"]
 
     [item async for item in mock_writer.collect_stream_docs(1)]
-    assert type(mock_writer._file) is HDFFile
-    assert mock_writer._file._last_emitted == 1
+    assert type(mock_writer._composer) is HDFDocumentComposer
+    assert mock_writer._composer._last_emitted == 1
 
     for i in range(len(table.name)):
-        resource_doc = mock_writer._file._bundles[i].stream_resource_doc
+        resource_doc = mock_writer._composer._bundles[i].stream_resource_doc
         name = table.name[i]
 
         assert_resource_document(name=name, resource_doc=resource_doc)

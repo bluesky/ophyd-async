@@ -145,7 +145,6 @@ async def test_hdf_panda_hardware_triggered_flyable(
             "uri": "file://localhost/" + str(tmp_path / "test-panda.h5").lstrip("/"),
             "parameters": {
                 "dataset": f"/{dataset_name}",
-                "swmr": False,
                 "chunk_shape": (1024,),
             },
         }

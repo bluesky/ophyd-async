@@ -5,7 +5,7 @@ from bluesky.protocols import StreamAsset
 from event_model import DataKey
 
 from ophyd_async.core import DEFAULT_TIMEOUT, DetectorWriter, NameProvider, PathProvider
-from ophyd_async.core._hdf_dataset import HDFDataset, HDFFile
+from ophyd_async.core._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
 
 from ._pattern_generator import DATA_PATH, SUM_PATH, PatternGenerator
 
@@ -24,8 +24,8 @@ class BlobDetectorWriter(DetectorWriter):
         self.path_provider = path_provider
         self.name_provider = name_provider
         self.path: Path | None = None
-        self.composer: HDFFile | None = None
-        self.datasets: list[HDFDataset] = []
+        self.composer: HDFDocumentComposer | None = None
+        self.datasets: list[HDFDatasetDescription] = []
 
     async def open(self, exposures_per_event: int = 1) -> dict[str, DataKey]:
         name = self.name_provider()
@@ -35,15 +35,19 @@ class BlobDetectorWriter(DetectorWriter):
         self.exposures_per_event = exposures_per_event
         # We know it will write data and sum, so emit those
         self.datasets = [
-            HDFDataset(
+            HDFDatasetDescription(
                 data_key=name,
                 dataset=DATA_PATH,
                 shape=(exposures_per_event, HEIGHT, WIDTH),
+                dtype_numpy="|u1",
+                chunk_shape=(HEIGHT, WIDTH),
             ),
-            HDFDataset(
-                f"{name}-sum",
+            HDFDatasetDescription(
+                data_key=f"{name}-sum",
                 dataset=SUM_PATH,
                 shape=(exposures_per_event,),
+                dtype_numpy="<i8",
+                chunk_shape=(1024,),
             ),
         ]
         self.composer = None
@@ -71,7 +75,7 @@ class BlobDetectorWriter(DetectorWriter):
             if not self.composer:
                 if not self.path:
                     raise RuntimeError(f"open() not called on {self}")
-                self.composer = HDFFile(self.path, self.datasets)
+                self.composer = HDFDocumentComposer(self.path, self.datasets)
                 for doc in self.composer.stream_resources():
                     yield "stream_resource", doc
             for doc in self.composer.stream_data(indices_written):
