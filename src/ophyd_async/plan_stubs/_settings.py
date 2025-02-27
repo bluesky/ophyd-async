@@ -14,6 +14,7 @@ from ophyd_async.core import (
     SettingsProvider,
     SignalRW,
     walk_rw_signals,
+    walk_config_signals,
 )
 from ophyd_async.core._table import Table
 
