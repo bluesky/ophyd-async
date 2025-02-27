@@ -2,6 +2,7 @@ import asyncio
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    AsyncStatus,
     DetectorController,
     DetectorTrigger,
     TriggerInfo,
@@ -26,6 +27,7 @@ class EigerController(DetectorController):
         driver: EigerDriverIO,
     ) -> None:
         self._drv = driver
+        self._arm_status: AsyncStatus | None = None
 
     def get_deadtime(self, exposure: float | None) -> float:
         # See https://media.dectris.com/filer_public/30/14/3014704e-5f3b-43ba-8ccf-8ef720e60d2a/240202_usermanual_eiger2.pdf
@@ -45,7 +47,7 @@ class EigerController(DetectorController):
             self._drv.trigger_mode.set(
                 EIGER_TRIGGER_MODE_MAP[trigger_info.trigger].value
             ),
-            self._drv.num_images.set(trigger_info.total_number_of_triggers),
+            self._drv.num_images.set(trigger_info.total_number_of_exposures),
         ]
         if trigger_info.livetime is not None:
             coros.extend(
@@ -58,7 +60,7 @@ class EigerController(DetectorController):
 
     async def arm(self):
         # TODO: Detector state should be an enum see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
-        self._arm_status = set_and_wait_for_other_value(
+        self._arm_status = await set_and_wait_for_other_value(
             self._drv.arm,
             1,
             self._drv.state,
@@ -68,8 +70,9 @@ class EigerController(DetectorController):
         )
 
     async def wait_for_idle(self):
-        if self._arm_status:
+        if self._arm_status and not self._arm_status.done:
             await self._arm_status
+        self._arm_status = None
 
     async def disarm(self):
         await self._drv.disarm.set(1)

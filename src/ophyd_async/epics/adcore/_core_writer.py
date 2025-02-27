@@ -10,6 +10,7 @@ from event_model import (  # type: ignore
     DataKey,
     StreamRange,
 )
+from pydantic import PositiveInt
 
 from ophyd_async.core._detector import DetectorWriter
 from ophyd_async.core._providers import DatasetDescriber, NameProvider, PathProvider
@@ -124,10 +125,10 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             self.fileio.capture, True, wait_for_set_completion=False
         )
 
-    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
+    async def open(self, exposures_per_event: PositiveInt = 1) -> dict[str, DataKey]:
         self._emitted_resource = None
         self._last_emitted = 0
-        self._frames_per_event = frames_per_event
+        self._exposures_per_event = exposures_per_event
         frame_shape = await self._dataset_describer.shape()
         dtype_numpy = await self._dataset_describer.np_datatype()
 
@@ -136,7 +137,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         describe = {
             self._name_provider(): DataKey(
                 source=self._name_provider(),
-                shape=[frames_per_event, *frame_shape],
+                shape=[exposures_per_event, *frame_shape],
                 dtype="array",
                 dtype_numpy=dtype_numpy,
                 external="STREAM:",
@@ -149,11 +150,11 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     ) -> AsyncGenerator[int, None]:
         """Wait until a specific index is ready to be collected."""
         async for num_captured in observe_value(self.fileio.num_captured, timeout):
-            yield num_captured // self._frames_per_event
+            yield num_captured // self._exposures_per_event
 
     async def get_indices_written(self) -> int:
         num_captured = await self.fileio.num_captured.get_value()
-        return num_captured // self._frames_per_event
+        return num_captured // self._exposures_per_event
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -185,7 +186,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                     data_key=self._name_provider(),
                     parameters={
                         # Assume that we always write 1 frame per file/chunk, this
-                        # may change to self._frames_per_event in the future
+                        # may change to self._exposures_per_event in the future
                         "chunk_shape": (1, *frame_shape),
                         # Include file template for reconstruction in consolidator
                         "template": file_template,
@@ -212,9 +213,10 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         # Already done a caput callback in _capture_status, so can't do one here
         await self.fileio.capture.set(False, wait=False)
         await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
-        if self._capture_status:
+        if self._capture_status and not self._capture_status.done:
             # We kicked off an open, so wait for it to return
             await self._capture_status
+        self._capture_status = None
 
     @property
     def hints(self) -> Hints:

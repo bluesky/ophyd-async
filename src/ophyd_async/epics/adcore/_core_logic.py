@@ -27,7 +27,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         driver: ADBaseIOT,
         good_states: frozenset[ADState] = DEFAULT_GOOD_STATES,
     ) -> None:
-        self.driver = driver
+        self.driver: ADBaseIOT = driver
         self.good_states = good_states
         self.frame_timeout = DEFAULT_TIMEOUT
         self._arm_status: AsyncStatus | None = None
@@ -43,7 +43,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
             DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         )
         await asyncio.gather(
-            self.driver.num_images.set(trigger_info.total_number_of_triggers),
+            self.driver.num_images.set(trigger_info.total_number_of_exposures),
             self.driver.image_mode.set(ImageMode.MULTIPLE),
         )
 
@@ -51,8 +51,9 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         self._arm_status = await self.start_acquiring_driver_and_ensure_status()
 
     async def wait_for_idle(self):
-        if self._arm_status:
+        if self._arm_status and not self._arm_status.done:
             await self._arm_status
+        self._arm_status = None
 
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have

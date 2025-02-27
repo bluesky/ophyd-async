@@ -3,17 +3,16 @@ from collections.abc import AsyncIterator
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
-from bluesky.protocols import Hints, StreamAsset
-from event_model import DataKey  # type: ignore
+from bluesky.protocols import StreamAsset
+from event_model import DataKey
+from pydantic import PositiveInt
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     DatasetDescriber,
     HDFDataset,
     HDFFile,
     NameProvider,
     PathProvider,
-    wait_for_value,
 )
 
 from ._core_io import NDFileHDFIO, NDPluginBaseIO
@@ -50,7 +49,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self._file: HDFFile | None = None
         self._filename_template = "%s%s"
 
-    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
+    async def open(self, exposures_per_event: PositiveInt = 1) -> dict[str, DataKey]:
         self._file = None
 
         # Setting HDF writer specific signals
@@ -73,7 +72,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         np_dtype = await self._dataset_describer.np_datatype()
 
         # Used by the base class
-        self._frames_per_event = frames_per_event
+        self._exposures_per_event = exposures_per_event
 
         # Determine number of frames that will be saved per HDF chunk
         frames_per_chunk = await self.fileio.num_frames_chunks.get_value()
@@ -83,7 +82,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             HDFDataset(
                 data_key=name,
                 dataset="/entry/data/data",
-                shape=(frames_per_event, *detector_shape),
+                shape=(exposures_per_event, *detector_shape),
                 dtype_numpy=np_dtype,
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
@@ -109,7 +108,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                         HDFDataset(
                             datakey,
                             f"/entry/instrument/NDAttributes/{datakey}",
-                            (frames_per_event,),
+                            (exposures_per_event,),
                             np_datatype,
                             # NDAttributes appear to always be configured with
                             # this chunk size
@@ -150,15 +149,3 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                     yield "stream_resource", doc
             for doc in self._file.stream_data(indices_written):
                 yield "stream_datum", doc
-
-    async def close(self):
-        # Already done a caput callback in _capture_status, so can't do one here
-        await self.fileio.capture.set(False, wait=False)
-        await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
-        if self._capture_status:
-            # We kicked off an open, so wait for it to return
-            await self._capture_status
-
-    @property
-    def hints(self) -> Hints:
-        return {"fields": [self._name_provider()]}

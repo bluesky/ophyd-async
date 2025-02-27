@@ -27,23 +27,23 @@ class BlobDetectorWriter(DetectorWriter):
         self.composer: HDFFile | None = None
         self.datasets: list[HDFDataset] = []
 
-    async def open(self, frames_per_event: int = 1) -> dict[str, DataKey]:
+    async def open(self, exposures_per_event: int = 1) -> dict[str, DataKey]:
         name = self.name_provider()
         path_info = self.path_provider(name)
         self.path = path_info.directory_path / f"{path_info.filename}.h5"
         self.pattern_generator.open_file(self.path, WIDTH, HEIGHT)
-        self.frames_per_event = frames_per_event
+        self.exposures_per_event = exposures_per_event
         # We know it will write data and sum, so emit those
         self.datasets = [
             HDFDataset(
                 data_key=name,
                 dataset=DATA_PATH,
-                shape=(frames_per_event, HEIGHT, WIDTH),
+                shape=(exposures_per_event, HEIGHT, WIDTH),
             ),
             HDFDataset(
                 f"{name}-sum",
                 dataset=SUM_PATH,
-                shape=(frames_per_event,),
+                shape=(exposures_per_event,),
             ),
         ]
         self.composer = None
@@ -81,7 +81,7 @@ class BlobDetectorWriter(DetectorWriter):
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         async for index in self.pattern_generator.observe_indices_written(timeout):
-            yield index // self.frames_per_event
+            yield index // self.exposures_per_event
 
     async def get_indices_written(self) -> int:
-        return await self.pattern_generator.get_last_index() // self.frames_per_event
+        return await self.pattern_generator.get_last_index() // self.exposures_per_event

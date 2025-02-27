@@ -25,8 +25,8 @@ async def test_when_prepared_with_energy_then_energy_set_on_detector(detector):
     detector._controller.arm = AsyncMock()
     await detector.prepare(
         EigerTriggerInfo(
-            frame_timeout=None,
-            number_of_triggers=1,
+            exposure_timeout=None,
+            number_of_events=1,
             trigger=DetectorTrigger.INTERNAL,
             energy_ev=10000,
         )
