@@ -11,9 +11,15 @@ from ophyd_async.plan_stubs import (
     apply_settings_if_different,
     get_current_settings,
     retrieve_settings,
+    store_config_settings,
     store_settings,
 )
-from ophyd_async.testing import ExampleTable, ParentOfEverythingDevice, get_mock
+from ophyd_async.testing import (
+    ExampleTable,
+    OneOfEverythingDevice,
+    ParentOfEverythingDevice,
+    get_mock,
+)
 
 TEST_DATA = Path(__file__).absolute().parent.parent / "test_data"
 
@@ -43,6 +49,25 @@ async def test_store_settings(RE, parent_device: ParentOfEverythingDevice, tmp_p
         with open(tmp_path / "test_file.yaml") as actual_file:
             with open(TEST_DATA / "test_yaml_save.yaml") as expected_file:
                 assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
+
+    RE(my_plan())
+
+
+async def test_store_config_settings(
+    RE, parent_device: OneOfEverythingDevice, tmp_path
+):
+    provider = YamlSettingsProvider(tmp_path)
+
+    def my_plan():
+        yield from store_config_settings(provider, "test_file", parent_device)
+        with open(tmp_path / "test_file.yaml") as actual_file:
+            actual_data = yaml.safe_load(actual_file)
+        with open(TEST_DATA / "test_yaml_save.yaml") as expected_file:
+            expected_data = yaml.safe_load(expected_file)
+        # Remove the keys that shouldn't be expected
+        expected_data.pop("_sig_rw", None)
+        expected_data.pop("sig_rw", None)
+        assert actual_data == expected_data
 
     RE(my_plan())
 
