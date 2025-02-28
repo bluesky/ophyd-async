@@ -679,8 +679,6 @@ def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW
 
 
 class Ignore:
-    """
-    Use this class as an annotation which signals to device fillers not to infer the 
-    existence of the attribute from device introspection.
-    """
+    """Annotation to ignore a signal when connecting a device."""
+
     pass

@@ -11,7 +11,7 @@ import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import Array1D, SignalRW, init_devices, Ignore
+from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_python_type
 from ophyd_async.tango.demo import (
@@ -67,7 +67,7 @@ class TestDevice(Device):
     _label = "Test Device"
 
     _limitedvalue = 3
-    
+
     _ignored_attr = 1.0
 
     @attribute(dtype=float, access=AttrWriteType.READ)
@@ -157,7 +157,7 @@ class TestDevice(Device):
 
     def write_raise_exception_attr(self, value: float):
         raise
-    
+
     @attribute(dtype=float, access=AttrWriteType.READ)
     def ignored_attr(self) -> float:
         return self._ignored_attr
