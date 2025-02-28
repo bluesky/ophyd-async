@@ -104,7 +104,7 @@ class TangoDeviceConnector(DeviceConnector):
         return await super().connect_mock(device, mock)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
-        if getattr(device, '_auto_fill_signals', False) is True:
+        if getattr(device, "_auto_fill_signals", False) is True:
             if self.trl and self.proxy is None:
                 self.proxy = await AsyncDeviceProxy(self.trl)
             elif self.proxy and not self.trl:
