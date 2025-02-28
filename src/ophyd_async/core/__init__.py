@@ -32,7 +32,6 @@ from ._readable import (
     HintedSignal,
     StandardReadable,
     StandardReadableFormat,
-    walk_config_signals
 )
 from ._settings import Settings, SettingsProvider
 from ._signal import (
@@ -50,6 +49,7 @@ from ._signal import (
     soft_signal_rw,
     wait_for_value,
     walk_rw_signals,
+    walk_config_signals,
 )
 from ._signal_backend import (
     Array1D,

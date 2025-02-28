@@ -9,7 +9,7 @@ from event_model import DataKey
 
 from ._device import Device, DeviceVector
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable
-from ._signal import SignalR, SignalRW
+from ._signal import SignalR
 from ._status import AsyncStatus
 from ._utils import merge_gathered_dicts
 
@@ -274,30 +274,3 @@ class _HintsFromName(HasHints):
     def hints(self) -> Hints:
         fields = [self.name] if self.name else []
         return {"fields": fields}
-
-
-async def walk_config_signals(device: StandardReadable, path_prefix: str = "") -> dict[str, SignalRW[Any]]:
-    """Retrieve all configuration signals from a device.
-
-    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
-    part of saving and loading a device.
-
-    :param device: Device to retrieve configuration signals from.
-    :param path_prefix: For internal use, leave blank when calling the method.
-    :return:
-        A dictionary matching the string attribute path of a SignalRW with the
-        signal itself.
-    """
-    signals: dict[str, SignalRW[Any]] = {}
-    config_names: list[str] = []
-    if isinstance(device, StandardReadable):
-        configuration = await device.read_configuration()
-        config_names = list(configuration.keys())
-    
-    for attr_name, attr in device.children():
-        dot_path = f"{path_prefix}{attr_name}"
-        if attr.name in config_names:
-            signals[dot_path] = attr
-        attr_signals = await walk_config_signals(attr, path_prefix=dot_path + ".")
-        signals.update(attr_signals)
-    return signals

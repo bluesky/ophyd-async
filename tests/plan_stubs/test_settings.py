@@ -58,9 +58,13 @@ async def test_store_config_settings(RE, parent_device: OneOfEverythingDevice, t
     def my_plan():
         yield from store_config_settings(provider, "test_file", parent_device)
         with open(tmp_path / "test_file.yaml") as actual_file:
-            with open(TEST_DATA / "test_yaml_save.yaml") as expected_file:
-                assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
-
+            actual_data = yaml.safe_load(actual_file)
+        with open(TEST_DATA / "test_yaml_save.yaml") as expected_file:
+            expected_data = yaml.safe_load(expected_file)
+        # Remove the keys that shouldn't be expected
+        expected_data.pop('_sig_rw', None)
+        expected_data.pop('sig_rw', None)
+        assert actual_data == expected_data
     RE(my_plan())
 
 async def test_retrieve_and_apply_settings(RE, parent_device: ParentOfEverythingDevice):

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import inspect
 import time
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from typing import Any, Generic, cast
@@ -13,6 +14,7 @@ from bluesky.protocols import (
     Reading,
     Status,
     Subscribable,
+    Configurable
 )
 from event_model import DataKey
 
@@ -675,4 +677,33 @@ def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW
             signals[dot_path] = attr
         attr_signals = walk_rw_signals(attr, path_prefix=dot_path + ".")
         signals.update(attr_signals)
+    return signals
+
+async def walk_config_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW[Any]]:
+    """Retrieve all configuration signals from a device.
+
+    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
+    part of saving and loading a device.
+
+    :param device: Device to retrieve configuration signals from.
+    :param path_prefix: For internal use, leave blank when calling the method.
+    :return:
+        A dictionary matching the string attribute path of a SignalRW with the
+        signal itself.
+    """
+    signals: dict[str, SignalRW[Any]] = {}
+    config_names: list[str] = []
+    
+    if isinstance(device, Configurable):
+        configuration = device.read_configuration()
+        if inspect.isawaitable(configuration):
+            configuration = await configuration
+        config_names = list(configuration.keys())
+    
+    for attr_name, attr in device.children():
+        dot_path = f"{path_prefix}{attr_name}"
+        if isinstance(attr, SignalRW) and attr.name in config_names:
+            signals[dot_path] = attr
+        signals.update(await walk_config_signals(attr, path_prefix=dot_path + "."))
+        
     return signals
