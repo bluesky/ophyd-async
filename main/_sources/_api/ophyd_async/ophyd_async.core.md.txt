@@ -267,6 +267,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._signal.walk_rw_signals
     :summary:
     ```
+* - {py:obj}`walk_config_signals <ophyd_async.core._signal.walk_config_signals>`
+  - ```{autodoc2-docstring} ophyd_async.core._signal.walk_config_signals
+    :summary:
+    ```
 * - {py:obj}`config_ophyd_async_logging <ophyd_async.core._log.config_ophyd_async_logging>`
   - ```{autodoc2-docstring} ophyd_async.core._log.config_ophyd_async_logging
     :summary:
@@ -1487,6 +1491,14 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._signal.walk_rw_signals
 
 ```{autodoc2-docstring} ophyd_async.core._signal.walk_rw_signals
+```
+````
+
+````{py:function} walk_config_signals(device: ~ophyd_async.core._device.Device, path_prefix: str = '') -> dict[str, ~ophyd_async.core._signal.SignalRW[~typing.Any]]
+:canonical: ophyd_async.core._signal.walk_config_signals
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._signal.walk_config_signals
 ```
 ````
 
