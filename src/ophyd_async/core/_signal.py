@@ -676,3 +676,11 @@ def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW
         attr_signals = walk_rw_signals(attr, path_prefix=dot_path + ".")
         signals.update(attr_signals)
     return signals
+
+
+class Ignore:
+    """
+    Use this class as an annotation which signals to device fillers not to infer the 
+    existence of the attribute from device introspection.
+    """
+    pass

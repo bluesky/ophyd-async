@@ -41,6 +41,7 @@ from ._signal import (
     SignalRW,
     SignalW,
     SignalX,
+    Ignore,
     observe_signals_value,
     observe_value,
     set_and_wait_for_other_value,
