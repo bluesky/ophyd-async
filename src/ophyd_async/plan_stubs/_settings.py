@@ -42,6 +42,15 @@ def get_current_settings(device: Device) -> MsgGenerator[Settings]:
 
 
 @plan
+def get_current_config_settings(device: Device) -> MsgGenerator[Settings]:
+    """Get current configuration settings on `Configurable`."""
+    signals = yield from wait_for_awaitable(walk_config_signals(device))
+    named_values = yield from _get_values_of_signals(signals)
+    signal_values = {signals[name]: value for name, value in named_values.items()}
+    return Settings(device, signal_values)
+
+
+@plan
 def store_settings(
     provider: SettingsProvider, name: str, device: Device
 ) -> MsgGenerator[None]:
@@ -60,7 +69,7 @@ def store_settings(
 def store_config_settings(
     provider: SettingsProvider, name: str, device: Device
 ) -> MsgGenerator[None]:
-    """Walk a Device for SignalRWs and store their values.
+    """Walk a Device for configuration attributes and store their values.
 
     :param provider: The provider to store the settings with.
     :param name: The name to store the settings under.
@@ -78,6 +87,20 @@ def retrieve_settings(
     """Retrieve named Settings for a Device from a provider."""
     named_values = yield from wait_for_awaitable(provider.retrieve(name))
     signals = walk_rw_signals(device)
+    unknown_names = set(named_values) - set(signals)
+    if unknown_names:
+        raise NameError(f"Unknown signal names {sorted(unknown_names)}")
+    signal_values = {signals[name]: value for name, value in named_values.items()}
+    return Settings(device, signal_values)
+
+
+@plan
+def retrieve_config_settings(
+    provider: SettingsProvider, name: str, device: Device
+) -> MsgGenerator[Settings]:
+    """Retrieve named configuration attribute Settings for a Device from a provider."""
+    named_values = yield from wait_for_awaitable(provider.retrieve(name))
+    signals = yield from wait_for_awaitable(walk_config_signals(device))
     unknown_names = set(named_values) - set(signals)
     if unknown_names:
         raise NameError(f"Unknown signal names {sorted(unknown_names)}")
