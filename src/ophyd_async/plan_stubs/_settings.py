@@ -13,8 +13,8 @@ from ophyd_async.core import (
     Settings,
     SettingsProvider,
     SignalRW,
-    walk_rw_signals,
     walk_config_signals,
+    walk_rw_signals,
 )
 from ophyd_async.core._table import Table
 
@@ -54,6 +54,7 @@ def store_settings(
     signals = walk_rw_signals(device)
     named_values = yield from _get_values_of_signals(signals)
     yield from wait_for_awaitable(provider.store(name, named_values))
+
 
 @plan
 def store_config_settings(

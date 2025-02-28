@@ -11,14 +11,14 @@ from ophyd_async.plan_stubs import (
     apply_settings_if_different,
     get_current_settings,
     retrieve_settings,
-    store_settings,
     store_config_settings,
+    store_settings,
 )
 from ophyd_async.testing import (
     ExampleTable,
+    OneOfEverythingDevice,
     ParentOfEverythingDevice,
     get_mock,
-    OneOfEverythingDevice
 )
 
 TEST_DATA = Path(__file__).absolute().parent.parent / "test_data"
@@ -52,7 +52,10 @@ async def test_store_settings(RE, parent_device: ParentOfEverythingDevice, tmp_p
 
     RE(my_plan())
 
-async def test_store_config_settings(RE, parent_device: OneOfEverythingDevice, tmp_path):
+
+async def test_store_config_settings(RE,
+                                     parent_device: OneOfEverythingDevice,
+                                     tmp_path):
     provider = YamlSettingsProvider(tmp_path)
 
     def my_plan():
@@ -66,6 +69,7 @@ async def test_store_config_settings(RE, parent_device: OneOfEverythingDevice, t
         expected_data.pop('sig_rw', None)
         assert actual_data == expected_data
     RE(my_plan())
+
 
 async def test_retrieve_and_apply_settings(RE, parent_device: ParentOfEverythingDevice):
     provider = YamlSettingsProvider(TEST_DATA)
