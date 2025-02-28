@@ -10,11 +10,8 @@ from ophyd_async.core import Settings, YamlSettingsProvider
 from ophyd_async.plan_stubs import (
     apply_settings,
     apply_settings_if_different,
-    get_current_config_settings,
     get_current_settings,
-    retrieve_config_settings,
     retrieve_settings,
-    store_config_settings,
     store_settings,
 )
 from ophyd_async.testing import (
@@ -57,7 +54,9 @@ async def test_get_current_config_settings(
     expected_values = await every_parent_device.get_signal_values()
 
     def my_plan():
-        current_settings = yield from get_current_config_settings(every_parent_device)
+        current_settings = yield from get_current_settings(
+            every_parent_device, only_config=True
+        )
         current_settings = dict(current_settings)
         for key, value in current_settings.items():
             if isinstance(value, np.ndarray):
@@ -86,7 +85,9 @@ async def test_store_config_settings(
     provider = YamlSettingsProvider(tmp_path)
 
     def my_plan():
-        yield from store_config_settings(provider, "test_file", every_parent_device)
+        yield from store_settings(
+            provider, "test_file", every_parent_device, only_config=True
+        )
         with open(tmp_path / "test_file.yaml") as actual_file:
             actual_data = yaml.safe_load(actual_file)
         with open(TEST_DATA / "test_yaml_config_save.yaml") as expected_file:
@@ -149,8 +150,8 @@ async def test_retrieve_and_apply_config_settings(
 
     def my_plan():
         m = get_mock(every_parent_device)
-        settings = yield from retrieve_config_settings(
-            provider, "test_yaml_config_save", every_parent_device
+        settings = yield from retrieve_settings(
+            provider, "test_yaml_config_save", every_parent_device, only_config=True
         )
         assert dict(settings) == serialized_values
         assert not m.mock_calls

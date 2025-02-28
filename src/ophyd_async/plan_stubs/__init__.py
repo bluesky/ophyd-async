@@ -11,11 +11,8 @@ from ._panda import apply_panda_settings
 from ._settings import (
     apply_settings,
     apply_settings_if_different,
-    get_current_config_settings,
     get_current_settings,
-    retrieve_config_settings,
     retrieve_settings,
-    store_config_settings,
     store_settings,
 )
 
@@ -30,9 +27,6 @@ __all__ = [
     "apply_settings",
     "apply_settings_if_different",
     "get_current_settings",
-    "get_current_config_settings",
     "retrieve_settings",
-    "retrieve_config_settings",
     "store_settings",
-    "store_config_settings",
 ]
