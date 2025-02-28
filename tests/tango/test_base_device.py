@@ -11,7 +11,7 @@ import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import Array1D, SignalRW, init_devices
+from ophyd_async.core import Array1D, SignalRW, init_devices, Ignore
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_python_type
 from ophyd_async.tango.demo import (
@@ -67,6 +67,8 @@ class TestDevice(Device):
     _label = "Test Device"
 
     _limitedvalue = 3
+    
+    _ignored_attr = 1.0
 
     @attribute(dtype=float, access=AttrWriteType.READ)
     def readback(self):
@@ -155,6 +157,10 @@ class TestDevice(Device):
 
     def write_raise_exception_attr(self, value: float):
         raise
+    
+    @attribute(dtype=float, access=AttrWriteType.READ)
+    def ignored_attr(self) -> float:
+        return self._ignored_attr
 
     @command
     def clear(self) -> str:
@@ -181,6 +187,7 @@ class TestTangoReadable(TangoReadable):
     justvalue: A[SignalRW[int], Format.HINTED_UNCACHED_SIGNAL]
     array: A[SignalRW[Array1D[np.float64]], Format.HINTED_UNCACHED_SIGNAL]
     limitedvalue: A[SignalRW[float], Format.HINTED_UNCACHED_SIGNAL]
+    ignored_attr: Ignore
 
 
 # --------------------------------------------------------------------
@@ -393,6 +400,8 @@ async def test_signal_autofill(tango_test_device, auto_fill_signals):
     )
     await test_device.connect()
     if auto_fill_signals:
+        assert not hasattr(test_device, "ignored_attr")
         assert hasattr(test_device, "readback")
     else:
+        assert not hasattr(test_device, "ignored_attr")
         assert not hasattr(test_device, "readback")
