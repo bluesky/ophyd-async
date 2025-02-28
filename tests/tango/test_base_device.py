@@ -393,8 +393,6 @@ async def test_signal_autofill(tango_test_device, auto_fill_signals):
     )
     await test_device.connect()
     if auto_fill_signals:
-        assert test_device._auto_fill_signals
         assert hasattr(test_device, "readback")
     else:
-        assert not test_device._auto_fill_signals
         assert not hasattr(test_device, "readback")
