@@ -33,9 +33,13 @@ class TangoDevice(Device):
         device_proxy: DeviceProxy | None = None,
         support_events: bool = False,
         name: str = "",
+        auto_fill_signals: bool = True,
     ) -> None:
         connector = TangoDeviceConnector(
-            trl=trl, device_proxy=device_proxy, support_events=support_events
+            trl=trl,
+            device_proxy=device_proxy,
+            support_events=support_events,
+            auto_fill_signals=auto_fill_signals,
         )
         super().__init__(name=name, connector=connector)
 
@@ -73,10 +77,12 @@ class TangoDeviceConnector(DeviceConnector):
         trl: str | None,
         device_proxy: DeviceProxy | None,
         support_events: bool,
+        auto_fill_signals: bool = True,
     ) -> None:
         self.trl = trl
         self.proxy = device_proxy
         self._support_events = support_events
+        self._auto_fill_signals = auto_fill_signals
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
@@ -114,16 +120,24 @@ class TangoDeviceConnector(DeviceConnector):
             .union(self.proxy.get_attribute_list())
             .union(self.proxy.get_command_list())
         )
+
+        not_filled = {unfilled for unfilled, _ in device.children()}
+
+        # If auto_fill_signals is True, fill all children inferred from the device
+        # else fill only the children that are annotated
         for name in children:
-            # TODO: strip attribute name
-            full_trl = f"{self.trl}/{name}"
-            signal_type = await infer_signal_type(full_trl, self.proxy)
-            if signal_type:
-                backend = self.filler.fill_child_signal(name, signal_type)
-                backend.datatype = await infer_python_type(full_trl, self.proxy)
-                backend.set_trl(full_trl)
+            if self._auto_fill_signals or name in not_filled:
+                # TODO: strip attribute name
+                full_trl = f"{self.trl}/{name}"
+                signal_type = await infer_signal_type(full_trl, self.proxy)
+                if signal_type:
+                    backend = self.filler.fill_child_signal(name, signal_type)
+                    backend.datatype = await infer_python_type(full_trl, self.proxy)
+                    backend.set_trl(full_trl)
+
         # Check that all the requested children have been filled
         self.filler.check_filled(f"{self.trl}: {children}")
+
         # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_real(device, timeout, force_reconnect)
