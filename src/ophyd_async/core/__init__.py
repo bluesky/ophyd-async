@@ -48,8 +48,8 @@ from ._signal import (
     soft_signal_r_and_setter,
     soft_signal_rw,
     wait_for_value,
-    walk_rw_signals,
     walk_config_signals,
+    walk_rw_signals,
 )
 from ._signal_backend import (
     Array1D,

@@ -680,8 +680,9 @@ def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW
     return signals
 
 
-async def walk_config_signals(device: Device,
-                              path_prefix: str = "") -> dict[str, SignalRW[Any]]:
+async def walk_config_signals(
+    device: Device, path_prefix: str = ""
+) -> dict[str, SignalRW[Any]]:
     """Retrieve all configuration signals from a device.
 
     Stores retrieved signals with their dotted attribute paths in a dictionary. Used as

@@ -13,8 +13,8 @@ from ._settings import (
     apply_settings_if_different,
     get_current_settings,
     retrieve_settings,
+    store_config_settings,
     store_settings,
-    store_config_settings
 )
 
 __all__ = [
