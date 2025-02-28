@@ -76,11 +76,11 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
         self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
-        self.ignored_signals = [
+        self.ignored_signals: set[str] = {
             name
             for name, type_annotation in device.__annotations__.items()
             if type_annotation is Ignore
-        ]
+        }
         # Backends and Connectors stored ready for the connection phase
         self._unfilled_backends: dict[
             LogicalName, tuple[SignalBackendT, type[Signal]]
