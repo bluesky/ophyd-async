@@ -82,7 +82,7 @@ class TangoDeviceConnector(DeviceConnector):
         self.trl = trl
         self.proxy = device_proxy
         self._support_events = support_events
-        self.auto_fill_signals = auto_fill_signals
+        self._auto_fill_signals = auto_fill_signals
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
@@ -126,7 +126,7 @@ class TangoDeviceConnector(DeviceConnector):
         # If auto_fill_signals is True, fill all children inferred from the device
         # else fill only the children that are annotated
         for name in children:
-            if self.auto_fill_signals or name in not_filled:
+            if self._auto_fill_signals or name in not_filled:
                 # TODO: strip attribute name
                 full_trl = f"{self.trl}/{name}"
                 signal_type = await infer_signal_type(full_trl, self.proxy)
