@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
-from ophyd_async.core import Device, DeviceConnector, DeviceFiller, Ignore, LazyMock
+from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock
 from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
@@ -121,12 +121,9 @@ class TangoDeviceConnector(DeviceConnector):
             .union(self.proxy.get_command_list())
         )
 
-        ignored_signals = []
-        for name, type_annotation in device.__annotations__.items():
-            if type_annotation is Ignore:
-                ignored_signals.append(name)
-
-        children = [child for child in children if child not in ignored_signals]
+        children = [
+            child for child in children if child not in self.filler.ignored_signals
+        ]
 
         not_filled = {unfilled for unfilled, _ in device.children()}
 

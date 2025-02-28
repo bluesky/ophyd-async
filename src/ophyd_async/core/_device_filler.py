@@ -16,7 +16,7 @@ from typing import (
 )
 
 from ._device import Device, DeviceConnector, DeviceVector
-from ._signal import Signal, SignalX
+from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
 from ._utils import get_origin_class
 
@@ -76,6 +76,11 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
         self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
+        self.ignored_signals = [
+            name
+            for name, type_annotation in device.__annotations__.items()
+            if type_annotation is Ignore
+        ]
         # Backends and Connectors stored ready for the connection phase
         self._unfilled_backends: dict[
             LogicalName, tuple[SignalBackendT, type[Signal]]
