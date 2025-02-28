@@ -12,5 +12,12 @@ class TangoReadable(TangoDevice, StandardReadable):
         trl: str | None = None,
         device_proxy: DeviceProxy | None = None,
         name: str = "",
+        auto_fill_signals: bool = True,
     ) -> None:
-        TangoDevice.__init__(self, trl, device_proxy=device_proxy, name=name)
+        TangoDevice.__init__(
+            self,
+            trl,
+            device_proxy=device_proxy,
+            name=name,
+            auto_fill_signals=auto_fill_signals,
+        )
