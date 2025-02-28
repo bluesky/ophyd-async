@@ -1,3 +1,4 @@
+import asyncio
 import os
 from collections import defaultdict
 
@@ -64,11 +65,7 @@ async def test_sim_blob_detector_count(
     }
 
 
-async def test_sim_blob_detector_fly(
-    RE: RunEngine,
-    tmp_path,
-    blob_detector: SimBlobDetector,
-):
+async def test_sim_blob_detector_fly(RE: RunEngine, blob_detector: SimBlobDetector):
     @bpp.stage_decorator([blob_detector])
     @bpp.run_decorator()
     def fly_plan():
@@ -78,11 +75,22 @@ async def test_sim_blob_detector_fly(
         yield from bps.declare_stream(blob_detector, name="primary")
         yield from bps.kickoff(blob_detector, wait=True)
         yield from bps.collect_while_completing(
-            flyers=[blob_detector], dets=[blob_detector], flush_period=0.5
+            flyers=[blob_detector], dets=[blob_detector], flush_period=0.1
         )
 
     docs = defaultdict(list)
     RE.subscribe(lambda name, doc: docs[name].append(doc))
+
+    values = iter(np.linspace(1, 2, 7))
+
+    async def set_next_x(t: float):
+        x = next(values)
+        blob_detector.pattern_generator.set_x(x)
+        if x == pytest.approx(1.5):
+            # pause here so we emit the data in 2 stream_datums
+            await asyncio.sleep(0.2)
+
+    blob_detector.pattern_generator.sleep = set_next_x
 
     RE(fly_plan())
     assert_emitted(
@@ -94,14 +102,28 @@ async def test_sim_blob_detector_fly(
         == docs["stream_datum"][1]["indices"]
         == {
             "start": 0,
-            "stop": 4,
+            "stop": 3,
         }
     )
     assert (
         docs["stream_datum"][2]["indices"]
         == docs["stream_datum"][3]["indices"]
         == {
-            "start": 4,
+            "start": 3,
             "stop": 7,
         }
     )
+    # Check we get the right data
+    path = docs["stream_resource"][0]["uri"].split("://localhost")[-1]
+    if os.name == "nt":
+        path = path.lstrip("/")
+    h5file = h5py.File(path)
+    assert list(h5file["/entry/sum"]) == [
+        506344,
+        527596,
+        542140,
+        549008,
+        548516,
+        540424,
+        524808,
+    ]

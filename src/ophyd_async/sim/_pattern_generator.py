@@ -75,10 +75,11 @@ class PatternFile:
 class PatternGenerator:
     """Generates pattern images in files."""
 
-    def __init__(self):
+    def __init__(self, sleep=asyncio.sleep):
         self._x = 0.0
         self._y = 0.0
         self._file: PatternFile | None = None
+        self.sleep = sleep
 
     def set_x(self, x: float):
         self._x = x
@@ -105,10 +106,10 @@ class PatternGenerator:
         file = self._get_file()
         start = time.monotonic()
         for i in range(1, number_of_frames + 1):
-            intensity = self.generate_point() * exposure
             deadline = start + i * period
             timeout = deadline - time.monotonic()
-            await asyncio.sleep(timeout)
+            await self.sleep(timeout)
+            intensity = self.generate_point() * exposure
             file.write_image_to_file(intensity)
 
     async def wait_for_next_index(self, timeout: float):
