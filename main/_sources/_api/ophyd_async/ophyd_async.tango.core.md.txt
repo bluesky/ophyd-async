@@ -509,7 +509,7 @@ Bases: {py:obj}`ophyd_async.core.SignalBackend`\[{py:obj}`ophyd_async.core.Signa
 ```
 ````
 
-`````{py:class} TangoDevice(trl: str | None = None, device_proxy: ~tango.DeviceProxy | None = None, support_events: bool = False, name: str = '')
+`````{py:class} TangoDevice(trl: str | None = None, device_proxy: ~tango.DeviceProxy | None = None, support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
 :canonical: ophyd_async.tango.core._base_device.TangoDevice
 
 Bases: {py:obj}`ophyd_async.core.Device`
@@ -540,7 +540,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 `````
 
-````{py:class} TangoReadable(trl: str | None = None, device_proxy: ~tango.DeviceProxy | None = None, name: str = '')
+````{py:class} TangoReadable(trl: str | None = None, device_proxy: ~tango.DeviceProxy | None = None, name: str = '', auto_fill_signals: bool = True)
 :canonical: ophyd_async.tango.core._tango_readable.TangoReadable
 
 Bases: {py:obj}`ophyd_async.tango.core._base_device.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`
@@ -593,7 +593,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.tango.core._base_device.T`
 
 `````
 
-`````{py:class} TangoDeviceConnector(trl: str | None, device_proxy: ~tango.DeviceProxy | None, support_events: bool)
+`````{py:class} TangoDeviceConnector(trl: str | None, device_proxy: ~tango.DeviceProxy | None, support_events: bool, auto_fill_signals: bool = True)
 :canonical: ophyd_async.tango.core._base_device.TangoDeviceConnector
 
 Bases: {py:obj}`ophyd_async.core.DeviceConnector`

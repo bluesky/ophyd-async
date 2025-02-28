@@ -31,7 +31,7 @@
 
 ### API
 
-`````{py:class} TangoCounter(trl: str | None = None, device_proxy: ~tango.DeviceProxy | None = None, name: str = '')
+`````{py:class} TangoCounter(trl: str | None = None, device_proxy: ~tango.DeviceProxy | None = None, name: str = '', auto_fill_signals: bool = True)
 :canonical: ophyd_async.tango.demo._counter.TangoCounter
 
 Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
