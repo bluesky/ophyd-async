@@ -695,18 +695,16 @@ async def walk_config_signals(
         signal itself.
     """
     signals: dict[str, SignalRW[Any]] = {}
-    config_names: list[str] = []
-
     if isinstance(device, Configurable):
         configuration = device.read_configuration()
         if inspect.isawaitable(configuration):
             configuration = await configuration
-        config_names = list(configuration.keys())
+        config_names = set(configuration)
 
-    for attr_name, attr in device.children():
-        dot_path = f"{path_prefix}{attr_name}"
-        if isinstance(attr, SignalRW) and attr.name in config_names:
-            signals[dot_path] = attr
-        signals.update(await walk_config_signals(attr, path_prefix=dot_path + "."))
+        for attr_name, attr in device.children():
+            dot_path = f"{path_prefix}{attr_name}"
+            if type(attr) is SignalRW and attr.name in config_names:
+                signals[dot_path] = attr
+            signals.update(await walk_config_signals(attr, path_prefix=dot_path + "."))
 
     return signals
