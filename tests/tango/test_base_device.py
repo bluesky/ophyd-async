@@ -383,3 +383,18 @@ async def test_tango_sim(sim_test_context):
         await stop_status
         assert all([set_status.done, stop_status.done])
         assert all([set_status.success, stop_status.success])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("auto_fill_signals", [True, False])
+async def test_signal_autofill(tango_test_device, auto_fill_signals):
+    test_device = TestTangoReadable(
+        trl=tango_test_device, auto_fill_signals=auto_fill_signals
+    )
+    await test_device.connect()
+    if auto_fill_signals:
+        assert test_device._auto_fill_signals
+        assert hasattr(test_device, "readback")
+    else:
+        assert not test_device._auto_fill_signals
+        assert not hasattr(test_device, "readback")
