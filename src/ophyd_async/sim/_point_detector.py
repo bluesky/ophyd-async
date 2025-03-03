@@ -81,8 +81,6 @@ class SimPointDetector(StandardReadable):
 
     @AsyncStatus.wrap
     async def trigger(self):
-        start = time.time()
         for setter in self._value_signals.values():
             setter(0)
         await self._update_values(await self.acquire_time.get_value())
-        print("Trigger took", time.time() - start)

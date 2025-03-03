@@ -32,12 +32,13 @@ the specific extra:
 - `ca` for EPICS Channel Access
 - `pva` for EPICS PVAccess
 - `tango` for Tango
-- `demo` for tutorial requirements like h5py and ipython
+- `sim` for simulated device requirements like h5py
+- `demo` for tutorial requirements like ipython and matplotlib
 - `testing` for testing requirements like pytest
 
 E.g.:
 ```
-$ python3 -m pip install ophyd-async[ca,demo]
+$ python3 -m pip install ophyd-async[ca,sim,demo]
 ```
 
 If you require a feature that is not currently released you can also install
