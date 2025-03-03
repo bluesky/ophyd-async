@@ -29,7 +29,7 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_adkinetix._controller.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=trig_mode)
+            TriggerInfo(number_of_events=1, trigger=trig_mode)
         )
         await test_adkinetix._controller.arm()
         await test_adkinetix._controller.wait_for_idle()
@@ -61,6 +61,7 @@ async def test_can_read(test_adkinetix: adkinetix.KinetixDetector):
     assert (await test_adkinetix.read()) == {}
 
 
+@pytest.mark.parametrize("one_shot_trigger_info", [1, 2, 10, 100], indirect=True)
 async def test_decribe_describes_writer_dataset(
     test_adkinetix: adkinetix.KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
@@ -70,7 +71,7 @@ async def test_decribe_describes_writer_dataset(
     assert await test_adkinetix.describe() == {
         "test_adkinetix1": {
             "source": "mock+ca://KINETIX1:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
+            "shape": [one_shot_trigger_info.exposures_per_event, 10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
@@ -78,6 +79,7 @@ async def test_decribe_describes_writer_dataset(
     }
 
 
+@pytest.mark.parametrize("one_shot_trigger_info", [1, 2, 10, 100], indirect=True)
 async def test_can_collect(
     test_adkinetix: adkinetix.KinetixDetector,
     static_path_provider: StaticPathProvider,
@@ -99,7 +101,6 @@ async def test_can_collect(
     )
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
-        "multiplier": 1,
         "chunk_shape": (1, 10, 10),
     }
     assert docs[1][0] == "stream_datum"
@@ -109,6 +110,7 @@ async def test_can_collect(
     assert stream_datum["indices"] == {"start": 0, "stop": 1}
 
 
+@pytest.mark.parametrize("one_shot_trigger_info", [1, 2, 10, 100], indirect=True)
 async def test_can_decribe_collect(
     test_adkinetix: adkinetix.KinetixDetector, one_shot_trigger_info: TriggerInfo
 ):
@@ -118,7 +120,7 @@ async def test_can_decribe_collect(
     assert (await test_adkinetix.describe_collect()) == {
         "test_adkinetix1": {
             "source": "mock+ca://KINETIX1:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
+            "shape": [one_shot_trigger_info.exposures_per_event, 10, 10],
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",

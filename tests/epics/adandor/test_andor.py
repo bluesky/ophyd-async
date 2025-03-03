@@ -43,7 +43,7 @@ async def test_decribe_describes_writer_dataset(
     assert await test_adandor.describe() == {
         "test_adandor21": {
             "source": "mock+ca://ANDOR21:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
+            "shape": [1, 10, 10],
             "dtype": "array",
             "dtype_numpy": "<u2",
             "external": "STREAM:",
@@ -71,7 +71,6 @@ async def test_can_collect(
     )
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
-        "multiplier": 1,
         "chunk_shape": (1, 10, 10),
     }
     assert docs[1][0] == "stream_datum"
@@ -90,7 +89,7 @@ async def test_can_decribe_collect(
     assert (await test_adandor.describe_collect()) == {
         "test_adandor21": {
             "source": "mock+ca://ANDOR21:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
+            "shape": [1, 10, 10],
             "dtype": "array",
             "dtype_numpy": "<u2",
             "external": "STREAM:",
@@ -111,11 +110,11 @@ async def test_unsupported_trigger_excepts(test_adandor: adandor.Andor2Detector)
         ):
             await test_adandor.prepare(
                 TriggerInfo(
-                    number_of_triggers=0,
+                    number_of_events=0,
                     trigger=DetectorTrigger.VARIABLE_GATE,
                     deadtime=1.1,
                     livetime=1,
-                    frame_timeout=3,
+                    exposure_timeout=3,
                 )
             )
 

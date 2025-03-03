@@ -6,7 +6,11 @@ import bluesky.plan_stubs as bps
 import pytest
 from bluesky.protocols import StreamAsset
 from bluesky.run_engine import RunEngine
-from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_resource
+from event_model import (  # type: ignore
+    ComposeStreamResourceBundle,
+    DataKey,
+    compose_stream_resource,
+)
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -47,11 +51,12 @@ class DummyWriter(DetectorWriter):
         self.index = 0
         self.observe_indices_written_timeout_log = []
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, exposures_per_event: int = 1) -> dict[str, DataKey]:
+        self._exposures_per_event = exposures_per_event
         return {
             self._name: DataKey(
                 source="soft://some-source",
-                shape=self._shape,
+                shape=[exposures_per_event, *self._shape],
                 dtype="number",
                 external="STREAM:",
             )
@@ -63,10 +68,10 @@ class DummyWriter(DetectorWriter):
         self.observe_indices_written_timeout_log.append(timeout)
         num_captured: int
         async for num_captured in observe_value(self.dummy_signal, timeout):
-            yield num_captured
+            yield num_captured // self._exposures_per_event
 
     async def get_indices_written(self) -> int:
-        return self.index
+        return self.index // self._exposures_per_event
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -80,7 +85,6 @@ class DummyWriter(DetectorWriter):
                     parameters={
                         "path": "",
                         "swmr": False,
-                        "multiplier": 1,
                     },
                     uid=None,
                     validate=True,
@@ -119,7 +123,7 @@ class MockDetector(StandardDetector):
         assert self._fly_start
         self._writer.increment_index()
         async for index in self._writer.observe_indices_written(
-            self._trigger_info.frame_timeout
+            self._trigger_info.exposure_timeout
             or (
                 DEFAULT_TIMEOUT
                 + self._trigger_info.livetime
@@ -130,14 +134,14 @@ class MockDetector(StandardDetector):
                 name=self.name,
                 current=index,
                 initial=self._initial_frame,
-                target=self._trigger_info.number_of_triggers,
+                target=self._trigger_info.number_of_events,
                 unit="",
                 precision=0,
                 time_elapsed=time.monotonic() - self._fly_start,
             )
             if (
-                isinstance(self._trigger_info.number_of_triggers, int)
-                and index >= self._trigger_info.number_of_triggers
+                isinstance(self._trigger_info.number_of_events, int)
+                and index >= self._trigger_info.number_of_events
             ):
                 break
 

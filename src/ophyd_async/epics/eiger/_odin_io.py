@@ -2,7 +2,7 @@ import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
 
 from bluesky.protocols import StreamAsset
-from event_model import DataKey
+from event_model import DataKey  # type: ignore
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -77,8 +77,9 @@ class OdinWriter(DetectorWriter):
         self._name_provider = name_provider
         super().__init__()
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, exposures_per_event: int = 1) -> dict[str, DataKey]:
         info = self._path_provider(device_name=self._name_provider())
+        self._exposures_per_event = exposures_per_event
 
         await asyncio.gather(
             self._drv.file_path.set(str(info.directory_path)),
@@ -101,7 +102,7 @@ class OdinWriter(DetectorWriter):
         return {
             "data": DataKey(
                 source=self._drv.file_name.source,
-                shape=list(data_shape),
+                shape=[self._exposures_per_event, *data_shape],
                 dtype="array",
                 # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
                 dtype_numpy="<u2",
@@ -113,10 +114,10 @@ class OdinWriter(DetectorWriter):
         self, timeout=DEFAULT_TIMEOUT
     ) -> AsyncGenerator[int, None]:
         async for num_captured in observe_value(self._drv.num_captured, timeout):
-            yield num_captured
+            yield num_captured // self._exposures_per_event
 
     async def get_indices_written(self) -> int:
-        return await self._drv.num_captured.get_value()
+        return await self._drv.num_captured.get_value() // self._exposures_per_event
 
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
         # TODO: Correctly return stream https://github.com/bluesky/ophyd-async/issues/530
