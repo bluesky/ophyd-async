@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncGenerator
+import time
 from pathlib import Path
 
 import h5py
@@ -56,7 +56,7 @@ class PatternFile:
         self.file.swmr_mode = True
         self.blob = generate_gaussian_blob(height, width) * np.iinfo(np.uint8).max
         self.image_counter = 0
-        self.q = asyncio.Queue()
+        self.e = asyncio.Event()
 
     def write_image_to_file(self, intensity: float):
         data = np.floor(self.blob * intensity)
@@ -64,8 +64,9 @@ class PatternFile:
             dset.resize(self.image_counter + 1, axis=0)
             dset[self.image_counter] = value
             dset.flush()
-        self.q.put_nowait(self.image_counter)
         self.image_counter += 1
+        self.e.set()
+        self.e.clear()
 
     def close(self):
         self.file.close()
@@ -74,10 +75,11 @@ class PatternFile:
 class PatternGenerator:
     """Generates pattern images in files."""
 
-    def __init__(self):
+    def __init__(self, sleep=asyncio.sleep):
         self._x = 0.0
         self._y = 0.0
         self._file: PatternFile | None = None
+        self.sleep = sleep
 
     def set_x(self, x: float):
         self._x = x
@@ -98,17 +100,22 @@ class PatternGenerator:
             raise RuntimeError("open_file not run")
         return self._file
 
-    def write_image_to_file(self, exposure: float):
-        self._get_file().write_image_to_file(self.generate_point() * exposure)
-
-    async def observe_indices_written(self, timeout: float) -> AsyncGenerator[int]:
+    async def write_images_to_file(
+        self, exposure: float, period: float, number_of_frames: int
+    ):
         file = self._get_file()
-        if file.image_counter:
-            yield file.image_counter
-        while True:
-            yield await asyncio.wait_for(file.q.get(), timeout)
+        start = time.monotonic()
+        for i in range(1, number_of_frames + 1):
+            deadline = start + i * period
+            timeout = deadline - time.monotonic()
+            await self.sleep(timeout)
+            intensity = self.generate_point() * exposure
+            file.write_image_to_file(intensity)
 
-    async def get_last_index(self) -> int:
+    async def wait_for_next_index(self, timeout: float):
+        await asyncio.wait_for(self._get_file().e.wait(), timeout)
+
+    def get_last_index(self) -> int:
         return self._get_file().image_counter
 
     def close_file(self):
