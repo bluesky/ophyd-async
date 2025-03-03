@@ -32,7 +32,7 @@ Now let's run a grid scan on the point detector, and pass a callback to the RunE
 ```
 We see a series of documents being emitted:
 - A [](#event_model.RunStart) document that tells us a scan is starting and what sort of scan it is, along with the names of the motors that will be moved.
-- An [](#event_model.EventDescriptor) document that tells us that the motor readbacks and detector channels will be all be read together in a single stream. It is used to make the column headings, but it contains more metadata about the Devices too like their configuration.
+- An [](#event_model.EventDescriptor) document that tells us that the motor readbacks and detector channels will be all be read together in a single stream. It is used to make the column headings, but it contains more metadata about the Devices too, like their configuration.
 - For each point in the scan:
   - An [](#event_model.Event) document, containing the motor readbacks and detector channels with their timestamps. It is used to make each row of the table.
 - A [](#event_model.RunStop) document that tells us the scan has stopped, and gives us its status.
