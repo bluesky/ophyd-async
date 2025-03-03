@@ -121,6 +121,10 @@ class TangoDeviceConnector(DeviceConnector):
             .union(self.proxy.get_command_list())
         )
 
+        children = [
+            child for child in children if child not in self.filler.ignored_signals
+        ]
+
         not_filled = {unfilled for unfilled, _ in device.children()}
 
         # If auto_fill_signals is True, fill all children inferred from the device

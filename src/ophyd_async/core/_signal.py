@@ -708,3 +708,9 @@ async def walk_config_signals(
         signals.update(await walk_config_signals(attr, path_prefix=dot_path + "."))
 
     return signals
+
+
+class Ignore:
+    """Annotation to ignore a signal when connecting a device."""
+
+    pass

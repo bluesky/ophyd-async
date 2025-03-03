@@ -35,6 +35,7 @@ from ._readable import (
 )
 from ._settings import Settings, SettingsProvider
 from ._signal import (
+    Ignore,
     Signal,
     SignalConnector,
     SignalR,
@@ -181,4 +182,5 @@ __all__ = [
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",
+    "Ignore",
 ]
