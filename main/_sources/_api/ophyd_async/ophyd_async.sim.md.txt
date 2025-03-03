@@ -193,7 +193,7 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ````
 
-`````{py:class} PatternGenerator()
+`````{py:class} PatternGenerator(sleep=asyncio.sleep)
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator
@@ -231,26 +231,26 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ````
 
-````{py:method} write_image_to_file(exposure: float)
-:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.write_image_to_file
+````{py:method} write_images_to_file(exposure: float, period: float, number_of_frames: int)
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.write_images_to_file
+:async:
 
-```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.write_image_to_file
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.write_images_to_file
 ```
 
 ````
 
-````{py:method} observe_indices_written(timeout: float) -> ~collections.abc.AsyncGenerator[int]
-:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.observe_indices_written
+````{py:method} wait_for_next_index(timeout: float)
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.wait_for_next_index
 :async:
 
-```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.observe_indices_written
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.wait_for_next_index
 ```
 
 ````
 
 ````{py:method} get_last_index() -> int
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator.get_last_index
-:async:
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.get_last_index
 ```

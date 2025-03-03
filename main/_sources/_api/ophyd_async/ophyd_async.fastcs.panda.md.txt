@@ -720,7 +720,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorWriter`
 
 ````
 
-````{py:method} observe_indices_written(timeout=DEFAULT_TIMEOUT) -> ~collections.abc.AsyncGenerator[int, None]
+````{py:method} observe_indices_written(timeout: float) -> ~collections.abc.AsyncGenerator[int, None]
 :canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.observe_indices_written
 :async:
 

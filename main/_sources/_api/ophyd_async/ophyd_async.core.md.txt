@@ -1803,7 +1803,7 @@ Bases: {py:obj}`pydantic.BaseModel`
 :canonical: ophyd_async.core._detector.TriggerInfo.number_of_triggers
 :type: ~pydantic.NonNegativeInt | list[~pydantic.NonNegativeInt]
 :value: >
-   None
+   'Field(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.number_of_triggers
 ```
@@ -2002,11 +2002,11 @@ Bases: {py:obj}`abc.ABC`
 
 ````
 
-````{py:method} observe_indices_written(timeout=DEFAULT_TIMEOUT) -> ~collections.abc.AsyncGenerator[int, None]
-:canonical: ophyd_async.core._detector.DetectorWriter.observe_indices_written
-:abstractmethod:
+````{py:property} hints
+:canonical: ophyd_async.core._detector.DetectorWriter.hints
+:type: ~bluesky.protocols.Hints
 
-```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.observe_indices_written
+```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.hints
 ```
 
 ````
@@ -2017,6 +2017,15 @@ Bases: {py:obj}`abc.ABC`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.get_indices_written
+```
+
+````
+
+````{py:method} observe_indices_written(timeout: float) -> ~collections.abc.AsyncGenerator[int, None]
+:canonical: ophyd_async.core._detector.DetectorWriter.observe_indices_written
+:abstractmethod:
+
+```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.observe_indices_written
 ```
 
 ````
@@ -2036,15 +2045,6 @@ Bases: {py:obj}`abc.ABC`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.close
-```
-
-````
-
-````{py:property} hints
-:canonical: ophyd_async.core._detector.DetectorWriter.hints
-:type: ~bluesky.protocols.Hints
-
-```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter.hints
 ```
 
 ````
