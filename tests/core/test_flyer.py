@@ -13,7 +13,6 @@ from event_model import ComposeStreamResourceBundle, DataKey, compose_stream_res
 from pydantic import ValidationError
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     DetectorController,
     DetectorTrigger,
     DetectorWriter,
@@ -74,7 +73,7 @@ class DummyWriter(DetectorWriter):
         }
 
     async def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
+        self, timeout: float
     ) -> AsyncGenerator[int, None]:
         num_captured: int
         async for num_captured in observe_value(self.dummy_signal, timeout):

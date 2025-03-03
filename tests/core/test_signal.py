@@ -182,7 +182,7 @@ async def test_set_and_wait_for_value_different_set_and_read():
     assert await set_signal.get_value() == 1
 
 
-async def test_set_and_wait_behaviour_with_wait_for_set_completion_false():
+async def test_set_and_wait_behavior_with_wait_for_set_completion_false():
     set_signal = epics_signal_rw(int, "pva://set", name="set-signal")
     match_signal = epics_signal_r(str, "pva://read", name="match-signal")
     await set_signal.connect(mock=True)

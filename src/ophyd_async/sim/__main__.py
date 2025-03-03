@@ -5,6 +5,7 @@ from tempfile import mkdtemp
 
 import bluesky.plan_stubs as bps  # noqa: F401
 import bluesky.plans as bp  # noqa: F401
+import bluesky.preprocessors as bpp  # noqa: F401
 from bluesky.callbacks.best_effort import BestEffortCallback
 from bluesky.run_engine import RunEngine, autoawait_in_bluesky_event_loop
 
