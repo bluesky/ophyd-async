@@ -58,7 +58,7 @@ class DummyWriter(DetectorWriter):
         }
 
     async def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
+        self, timeout: float
     ) -> AsyncGenerator[int, None]:
         self.observe_indices_written_timeout_log.append(timeout)
         num_captured: int

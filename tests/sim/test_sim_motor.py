@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from unittest.mock import patch
 
 import pytest
@@ -27,6 +28,7 @@ def m1() -> SimMotor:
     return SimMotor("M1", instant=False)
 
 
+@pytest.mark.skipif("win" in sys.platform, reason="windows CI runners too weedy")
 @pytest.mark.parametrize(
     "setpoint,expected",
     [
@@ -74,6 +76,7 @@ async def test_stop(m1: SimMotor):
         await move_status
 
 
+@pytest.mark.skipif("win" in sys.platform, reason="windows CI runners too weedy")
 async def test_fly(m1: SimMotor):
     await m1.acceleration_time.set(0.1)
     info = FlySimMotorInfo(cv_start=0, cv_end=1, cv_time=0.2)

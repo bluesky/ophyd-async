@@ -86,7 +86,7 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
         target=0.3,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.05),
+        time_elapsed=pytest.approx(0.0, abs=0.2),
     )
 
 

@@ -146,7 +146,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         return describe
 
     async def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
+        self, timeout: float
     ) -> AsyncGenerator[int, None]:
         """Wait until a specific index is ready to be collected."""
         async for num_captured in observe_value(self.fileio.num_captured, timeout):
