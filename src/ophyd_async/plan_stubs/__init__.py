@@ -13,7 +13,6 @@ from ._settings import (
     apply_settings_if_different,
     get_current_settings,
     retrieve_settings,
-    store_config_settings,
     store_settings,
 )
 
@@ -30,5 +29,4 @@ __all__ = [
     "get_current_settings",
     "retrieve_settings",
     "store_settings",
-    "store_config_settings",
 ]
