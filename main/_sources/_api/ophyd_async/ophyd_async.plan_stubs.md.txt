@@ -63,10 +63,6 @@
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.store_settings
     :summary:
     ```
-* - {py:obj}`store_config_settings <ophyd_async.plan_stubs._settings.store_config_settings>`
-  - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.store_config_settings
-    :summary:
-    ```
 ````
 
 ### API
@@ -134,30 +130,23 @@
 ```
 ````
 
-````{py:function} get_current_settings(device: ~ophyd_async.core.Device) -> ~bluesky.utils.MsgGenerator[~ophyd_async.core.Settings]
+````{py:function} get_current_settings(device: ~ophyd_async.core.Device, only_config: bool = False) -> ~bluesky.utils.MsgGenerator[~ophyd_async.core.Settings]
 :canonical: ophyd_async.plan_stubs._settings.get_current_settings
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.get_current_settings
 ```
 ````
 
-````{py:function} retrieve_settings(provider: ~ophyd_async.core.SettingsProvider, name: str, device: ~ophyd_async.core.Device) -> ~bluesky.utils.MsgGenerator[~ophyd_async.core.Settings]
+````{py:function} retrieve_settings(provider: ~ophyd_async.core.SettingsProvider, name: str, device: ~ophyd_async.core.Device, only_config: bool = False) -> ~bluesky.utils.MsgGenerator[~ophyd_async.core.Settings]
 :canonical: ophyd_async.plan_stubs._settings.retrieve_settings
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.retrieve_settings
 ```
 ````
 
-````{py:function} store_settings(provider: ~ophyd_async.core.SettingsProvider, name: str, device: ~ophyd_async.core.Device) -> ~bluesky.utils.MsgGenerator[None]
+````{py:function} store_settings(provider: ~ophyd_async.core.SettingsProvider, name: str, device: ~ophyd_async.core.Device, only_config: bool = False) -> ~bluesky.utils.MsgGenerator[None]
 :canonical: ophyd_async.plan_stubs._settings.store_settings
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.store_settings
-```
-````
-
-````{py:function} store_config_settings(provider: ~ophyd_async.core.SettingsProvider, name: str, device: ~ophyd_async.core.Device) -> ~bluesky.utils.MsgGenerator[None]
-:canonical: ophyd_async.plan_stubs._settings.store_config_settings
-
-```{autodoc2-docstring} ophyd_async.plan_stubs._settings.store_config_settings
 ```
 ````

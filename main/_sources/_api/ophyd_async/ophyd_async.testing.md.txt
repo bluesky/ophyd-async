@@ -319,7 +319,7 @@ Bases: {py:obj}`ophyd_async.core.Table`
 
 `````
 
-````{py:class} OneOfEverythingDevice(name='')
+`````{py:class} OneOfEverythingDevice(name='')
 :canonical: ophyd_async.testing._one_of_everything.OneOfEverythingDevice
 
 Bases: {py:obj}`ophyd_async.core.StandardReadable`
@@ -327,7 +327,16 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.OneOfEverythingDevice
 ```
 
+````{py:method} get_signal_values()
+:canonical: ophyd_async.testing._one_of_everything.OneOfEverythingDevice.get_signal_values
+:async:
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.OneOfEverythingDevice.get_signal_values
+```
+
 ````
+
+`````
 
 `````{py:class} ParentOfEverythingDevice(name='')
 :canonical: ophyd_async.testing._one_of_everything.ParentOfEverythingDevice
