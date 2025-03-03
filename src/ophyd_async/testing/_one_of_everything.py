@@ -105,6 +105,9 @@ class OneOfEverythingDevice(StandardReadable):
             self.ndarray = soft_signal_rw(np.ndarray, np.array(([1, 2, 3], [4, 5, 6])))
         super().__init__(name)
 
+    async def get_signal_values(self):
+        return await _get_signal_values(self)
+
 
 async def _get_signal_values(child: Device) -> dict[SignalRW, Any]:
     if isinstance(child, SignalRW):
