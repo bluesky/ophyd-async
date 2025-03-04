@@ -17,8 +17,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoPolling, TangoReadable
-from tango import DevState
+from ophyd_async.tango.core import DevStateEnum, TangoPolling, TangoReadable
 
 
 class TangoMover(TangoReadable, Movable, Stoppable):
@@ -29,7 +28,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
     # the parameters for ophyd to poll instead
     position: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
     velocity: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
-    state: A[SignalR[DevState], TangoPolling(0.1)]
+    state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
     # If a tango name clashes with a bluesky verb, add a trailing underscore
     stop_: SignalX
 
@@ -58,7 +57,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
         await self.position.set(value, wait=False, timeout=timeout)
 
         move_status = AsyncStatus(
-            wait_for_value(self.state, DevState.ON, timeout=timeout)
+            wait_for_value(self.state, DevStateEnum.ON, timeout=timeout)
         )
 
         try:

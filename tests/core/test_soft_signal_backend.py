@@ -1,6 +1,5 @@
 import asyncio
 import os
-import time
 import typing
 from collections.abc import Callable, Sequence
 from typing import Any, TypeVar
@@ -11,11 +10,11 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     Array1D,
-    SignalBackend,
     SoftSignalBackend,
     StrictEnum,
     soft_signal_rw,
 )
+from ophyd_async.testing import MonitorQueue
 
 T = TypeVar("T")
 
@@ -50,30 +49,6 @@ def enumwf_d(value):
     return {"dtype": "array", "shape": [len(value)], "choices": ["Aaa", "Bbb", "Ccc"]}
 
 
-class MonitorQueue:
-    def __init__(self, backend: SignalBackend):
-        self.backend = backend
-        self.updates: asyncio.Queue[Reading] = asyncio.Queue()
-        backend.set_callback(self.updates.put_nowait)
-
-    async def assert_updates(self, expected_value):
-        expected_reading = {
-            "value": expected_value,
-            "timestamp": pytest.approx(time.monotonic(), rel=0.1),
-            "alarm_severity": 0,
-        }
-        reading = await self.updates.get()
-
-        backend_value = await self.backend.get_value()
-        backend_reading = await self.backend.get_reading()
-
-        assert reading["value"] == expected_value == backend_value
-        assert reading == expected_reading == backend_reading
-
-    def close(self):
-        self.backend.set_callback(None)
-
-
 # Can be removed once numpy >=2 is pinned.
 scalar_int_dtype = (
     "<i4" if os.name == "nt" and np.version.version.startswith("1.") else "<i8"
@@ -87,16 +62,16 @@ scalar_int_dtype = (
         (float, 0.0, 43.5, number_d, "<f8"),
         (str, "", "goodbye", string_d, "|S40"),
         (MyEnum, MyEnum.A, MyEnum.C, enum_d, "|S40"),
-        (Array1D[np.int8], [], [-8, 3, 44], waveform_d, "|i1"),
-        (Array1D[np.uint8], [], [218], waveform_d, "|u1"),
-        (Array1D[np.int16], [], [-855], waveform_d, "<i2"),
-        (Array1D[np.uint16], [], [5666], waveform_d, "<u2"),
-        (Array1D[np.int32], [], [-2], waveform_d, "<i4"),
-        (Array1D[np.uint32], [], [1022233], waveform_d, "<u4"),
-        (Array1D[np.int64], [], [-3], waveform_d, "<i8"),
-        (Array1D[np.uint64], [], [995444], waveform_d, "<u8"),
-        (Array1D[np.float32], [], [1.0], waveform_d, "<f4"),
-        (Array1D[np.float64], [], [0.2], waveform_d, "<f8"),
+        (Array1D[np.int8], np.array([]), np.array([-8, 3, 44]), waveform_d, "|i1"),
+        (Array1D[np.uint8], np.array([]), np.array([218]), waveform_d, "|u1"),
+        (Array1D[np.int16], np.array([]), np.array([-855]), waveform_d, "<i2"),
+        (Array1D[np.uint16], np.array([]), np.array([5666]), waveform_d, "<u2"),
+        (Array1D[np.int32], np.array([]), np.array([-2]), waveform_d, "<i4"),
+        (Array1D[np.uint32], np.array([]), np.array([1022233]), waveform_d, "<u4"),
+        (Array1D[np.int64], np.array([]), np.array([-3]), waveform_d, "<i8"),
+        (Array1D[np.uint64], np.array([]), np.array([995444]), waveform_d, "<u8"),
+        (Array1D[np.float32], np.array([]), np.array([1.0]), waveform_d, "<f4"),
+        (Array1D[np.float64], np.array([]), np.array([0.2]), waveform_d, "<f8"),
         (Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
         (Sequence[MyEnum], [], [MyEnum.A, MyEnum.B], enumwf_d, "|S40"),
         (typing.Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
@@ -110,26 +85,21 @@ async def test_soft_signal_backend_get_put_monitor(
     descriptor: Callable[[Any], dict],
     dtype_numpy: str,
 ):
-    backend = SoftSignalBackend(datatype=datatype)
-
-    await backend.connect(1)
-    q = MonitorQueue(backend)
-    try:
+    signal = soft_signal_rw(datatype, initial_value)
+    await signal.connect()
+    backend = signal._connector.backend
+    with MonitorQueue(signal) as q:
         # Check descriptor
         source = "soft://test"
         # Add expected dtype_numpy to descriptor
         assert dict(
             source=source, **descriptor(initial_value), dtype_numpy=dtype_numpy
         ) == await backend.get_datakey(source)
-        # Check initial value
-        await q.assert_updates(
-            pytest.approx(initial_value) if initial_value != "" else initial_value
-        )
+        await q.assert_updates(initial_value)
+
         # Put to new value and check that
-        await backend.put(put_value, True)
-        await q.assert_updates(pytest.approx(put_value))
-    finally:
-        q.close()
+        await backend.put(put_value, wait=True)
+        await q.assert_updates(put_value)
 
 
 async def test_soft_signal_backend_enum_value_equivalence():
