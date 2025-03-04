@@ -30,7 +30,7 @@ class EigerController(DetectorController):
         return 0.0001
 
     async def set_energy(self, energy: float, tolerance: float = 0.1):
-        """Set photon enery."""
+        """Set photon energy."""
         """Changing photon energy takes some time so only do so if the current energy is
         outside the tolerance."""
 

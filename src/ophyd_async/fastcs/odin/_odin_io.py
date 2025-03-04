@@ -8,17 +8,13 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorWriter,
     Device,
-    DeviceVector,
     NameProvider,
     PathProvider,
+    SignalR,
+    SignalRW,
     StrictEnum,
     observe_value,
     set_and_wait_for_value,
-)
-from ophyd_async.epics.core import (
-    epics_signal_r,
-    epics_signal_rw,
-    epics_signal_rw_rbv,
 )
 
 
@@ -28,41 +24,18 @@ class Writing(StrictEnum):
 
 
 class OdinNode(Device):
-    def __init__(self, prefix: str, name: str = "") -> None:
-        self.writing = epics_signal_r(Writing, f"{prefix}HDF:Writing")
-        self.connected = epics_signal_r(bool, f"{prefix}Connected")
-
-        super().__init__(name)
+    writing: SignalR[Writing]
 
 
-class Odin(Device):
-    def __init__(self, prefix: str, name: str = "") -> None:
-        self.nodes = DeviceVector({i: OdinNode(f"{prefix}FP{i}:") for i in range(4)})
-
-        self.capture = epics_signal_rw(
-            Writing, f"{prefix}Writing", f"{prefix}ConfigHdfWrite"
-        )
-        self.num_captured = epics_signal_r(int, f"{prefix}FramesWritten")
-        self.num_to_capture = epics_signal_rw_rbv(int, f"{prefix}ConfigHdfFrames")
-
-        self.start_timeout = epics_signal_rw_rbv(int, f"{prefix}TimeoutTimerPeriod")
-
-        self.image_height = epics_signal_rw_rbv(int, f"{prefix}DatasetDataDims0")
-        self.image_width = epics_signal_rw_rbv(int, f"{prefix}DatasetDataDims1")
-
-        self.num_row_chunks = epics_signal_rw_rbv(int, f"{prefix}DatasetDataChunks1")
-        self.num_col_chunks = epics_signal_rw_rbv(int, f"{prefix}DatasetDataChunks2")
-
-        self.file_path = epics_signal_rw_rbv(str, f"{prefix}ConfigHdfFilePath")
-        self.file_name = epics_signal_rw_rbv(str, f"{prefix}ConfigHdfFilePrefix")
-
-        self.acquisition_id = epics_signal_rw_rbv(
-            str, f"{prefix}ConfigHdfAcquisitionId"
-        )
-
-        self.data_type = epics_signal_rw_rbv(str, f"{prefix}DatasetDataDatatype")
-
-        super().__init__(name)
+class OdinHdfIO(Device):
+    capture: SignalRW[Writing]
+    num_captured: SignalR[int]
+    num_to_capture: SignalRW[int]
+    image_height: SignalRW[int]
+    image_width: SignalRW[int]
+    file_path: SignalRW[str]
+    file_name: SignalRW[str]
+    data_type: SignalRW[str]
 
 
 class OdinWriter(DetectorWriter):
@@ -70,7 +43,7 @@ class OdinWriter(DetectorWriter):
         self,
         path_provider: PathProvider,
         name_provider: NameProvider,
-        odin_driver: Odin,
+        odin_driver: OdinHdfIO,
     ) -> None:
         self._drv = odin_driver
         self._path_provider = path_provider
