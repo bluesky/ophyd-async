@@ -31,7 +31,7 @@ def eiger_driver_and_controller(
         if args[0] == 1:
             set_mock_value(driver.state, "ready")
 
-    callback_on_mock_put(driver.arm, become_ready_on_arm)
+    callback_on_mock_put(controller._drv.arm, become_ready_on_arm)
 
     return driver, controller
 

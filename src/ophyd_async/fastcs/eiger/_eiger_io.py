@@ -1,4 +1,11 @@
-from ophyd_async.core import Device, SignalR, SignalRW, SignalW, StrictEnum
+from ophyd_async.core import (
+    Device,
+    SignalR,
+    SignalRW,
+    SignalW,
+    StrictEnum,
+)
+from ophyd_async.fastcs.core import fastcs_connector
 
 
 class EigerTriggerMode(StrictEnum):
@@ -20,3 +27,6 @@ class EigerDriverIO(Device):
     arm: SignalW[int]
     disarm: SignalW[int]
     photon_energy: SignalRW[float]
+
+    def __init__(self, uri: str, name: str = ""):
+        super().__init__(name=name, connector=fastcs_connector(self, uri))
