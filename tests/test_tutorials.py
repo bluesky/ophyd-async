@@ -66,6 +66,7 @@ def test_flyscanning_devices(capsys):
         RE: RunEngine = main.RE
 
         @bpp.stage_decorator([main.bdet])
+        @bpp.monitor_during_decorator([main.stage.x.user_readback])
         @bpp.run_decorator()
         def fly_plan():
             # Move to the start
@@ -95,18 +96,25 @@ def test_flyscanning_devices(capsys):
         assert captured.err == ""
         # assert captured.out == ""
         assert_emitted(
-            docs, start=1, descriptor=1, stream_resource=2, stream_datum=4, stop=1
+            docs,
+            start=1,
+            descriptor=2,
+            event=19,
+            stream_resource=2,
+            stream_datum=4,
+            stop=1,
         )
+        assert [d["data"]["stage-x"] for d in docs["event"]] == []
         path = docs["stream_resource"][0]["uri"].split("://localhost")[-1]
         if os.name == "nt":
             path = path.lstrip("/")
         h5file = h5py.File(path)
         assert list(h5file["/entry/sum"]) == [
-            506344,
             524952,
             538800,
             547064,
             549656,
             547020,
             538668,
+            524808,
         ]
