@@ -4,6 +4,7 @@ https://github.com/epics-modules/motor
 """
 
 import asyncio
+from math import cos, pi, sin
 
 from bluesky.protocols import (
     Flyable,
@@ -19,6 +20,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
+    Device,
     StandardReadable,
     StrictEnum,
     WatchableAsyncStatus,
@@ -267,3 +269,42 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
                 f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
             )
         return fly_prepared_position
+
+
+class SParaPerpPDClass(Device):
+    def __init__(
+        self, xpd: Motor, ypd: Motor, phipd: Motor, phioffset: float, name: str = ""
+    ):
+        self.xpd = xpd
+        self.ypd = ypd
+        self.phipd = phipd
+        self.phioffset = phioffset
+        super().__init__(name)
+
+    @AsyncStatus.wrap
+    async def set(self, xpos):
+        x, y, phi_raw = await asyncio.gather(
+            # This would induce creep for relative scans, use setpoint instead?
+            self.xpd.user_readback.get_value(),
+            self.ypd.user_readback.get_value(),
+            self.phipd.user_readback.get_value(),
+        )
+        phi = (phi_raw + self.phioffset) * pi / 180
+        ypos = x * sin(phi) + y * cos(phi)
+        await asyncio.gather(
+            self.xpd.set(xpos * cos(phi) - ypos * sin(phi)),
+            self.ypd.set(xpos * sin(phi) + ypos * cos(phi)),
+        )
+
+    async def get_value(self) -> float:
+        x, y, phi_raw = await asyncio.gather(
+            self.xpd.user_readback.get_value(),
+            self.ypd.user_readback.get_value(),
+            self.phipd.user_readback.get_value(),
+        )
+        phi = (phi_raw + self.phioffset) * pi / 180
+        xpos = x * cos(phi) - y * sin(phi)
+        return xpos
+
+    async def stop(self):
+        await asyncio.gather(self.xpd.stop(), self.ypd.stop())
