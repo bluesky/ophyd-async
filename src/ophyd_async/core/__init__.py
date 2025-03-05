@@ -1,5 +1,11 @@
 """The building blocks for making devices."""
 
+from ._derived_signal import (
+    DerivedBackend,
+    DerivedSignalBackend,
+    Transform,
+    TransformArgument,
+)
 from ._detector import (
     DetectorController,
     DetectorTrigger,
@@ -179,8 +185,13 @@ __all__ = [
     "in_micros",
     "make_datakey",
     "wait_for_connection",
+    "Ignore",
+    # Derived signal
+    "DerivedBackend",
+    "DerivedSignalBackend",
+    "Transform",
+    "TransformArgument",
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",
-    "Ignore",
 ]
