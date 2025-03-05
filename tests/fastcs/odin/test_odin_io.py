@@ -4,16 +4,16 @@ from unittest.mock import ANY, MagicMock
 import pytest
 
 from ophyd_async.core import init_devices
-from ophyd_async.epics.eiger._odin_io import Odin, OdinWriter, Writing  # noqa: PLC2701
+from ophyd_async.fastcs.odin import OdinHdfIO, OdinWriter, Writing  # noqa: PLC2701
 from ophyd_async.testing import get_mock_put, set_mock_value
 
-OdinDriverAndWriter = tuple[Odin, OdinWriter]
+OdinDriverAndWriter = tuple[OdinHdfIO, OdinWriter]
 
 
 @pytest.fixture
 def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
     with init_devices(mock=True):
-        driver = Odin("")
+        driver = OdinHdfIO("")
         writer = OdinWriter(MagicMock(), lambda: "odin", driver)
     return driver, writer
 
@@ -22,7 +22,7 @@ async def test_when_open_called_then_file_correctly_set(
     odin_driver_and_writer: OdinDriverAndWriter, tmp_path: Path
 ):
     driver, writer = odin_driver_and_writer
-    path_info = writer._path_provider.return_value
+    path_info = writer._path_provider.return_value  # type: ignore
     expected_filename = "filename.h5"
     path_info.directory_path = tmp_path
     path_info.filename = expected_filename
