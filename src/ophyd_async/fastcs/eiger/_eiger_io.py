@@ -27,6 +27,11 @@ class EigerDriverIO(Device):
     arm: SignalW[int]
     disarm: SignalW[int]
     photon_energy: SignalRW[float]
+    beam_centre_x: SignalRW[float]
+    beam_centre_y: SignalRW[float]
+    det_distance: SignalRW[float]
+    omega_start: SignalRW[float]
+    omega_increment: SignalRW[float]
 
     def __init__(self, uri: str, name: str = ""):
         super().__init__(name=name, connector=fastcs_connector(self, uri))
