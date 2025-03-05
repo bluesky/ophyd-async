@@ -8,6 +8,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorWriter,
     Device,
+    DeviceVector,
     NameProvider,
     PathProvider,
     SignalR,
@@ -16,6 +17,7 @@ from ophyd_async.core import (
     observe_value,
     set_and_wait_for_value,
 )
+from ophyd_async.fastcs.core import fastcs_connector
 
 
 class Writing(StrictEnum):
@@ -36,6 +38,10 @@ class OdinHdfIO(Device):
     file_path: SignalRW[str]
     file_name: SignalRW[str]
     data_type: SignalRW[str]
+    nodes = DeviceVector[OdinNode]
+
+    def __init__(self, uri: str, name: str = ""):
+        super().__init__(name=name, connector=fastcs_connector(self, uri))
 
 
 class OdinWriter(DetectorWriter):

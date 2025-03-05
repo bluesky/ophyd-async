@@ -1,6 +1,7 @@
 from pydantic import Field
 
 from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector, TriggerInfo
+from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.odin._odin_io import OdinHdfIO, OdinWriter
 
 from ._eiger_controller import EigerController
@@ -25,6 +26,7 @@ class EigerDetector(StandardDetector):
         hdf_suffix="-EA-ODIN-01:",
         name="",
     ):
+        connector = fastcs_connector(self, prefix)
         self.drv = EigerDriverIO(prefix + drv_suffix)
         self.odin = OdinHdfIO(prefix + hdf_suffix + "FP:")
 
@@ -32,6 +34,7 @@ class EigerDetector(StandardDetector):
             EigerController(self.drv),
             OdinWriter(path_provider, lambda: self.name, self.odin),
             name=name,
+            connector=connector,
         )
 
     @AsyncStatus.wrap
