@@ -107,6 +107,14 @@
   - ```{autodoc2-docstring} ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups
     :summary:
     ```
+* - {py:obj}`int_array_value <ophyd_async.testing._one_of_everything.int_array_value>`
+  - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.int_array_value
+    :summary:
+    ```
+* - {py:obj}`float_array_value <ophyd_async.testing._one_of_everything.float_array_value>`
+  - ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.float_array_value
+    :summary:
+    ```
 ````
 
 ### API
@@ -126,7 +134,7 @@
 ```
 ````
 
-````{py:function} assert_reading(readable: ~ophyd_async.core.AsyncReadable, expected_reading: dict[str, ~bluesky.protocols.Reading]) -> None
+````{py:function} assert_reading(readable: ~ophyd_async.core.AsyncReadable, expected_reading: dict[str, dict[str, ~typing.Any]]) -> None
 :canonical: ophyd_async.testing._assert.assert_reading
 :async:
 
@@ -134,7 +142,7 @@
 ```
 ````
 
-````{py:function} assert_configuration(configurable: ~ophyd_async.core.AsyncConfigurable, configuration: dict[str, ~bluesky.protocols.Reading]) -> None
+````{py:function} assert_configuration(configurable: ~ophyd_async.core.AsyncConfigurable, configuration: dict[str, dict[str, ~typing.Any]]) -> None
 :canonical: ophyd_async.testing._assert.assert_configuration
 :async:
 
@@ -412,3 +420,17 @@ Bases: {py:obj}`ophyd_async.core.Watcher`\[{py:obj}`ophyd_async.testing._utils.T
 ````
 
 `````
+
+````{py:function} int_array_value(dtype: type[~ophyd_async.core.DTypeScalar_co])
+:canonical: ophyd_async.testing._one_of_everything.int_array_value
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.int_array_value
+```
+````
+
+````{py:function} float_array_value(dtype: type[~ophyd_async.core.DTypeScalar_co])
+:canonical: ophyd_async.testing._one_of_everything.float_array_value
+
+```{autodoc2-docstring} ophyd_async.testing._one_of_everything.float_array_value
+```
+````

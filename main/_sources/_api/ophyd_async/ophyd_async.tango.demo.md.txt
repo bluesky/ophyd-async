@@ -31,7 +31,7 @@
 
 ### API
 
-`````{py:class} TangoCounter(trl: str | None = None, device_proxy: ~tango.DeviceProxy | None = None, name: str = '', auto_fill_signals: bool = True)
+`````{py:class} TangoCounter(trl: str | None = None, name: str = '', auto_fill_signals: bool = True)
 :canonical: ophyd_async.tango.demo._counter.TangoCounter
 
 Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
@@ -135,7 +135,7 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`, {py:obj}`bluesky.protocol
 
 ````{py:attribute} state
 :canonical: ophyd_async.tango.demo._mover.TangoMover.state
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[~tango.DevState], TangoPolling(0.1)]
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[~ophyd_async.tango.core.DevStateEnum], TangoPolling(0.1)]
 :value: >
    None
 

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.9.1.dev22+g38270ef2 documentation</title>
+    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.9.1.dev23+gf50f67d1 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=154a1862"></script>
+    <script src="../../../../_static/documentation_options.js?v=cac45b7d"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev22+g38270ef2 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev22+g38270ef2 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
   
   
 </a></div>
@@ -492,6 +492,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">AsyncDeviceProxy</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._tango_transport</span><span class="w"> </span><span class="kn">import</span> <span class="n">TangoSignalBackend</span><span class="p">,</span> <span class="n">get_python_type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_device_trl_and_attr</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ophyd_async&quot;</span><span class="p">)</span>
 
@@ -502,9 +503,8 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">read_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TangoSignalBackend</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">TangoSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">TangoSignalBackend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">)</span></div>
 
 
 
@@ -514,7 +514,6 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">read_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
@@ -528,15 +527,13 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        The Attribute/Command to read and monitor</span>
 <span class="sd">    write_trl:</span>
 <span class="sd">        If given, use this Attribute/Command to write to, otherwise use read_trl</span>
-<span class="sd">    device_proxy:</span>
-<span class="sd">        If given, this DeviceProxy will be used</span>
 <span class="sd">    timeout:</span>
 <span class="sd">        The timeout for the read and write operations</span>
 <span class="sd">    name:</span>
 <span class="sd">        The name of the Signal</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">,</span> <span class="n">write_trl</span> <span class="ow">or</span> <span class="n">read_trl</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">,</span> <span class="n">write_trl</span> <span class="ow">or</span> <span class="n">read_trl</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">SignalRW</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
@@ -546,7 +543,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">def</span><span class="w"> </span><span class="nf">tango_signal_r</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">read_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
@@ -558,15 +554,13 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        Check that the Attribute/Command is of this type</span>
 <span class="sd">    read_trl:</span>
 <span class="sd">        The Attribute/Command to read and monitor</span>
-<span class="sd">    device_proxy:</span>
-<span class="sd">        If given, this DeviceProxy will be used</span>
 <span class="sd">    timeout:</span>
 <span class="sd">        The timeout for the read operation</span>
 <span class="sd">    name:</span>
 <span class="sd">        The name of the Signal</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">SignalR</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
@@ -576,7 +570,6 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">def</span><span class="w"> </span><span class="nf">tango_signal_w</span><span class="p">(</span>
     <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
@@ -588,15 +581,13 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        Check that the Attribute/Command is of this type</span>
 <span class="sd">    write_trl:</span>
 <span class="sd">        The Attribute/Command to write to</span>
-<span class="sd">    device_proxy:</span>
-<span class="sd">        If given, this DeviceProxy will be used</span>
 <span class="sd">    timeout:</span>
 <span class="sd">        The timeout for the write operation</span>
 <span class="sd">    name:</span>
 <span class="sd">        The name of the Signal</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">SignalW</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
@@ -605,7 +596,6 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.tango_signal_x">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">tango_signal_x</span><span class="p">(</span>
     <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalX</span><span class="p">:</span>
@@ -615,15 +605,13 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    ----------</span>
 <span class="sd">    write_trl:</span>
 <span class="sd">        The Attribute/Command to write its initial value to on execute</span>
-<span class="sd">    device_proxy:</span>
-<span class="sd">        If given, this DeviceProxy will be used</span>
 <span class="sd">    timeout:</span>
 <span class="sd">        The timeout for the command operation</span>
 <span class="sd">    name:</span>
 <span class="sd">        The name of the Signal</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">make_backend</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">SignalX</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
@@ -635,7 +623,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span> <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span> <span class="o">|</span> <span class="nb">type</span><span class="p">[</span><span class="n">DevState</span><span class="p">]</span> <span class="o">|</span> <span class="n">IntEnum</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Infers the python type from the TRL.&quot;&quot;&quot;</span>
     <span class="c1"># TODO: work out if this is still needed</span>
-    <span class="n">device_trl</span><span class="p">,</span> <span class="n">tr_name</span> <span class="o">=</span> <span class="n">trl</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">device_trl</span><span class="p">,</span> <span class="n">tr_name</span> <span class="o">=</span> <span class="n">get_device_trl_and_attr</span><span class="p">(</span><span class="n">trl</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">dev_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -667,7 +655,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">infer_signal_type</span><span class="p">(</span>
     <span class="n">trl</span><span class="p">,</span> <span class="n">proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">Signal</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="n">device_trl</span><span class="p">,</span> <span class="n">tr_name</span> <span class="o">=</span> <span class="n">trl</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">device_trl</span><span class="p">,</span> <span class="n">tr_name</span> <span class="o">=</span> <span class="n">get_device_trl_and_attr</span><span class="p">(</span><span class="n">trl</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">dev_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>

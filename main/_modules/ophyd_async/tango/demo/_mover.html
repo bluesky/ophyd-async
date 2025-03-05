@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.demo._mover &#8212; ophyd-async 0.9.1.dev22+g38270ef2 documentation</title>
+    <title>ophyd_async.tango.demo._mover &#8212; ophyd-async 0.9.1.dev23+gf50f67d1 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=154a1862"></script>
+    <script src="../../../../_static/documentation_options.js?v=cac45b7d"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev22+g38270ef2 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev22+g38270ef2 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
   
   
 </a></div>
@@ -482,8 +482,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.tango.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">TangoPolling</span><span class="p">,</span> <span class="n">TangoReadable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="n">DevState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.tango.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">DevStateEnum</span><span class="p">,</span> <span class="n">TangoPolling</span><span class="p">,</span> <span class="n">TangoReadable</span>
 
 
 <div class="viewcode-block" id="TangoMover">
@@ -496,7 +495,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="c1"># the parameters for ophyd to poll instead</span>
     <span class="n">position</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)]</span>
     <span class="n">velocity</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)]</span>
-    <span class="n">state</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">DevState</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)]</span>
+    <span class="n">state</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">DevStateEnum</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)]</span>
     <span class="c1"># If a tango name clashes with a bluesky verb, add a trailing underscore</span>
     <span class="n">stop_</span><span class="p">:</span> <span class="n">SignalX</span>
 
@@ -527,7 +526,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 
         <span class="n">move_status</span> <span class="o">=</span> <span class="n">AsyncStatus</span><span class="p">(</span>
-            <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">DevState</span><span class="o">.</span><span class="n">ON</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">DevStateEnum</span><span class="o">.</span><span class="n">ON</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.testing._one_of_everything &#8212; ophyd-async 0.9.1.dev22+g38270ef2 documentation</title>
+    <title>ophyd_async.testing._one_of_everything &#8212; ophyd-async 0.9.1.dev23+gf50f67d1 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=154a1862"></script>
+    <script src="../../../_static/documentation_options.js?v=cac45b7d"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev22+g38270ef2 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev22+g38270ef2 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
   
   
 </a></div>
@@ -505,19 +505,26 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
+<div class="viewcode-block" id="int_array_value">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.int_array_value">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">int_array_value</span><span class="p">(</span><span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">DTypeScalar_co</span><span class="p">]):</span>
+    <span class="n">iinfo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">iinfo</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">iinfo</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span></div>
+
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">int_array_signal</span><span class="p">(</span>
     <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">DTypeScalar_co</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">DTypeScalar_co</span><span class="p">]]:</span>
-    <span class="n">iinfo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">iinfo</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">iinfo</span><span class="o">.</span><span class="n">max</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">int_array_value</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="n">Array1D</span><span class="p">[</span><span class="n">dtype</span><span class="p">],</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">float_array_signal</span><span class="p">(</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">DTypeScalar_co</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">DTypeScalar_co</span><span class="p">]]:</span>
+<div class="viewcode-block" id="float_array_value">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.float_array_value">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">float_array_value</span><span class="p">(</span><span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">DTypeScalar_co</span><span class="p">]):</span>
     <span class="n">finfo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
         <span class="p">[</span>
             <span class="n">finfo</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
             <span class="n">finfo</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
@@ -529,7 +536,14 @@ window.addEventListener("load", () => mermaid.run());
             <span class="mf">3.45e-6</span><span class="p">,</span>
         <span class="p">],</span>
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">float_array_signal</span><span class="p">(</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">DTypeScalar_co</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Array1D</span><span class="p">[</span><span class="n">DTypeScalar_co</span><span class="p">]]:</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">float_array_value</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="n">Array1D</span><span class="p">[</span><span class="n">dtype</span><span class="p">],</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
 
@@ -546,7 +560,10 @@ window.addEventListener("load", () => mermaid.run());
             <span class="bp">self</span><span class="o">.</span><span class="n">a_float</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="mf">1.234</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">a_str</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;test_string&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">a_bool</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">enum</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="n">ExampleEnum</span><span class="p">,</span> <span class="n">ExampleEnum</span><span class="o">.</span><span class="n">B</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">a_enum</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="n">ExampleEnum</span><span class="p">,</span> <span class="n">ExampleEnum</span><span class="o">.</span><span class="n">B</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">boola</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span>
+                <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">int8a</span> <span class="o">=</span> <span class="n">int_array_signal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">uint8a</span> <span class="o">=</span> <span class="n">int_array_signal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">int16a</span> <span class="o">=</span> <span class="n">int_array_signal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
