@@ -34,19 +34,21 @@ class ExampleTable(Table):
     a_enum: Sequence[ExampleEnum]
 
 
+def int_array_value(dtype: type[DTypeScalar_co]):
+    iinfo = np.iinfo(dtype)  # type: ignore
+    return np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
+
+
 def int_array_signal(
     dtype: type[DTypeScalar_co], name: str = ""
 ) -> SignalRW[Array1D[DTypeScalar_co]]:
-    iinfo = np.iinfo(dtype)  # type: ignore
-    value = np.array([iinfo.min, iinfo.max, 0, 1, 2, 3, 4], dtype=dtype)
+    value = int_array_value(dtype)
     return soft_signal_rw(Array1D[dtype], value, name)
 
 
-def float_array_signal(
-    dtype: type[DTypeScalar_co], name: str = ""
-) -> SignalRW[Array1D[DTypeScalar_co]]:
+def float_array_value(dtype: type[DTypeScalar_co]):
     finfo = np.finfo(dtype)  # type: ignore
-    value = np.array(
+    return np.array(
         [
             finfo.min,
             finfo.max,
@@ -59,6 +61,12 @@ def float_array_signal(
         ],
         dtype=dtype,
     )
+
+
+def float_array_signal(
+    dtype: type[DTypeScalar_co], name: str = ""
+) -> SignalRW[Array1D[DTypeScalar_co]]:
+    value = float_array_value(dtype)
     return soft_signal_rw(Array1D[dtype], value, name)
 
 
@@ -73,7 +81,10 @@ class OneOfEverythingDevice(StandardReadable):
             self.a_float = soft_signal_rw(float, 1.234)
             self.a_str = soft_signal_rw(str, "test_string")
             self.a_bool = soft_signal_rw(bool, True)
-            self.enum = soft_signal_rw(ExampleEnum, ExampleEnum.B)
+            self.a_enum = soft_signal_rw(ExampleEnum, ExampleEnum.B)
+            self.boola = soft_signal_rw(
+                Array1D[np.bool_], np.array([False, False, True])
+            )
             self.int8a = int_array_signal(np.int8)
             self.uint8a = int_array_signal(np.uint8)
             self.int16a = int_array_signal(np.int16)
@@ -104,6 +115,9 @@ class OneOfEverythingDevice(StandardReadable):
             )
             self.ndarray = soft_signal_rw(np.ndarray, np.array(([1, 2, 3], [4, 5, 6])))
         super().__init__(name)
+
+    async def get_signal_values(self):
+        return await _get_signal_values(self)
 
 
 async def _get_signal_values(child: Device) -> dict[SignalRW, Any]:
