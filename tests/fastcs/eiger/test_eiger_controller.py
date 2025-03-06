@@ -71,7 +71,7 @@ async def test_when_arm_with_number_of_images_then_number_of_images_set_correctl
     )
 
 
-@patch("ophyd_async.epics.eiger._eiger_controller.DEFAULT_TIMEOUT", 0.1)
+@patch("ophyd_async.fastcs.eiger._eiger_controller.DEFAULT_TIMEOUT", 0.1)
 async def test_given_detector_fails_to_go_ready_when_arm_called_then_fails(
     eiger_driver_and_controller_no_arm: DriverAndController,
 ):
