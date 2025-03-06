@@ -29,8 +29,12 @@ async def test_when_open_called_then_file_correctly_set(
 
     await writer.open()
 
-    get_mock_put(driver.file_path).assert_called_once_with(str(tmp_path), wait=ANY)
-    get_mock_put(driver.file_name).assert_called_once_with(expected_filename, wait=ANY)
+    get_mock_put(driver.config_hdf_file_path).assert_called_once_with(
+        str(tmp_path), wait=ANY
+    )
+    get_mock_put(driver.config_hdf_file_prefix).assert_called_once_with(
+        expected_filename, wait=ANY
+    )
 
 
 async def test_when_open_called_then_all_expected_signals_set(
@@ -39,18 +43,20 @@ async def test_when_open_called_then_all_expected_signals_set(
     driver, writer = odin_driver_and_writer
     await writer.open()
 
-    get_mock_put(driver.data_type).assert_called_once_with("uint16", wait=ANY)
-    get_mock_put(driver.num_to_capture).assert_called_once_with(0, wait=ANY)
+    get_mock_put(driver.dataset_data_datatype).assert_called_once_with(
+        "uint16", wait=ANY
+    )
+    get_mock_put(driver.config_hdf_frames).assert_called_once_with(0, wait=ANY)
 
-    get_mock_put(driver.capture).assert_called_once_with(Writing.ON, wait=ANY)
+    get_mock_put(driver.config_hdf_write).assert_called_once_with(Writing.ON, wait=ANY)
 
 
 async def test_given_data_shape_set_when_open_called_then_describe_has_correct_shape(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
     driver, writer = odin_driver_and_writer
-    set_mock_value(driver.image_width, 1024)
-    set_mock_value(driver.image_height, 768)
+    set_mock_value(driver.dataset_data_dims_1, 1024)
+    set_mock_value(driver.dataset_data_dims_0, 768)
     description = await writer.open()
     assert description["data"]["shape"] == [768, 1024]
 
@@ -60,4 +66,4 @@ async def test_when_closed_then_data_capture_turned_off(
 ):
     driver, writer = odin_driver_and_writer
     await writer.close()
-    get_mock_put(driver.capture).assert_called_once_with(Writing.OFF, wait=ANY)
+    get_mock_put(driver.config_hdf_write).assert_called_once_with(Writing.OFF, wait=ANY)
