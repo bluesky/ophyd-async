@@ -1,3 +1,8 @@
+"""Core components of the areaDetector software.
+
+https://github.com/areaDetector/ADCore
+"""
+
 from ._core_detector import AreaDetector
 from ._core_io import (
     ADBaseDatasetDescriber,
@@ -19,12 +24,12 @@ from ._single_trigger import SingleTriggerDetector
 from ._tiff_writer import ADTIFFWriter
 from ._utils import (
     ADBaseDataType,
-    FileWriteMode,
-    ImageMode,
-    NDAttributeDataType,
+    ADFileWriteMode,
+    ADImageMode,
+    ADNDAttributeDataType,
+    ADNDAttributePvDbrType,
     NDAttributeParam,
     NDAttributePv,
-    NDAttributePvDbrType,
     stop_busy_record,
 )
 
@@ -48,11 +53,11 @@ __all__ = [
     "ADJPEGWriter",
     "SingleTriggerDetector",
     "ADBaseDataType",
-    "FileWriteMode",
-    "ImageMode",
+    "ADFileWriteMode",
+    "ADImageMode",
     "NDAttributePv",
     "NDAttributeParam",
-    "NDAttributeDataType",
+    "ADNDAttributeDataType",
     "stop_busy_record",
-    "NDAttributePvDbrType",
+    "ADNDAttributePvDbrType",
 ]

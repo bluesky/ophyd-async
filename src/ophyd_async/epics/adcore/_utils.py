@@ -79,25 +79,25 @@ def convert_param_dtype_to_np(datatype: str) -> str:
     return np_datatype
 
 
-class FileWriteMode(StrictEnum):
+class ADFileWriteMode(StrictEnum):
     SINGLE = "Single"
     CAPTURE = "Capture"
     STREAM = "Stream"
 
 
-class ImageMode(SubsetEnum):
+class ADImageMode(SubsetEnum):
     SINGLE = "Single"
     MULTIPLE = "Multiple"
     CONTINUOUS = "Continuous"
 
 
-class NDAttributeDataType(StrictEnum):
+class ADNDAttributeDataType(StrictEnum):
     INT = "INT"
     DOUBLE = "DOUBLE"
     STRING = "STRING"
 
 
-class NDAttributePvDbrType(StrictEnum):
+class ADNDAttributePvDbrType(StrictEnum):
     DBR_SHORT = "DBR_SHORT"
     DBR_ENUM = "DBR_ENUM"
     DBR_INT = "DBR_INT"
@@ -113,7 +113,7 @@ class NDAttributePv:
     name: str  # name of attribute stamped on array, also scientifically useful name
     # when appended to device.name
     signal: SignalR  # caget the pv given by signal.source and attach to each frame
-    dbrtype: NDAttributePvDbrType
+    dbrtype: ADNDAttributePvDbrType
     description: str = ""  # A description that appears in the HDF file as an attribute
 
 
@@ -122,7 +122,7 @@ class NDAttributeParam:
     name: str  # name of attribute stamped on array, also scientifically useful name
     # when appended to device.name
     param: str  # The parameter string as seen in the INP link of the record
-    datatype: NDAttributeDataType  # The datatype of the parameter
+    datatype: ADNDAttributeDataType  # The datatype of the parameter
     addr: int = 0  # The address as seen in the INP link of the record
     description: str = ""  # A description that appears in the HDF file as an attribute
 
