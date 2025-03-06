@@ -66,7 +66,7 @@ async def test_when_arm_with_number_of_images_then_number_of_images_set_correctl
     await controller.prepare(TriggerInfo(number_of_triggers=test_number_of_images))
     await controller.arm()
     await controller.wait_for_idle()
-    get_mock_put(driver.number_of_images).assert_called_once_with(
+    get_mock_put(driver.nimages).assert_called_once_with(
         test_number_of_images, wait=ANY
     )
 
