@@ -34,7 +34,7 @@ class Andor2Controller(adcore.ADBaseController[Andor2DriverIO]):
             self.driver.num_images.set(
                 trigger_info.total_number_of_triggers or _MAX_NUM_IMAGE
             ),
-            self.driver.image_mode.set(adcore.ImageMode.MULTIPLE),
+            self.driver.image_mode.set(adcore.ADImageMode.MULTIPLE),
         )
 
     def _get_trigger_mode(self, trigger: DetectorTrigger) -> Andor2TriggerMode:
