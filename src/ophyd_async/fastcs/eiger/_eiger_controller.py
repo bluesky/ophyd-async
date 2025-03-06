@@ -43,13 +43,13 @@ class EigerController(DetectorController):
             self._drv.trigger_mode.set(
                 EIGER_TRIGGER_MODE_MAP[trigger_info.trigger].value
             ),
-            self._drv.num_images.set(trigger_info.total_number_of_triggers),
+            self._drv.nimages.set(trigger_info.total_number_of_triggers),
         ]
         if trigger_info.livetime is not None:
             coros.extend(
                 [
-                    self._drv.acquire_time.set(trigger_info.livetime),
-                    self._drv.acquire_period.set(trigger_info.livetime),
+                    self._drv.count_time.set(trigger_info.livetime),
+                    self._drv.frame_time.set(trigger_info.livetime),
                 ]
             )
         await asyncio.gather(*coros)

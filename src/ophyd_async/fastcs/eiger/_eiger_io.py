@@ -17,19 +17,19 @@ class EigerTriggerMode(StrictEnum):
 class EigerDriverIO(Device):
     """Contains signals for handling IO on the Eiger detector."""
 
-    bit_depth: SignalR[int]
+    bit_depth_readout: SignalR[int]
     stale_parameters: SignalR[bool]
     state: SignalR[str]
-    acquire_time: SignalRW[float]
-    acquire_period: SignalRW[float]
-    num_images: SignalRW[int]
+    count_time: SignalRW[float]
+    frame_time: SignalRW[float]
+    nimages: SignalRW[int]
     trigger_mode: SignalRW[str]
     arm: SignalW[int]
     disarm: SignalW[int]
     photon_energy: SignalRW[float]
-    beam_centre_x: SignalRW[float]
-    beam_centre_y: SignalRW[float]
-    det_distance: SignalRW[float]
+    beam_center_x: SignalRW[float]
+    beam_center_y: SignalRW[float]
+    detector_distance: SignalRW[float]
     omega_start: SignalRW[float]
     omega_increment: SignalRW[float]
 
