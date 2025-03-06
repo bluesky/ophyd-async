@@ -33,7 +33,7 @@ class OdinHdfIO(Device):
     writing: SignalR[Writing]
     config_hdf_write: SignalW[Writing]
     frames_written: SignalR[int]
-    config_hdf_frames: SignalRW[int]
+    config_hdf_frames: SignalW[int]
     dataset_data_dims_0: SignalRW[int]
     dataset_data_dims_1: SignalRW[int]
     dataset_data_chunks_0: SignalRW[int]
