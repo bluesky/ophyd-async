@@ -243,6 +243,44 @@ async def test_set_and_wait_for_value_different_set_and_read_times_out():
         await asyncio.gather(wait_and_set_read(), check_set_and_wait())
 
 
+async def test_status_of_set_and_wait_for_value():
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+
+    async def set_match_signal_after_delay(value: Any, **kwargs):
+        await asyncio.sleep(0.3)
+        await match_signal.set(value / 2)
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+    callback_on_mock_put(set_signal, set_match_signal_after_delay)  # type: ignore
+
+    status = await set_and_wait_for_value(set_signal, 2)
+    assert status.done
+
+    with pytest.raises(asyncio.TimeoutError):
+        status = await set_and_wait_for_value(set_signal, 4, timeout=0.1)
+
+    with pytest.raises(asyncio.TimeoutError):
+        status = await set_and_wait_for_value(
+            set_signal, 8, timeout=0.1, wait_for_set_completion=False
+        )
+
+    status = await set_and_wait_for_other_value(set_signal, 32, match_signal, 16)
+    assert status.done
+
+    status = await set_and_wait_for_other_value(
+        set_signal, 30, match_signal, 15, wait_for_set_completion=False
+    )
+    assert not status.done
+    await status
+
+    with pytest.raises(asyncio.TimeoutError):
+        status = await set_and_wait_for_other_value(
+            set_signal, 30, match_signal, -1, timeout=0.5
+        )
+
+
 async def test_wait_for_value_with_value():
     signal = epics_signal_rw(str, read_pv="pva://signal", name="signal")
     await signal.connect(mock=True)
