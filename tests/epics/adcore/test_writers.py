@@ -214,14 +214,14 @@ async def test_nd_attributes_plan_stub(RE, detectors):
         param = adcore.NDAttributeParam(
             name=f"{detector.name}-sum",
             param="sum",
-            datatype=adcore.NDAttributeDataType.DOUBLE,
+            datatype=adcore.ADNDAttributeDataType.DOUBLE,
             description=f"Sum of {detector.name} frame",
         )
         pv = adcore.NDAttributePv(
             name="Temperature",
             signal=epics_signal_r(str, "LINKAM:TEMP"),
             description="The sample temperature",
-            dbrtype=adcore.NDAttributePvDbrType.DBR_FLOAT,
+            dbrtype=adcore.ADNDAttributePvDbrType.DBR_FLOAT,
         )
         RE(setup_ndattributes(detector.fileio, [pv, param]))
         text = await detector.fileio.nd_attributes_file.get_value()

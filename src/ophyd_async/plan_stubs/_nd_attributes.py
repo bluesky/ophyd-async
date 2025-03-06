@@ -5,8 +5,8 @@ import bluesky.plan_stubs as bps
 
 from ophyd_async.core import Device
 from ophyd_async.epics.adcore import (
+    ADNDAttributeDataType,
     NDArrayBaseIO,
-    NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
     NDFileHDFIO,
@@ -66,7 +66,7 @@ def setup_ndstats_sum(detector: Device):
                 NDAttributeParam(
                     name=f"{detector.name}-sum",
                     param="NDPluginStatsTotal",
-                    datatype=NDAttributeDataType.DOUBLE,
+                    datatype=ADNDAttributeDataType.DOUBLE,
                     description="Sum of the array",
                 )
             ],
