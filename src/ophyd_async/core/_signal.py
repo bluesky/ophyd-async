@@ -580,21 +580,32 @@ async def set_and_wait_for_other_value(
     status = set_signal.set(set_value, timeout=set_timeout)
 
     # If the value was the same as before no need to wait for it to change
-    if current_value != match_value:
+    if (
+        callable(match_value) and not match_value(current_value)
+    ) or match_value != current_value:
 
         async def _wait_for_value():
-            async for value in values_gen:
-                if value == match_value:
-                    break
+            if callable(match_value):
+                async for value in values_gen:
+                    if match_value(value):
+                        break
+            else:
+                async for value in values_gen:
+                    if value == match_value:
+                        break
 
         try:
             await asyncio.wait_for(_wait_for_value(), timeout)
             if wait_for_set_completion:
                 await status
         except asyncio.TimeoutError as e:
-            raise TimeoutError(
-                f"{match_signal.name} didn't match {match_value} in {timeout}s"
-            ) from e
+            msg = (
+                f"{match_signal.name} value didn't match value from {match_value}()"
+                f" in {timeout}s"
+                if callable(match_value)
+                else f"{match_signal.name} didn't match {match_value} in {timeout}s"
+            )
+            raise asyncio.TimeoutError(msg) from e
 
     return status
 

@@ -239,7 +239,7 @@ async def test_set_and_wait_for_value_different_set_and_read_times_out():
             )
         )
 
-    with pytest.raises(TimeoutError):
+    with pytest.raises(asyncio.TimeoutError):
         await asyncio.gather(wait_and_set_read(), check_set_and_wait())
 
 
@@ -278,6 +278,37 @@ async def test_status_of_set_and_wait_for_value():
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_other_value(
             set_signal, 30, match_signal, -1, timeout=0.5
+        )
+
+
+async def test_callable_match_value_set_and_wait_for_value():
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+
+    async def set_match_signal_after_delay(value: Any, **kwargs):
+        await asyncio.sleep(0.3)
+        await match_signal.set(value / 2)
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+    callback_on_mock_put(set_signal, set_match_signal_after_delay)  # type: ignore
+
+    def _equals_x(value, x):
+        return value == x
+
+    status = await set_and_wait_for_value(
+        set_signal, 10, lambda val: _equals_x(val, 10)
+    )
+    assert status.done
+
+    status = await set_and_wait_for_other_value(
+        set_signal, 20, match_signal, lambda val: _equals_x(val, 10)
+    )
+    assert status.done
+
+    with pytest.raises(asyncio.TimeoutError):
+        status = await set_and_wait_for_other_value(
+            set_signal, 30, match_signal, lambda val: _equals_x(val, -1), timeout=0.5
         )
 
 
