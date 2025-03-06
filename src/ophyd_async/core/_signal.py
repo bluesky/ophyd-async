@@ -23,7 +23,7 @@ from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend, SignalDatatypeT, SignalDatatypeV
 from ._soft_signal_backend import SoftSignalBackend
-from ._status import AsyncStatus, completed_status
+from ._status import AsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -591,13 +591,12 @@ async def set_and_wait_for_other_value(
             await asyncio.wait_for(_wait_for_value(), timeout)
             if wait_for_set_completion:
                 await status
-            return status
         except asyncio.TimeoutError as e:
             raise TimeoutError(
                 f"{match_signal.name} didn't match {match_value} in {timeout}s"
             ) from e
 
-    return completed_status()
+    return status
 
 
 async def set_and_wait_for_value(
