@@ -91,13 +91,13 @@ class ADImageMode(SubsetEnum):
     CONTINUOUS = "Continuous"
 
 
-class ADNDAttributeDataType(StrictEnum):
+class NDAttributeDataType(StrictEnum):
     INT = "INT"
     DOUBLE = "DOUBLE"
     STRING = "STRING"
 
 
-class ADNDAttributePvDbrType(StrictEnum):
+class NDAttributePvDbrType(StrictEnum):
     DBR_SHORT = "DBR_SHORT"
     DBR_ENUM = "DBR_ENUM"
     DBR_INT = "DBR_INT"
@@ -113,7 +113,7 @@ class NDAttributePv:
     name: str  # name of attribute stamped on array, also scientifically useful name
     # when appended to device.name
     signal: SignalR  # caget the pv given by signal.source and attach to each frame
-    dbrtype: ADNDAttributePvDbrType
+    dbrtype: NDAttributePvDbrType
     description: str = ""  # A description that appears in the HDF file as an attribute
 
 
@@ -122,7 +122,7 @@ class NDAttributeParam:
     name: str  # name of attribute stamped on array, also scientifically useful name
     # when appended to device.name
     param: str  # The parameter string as seen in the INP link of the record
-    datatype: ADNDAttributeDataType  # The datatype of the parameter
+    datatype: NDAttributeDataType  # The datatype of the parameter
     addr: int = 0  # The address as seen in the INP link of the record
     description: str = ""  # A description that appears in the HDF file as an attribute
 

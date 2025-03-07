@@ -26,10 +26,10 @@ from ._utils import (
     ADBaseDataType,
     ADFileWriteMode,
     ADImageMode,
-    ADNDAttributeDataType,
-    ADNDAttributePvDbrType,
+    NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
+    NDAttributePvDbrType,
     stop_busy_record,
 )
 
@@ -57,7 +57,7 @@ __all__ = [
     "ADImageMode",
     "NDAttributePv",
     "NDAttributeParam",
-    "ADNDAttributeDataType",
+    "NDAttributeDataType",
     "stop_busy_record",
-    "ADNDAttributePvDbrType",
+    "NDAttributePvDbrType",
 ]
