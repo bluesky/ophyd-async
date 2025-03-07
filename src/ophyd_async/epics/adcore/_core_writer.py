@@ -29,7 +29,7 @@ from ._core_io import (
     NDFileIO,
     NDPluginBaseIO,
 )
-from ._utils import FileWriteMode
+from ._utils import ADFileWriteMode
 
 NDFileIOT = TypeVar("NDFileIOT", bound=NDFileIO)
 ADWriterT = TypeVar("ADWriterT", bound="ADWriter")
@@ -104,7 +104,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             # See https://github.com/bluesky/ophyd-async/issues/122
             self.fileio.file_path.set(str(info.directory_path)),
             self.fileio.file_name.set(info.filename),
-            self.fileio.file_write_mode.set(FileWriteMode.STREAM),
+            self.fileio.file_write_mode.set(ADFileWriteMode.STREAM),
             # For non-HDF file writers, use AD file templating mechanism
             # for generating multi-image datasets
             self.fileio.file_template.set(

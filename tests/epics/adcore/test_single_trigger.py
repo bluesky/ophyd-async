@@ -39,7 +39,7 @@ async def test_single_trigger_det(
         yield from bps.abs_set(single_trigger_det_with_stats.drv.acquire_time, 0.5)
         yield from bps.abs_set(single_trigger_det_with_stats.drv.array_counter, 1)
         yield from bps.abs_set(
-            single_trigger_det_with_stats.drv.image_mode, adcore.ImageMode.CONTINUOUS
+            single_trigger_det_with_stats.drv.image_mode, adcore.ADImageMode.CONTINUOUS
         )
         # set_mock_value(stats.unique_id, 3)
         yield from bp.count([single_trigger_det_with_stats])
@@ -48,7 +48,7 @@ async def test_single_trigger_det(
 
     drv = single_trigger_det_with_stats.drv
     assert 1 == await drv.acquire.get_value()
-    assert adcore.ImageMode.SINGLE == await drv.image_mode.get_value()
+    assert adcore.ADImageMode.SINGLE == await drv.image_mode.get_value()
     assert True is await drv.wait_for_plugins.get_value()
 
     assert names == ["start", "descriptor", "event", "stop"]
