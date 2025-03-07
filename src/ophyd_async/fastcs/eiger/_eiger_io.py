@@ -14,9 +14,15 @@ class EigerTriggerMode(StrictEnum):
     GATE = "exte"
 
 
-class EigerDriverIO(Device):
-    """Contains signals for handling IO on the Eiger detector."""
+class EigerMonitorIO(Device):
+    pass
 
+
+class EigerStreamIO(Device):
+    pass
+
+
+class EigerDetectorIO(Device):
     bit_depth_readout: SignalR[int]
     stale_parameters: SignalR[bool]
     state: SignalR[str]
@@ -32,6 +38,14 @@ class EigerDriverIO(Device):
     detector_distance: SignalRW[float]
     omega_start: SignalRW[float]
     omega_increment: SignalRW[float]
+
+
+class EigerDriverIO(Device):
+    """Contains signals for handling IO on the Eiger detector."""
+
+    eiger_monitor: EigerMonitorIO
+    eiger_stream: EigerStreamIO
+    eiger_detector: EigerDetectorIO
 
     def __init__(self, uri: str, name: str = ""):
         super().__init__(name=name, connector=fastcs_connector(self, uri))

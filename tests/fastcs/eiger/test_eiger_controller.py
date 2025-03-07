@@ -29,9 +29,9 @@ def eiger_driver_and_controller(
 
     def become_ready_on_arm(*args, **kwargs):
         if args[0] == 1:
-            set_mock_value(driver.state, "ready")
+            set_mock_value(driver.eiger_detector.state, "ready")
 
-    callback_on_mock_put(driver.arm, become_ready_on_arm)
+    callback_on_mock_put(driver.eiger_detector.arm, become_ready_on_arm)
 
     return driver, controller
 
@@ -44,8 +44,8 @@ async def test_when_arm_with_exposure_then_time_and_period_set(
     await controller.prepare(TriggerInfo(number_of_triggers=10, livetime=test_exposure))
     await controller.arm()
     await controller.wait_for_idle()
-    assert (await driver.frame_time.get_value()) == test_exposure
-    assert (await driver.count_time.get_value()) == test_exposure
+    assert (await driver.eiger_detector.frame_time.get_value()) == test_exposure
+    assert (await driver.eiger_detector.count_time.get_value()) == test_exposure
 
 
 async def test_when_arm_with_no_exposure_then_arm_set_correctly(
@@ -55,7 +55,7 @@ async def test_when_arm_with_no_exposure_then_arm_set_correctly(
     await controller.prepare(TriggerInfo(number_of_triggers=10))
     await controller.arm()
     await controller.wait_for_idle()
-    get_mock_put(driver.arm).assert_called_once_with(1, wait=ANY)
+    get_mock_put(driver.eiger_detector.arm).assert_called_once_with(1, wait=ANY)
 
 
 async def test_when_arm_with_number_of_images_then_number_of_images_set_correctly(
@@ -66,7 +66,7 @@ async def test_when_arm_with_number_of_images_then_number_of_images_set_correctl
     await controller.prepare(TriggerInfo(number_of_triggers=test_number_of_images))
     await controller.arm()
     await controller.wait_for_idle()
-    get_mock_put(driver.nimages).assert_called_once_with(
+    get_mock_put(driver.eiger_detector.nimages).assert_called_once_with(
         test_number_of_images, wait=ANY
     )
 
@@ -87,7 +87,7 @@ async def test_when_disarm_called_on_controller_then_disarm_called_on_driver(
 ):
     driver, controller = eiger_driver_and_controller
     await controller.disarm()
-    get_mock_put(driver.disarm).assert_called_once_with(1, wait=ANY)
+    get_mock_put(driver.eiger_detector.disarm).assert_called_once_with(1, wait=ANY)
 
 
 async def test_when_get_deadtime_called_then_returns_expected_deadtime(
@@ -102,10 +102,10 @@ async def test_given_energy_within_tolerance_when_photon_energy_set_then_pv_unch
 ):
     driver, controller = eiger_driver_and_controller
     initial_energy = 10
-    set_mock_value(driver.photon_energy, initial_energy)
+    set_mock_value(driver.eiger_detector.photon_energy, initial_energy)
     await controller.set_energy(10.002)
-    get_mock_put(driver.photon_energy).assert_not_called()
-    assert (await driver.photon_energy.get_value()) == initial_energy
+    get_mock_put(driver.eiger_detector.photon_energy).assert_not_called()
+    assert (await driver.eiger_detector.photon_energy.get_value()) == initial_energy
 
 
 async def test_given_energy_outside_tolerance_when_photon_energy_set_then_pv_changed(
@@ -114,7 +114,7 @@ async def test_given_energy_outside_tolerance_when_photon_energy_set_then_pv_cha
     driver, controller = eiger_driver_and_controller
     initial_energy = 10
     new_energy = 15
-    set_mock_value(driver.photon_energy, initial_energy)
+    set_mock_value(driver.eiger_detector.photon_energy, initial_energy)
     await controller.set_energy(new_energy)
-    get_mock_put(driver.photon_energy).assert_called_once()
-    assert (await driver.photon_energy.get_value()) == new_energy
+    get_mock_put(driver.eiger_detector.photon_energy).assert_called_once()
+    assert (await driver.eiger_detector.photon_energy.get_value()) == new_energy
