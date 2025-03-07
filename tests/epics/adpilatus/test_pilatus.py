@@ -154,7 +154,7 @@ async def test_pilatus_controller(test_adpilatus: adpilatus.PilatusDetector):
     await pilatus.wait_for_idle()
 
     assert await pilatus_driver.num_images.get_value() == 1
-    assert await pilatus_driver.image_mode.get_value() == adcore.ImageMode.MULTIPLE
+    assert await pilatus_driver.image_mode.get_value() == adcore.ADImageMode.MULTIPLE
     assert (
         await pilatus_driver.trigger_mode.get_value()
         == adpilatus.PilatusTriggerMode.EXT_ENABLE
