@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.9.1.dev23+gf50f67d1 documentation</title>
+    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.9.1.dev24+g20197e79 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=cac45b7d"></script>
+    <script src="../../_static/documentation_options.js?v=357a1773"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev24+g20197e79 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev24+g20197e79 documentation - Home"/>
   
   
 </a></div>
@@ -521,6 +521,8 @@
                   
   <section id="module-ophyd_async.epics.adcore">
 <span id="ophyd-async-epics-adcore"></span><h1><a class="reference internal" href="#module-ophyd_async.epics.adcore" title="ophyd_async.epics.adcore"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a><a class="headerlink" href="#module-ophyd_async.epics.adcore" title="Link to this heading">#</a></h1>
+<p>Core components of the areaDetector software.</p>
+<p>https://github.com/areaDetector/ADCore</p>
 <section id="package-contents">
 <h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
 <section id="classes">
@@ -528,7 +530,7 @@
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore._core_io.ADBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseIO</span></code></a></p></td>
-<td><p>Baseclass to allow child signals to be created declaratively.</p></td>
+<td><p>Base class from which areaDetector drivers are derived.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADCallbacks" title="ophyd_async.epics.adcore._core_io.ADCallbacks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADCallbacks</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
@@ -543,16 +545,16 @@
 <td><p>Default set of states of an AreaDetector driver.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore._core_io.NDArrayBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArrayBaseIO</span></code></a></p></td>
-<td><p>Baseclass to allow child signals to be created declaratively.</p></td>
+<td><p>Class responsible for passing detector data from drivers to pluglins.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDFileIO" title="ophyd_async.epics.adcore._core_io.NDFileIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDFileIO</span></code></a></p></td>
-<td><p>Baseclass to allow child signals to be created declaratively.</p></td>
+<td><p>Base class from which file plugins are derived.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDFileHDFIO" title="ophyd_async.epics.adcore._core_io.NDFileHDFIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDFileHDFIO</span></code></a></p></td>
-<td><p>Baseclass to allow child signals to be created declaratively.</p></td>
+<td><p>Plugin for storing data in HDF5 file format.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore._core_io.NDPluginBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDPluginBaseIO</span></code></a></p></td>
-<td><p>Baseclass to allow child signals to be created declaratively.</p></td>
+<td><p>Base class from which plugins are derived.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginStatsIO" title="ophyd_async.epics.adcore._core_io.NDPluginStatsIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDPluginStatsIO</span></code></a></p></td>
 <td><p>Plugin for computing statistics from an image or ROI within an image.</p></td>
@@ -581,10 +583,10 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType" title="ophyd_async.epics.adcore._utils.ADBaseDataType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseDataType</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.FileWriteMode" title="ophyd_async.epics.adcore._utils.FileWriteMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileWriteMode</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADFileWriteMode" title="ophyd_async.epics.adcore._utils.ADFileWriteMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADFileWriteMode</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ImageMode" title="ophyd_async.epics.adcore._utils.ImageMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ImageMode</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADImageMode" title="ophyd_async.epics.adcore._utils.ADImageMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADImageMode</span></code></a></p></td>
 <td><p>All members should exist in the Backend, but there may be extras.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributePv" title="ophyd_async.epics.adcore._utils.NDAttributePv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributePv</span></code></a></p></td>
@@ -631,7 +633,9 @@
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseIO">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADBaseIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_io.html#ADBaseIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore._core_io.NDArrayBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_io.NDArrayBaseIO</span></code></a></p>
-<p>Baseclass to allow child signals to be created declaratively.</p>
+<p>Base class from which areaDetector drivers are derived.</p>
+<p>This mirrors the interface provided by ADCore/db/ADBase.template.
+See HTML docs at https://areadetector.github.io/areaDetector/ADCore/ADDriver.html</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseIO.acquire_time">
 <span class="sig-name descname"><span class="pre">acquire_time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'AcquireTime'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseIO.acquire_time" title="Link to this definition">#</a></dt>
@@ -652,7 +656,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseIO.image_mode">
-<span class="sig-name descname"><span class="pre">image_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adcore.ImageMode" title="ophyd_async.epics.adcore._utils.ImageMode"><span class="pre">ImageMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'ImageMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseIO.image_mode" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">image_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adcore.ADImageMode" title="ophyd_async.epics.adcore._utils.ADImageMode"><span class="pre">ADImageMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'ImageMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseIO.image_mode" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
@@ -839,7 +843,9 @@
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDArrayBaseIO">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">NDArrayBaseIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_io.html#NDArrayBaseIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.NDArrayBaseIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.core.EpicsDevice</span></code></a></p>
-<p>Baseclass to allow child signals to be created declaratively.</p>
+<p>Class responsible for passing detector data from drivers to pluglins.</p>
+<p>This mirrors the interface provided by ADCore/db/NDArrayBase.template.
+See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDArray.html</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDArrayBaseIO.unique_id">
 <span class="sig-name descname"><span class="pre">unique_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'UniqueId_RBV'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDArrayBaseIO.unique_id" title="Link to this definition">#</a></dt>
@@ -894,7 +900,9 @@
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDFileIO">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">NDFileIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_io.html#NDFileIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.NDFileIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore._core_io.NDPluginBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_io.NDPluginBaseIO</span></code></a></p>
-<p>Baseclass to allow child signals to be created declaratively.</p>
+<p>Base class from which file plugins are derived.</p>
+<p>This mirrors the interface provided by ADCore/db/NDFile.template.
+See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginFile.html</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDFileIO.file_path">
 <span class="sig-name descname"><span class="pre">file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'FilePath'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDFileIO.file_path" title="Link to this definition">#</a></dt>
@@ -939,7 +947,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDFileIO.file_write_mode">
-<span class="sig-name descname"><span class="pre">file_write_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adcore.FileWriteMode" title="ophyd_async.epics.adcore._utils.FileWriteMode"><span class="pre">FileWriteMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'FileWriteMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDFileIO.file_write_mode" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">file_write_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adcore.ADFileWriteMode" title="ophyd_async.epics.adcore._utils.ADFileWriteMode"><span class="pre">ADFileWriteMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'FileWriteMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDFileIO.file_write_mode" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
@@ -985,7 +993,9 @@
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDFileHDFIO">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">NDFileHDFIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_io.html#NDFileHDFIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.NDFileHDFIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.adcore.NDFileIO" title="ophyd_async.epics.adcore._core_io.NDFileIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_io.NDFileIO</span></code></a></p>
-<p>Baseclass to allow child signals to be created declaratively.</p>
+<p>Plugin for storing data in HDF5 file format.</p>
+<p>This mirrors the interface provided by ADCore/db/NDFileHDF5.template.
+See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDFileHDF5.html</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDFileHDFIO.position_mode">
 <span class="sig-name descname"><span class="pre">position_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'PositionMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDFileHDFIO.position_mode" title="Link to this definition">#</a></dt>
@@ -1046,7 +1056,9 @@
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginBaseIO">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">NDPluginBaseIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_io.html#NDPluginBaseIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginBaseIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore._core_io.NDArrayBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_io.NDArrayBaseIO</span></code></a></p>
-<p>Baseclass to allow child signals to be created declaratively.</p>
+<p>Base class from which plugins are derived.</p>
+<p>This mirrors the interface provided by ADCore/db/NDPluginBase.template.
+See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginDriver.html</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginBaseIO.nd_array_port">
 <span class="sig-name descname"><span class="pre">nd_array_port</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'NDArrayPort'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginBaseIO.nd_array_port" title="Link to this definition">#</a></dt>
@@ -1090,6 +1102,8 @@
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">NDPluginStatsIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_io.html#NDPluginStatsIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginStatsIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore._core_io.NDPluginBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_io.NDPluginBaseIO</span></code></a></p>
 <p>Plugin for computing statistics from an image or ROI within an image.</p>
+<p>This mirrors the interface provided by ADCore/db/NDStats.template.
+See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginStats.html</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginStatsIO.compute_statistics">
 <span class="sig-name descname"><span class="pre">compute_statistics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'ComputeStatistics'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginStatsIO.compute_statistics" title="Link to this definition">#</a></dt>
@@ -1485,50 +1499,50 @@ subsequent raising (if applicable) due to detector state.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.FileWriteMode">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">FileWriteMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_utils.html#FileWriteMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.FileWriteMode" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADFileWriteMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADFileWriteMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_utils.html#ADFileWriteMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADFileWriteMode" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
 <p>All members should exist in the Backend, and there will be no extras.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.FileWriteMode.SINGLE">
-<span class="sig-name descname"><span class="pre">SINGLE</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.FileWriteMode.SINGLE" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADFileWriteMode.SINGLE">
+<span class="sig-name descname"><span class="pre">SINGLE</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADFileWriteMode.SINGLE" title="Link to this definition">#</a></dt>
 <dd><p>‘Single’</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.FileWriteMode.CAPTURE">
-<span class="sig-name descname"><span class="pre">CAPTURE</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.FileWriteMode.CAPTURE" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADFileWriteMode.CAPTURE">
+<span class="sig-name descname"><span class="pre">CAPTURE</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADFileWriteMode.CAPTURE" title="Link to this definition">#</a></dt>
 <dd><p>‘Capture’</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.FileWriteMode.STREAM">
-<span class="sig-name descname"><span class="pre">STREAM</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.FileWriteMode.STREAM" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADFileWriteMode.STREAM">
+<span class="sig-name descname"><span class="pre">STREAM</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADFileWriteMode.STREAM" title="Link to this definition">#</a></dt>
 <dd><p>‘Stream’</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ImageMode">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ImageMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_utils.html#ImageMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ImageMode" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADImageMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADImageMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_utils.html#ADImageMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADImageMode" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.SubsetEnum</span></code></a></p>
 <p>All members should exist in the Backend, but there may be extras.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ImageMode.SINGLE">
-<span class="sig-name descname"><span class="pre">SINGLE</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ImageMode.SINGLE" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADImageMode.SINGLE">
+<span class="sig-name descname"><span class="pre">SINGLE</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADImageMode.SINGLE" title="Link to this definition">#</a></dt>
 <dd><p>‘Single’</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ImageMode.MULTIPLE">
-<span class="sig-name descname"><span class="pre">MULTIPLE</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ImageMode.MULTIPLE" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADImageMode.MULTIPLE">
+<span class="sig-name descname"><span class="pre">MULTIPLE</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADImageMode.MULTIPLE" title="Link to this definition">#</a></dt>
 <dd><p>‘Multiple’</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ImageMode.CONTINUOUS">
-<span class="sig-name descname"><span class="pre">CONTINUOUS</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ImageMode.CONTINUOUS" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADImageMode.CONTINUOUS">
+<span class="sig-name descname"><span class="pre">CONTINUOUS</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADImageMode.CONTINUOUS" title="Link to this definition">#</a></dt>
 <dd><p>‘Continuous’</p>
 </dd></dl>
 
@@ -1904,16 +1918,16 @@ subsequent raising (if applicable) due to detector state.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.FLOAT64"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.FLOAT64</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.FileWriteMode"><code class="docutils literal notranslate"><span class="pre">FileWriteMode</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.FileWriteMode.SINGLE"><code class="docutils literal notranslate"><span class="pre">FileWriteMode.SINGLE</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.FileWriteMode.CAPTURE"><code class="docutils literal notranslate"><span class="pre">FileWriteMode.CAPTURE</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.FileWriteMode.STREAM"><code class="docutils literal notranslate"><span class="pre">FileWriteMode.STREAM</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADFileWriteMode"><code class="docutils literal notranslate"><span class="pre">ADFileWriteMode</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADFileWriteMode.SINGLE"><code class="docutils literal notranslate"><span class="pre">ADFileWriteMode.SINGLE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADFileWriteMode.CAPTURE"><code class="docutils literal notranslate"><span class="pre">ADFileWriteMode.CAPTURE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADFileWriteMode.STREAM"><code class="docutils literal notranslate"><span class="pre">ADFileWriteMode.STREAM</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ImageMode"><code class="docutils literal notranslate"><span class="pre">ImageMode</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ImageMode.SINGLE"><code class="docutils literal notranslate"><span class="pre">ImageMode.SINGLE</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ImageMode.MULTIPLE"><code class="docutils literal notranslate"><span class="pre">ImageMode.MULTIPLE</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ImageMode.CONTINUOUS"><code class="docutils literal notranslate"><span class="pre">ImageMode.CONTINUOUS</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADImageMode"><code class="docutils literal notranslate"><span class="pre">ADImageMode</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADImageMode.SINGLE"><code class="docutils literal notranslate"><span class="pre">ADImageMode.SINGLE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADImageMode.MULTIPLE"><code class="docutils literal notranslate"><span class="pre">ADImageMode.MULTIPLE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADImageMode.CONTINUOUS"><code class="docutils literal notranslate"><span class="pre">ADImageMode.CONTINUOUS</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDAttributePv"><code class="docutils literal notranslate"><span class="pre">NDAttributePv</span></code></a><ul class="nav section-nav flex-column">

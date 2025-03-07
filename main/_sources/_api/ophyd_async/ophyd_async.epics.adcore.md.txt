@@ -87,12 +87,12 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType
     :summary:
     ```
-* - {py:obj}`FileWriteMode <ophyd_async.epics.adcore._utils.FileWriteMode>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.FileWriteMode
+* - {py:obj}`ADFileWriteMode <ophyd_async.epics.adcore._utils.ADFileWriteMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode
     :summary:
     ```
-* - {py:obj}`ImageMode <ophyd_async.epics.adcore._utils.ImageMode>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ImageMode
+* - {py:obj}`ADImageMode <ophyd_async.epics.adcore._utils.ADImageMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode
     :summary:
     ```
 * - {py:obj}`NDAttributePv <ophyd_async.epics.adcore._utils.NDAttributePv>`
@@ -182,7 +182,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDArrayBaseIO`
 
 ````{py:attribute} image_mode
 :canonical: ophyd_async.epics.adcore._core_io.ADBaseIO.image_mode
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._utils.ImageMode], ophyd_async.epics.core.PvSuffix.rbv('ImageMode')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._utils.ADImageMode], ophyd_async.epics.core.PvSuffix.rbv('ImageMode')]
 :value: >
    None
 
@@ -647,7 +647,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
 
 ````{py:attribute} file_write_mode
 :canonical: ophyd_async.epics.adcore._core_io.NDFileIO.file_write_mode
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._utils.FileWriteMode], ophyd_async.epics.core.PvSuffix.rbv('FileWriteMode')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._utils.ADFileWriteMode], ophyd_async.epics.core.PvSuffix.rbv('FileWriteMode')]
 :value: >
    None
 
@@ -1488,80 +1488,80 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
-`````{py:class} FileWriteMode()
-:canonical: ophyd_async.epics.adcore._utils.FileWriteMode
+`````{py:class} ADFileWriteMode()
+:canonical: ophyd_async.epics.adcore._utils.ADFileWriteMode
 
 Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._utils.FileWriteMode
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode
 ```
 
 ````{py:attribute} SINGLE
-:canonical: ophyd_async.epics.adcore._utils.FileWriteMode.SINGLE
+:canonical: ophyd_async.epics.adcore._utils.ADFileWriteMode.SINGLE
 :value: >
    'Single'
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._utils.FileWriteMode.SINGLE
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode.SINGLE
 ```
 
 ````
 
 ````{py:attribute} CAPTURE
-:canonical: ophyd_async.epics.adcore._utils.FileWriteMode.CAPTURE
+:canonical: ophyd_async.epics.adcore._utils.ADFileWriteMode.CAPTURE
 :value: >
    'Capture'
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._utils.FileWriteMode.CAPTURE
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode.CAPTURE
 ```
 
 ````
 
 ````{py:attribute} STREAM
-:canonical: ophyd_async.epics.adcore._utils.FileWriteMode.STREAM
+:canonical: ophyd_async.epics.adcore._utils.ADFileWriteMode.STREAM
 :value: >
    'Stream'
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._utils.FileWriteMode.STREAM
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode.STREAM
 ```
 
 ````
 
 `````
 
-`````{py:class} ImageMode()
-:canonical: ophyd_async.epics.adcore._utils.ImageMode
+`````{py:class} ADImageMode()
+:canonical: ophyd_async.epics.adcore._utils.ADImageMode
 
 Bases: {py:obj}`ophyd_async.core.SubsetEnum`
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ImageMode
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode
 ```
 
 ````{py:attribute} SINGLE
-:canonical: ophyd_async.epics.adcore._utils.ImageMode.SINGLE
+:canonical: ophyd_async.epics.adcore._utils.ADImageMode.SINGLE
 :value: >
    'Single'
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ImageMode.SINGLE
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode.SINGLE
 ```
 
 ````
 
 ````{py:attribute} MULTIPLE
-:canonical: ophyd_async.epics.adcore._utils.ImageMode.MULTIPLE
+:canonical: ophyd_async.epics.adcore._utils.ADImageMode.MULTIPLE
 :value: >
    'Multiple'
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ImageMode.MULTIPLE
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode.MULTIPLE
 ```
 
 ````
 
 ````{py:attribute} CONTINUOUS
-:canonical: ophyd_async.epics.adcore._utils.ImageMode.CONTINUOUS
+:canonical: ophyd_async.epics.adcore._utils.ADImageMode.CONTINUOUS
 :value: >
    'Continuous'
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ImageMode.CONTINUOUS
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode.CONTINUOUS
 ```
 
 ````

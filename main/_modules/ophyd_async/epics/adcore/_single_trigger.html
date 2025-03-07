@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._single_trigger &#8212; ophyd-async 0.9.1.dev23+gf50f67d1 documentation</title>
+    <title>ophyd_async.epics.adcore._single_trigger &#8212; ophyd-async 0.9.1.dev24+g20197e79 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=cac45b7d"></script>
+    <script src="../../../../_static/documentation_options.js?v=357a1773"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev24+g20197e79 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev24+g20197e79 documentation - Home"/>
   
   
 </a></div>
@@ -472,7 +472,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._core_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageMode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADImageMode</span>
 
 
 <div class="viewcode-block" id="SingleTriggerDetector">
@@ -504,7 +504,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">image_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ImageMode</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">image_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ADImageMode</span><span class="o">.</span><span class="n">SINGLE</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="o">.</span><span class="n">wait_for_plugins</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">stage</span><span class="p">()</span></div>

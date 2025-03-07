@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.9.1.dev23+gf50f67d1 documentation</title>
+    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.9.1.dev24+g20197e79 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=cac45b7d"></script>
+    <script src="../../../../_static/documentation_options.js?v=357a1773"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev23+gf50f67d1 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev24+g20197e79 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev24+g20197e79 documentation - Home"/>
   
   
 </a></div>
@@ -469,7 +469,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetDescriber</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">StrictEnum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADBaseDataType</span><span class="p">,</span> <span class="n">FileWriteMode</span><span class="p">,</span> <span class="n">ImageMode</span><span class="p">,</span> <span class="n">convert_ad_dtype_to_np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADBaseDataType</span><span class="p">,</span> <span class="n">ADFileWriteMode</span><span class="p">,</span> <span class="n">ADImageMode</span><span class="p">,</span> <span class="n">convert_ad_dtype_to_np</span>
 
 
 <div class="viewcode-block" id="ADCallbacks">
@@ -483,6 +483,12 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="NDArrayBaseIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDArrayBaseIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDArrayBaseIO</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class responsible for passing detector data from drivers to pluglins.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/NDArrayBase.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDArray.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">unique_id</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;UniqueId_RBV&quot;</span><span class="p">)]</span>
     <span class="n">nd_attributes_file</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;NDAttributesFile&quot;</span><span class="p">)]</span>
     <span class="n">acquire</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Acquire&quot;</span><span class="p">)]</span>
@@ -522,6 +528,12 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="NDPluginBaseIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginBaseIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDPluginBaseIO</span><span class="p">(</span><span class="n">NDArrayBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class from which plugins are derived.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/NDPluginBase.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginDriver.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">nd_array_port</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NDArrayPort&quot;</span><span class="p">)]</span>
     <span class="n">enable_callbacks</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADCallbacks</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;EnableCallbacks&quot;</span><span class="p">)]</span>
     <span class="n">nd_array_address</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NDArrayAddress&quot;</span><span class="p">)]</span>
@@ -534,7 +546,11 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="NDPluginStatsIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginStatsIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDPluginStatsIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for computing statistics from an image or ROI within an image.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for computing statistics from an image or ROI within an image.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/NDStats.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginStats.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Basic statistics</span>
     <span class="n">compute_statistics</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ComputeStatistics&quot;</span><span class="p">)]</span>
@@ -582,10 +598,16 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="ADBaseIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADBaseIO</span><span class="p">(</span><span class="n">NDArrayBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class from which areaDetector drivers are derived.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/ADBase.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/ADDriver.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">acquire_time</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;AcquireTime&quot;</span><span class="p">)]</span>
     <span class="n">acquire_period</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;AcquirePeriod&quot;</span><span class="p">)]</span>
     <span class="n">num_images</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NumImages&quot;</span><span class="p">)]</span>
-    <span class="n">image_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ImageMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ImageMode&quot;</span><span class="p">)]</span>
+    <span class="n">image_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADImageMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ImageMode&quot;</span><span class="p">)]</span>
     <span class="n">detector_state</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">ADState</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;DetectorState_RBV&quot;</span><span class="p">)]</span></div>
 
 
@@ -607,6 +629,12 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="NDFileIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDFileIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class from which file plugins are derived.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/NDFile.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginFile.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">file_path</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;FilePath&quot;</span><span class="p">)]</span>
     <span class="n">file_name</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;FileName&quot;</span><span class="p">)]</span>
     <span class="n">file_path_exists</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;FilePathExists_RBV&quot;</span><span class="p">)]</span>
@@ -614,7 +642,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">full_file_name</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;FullFileName_RBV&quot;</span><span class="p">)]</span>
     <span class="n">file_number</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;FileNumber&quot;</span><span class="p">)]</span>
     <span class="n">auto_increment</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;AutoIncrement&quot;</span><span class="p">)]</span>
-    <span class="n">file_write_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">FileWriteMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;FileWriteMode&quot;</span><span class="p">)]</span>
+    <span class="n">file_write_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADFileWriteMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;FileWriteMode&quot;</span><span class="p">)]</span>
     <span class="n">num_capture</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NumCapture&quot;</span><span class="p">)]</span>
     <span class="n">num_captured</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;NumCaptured_RBV&quot;</span><span class="p">)]</span>
     <span class="n">capture</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Capture&quot;</span><span class="p">)]</span>
@@ -627,6 +655,12 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="NDFileHDFIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDFIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDFileHDFIO</span><span class="p">(</span><span class="n">NDFileIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for storing data in HDF5 file format.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/NDFileHDF5.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDFileHDF5.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">position_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;PositionMode&quot;</span><span class="p">)]</span>
     <span class="n">compression</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADCompression</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Compression&quot;</span><span class="p">)]</span>
     <span class="n">num_extra_dims</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NumExtraDims&quot;</span><span class="p">)]</span>
