@@ -20,33 +20,33 @@ from ophyd_async.core import (
     StaticPathProvider,
     TriggerInfo,
 )
-from ophyd_async.epics import adcore, adsim
+from ophyd_async.epics import adcore, adsimdetector
 from ophyd_async.testing import assert_emitted, set_mock_value
 
 
 @pytest.fixture
-def test_adsimdetector(ad_standard_det_factory: Callable) -> adsim.SimDetector:
-    return ad_standard_det_factory(adsim.SimDetector)
+def test_adsimdetector(ad_standard_det_factory: Callable) -> adsimdetector.SimDetector:
+    return ad_standard_det_factory(adsimdetector.SimDetector)
 
 
 @pytest.fixture
 def test_adsimdetector_tiff(
     ad_standard_det_factory: Callable,
-) -> adsim.SimDetector:
-    return ad_standard_det_factory(adsim.SimDetector, adcore.ADTIFFWriter)
+) -> adsimdetector.SimDetector:
+    return ad_standard_det_factory(adsimdetector.SimDetector, adcore.ADTIFFWriter)
 
 
 @pytest.fixture
 def two_test_adsimdetectors(
     ad_standard_det_factory: Callable,
-) -> Sequence[adsim.SimDetector]:
-    deta = ad_standard_det_factory(adsim.SimDetector)
-    detb = ad_standard_det_factory(adsim.SimDetector, number=2)
+) -> Sequence[adsimdetector.SimDetector]:
+    deta = ad_standard_det_factory(adsimdetector.SimDetector)
+    detb = ad_standard_det_factory(adsimdetector.SimDetector, number=2)
 
     return deta, detb
 
 
-def count_sim(dets: Sequence[adsim.SimDetector], times: int = 1):
+def count_sim(dets: Sequence[adsimdetector.SimDetector], times: int = 1):
     """Test plan to do the equivalent of bp.count for a sim detector."""
 
     yield from bps.stage_all(*dets)
@@ -81,7 +81,7 @@ def count_sim(dets: Sequence[adsim.SimDetector], times: int = 1):
 
 
 async def test_two_detectors_fly_different_rate(
-    two_test_adsimdetectors: Sequence[adsim.SimDetector], RE: RunEngine
+    two_test_adsimdetectors: Sequence[adsimdetector.SimDetector], RE: RunEngine
 ):
     trigger_info = TriggerInfo(
         number_of_triggers=15,
@@ -146,7 +146,7 @@ async def test_two_detectors_fly_different_rate(
 
 
 async def test_two_detectors_step(
-    two_test_adsimdetectors: list[adsim.SimDetector],
+    two_test_adsimdetectors: list[adsimdetector.SimDetector],
     RE: RunEngine,
 ):
     names = []
@@ -240,8 +240,8 @@ async def test_detector_writes_to_file(
     writer_cls: type[adcore.ADWriter],
     tmp_path: Path,
 ):
-    test_adsimdetector: adsim.SimDetector = ad_standard_det_factory(
-        adsim.SimDetector, writer_cls
+    test_adsimdetector: adsimdetector.SimDetector = ad_standard_det_factory(
+        adsimdetector.SimDetector, writer_cls
     )
 
     names = []
@@ -280,7 +280,7 @@ async def test_detector_writes_to_file(
 
 
 async def test_read_and_describe_detector(
-    test_adsimdetector: adsim.SimDetector,
+    test_adsimdetector: adsimdetector.SimDetector,
 ):
     describe = await test_adsimdetector.describe_configuration()
     read = await test_adsimdetector.read_configuration()
@@ -312,7 +312,7 @@ async def test_read_and_describe_detector(
     }
 
 
-async def test_read_returns_nothing(test_adsimdetector: adsim.SimDetector):
+async def test_read_returns_nothing(test_adsimdetector: adsimdetector.SimDetector):
     assert await test_adsimdetector.read() == {}
 
 
@@ -352,9 +352,9 @@ def test_detector_with_unnamed_or_disconnected_config_sigs(
 ):
     dp = StaticPathProvider(static_filename_provider, tmp_path)
 
-    some_other_driver = adsim.SimDriverIO("TEST", name=driver_name)
+    some_other_driver = adsimdetector.SimDriverIO("TEST", name=driver_name)
 
-    det = adsim.SimDetector(
+    det = adsimdetector.SimDetector(
         "FOO:",
         dp,
         name="foo",
@@ -381,7 +381,7 @@ def test_detector_with_unnamed_or_disconnected_config_sigs(
     RE(bps.unstage(det, wait=True))
 
 
-async def test_ad_sim_controller(test_adsimdetector: adsim.SimDetector):
+async def test_ad_sim_controller(test_adsimdetector: adsimdetector.SimDetector):
     ad = test_adsimdetector._controller
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
         await ad.prepare(

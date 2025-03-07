@@ -11,7 +11,7 @@ from ophyd_async.epics import (
     adcore,
     adkinetix,  # noqa
     adpilatus,  # noqa
-    adsim,  # noqa
+    adsimdetector,  # noqa
     advimba,  # noqa
 )
 
