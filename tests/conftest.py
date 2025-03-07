@@ -21,7 +21,7 @@ from ophyd_async.core import (
     TriggerInfo,
     init_devices,
 )
-from ophyd_async.epics import adsimdetector
+from ophyd_async.epics import adsim
 
 PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
@@ -266,7 +266,7 @@ async def sim_detector(request: FixtureRequest):
     dp = StaticPathProvider(fp, tmp_path)
 
     async with init_devices(mock=True):
-        det = adsimdetector.SimDetector(prefix, dp, name=name)
+        det = adsim.SimDetector(prefix, dp, name=name)
 
     det._config_sigs = [det.driver.acquire_time, det.driver.acquire]
 

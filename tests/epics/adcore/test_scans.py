@@ -18,7 +18,7 @@ from ophyd_async.core import (
     TriggerInfo,
     init_devices,
 )
-from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.epics import adcore, adsim
 from ophyd_async.testing import set_mock_value
 
 
@@ -53,11 +53,11 @@ class DummyController(DetectorController):
 
 
 @pytest.fixture
-def controller(RE) -> adsimdetector.SimController:
+def controller(RE) -> adsim.SimController:
     with init_devices(mock=True):
         drv = adcore.ADBaseIO("DRV")
 
-    return adsimdetector.SimController(drv)
+    return adsim.SimController(drv)
 
 
 @pytest.fixture
@@ -78,7 +78,7 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
 async def test_hdf_writer_fails_on_timeout_with_stepscan(
     RE: RunEngine,
     writer: adcore.ADHDFWriter,
-    controller: adsimdetector.SimController,
+    controller: adsim.SimController,
 ):
     set_mock_value(writer.fileio.file_path_exists, True)
     detector: StandardDetector[Any, Any] = StandardDetector(
@@ -134,7 +134,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
     assert isinstance(exc.value.__cause__, asyncio.TimeoutError)
 
 
-async def test_ad_sim_controller_raise(controller: adsimdetector.SimController):
+async def test_ad_sim_controller_raise(controller: adsim.SimController):
     with pytest.raises(
         TypeError,
         match=r"fly scanning .* is not supported for this device",
