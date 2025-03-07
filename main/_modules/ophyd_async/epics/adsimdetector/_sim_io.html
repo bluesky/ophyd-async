@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.core._epics_connector &#8212; ophyd-async 0.9.1.dev25+ga0b32c5e documentation</title>
+    <title>ophyd_async.epics.adsimdetector._sim_io &#8212; ophyd-async 0.9.1.dev25+ga0b32c5e documentation</title>
   
   
   
@@ -55,7 +55,7 @@
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
 window.addEventListener("load", () => mermaid.run());
 </script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/core/_epics_connector';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/adsimdetector/_sim_io';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -445,7 +445,7 @@ window.addEventListener("load", () => mermaid.run());
     
     <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.core._epics_connector</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.adsimdetector._sim_io</span></li>
   </ul>
 </nav>
 </div>
@@ -462,75 +462,19 @@ window.addEventListener("load", () => mermaid.run());
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.epics.core._epics_connector</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span><span class="p">,</span> <span class="n">DeviceFiller</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsSignalBackend</span><span class="p">,</span> <span class="n">get_signal_backend_type</span><span class="p">,</span> <span class="n">split_protocol_from_pv</span>
+  <h1>Source code for ophyd_async.epics.adsimdetector._sim_io</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adcore</span>
 
 
-<div class="viewcode-block" id="PvSuffix">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">PvSuffix</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Define the PV suffix to be appended to the device prefix.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SimDriverIO">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adsimdetector.html#ophyd_async.epics.adsimdetector.SimDriverIO">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SimDriverIO</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for driving simulated Areadetector IO.</span>
 
-    <span class="n">read_suffix</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">write_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="sd">    This mirrors the interface provided by ADSimDetector/db/simDetector.template.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PvSuffix.rbv">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv">[docs]</a>
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">rbv</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">write_suffix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rbv_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;_RBV&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PvSuffix</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">write_suffix</span> <span class="o">+</span> <span class="n">rbv_suffix</span><span class="p">,</span> <span class="n">write_suffix</span><span class="p">)</span></div>
-</div>
-
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">fill_backend_with_prefix</span><span class="p">(</span>
-    <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">EpicsSignalBackend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
-<span class="p">):</span>
-    <span class="n">unhandled</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">while</span> <span class="n">annotations</span><span class="p">:</span>
-        <span class="n">annotation</span> <span class="o">=</span> <span class="n">annotations</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">annotation</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">):</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">read_pv</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="n">annotation</span><span class="o">.</span><span class="n">read_suffix</span>
-            <span class="n">backend</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">prefix</span> <span class="o">+</span> <span class="p">(</span>
-                <span class="n">annotation</span><span class="o">.</span><span class="n">write_suffix</span> <span class="ow">or</span> <span class="n">annotation</span><span class="o">.</span><span class="n">read_suffix</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">unhandled</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">annotation</span><span class="p">)</span>
-    <span class="n">annotations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unhandled</span><span class="p">)</span>
-    <span class="c1"># These leftover annotations will now be handled by the iterator</span>
-
-
-<div class="viewcode-block" id="EpicsDeviceConnector">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDeviceConnector">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EpicsDeviceConnector</span><span class="p">(</span><span class="n">DeviceConnector</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for connecting signals to static EPICS pvs.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
-
-<div class="viewcode-block" id="EpicsDeviceConnector.create_children_from_annotations">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDeviceConnector.create_children_from_annotations">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">create_children_from_annotations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;filler&quot;</span><span class="p">):</span>
-            <span class="n">protocol</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">=</span> <span class="n">split_protocol_from_pv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">filler</span> <span class="o">=</span> <span class="n">DeviceFiller</span><span class="p">(</span>
-                <span class="n">device</span><span class="p">,</span>
-                <span class="n">signal_backend_factory</span><span class="o">=</span><span class="n">get_signal_backend_type</span><span class="p">(</span><span class="n">protocol</span><span class="p">),</span>
-                <span class="n">device_connector_factory</span><span class="o">=</span><span class="n">DeviceConnector</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="k">for</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_signals_from_annotations</span><span class="p">():</span>
-                <span class="n">fill_backend_with_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">annotations</span><span class="p">)</span>
-
-            <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_devices_from_annotations</span><span class="p">())</span></div>
-</div>
+    <span class="k">pass</span></div>
 
 </pre></div>
 
