@@ -43,9 +43,9 @@ class EigerDetectorIO(Device):
 class EigerDriverIO(Device):
     """Contains signals for handling IO on the Eiger detector."""
 
-    eiger_monitor: EigerMonitorIO
-    eiger_stream: EigerStreamIO
-    eiger_detector: EigerDetectorIO
+    monitor: EigerMonitorIO
+    stream: EigerStreamIO
+    detector: EigerDetectorIO
 
     def __init__(self, uri: str, name: str = ""):
         super().__init__(name=name, connector=fastcs_connector(self, uri))

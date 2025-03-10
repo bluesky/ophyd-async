@@ -34,22 +34,22 @@ class EigerController(DetectorController):
         """Changing photon energy takes some time so only do so if the current energy is
         outside the tolerance."""
 
-        current_energy = await self._drv.eiger_detector.photon_energy.get_value()
+        current_energy = await self._drv.detector.photon_energy.get_value()
         if abs(current_energy - energy) > tolerance:
-            await self._drv.eiger_detector.photon_energy.set(energy)
+            await self._drv.detector.photon_energy.set(energy)
 
     async def prepare(self, trigger_info: TriggerInfo):
         coros = [
-            self._drv.eiger_detector.trigger_mode.set(
+            self._drv.detector.trigger_mode.set(
                 EIGER_TRIGGER_MODE_MAP[trigger_info.trigger].value
             ),
-            self._drv.eiger_detector.nimages.set(trigger_info.total_number_of_triggers),
+            self._drv.detector.nimages.set(trigger_info.total_number_of_triggers),
         ]
         if trigger_info.livetime is not None:
             coros.extend(
                 [
-                    self._drv.eiger_detector.count_time.set(trigger_info.livetime),
-                    self._drv.eiger_detector.frame_time.set(trigger_info.livetime),
+                    self._drv.detector.count_time.set(trigger_info.livetime),
+                    self._drv.detector.frame_time.set(trigger_info.livetime),
                 ]
             )
         await asyncio.gather(*coros)
@@ -57,9 +57,9 @@ class EigerController(DetectorController):
     async def arm(self):
         # TODO: Detector state should be an enum see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
         self._arm_status = await set_and_wait_for_other_value(
-            self._drv.eiger_detector.arm,
+            self._drv.detector.arm,
             1,
-            self._drv.eiger_detector.state,
+            self._drv.detector.state,
             "ready",
             timeout=DEFAULT_TIMEOUT,
             wait_for_set_completion=False,
@@ -70,4 +70,4 @@ class EigerController(DetectorController):
             await self._arm_status
 
     async def disarm(self):
-        await self._drv.eiger_detector.disarm.set(1)
+        await self._drv.detector.disarm.set(1)
