@@ -34,14 +34,14 @@ class OdinHdfIO(Device):
     config_hdf_write: SignalW[Writing]
     frames_written: SignalR[int]
     config_hdf_frames: SignalW[int]
-    dataset_data_dims_0: SignalRW[int]
-    dataset_data_dims_1: SignalRW[int]
-    dataset_data_chunks_0: SignalRW[int]
-    dataset_data_chunks_1: SignalRW[int]
-    dataset_data_chunks_2: SignalRW[int]
+    data_dims_0: SignalRW[int]
+    data_dims_1: SignalRW[int]
+    data_chunks_0: SignalRW[int]
+    data_chunks_1: SignalRW[int]
+    data_chunks_2: SignalRW[int]
     config_hdf_file_path: SignalRW[str]
     config_hdf_file_prefix: SignalRW[str]
-    dataset_data_datatype: SignalRW[str]
+    data_datatype: SignalRW[str]
     nodes = DeviceVector[OdinNode]
 
     def __init__(self, uri: str, name: str = ""):
@@ -66,7 +66,7 @@ class OdinWriter(DetectorWriter):
         await asyncio.gather(
             self._drv.config_hdf_file_path.set(str(info.directory_path)),
             self._drv.config_hdf_file_prefix.set(info.filename),
-            self._drv.dataset_data_datatype.set(
+            self._drv.data_datatype.set(
                 "uint16"
             ),  # TODO: Get from eiger https://github.com/bluesky/ophyd-async/issues/529
             self._drv.config_hdf_frames.set(0),
@@ -78,8 +78,8 @@ class OdinWriter(DetectorWriter):
 
     async def _describe(self) -> dict[str, DataKey]:
         data_shape = await asyncio.gather(
-            self._drv.dataset_data_dims_0.get_value(),
-            self._drv.dataset_data_dims_1.get_value(),
+            self._drv.data_dims_0.get_value(),
+            self._drv.data_dims_1.get_value(),
         )
 
         return {
