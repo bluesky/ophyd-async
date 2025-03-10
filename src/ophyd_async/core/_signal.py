@@ -579,33 +579,32 @@ async def set_and_wait_for_other_value(
 
     status = set_signal.set(set_value, timeout=set_timeout)
 
+    if callable(match_value):
+        matcher: Callable[[SignalDatatypeV], bool] = match_value  # type: ignore
+    else:
+
+        def matcher(value):
+            return value == match_value
+
+        matcher.__name__ = f"equals_{match_value}"
+
     # If the value was the same as before no need to wait for it to change
-    if (
-        callable(match_value) and not match_value(current_value)
-    ) or match_value != current_value:
+    if not matcher(current_value):
 
         async def _wait_for_value():
-            if callable(match_value):
-                async for value in values_gen:
-                    if match_value(value):
-                        break
-            else:
-                async for value in values_gen:
-                    if value == match_value:
-                        break
+            async for value in values_gen:
+                if matcher(value):
+                    break
 
         try:
             await asyncio.wait_for(_wait_for_value(), timeout)
             if wait_for_set_completion:
                 await status
         except asyncio.TimeoutError as e:
-            msg = (
-                f"{match_signal.name} value didn't match value from {match_value}()"
-                f" in {timeout}s"
-                if callable(match_value)
-                else f"{match_signal.name} didn't match {match_value} in {timeout}s"
-            )
-            raise asyncio.TimeoutError(msg) from e
+            raise asyncio.TimeoutError(
+                f"{match_signal.name} value didn't match value from"
+                f" {matcher.__name__}() in {timeout}s"
+            ) from e
 
     return status
 
