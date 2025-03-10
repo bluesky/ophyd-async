@@ -7,7 +7,6 @@ from event_model import DataKey
 from ophyd_async.core import (
     DetectorWriter,
     Device,
-    DeviceVector,
     NameProvider,
     PathProvider,
     SignalR,
@@ -25,24 +24,19 @@ class Writing(StrictEnum):
     OFF = "OFF"
 
 
-class OdinNode(Device):
-    writing: SignalR[Writing]
-
-
 class OdinHdfIO(Device):
     writing: SignalR[Writing]
     config_hdf_write: SignalW[Writing]
     frames_written: SignalR[int]
-    config_hdf_frames: SignalW[int]
+    frames: SignalW[int]
     data_dims_0: SignalRW[int]
     data_dims_1: SignalRW[int]
     data_chunks_0: SignalRW[int]
     data_chunks_1: SignalRW[int]
     data_chunks_2: SignalRW[int]
-    config_hdf_file_path: SignalRW[str]
-    config_hdf_file_prefix: SignalRW[str]
+    file_path: SignalRW[str]
+    file_prefix: SignalRW[str]
     data_datatype: SignalRW[str]
-    nodes = DeviceVector[OdinNode]
 
     def __init__(self, uri: str, name: str = ""):
         super().__init__(name=name, connector=fastcs_connector(self, uri))
