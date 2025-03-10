@@ -1,6 +1,6 @@
 from typing import Annotated as A
 
-from ophyd_async.core import SignalRW, StrictEnum
+from ophyd_async.core import SignalR, SignalRW, StrictEnum
 from ophyd_async.epics import adcore
 from ophyd_async.epics.core import PvSuffix
 
@@ -19,3 +19,4 @@ class PilatusDriverIO(adcore.ADBaseIO):
     """This mirrors the interface provided by ADPilatus/db/pilatus.template."""
 
     trigger_mode = A[SignalRW[PilatusTriggerMode], PvSuffix.rbv("TriggerMode")]
+    armed = A[SignalR[bool], PvSuffix.rbv("Armed")]
