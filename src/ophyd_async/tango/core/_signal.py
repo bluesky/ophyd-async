@@ -22,7 +22,6 @@ from tango import (
     CmdArgType,
     DeviceProxy,
     DevState,
-    NonSupportedFeature,  # type: ignore
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
@@ -175,12 +174,6 @@ async def infer_signal_type(
         dev_proxy = await AsyncDeviceProxy(device_trl)
     else:
         dev_proxy = proxy
-
-    try:
-        if tr_name in dev_proxy.get_pipe_list():
-            raise NotImplementedError("Pipes are not supported")
-    except NonSupportedFeature:  # type: ignore
-        pass
 
     if tr_name not in dev_proxy.get_attribute_list():
         if tr_name not in dev_proxy.get_command_list():
