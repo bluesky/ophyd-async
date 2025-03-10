@@ -643,13 +643,6 @@ async def get_tango_trl(
     if trl_name in all_cmds:
         return CommandProxy(device_proxy, trl_name)
 
-    # If version is below tango 9, then pipes are not supported
-    if device_proxy.info().server_version >= 9:
-        # all pipes can be always accessible with low register
-        all_pipes = [pipe_name.lower() for pipe_name in device_proxy.get_pipe_list()]
-        if trl_name in all_pipes:
-            raise NotImplementedError("Pipes are not supported")
-
     raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
 
 
