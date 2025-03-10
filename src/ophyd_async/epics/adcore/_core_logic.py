@@ -60,8 +60,9 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         self._arm_status = await self.start_acquiring_driver_and_ensure_status()
 
     async def wait_for_idle(self):
-        if self._arm_status:
+        if self._arm_status and not self._arm_status.done:
             await self._arm_status
+        self._arm_status = None
 
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have

@@ -40,3 +40,6 @@ class PandaPcapController(DetectorController):
     async def disarm(self):
         await self.pcap.arm.set(False)
         await wait_for_value(self.pcap.active, False, timeout=1)
+        if self._arm_status and not self._arm_status.done:
+            await self._arm_status
+        self._arm_status = None
