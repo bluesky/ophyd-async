@@ -1,6 +1,8 @@
-from ophyd_async.core import StrictEnum
+from typing import Annotated as A
+
+from ophyd_async.core import SignalRW, StrictEnum
 from ophyd_async.epics import adcore
-from ophyd_async.epics.core import epics_signal_r, epics_signal_rw_rbv
+from ophyd_async.epics.core import PvSuffix
 
 
 class PilatusTriggerMode(StrictEnum):
@@ -14,11 +16,6 @@ class PilatusTriggerMode(StrictEnum):
 
 
 class PilatusDriverIO(adcore.ADBaseIO):
-    """Mirrors the interface provided by ADPilatus/db/pilatus.template."""
+    """This mirrors the interface provided by ADPilatus/db/pilatus.template."""
 
-    def __init__(self, prefix: str, name: str = "") -> None:
-        self.trigger_mode = epics_signal_rw_rbv(
-            PilatusTriggerMode, prefix + "TriggerMode"
-        )
-        self.armed = epics_signal_r(bool, prefix + "Armed")
-        super().__init__(prefix, name=name)
+    trigger_mode = A[SignalRW[PilatusTriggerMode], PvSuffix.rbv("TriggerMode")]
