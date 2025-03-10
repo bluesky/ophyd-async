@@ -29,10 +29,8 @@ async def test_when_open_called_then_file_correctly_set(
 
     await writer.open()
 
-    get_mock_put(driver.config_hdf_file_path).assert_called_once_with(
-        str(tmp_path), wait=ANY
-    )
-    get_mock_put(driver.config_hdf_file_prefix).assert_called_once_with(
+    get_mock_put(driver.file_path).assert_called_once_with(str(tmp_path), wait=ANY)
+    get_mock_put(driver.file_prefix).assert_called_once_with(
         expected_filename, wait=ANY
     )
 
@@ -44,7 +42,7 @@ async def test_when_open_called_then_all_expected_signals_set(
     await writer.open()
 
     get_mock_put(driver.data_datatype).assert_called_once_with("uint16", wait=ANY)
-    get_mock_put(driver.config_hdf_frames).assert_called_once_with(0, wait=ANY)
+    get_mock_put(driver.frames).assert_called_once_with(0, wait=ANY)
 
     get_mock_put(driver.config_hdf_write).assert_called_once_with(Writing.ON, wait=ANY)
 

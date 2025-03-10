@@ -58,12 +58,12 @@ class OdinWriter(DetectorWriter):
         info = self._path_provider(device_name=self._name_provider())
 
         await asyncio.gather(
-            self._drv.config_hdf_file_path.set(str(info.directory_path)),
-            self._drv.config_hdf_file_prefix.set(info.filename),
+            self._drv.file_path.set(str(info.directory_path)),
+            self._drv.file_prefix.set(info.filename),
             self._drv.data_datatype.set(
                 "uint16"
             ),  # TODO: Get from eiger https://github.com/bluesky/ophyd-async/issues/529
-            self._drv.config_hdf_frames.set(0),
+            self._drv.frames.set(0),
         )
 
         await self._drv.config_hdf_write.set(Writing.ON)
@@ -78,7 +78,7 @@ class OdinWriter(DetectorWriter):
 
         return {
             "data": DataKey(
-                source=self._drv.config_hdf_file_prefix.source,
+                source=self._drv.file_prefix.source,
                 shape=list(data_shape),
                 dtype="array",
                 # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
