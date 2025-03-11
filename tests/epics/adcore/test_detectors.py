@@ -2,8 +2,7 @@ import itertools
 
 import pytest
 
-from ophyd_async.core import TriggerInfo
-from ophyd_async.core._providers import StaticPathProvider
+from ophyd_async.core import StaticPathProvider, TriggerInfo
 from ophyd_async.epics import (
     adandor,
     adaravis,
