@@ -99,7 +99,6 @@ async def test_can_collect(
     )
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
-        "swmr": False,
         "multiplier": 1,
         "chunk_shape": (1, 10, 10),
     }

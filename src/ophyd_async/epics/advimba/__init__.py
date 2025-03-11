@@ -1,10 +1,8 @@
-from ._vimba import ContAcqVimbaDetector, VimbaDetector
-from ._vimba_controller import ContAcqVimbaController, VimbaController
+from ._vimba import VimbaDetector
+from ._vimba_controller import VimbaController
 from ._vimba_io import VimbaDriverIO, VimbaExposeOutMode, VimbaOnOff, VimbaTriggerSource
 
 __all__ = [
-    "ContAcqVimbaController",
-    "ContAcqVimbaDetector",
     "VimbaDetector",
     "VimbaController",
     "VimbaDriverIO",

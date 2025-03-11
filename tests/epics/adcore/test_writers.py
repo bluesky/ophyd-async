@@ -98,10 +98,10 @@ async def test_hdf_writer_file_not_found(hdf_writer: adcore.ADHDFWriter):
 
 
 async def test_hdf_writer_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
-    assert hdf_writer._file is None
+    assert hdf_writer._composer is None
 
     [item async for item in hdf_writer.collect_stream_docs(1)]
-    assert hdf_writer._file
+    assert hdf_writer._composer
 
 
 async def test_tiff_writer_collect_stream_docs(tiff_writer: adcore.ADTIFFWriter):
@@ -113,7 +113,7 @@ async def test_tiff_writer_collect_stream_docs(tiff_writer: adcore.ADTIFFWriter)
 async def test_stats_describe_when_plugin_configured(
     hdf_writer_with_stats: adcore.ADHDFWriter,
 ):
-    assert hdf_writer_with_stats._file is None
+    assert hdf_writer_with_stats._composer is None
     set_mock_value(hdf_writer_with_stats.fileio.file_path_exists, True)
     assert hdf_writer_with_stats._plugins is not None
     set_mock_value(
@@ -166,7 +166,7 @@ async def test_stats_describe_when_plugin_configured(
 async def test_stats_describe_raises_error_with_dbr_native(
     hdf_writer_with_stats: adcore.ADHDFWriter,
 ):
-    assert hdf_writer_with_stats._file is None
+    assert hdf_writer_with_stats._composer is None
     set_mock_value(hdf_writer_with_stats.fileio.file_path_exists, True)
     assert hdf_writer_with_stats._plugins is not None
     set_mock_value(

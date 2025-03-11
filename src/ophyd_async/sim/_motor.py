@@ -102,6 +102,8 @@ class SimMotor(StandardReadable, Movable, Stoppable):
             raise RuntimeError(msg)
         acceleration_time = await self.acceleration_time.get_value()
         self._fly_status = self.set(self._fly_info.end_position(acceleration_time))
+        # Wait for the acceleration time to ensure we are at velocity
+        await asyncio.sleep(acceleration_time)
 
     def complete(self) -> WatchableAsyncStatus:
         """Mark as complete once motor reaches completed position."""

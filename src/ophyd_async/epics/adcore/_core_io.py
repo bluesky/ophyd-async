@@ -4,7 +4,7 @@ from typing import Annotated as A
 from ophyd_async.core import DatasetDescriber, SignalR, SignalRW, StrictEnum
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
-from ._utils import ADBaseDataType, FileWriteMode, ImageMode, convert_ad_dtype_to_np
+from ._utils import ADBaseDataType, ADFileWriteMode, ADImageMode, convert_ad_dtype_to_np
 
 
 class ADCallbacks(StrictEnum):
@@ -13,6 +13,12 @@ class ADCallbacks(StrictEnum):
 
 
 class NDArrayBaseIO(EpicsDevice):
+    """Class responsible for passing detector data from drivers to pluglins.
+
+    This mirrors the interface provided by ADCore/db/NDArrayBase.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDArray.html
+    """
+
     unique_id: A[SignalR[int], PvSuffix("UniqueId_RBV")]
     nd_attributes_file: A[SignalRW[str], PvSuffix("NDAttributesFile")]
     acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire")]
@@ -40,6 +46,12 @@ class ADBaseDatasetDescriber(DatasetDescriber):
 
 
 class NDPluginBaseIO(NDArrayBaseIO):
+    """Base class from which plugins are derived.
+
+    This mirrors the interface provided by ADCore/db/NDPluginBase.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginDriver.html
+    """
+
     nd_array_port: A[SignalRW[str], PvSuffix.rbv("NDArrayPort")]
     enable_callbacks: A[SignalRW[ADCallbacks], PvSuffix.rbv("EnableCallbacks")]
     nd_array_address: A[SignalRW[int], PvSuffix.rbv("NDArrayAddress")]
@@ -49,7 +61,11 @@ class NDPluginBaseIO(NDArrayBaseIO):
 
 
 class NDPluginStatsIO(NDPluginBaseIO):
-    """Plugin for computing statistics from an image or ROI within an image."""
+    """Plugin for computing statistics from an image or ROI within an image.
+
+    This mirrors the interface provided by ADCore/db/NDStats.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginStats.html
+    """
 
     # Basic statistics
     compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
@@ -91,10 +107,16 @@ class ADState(StrictEnum):
 
 
 class ADBaseIO(NDArrayBaseIO):
+    """Base class from which areaDetector drivers are derived.
+
+    This mirrors the interface provided by ADCore/db/ADBase.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/ADDriver.html
+    """
+
     acquire_time: A[SignalRW[float], PvSuffix.rbv("AcquireTime")]
     acquire_period: A[SignalRW[float], PvSuffix.rbv("AcquirePeriod")]
     num_images: A[SignalRW[int], PvSuffix.rbv("NumImages")]
-    image_mode: A[SignalRW[ImageMode], PvSuffix.rbv("ImageMode")]
+    image_mode: A[SignalRW[ADImageMode], PvSuffix.rbv("ImageMode")]
     detector_state: A[SignalR[ADState], PvSuffix("DetectorState_RBV")]
 
 
@@ -110,6 +132,12 @@ class ADCompression(StrictEnum):
 
 
 class NDFileIO(NDPluginBaseIO):
+    """Base class from which file plugins are derived.
+
+    This mirrors the interface provided by ADCore/db/NDFile.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginFile.html
+    """
+
     file_path: A[SignalRW[str], PvSuffix.rbv("FilePath")]
     file_name: A[SignalRW[str], PvSuffix.rbv("FileName")]
     file_path_exists: A[SignalR[bool], PvSuffix("FilePathExists_RBV")]
@@ -117,7 +145,7 @@ class NDFileIO(NDPluginBaseIO):
     full_file_name: A[SignalR[str], PvSuffix("FullFileName_RBV")]
     file_number: A[SignalRW[int], PvSuffix("FileNumber")]
     auto_increment: A[SignalRW[bool], PvSuffix("AutoIncrement")]
-    file_write_mode: A[SignalRW[FileWriteMode], PvSuffix.rbv("FileWriteMode")]
+    file_write_mode: A[SignalRW[ADFileWriteMode], PvSuffix.rbv("FileWriteMode")]
     num_capture: A[SignalRW[int], PvSuffix.rbv("NumCapture")]
     num_captured: A[SignalR[int], PvSuffix("NumCaptured_RBV")]
     capture: A[SignalRW[bool], PvSuffix.rbv("Capture")]
@@ -127,6 +155,12 @@ class NDFileIO(NDPluginBaseIO):
 
 
 class NDFileHDFIO(NDFileIO):
+    """Plugin for storing data in HDF5 file format.
+
+    This mirrors the interface provided by ADCore/db/NDFileHDF5.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDFileHDF5.html
+    """
+
     position_mode: A[SignalRW[bool], PvSuffix.rbv("PositionMode")]
     compression: A[SignalRW[ADCompression], PvSuffix.rbv("Compression")]
     num_extra_dims: A[SignalRW[int], PvSuffix.rbv("NumExtraDims")]

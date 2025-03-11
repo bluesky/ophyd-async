@@ -17,7 +17,7 @@ from ._core_io import (
     NDCBFlushOnSoftTrgMode,
     NDPluginCBIO,
 )
-from ._utils import ImageMode, stop_busy_record
+from ._utils import ADImageMode, stop_busy_record
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
@@ -50,7 +50,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         )
         await asyncio.gather(
             self.driver.num_images.set(trigger_info.total_number_of_triggers),
-            self.driver.image_mode.set(ImageMode.MULTIPLE),
+            self.driver.image_mode.set(ADImageMode.MULTIPLE),
         )
 
     async def arm(self):
@@ -157,7 +157,7 @@ class ADBaseContAcqController(ADBaseController[ADBaseIO]):
         image_mode = await self.driver.image_mode.get_value()
         acquiring = await self.driver.acquire.get_value()
 
-        if image_mode != ImageMode.CONTINUOUS or not acquiring:
+        if image_mode != ADImageMode.CONTINUOUS or not acquiring:
             raise RuntimeError(
                 "Driver must be acquiring in continuous mode to use the "
                 "cont acq interface"

@@ -11,14 +11,15 @@ import pytest
 from bluesky import RunEngine
 
 import tango
-from ophyd_async.core import Array1D, SignalRW, init_devices
+from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoReadable, get_python_type
+from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
     TangoDetector,
 )
+from ophyd_async.testing import assert_reading
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -27,10 +28,7 @@ from tango import (
     DevState,
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
-from tango.asyncio_executor import set_global_executor
 from tango.server import Device, attribute, command
-from tango.test_context import MultiDeviceTestContext
-from tango.test_utils import assert_close
 
 T = TypeVar("T")
 
@@ -67,6 +65,8 @@ class TestDevice(Device):
     _label = "Test Device"
 
     _limitedvalue = 3
+
+    _ignored_attr = 1.0
 
     @attribute(dtype=float, access=AttrWriteType.READ)
     def readback(self):
@@ -156,6 +156,10 @@ class TestDevice(Device):
     def write_raise_exception_attr(self, value: float):
         raise
 
+    @attribute(dtype=float, access=AttrWriteType.READ)
+    def ignored_attr(self) -> float:
+        return self._ignored_attr
+
     @command
     def clear(self) -> str:
         # self.info_stream("Received clear command")
@@ -181,6 +185,7 @@ class TestTangoReadable(TangoReadable):
     justvalue: A[SignalRW[int], Format.HINTED_UNCACHED_SIGNAL]
     array: A[SignalRW[Array1D[np.float64]], Format.HINTED_UNCACHED_SIGNAL]
     limitedvalue: A[SignalRW[float], Format.HINTED_UNCACHED_SIGNAL]
+    ignored_attr: Ignore
 
 
 # --------------------------------------------------------------------
@@ -224,7 +229,7 @@ async def describe_class(fqtrl):
             )
 
         description[f"test_device-{name}"] = {
-            "source": f"{fqtrl}/{name}",  # type: ignore
+            "source": get_full_attr_trl(fqtrl, name),
             "dtype": "array" if is_array else descr,
             "shape": shape,
         }
@@ -263,17 +268,17 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def tango_test_device():
-    with MultiDeviceTestContext(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}], process=True
+def tango_test_device(subprocess_helper):
+    with subprocess_helper(
+        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
     ) as context:
-        yield context.get_device_access("test/device/1")
+        yield context.trls["test/device/1"]
 
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def sim_test_context():
-    content = (
+def sim_test_context_trls(subprocess_helper):
+    args = (
         {
             "class": DemoMover,
             "devices": [{"name": "sim/motor/1"}],
@@ -283,34 +288,20 @@ def sim_test_context():
             "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
         },
     )
-    yield MultiDeviceTestContext(content, process=True)
-
-
-# --------------------------------------------------------------------
-@pytest.fixture(autouse=True)
-def reset_tango_asyncio():
-    set_global_executor(None)
-
-
-# --------------------------------------------------------------------
-def compare_values(expected, received):
-    assert set(expected.keys()) == set(received.keys())
-    for k, v in expected.items():
-        for _k, _v in v.items():
-            assert_close(_v, received[k][_k])
+    with subprocess_helper(args) as context:
+        yield context.trls
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)
-
     async with init_devices():
         test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
     assert description == await test_device.describe()
-    compare_values(values, await test_device.read())
+    await assert_reading(test_device, values)
 
 
 # --------------------------------------------------------------------
@@ -324,26 +315,20 @@ async def test_set_trl(tango_test_device):
 
     assert test_device.name == "test_device"
     assert description == await test_device.describe()
-    compare_values(values, await test_device.read())
+    await assert_reading(test_device, values)
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize("proxy", [True, False, None])
-async def test_connect_proxy(tango_test_device, proxy: bool | None):
-    if proxy is None:
+@pytest.mark.parametrize("use_trl", [True, False])
+async def test_connect_proxy(tango_test_device, use_trl: str | None):
+    if use_trl:
         test_device = TestTangoReadable(trl=tango_test_device)
         test_device.proxy = None
         await test_device.connect()
         assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
-    elif proxy:
-        proxy = await AsyncDeviceProxy(tango_test_device)
-        test_device = TestTangoReadable(device_proxy=proxy)
-        await test_device.connect()
-        assert isinstance(test_device._connector.proxy, tango._tango.DeviceProxy)
     else:
-        proxy = None
-        test_device = TestTangoReadable(device_proxy=proxy)
+        test_device = TestTangoReadable()
         assert test_device
 
 
@@ -359,27 +344,44 @@ async def test_with_bluesky(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_sim(sim_test_context):
-    with sim_test_context:
-        detector = TangoDetector(
-            name="detector",
-            mover_trl="sim/motor/1",
-            counter_trls=["sim/counter/1", "sim/counter/2"],
-        )
-        await detector.connect()
-        await detector.trigger()
-        await detector.mover.velocity.set(0.5)
+async def test_tango_sim(sim_test_context_trls):
+    detector = TangoDetector(
+        name="detector",
+        mover_trl=sim_test_context_trls["sim/motor/1"],
+        counter_trls=[
+            sim_test_context_trls["sim/counter/1"],
+            sim_test_context_trls["sim/counter/2"],
+        ],
+    )
+    await detector.connect()
+    await detector.trigger()
+    await detector.mover.velocity.set(0.5)
 
-        RE = RunEngine()
+    RE = RunEngine()
 
-        RE(bps.read(detector))
-        RE(bps.mv(detector, 0))
-        RE(bp.count(list(detector.counters.values())))
+    RE(bps.read(detector))
+    RE(bps.mv(detector, 0))
+    RE(bp.count(list(detector.counters.values())))
 
-        set_status = detector.set(1.0)
-        await asyncio.sleep(1.0)
-        stop_status = detector.stop()
-        await set_status
-        await stop_status
-        assert all([set_status.done, stop_status.done])
-        assert all([set_status.success, stop_status.success])
+    set_status = detector.set(1.0)
+    await asyncio.sleep(1.0)
+    stop_status = detector.stop()
+    await set_status
+    await stop_status
+    assert all([set_status.done, stop_status.done])
+    assert all([set_status.success, stop_status.success])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("auto_fill_signals", [True, False])
+async def test_signal_autofill(tango_test_device, auto_fill_signals):
+    test_device = TestTangoReadable(
+        trl=tango_test_device, auto_fill_signals=auto_fill_signals
+    )
+    await test_device.connect()
+    if auto_fill_signals:
+        assert not hasattr(test_device, "ignored_attr")
+        assert hasattr(test_device, "readback")
+    else:
+        assert not hasattr(test_device, "ignored_attr")
+        assert not hasattr(test_device, "readback")
