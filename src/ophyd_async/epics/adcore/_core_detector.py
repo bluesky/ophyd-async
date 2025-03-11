@@ -1,10 +1,12 @@
 from collections.abc import Sequence
 
 from ophyd_async.core import SignalR, StandardDetector
+from ophyd_async.core._providers import PathProvider
 
-from ._core_io import NDPluginBaseIO
-from ._core_logic import ADBaseContAcqControllerT, ADBaseControllerT
+from ._core_io import ADBaseIO, NDPluginBaseIO, NDPluginCBIO
+from ._core_logic import ADBaseContAcqController, ADBaseControllerT
 from ._core_writer import ADWriter
+from ._hdf_writer import ADHDFWriter
 
 
 class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
@@ -41,26 +43,38 @@ class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
         return plugin
 
 
-class ContAcqAreaDetector(StandardDetector[ADBaseContAcqControllerT, ADWriter]):
+class ContAcqAreaDetector(AreaDetector[ADBaseContAcqController]):
+    """Ophyd-async implementation of a continuously acquiring AreaDetector."""
+
     def __init__(
         self,
-        controller: ADBaseContAcqControllerT,
-        writer: ADWriter,
+        prefix: str,
+        path_provider: PathProvider,
+        drv_suffix: str = "cam1:",
+        cb_suffix: str = "CB1:",
+        writer_cls: type[ADWriter] = ADHDFWriter,
+        fileio_suffix: str | None = None,
+        name: str = "",
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
-        name: str = "",
     ):
-        self.cb_plugin = controller.cb_plugin
-        self.driver = controller.driver
-        self.fileio = writer.fileio
+        self.cb_plugin = NDPluginCBIO(prefix + cb_suffix)
+        driver = ADBaseIO(prefix + drv_suffix)
+        controller = ADBaseContAcqController(driver, self.cb_plugin)
 
-        if plugins is not None:
-            for name, plugin in plugins.items():
-                setattr(self, name, plugin)
+        writer = writer_cls.with_io(
+            prefix,
+            path_provider,
+            # Since the CB plugin controls acq, use it when checking shape
+            dataset_source=self.cb_plugin,
+            fileio_suffix=fileio_suffix,
+            plugins=plugins,
+        )
 
         super().__init__(
-            controller,
-            writer,
-            (self.driver.acquire_period, self.driver.acquire_time, *config_sigs),
+            controller=controller,
+            writer=writer,
+            plugins=plugins,
             name=name,
+            config_sigs=config_sigs,
         )

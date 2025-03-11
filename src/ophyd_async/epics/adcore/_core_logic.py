@@ -25,9 +25,6 @@ DEFAULT_GOOD_STATES: frozenset[ADState] = frozenset([ADState.IDLE, ADState.ABORT
 
 ADBaseIOT = TypeVar("ADBaseIOT", bound=ADBaseIO)
 ADBaseControllerT = TypeVar("ADBaseControllerT", bound="ADBaseController")
-ADBaseContAcqControllerT = TypeVar(
-    "ADBaseContAcqControllerT", bound="ADBaseContAcqController"
-)
 
 
 class ADBaseController(DetectorController, Generic[ADBaseIOT]):
@@ -124,31 +121,56 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         return AsyncStatus(complete_acquisition())
 
 
-class ADBaseContAcqController(DetectorController, Generic[ADBaseIOT]):
-    def __init__(self, cb_plugin_prefix: str, driver: ADBaseIOT) -> None:
-        self.driver = driver
-        self.cb_plugin = NDPluginCBIO(cb_plugin_prefix)
-        self._arm_status: AsyncStatus | None = None
+class ADBaseContAcqController(ADBaseController[ADBaseIO]):
+    """Continuous acquisition interface for an AreaDetector."""
 
-    async def prepare(self, trigger_info: TriggerInfo) -> None:
+    def __init__(self, driver: ADBaseIO, cb_plugin: NDPluginCBIO) -> None:
+        self.cb_plugin = cb_plugin
+        super().__init__(driver)
+
+    def get_deadtime(self, exposure):
+        # For now just set this to something until we can decide how to pass this in
+        return 0.001
+
+    async def ensure_acquisition_settings_valid(
+        self, trigger_info: TriggerInfo
+    ) -> None:
+        """Ensure the trigger mode is valid for the detector."""
         if trigger_info.trigger != DetectorTrigger.INTERNAL:
-            msg = "The continuous acq interface only supports internal triggering."
-            raise TypeError(msg)
+            # Note that not all detectors will use the `DetectorTrigger` enum
+            raise TypeError(
+                "The continuous acq interface only supports internal triggering."
+            )
 
-        # Make sure we are in continuous mode & acquiring
+        # Not all detectors allow for changing exposure times during an acquisition,
+        # so in this least-common-denominator implementation check to see if
+        # exposure time matches the current exposure time.
+        exposure_time = await self.driver.acquire_time.get_value()
+        if trigger_info.livetime is not None and trigger_info.livetime != exposure_time:
+            raise ValueError(
+                f"Detector exposure time currently set to {exposure_time}, "
+                f"but requested exposure is {trigger_info.livetime}"
+            )
+
+    async def ensure_in_continuous_acquisition_mode(self) -> None:
+        """Ensure the detector is in continuous acquisition mode."""
         image_mode = await self.driver.image_mode.get_value()
         acquiring = await self.driver.acquire.get_value()
 
-        # For now, expect that the detector is in cont mode and acquiring with
-        # specified exposure time/framerate, because we can't guarantee that a detector
-        # will allow for switching exposure time/framerate while in continuous mode.
-        # If your detector can do this, you can override this method in the controller
-        # subclass, and set the exposure time/framerate here.
         if image_mode != ImageMode.CONTINUOUS or not acquiring:
             raise RuntimeError(
-                "Driver must be in continuous mode and acquiring to use the "
-                "continuous acquisition interface"
+                "Driver must be acquiring in continuous mode to use the "
+                "cont acq interface"
             )
+
+    async def prepare(self, trigger_info: TriggerInfo) -> None:
+        # These are broken out into seperate functions to make it easier to
+        # override them in subclasses, for example if you want `prepare` to
+        # setup the detector in continuous mode if it isn't already (for now,
+        # we assume it already is). If your detector uses differnt enums
+        # for `ImageMode` or `DetectorTrigger`, you should also override these.
+        await self.ensure_acquisition_settings_valid(trigger_info)
+        await self.ensure_in_continuous_acquisition_mode()
 
         # Configure the CB plugin to collect the correct number of triggers
         await asyncio.gather(
@@ -170,11 +192,6 @@ class ADBaseContAcqController(DetectorController, Generic[ADBaseIOT]):
 
         # Send the trigger to begin acquisition
         await self.cb_plugin.trigger.set(True, wait=False)
-
-    async def wait_for_idle(self) -> None:
-        if self._arm_status and not self._arm_status.done:
-            await self._arm_status
-        self._arm_status = None
 
     async def disarm(self) -> None:
         await stop_busy_record(self.cb_plugin.capture, False, timeout=1)
