@@ -78,7 +78,7 @@ async def test_cont_acq_controller_invalid_exp_time(
 async def test_cont_acq_controller_not_in_continuous_mode(
     cont_acq_controller: adcore.ADBaseContAcqController, one_shot_trigger_info_factory
 ):
-    set_mock_value(cont_acq_controller.driver.image_mode, adcore.ImageMode.SINGLE)
+    set_mock_value(cont_acq_controller.driver.image_mode, adcore.ADImageMode.SINGLE)
 
     with pytest.raises(RuntimeError) as e:
         await cont_acq_controller.prepare(one_shot_trigger_info_factory())
@@ -148,7 +148,6 @@ async def test_can_collect(
     )
     assert stream_resource["parameters"] == {
         "dataset": "/entry/data/data",
-        "swmr": False,
         "multiplier": 1,
         "chunk_shape": (1, 10, 10),
     }
