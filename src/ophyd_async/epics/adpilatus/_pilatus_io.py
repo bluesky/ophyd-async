@@ -19,4 +19,4 @@ class PilatusDriverIO(adcore.ADBaseIO):
     """This mirrors the interface provided by ADPilatus/db/pilatus.template."""
 
     trigger_mode = A[SignalRW[PilatusTriggerMode], PvSuffix.rbv("TriggerMode")]
-    armed = A[SignalR[bool], PvSuffix.rbv("Armed")]
+    armed = A[SignalR[bool], PvSuffix.rbv("Armed_RBV")]
