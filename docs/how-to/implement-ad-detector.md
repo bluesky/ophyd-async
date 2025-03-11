@@ -80,8 +80,8 @@ det = adaravis.AravisDetector(
 
 ## Continuously acquiring detector
 
-In the event that you need to be able to acquire data from a detector that is continuously acquiring, you should use the `ContAcqAreaDetector` class.
-This uses the builtin `areaDetector` [circular buffer plugin](https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html) to act as the acquire start/stop replacement, while the detector acquires continuously.
+In the event that you need to be able to collect data from a detector that is continuously acquiring, you should use the `ContAcqAreaDetector` class.
+This uses the builtin `areaDetector` [circular buffer plugin](https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html) to act as the acquisition start/stop replacement, while the detector runs continuously.
 
 Your AD IOC will require at least one instance of this plugin to be configured, and the output of the plugin should be fed to the file writer of your choosing.
 The expectation is that the detector is already acquiring in continuous mode with the expected exposure time prior to using an instance of `ContAcqAreaDetector`.
