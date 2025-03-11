@@ -14,7 +14,7 @@ from ophyd_async.epics import (
     advimba,
 )
 
-DETECTOR_CLASSES = [
+DETECTOR_CLASSES: list[type[adcore.AreaDetector]] = [
     adsimdetector.SimDetector,
     advimba.VimbaDetector,
     adandor.Andor2Detector,
@@ -23,7 +23,7 @@ DETECTOR_CLASSES = [
     adpilatus.PilatusDetector,
 ]
 
-WRITER_CLASSES = [
+WRITER_CLASSES: list[type[adcore.ADWriter]] = [
     adcore.ADHDFWriter,
     adcore.ADTIFFWriter,
     adcore.ADJPEGWriter,
@@ -35,12 +35,20 @@ pytestmark = pytest.mark.parametrize(
 )
 
 
-async def test_hints_from_hdf_writer(ad_standard_det_factory, detector_cls, writer_cls):
+async def test_hints_from_hdf_writer(
+    ad_standard_det_factory,
+    detector_cls: type[adcore.AreaDetector],
+    writer_cls: type[adcore.ADWriter],
+):
     test_det = ad_standard_det_factory(detector_cls, writer_cls=writer_cls)
     assert test_det.hints == {"fields": [test_det.name]}
 
 
-async def test_can_read(ad_standard_det_factory, detector_cls, writer_cls):
+async def test_can_read(
+    ad_standard_det_factory,
+    detector_cls: type[adcore.AreaDetector],
+    writer_cls: type[adcore.ADWriter],
+):
     # Standard detector can be used as Readable
     test_det = ad_standard_det_factory(detector_cls, writer_cls=writer_cls)
     assert (await test_det.read()) == {}
@@ -48,8 +56,8 @@ async def test_can_read(ad_standard_det_factory, detector_cls, writer_cls):
 
 async def test_decribe_describes_writer_dataset(
     ad_standard_det_factory,
-    detector_cls,
-    writer_cls,
+    detector_cls: type[adcore.AreaDetector],
+    writer_cls: type[adcore.ADWriter],
     one_shot_trigger_info: TriggerInfo,
 ):
     test_det = ad_standard_det_factory(detector_cls, writer_cls=writer_cls)
@@ -72,8 +80,8 @@ async def test_decribe_describes_writer_dataset(
 
 async def test_can_collect(
     ad_standard_det_factory,
-    detector_cls,
-    writer_cls,
+    detector_cls: type[adcore.AreaDetector],
+    writer_cls: type[adcore.ADWriter],
     static_path_provider: StaticPathProvider,
     one_shot_trigger_info: TriggerInfo,
 ):
@@ -117,8 +125,8 @@ async def test_can_collect(
 
 async def test_can_decribe_collect(
     ad_standard_det_factory,
-    detector_cls,
-    writer_cls,
+    detector_cls: type[adcore.AreaDetector],
+    writer_cls: type[adcore.ADWriter],
     one_shot_trigger_info: TriggerInfo,
 ):
     test_det = ad_standard_det_factory(detector_cls, writer_cls=writer_cls)
