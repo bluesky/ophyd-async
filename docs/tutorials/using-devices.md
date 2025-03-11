@@ -11,7 +11,7 @@ Ophyd-async ships with some simulated devices and a demo script that will create
 
 We will explain the contents in more detail later on, but for now let's run it in an interactive [ipython](https://ipython.org) shell:
 ```
-$ ipython -i -m ophyd_async.sim
+$ ipython --matplotlib=qt6 -i -m ophyd_async.sim
 Python 3.11.11 (main, Dec  4 2024, 20:38:25) [GCC 12.2.0]
 Type 'copyright', 'credits' or 'license' for more information
 IPython 8.30.0 -- An enhanced Interactive Python. Type '?' for help.
@@ -19,7 +19,7 @@ IPython 8.30.0 -- An enhanced Interactive Python. Type '?' for help.
 In [1]: 
 ```
 
-This has launched an ipython shell, told it to import and run the demo script packaged inside `ophyd_async.sim`, then return to an interactive prompt.
+This has launched an ipython shell, enabled live plotting, told it to import and run the demo script packaged inside `ophyd_async.sim`, then return to an interactive prompt.
 
 ## Investigate the Devices
 

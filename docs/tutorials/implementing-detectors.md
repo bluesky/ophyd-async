@@ -7,7 +7,7 @@ In [](./implementing-devices.md) we learned how to create Devices that talk to a
 We will return to our [](#ophyd_async.sim) devices we saw in [](./using-devices.md) for this tutorial, and dig a little deeper into what [Event Model Documents](inv:event-model#data_model) they produce. Let's run up our ipython shell again:
 
 ```
-$ ipython -i -m ophyd_async.sim
+$ ipython --matplotlib=qt6 -i -m ophyd_async.sim
 Python 3.11.11 (main, Dec  4 2024, 20:38:25) [GCC 12.2.0]
 Type 'copyright', 'credits' or 'license' for more information
 IPython 8.30.0 -- An enhanced Interactive Python. Type '?' for help.
