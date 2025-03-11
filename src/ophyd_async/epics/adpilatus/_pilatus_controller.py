@@ -23,7 +23,7 @@ class PilatusReadoutTime(float, Enum):
 
 
 class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
-    """Controller for ADPilatus detector."""
+    """`DetectorController` for a `PilatusDriverIO`."""
 
     _supported_trigger_types = {
         DetectorTrigger.INTERNAL: PilatusTriggerMode.INTERNAL,
