@@ -136,7 +136,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
         describe = {
             self._name_provider(): DataKey(
-                source=self._name_provider(),
+                source=self.fileio.full_file_name.source,
                 shape=list(frame_shape),
                 dtype="array",
                 dtype_numpy=dtype_numpy,
@@ -189,6 +189,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                         "chunk_shape": (1, *frame_shape),
                         # Include file template for reconstruction in consolidator
                         "template": file_template,
+                        "multiplier": self._multiplier,
                     },
                     uid=None,
                     validate=True,
