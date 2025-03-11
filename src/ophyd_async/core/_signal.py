@@ -259,6 +259,11 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
 class SignalW(Signal[SignalDatatypeT], Movable):
     """Signal that can be set."""
 
+    @_add_timeout
+    async def get_setpoint(self) -> SignalDatatypeT:
+        """Return the setpoint."""
+        return await self._connector.backend.get_setpoint()
+
     @AsyncStatus.wrap
     async def set(
         self,
