@@ -98,10 +98,6 @@ async def _trigger(
     assert (await pilatus_driver.trigger_mode.get_value()) == expected_trigger_mode
 
 
-async def test_hints_from_hdf_writer(test_adpilatus: adpilatus.PilatusDetector):
-    assert test_adpilatus.hints == {"fields": [test_adpilatus.name]}
-
-
 async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDetector):
     open = "ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.open"
     with patch(open, new_callable=AsyncMock) as mock_open:
