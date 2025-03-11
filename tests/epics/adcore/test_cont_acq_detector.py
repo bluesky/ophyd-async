@@ -23,7 +23,7 @@ def cont_acq_controller(RE):
         drv = adcore.ADBaseIO("DRV")
         cb_plugin = adcore.NDPluginCBIO("CB1")
 
-    set_mock_value(drv.image_mode, adcore.ImageMode.CONTINUOUS)
+    set_mock_value(drv.image_mode, adcore.ADImageMode.CONTINUOUS)
     set_mock_value(drv.acquire_time, 0.8)
     set_mock_value(drv.acquire_period, 1.0)
     set_mock_value(drv.acquire, True)

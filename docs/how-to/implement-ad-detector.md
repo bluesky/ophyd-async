@@ -77,3 +77,28 @@ det = adaravis.AravisDetector(
    fileio_suffix="HDF:",
 )
 ```
+
+## Continuously acquiring detector
+
+In the event that you need to be able to acquire data from a detector that is continuously acquiring, you should use the `ContAcqAreaDetector` class.
+This uses the builtin `areaDetector` [circular buffer plugin](https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html) to act as the acquire start/stop replacement, while the detector acquires continuously.
+
+Your AD IOC will require at least one instance of this plugin to be configured, and the output of the plugin should be fed to the file writer of your choosing.
+The expectation is that the detector is already acquiring in continuous mode with the expected exposure time prior to using an instance of `ContAcqAreaDetector`.
+
+To instantiate a detector instance, import it and create it like this:
+
+```python
+from ophyd_async.epics import adcore
+
+det = adcore.ContAcqAreaDetector(
+   "PREFIX:", 
+   path_provider, 
+   drv_suffix="DRV:", 
+   cb_suffix="CB:",
+   writer_cls=adcore.ADHDFWriter, 
+   fileio_suffix="HDF:",
+)
+```
+
+Note that typically the only change from a typical detector is the additional `cb_suffix` kwarg, which is used to identify the prefix to use when instantiating the CB plugin instance.

@@ -59,7 +59,7 @@ def ad_standard_det_factory(
 
         # Set image mode to continuous to mimic a real detector setup
         set_mock_value(
-            test_adstandard_det.driver.image_mode, adcore.ImageMode.CONTINUOUS
+            test_adstandard_det.driver.image_mode, adcore.ADImageMode.CONTINUOUS
         )
 
         # Set number of frames per chunk and frame dimensions to something reasonable
