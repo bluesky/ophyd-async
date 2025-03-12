@@ -6,18 +6,6 @@ from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture
-def cont_acq_det(ad_standard_det_factory):
-    det = ad_standard_det_factory(adcore.ContAcqAreaDetector)
-
-    # Set a few additional settings specific to cont acq detectors
-    set_mock_value(det.driver.acquire, True)
-    set_mock_value(det.cb_plugin.array_size_x, 10)
-    set_mock_value(det.cb_plugin.array_size_y, 10)
-
-    return det
-
-
-@pytest.fixture
 def cont_acq_controller(RE):
     with init_devices(mock=True):
         drv = adcore.ADBaseIO("DRV")
@@ -30,30 +18,24 @@ def cont_acq_controller(RE):
     return adcore.ADBaseContAcqController(drv, cb_plugin)
 
 
-@pytest.fixture
-def one_shot_trigger_info_factory():
-    def generate_one_shot_trigger_info(
-        trigger_mode=DetectorTrigger.INTERNAL, livetime=0.8
-    ):
-        if trigger_mode != DetectorTrigger.INTERNAL:
-            return TriggerInfo(
-                number_of_triggers=1,
-                trigger=trigger_mode,
-                livetime=livetime,
-                deadtime=0.001,
-            )
-        else:
-            return TriggerInfo(
-                number_of_triggers=1, trigger=trigger_mode, livetime=livetime
-            )
-
-    return generate_one_shot_trigger_info
+def generate_one_shot_trigger_info(trigger_mode=DetectorTrigger.INTERNAL, livetime=0.8):
+    if trigger_mode != DetectorTrigger.INTERNAL:
+        return TriggerInfo(
+            number_of_triggers=1,
+            trigger=trigger_mode,
+            livetime=livetime,
+            deadtime=0.001,
+        )
+    else:
+        return TriggerInfo(
+            number_of_triggers=1, trigger=trigger_mode, livetime=livetime
+        )
 
 
 async def test_cont_acq_controller_invalid_trigger_mode(
-    cont_acq_controller: adcore.ADBaseContAcqController, one_shot_trigger_info_factory
+    cont_acq_controller: adcore.ADBaseContAcqController,
 ):
-    trigger_info = one_shot_trigger_info_factory(
+    trigger_info = generate_one_shot_trigger_info(
         trigger_mode=DetectorTrigger.CONSTANT_GATE
     )
     with pytest.raises(TypeError) as e:
@@ -65,10 +47,10 @@ async def test_cont_acq_controller_invalid_trigger_mode(
 
 
 async def test_cont_acq_controller_invalid_exp_time(
-    cont_acq_controller: adcore.ADBaseContAcqController, one_shot_trigger_info_factory
+    cont_acq_controller: adcore.ADBaseContAcqController,
 ):
     with pytest.raises(ValueError) as e:
-        await cont_acq_controller.prepare(one_shot_trigger_info_factory(livetime=0.1))
+        await cont_acq_controller.prepare(generate_one_shot_trigger_info(livetime=0.1))
     assert (
         str(e.value)
         == "Detector exposure time currently set to 0.8, but requested exposure is 0.1"
@@ -76,12 +58,12 @@ async def test_cont_acq_controller_invalid_exp_time(
 
 
 async def test_cont_acq_controller_not_in_continuous_mode(
-    cont_acq_controller: adcore.ADBaseContAcqController, one_shot_trigger_info_factory
+    cont_acq_controller: adcore.ADBaseContAcqController,
 ):
     set_mock_value(cont_acq_controller.driver.image_mode, adcore.ADImageMode.SINGLE)
 
     with pytest.raises(RuntimeError) as e:
-        await cont_acq_controller.prepare(one_shot_trigger_info_factory())
+        await cont_acq_controller.prepare(generate_one_shot_trigger_info())
     assert (
         str(e.value)
         == "Driver must be acquiring in continuous mode to use the cont acq interface"
@@ -89,12 +71,12 @@ async def test_cont_acq_controller_not_in_continuous_mode(
 
 
 async def test_cont_acq_controller_not_acquiring(
-    cont_acq_controller: adcore.ADBaseContAcqController, one_shot_trigger_info_factory
+    cont_acq_controller: adcore.ADBaseContAcqController,
 ):
     set_mock_value(cont_acq_controller.driver.acquire, False)
 
     with pytest.raises(RuntimeError) as e:
-        await cont_acq_controller.prepare(one_shot_trigger_info_factory())
+        await cont_acq_controller.prepare(generate_one_shot_trigger_info())
     assert (
         str(e.value)
         == "Driver must be acquiring in continuous mode to use the cont acq interface"

@@ -50,6 +50,7 @@ class ContAcqAreaDetector(AreaDetector[ADBaseContAcqController]):
         self,
         prefix: str,
         path_provider: PathProvider,
+        drv_cls: type[ADBaseIO] = ADBaseIO,
         drv_suffix: str = "cam1:",
         cb_suffix: str = "CB1:",
         writer_cls: type[ADWriter] = ADHDFWriter,
@@ -59,7 +60,7 @@ class ContAcqAreaDetector(AreaDetector[ADBaseContAcqController]):
         config_sigs: Sequence[SignalR] = (),
     ):
         self.cb_plugin = NDPluginCBIO(prefix + cb_suffix)
-        driver = ADBaseIO(prefix + drv_suffix)
+        driver = drv_cls(prefix + drv_suffix)
         controller = ADBaseContAcqController(driver, self.cb_plugin)
 
         writer = writer_cls.with_io(
