@@ -167,7 +167,7 @@ class ADBaseContAcqController(ADBaseController[ADBaseIO]):
         # These are broken out into seperate functions to make it easier to
         # override them in subclasses, for example if you want `prepare` to
         # setup the detector in continuous mode if it isn't already (for now,
-        # we assume it already is). If your detector uses differnt enums
+        # we assume it already is). If your detector uses different enums
         # for `ImageMode` or `DetectorTrigger`, you should also override these.
         await self.ensure_acquisition_settings_valid(trigger_info)
         await self.ensure_in_continuous_acquisition_mode()
