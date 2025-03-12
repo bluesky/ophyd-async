@@ -101,4 +101,4 @@ det = adcore.ContAcqAreaDetector(
 )
 ```
 
-Note that typically the only change from a typical detector is the additional `cb_suffix` kwarg, which is used to identify the prefix to use when instantiating the CB plugin instance.
+Note that typically the only change from a typical detector is the additional `cb_suffix` kwarg, which is used to identify the prefix to use when instantiating the circular buffer (CB) plugin instance.
