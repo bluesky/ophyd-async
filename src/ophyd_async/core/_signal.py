@@ -5,7 +5,7 @@ import functools
 import inspect
 import time
 from collections.abc import AsyncGenerator, Awaitable, Callable
-from typing import Any, Generic, cast
+from typing import Any, Generic, TypeVar, cast
 
 from bluesky.protocols import (
     Configurable,
@@ -56,7 +56,15 @@ class SignalConnector(DeviceConnector):
         self.backend = self._init_backend = backend
 
     async def connect_mock(self, device: Device, mock: LazyMock):
-        self.backend = MockSignalBackend(self._init_backend, mock)
+        # TODO: ugly circular import
+        from ._derived_signal import DerivedSignalBackend
+
+        if isinstance(self._init_backend, DerivedSignalBackend):
+            # It makes no sense to mock a derived signal backend, so
+            # use the real thing which will be backed by mocked signals
+            self.backend = self._init_backend
+        else:
+            self.backend = MockSignalBackend(self._init_backend, mock)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         self.backend = self._init_backend
@@ -99,6 +107,9 @@ class Signal(Device, Generic[SignalDatatypeT]):
         E.g. "ca://PV_PREFIX:SIGNAL", or "" if not available until connection.
         """
         return self._connector.backend.source(self.name, read=True)
+
+
+SignalT = TypeVar("SignalT", bound=Signal)
 
 
 class _SignalCache(Generic[SignalDatatypeT]):

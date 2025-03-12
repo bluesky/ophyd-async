@@ -7,7 +7,7 @@ from bluesky.protocols import Reading
 from event_model import DataKey, Dtype, Limits
 
 from ._table import Table
-from ._utils import Callback, StrictEnum
+from ._utils import Callback, StrictEnum, get_enum_cls
 
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 """A numpy dtype like [](#numpy.float64)."""
@@ -193,3 +193,18 @@ def make_datakey(
         source=source,
         **metadata,
     )
+
+
+def make_metadata(
+    datatype: type[SignalDatatypeT] | None,
+    units: str | None = None,
+    precision: int | None = None,
+) -> SignalMetadata:
+    metadata: SignalMetadata = {}
+    if units is not None:
+        metadata["units"] = units
+    if precision is not None:
+        metadata["precision"] = precision
+    if enum_cls := get_enum_cls(datatype):
+        metadata["choices"] = [v.value for v in enum_cls]
+    return metadata
