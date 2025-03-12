@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Installation &#8212; ophyd-async 0.9.1.dev26+gcbeebe21 documentation</title>
+    <title>Installation &#8212; ophyd-async 0.9.1.dev27+gb8f73bbb documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=dc8dc48a"></script>
+    <script src="../_static/documentation_options.js?v=4db5ecb7"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev26+gcbeebe21 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev26+gcbeebe21 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
   
   
 </a></div>
@@ -506,11 +506,12 @@ the specific extra:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">ca</span></code> for EPICS Channel Access</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">pva</span></code> for EPICS PVAccess</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tango</span></code> for Tango</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">demo</span></code> for tutorial requirements like h5py and ipython</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sim</span></code> for simulated device requirements like h5py</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">demo</span></code> for tutorial requirements like ipython and matplotlib</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">testing</span></code> for testing requirements like pytest</p></li>
 </ul>
 <p>E.g.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m pip install ophyd-async[ca,demo]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -m pip install ophyd-async[ca,sim,demo]
 </pre></div>
 </div>
 <p>If you require a feature that is not currently released you can also install
