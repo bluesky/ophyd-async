@@ -1,4 +1,4 @@
-"""Support for the ADAravis areaDetector driver.
+"""Support for the ADPilatus areaDetector driver.
 
 https://github.com/areaDetector/ADPilatus
 """
