@@ -1,6 +1,8 @@
-from ophyd_async.core import StrictEnum
+from typing import Annotated as A
+
+from ophyd_async.core import SignalRW, StrictEnum
 from ophyd_async.epics import adcore
-from ophyd_async.epics.core import epics_signal_rw_rbv
+from ophyd_async.epics.core import PvSuffix
 
 
 class VimbaPixelFormat(StrictEnum):
@@ -53,19 +55,10 @@ class VimbaExposeOutMode(StrictEnum):
 class VimbaDriverIO(adcore.ADBaseIO):
     """Mirrors the interface provided by ADVimba/db/vimba.template."""
 
-    def __init__(self, prefix: str, name: str = "") -> None:
-        # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
-        self.convert_pixel_format = epics_signal_rw_rbv(
-            VimbaConvertFormat, prefix + "ConvertPixelFormat"
-        )  # Pixel format of data outputted to AD
-        self.trigger_source = epics_signal_rw_rbv(
-            VimbaTriggerSource, prefix + "TriggerSource"
-        )
-        self.trigger_mode = epics_signal_rw_rbv(VimbaOnOff, prefix + "TriggerMode")
-        self.trigger_overlap = epics_signal_rw_rbv(
-            VimbaOverlap, prefix + "TriggerOverlap"
-        )
-        self.exposure_mode = epics_signal_rw_rbv(
-            VimbaExposeOutMode, prefix + "ExposureMode"
-        )
-        super().__init__(prefix, name=name)
+    convert_pixel_format: A[
+        SignalRW[VimbaConvertFormat], PvSuffix("ConvertPixelFormat")
+    ]
+    trigger_source: A[SignalRW[VimbaTriggerSource], PvSuffix("TriggerSource")]
+    trigger_mode: A[SignalRW[VimbaOnOff], PvSuffix("TriggerMode")]
+    trigger_overlap: A[SignalRW[VimbaOverlap], PvSuffix("TriggerOverlap")]
+    exposure_mode: A[SignalRW[VimbaExposeOutMode], PvSuffix("ExposureMode")]
