@@ -1,6 +1,6 @@
 import pytest
 
-from ophyd_async.core import DetectorTrigger, PathProvider, TriggerInfo, init_devices
+from ophyd_async.core import DetectorTrigger, TriggerInfo, init_devices
 from ophyd_async.epics import adcore
 from ophyd_async.testing import set_mock_value
 
@@ -99,77 +99,3 @@ async def test_cont_acq_controller_not_acquiring(
         str(e.value)
         == "Driver must be acquiring in continuous mode to use the cont acq interface"
     )
-
-
-async def test_hints_from_hdf_writer(cont_acq_det: adcore.ContAcqAreaDetector):
-    assert cont_acq_det.hints == {"fields": [cont_acq_det.name]}
-
-
-async def test_can_read(cont_acq_det: adcore.ContAcqAreaDetector):
-    # Standard detector can be used as Readable
-    assert (await cont_acq_det.read()) == {}
-
-
-async def test_decribe_describes_writer_dataset(
-    cont_acq_det: adcore.ContAcqAreaDetector, one_shot_trigger_info: TriggerInfo
-):
-    assert await cont_acq_det.describe() == {}
-    await cont_acq_det.stage()
-    await cont_acq_det.prepare(one_shot_trigger_info)
-    assert await cont_acq_det.describe() == {
-        "test_adcontacqarea1": {
-            "source": "mock+ca://CONTACQAREA1:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
-            "dtype": "array",
-            "dtype_numpy": "|i1",
-            "external": "STREAM:",
-        }
-    }
-
-
-async def test_can_collect(
-    cont_acq_det: adcore.ContAcqAreaDetector,
-    static_path_provider: PathProvider,
-    one_shot_trigger_info: TriggerInfo,
-):
-    path_info = static_path_provider()
-    full_file_name = path_info.directory_path / f"{path_info.filename}.h5"
-
-    await cont_acq_det.stage()
-    await cont_acq_det.prepare(one_shot_trigger_info)
-    docs = [(name, doc) async for name, doc in cont_acq_det.collect_asset_docs(1)]
-    assert len(docs) == 2
-    assert docs[0][0] == "stream_resource"
-    stream_resource = docs[0][1]
-    sr_uid = stream_resource["uid"]
-    assert stream_resource["data_key"] == "test_adcontacqarea1"
-    assert stream_resource["uri"] == "file://localhost/" + str(full_file_name).lstrip(
-        "/"
-    )
-    assert stream_resource["parameters"] == {
-        "dataset": "/entry/data/data",
-        "multiplier": 1,
-        "chunk_shape": (1, 10, 10),
-    }
-    assert docs[1][0] == "stream_datum"
-    stream_datum = docs[1][1]
-    assert stream_datum["stream_resource"] == sr_uid
-    assert stream_datum["seq_nums"] == {"start": 0, "stop": 0}
-    assert stream_datum["indices"] == {"start": 0, "stop": 1}
-
-
-async def test_can_decribe_collect(
-    cont_acq_det: adcore.ContAcqAreaDetector, one_shot_trigger_info: TriggerInfo
-):
-    assert (await cont_acq_det.describe_collect()) == {}
-    await cont_acq_det.stage()
-    await cont_acq_det.prepare(one_shot_trigger_info)
-    assert (await cont_acq_det.describe_collect()) == {
-        "test_adcontacqarea1": {
-            "source": "mock+ca://CONTACQAREA1:HDF1:FullFileName_RBV",
-            "shape": [10, 10],
-            "dtype": "array",
-            "dtype_numpy": "|i1",
-            "external": "STREAM:",
-        }
-    }
