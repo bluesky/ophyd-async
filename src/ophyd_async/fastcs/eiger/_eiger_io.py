@@ -2,7 +2,7 @@ from ophyd_async.core import (
     Device,
     SignalR,
     SignalRW,
-    SignalW,
+    SignalX,
     StrictEnum,
 )
 from ophyd_async.fastcs.core import fastcs_connector
@@ -30,8 +30,8 @@ class EigerDetectorIO(Device):
     frame_time: SignalRW[float]
     nimages: SignalRW[int]
     trigger_mode: SignalRW[str]
-    arm: SignalW[int]
-    disarm: SignalW[int]
+    arm: SignalX
+    disarm: SignalX
     photon_energy: SignalRW[float]
     beam_center_x: SignalRW[float]
     beam_center_y: SignalRW[float]
