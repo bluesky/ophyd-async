@@ -16,8 +16,8 @@ class PilatusTriggerMode(StrictEnum):
 
 
 class PilatusDriverIO(adcore.ADBaseIO):
-    """Driver for the Pilatus pixel array detectors"""
-    
+    """Driver for the Pilatus pixel array detectors."""
+
     """This mirrors the interface provided by ADPilatus/db/pilatus.template."""
     """See HTML docs at https://areadetector.github.io/areaDetector/ADPilatus/pilatusDoc.html"""
     trigger_mode: A[SignalRW[PilatusTriggerMode], PvSuffix.rbv("TriggerMode")]
