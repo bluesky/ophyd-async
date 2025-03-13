@@ -30,7 +30,7 @@ requires-python = ">=3.10"
 sim = ["h5py"]
 ca = ["aioca>=1.6"]
 pva = ["p4p>=4.2.0"]
-tango = ["pytango>=10.0.0"]
+tango = ["pytango==10.0.0"]
 demo = ["ipython", "matplotlib", "pyqt6"]
 dev = [
     "ophyd_async[sim]",
