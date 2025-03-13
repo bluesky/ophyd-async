@@ -5,15 +5,9 @@ from ophyd_async.epics import adcore
 from ophyd_async.epics.core import PvSuffix
 
 
-class VimbaPixelFormat(StrictEnum):
-    INTERNAL = "Mono8"
-    EXT_ENABLE = "Mono12"
-    EXT_TRIGGER = "Ext. Trigger"
-    MULT_TRIGGER = "Mult. Trigger"
-    ALIGNMENT = "Alignment"
-
-
 class VimbaConvertFormat(StrictEnum):
+    """Convert pixel format for the Vimba detector."""
+
     NONE = "None"
     MONO8 = "Mono8"
     MONO16 = "Mono16"
@@ -34,6 +28,8 @@ class VimbaTriggerSource(StrictEnum):
 
 
 class VimbaOverlap(StrictEnum):
+    """Overlap modes for the Vimba detector."""
+
     OFF = "Off"
     PREV_FRAME = "PreviousFrame"
 
@@ -46,7 +42,7 @@ class VimbaOnOff(StrictEnum):
 
 
 class VimbaExposeOutMode(StrictEnum):
-    """Modes for exposure on the Vimba detector."""
+    """Exposure control modes for Vimba detectors."""
 
     TIMED = "Timed"  # Use ExposureTime PV
     TRIGGER_WIDTH = "TriggerWidth"  # Expose for length of high signal
