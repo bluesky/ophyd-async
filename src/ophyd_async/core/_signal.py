@@ -23,7 +23,7 @@ from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend, SignalDatatypeT, SignalDatatypeV
 from ._soft_signal_backend import SoftSignalBackend
-from ._status import AsyncStatus, completed_status
+from ._status import AsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -579,25 +579,34 @@ async def set_and_wait_for_other_value(
 
     status = set_signal.set(set_value, timeout=set_timeout)
 
+    if callable(match_value):
+        matcher: Callable[[SignalDatatypeV], bool] = match_value  # type: ignore
+    else:
+
+        def matcher(value):
+            return value == match_value
+
+        matcher.__name__ = f"equals_{match_value}"
+
     # If the value was the same as before no need to wait for it to change
-    if current_value != match_value:
+    if not matcher(current_value):
 
         async def _wait_for_value():
             async for value in values_gen:
-                if value == match_value:
+                if matcher(value):
                     break
 
         try:
             await asyncio.wait_for(_wait_for_value(), timeout)
             if wait_for_set_completion:
                 await status
-            return status
         except asyncio.TimeoutError as e:
-            raise TimeoutError(
-                f"{match_signal.name} didn't match {match_value} in {timeout}s"
+            raise asyncio.TimeoutError(
+                f"{match_signal.name} value didn't match value from"
+                f" {matcher.__name__}() in {timeout}s"
             ) from e
 
-    return completed_status()
+    return status
 
 
 async def set_and_wait_for_value(
