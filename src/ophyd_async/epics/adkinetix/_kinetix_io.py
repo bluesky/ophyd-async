@@ -14,6 +14,8 @@ class KinetixTriggerMode(StrictEnum):
 
 
 class KinetixReadoutMode(StrictEnum):
+    """Readout mode for ADKinetix detector."""
+
     SENSITIVITY = 1
     SPEED = 2
     DYNAMIC_RANGE = 3
