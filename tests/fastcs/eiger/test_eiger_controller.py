@@ -28,8 +28,7 @@ def eiger_driver_and_controller(
     driver, controller = eiger_driver_and_controller_no_arm
 
     def become_ready_on_arm(*args, **kwargs):
-        if args[0] == 1:
-            set_mock_value(driver.detector.state, "ready")
+        set_mock_value(driver.detector.state, "ready")
 
     callback_on_mock_put(driver.detector.arm, become_ready_on_arm)
 
@@ -55,7 +54,7 @@ async def test_when_arm_with_no_exposure_then_arm_set_correctly(
     await controller.prepare(TriggerInfo(number_of_triggers=10))
     await controller.arm()
     await controller.wait_for_idle()
-    get_mock_put(driver.detector.arm).assert_called_once_with(1, wait=ANY)
+    get_mock_put(driver.detector.arm).assert_called_once()
 
 
 async def test_when_arm_with_number_of_images_then_number_of_images_set_correctly(
@@ -87,7 +86,7 @@ async def test_when_disarm_called_on_controller_then_disarm_called_on_driver(
 ):
     driver, controller = eiger_driver_and_controller
     await controller.disarm()
-    get_mock_put(driver.detector.disarm).assert_called_once_with(1, wait=ANY)
+    get_mock_put(driver.detector.disarm).assert_called_once()
 
 
 async def test_when_get_deadtime_called_then_returns_expected_deadtime(

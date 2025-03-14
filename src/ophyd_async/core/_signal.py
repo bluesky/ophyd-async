@@ -537,9 +537,9 @@ async def wait_for_value(
     await checker.wait_for_value(signal, timeout)
 
 
-async def set_and_wait_for_other_value(
-    set_signal: SignalW[SignalDatatypeT],
-    set_value: SignalDatatypeT,
+async def _put_and_wait_for_other_value(
+    set_signal: SignalW[SignalDatatypeT] | SignalX,
+    set_value: SignalDatatypeT | None,
     match_signal: SignalR[SignalDatatypeV],
     match_value: SignalDatatypeV | Callable[[SignalDatatypeV], bool],
     timeout: float = DEFAULT_TIMEOUT,
@@ -577,7 +577,14 @@ async def set_and_wait_for_other_value(
     # Get the initial value from the monitor to make sure we've created it
     current_value = await anext(values_gen)
 
-    status = set_signal.set(set_value, timeout=set_timeout)
+    if isinstance(set_signal, SignalW) and set_value:
+        status = set_signal.set(set_value, timeout=set_timeout)
+    elif isinstance(set_signal, SignalX) and not set_value:
+        status = set_signal.trigger(timeout=set_timeout)
+    else:
+        raise TypeError(
+            "Function must be provided a SignalW with set_value, or only a SignalX"
+        )
 
     # If the value was the same as before no need to wait for it to change
     if current_value != match_value:
@@ -598,6 +605,45 @@ async def set_and_wait_for_other_value(
             ) from e
 
     return completed_status()
+
+
+async def trigger_and_wait_for_other_value(
+    set_signal: SignalX,
+    match_signal: SignalR[SignalDatatypeV],
+    match_value: SignalDatatypeV | Callable[[SignalDatatypeV], bool],
+    timeout: float = DEFAULT_TIMEOUT,
+    set_timeout: float | None = None,
+    wait_for_set_completion: bool = True,
+) -> AsyncStatus:
+    return await _put_and_wait_for_other_value(
+        set_signal=set_signal,
+        set_value=None,
+        match_signal=match_signal,
+        match_value=match_value,
+        timeout=timeout,
+        set_timeout=set_timeout,
+        wait_for_set_completion=wait_for_set_completion,
+    )
+
+
+async def set_and_wait_for_other_value(
+    set_signal: SignalW[SignalDatatypeT],
+    set_value: SignalDatatypeT,
+    match_signal: SignalR[SignalDatatypeV],
+    match_value: SignalDatatypeV | Callable[[SignalDatatypeV], bool],
+    timeout: float = DEFAULT_TIMEOUT,
+    set_timeout: float | None = None,
+    wait_for_set_completion: bool = True,
+) -> AsyncStatus:
+    return await _put_and_wait_for_other_value(
+        set_signal=set_signal,
+        set_value=set_value,
+        match_signal=match_signal,
+        match_value=match_value,
+        timeout=timeout,
+        set_timeout=set_timeout,
+        wait_for_set_completion=wait_for_set_completion,
+    )
 
 
 async def set_and_wait_for_value(
@@ -646,7 +692,7 @@ async def set_and_wait_for_value(
     """
     if match_value is None:
         match_value = value
-    return await set_and_wait_for_other_value(
+    return await _put_and_wait_for_other_value(
         signal,
         value,
         signal,

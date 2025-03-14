@@ -5,7 +5,7 @@ from ophyd_async.core import (
     DetectorController,
     DetectorTrigger,
     TriggerInfo,
-    set_and_wait_for_other_value,
+    trigger_and_wait_for_other_value,
 )
 
 from ._eiger_io import EigerDriverIO, EigerTriggerMode
@@ -56,9 +56,8 @@ class EigerController(DetectorController):
 
     async def arm(self):
         # TODO: Detector state should be an enum see https://github.com/DiamondLightSource/eiger-fastcs/issues/43
-        self._arm_status = await set_and_wait_for_other_value(
+        self._arm_status = await trigger_and_wait_for_other_value(
             self._drv.detector.arm,
-            1,
             self._drv.detector.state,
             "ready",
             timeout=DEFAULT_TIMEOUT,
@@ -70,4 +69,4 @@ class EigerController(DetectorController):
             await self._arm_status
 
     async def disarm(self):
-        await self._drv.detector.disarm.set(1)
+        await self._drv.detector.disarm.trigger()
