@@ -30,14 +30,14 @@ class EigerDetectorIO(Device):
     frame_time: SignalRW[float]
     nimages: SignalRW[int]
     trigger_mode: SignalRW[str]
-    arm: SignalX
-    disarm: SignalX
     photon_energy: SignalRW[float]
     beam_center_x: SignalRW[float]
     beam_center_y: SignalRW[float]
     detector_distance: SignalRW[float]
     omega_start: SignalRW[float]
     omega_increment: SignalRW[float]
+    arm: SignalX
+    disarm: SignalX
 
 
 class EigerDriverIO(Device):
