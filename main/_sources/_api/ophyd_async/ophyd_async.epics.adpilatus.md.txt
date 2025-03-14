@@ -115,7 +115,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async
 
 `````
 
-````{py:class} PilatusDriverIO(prefix: str, name: str = '')
+`````{py:class} PilatusDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
 :canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
@@ -123,7 +123,29 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO
 ```
 
+````{py:attribute} trigger_mode
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO.trigger_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO.trigger_mode
+```
+
 ````
+
+````{py:attribute} armed
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO.armed
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[bool], ophyd_async.epics.core.PvSuffix.rbv('Armed_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO.armed
+```
+
+````
+
+`````
 
 `````{py:class} PilatusTriggerMode()
 :canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode

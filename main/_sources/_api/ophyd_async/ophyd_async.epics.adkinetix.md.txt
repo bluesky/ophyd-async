@@ -31,6 +31,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode
     :summary:
     ```
+* - {py:obj}`KinetixReadoutMode <ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode
+    :summary:
+    ```
 ````
 
 ### API
@@ -72,7 +76,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async
 
 `````
 
-````{py:class} KinetixDriverIO(prefix: str, name: str = '')
+`````{py:class} KinetixDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
 :canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
@@ -80,7 +84,29 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO
 ```
 
+````{py:attribute} trigger_mode
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO.trigger_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode], PvSuffix('TriggerMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO.trigger_mode
+```
+
 ````
+
+````{py:attribute} readout_port_idx
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO.readout_port_idx
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode], PvSuffix('ReadoutPortIdx')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixDriverIO.readout_port_idx
+```
+
+````
+
+`````
 
 `````{py:class} KinetixTriggerMode()
 :canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode
@@ -116,6 +142,56 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Exp. Gate'
 
 ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode.GATE
+```
+
+````
+
+`````
+
+`````{py:class} KinetixReadoutMode()
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode
+```
+
+````{py:attribute} SENSITIVITY
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SENSITIVITY
+:value: >
+   1
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SENSITIVITY
+```
+
+````
+
+````{py:attribute} SPEED
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SPEED
+:value: >
+   2
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SPEED
+```
+
+````
+
+````{py:attribute} DYNAMIC_RANGE
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.DYNAMIC_RANGE
+:value: >
+   3
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.DYNAMIC_RANGE
+```
+
+````
+
+````{py:attribute} SUB_ELECTRON
+:canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SUB_ELECTRON
+:value: >
+   4
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SUB_ELECTRON
 ```
 
 ````

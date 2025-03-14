@@ -39,6 +39,14 @@
   - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource
     :summary:
     ```
+* - {py:obj}`VimbaOverlap <ophyd_async.epics.advimba._vimba_io.VimbaOverlap>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOverlap
+    :summary:
+    ```
+* - {py:obj}`VimbaConvertFormat <ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat
+    :summary:
+    ```
 ````
 
 ### API
@@ -80,7 +88,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async
 
 `````
 
-````{py:class} VimbaDriverIO(prefix: str, name: str = '')
+`````{py:class} VimbaDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
 :canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
@@ -88,7 +96,62 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO
 ```
 
+````{py:attribute} convert_pixel_format
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.convert_pixel_format
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat], PvSuffix('ConvertPixelFormat')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.convert_pixel_format
+```
+
 ````
+
+````{py:attribute} trigger_source
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_source
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource], PvSuffix('TriggerSource')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_source
+```
+
+````
+
+````{py:attribute} trigger_mode
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaOnOff], PvSuffix('TriggerMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_mode
+```
+
+````
+
+````{py:attribute} trigger_overlap
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_overlap
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaOverlap], PvSuffix('TriggerOverlap')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_overlap
+```
+
+````
+
+````{py:attribute} exposure_mode
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.exposure_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode], PvSuffix('ExposureMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.exposure_mode
+```
+
+````
+
+`````
 
 `````{py:class} VimbaExposeOutMode()
 :canonical: ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode
@@ -224,6 +287,96 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'Action1'
 
 ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.ACTION1
+```
+
+````
+
+`````
+
+`````{py:class} VimbaOverlap()
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOverlap
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOverlap
+```
+
+````{py:attribute} OFF
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOverlap.OFF
+:value: >
+   'Off'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOverlap.OFF
+```
+
+````
+
+````{py:attribute} PREV_FRAME
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOverlap.PREV_FRAME
+:value: >
+   'PreviousFrame'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOverlap.PREV_FRAME
+```
+
+````
+
+`````
+
+`````{py:class} VimbaConvertFormat()
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat
+```
+
+````{py:attribute} NONE
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.NONE
+:value: >
+   'None'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.NONE
+```
+
+````
+
+````{py:attribute} MONO8
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.MONO8
+:value: >
+   'Mono8'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.MONO8
+```
+
+````
+
+````{py:attribute} MONO16
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.MONO16
+:value: >
+   'Mono16'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.MONO16
+```
+
+````
+
+````{py:attribute} RGB8
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.RGB8
+:value: >
+   'RGB8'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.RGB8
+```
+
+````
+
+````{py:attribute} RGB16
+:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.RGB16
+:value: >
+   'RGB16'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.RGB16
 ```
 
 ````

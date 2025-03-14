@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.9.1.dev27+gb8f73bbb documentation</title>
+    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.9.1.dev33+g93ac4990 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=4db5ecb7"></script>
+    <script src="../../../../_static/documentation_options.js?v=af71aa69"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev33+g93ac4990 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev33+g93ac4990 documentation - Home"/>
   
   
 </a></div>
@@ -1187,13 +1187,6 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">all_cmds</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">cmd_name</span> <span class="ow">in</span> <span class="n">device_proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">()]</span>
     <span class="k">if</span> <span class="n">trl_name</span> <span class="ow">in</span> <span class="n">all_cmds</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">CommandProxy</span><span class="p">(</span><span class="n">device_proxy</span><span class="p">,</span> <span class="n">trl_name</span><span class="p">)</span>
-
-    <span class="c1"># If version is below tango 9, then pipes are not supported</span>
-    <span class="k">if</span> <span class="n">device_proxy</span><span class="o">.</span><span class="n">info</span><span class="p">()</span><span class="o">.</span><span class="n">server_version</span> <span class="o">&gt;=</span> <span class="mi">9</span><span class="p">:</span>
-        <span class="c1"># all pipes can be always accessible with low register</span>
-        <span class="n">all_pipes</span> <span class="o">=</span> <span class="p">[</span><span class="n">pipe_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">pipe_name</span> <span class="ow">in</span> <span class="n">device_proxy</span><span class="o">.</span><span class="n">get_pipe_list</span><span class="p">()]</span>
-        <span class="k">if</span> <span class="n">trl_name</span> <span class="ow">in</span> <span class="n">all_pipes</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Pipes are not supported&quot;</span><span class="p">)</span>
 
     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trl_name</span><span class="si">}</span><span class="s2"> cannot be found in </span><span class="si">{</span><span class="n">device_proxy</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 

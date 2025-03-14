@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adkinetix &#8212; ophyd-async 0.9.1.dev27+gb8f73bbb documentation</title>
+    <title>ophyd_async.epics.adkinetix &#8212; ophyd-async 0.9.1.dev33+g93ac4990 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=4db5ecb7"></script>
+    <script src="../../_static/documentation_options.js?v=af71aa69"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev33+g93ac4990 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev33+g93ac4990 documentation - Home"/>
   
   
 </a></div>
@@ -539,6 +539,9 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adkinetix.KinetixTriggerMode" title="ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KinetixTriggerMode</span></code></a></p></td>
 <td><p>Trigger mode for ADKinetix detector.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode" title="ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KinetixReadoutMode</span></code></a></p></td>
+<td><p>Readout mode for ADKinetix detector.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -579,9 +582,21 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixDriverIO">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adkinetix.</span></span><span class="sig-name descname"><span class="pre">KinetixDriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adkinetix/_kinetix_io.html#KinetixDriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixDriverIO" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adkinetix.</span></span><span class="sig-name descname"><span class="pre">KinetixDriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adkinetix/_kinetix_io.html#KinetixDriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixDriverIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore.ADBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore.ADBaseIO</span></code></a></p>
 <p>Mirrors the interface provided by ADKinetix/db/ADKinetix.template.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixDriverIO.trigger_mode">
+<span class="sig-name descname"><span class="pre">trigger_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adkinetix.KinetixTriggerMode" title="ophyd_async.epics.adkinetix._kinetix_io.KinetixTriggerMode"><span class="pre">KinetixTriggerMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'TriggerMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixDriverIO.trigger_mode" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixDriverIO.readout_port_idx">
+<span class="sig-name descname"><span class="pre">readout_port_idx</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode" title="ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode"><span class="pre">KinetixReadoutMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'ReadoutPortIdx'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixDriverIO.readout_port_idx" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -605,6 +620,37 @@
 <dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixTriggerMode.GATE">
 <span class="sig-name descname"><span class="pre">GATE</span></span><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixTriggerMode.GATE" title="Link to this definition">#</a></dt>
 <dd><p>‘Exp. Gate’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixReadoutMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adkinetix.</span></span><span class="sig-name descname"><span class="pre">KinetixReadoutMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adkinetix/_kinetix_io.html#KinetixReadoutMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>Readout mode for ADKinetix detector.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixReadoutMode.SENSITIVITY">
+<span class="sig-name descname"><span class="pre">SENSITIVITY</span></span><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode.SENSITIVITY" title="Link to this definition">#</a></dt>
+<dd><p>1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixReadoutMode.SPEED">
+<span class="sig-name descname"><span class="pre">SPEED</span></span><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode.SPEED" title="Link to this definition">#</a></dt>
+<dd><p>2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixReadoutMode.DYNAMIC_RANGE">
+<span class="sig-name descname"><span class="pre">DYNAMIC_RANGE</span></span><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode.DYNAMIC_RANGE" title="Link to this definition">#</a></dt>
+<dd><p>3</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adkinetix.KinetixReadoutMode.SUB_ELECTRON">
+<span class="sig-name descname"><span class="pre">SUB_ELECTRON</span></span><a class="headerlink" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode.SUB_ELECTRON" title="Link to this definition">#</a></dt>
+<dd><p>4</p>
 </dd></dl>
 
 </dd></dl>
@@ -669,11 +715,22 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixController.prepare"><code class="docutils literal notranslate"><span class="pre">KinetixController.prepare()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixDriverIO"><code class="docutils literal notranslate"><span class="pre">KinetixDriverIO</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixDriverIO"><code class="docutils literal notranslate"><span class="pre">KinetixDriverIO</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixDriverIO.trigger_mode"><code class="docutils literal notranslate"><span class="pre">KinetixDriverIO.trigger_mode</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixDriverIO.readout_port_idx"><code class="docutils literal notranslate"><span class="pre">KinetixDriverIO.readout_port_idx</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixTriggerMode"><code class="docutils literal notranslate"><span class="pre">KinetixTriggerMode</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixTriggerMode.INTERNAL"><code class="docutils literal notranslate"><span class="pre">KinetixTriggerMode.INTERNAL</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixTriggerMode.EDGE"><code class="docutils literal notranslate"><span class="pre">KinetixTriggerMode.EDGE</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixTriggerMode.GATE"><code class="docutils literal notranslate"><span class="pre">KinetixTriggerMode.GATE</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode"><code class="docutils literal notranslate"><span class="pre">KinetixReadoutMode</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode.SENSITIVITY"><code class="docutils literal notranslate"><span class="pre">KinetixReadoutMode.SENSITIVITY</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode.SPEED"><code class="docutils literal notranslate"><span class="pre">KinetixReadoutMode.SPEED</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode.DYNAMIC_RANGE"><code class="docutils literal notranslate"><span class="pre">KinetixReadoutMode.DYNAMIC_RANGE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adkinetix.KinetixReadoutMode.SUB_ELECTRON"><code class="docutils literal notranslate"><span class="pre">KinetixReadoutMode.SUB_ELECTRON</span></code></a></li>
 </ul>
 </li>
 </ul>

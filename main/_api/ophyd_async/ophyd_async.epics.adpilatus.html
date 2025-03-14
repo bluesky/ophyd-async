@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adpilatus &#8212; ophyd-async 0.9.1.dev27+gb8f73bbb documentation</title>
+    <title>ophyd_async.epics.adpilatus &#8212; ophyd-async 0.9.1.dev33+g93ac4990 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=4db5ecb7"></script>
+    <script src="../../_static/documentation_options.js?v=af71aa69"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev33+g93ac4990 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev33+g93ac4990 documentation - Home"/>
   
   
 </a></div>
@@ -521,6 +521,8 @@
                   
   <section id="module-ophyd_async.epics.adpilatus">
 <span id="ophyd-async-epics-adpilatus"></span><h1><a class="reference internal" href="#module-ophyd_async.epics.adpilatus" title="ophyd_async.epics.adpilatus"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a><a class="headerlink" href="#module-ophyd_async.epics.adpilatus" title="Link to this heading">#</a></h1>
+<p>Support for the ADPilatus areaDetector driver.</p>
+<p>https://github.com/areaDetector/ADPilatus</p>
 <section id="package-contents">
 <h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
 <section id="classes">
@@ -534,10 +536,10 @@
 <td><p>Pilatus readout time per model in ms.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adpilatus.PilatusController" title="ophyd_async.epics.adpilatus._pilatus_controller.PilatusController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PilatusController</span></code></a></p></td>
-<td><p>Controller for ADPilatus detector.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">DetectorController</span></code> for a <code class="docutils literal notranslate"><span class="pre">PilatusDriverIO</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adpilatus.PilatusDriverIO" title="ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PilatusDriverIO</span></code></a></p></td>
-<td><p>Mirrors the interface provided by ADPilatus/db/pilatus.template.</p></td>
+<td><p>Driver for the Pilatus pixel array detectors.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adpilatus.PilatusTriggerMode" title="ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PilatusTriggerMode</span></code></a></p></td>
 <td><p>Trigger modes for ADPilatus detector.</p></td>
@@ -578,7 +580,7 @@
 <dt class="sig sig-object py" id="ophyd_async.epics.adpilatus.PilatusController">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adpilatus.</span></span><span class="sig-name descname"><span class="pre">PilatusController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adpilatus.PilatusDriverIO" title="ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO"><span class="pre">PilatusDriverIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">good_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#frozenset" title="(in Python v3.13)"><span class="pre">frozenset</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState" title="ophyd_async.epics.adcore.ADState"><span class="pre">ADState</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">adcore.DEFAULT_GOOD_STATES</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">readout_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PilatusReadoutTime.PILATUS3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adpilatus/_pilatus_controller.html#PilatusController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adpilatus.PilatusController" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseController" title="ophyd_async.epics.adcore.ADBaseController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore.ADBaseController</span></code></a>[<a class="reference internal" href="#ophyd_async.epics.adpilatus.PilatusDriverIO" title="ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO</span></code></a>]</p>
-<p>Controller for ADPilatus detector.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DetectorController</span></code> for a <code class="docutils literal notranslate"><span class="pre">PilatusDriverIO</span></code>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.adpilatus.PilatusController.get_deadtime">
 <span class="sig-name descname"><span class="pre">get_deadtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adpilatus/_pilatus_controller.html#PilatusController.get_deadtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adpilatus.PilatusController.get_deadtime" title="Link to this definition">#</a></dt>
@@ -606,9 +608,21 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.adpilatus.PilatusDriverIO">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adpilatus.</span></span><span class="sig-name descname"><span class="pre">PilatusDriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adpilatus/_pilatus_io.html#PilatusDriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adpilatus.PilatusDriverIO" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adpilatus.</span></span><span class="sig-name descname"><span class="pre">PilatusDriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adpilatus/_pilatus_io.html#PilatusDriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adpilatus.PilatusDriverIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore.ADBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore.ADBaseIO</span></code></a></p>
-<p>Mirrors the interface provided by ADPilatus/db/pilatus.template.</p>
+<p>Driver for the Pilatus pixel array detectors.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adpilatus.PilatusDriverIO.trigger_mode">
+<span class="sig-name descname"><span class="pre">trigger_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adpilatus.PilatusTriggerMode" title="ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode"><span class="pre">PilatusTriggerMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'TriggerMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adpilatus.PilatusDriverIO.trigger_mode" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adpilatus.PilatusDriverIO.armed">
+<span class="sig-name descname"><span class="pre">armed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'Armed_RBV'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adpilatus.PilatusDriverIO.armed" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -714,7 +728,11 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adpilatus.PilatusController.arm"><code class="docutils literal notranslate"><span class="pre">PilatusController.arm()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adpilatus.PilatusDriverIO"><code class="docutils literal notranslate"><span class="pre">PilatusDriverIO</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adpilatus.PilatusDriverIO"><code class="docutils literal notranslate"><span class="pre">PilatusDriverIO</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adpilatus.PilatusDriverIO.trigger_mode"><code class="docutils literal notranslate"><span class="pre">PilatusDriverIO.trigger_mode</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adpilatus.PilatusDriverIO.armed"><code class="docutils literal notranslate"><span class="pre">PilatusDriverIO.armed</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adpilatus.PilatusTriggerMode"><code class="docutils literal notranslate"><span class="pre">PilatusTriggerMode</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adpilatus.PilatusTriggerMode.INTERNAL"><code class="docutils literal notranslate"><span class="pre">PilatusTriggerMode.INTERNAL</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adpilatus.PilatusTriggerMode.EXT_ENABLE"><code class="docutils literal notranslate"><span class="pre">PilatusTriggerMode.EXT_ENABLE</span></code></a></li>

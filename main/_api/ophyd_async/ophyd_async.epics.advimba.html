@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.advimba &#8212; ophyd-async 0.9.1.dev27+gb8f73bbb documentation</title>
+    <title>ophyd_async.epics.advimba &#8212; ophyd-async 0.9.1.dev33+g93ac4990 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=4db5ecb7"></script>
+    <script src="../../_static/documentation_options.js?v=af71aa69"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev27+gb8f73bbb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev33+g93ac4990 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev33+g93ac4990 documentation - Home"/>
   
   
 </a></div>
@@ -537,13 +537,19 @@
 <td><p>Mirrors the interface provided by ADVimba/db/vimba.template.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaExposeOutMode" title="ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaExposeOutMode</span></code></a></p></td>
-<td><p>Modes for exposure on the Vimba detector.</p></td>
+<td><p>Exposure control modes for Vimba detectors.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaOnOff" title="ophyd_async.epics.advimba._vimba_io.VimbaOnOff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaOnOff</span></code></a></p></td>
 <td><p>On/Off modes on the Vimba detector.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaTriggerSource" title="ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaTriggerSource</span></code></a></p></td>
 <td><p>Mode for the source of triggers on the Vimbda.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaOverlap" title="ophyd_async.epics.advimba._vimba_io.VimbaOverlap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaOverlap</span></code></a></p></td>
+<td><p>Overlap modes for the Vimba detector.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaConvertFormat" title="ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VimbaConvertFormat</span></code></a></p></td>
+<td><p>Convert pixel format for the Vimba detector.</p></td>
 </tr>
 </tbody>
 </table>
@@ -556,6 +562,7 @@
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.advimba.</span></span><span class="sig-name descname"><span class="pre">VimbaDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.PathProvider" title="ophyd_async.core.PathProvider"><span class="pre">PathProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">drv_suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cam1:'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriter" title="ophyd_async.epics.adcore.ADWriter"><span class="pre">ADWriter</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">adcore.ADHDFWriter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileio_suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore.NDPluginBaseIO"><span class="pre">NDPluginBaseIO</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_sigs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/advimba/_vimba.html#VimbaDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDetector" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.AreaDetector" title="ophyd_async.epics.adcore.AreaDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore.AreaDetector</span></code></a>[<a class="reference internal" href="#ophyd_async.epics.advimba.VimbaController" title="ophyd_async.epics.advimba._vimba_controller.VimbaController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba._vimba_controller.VimbaController</span></code></a>]</p>
 <p>Ophyd-async implementation of an ADVimba Detector.</p>
+<p>https://github.com/areaDetector/ADVimba</p>
 </dd></dl>
 
 <dl class="py class">
@@ -584,16 +591,46 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaDriverIO">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.advimba.</span></span><span class="sig-name descname"><span class="pre">VimbaDriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/advimba/_vimba_io.html#VimbaDriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDriverIO" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.advimba.</span></span><span class="sig-name descname"><span class="pre">VimbaDriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/advimba/_vimba_io.html#VimbaDriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDriverIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore.ADBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore.ADBaseIO</span></code></a></p>
 <p>Mirrors the interface provided by ADVimba/db/vimba.template.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaDriverIO.convert_pixel_format">
+<span class="sig-name descname"><span class="pre">convert_pixel_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaConvertFormat" title="ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat"><span class="pre">VimbaConvertFormat</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'ConvertPixelFormat'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDriverIO.convert_pixel_format" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaDriverIO.trigger_source">
+<span class="sig-name descname"><span class="pre">trigger_source</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaTriggerSource" title="ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource"><span class="pre">VimbaTriggerSource</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'TriggerSource'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDriverIO.trigger_source" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaDriverIO.trigger_mode">
+<span class="sig-name descname"><span class="pre">trigger_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaOnOff" title="ophyd_async.epics.advimba._vimba_io.VimbaOnOff"><span class="pre">VimbaOnOff</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'TriggerMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDriverIO.trigger_mode" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaDriverIO.trigger_overlap">
+<span class="sig-name descname"><span class="pre">trigger_overlap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaOverlap" title="ophyd_async.epics.advimba._vimba_io.VimbaOverlap"><span class="pre">VimbaOverlap</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'TriggerOverlap'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDriverIO.trigger_overlap" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaDriverIO.exposure_mode">
+<span class="sig-name descname"><span class="pre">exposure_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.advimba.VimbaExposeOutMode" title="ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode"><span class="pre">VimbaExposeOutMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'ExposureMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaDriverIO.exposure_mode" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaExposeOutMode">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.advimba.</span></span><span class="sig-name descname"><span class="pre">VimbaExposeOutMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/advimba/_vimba_io.html#VimbaExposeOutMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaExposeOutMode" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
-<p>Modes for exposure on the Vimba detector.</p>
+<p>Exposure control modes for Vimba detectors.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaExposeOutMode.TIMED">
 <span class="sig-name descname"><span class="pre">TIMED</span></span><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaExposeOutMode.TIMED" title="Link to this definition">#</a></dt>
@@ -676,6 +713,62 @@
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaOverlap">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.advimba.</span></span><span class="sig-name descname"><span class="pre">VimbaOverlap</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/advimba/_vimba_io.html#VimbaOverlap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaOverlap" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>Overlap modes for the Vimba detector.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaOverlap.OFF">
+<span class="sig-name descname"><span class="pre">OFF</span></span><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaOverlap.OFF" title="Link to this definition">#</a></dt>
+<dd><p>‘Off’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaOverlap.PREV_FRAME">
+<span class="sig-name descname"><span class="pre">PREV_FRAME</span></span><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaOverlap.PREV_FRAME" title="Link to this definition">#</a></dt>
+<dd><p>‘PreviousFrame’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaConvertFormat">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.advimba.</span></span><span class="sig-name descname"><span class="pre">VimbaConvertFormat</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/advimba/_vimba_io.html#VimbaConvertFormat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaConvertFormat" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>Convert pixel format for the Vimba detector.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaConvertFormat.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaConvertFormat.NONE" title="Link to this definition">#</a></dt>
+<dd><p>‘None’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaConvertFormat.MONO8">
+<span class="sig-name descname"><span class="pre">MONO8</span></span><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaConvertFormat.MONO8" title="Link to this definition">#</a></dt>
+<dd><p>‘Mono8’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaConvertFormat.MONO16">
+<span class="sig-name descname"><span class="pre">MONO16</span></span><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaConvertFormat.MONO16" title="Link to this definition">#</a></dt>
+<dd><p>‘Mono16’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaConvertFormat.RGB8">
+<span class="sig-name descname"><span class="pre">RGB8</span></span><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaConvertFormat.RGB8" title="Link to this definition">#</a></dt>
+<dd><p>‘RGB8’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.advimba.VimbaConvertFormat.RGB16">
+<span class="sig-name descname"><span class="pre">RGB16</span></span><a class="headerlink" href="#ophyd_async.epics.advimba.VimbaConvertFormat.RGB16" title="Link to this definition">#</a></dt>
+<dd><p>‘RGB16’</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -736,7 +829,14 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaController.prepare"><code class="docutils literal notranslate"><span class="pre">VimbaController.prepare()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaDriverIO"><code class="docutils literal notranslate"><span class="pre">VimbaDriverIO</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaDriverIO"><code class="docutils literal notranslate"><span class="pre">VimbaDriverIO</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaDriverIO.convert_pixel_format"><code class="docutils literal notranslate"><span class="pre">VimbaDriverIO.convert_pixel_format</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaDriverIO.trigger_source"><code class="docutils literal notranslate"><span class="pre">VimbaDriverIO.trigger_source</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaDriverIO.trigger_mode"><code class="docutils literal notranslate"><span class="pre">VimbaDriverIO.trigger_mode</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaDriverIO.trigger_overlap"><code class="docutils literal notranslate"><span class="pre">VimbaDriverIO.trigger_overlap</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaDriverIO.exposure_mode"><code class="docutils literal notranslate"><span class="pre">VimbaDriverIO.exposure_mode</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaExposeOutMode"><code class="docutils literal notranslate"><span class="pre">VimbaExposeOutMode</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaExposeOutMode.TIMED"><code class="docutils literal notranslate"><span class="pre">VimbaExposeOutMode.TIMED</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaExposeOutMode.TRIGGER_WIDTH"><code class="docutils literal notranslate"><span class="pre">VimbaExposeOutMode.TRIGGER_WIDTH</span></code></a></li>
@@ -755,6 +855,19 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaTriggerSource.SOFTWARE"><code class="docutils literal notranslate"><span class="pre">VimbaTriggerSource.SOFTWARE</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaTriggerSource.ACTION0"><code class="docutils literal notranslate"><span class="pre">VimbaTriggerSource.ACTION0</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaTriggerSource.ACTION1"><code class="docutils literal notranslate"><span class="pre">VimbaTriggerSource.ACTION1</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaOverlap"><code class="docutils literal notranslate"><span class="pre">VimbaOverlap</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaOverlap.OFF"><code class="docutils literal notranslate"><span class="pre">VimbaOverlap.OFF</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaOverlap.PREV_FRAME"><code class="docutils literal notranslate"><span class="pre">VimbaOverlap.PREV_FRAME</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaConvertFormat"><code class="docutils literal notranslate"><span class="pre">VimbaConvertFormat</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaConvertFormat.NONE"><code class="docutils literal notranslate"><span class="pre">VimbaConvertFormat.NONE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaConvertFormat.MONO8"><code class="docutils literal notranslate"><span class="pre">VimbaConvertFormat.MONO8</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaConvertFormat.MONO16"><code class="docutils literal notranslate"><span class="pre">VimbaConvertFormat.MONO16</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaConvertFormat.RGB8"><code class="docutils literal notranslate"><span class="pre">VimbaConvertFormat.RGB8</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.advimba.VimbaConvertFormat.RGB16"><code class="docutils literal notranslate"><span class="pre">VimbaConvertFormat.RGB16</span></code></a></li>
 </ul>
 </li>
 </ul>
