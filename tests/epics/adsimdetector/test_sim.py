@@ -229,11 +229,6 @@ async def test_detector_fly(
 async def test_two_detectors_fly_different_rate(
     two_test_adsimdetectors: Sequence[adsimdetector.SimDetector], RE: RunEngine
 ):
-    trigger_info = TriggerInfo(
-        number_of_events=15,
-        trigger=DetectorTrigger.INTERNAL,
-        exposures_per_event=1,
-    )
     docs = defaultdict(list)
     RE.subscribe(lambda name, doc: docs[name].append(doc))
 
@@ -253,8 +248,17 @@ async def test_two_detectors_fly_different_rate(
     @bpp.stage_decorator(two_test_adsimdetectors)
     @bpp.run_decorator()
     def fly_plan():
-        for det in two_test_adsimdetectors:
-            yield from bps.prepare(det, trigger_info, wait=True, group="prepare")
+        for i, det in enumerate(two_test_adsimdetectors):
+            yield from bps.prepare(
+                det,
+                TriggerInfo(
+                    number_of_events=15,
+                    trigger=DetectorTrigger.INTERNAL,
+                    exposures_per_event=i + 1,
+                ),
+                wait=True,
+                group="prepare",
+            )
         yield from bps.declare_stream(*two_test_adsimdetectors, name="primary")
 
         for det in two_test_adsimdetectors:
@@ -273,24 +277,30 @@ async def test_two_detectors_fly_different_rate(
         yield from bps.collect(*two_test_adsimdetectors)
         assert_n_stream_datums(0)
 
-        # det[1] has caught up to first 7 frames, emit streamDatum for seq_num {1,7}
+        # det[1] has caught up to first 7 frames, emit streamDatum for seq_num {1,4}
         set_mock_value(two_test_adsimdetectors[1].fileio.num_captured, 7)
         yield from bps.collect(*two_test_adsimdetectors)
-        assert_n_stream_datums(2, 1, 8)
+        assert_n_stream_datums(2, 1, 4)
 
-        for det in two_test_adsimdetectors:
-            set_mock_value(det.fileio.num_captured, 15)
+        # det[1] has caught up to first 14 frames, emit streamDatum for seq_num {4,8}
+        set_mock_value(two_test_adsimdetectors[1].fileio.num_captured, 14)
+        yield from bps.collect(*two_test_adsimdetectors)
+        assert_n_stream_datums(4, 4, 8)
+
+        # Complete both detectors
+        for i, det in enumerate(two_test_adsimdetectors):
+            set_mock_value(det.fileio.num_captured, 15 * (i + 1))
 
         # emits stream datum for seq_num {8, 15}
         yield from bps.collect(*two_test_adsimdetectors)
-        assert_n_stream_datums(4, 8, 16)
+        assert_n_stream_datums(6, 8, 16)
 
         # Trigger has complete as all expected frames written
         yield from bps.wait("trigger_cleanup")
 
     RE(fly_plan())
     assert_emitted(
-        docs, start=1, descriptor=1, stream_resource=2, stream_datum=4, stop=1
+        docs, start=1, descriptor=1, stream_resource=2, stream_datum=6, stop=1
     )
 
 

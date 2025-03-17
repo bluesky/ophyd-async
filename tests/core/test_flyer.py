@@ -335,7 +335,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
             # Since we set number of iterations to 1 (default),
             # make sure it gets reset on complete
             assert detector._completable_frames == 0
-            assert detector._frames_to_complete == 0
+            assert detector._events_to_complete == 0
             assert detector._number_of_events_iter is None
             assert detector._controller.wait_for_idle.called  # type: ignore
 

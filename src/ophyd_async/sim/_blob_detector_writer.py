@@ -46,7 +46,7 @@ class BlobDetectorWriter(DetectorWriter):
                 dataset=DATA_PATH,
                 shape=(exposures_per_event, HEIGHT, WIDTH),
                 dtype_numpy=np.dtype(np.uint8).str,
-                chunk_shape=(HEIGHT, WIDTH),
+                chunk_shape=(1024,),
             ),
             HDFDatasetDescription(
                 data_key=f"{name}-sum",
@@ -62,6 +62,7 @@ class BlobDetectorWriter(DetectorWriter):
                 source="sim://pattern-generator-hdf-file",
                 shape=list(ds.shape),
                 dtype="array" if len(ds.shape) > 1 else "number",
+                dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
             for ds in self.datasets

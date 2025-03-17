@@ -218,7 +218,7 @@ class StandardDetector(
         self._watchers: list[Callable] = []
         self._fly_status: WatchableAsyncStatus | None = None
         self._fly_start: float | None = None
-        self._frames_to_complete: int = 0
+        self._events_to_complete: int = 0
         # Represents the total number of frames that will have been completed at the
         # end of the next `complete`.
         self._completable_frames: int = 0
@@ -276,7 +276,6 @@ class StandardDetector(
                     trigger=DetectorTrigger.INTERNAL,
                 )
             )
-
         trigger_info = _ensure_trigger_info_exists(self._trigger_info)
         if trigger_info.trigger is not DetectorTrigger.INTERNAL:
             msg = "The trigger method can only be called with INTERNAL triggering"
@@ -343,8 +342,10 @@ class StandardDetector(
             await self._controller.arm()
         self._fly_start = time.monotonic()
         try:
-            self._frames_to_complete = next(self._number_of_events_iter)
-            self._completable_frames += self._frames_to_complete
+            self._events_to_complete = next(self._number_of_events_iter)
+            self._completable_frames += (
+                self._events_to_complete * self._trigger_info.exposures_per_event
+            )
         except StopIteration as err:
             raise RuntimeError(
                 f"Kickoff called more than the configured number of "
@@ -368,20 +369,20 @@ class StandardDetector(
                     name=self.name,
                     current=index,
                     initial=self._initial_frame,
-                    target=self._frames_to_complete,
+                    target=self._events_to_complete,
                     unit="",
                     precision=0,
                     time_elapsed=time.monotonic() - self._fly_start
                     if self._fly_start
                     else None,
                 )
-                if index >= self._frames_to_complete:
+                if index >= self._events_to_complete:
                     break
         finally:
             await indices_written.aclose()
             if self._completable_frames >= trigger_info.total_number_of_exposures:
                 self._completable_frames = 0
-                self._frames_to_complete = 0
+                self._events_to_complete = 0
                 self._number_of_events_iter = None
                 await self._controller.wait_for_idle()
 
