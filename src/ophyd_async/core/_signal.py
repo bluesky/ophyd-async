@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import inspect
 import time
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from typing import Any, Generic, cast
 
 from bluesky.protocols import (
+    Configurable,
     Locatable,
     Location,
     Movable,
@@ -21,7 +23,7 @@ from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend, SignalDatatypeT, SignalDatatypeV
 from ._soft_signal_backend import SoftSignalBackend
-from ._status import AsyncStatus, completed_status
+from ._status import AsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -577,25 +579,34 @@ async def set_and_wait_for_other_value(
 
     status = set_signal.set(set_value, timeout=set_timeout)
 
+    if callable(match_value):
+        matcher: Callable[[SignalDatatypeV], bool] = match_value  # type: ignore
+    else:
+
+        def matcher(value):
+            return value == match_value
+
+        matcher.__name__ = f"equals_{match_value}"
+
     # If the value was the same as before no need to wait for it to change
-    if current_value != match_value:
+    if not matcher(current_value):
 
         async def _wait_for_value():
             async for value in values_gen:
-                if value == match_value:
+                if matcher(value):
                     break
 
         try:
             await asyncio.wait_for(_wait_for_value(), timeout)
             if wait_for_set_completion:
                 await status
-            return status
         except asyncio.TimeoutError as e:
-            raise TimeoutError(
-                f"{match_signal.name} didn't match {match_value} in {timeout}s"
+            raise asyncio.TimeoutError(
+                f"{match_signal.name} value didn't match value from"
+                f" {matcher.__name__}() in {timeout}s"
             ) from e
 
-    return completed_status()
+    return status
 
 
 async def set_and_wait_for_value(
@@ -676,3 +687,39 @@ def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW
         attr_signals = walk_rw_signals(attr, path_prefix=dot_path + ".")
         signals.update(attr_signals)
     return signals
+
+
+async def walk_config_signals(
+    device: Device, path_prefix: str = ""
+) -> dict[str, SignalRW[Any]]:
+    """Retrieve all configuration signals from a device.
+
+    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
+    part of saving and loading a device.
+
+    :param device: Device to retrieve configuration signals from.
+    :param path_prefix: For internal use, leave blank when calling the method.
+    :return:
+        A dictionary matching the string attribute path of a SignalRW with the
+        signal itself.
+    """
+    signals: dict[str, SignalRW[Any]] = {}
+    config_names: list[str] = []
+    if isinstance(device, Configurable):
+        configuration = device.read_configuration()
+        if inspect.isawaitable(configuration):
+            configuration = await configuration
+        config_names = list(configuration.keys())
+    for attr_name, attr in device.children():
+        dot_path = f"{path_prefix}{attr_name}"
+        if isinstance(attr, SignalRW) and attr.name in config_names:
+            signals[dot_path] = attr
+        signals.update(await walk_config_signals(attr, path_prefix=dot_path + "."))
+
+    return signals
+
+
+class Ignore:
+    """Annotation to ignore a signal when connecting a device."""
+
+    pass

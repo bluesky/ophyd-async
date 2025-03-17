@@ -23,7 +23,7 @@ class PilatusReadoutTime(float, Enum):
 
 
 class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
-    """Controller for ADPilatus detector."""
+    """`DetectorController` for a `PilatusDriverIO`."""
 
     _supported_trigger_types = {
         DetectorTrigger.INTERNAL: PilatusTriggerMode.INTERNAL,
@@ -55,7 +55,7 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
                 if trigger_info.total_number_of_exposures == 0
                 else trigger_info.total_number_of_exposures
             ),
-            self.driver.image_mode.set(adcore.ImageMode.MULTIPLE),
+            self.driver.image_mode.set(adcore.ADImageMode.MULTIPLE),
         )
 
     async def arm(self):

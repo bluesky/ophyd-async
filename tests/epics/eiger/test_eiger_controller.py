@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import ANY, patch
 
 from pytest import fixture, raises
@@ -76,7 +77,7 @@ async def test_given_detector_fails_to_go_ready_when_arm_called_then_fails(
     eiger_driver_and_controller_no_arm: DriverAndController,
 ):
     _, controller = eiger_driver_and_controller_no_arm
-    with raises(TimeoutError):
+    with raises(asyncio.TimeoutError):
         await controller.prepare(TriggerInfo(number_of_events=10))
         await controller.arm()
         await controller.wait_for_idle()

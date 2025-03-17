@@ -13,6 +13,7 @@ from ophyd_async.core import (
     Settings,
     SettingsProvider,
     SignalRW,
+    walk_config_signals,
     walk_rw_signals,
 )
 from ophyd_async.core._table import Table
@@ -32,9 +33,17 @@ def _get_values_of_signals(
 
 
 @plan
-def get_current_settings(device: Device) -> MsgGenerator[Settings]:
-    """Get current settings on `Device`."""
-    signals = walk_rw_signals(device)
+def get_current_settings(
+    device: Device, only_config: bool = False
+) -> MsgGenerator[Settings]:
+    """Get current settings on `Device`.
+
+    If `only_config` is True, get current configuration settings on `Configurable`.
+    """
+    if only_config:
+        signals = yield from wait_for_awaitable(walk_config_signals(device))
+    else:
+        signals = walk_rw_signals(device)
     named_values = yield from _get_values_of_signals(signals)
     signal_values = {signals[name]: value for name, value in named_values.items()}
     return Settings(device, signal_values)
@@ -42,26 +51,43 @@ def get_current_settings(device: Device) -> MsgGenerator[Settings]:
 
 @plan
 def store_settings(
-    provider: SettingsProvider, name: str, device: Device
+    provider: SettingsProvider, name: str, device: Device, only_config: bool = False
 ) -> MsgGenerator[None]:
     """Walk a Device for SignalRWs and store their values.
+
+    If `only_config` is True, store only configuration settings on `Configurable`.
 
     :param provider: The provider to store the settings with.
     :param name: The name to store the settings under.
     :param device: The Device to walk for SignalRWs.
+    :param only_config: If True, store only configuration settings.
     """
-    signals = walk_rw_signals(device)
+    if only_config:
+        signals = yield from wait_for_awaitable(walk_config_signals(device))
+    else:
+        signals = walk_rw_signals(device)
     named_values = yield from _get_values_of_signals(signals)
     yield from wait_for_awaitable(provider.store(name, named_values))
 
 
 @plan
 def retrieve_settings(
-    provider: SettingsProvider, name: str, device: Device
+    provider: SettingsProvider, name: str, device: Device, only_config: bool = False
 ) -> MsgGenerator[Settings]:
-    """Retrieve named Settings for a Device from a provider."""
+    """Retrieve named Settings for a Device from a provider.
+
+    If `only_config` is True, retrieve only configuration settings on `Configurable`.
+
+    :param provider: The provider to retrieve the settings from.
+    :param name: The name of the settings to retrieve.
+    :param device: The Device to retrieve the settings for.
+    :param only_config: If True, retrieve only configuration settings.
+    """
     named_values = yield from wait_for_awaitable(provider.retrieve(name))
-    signals = walk_rw_signals(device)
+    if only_config:
+        signals = yield from wait_for_awaitable(walk_config_signals(device))
+    else:
+        signals = walk_rw_signals(device)
     unknown_names = set(named_values) - set(signals)
     if unknown_names:
         raise NameError(f"Unknown signal names {sorted(unknown_names)}")

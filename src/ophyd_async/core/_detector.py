@@ -51,7 +51,7 @@ class DetectorTrigger(Enum):
 class TriggerInfo(BaseModel):
     """Minimal set of information required to setup triggering on a detector."""
 
-    number_of_events: NonNegativeInt | list[NonNegativeInt]
+    number_of_events: NonNegativeInt | list[NonNegativeInt] = Field(default=1)
     """Number of events that will be processed, (0 means infinite).
 
     Can be:
@@ -138,15 +138,22 @@ class DetectorWriter(ABC):
         :return: Output for ``describe()``
         """
 
-    @abstractmethod
-    def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
-    ) -> AsyncGenerator[int, None]:
-        """Yield the index of each exposure (or data point) as it is written."""
+    @property
+    def hints(self) -> Hints:
+        """The hints to be used for the detector."""
+        return {}
 
     @abstractmethod
     async def get_indices_written(self) -> int:
         """Get the number of indices written."""
+
+    # Note: this method is really async, but if we make it async here then we
+    # need to give it a body with a redundant yield statement, which is a bit
+    # awkward. So we just leave it as a regular method and let the user
+    # implement it as async.
+    @abstractmethod
+    def observe_indices_written(self, timeout: float) -> AsyncGenerator[int, None]:
+        """Yield the index of each frame (or equivalent data point) as it is written."""
 
     @abstractmethod
     def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
@@ -155,11 +162,6 @@ class DetectorWriter(ABC):
     @abstractmethod
     async def close(self) -> None:
         """Close writer, blocks until I/O is complete."""
-
-    @property
-    def hints(self) -> Hints:
-        """The hints to be used for the detector."""
-        return {}
 
 
 # Add type var for controller so we can define
@@ -275,8 +277,8 @@ class StandardDetector(
                 )
             )
 
-        self._trigger_info = _ensure_trigger_info_exists(self._trigger_info)
-        if self._trigger_info.trigger is not DetectorTrigger.INTERNAL:
+        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
+        if trigger_info.trigger is not DetectorTrigger.INTERNAL:
             msg = "The trigger method can only be called with INTERNAL triggering"
             raise ValueError(msg)
         if self._trigger_info.number_of_events != 1:
@@ -292,9 +294,7 @@ class StandardDetector(
         end_observation = indices_written + 1
 
         async for index in self._writer.observe_indices_written(
-            DEFAULT_TIMEOUT
-            + (self._trigger_info.livetime or 0)
-            + self._trigger_info.deadtime
+            DEFAULT_TIMEOUT + (trigger_info.livetime or 0) + trigger_info.deadtime
         ):
             if index >= end_observation:
                 break
@@ -333,12 +333,15 @@ class StandardDetector(
         self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
             await self._controller.arm()
-            self._fly_start = time.monotonic()
+        self._trigger_info = value
 
     @AsyncStatus.wrap
     async def kickoff(self):
         if self._trigger_info is None or self._number_of_events_iter is None:
             raise RuntimeError("Prepare must be called before kickoff!")
+        if self._trigger_info.trigger == DetectorTrigger.INTERNAL:
+            await self._controller.arm()
+        self._fly_start = time.monotonic()
         try:
             self._frames_to_complete = next(self._number_of_events_iter)
             self._completable_frames += self._frames_to_complete
@@ -350,13 +353,13 @@ class StandardDetector(
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
-        self._trigger_info = _ensure_trigger_info_exists(self._trigger_info)
+        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
         indices_written = self._writer.observe_indices_written(
-            self._trigger_info.exposure_timeout
+            trigger_info.exposure_timeout
             or (
                 DEFAULT_TIMEOUT
-                + (self._trigger_info.livetime or 0)
-                + (self._trigger_info.deadtime or 0)
+                + (trigger_info.livetime or 0)
+                + (trigger_info.deadtime or 0)
             )
         )
         try:
@@ -376,7 +379,7 @@ class StandardDetector(
                     break
         finally:
             await indices_written.aclose()
-            if self._completable_frames >= self._trigger_info.total_number_of_exposures:
+            if self._completable_frames >= trigger_info.total_number_of_exposures:
                 self._completable_frames = 0
                 self._frames_to_complete = 0
                 self._number_of_events_iter = None

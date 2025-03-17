@@ -196,35 +196,35 @@ CA_PVA_INFERRED = {
 }
 PVA_INFERRED = {
     "int8a": ExpectedData(
-        np.array([-128, 127], dtype=np.int8),
+        np.array([-128, 127, 0, 1, 2, 3, 4], dtype=np.int8),
         np.array([-8, 3, 44], dtype=np.int8),
         "array",
         "|i1",
         units="",
     ),
     "uint16a": ExpectedData(
-        np.array([0, 65535], dtype=np.uint16),
+        np.array([0, 65535, 0, 1, 2, 3, 4], dtype=np.uint16),
         np.array([5666], dtype=np.uint16),
         "array",
         "<u2",
         units="",
     ),
     "uint32a": ExpectedData(
-        np.array([0, 4294967295], dtype=np.uint32),
+        np.array([0, 4294967295, 0, 1, 2, 3, 4], dtype=np.uint32),
         np.array([1022233], dtype=np.uint32),
         "array",
         "<u4",
         units="",
     ),
     "int64a": ExpectedData(
-        np.array([-2147483649, 2147483648], dtype=np.int64),
+        np.array([-(2**63 - 1), 2**63 - 1, 0, 1, 2, 3, 4], dtype=np.int64),
         np.array([-3], dtype=np.int64),
         "array",
         "<i8",
         units="",
     ),
     "uint64a": ExpectedData(
-        np.array([0, 4294967297], dtype=np.uint64),
+        np.array([0, 2**63 - 1, 0, 1, 2, 3, 4], dtype=np.uint64),
         np.array([995444], dtype=np.uint64),
         "array",
         "<u8",

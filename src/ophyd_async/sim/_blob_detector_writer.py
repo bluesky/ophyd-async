@@ -1,11 +1,17 @@
 from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
 
-from bluesky.protocols import StreamAsset
+import numpy as np
+from bluesky.protocols import Hints, StreamAsset
 from event_model import DataKey
 
-from ophyd_async.core import DEFAULT_TIMEOUT, DetectorWriter, NameProvider, PathProvider
-from ophyd_async.core._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
+from ophyd_async.core import (
+    DetectorWriter,
+    HDFDatasetDescription,
+    HDFDocumentComposer,
+    NameProvider,
+    PathProvider,
+)
 
 from ._pattern_generator import DATA_PATH, SUM_PATH, PatternGenerator
 
@@ -39,14 +45,14 @@ class BlobDetectorWriter(DetectorWriter):
                 data_key=name,
                 dataset=DATA_PATH,
                 shape=(exposures_per_event, HEIGHT, WIDTH),
-                dtype_numpy="|u1",
+                dtype_numpy=np.dtype(np.uint8).str,
                 chunk_shape=(HEIGHT, WIDTH),
             ),
             HDFDatasetDescription(
                 data_key=f"{name}-sum",
                 dataset=SUM_PATH,
                 shape=(exposures_per_event,),
-                dtype_numpy="<i8",
+                dtype_numpy=np.dtype(np.int64).str,
                 chunk_shape=(1024,),
             ),
         ]
@@ -62,8 +68,20 @@ class BlobDetectorWriter(DetectorWriter):
         }
         return describe
 
-    async def close(self) -> None:
-        self.pattern_generator.close_file()
+    @property
+    def hints(self) -> Hints:
+        """The hints to be used for the detector."""
+        return {"fields": [self.name_provider()]}
+
+    async def get_indices_written(self) -> int:
+        return self.pattern_generator.get_last_index() // self.exposures_per_event
+
+    async def observe_indices_written(
+        self, timeout: float
+    ) -> AsyncGenerator[int, None]:
+        while True:
+            yield self.pattern_generator.get_last_index() // self.exposures_per_event
+            await self.pattern_generator.wait_for_next_index(timeout)
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -81,11 +99,5 @@ class BlobDetectorWriter(DetectorWriter):
             for doc in self.composer.stream_data(indices_written):
                 yield "stream_datum", doc
 
-    async def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
-    ) -> AsyncGenerator[int, None]:
-        async for index in self.pattern_generator.observe_indices_written(timeout):
-            yield index // self.exposures_per_event
-
-    async def get_indices_written(self) -> int:
-        return await self.pattern_generator.get_last_index() // self.exposures_per_event
+    async def close(self) -> None:
+        self.pattern_generator.close_file()

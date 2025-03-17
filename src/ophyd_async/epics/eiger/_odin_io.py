@@ -5,7 +5,6 @@ from bluesky.protocols import StreamAsset
 from event_model import DataKey  # type: ignore
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     DetectorWriter,
     Device,
     DeviceVector,
@@ -111,7 +110,7 @@ class OdinWriter(DetectorWriter):
         }
 
     async def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
+        self, timeout: float
     ) -> AsyncGenerator[int, None]:
         async for num_captured in observe_value(self._drv.num_captured, timeout):
             yield num_captured // self._exposures_per_event

@@ -98,10 +98,6 @@ async def _trigger(
     assert (await pilatus_driver.trigger_mode.get_value()) == expected_trigger_mode
 
 
-async def test_hints_from_hdf_writer(test_adpilatus: adpilatus.PilatusDetector):
-    assert test_adpilatus.hints == {"fields": [test_adpilatus.name]}
-
-
 async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDetector):
     open = "ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.open"
     with patch(open, new_callable=AsyncMock) as mock_open:
@@ -150,7 +146,7 @@ async def test_pilatus_controller(test_adpilatus: adpilatus.PilatusDetector):
     await pilatus.wait_for_idle()
 
     assert await pilatus_driver.num_images.get_value() == 1
-    assert await pilatus_driver.image_mode.get_value() == adcore.ImageMode.MULTIPLE
+    assert await pilatus_driver.image_mode.get_value() == adcore.ADImageMode.MULTIPLE
     assert (
         await pilatus_driver.trigger_mode.get_value()
         == adpilatus.PilatusTriggerMode.EXT_ENABLE

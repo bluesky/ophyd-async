@@ -41,7 +41,7 @@ class VimbaController(adcore.ADBaseController[VimbaDriverIO]):
             self.driver.trigger_mode.set(TRIGGER_MODE[trigger_info.trigger]),
             self.driver.exposure_mode.set(EXPOSE_OUT_MODE[trigger_info.trigger]),
             self.driver.num_images.set(trigger_info.total_number_of_exposures),
-            self.driver.image_mode.set(adcore.ImageMode.MULTIPLE),
+            self.driver.image_mode.set(adcore.ADImageMode.MULTIPLE),
         )
         if trigger_info.livetime is not None and trigger_info.trigger not in [
             DetectorTrigger.VARIABLE_GATE,

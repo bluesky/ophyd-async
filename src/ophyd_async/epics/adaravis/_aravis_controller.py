@@ -36,9 +36,9 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
             raise ValueError(f"ADAravis does not support {trigger_info.trigger}")
 
         if trigger_info.total_number_of_exposures == 0:
-            image_mode = adcore.ImageMode.CONTINUOUS
+            image_mode = adcore.ADImageMode.CONTINUOUS
         else:
-            image_mode = adcore.ImageMode.MULTIPLE
+            image_mode = adcore.ADImageMode.MULTIPLE
         await asyncio.gather(
             self.driver.num_images.set(trigger_info.total_number_of_exposures),
             self.driver.image_mode.set(image_mode),

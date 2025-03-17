@@ -11,7 +11,7 @@ from ophyd_async.core import (
 )
 
 from ._core_io import ADBaseIO, ADState
-from ._utils import ImageMode, stop_busy_record
+from ._utils import ADImageMode, stop_busy_record
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
@@ -44,7 +44,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         )
         await asyncio.gather(
             self.driver.num_images.set(trigger_info.total_number_of_exposures),
-            self.driver.image_mode.set(ImageMode.MULTIPLE),
+            self.driver.image_mode.set(ADImageMode.MULTIPLE),
         )
 
     async def arm(self):

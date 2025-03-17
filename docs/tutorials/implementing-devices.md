@@ -52,7 +52,7 @@ Ophyd-async ships with some demo devices that do the same thing for each control
 :sync: epics
 
 ```
-$ ipython -i -m ophyd_async.epics.demo
+$ ipython --matplotlib=qt6 -i -m ophyd_async.epics.demo
 Python 3.11.11 (main, Dec  4 2024, 20:38:25) [GCC 12.2.0]
 Type 'copyright', 'credits' or 'license' for more information
 IPython 8.30.0 -- An enhanced Interactive Python. Type '?' for help.

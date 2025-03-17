@@ -8,7 +8,10 @@ from ._vimba_io import VimbaDriverIO
 
 
 class VimbaDetector(adcore.AreaDetector[VimbaController]):
-    """Ophyd-async implementation of an ADVimba Detector."""
+    """Ophyd-async implementation of an ADVimba Detector.
+
+    https://github.com/areaDetector/ADVimba
+    """
 
     def __init__(
         self,

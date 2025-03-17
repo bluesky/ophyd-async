@@ -27,20 +27,19 @@ readme = "README.md"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
+sim = ["h5py"]
 ca = ["aioca>=1.6"]
 pva = ["p4p>=4.2.0"]
-sim = ["h5py"]
-tango = ["pytango>=10.0.0"]
+tango = ["pytango==10.0.0"]
+demo = ["ipython", "matplotlib", "pyqt6"]
 dev = [
-    "ophyd_async[pva]",
     "ophyd_async[sim]",
     "ophyd_async[ca]",
+    "ophyd_async[pva]",
     "ophyd_async[tango]",
+    "ophyd_async[demo]",
     "inflection",
-    "ipython",
-    "ipywidgets",
     "import-linter",
-    "matplotlib",
     "myst-parser",
     "numpydoc",
     "ophyd",
@@ -187,7 +186,8 @@ type = "forbidden"
 forbidden_modules = ["ophyd_async.testing", "ophyd_async.sim"]
 source_modules = [
     "ophyd_async.plan_stubs",
-    "ophyd_async.fastcs",
-    "ophyd_async.epics",
-    "ophyd_async.tango",
+    "ophyd_async.fast.*",
+    "ophyd_async.epics.*",
+    "ophyd_async.tango.*",
 ]
+ignore_imports = ["ophyd_async.tango.testing.* -> ophyd_async.testing"]

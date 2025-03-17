@@ -20,6 +20,7 @@ def ad_standard_det_factory(
         detector_cls: type[adcore.AreaDetector],
         writer_cls: type[adcore.ADWriter] = adcore.ADHDFWriter,
         number=1,
+        data_type=adcore.ADBaseDataType.UINT16,
         **kwargs,
     ) -> adcore.AreaDetector:
         # Dynamically generate a name based on the class of controller
@@ -56,6 +57,7 @@ def ad_standard_det_factory(
         set_mock_value(test_adstandard_det.driver.acquire_time, (number - 0.2))
         set_mock_value(test_adstandard_det.driver.acquire_period, float(number))
         set_mock_value(test_adstandard_det.fileio.capture, True)
+        set_mock_value(test_adstandard_det.driver.data_type, data_type)
 
         # Set number of frames per chunk and frame dimensions to something reasonable
         set_mock_value(test_adstandard_det.driver.array_size_x, (9 + number))
