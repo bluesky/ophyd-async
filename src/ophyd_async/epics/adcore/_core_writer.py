@@ -190,7 +190,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                         "chunk_shape": (1, *frame_shape),
                         # Include file template for reconstruction in consolidator
                         "template": file_template,
-                        "multiplier": self._multiplier,
                     },
                     uid=None,
                     validate=True,

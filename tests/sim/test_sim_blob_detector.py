@@ -72,7 +72,7 @@ async def test_sim_blob_detector_fly(RE: RunEngine, blob_detector: SimBlobDetect
     @bpp.run_decorator()
     def fly_plan():
         yield from bps.prepare(
-            blob_detector, TriggerInfo(number_of_triggers=7), wait=True
+            blob_detector, TriggerInfo(number_of_events=7), wait=True
         )
         yield from bps.declare_stream(blob_detector, name="primary")
         yield from bps.kickoff(blob_detector, wait=True)
