@@ -136,14 +136,14 @@ async def test_hdf_writer_file_not_found(hdf_writer: adcore.ADHDFWriter):
 
 async def test_hdf_writer_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
     assert hdf_writer._composer is None
-    _ = await hdf_writer.open(exposures_per_event=1)
+    await hdf_writer.open(exposures_per_event=1)
     [item async for item in hdf_writer.collect_stream_docs(1)]
     assert hdf_writer._composer
 
 
 async def test_tiff_writer_collect_stream_docs(tiff_writer: adcore.ADTIFFWriter):
     assert tiff_writer._emitted_resource is None
-    _ = await tiff_writer.open(exposures_per_event=1)
+    await tiff_writer.open(exposures_per_event=1)
     [item async for item in tiff_writer.collect_stream_docs(1)]
     assert tiff_writer._emitted_resource
 
