@@ -47,11 +47,18 @@ def two_test_adsimdetectors(
     return deta, detb
 
 
-def count_sim(dets: Sequence[adsimdetector.SimDetector], times: int = 1):
+def count_sim(
+    dets: Sequence[adsimdetector.SimDetector],
+    times: int = 1,
+    trigger_info: TriggerInfo | None = None,
+):
     """Test plan to do the equivalent of bp.count for a sim detector."""
 
     yield from bps.stage_all(*dets)
     yield from bps.open_run()
+    if trigger_info:
+        for det in dets:
+            yield from bps.prepare(det, trigger_info, wait=True)
     for _ in range(times):
         read_values = {}
         for det in dets:
@@ -95,10 +102,9 @@ async def test_detector_count_failure(
         trigger=DetectorTrigger.INTERNAL,
         exposures_per_event=5,
     )
-    RE(bps.prepare(test_adsimdetector, trigger_info, wait=True))
     try:
         with pytest.raises(FailedStatus) as exc:
-            RE(count_sim([test_adsimdetector], times=1))
+            RE(count_sim([test_adsimdetector], times=1, trigger_info=trigger_info))
         assert isinstance(exc.value.__cause__, ValueError)
     finally:
         RE(bps.unstage(test_adsimdetector, wait=True))
@@ -117,8 +123,7 @@ async def test_detector_count(
         trigger=DetectorTrigger.INTERNAL,
         exposures_per_event=exposures_per_event,
     )
-    RE(bps.prepare(test_adsimdetector, trigger_info, wait=True))
-    RE(count_sim([test_adsimdetector], times=5))
+    RE(count_sim([test_adsimdetector], times=5, trigger_info=trigger_info))
 
     assert_emitted(
         docs,
