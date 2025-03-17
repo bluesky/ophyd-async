@@ -218,7 +218,7 @@ async def test_hardware_triggered_flyable(
 
         for detector in detectors:
             # ensure _completable_frames are reset after completion
-            assert detector._completable_frames == 0
+            assert detector._completable_exposures == 0
 
         yield from bps.close_run()
 
@@ -334,7 +334,7 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         for detector in detectors:
             # Since we set number of iterations to 1 (default),
             # make sure it gets reset on complete
-            assert detector._completable_frames == 0
+            assert detector._completable_exposures == 0
             assert detector._events_to_complete == 0
             assert detector._number_of_events_iter is None
             assert detector._controller.wait_for_idle.called  # type: ignore

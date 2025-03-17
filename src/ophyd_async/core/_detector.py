@@ -219,9 +219,9 @@ class StandardDetector(
         self._fly_status: WatchableAsyncStatus | None = None
         self._fly_start: float | None = None
         self._events_to_complete: int = 0
-        # Represents the total number of frames that will have been completed at the
+        # Represents the total number of exposures that will have been completed at the
         # end of the next `complete`.
-        self._completable_frames: int = 0
+        self._completable_exposures: int = 0
         self._number_of_events_iter: Iterator[int] | None = None
         self._initial_frame: int = 0
         super().__init__(name, connector=connector)
@@ -343,7 +343,7 @@ class StandardDetector(
         self._fly_start = time.monotonic()
         try:
             self._events_to_complete = next(self._number_of_events_iter)
-            self._completable_frames += (
+            self._completable_exposures += (
                 self._events_to_complete * self._trigger_info.exposures_per_event
             )
         except StopIteration as err:
@@ -380,8 +380,8 @@ class StandardDetector(
                     break
         finally:
             await indices_written.aclose()
-            if self._completable_frames >= trigger_info.total_number_of_exposures:
-                self._completable_frames = 0
+            if self._completable_exposures >= trigger_info.total_number_of_exposures:
+                self._completable_exposures = 0
                 self._events_to_complete = 0
                 self._number_of_events_iter = None
                 await self._controller.wait_for_idle()
