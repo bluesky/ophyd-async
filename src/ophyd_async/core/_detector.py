@@ -281,10 +281,10 @@ class StandardDetector(
         if trigger_info.trigger is not DetectorTrigger.INTERNAL:
             msg = "The trigger method can only be called with INTERNAL triggering"
             raise ValueError(msg)
-        if self._trigger_info.number_of_events != 1:
+        if trigger_info.number_of_events != 1:
             raise ValueError(
                 "Triggering is not supported for multiple events, the detector was "
-                f"prepared with number_of_events={self._trigger_info.number_of_events}."
+                f"prepared with number_of_events={trigger_info.number_of_events}."
             )
 
         # Arm the detector and wait for it to finish.
