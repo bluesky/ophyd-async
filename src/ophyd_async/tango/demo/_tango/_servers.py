@@ -6,7 +6,7 @@ from tango import AttrWriteType, DevState, GreenMode
 from tango.server import Device, attribute, command
 
 
-class DemoMover(Device):
+class DemoMotorServer(Device):
     """Demo tango moving device."""
 
     green_mode = GreenMode.Asyncio
@@ -65,7 +65,7 @@ class DemoMover(Device):
             await asyncio.sleep(step)
 
 
-class DemoCounter(Device):
+class DemoCounterServer(Device):
     """Demo tango counting device."""
 
     green_mode = GreenMode.Asyncio
