@@ -56,15 +56,7 @@ class SignalConnector(DeviceConnector):
         self.backend = self._init_backend = backend
 
     async def connect_mock(self, device: Device, mock: LazyMock):
-        # TODO: ugly circular import
-        from ._derived_signal import DerivedSignalBackend
-
-        if isinstance(self._init_backend, DerivedSignalBackend):
-            # It makes no sense to mock a derived signal backend, so
-            # use the real thing which will be backed by mocked signals
-            self.backend = self._init_backend
-        else:
-            self.backend = MockSignalBackend(self._init_backend, mock)
+        self.backend = MockSignalBackend(self._init_backend, mock)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         self.backend = self._init_backend

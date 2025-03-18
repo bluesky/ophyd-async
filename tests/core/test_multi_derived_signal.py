@@ -9,9 +9,9 @@ from bluesky.protocols import Reading
 from ophyd_async.core import (
     Array1D,
     AsyncStatus,
+    DerivedSignalCreator,
     Device,
     DTypeScalar_co,
-    SignalTransformer,
     Transform,
     soft_signal_rw,
 )
@@ -77,20 +77,20 @@ class Mirror(Device):
         # Parameter
         self.x1_x2_distance = soft_signal_rw(float, initial_value=1)
         # Derived signals
-        self._transformer = SignalTransformer(
+        self._creator = DerivedSignalCreator(
             TwoJackTransform,
             self.set,
             jack1=self.x1,
             jack2=self.x2,
             distance=self.x1_x2_distance,
         )
-        self.x = self._transformer.derived_signal_rw(float, "height", "x")
-        self.roll = self._transformer.derived_signal_rw(float, "angle", "roll")
+        self.x = self._creator.derived_signal_rw(float, "height", "x")
+        self.roll = self._creator.derived_signal_rw(float, "angle", "roll")
         super().__init__(name=name)
 
     @AsyncStatus.wrap
     async def set(self, derived: MirrorDerived) -> None:
-        transform = await self._transformer.get_transform()
+        transform = await self._creator.get_transform()
         raw = transform.derived_to_raw(height=derived["x"], angle=derived["roll"])
         await asyncio.gather(
             self.x1.set(raw["jack1"]),
@@ -155,6 +155,7 @@ async def test_setting_position():
     # Try to move just one axis
     await inst.x.set(0.5)
     assert m.mock_calls == [
+        call.x.put(0.5, wait=True),
         call.x1.user_setpoint.put(1.0, wait=True),
         call.x2.user_setpoint.put(pytest.approx(0.0), wait=True),
     ]

@@ -122,12 +122,14 @@ async def test_setting_position():
     m = get_mock(inst)
     await inst.position.set(BeamstopPosition.OUT_OF_POSITION)
     assert m.mock_calls == [
+        call.position.put(BeamstopPosition.OUT_OF_POSITION, wait=True),
         call.x.put(3, wait=True),
         call.y.put(5, wait=True),
     ]
     m.reset_mock()
     await inst.position.set(BeamstopPosition.IN_POSITION)
     assert m.mock_calls == [
+        call.position.put(BeamstopPosition.IN_POSITION, wait=True),
         call.x.put(0, wait=True),
         call.y.put(0, wait=True),
     ]
