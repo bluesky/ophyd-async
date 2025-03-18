@@ -70,7 +70,7 @@ async def test_decribe_describes_writer_dataset(
                 f"mock+ca://{detector_cls.__name__[: -len('Detector')].upper()}"
                 f"1:{writer_cls.default_suffix}FullFileName_RBV"
             ),
-            "shape": [10, 10],
+            "shape": [one_shot_trigger_info.exposures_per_event, 10, 10],
             "dtype": "array",
             "dtype_numpy": "<u2",
             "external": "STREAM:",
@@ -108,7 +108,6 @@ async def test_can_collect(
     # Construct expected stream resource parameters based on writer
     expected_sres_params = {
         "chunk_shape": (1, 10, 10),
-        "multiplier": 1,
     }
     if writer_cls == adcore.ADHDFWriter:
         expected_sres_params["dataset"] = "/entry/data/data"
@@ -142,7 +141,7 @@ async def test_can_decribe_collect(
                 f"mock+ca://{detector_cls.__name__[: -len('Detector')].upper()}"
                 f"1:{writer_cls.default_suffix}FullFileName_RBV"
             ),
-            "shape": [10, 10],
+            "shape": [one_shot_trigger_info.exposures_per_event, 10, 10],
             "dtype": "array",
             "dtype_numpy": "<u2",
             "external": "STREAM:",
