@@ -26,7 +26,7 @@ def _get_signal_details(entry: Entry) -> tuple[type[Signal], str, str]:
         case {"rw": read_write_pv}:
             return SignalRW, read_write_pv, read_write_pv
         case {"x": execute_pv}:
-            return SignalX, execute_pv + ".PROC", execute_pv + ".PROC"
+            return SignalX, execute_pv, execute_pv
         case _:
             raise TypeError(f"Can't process entry {entry}")
 
