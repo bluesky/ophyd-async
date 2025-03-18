@@ -82,6 +82,7 @@ class SignalTransformer(Generic[TransformT]):
             self.raw_and_transform_subscribables
         ):
             return self._cached_readings
+        return None
 
     def _make_transform_from_readings(
         self, transform_readings: dict[str, Reading]
@@ -233,6 +234,13 @@ class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
     async def connect(self, timeout: float):
         # Assume that the underlying signals are already connected
         pass
+
+    def set_value(self, value: SignalDatatypeT):
+        msg = (
+            "Cannot set the value of a derived signal, "
+            "set the underlying raw signals instead"
+        )
+        raise RuntimeError(msg)
 
     async def put(self, value: SignalDatatypeT | None, wait: bool) -> None:
         if wait is False:
