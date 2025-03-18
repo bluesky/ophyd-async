@@ -1,6 +1,12 @@
 """The building blocks for making devices."""
 
-from ._derived_signal import derived_signal_r, derived_signal_rw, derived_signal_w
+from ._derived_signal import (
+    SignalTransformer,
+    Transform,
+    derived_signal_r,
+    derived_signal_rw,
+    derived_signal_w,
+)
 from ._detector import (
     DetectorController,
     DetectorTrigger,
@@ -185,6 +191,8 @@ __all__ = [
     "derived_signal_r",
     "derived_signal_rw",
     "derived_signal_w",
+    "Transform",
+    "SignalTransformer",
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",

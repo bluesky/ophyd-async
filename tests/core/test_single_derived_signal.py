@@ -6,9 +6,12 @@ import pytest
 from ophyd_async.core import (
     AsyncStatus,
     Device,
+    DeviceVector,
+    StandardReadable,
     StrictEnum,
     derived_signal_r,
     derived_signal_rw,
+    derived_signal_w,
     soft_signal_rw,
 )
 from ophyd_async.testing import (
@@ -58,13 +61,11 @@ class Positioner(Device):
             return BeamstopPosition.OUT_OF_POSITION
 
     @AsyncStatus.wrap
-    async def set(self, value: BeamstopPosition, wait: bool) -> None:
+    async def set(self, value: BeamstopPosition) -> None:
         if value == BeamstopPosition.IN_POSITION:
-            self.x.set(0, wait=wait)
-            self.y.set(0, wait=wait)
+            await asyncio.gather(self.x.set(0), self.y.set(0))
         else:
-            self.x.set(3, wait=wait)
-            self.y.set(5, wait=wait)
+            await asyncio.gather(self.x.set(3), self.y.set(5))
 
 
 @pytest.mark.parametrize(
@@ -125,8 +126,34 @@ async def test_setting_position():
         call.y.put(5, wait=True),
     ]
     m.reset_mock()
-    await inst.position.set(BeamstopPosition.IN_POSITION, wait=False)
+    await inst.position.set(BeamstopPosition.IN_POSITION)
     assert m.mock_calls == [
-        call.x.put(0, wait=False),
-        call.y.put(0, wait=False),
+        call.x.put(0, wait=True),
+        call.y.put(0, wait=True),
     ]
+
+
+class Exploder(StandardReadable):
+    def __init__(self, num_signals: int, name=""):
+        with self.add_children_as_readables():
+            self.signals = DeviceVector(
+                {i: soft_signal_rw(int, units="cts") for i in range(1, num_signals + 1)}
+            )
+        self.set_all = derived_signal_w(self._set_all, derived_units="cts")
+        super().__init__(name=name)
+
+    @AsyncStatus.wrap
+    async def _set_all(self, value: int) -> None:
+        coros = [sig.set(value) for sig in self.signals.values()]
+        await asyncio.gather(*coros)
+
+
+async def test_setting_all():
+    inst = Exploder(3, "exploder")
+    await assert_reading(
+        inst, {f"exploder-signals-{i}": {"value": 0} for i in range(1, 4)}
+    )
+    await inst.set_all.set(5)
+    await assert_reading(
+        inst, {f"exploder-signals-{i}": {"value": 5} for i in range(1, 4)}
+    )
