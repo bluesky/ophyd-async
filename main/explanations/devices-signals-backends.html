@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.9.1.dev34+gc3413a63 documentation</title>
+    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.9.1.dev35+gbf6b71f0 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=e4894eb7"></script>
+    <script src="../_static/documentation_options.js?v=4722f8b5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -137,8 +137,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev34+gc3413a63 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev34+gc3413a63 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev35+gbf6b71f0 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev35+gbf6b71f0 documentation - Home"/>
   
   
 </a></div>
@@ -502,8 +502,13 @@ window.addEventListener("load", () => mermaid.run());
 <p>The <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.run_engine.RunEngine.html#bluesky.run_engine.RunEngine" title="bluesky 1.13.2.dev22+g53f76513"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.run_engine.RunEngine</span></code></a> facing interface is defined by the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html" title="bluesky 1.13.2.dev22+g53f76513">bluesky protocols</a> that a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> implements, but to implement that interface ophyd-async uses some helper classes. This document details how those helper classes fit together to provide particular <code class="docutils literal notranslate"><span class="pre">Device</span></code> behavior.</p>
 <section id="device-and-deviceconnector">
 <h2>Device and DeviceConnector<a class="headerlink" href="#device-and-deviceconnector" title="Link to this heading">#</a></h2>
-<pre  class="mermaid">
-        classDiagram
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+classDiagram
 Device *-- DeviceConnector
 Device : connect(mock)
 Device &lt;|-- EpicsDevice
@@ -532,8 +537,13 @@ DeviceConnector &lt;|-- TangoDeviceConnector
 </section>
 <section id="signal-and-signalbackend">
 <h2>Signal and SignalBackend<a class="headerlink" href="#signal-and-signalbackend" title="Link to this heading">#</a></h2>
-<pre  class="mermaid">
-        classDiagram
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+classDiagram
 Device &lt;|-- Signal
 Signal : source
 Signal &lt;|-- SignalR
@@ -620,8 +630,13 @@ SignalBackend &lt;|-- TangoSignalConnector
 </section>
 <section id="standard-device-subclasses">
 <h2>“Standard” Device subclasses<a class="headerlink" href="#standard-device-subclasses" title="Link to this heading">#</a></h2>
-<pre  class="mermaid">
-        classDiagram
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+classDiagram
 Device &lt;|-- StandardReadable
 Device &lt;|-- StandardDetector
 Device &lt;|-- StandardFlyer

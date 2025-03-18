@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.9.1.dev34+gc3413a63 documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.9.1.dev35+gbf6b71f0 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=e4894eb7"></script>
+    <script src="../_static/documentation_options.js?v=4722f8b5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -137,8 +137,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev34+gc3413a63 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev34+gc3413a63 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev35+gbf6b71f0 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev35+gbf6b71f0 documentation - Home"/>
   
   
 </a></div>
@@ -626,8 +626,13 @@ FastCS</label><div class="sd-tab-content docutils">
 <section id="look-at-the-device-implementations">
 <h2>Look at the Device implementations<a class="headerlink" href="#look-at-the-device-implementations" title="Link to this heading">#</a></h2>
 <p>The demo creates the following structure of Devices:</p>
-<pre  class="mermaid">
-        flowchart LR
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+flowchart LR
     DemoPointDetector-- channel ---DeviceVector
     DeviceVector-- 1 ---pdet.1(DemoPointDetectorChannel)
     DeviceVector-- 2 ---pdet.2(DemoPointDetectorChannel)
