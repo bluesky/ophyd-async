@@ -146,6 +146,8 @@ TODO
 
 The demo creates the following structure of Devices:
 ```{mermaid}
+:config: { "theme": "neutral" }
+:align: center
 flowchart LR
     DemoPointDetector-- channel ---DeviceVector
     DeviceVector-- 1 ---pdet.1(DemoPointDetectorChannel)
