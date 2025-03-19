@@ -6,11 +6,11 @@ https://github.com/epics-modules/motor
 import asyncio
 
 from bluesky.protocols import (
-    Callback,
     Flyable,
     Locatable,
     Location,
     Preparable,
+    Reading,
     Stoppable,
     Subscribable,
 )
@@ -21,6 +21,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
+    Callback,
     StandardReadable,
     StrictEnum,
     WatchableAsyncStatus,
@@ -242,11 +243,11 @@ class Motor(
         )
         return Location(setpoint=setpoint, readback=readback)
 
-    def subscribe(self, function: Callback[float]) -> None:
+    def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Subscribe."""
         self.user_readback.subscribe(function)
 
-    def clear_sub(self, function: Callback[float]) -> None:
+    def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Unsubscribe."""
         self.user_readback.clear_sub(function)
 

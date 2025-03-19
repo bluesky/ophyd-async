@@ -234,7 +234,9 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
         """
         self._get_cache().subscribe(function, want_value=True)
 
-    def subscribe(self, function: Callback[dict[str, Reading]]) -> None:
+    def subscribe(
+        self, function: Callback[dict[str, Reading[SignalDatatypeT]]]
+    ) -> None:
         """Subscribe to updates in the reading.
 
         :param function: The callback function to call when the reading changes.

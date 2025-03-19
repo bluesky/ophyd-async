@@ -1,10 +1,11 @@
 import asyncio
-from typing import Generic, TypedDict, TypeVar, cast
+from typing import Generic, TypeVar, cast
 from unittest.mock import ANY, call
 
 import numpy as np
 import pytest
 from bluesky.protocols import Reading
+from typing_extensions import TypedDict
 
 from ophyd_async.core import (
     Array1D,
