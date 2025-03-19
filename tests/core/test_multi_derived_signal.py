@@ -140,6 +140,10 @@ async def test_monitoring_position():
     await assert_mirror_readings(results, 0, 0)
     await inst.x2.set(1)
     await assert_mirror_readings(results, 0.5, np.pi / 4)
+    inst.x.clear_sub(results.put_nowait)
+    inst.roll.clear_sub(results.put_nowait)
+    await inst.x1.set(1)
+    assert results.empty()
 
 
 async def test_setting_position():
