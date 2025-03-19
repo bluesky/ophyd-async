@@ -1,4 +1,5 @@
 import itertools
+import os
 
 import pytest
 
@@ -90,7 +91,7 @@ async def test_can_collect(
     # If we are using the HDF writer, the uri will reference
     uri = str(path_info.directory_path) + "/"
     if writer_cls == adcore.ADHDFWriter:
-        uri = uri + f"{path_info.filename}.h5"
+        uri = uri.rstrip("/") + os.sep + f"{path_info.filename}.h5"
     test_det = ad_standard_det_factory(detector_cls, writer_cls=writer_cls)
 
     await test_det.stage()
@@ -101,7 +102,9 @@ async def test_can_collect(
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
     assert stream_resource["data_key"] == test_det.name
-    assert stream_resource["uri"] == "file://localhost" + str(uri)
+    assert stream_resource["uri"] == "/".join(
+        ["file://localhost", str(uri).lstrip("/")]
+    )
 
     # Construct expected stream resource parameters based on writer
     expected_sres_params = {
