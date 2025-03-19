@@ -94,6 +94,7 @@ from ophyd_async.epics import adcore
 det = adcore.ContAcqAreaDetector(
    "PREFIX:", 
    path_provider, 
+   drv_cls=adcore.ADBaseIO,
    drv_suffix="DRV:", 
    cb_suffix="CB:",
    writer_cls=adcore.ADHDFWriter, 
@@ -101,4 +102,4 @@ det = adcore.ContAcqAreaDetector(
 )
 ```
 
-Note that typically the only change from a typical detector is the additional `cb_suffix` kwarg, which is used to identify the prefix to use when instantiating the circular buffer (CB) plugin instance.
+Note that typically the only changes from a typical detector are the additional `cb_suffix` kwarg, which is used to identify the prefix to use when instantiating the circular buffer (CB) plugin instance, and the `drv_cls` kwarg, which allows you to specify the driver to use, with the default being the `ADBaseIO` class.
