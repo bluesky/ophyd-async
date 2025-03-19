@@ -54,7 +54,7 @@ class TwoJackTransform(Transform):
             height=jack1 + diff / 2,
             # need the case as returns numpy float rather than float64, but this
             # is ok at runtime
-            angle=convert_to_type_of(np.atan(diff / self.distance), jack1),
+            angle=convert_to_type_of(np.arctan(diff / self.distance), jack1),
         )
 
     def derived_to_raw(self, *, height: F, angle: F) -> TwoJackRaw[F]:
