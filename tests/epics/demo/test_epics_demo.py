@@ -267,14 +267,14 @@ async def test_point_detector_disconnected():
 det: NotConnected:
     channel: NotConnected:
         1: NotConnected:
-            value: NotConnected: ca://MOCK:DET:1:Value
-            mode: NotConnected: ca://MOCK:DET:1:Mode
+            value: NotConnected: ca://MOCK:DET:C1:Value
+            mode: NotConnected: ca://MOCK:DET:C1:Mode
         2: NotConnected:
-            value: NotConnected: ca://MOCK:DET:2:Value
-            mode: NotConnected: ca://MOCK:DET:2:Mode
+            value: NotConnected: ca://MOCK:DET:C2:Value
+            mode: NotConnected: ca://MOCK:DET:C2:Mode
         3: NotConnected:
-            value: NotConnected: ca://MOCK:DET:3:Value
-            mode: NotConnected: ca://MOCK:DET:3:Mode
+            value: NotConnected: ca://MOCK:DET:C3:Value
+            mode: NotConnected: ca://MOCK:DET:C3:Mode
     acquire_time: NotConnected: ca://MOCK:DET:AcquireTime
     start: NotConnected: ca://MOCK:DET:Start.PROC
     acquiring: NotConnected: ca://MOCK:DET:Acquiring
@@ -321,18 +321,18 @@ async def test_point_detector_read_and_describe(
             "dtype": "integer",
             "dtype_numpy": scalar_int_dtype,
             "shape": [],
-            "source": "mock+ca://MOCK:DET:1:Value",
+            "source": "mock+ca://MOCK:DET:C1:Value",
         },
         "mock_point_detector-channel-2-value": {
             "dtype": "integer",
             "dtype_numpy": scalar_int_dtype,
             "shape": [],
-            "source": "mock+ca://MOCK:DET:2:Value",
+            "source": "mock+ca://MOCK:DET:C2:Value",
         },
         "mock_point_detector-channel-3-value": {
             "dtype": "integer",
             "dtype_numpy": scalar_int_dtype,
             "shape": [],
-            "source": "mock+ca://MOCK:DET:3:Value",
+            "source": "mock+ca://MOCK:DET:C3:Value",
         },
     }
