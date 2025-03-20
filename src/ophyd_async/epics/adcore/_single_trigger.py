@@ -7,7 +7,7 @@ from ophyd_async.core import AsyncStatus, SignalR, StandardReadable
 from ophyd_async.core import StandardReadableFormat as Format
 
 from ._core_io import ADBaseIO, NDPluginBaseIO
-from ._utils import ImageMode
+from ._utils import ADImageMode
 
 
 class SingleTriggerDetector(StandardReadable, Triggerable):
@@ -35,7 +35,7 @@ class SingleTriggerDetector(StandardReadable, Triggerable):
     @AsyncStatus.wrap
     async def stage(self) -> None:
         await asyncio.gather(
-            self.drv.image_mode.set(ImageMode.SINGLE),
+            self.drv.image_mode.set(ADImageMode.SINGLE),
             self.drv.wait_for_plugins.set(True),
         )
         await super().stage()

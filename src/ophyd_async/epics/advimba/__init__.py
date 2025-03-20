@@ -1,6 +1,13 @@
 from ._vimba import VimbaDetector
 from ._vimba_controller import VimbaController
-from ._vimba_io import VimbaDriverIO, VimbaExposeOutMode, VimbaOnOff, VimbaTriggerSource
+from ._vimba_io import (
+    VimbaConvertFormat,
+    VimbaDriverIO,
+    VimbaExposeOutMode,
+    VimbaOnOff,
+    VimbaOverlap,
+    VimbaTriggerSource,
+)
 
 __all__ = [
     "VimbaDetector",
@@ -9,4 +16,6 @@ __all__ = [
     "VimbaExposeOutMode",
     "VimbaOnOff",
     "VimbaTriggerSource",
+    "VimbaOverlap",
+    "VimbaConvertFormat",
 ]
