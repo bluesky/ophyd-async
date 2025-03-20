@@ -1,14 +1,13 @@
-import asyncio
-from unittest.mock import ANY, patch
+from unittest.mock import ANY
 
-from pytest import fixture, raises
+from pytest import fixture
 
 from ophyd_async.core import (
     TriggerInfo,
     init_devices,
 )
 from ophyd_async.fastcs.eiger import EigerController, EigerDriverIO
-from ophyd_async.testing import callback_on_mock_put, get_mock_put, set_mock_value
+from ophyd_async.testing import get_mock_put, set_mock_value
 
 DriverAndController = tuple[EigerDriverIO, EigerController]
 
@@ -27,11 +26,6 @@ def eiger_driver_and_controller(
     eiger_driver_and_controller_no_arm: DriverAndController,
 ) -> DriverAndController:
     driver, controller = eiger_driver_and_controller_no_arm
-
-    def become_ready_on_arm(*args, **kwargs):
-        set_mock_value(driver.detector.state, "ready")
-
-    callback_on_mock_put(driver.detector.arm, become_ready_on_arm)
 
     return driver, controller
 
@@ -69,17 +63,6 @@ async def test_when_arm_with_number_of_images_then_number_of_images_set_correctl
     get_mock_put(driver.detector.nimages).assert_called_once_with(
         test_number_of_images, wait=ANY
     )
-
-
-@patch("ophyd_async.fastcs.eiger._eiger_controller.DEFAULT_TIMEOUT", 0.1)
-async def test_given_detector_fails_to_go_ready_when_arm_called_then_fails(
-    eiger_driver_and_controller_no_arm: DriverAndController,
-):
-    _, controller = eiger_driver_and_controller_no_arm
-    with raises(asyncio.TimeoutError):
-        await controller.prepare(TriggerInfo(number_of_triggers=10))
-        await controller.arm()
-        await controller.wait_for_idle()
 
 
 async def test_when_disarm_called_on_controller_then_disarm_called_on_driver(
