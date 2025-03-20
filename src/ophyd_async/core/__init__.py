@@ -48,7 +48,6 @@ from ._signal import (
     set_and_wait_for_value,
     soft_signal_r_and_setter,
     soft_signal_rw,
-    trigger_and_wait_for_other_value,
     wait_for_value,
     walk_config_signals,
     walk_rw_signals,
@@ -132,7 +131,6 @@ __all__ = [
     "wait_for_value",
     "set_and_wait_for_value",
     "set_and_wait_for_other_value",
-    "trigger_and_wait_for_other_value",
     "walk_rw_signals",
     "walk_config_signals",
     # Readable
