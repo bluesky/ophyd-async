@@ -40,7 +40,7 @@ class TwoJackTransform(Transform):
         diff = jack2 - jack1
         return TwoJackDerived(
             height=jack1 + diff / 2,
-            # need the case as returns numpy float rather than float64, but this
+            # need the cast as returns numpy float rather than float64, but this
             # is ok at runtime
             angle=math.atan(diff / self.distance),
         )
