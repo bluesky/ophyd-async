@@ -1,4 +1,4 @@
-from unittest.mock import ANY
+from unittest.mock import ANY, patch
 
 from pytest import fixture
 
@@ -13,20 +13,10 @@ DriverAndController = tuple[EigerDriverIO, EigerController]
 
 
 @fixture
-def eiger_driver_and_controller_no_arm(RE) -> DriverAndController:
+def eiger_driver_and_controller(RE) -> DriverAndController:
     with init_devices(mock=True):
         driver = EigerDriverIO("")
         controller = EigerController(driver)
-
-    return driver, controller
-
-
-@fixture
-def eiger_driver_and_controller(
-    eiger_driver_and_controller_no_arm: DriverAndController,
-) -> DriverAndController:
-    driver, controller = eiger_driver_and_controller_no_arm
-
     return driver, controller
 
 
@@ -101,3 +91,16 @@ async def test_given_energy_outside_tolerance_when_photon_energy_set_then_pv_cha
     await controller.set_energy(new_energy)
     get_mock_put(driver.detector.photon_energy).assert_called_once()
     assert (await driver.detector.photon_energy.get_value()) == new_energy
+
+
+async def test_when_prepare_parameters_set_and_stale_parameters_waited_on(
+    eiger_driver_and_controller: DriverAndController,
+):
+    driver, controller = eiger_driver_and_controller
+    with patch(
+        "ophyd_async.fastcs.eiger._eiger_controller.wait_for_value"
+    ) as mock_wait_for_value:
+        await controller.prepare(TriggerInfo())
+        mock_wait_for_value.assert_called_once_with(
+            driver.detector.stale_parameters, False, timeout=ANY
+        )
