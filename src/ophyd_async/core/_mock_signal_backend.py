@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock
 from bluesky.protocols import Reading
 from event_model import DataKey
 
+from ._derived_signal_backend import DerivedSignalBackend
 from ._signal_backend import SignalBackend, SignalDatatypeT
 from ._soft_signal_backend import SoftSignalBackend
 from ._utils import Callback, LazyMock
@@ -24,7 +25,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
         self.initial_backend = initial_backend
 
-        if isinstance(self.initial_backend, SoftSignalBackend):
+        if isinstance(self.initial_backend, SoftSignalBackend | DerivedSignalBackend):
             # Backend is already a SoftSignalBackend, so use it
             self.soft_backend = self.initial_backend
         else:

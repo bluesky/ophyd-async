@@ -10,7 +10,9 @@ from bluesky.protocols import (
     Locatable,
     Location,
     Preparable,
+    Reading,
     Stoppable,
+    Subscribable,
 )
 from pydantic import BaseModel, Field
 
@@ -19,6 +21,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
+    Callback,
     StandardReadable,
     StrictEnum,
     WatchableAsyncStatus,
@@ -67,7 +70,14 @@ class UseSetMode(StrictEnum):
     SET = "Set"
 
 
-class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
+class Motor(
+    StandardReadable,
+    Locatable[float],
+    Stoppable,
+    Flyable,
+    Preparable,
+    Subscribable[float],
+):
     """Device that moves a motor record."""
 
     def __init__(self, prefix: str, name="") -> None:
@@ -228,11 +238,18 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
 
     async def locate(self) -> Location[float]:
         """Return the current setpoint and readback of the motor."""
-        location: Location = {
-            "setpoint": await self.user_setpoint.get_value(),
-            "readback": await self.user_readback.get_value(),
-        }
-        return location
+        setpoint, readback = await asyncio.gather(
+            self.user_setpoint.get_value(), self.user_readback.get_value()
+        )
+        return Location(setpoint=setpoint, readback=readback)
+
+    def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
+        """Subscribe."""
+        self.user_readback.subscribe(function)
+
+    def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
+        """Unsubscribe."""
+        self.user_readback.clear_sub(function)
 
     async def _prepare_motor_path(
         self, fly_velocity: float, start_position: float, end_position: float

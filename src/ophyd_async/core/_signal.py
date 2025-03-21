@@ -5,7 +5,7 @@ import functools
 import inspect
 import time
 from collections.abc import AsyncGenerator, Awaitable, Callable
-from typing import Any, Generic, cast
+from typing import Any, Generic, TypeVar, cast
 
 from bluesky.protocols import (
     Configurable,
@@ -99,6 +99,9 @@ class Signal(Device, Generic[SignalDatatypeT]):
         E.g. "ca://PV_PREFIX:SIGNAL", or "" if not available until connection.
         """
         return self._connector.backend.source(self.name, read=True)
+
+
+SignalT = TypeVar("SignalT", bound=Signal)
 
 
 class _SignalCache(Generic[SignalDatatypeT]):
@@ -231,7 +234,9 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
         """
         self._get_cache().subscribe(function, want_value=True)
 
-    def subscribe(self, function: Callback[dict[str, Reading]]) -> None:
+    def subscribe(
+        self, function: Callback[dict[str, Reading[SignalDatatypeT]]]
+    ) -> None:
         """Subscribe to updates in the reading.
 
         :param function: The callback function to call when the reading changes.
