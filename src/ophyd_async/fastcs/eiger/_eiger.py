@@ -1,5 +1,3 @@
-from pydantic import Field
-
 from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector, TriggerInfo
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.odin._odin_io import OdinHdfIO, OdinWriter
@@ -9,7 +7,7 @@ from ._eiger_io import EigerDriverIO
 
 
 class EigerTriggerInfo(TriggerInfo):
-    energy_ev: float = Field(gt=0)
+    """Additional information required to setup triggering on an Eiger detector."""
 
 
 class EigerDetector(StandardDetector):
@@ -39,5 +37,4 @@ class EigerDetector(StandardDetector):
 
     @AsyncStatus.wrap
     async def prepare(self, value: EigerTriggerInfo) -> None:  # type: ignore
-        await self._controller.set_energy(value.energy_ev)
         await super().prepare(value)
