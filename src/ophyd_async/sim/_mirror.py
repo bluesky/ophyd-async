@@ -78,7 +78,5 @@ class Mirror(Device, Movable):
         )
 
     @AsyncStatus.wrap
-    async def set(self, derived: MirrorDerived) -> None:
-        await self._set_mirror(
-            TwoJackDerived(height=derived["x"], angle=derived["roll"])
-        )
+    async def set(self, value: MirrorDerived) -> None:
+        await self._set_mirror(TwoJackDerived(height=value["x"], angle=value["roll"]))
