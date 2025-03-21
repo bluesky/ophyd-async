@@ -11,7 +11,8 @@ from ophyd_async.core import (
     Transform,
     soft_signal_rw,
 )
-from ophyd_async.sim import SimMotor
+
+from ._motor import SimMotor
 
 
 class TwoJackRaw(TypedDict):

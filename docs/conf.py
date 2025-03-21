@@ -162,8 +162,8 @@ obj_ignore = [
     "ophyd_async.tango.core._tango_transport.R",
     "ophyd_async.tango.core._tango_transport.TangoProxy",
     "ophyd_async.testing._utils.T",
-    "ophyd_async.testing._multi_derived.TwoJackDerived",
-    "ophyd_async.testing._multi_derived.TwoJackRaw",
+    "ophyd_async.sim._mirror.TwoJackRaw",
+    "ophyd_async.sim._mirror.TwoJackDerived",
     "0.1",
     "1.0",
 ]

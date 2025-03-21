@@ -31,7 +31,7 @@ To create the derived signals, we make a [](#DerivedSignalFactory) instance that
 
 In the below example we see this is action:
 
-```{literalinclude} ../../src/ophyd_async/testing/_multi_derived.py
+```{literalinclude} ../../src/ophyd_async/sim/_mirror.py
 :language: python
 ```
 

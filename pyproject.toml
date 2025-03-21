@@ -180,7 +180,6 @@ containers = ["ophyd_async"]
 layers = ["plan_stubs", "fastcs", "epics | tango | sim", "core"]
 exhaustive = true
 exhaustive_ignores = ["testing", "_version", "__main__", "_docs_parser"]
-ignore_imports = ["ophyd_async.*.testing.* -> ophyd_async.testing"]
 
 [[tool.importlinter.contracts]]
 name = "Testing and sim modules are not used at runtime"

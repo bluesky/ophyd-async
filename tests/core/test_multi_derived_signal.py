@@ -10,10 +10,12 @@ from ophyd_async.core import (
     DerivedSignalFactory,
     soft_signal_rw,
 )
-from ophyd_async.testing import (
+from ophyd_async.sim import (
     Mirror,
     MirrorDerived,
     TwoJackTransform,
+)
+from ophyd_async.testing import (
     assert_describe_signal,
     assert_reading,
     assert_value,

@@ -21,7 +21,6 @@ from ._mock_signal_utils import (
     set_mock_value,
     set_mock_values,
 )
-from ._multi_derived import Mirror, MirrorDerived, TwoJackTransform
 from ._one_of_everything import (
     ExampleEnum,
     ExampleTable,
@@ -72,7 +71,4 @@ __all__ = [
     "Exploder",
     "MovableBeamstop",
     "ReadOnlyBeamstop",
-    "Mirror",
-    "MirrorDerived",
-    "TwoJackTransform",
 ]

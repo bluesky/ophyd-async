@@ -1,6 +1,7 @@
 """Some simulated devices to be used in tutorials and testing."""
 
 from ._blob_detector import SimBlobDetector
+from ._mirror import Mirror, MirrorDerived, TwoJackTransform
 from ._motor import FlySimMotorInfo, SimMotor
 from ._pattern_generator import PatternGenerator
 from ._point_detector import SimPointDetector
@@ -13,4 +14,7 @@ __all__ = [
     "PatternGenerator",
     "SimPointDetector",
     "SimBlobDetector",
+    "Mirror",
+    "MirrorDerived",
+    "TwoJackTransform",
 ]
