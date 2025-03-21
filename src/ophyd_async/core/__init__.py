@@ -1,7 +1,7 @@
 """The building blocks for making devices."""
 
 from ._derived_signal import (
-    DerivedSignalCreator,
+    DerivedSignalFactory,
     Transform,
     derived_signal_r,
     derived_signal_rw,
@@ -192,7 +192,7 @@ __all__ = [
     "derived_signal_rw",
     "derived_signal_w",
     "Transform",
-    "DerivedSignalCreator",
+    "DerivedSignalFactory",
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",

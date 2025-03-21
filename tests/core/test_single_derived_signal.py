@@ -1,4 +1,5 @@
 import asyncio
+import re
 from unittest.mock import call
 
 import pytest
@@ -27,7 +28,7 @@ class BeamstopPosition(StrictEnum):
     OUT_OF_POSITION = "Out of position"
 
 
-class Beamstop(Device):
+class ReadOnlyBeamstop(Device):
     def __init__(self, name=""):
         # Raw signals
         self.x = soft_signal_rw(float)
@@ -43,14 +44,14 @@ class Beamstop(Device):
             return BeamstopPosition.OUT_OF_POSITION
 
 
-class Positioner(Device):
+class MovableBeamstop(Device):
     def __init__(self, name=""):
         # Raw signals
         self.x = soft_signal_rw(float)
         self.y = soft_signal_rw(float)
         # Derived signals
         self.position = derived_signal_rw(
-            self._get_position, self.set, x=self.x, y=self.y
+            self._get_position, self._set_from_position, x=self.x, y=self.y
         )
         super().__init__(name=name)
 
@@ -60,9 +61,8 @@ class Positioner(Device):
         else:
             return BeamstopPosition.OUT_OF_POSITION
 
-    @AsyncStatus.wrap
-    async def set(self, value: BeamstopPosition) -> None:
-        if value == BeamstopPosition.IN_POSITION:
+    async def _set_from_position(self, position: BeamstopPosition) -> None:
+        if position == BeamstopPosition.IN_POSITION:
             await asyncio.gather(self.x.set(0), self.y.set(0))
         else:
             await asyncio.gather(self.x.set(3), self.y.set(5))
@@ -75,9 +75,12 @@ class Positioner(Device):
         (3, 5, BeamstopPosition.OUT_OF_POSITION),
     ],
 )
-@pytest.mark.parametrize("cls", [Beamstop, Positioner])
+@pytest.mark.parametrize("cls", [ReadOnlyBeamstop, MovableBeamstop])
 async def test_get_returns_right_position(
-    cls: type[Beamstop | Positioner], x: float, y: float, position: BeamstopPosition
+    cls: type[ReadOnlyBeamstop | MovableBeamstop],
+    x: float,
+    y: float,
+    position: BeamstopPosition,
 ):
     inst = cls("inst")
     await inst.x.set(x)
@@ -96,8 +99,8 @@ async def test_get_returns_right_position(
     )
 
 
-@pytest.mark.parametrize("cls", [Beamstop, Positioner])
-async def test_monitoring_position(cls: type[Beamstop | Positioner]):
+@pytest.mark.parametrize("cls", [ReadOnlyBeamstop, MovableBeamstop])
+async def test_monitoring_position(cls: type[ReadOnlyBeamstop | MovableBeamstop]):
     results = asyncio.Queue[BeamstopPosition]()
     inst = cls("inst")
     inst.position.subscribe_value(results.put_nowait)
@@ -116,7 +119,7 @@ async def test_monitoring_position(cls: type[Beamstop | Positioner]):
 
 
 async def test_setting_position():
-    inst = Positioner("inst")
+    inst = MovableBeamstop("inst")
     # Connect in mock mode so we can see what would have been set
     await inst.connect(mock=True)
     m = get_mock(inst)
@@ -159,3 +162,22 @@ async def test_setting_all():
     await assert_reading(
         inst, {f"exploder-signals-{i}": {"value": 5} for i in range(1, 4)}
     )
+
+
+def test_mismatching_args():
+    def _get_position(x: float, y: float) -> BeamstopPosition:
+        if abs(x) < 1 and abs(y) < 2:
+            return BeamstopPosition.IN_POSITION
+        else:
+            return BeamstopPosition.OUT_OF_POSITION
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Expected devices to be passed as keyword arguments ['x', 'y'], "
+            "got ['foo', 'bar']"
+        ),
+    ):
+        derived_signal_r(
+            _get_position, foo=soft_signal_rw(float), bar=soft_signal_rw(float)
+        )

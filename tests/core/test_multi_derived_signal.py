@@ -1,18 +1,16 @@
 import asyncio
-from typing import Generic, TypeVar, cast
+import math
+import re
 from unittest.mock import ANY, call
 
-import numpy as np
 import pytest
-from bluesky.protocols import Reading
+from bluesky.protocols import Movable, Reading
 from typing_extensions import TypedDict
 
 from ophyd_async.core import (
-    Array1D,
     AsyncStatus,
-    DerivedSignalCreator,
+    DerivedSignalFactory,
     Device,
-    DTypeScalar_co,
     Transform,
     soft_signal_rw,
 )
@@ -24,41 +22,31 @@ from ophyd_async.testing import (
     get_mock,
 )
 
-F = TypeVar("F", float, Array1D[np.float64])
+
+class TwoJackRaw(TypedDict):
+    jack1: float
+    jack2: float
 
 
-def convert_to_type_of(arr: Array1D[DTypeScalar_co], *need_types: F) -> F:
-    types = {type(need_type) for need_type in need_types}
-    if len(types) != 1:
-        msg = f"All need_types must be the same type, got {types}"
-        raise ValueError(msg)
-    return cast(F, arr if types.pop() == np.ndarray else float(arr))
-
-
-class TwoJackRaw(TypedDict, Generic[F]):
-    jack1: F
-    jack2: F
-
-
-class TwoJackDerived(TypedDict, Generic[F]):
-    height: F
-    angle: F
+class TwoJackDerived(TypedDict):
+    height: float
+    angle: float
 
 
 class TwoJackTransform(Transform):
     distance: float
 
-    def raw_to_derived(self, *, jack1: F, jack2: F) -> TwoJackDerived[F]:
+    def raw_to_derived(self, *, jack1: float, jack2: float) -> TwoJackDerived:
         diff = jack2 - jack1
         return TwoJackDerived(
             height=jack1 + diff / 2,
             # need the case as returns numpy float rather than float64, but this
             # is ok at runtime
-            angle=convert_to_type_of(np.arctan(diff / self.distance), jack1),
+            angle=math.atan(diff / self.distance),
         )
 
-    def derived_to_raw(self, *, height: F, angle: F) -> TwoJackRaw[F]:
-        diff = convert_to_type_of(np.tan(angle) * self.distance, height)
+    def derived_to_raw(self, *, height: float, angle: float) -> TwoJackRaw:
+        diff = math.tan(angle) * self.distance
         return TwoJackRaw(
             jack1=height - diff / 2,
             jack2=height + diff / 2,
@@ -70,7 +58,7 @@ class MirrorDerived(TypedDict):
     roll: float
 
 
-class Mirror(Device):
+class Mirror(Device, Movable):
     def __init__(self, name=""):
         # Raw signals
         self.x1 = SimMotor()
@@ -78,20 +66,20 @@ class Mirror(Device):
         # Parameter
         self.x1_x2_distance = soft_signal_rw(float, initial_value=1)
         # Derived signals
-        self._creator = DerivedSignalCreator(
+        self._factory = DerivedSignalFactory(
             TwoJackTransform,
             self.set,
             jack1=self.x1,
             jack2=self.x2,
             distance=self.x1_x2_distance,
         )
-        self.x = self._creator.derived_signal_rw(float, "height", "x")
-        self.roll = self._creator.derived_signal_rw(float, "angle", "roll")
+        self.x = self._factory.derived_signal_rw(float, "height", "x")
+        self.roll = self._factory.derived_signal_rw(float, "angle", "roll")
         super().__init__(name=name)
 
     @AsyncStatus.wrap
     async def set(self, derived: MirrorDerived) -> None:
-        transform = await self._creator.get_transform()
+        transform = await self._factory.transform()
         raw = transform.derived_to_raw(height=derived["x"], angle=derived["roll"])
         await asyncio.gather(
             self.x1.set(raw["jack1"]),
@@ -103,8 +91,8 @@ class Mirror(Device):
     "x1, x2, x, roll",
     [
         (0, 0, 0, 0),
-        (0, 1, 0.5, np.pi / 4),
-        (2, 1, 1.5, -np.pi / 4),
+        (0, 1, 0.5, math.pi / 4),
+        (2, 1, 1.5, -math.pi / 4),
     ],
 )
 async def test_get_returns_right_position(x1: float, x2: float, x: float, roll: float):
@@ -139,7 +127,7 @@ async def test_monitoring_position():
     inst.roll.subscribe(results.put_nowait)
     await assert_mirror_readings(results, 0, 0)
     await inst.x2.set(1)
-    await assert_mirror_readings(results, 0.5, np.pi / 4)
+    await assert_mirror_readings(results, 0.5, math.pi / 4)
     inst.x.clear_sub(results.put_nowait)
     inst.roll.clear_sub(results.put_nowait)
     await inst.x1.set(1)
@@ -151,7 +139,7 @@ async def test_setting_position():
     # Connect in mock mode so we can see what would have been set
     await inst.connect(mock=True)
     m = get_mock(inst)
-    await inst.set(MirrorDerived(x=1.5, roll=-np.pi / 4))
+    await inst.set(MirrorDerived(x=1.5, roll=-math.pi / 4))
     assert m.mock_calls == [
         call.x1.user_setpoint.put(2.0, wait=True),
         call.x2.user_setpoint.put(1.0, wait=True),
@@ -165,3 +153,19 @@ async def test_setting_position():
         call.x2.user_setpoint.put(pytest.approx(0.0), wait=True),
     ]
     m.reset_mock()
+
+
+def test_mismatching_args():
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Expected devices to be passed as keyword arguments "
+            "['distance', 'jack1', 'jack2'], got ['jack1', 'jack22', 'distance']"
+        ),
+    ):
+        DerivedSignalFactory(
+            TwoJackTransform,
+            jack1=soft_signal_rw(float),
+            jack22=soft_signal_rw(float),
+            distance=soft_signal_rw(float),
+        )

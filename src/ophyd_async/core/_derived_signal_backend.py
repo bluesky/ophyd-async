@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
@@ -11,7 +11,6 @@ from pydantic import BaseModel
 
 from ._protocol import AsyncLocatable, AsyncReadable
 from ._signal_backend import SignalBackend, SignalDatatypeT, make_datakey, make_metadata
-from ._status import AsyncStatus
 from ._utils import Callback, T, gather_dict, merge_gathered_dicts
 
 RawT = TypeVar("RawT")
@@ -46,7 +45,7 @@ class SignalTransformer(Generic[TransformT]):
     def __init__(
         self,
         transform_cls: type[TransformT],
-        set_derived: Callable[..., AsyncStatus] | None = None,
+        set_derived: Callable[..., Awaitable[None]] | None = None,
         **raw_and_transform_devices,
     ):
         self._transform_cls = transform_cls

@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Any, Generic, get_type_hints
 
 from ._derived_signal_backend import (
@@ -10,17 +10,29 @@ from ._derived_signal_backend import (
 from ._device import Device
 from ._signal import SignalR, SignalRW, SignalT, SignalW
 from ._signal_backend import SignalDatatypeT
-from ._status import AsyncStatus
 
 
-class DerivedSignalCreator(Generic[TransformT]):
+class DerivedSignalFactory(Generic[TransformT]):
     def __init__(
         self,
         transform_cls: type[TransformT],
-        set_derived: Callable[..., AsyncStatus] | None = None,
+        set_derived: Callable[..., Awaitable[None]] | None = None,
         **raw_and_transform_devices,
     ):
         self._set_derived = set_derived
+        # Check the raw and transform devices match the input arguments of the Transform
+        if transform_cls is not Transform:
+            expected = list(transform_cls.model_fields) + [
+                x
+                for x in get_type_hints(transform_cls.raw_to_derived)
+                if x not in ["self", "return"]
+            ]
+            if set(expected) != set(raw_and_transform_devices):
+                msg = (
+                    f"Expected devices to be passed as keyword arguments {expected}, "
+                    f"got {list(raw_and_transform_devices)}"
+                )
+                raise TypeError(msg)
         self._transformer = SignalTransformer(
             transform_cls, set_derived, **raw_and_transform_devices
         )
@@ -83,7 +95,7 @@ class DerivedSignalCreator(Generic[TransformT]):
     ) -> SignalRW[SignalDatatypeT]:
         return self._make_signal(SignalRW, datatype, name, set_name, units, precision)
 
-    async def get_transform(self) -> TransformT:
+    async def transform(self) -> TransformT:
         return await self._transformer.get_transform()
 
 
@@ -106,26 +118,30 @@ def _get_first_arg_datatype(
     return list(args.values())[0]
 
 
-def _make_creator(
+def _make_factory(
     raw_to_derived: Callable[..., SignalDatatypeT] | None = None,
-    set_derived: Callable[[SignalDatatypeT], AsyncStatus] | None = None,
+    set_derived: Callable[[SignalDatatypeT], Awaitable[None]] | None = None,
     raw_devices: dict[str, Device] | None = None,
-) -> DerivedSignalCreator:
-    class DerivedTransform(Transform):
-        def raw_to_derived(self, **kwargs) -> dict[str, SignalDatatypeT]:
-            if raw_to_derived is None:
-                msg = "raw_to_derived not defined"
+) -> DerivedSignalFactory:
+    if raw_to_derived:
+
+        class DerivedTransform(Transform):
+            def raw_to_derived(self, **kwargs) -> dict[str, SignalDatatypeT]:
+                return {"value": raw_to_derived(**kwargs)}
+
+            def derived_to_raw(self, value: SignalDatatypeT):
+                msg = "derived_to_raw not implemented for a single derived_signal"
                 raise RuntimeError(msg)
-            return {"value": raw_to_derived(**kwargs)}
 
-        def derived_to_raw(self, value: SignalDatatypeT):
-            msg = "derived_to_raw not implemented for a single derived_signal"
-            raise RuntimeError(msg)
+        # Update the signature for raw_to_derived to match what we are passed as this
+        # will be checked in DerivedSignalFactory
+        DerivedTransform.raw_to_derived.__annotations__ = raw_to_derived.__annotations__
 
-    raw_devices = raw_devices or {}
-    return DerivedSignalCreator(
-        DerivedTransform, set_derived=set_derived, **raw_devices
-    )
+        return DerivedSignalFactory(
+            DerivedTransform, set_derived=set_derived, **(raw_devices or {})
+        )
+    else:
+        return DerivedSignalFactory(Transform, set_derived=set_derived)
 
 
 def derived_signal_r(
@@ -134,8 +150,8 @@ def derived_signal_r(
     derived_precision: int | None = None,
     **raw_devices: Device,
 ) -> SignalR[SignalDatatypeT]:
-    creator = _make_creator(raw_to_derived=raw_to_derived, raw_devices=raw_devices)
-    return creator.derived_signal_r(
+    factory = _make_factory(raw_to_derived=raw_to_derived, raw_devices=raw_devices)
+    return factory.derived_signal_r(
         datatype=_get_return_datatype(raw_to_derived),
         name="value",
         units=derived_units,
@@ -145,7 +161,7 @@ def derived_signal_r(
 
 def derived_signal_rw(
     raw_to_derived: Callable[..., SignalDatatypeT],
-    set_derived: Callable[[SignalDatatypeT], AsyncStatus],
+    set_derived: Callable[[SignalDatatypeT], Awaitable[None]],
     derived_units: str | None = None,
     derived_precision: int | None = None,
     **raw_devices: Device,
@@ -159,10 +175,10 @@ def derived_signal_rw(
         )
         raise TypeError(msg)
 
-    creator = _make_creator(
+    factory = _make_factory(
         raw_to_derived=raw_to_derived, set_derived=set_derived, raw_devices=raw_devices
     )
-    return creator.derived_signal_rw(
+    return factory.derived_signal_rw(
         datatype=raw_to_derived_datatype,
         name="value",
         units=derived_units,
@@ -171,12 +187,12 @@ def derived_signal_rw(
 
 
 def derived_signal_w(
-    set_derived: Callable[[SignalDatatypeT], AsyncStatus],
+    set_derived: Callable[[SignalDatatypeT], Awaitable[None]],
     derived_units: str | None = None,
     derived_precision: int | None = None,
 ) -> SignalW[SignalDatatypeT]:
-    creator = _make_creator(set_derived=set_derived)
-    return creator.derived_signal_w(
+    factory = _make_factory(set_derived=set_derived)
+    return factory.derived_signal_w(
         datatype=_get_first_arg_datatype(set_derived),
         name="value",
         units=derived_units,
