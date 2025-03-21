@@ -21,6 +21,7 @@ from ._mock_signal_utils import (
     set_mock_value,
     set_mock_values,
 )
+from ._multi_derived import Mirror, MirrorDerived, TwoJackTransform
 from ._one_of_everything import (
     ExampleEnum,
     ExampleTable,
@@ -28,6 +29,12 @@ from ._one_of_everything import (
     ParentOfEverythingDevice,
     float_array_value,
     int_array_value,
+)
+from ._single_derived import (
+    BeamstopPosition,
+    Exploder,
+    MovableBeamstop,
+    ReadOnlyBeamstop,
 )
 from ._wait_for_pending import wait_for_pending_wakeups
 
@@ -60,4 +67,12 @@ __all__ = [
     "StatusWatcher",
     "int_array_value",
     "float_array_value",
+    # Derived examples
+    "BeamstopPosition",
+    "Exploder",
+    "MovableBeamstop",
+    "ReadOnlyBeamstop",
+    "Mirror",
+    "MirrorDerived",
+    "TwoJackTransform",
 ]

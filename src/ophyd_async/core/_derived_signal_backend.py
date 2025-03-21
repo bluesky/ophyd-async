@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, is_typeddict
 
 from bluesky.protocols import Location, Reading, Subscribable
 from event_model import DataKey
@@ -18,6 +18,36 @@ DerivedT = TypeVar("DerivedT")
 
 
 class Transform(BaseModel, Generic[RawT, DerivedT]):
+    """Baseclass for bidirectional transforms for Derived Signals.
+
+    Subclass and add:
+    - type hinted parameters that should be fetched from Signals
+    - a raw_to_derived method that takes the elements of RawT and returns a DerivedT
+    - a derived_to_raw method that takes the elements of DerivedT and returns a RawT
+
+    :example:
+    ```python
+    class MyRaw(TypedDict):
+        raw1: float
+        raw2: float
+
+    class MyDerived(TypedDict):
+        derived1: float
+        derived2: float
+
+    class MyTransform(Transform):
+        param1: float
+
+        def raw_to_derived(self, *, raw1: float, raw2: float) -> MyDerived:
+            derived1, derived2 = some_maths(self.param1, raw1, raw2)
+            return MyDerived(derived1=derived1, derived2=derived2)
+
+        def derived_to_raw(self, *, derived1: float, derived2: float) -> MyRaw:
+            raw1, raw2 = some_inverse_maths(self.param1, derived1, derived2)
+            return MyRaw(raw1=raw1, raw2=raw2)
+    ```
+    """
+
     if TYPE_CHECKING:
         # Guard with if type checking so they don't appear in pydantic argument list
         # Ideally they would be:
@@ -45,18 +75,19 @@ class SignalTransformer(Generic[TransformT]):
     def __init__(
         self,
         transform_cls: type[TransformT],
-        set_derived: Callable[..., Awaitable[None]] | None = None,
+        set_derived: Callable[..., Awaitable[None]] | None,
+        set_derived_datatype: type | None,
         **raw_and_transform_devices,
     ):
         self._transform_cls = transform_cls
         self._set_derived = set_derived
+        self._need_dict = is_typeddict(set_derived_datatype)
         self._transform_devices = {
             k: raw_and_transform_devices.pop(k) for k in transform_cls.model_fields
         }
         self._raw_devices = raw_and_transform_devices
         self._derived_callbacks: dict[str, Callback[Reading]] = {}
         self._cached_readings: dict[str, Reading] | None = None
-        self._set_names: dict[str, str] = {}
 
     @cached_property
     def raw_locatables(self) -> dict[str, AsyncLocatable]:
@@ -198,18 +229,15 @@ class SignalTransformer(Generic[TransformT]):
         if self._set_derived is None:
             msg = "Cannot put as no set_derived method given"
             raise RuntimeError(msg)
-        if len(self._set_names) == 1:
-            # Only one derived signal, so pass it directly
-            await self._set_derived(value)
-        else:
+        if self._need_dict:
             # Need to get the other derived values and update the one that's changing
             derived = await self.get_locations()
-            setpoints = {self._set_names[k]: v["setpoint"] for k, v in derived.items()}
-            setpoints[self._set_names[name]] = value
+            setpoints = {k: v["setpoint"] for k, v in derived.items()}
+            setpoints[name] = value
             await self._set_derived(setpoints)
-
-    def register_derived(self, name: str, set_name: str | None = None):
-        self._set_names[name] = set_name or name
+        else:
+            # Only one derived signal, so pass it directly
+            await self._set_derived(value)
 
 
 class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):

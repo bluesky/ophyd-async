@@ -2,11 +2,11 @@
 
 from ._derived_signal import (
     DerivedSignalFactory,
-    Transform,
     derived_signal_r,
     derived_signal_rw,
     derived_signal_w,
 )
+from ._derived_signal_backend import Transform
 from ._detector import (
     DetectorController,
     DetectorTrigger,

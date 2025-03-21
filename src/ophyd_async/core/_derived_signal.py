@@ -13,6 +13,19 @@ from ._signal_backend import SignalDatatypeT
 
 
 class DerivedSignalFactory(Generic[TransformT]):
+    """A factory that makes Derived Signals using a many-many Transform.
+
+    :param transform_cls:
+        The Transform subclass that will be filled in with parameters in order to
+        transform raw to derived and derived to raw.
+    :param set_derived:
+        An optional async function that takes the output of
+        `transform_cls.raw_to_derived` and applies it to the raw devices.
+    :param raw_and_transform_devices:
+        Devices whose values will be passed as parameters to the `transform_cls`,
+        and as arguments to `transform_cls.raw_to_derived`.
+    """
+
     def __init__(
         self,
         transform_cls: type[TransformT],
@@ -33,8 +46,14 @@ class DerivedSignalFactory(Generic[TransformT]):
                     f"got {list(raw_and_transform_devices)}"
                 )
                 raise TypeError(msg)
+        set_derived_datatype = (
+            _get_first_arg_datatype(set_derived) if set_derived else None
+        )
         self._transformer = SignalTransformer(
-            transform_cls, set_derived, **raw_and_transform_devices
+            transform_cls,
+            set_derived,
+            set_derived_datatype,
+            **raw_and_transform_devices,
         )
 
     def _make_signal(
@@ -42,7 +61,6 @@ class DerivedSignalFactory(Generic[TransformT]):
         signal_cls: type[SignalT],
         datatype: type[SignalDatatypeT],
         name: str,
-        set_name: str | None = None,
         units: str | None = None,
         precision: int | None = None,
     ) -> SignalT:
@@ -59,7 +77,6 @@ class DerivedSignalFactory(Generic[TransformT]):
             raise ValueError(msg)
         if issubclass(signal_cls, SignalRW):
             self._transformer.raw_locatables  # noqa: B018
-        self._transformer.register_derived(name, set_name)
         backend = DerivedSignalBackend(
             datatype, name, self._transformer, units, precision
         )
@@ -69,33 +86,58 @@ class DerivedSignalFactory(Generic[TransformT]):
         self,
         datatype: type[SignalDatatypeT],
         name: str,
-        set_name: str | None = None,
         units: str | None = None,
         precision: int | None = None,
     ) -> SignalR[SignalDatatypeT]:
-        return self._make_signal(SignalR, datatype, name, set_name, units, precision)
+        """Create a read only derived signal.
+
+        :param datatype: The datatype of the derived signal value
+        :param name:
+            The name of the derived signal. Should be a key within the
+            return value of `transform_cls.raw_to_derived()`.
+        :param units: Engineering units for the derived signal
+        :param precision: Number of digits after the decimal place to display
+        """
+        return self._make_signal(SignalR, datatype, name, units, precision)
 
     def derived_signal_w(
         self,
         datatype: type[SignalDatatypeT],
         name: str,
-        set_name: str | None = None,
         units: str | None = None,
         precision: int | None = None,
     ) -> SignalW[SignalDatatypeT]:
-        return self._make_signal(SignalW, datatype, name, set_name, units, precision)
+        """Create a write only derived signal.
+
+        :param datatype: The datatype of the derived signal value
+        :param name:
+            The name of the derived signal. Should be a key within the
+            return value of `transform_cls.raw_to_derived()`.
+        :param units: Engineering units for the derived signal
+        :param precision: Number of digits after the decimal place to display
+        """
+        return self._make_signal(SignalW, datatype, name, units, precision)
 
     def derived_signal_rw(
         self,
         datatype: type[SignalDatatypeT],
         name: str,
-        set_name: str | None = None,
         units: str | None = None,
         precision: int | None = None,
     ) -> SignalRW[SignalDatatypeT]:
-        return self._make_signal(SignalRW, datatype, name, set_name, units, precision)
+        """Create a read-write derived signal.
+
+        :param datatype: The datatype of the derived signal value
+        :param name:
+            The name of the derived signal. Should be a key within the
+            return value of `transform_cls.raw_to_derived()`.
+        :param units: Engineering units for the derived signal
+        :param precision: Number of digits after the decimal place to display
+        """
+        return self._make_signal(SignalRW, datatype, name, units, precision)
 
     async def transform(self) -> TransformT:
+        """Return an instance of `transform_cls` with all the parameters filled in."""
         return await self._transformer.get_transform()
 
 
@@ -129,10 +171,6 @@ def _make_factory(
             def raw_to_derived(self, **kwargs) -> dict[str, SignalDatatypeT]:
                 return {"value": raw_to_derived(**kwargs)}
 
-            def derived_to_raw(self, value: SignalDatatypeT):
-                msg = "derived_to_raw not implemented for a single derived_signal"
-                raise RuntimeError(msg)
-
         # Update the signature for raw_to_derived to match what we are passed as this
         # will be checked in DerivedSignalFactory
         DerivedTransform.raw_to_derived.__annotations__ = raw_to_derived.__annotations__
@@ -150,6 +188,17 @@ def derived_signal_r(
     derived_precision: int | None = None,
     **raw_devices: Device,
 ) -> SignalR[SignalDatatypeT]:
+    """Create a read only derived signal.
+
+    :param raw_to_derived:
+        A function that takes the raw values as individual keyword arguments and
+        returns the derived value.
+    :param derived_units: Engineering units for the derived signal
+    :param derived_precision: Number of digits after the decimal place to display
+    :param raw_devices:
+        A dictionary of Devices to provide the values for raw_to_derived. The names
+        of these arguments must match the arguments of raw_to_derived.
+    """
     factory = _make_factory(raw_to_derived=raw_to_derived, raw_devices=raw_devices)
     return factory.derived_signal_r(
         datatype=_get_return_datatype(raw_to_derived),
@@ -166,6 +215,20 @@ def derived_signal_rw(
     derived_precision: int | None = None,
     **raw_devices: Device,
 ) -> SignalRW[SignalDatatypeT]:
+    """Create a read-write derived signal.
+
+    :param raw_to_derived:
+        A function that takes the raw values as individual keyword arguments and
+        returns the derived value.
+    :param set_derived:
+        A function that takes the derived value and sets the raw signals. It can
+        either be an async function, or return an [](#AsyncStatus)
+    :param derived_units: Engineering units for the derived signal
+    :param derived_precision: Number of digits after the decimal place to display
+    :param raw_devices:
+        A dictionary of Devices to provide the values for raw_to_derived. The names
+        of these arguments must match the arguments of raw_to_derived.
+    """
     raw_to_derived_datatype = _get_return_datatype(raw_to_derived)
     set_derived_datatype = _get_first_arg_datatype(set_derived)
     if raw_to_derived_datatype != set_derived_datatype:
@@ -191,6 +254,14 @@ def derived_signal_w(
     derived_units: str | None = None,
     derived_precision: int | None = None,
 ) -> SignalW[SignalDatatypeT]:
+    """Create a write only derived signal.
+
+    :param set_derived:
+        A function that takes the derived value and sets the raw signals. It can
+        either be an async function, or return an [](#AsyncStatus)
+    :param derived_units: Engineering units for the derived signal
+    :param derived_precision: Number of digits after the decimal place to display
+    """
     factory = _make_factory(set_derived=set_derived)
     return factory.derived_signal_w(
         datatype=_get_first_arg_datatype(set_derived),

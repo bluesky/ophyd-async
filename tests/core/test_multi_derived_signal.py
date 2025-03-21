@@ -4,87 +4,21 @@ import re
 from unittest.mock import ANY, call
 
 import pytest
-from bluesky.protocols import Movable, Reading
-from typing_extensions import TypedDict
+from bluesky.protocols import Reading
 
 from ophyd_async.core import (
-    AsyncStatus,
     DerivedSignalFactory,
-    Device,
-    Transform,
     soft_signal_rw,
 )
-from ophyd_async.sim import SimMotor
 from ophyd_async.testing import (
+    Mirror,
+    MirrorDerived,
+    TwoJackTransform,
     assert_describe_signal,
     assert_reading,
     assert_value,
     get_mock,
 )
-
-
-class TwoJackRaw(TypedDict):
-    jack1: float
-    jack2: float
-
-
-class TwoJackDerived(TypedDict):
-    height: float
-    angle: float
-
-
-class TwoJackTransform(Transform):
-    distance: float
-
-    def raw_to_derived(self, *, jack1: float, jack2: float) -> TwoJackDerived:
-        diff = jack2 - jack1
-        return TwoJackDerived(
-            height=jack1 + diff / 2,
-            # need the cast as returns numpy float rather than float64, but this
-            # is ok at runtime
-            angle=math.atan(diff / self.distance),
-        )
-
-    def derived_to_raw(self, *, height: float, angle: float) -> TwoJackRaw:
-        diff = math.tan(angle) * self.distance
-        return TwoJackRaw(
-            jack1=height - diff / 2,
-            jack2=height + diff / 2,
-        )
-
-
-class MirrorDerived(TypedDict):
-    x: float
-    roll: float
-
-
-class Mirror(Device, Movable):
-    def __init__(self, name=""):
-        # Raw signals
-        self.x1 = SimMotor()
-        self.x2 = SimMotor()
-        # Parameter
-        self.x1_x2_distance = soft_signal_rw(float, initial_value=1)
-        # Derived signals
-        self._factory = DerivedSignalFactory(
-            TwoJackTransform,
-            self.set,
-            jack1=self.x1,
-            jack2=self.x2,
-            distance=self.x1_x2_distance,
-        )
-        self.x = self._factory.derived_signal_rw(float, "height", "x")
-        self.roll = self._factory.derived_signal_rw(float, "angle", "roll")
-        super().__init__(name=name)
-
-    @AsyncStatus.wrap
-    async def set(self, derived: MirrorDerived) -> None:
-        transform = await self._factory.transform()
-        raw = transform.derived_to_raw(height=derived["x"], angle=derived["roll"])
-        await asyncio.gather(
-            self.x1.set(raw["jack1"]),
-            self.x2.set(raw["jack2"]),
-        )
 
 
 @pytest.mark.parametrize(
