@@ -34,6 +34,11 @@ jobs:
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  import_with_no_extras:
+    needs: check
+    if: needs.check.outputs.branch-pr == ''
+    uses: ./.github/workflows/_import_with_no_extras.yml
+
   docs:
     needs: check
     if: needs.check.outputs.branch-pr == ''
