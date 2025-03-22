@@ -100,6 +100,8 @@ def epics_signal_rw(
     :param datatype: Check that the PV is of this type
     :param read_pv: The PV to read and monitor
     :param write_pv: If given, use this PV to write to, otherwise use read_pv
+    :param name: The name of the signal (defaults to empty string)
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(datatype, read_pv, write_pv or read_pv)
     return SignalRW(backend, name=name, timeout=timeout)
@@ -117,6 +119,8 @@ def epics_signal_rw_rbv(
     :param datatype: Check that the PV is of this type
     :param write_pv: The PV to write to
     :param read_suffix: Append this suffix to the write pv to create the readback pv
+    :param name: The name of the signal (defaults to empty string)
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     base_pv, field = get_pv_basename_and_field(write_pv)
     if field is not None:
@@ -137,6 +141,8 @@ def epics_signal_r(
 
     :param datatype: Check that the PV is of this type
     :param read_pv: The PV to read from
+    :param name: The name of the signal (defaults to empty string)
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(datatype, read_pv, read_pv)
     return SignalR(backend, name=name, timeout=timeout)
@@ -152,6 +158,8 @@ def epics_signal_w(
 
     :param datatype: Check that the PV is of this type
     :param write_pv: The PV to write to
+    :param name: The name of the signal (defaults to empty string)
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(datatype, write_pv, write_pv)
     return SignalW(backend, name=name, timeout=timeout)
@@ -164,6 +172,7 @@ def epics_signal_x(
 
     :param write_pv: The PV to write its initial value to on trigger
     :param name: The name of the signal
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(None, write_pv, write_pv)
     return SignalX(backend, name=name, timeout=timeout)
