@@ -1,3 +1,5 @@
+import typing
+
 import bluesky.plan_stubs as bps
 from bluesky.utils import short_uid
 
@@ -8,18 +10,19 @@ from ophyd_async.core import (
     TriggerInfo,
     in_micros,
 )
-from ophyd_async.fastcs.panda import (
-    PandaPcompDirection,
-    PcompInfo,
-    SeqTable,
-    SeqTableInfo,
-)
+
+if typing.TYPE_CHECKING:
+    from ophyd_async.fastcs.panda import (
+        PandaPcompDirection,
+        PcompInfo,
+        SeqTableInfo,
+    )
 
 
 def prepare_static_pcomp_flyer_and_detectors(
-    flyer: StandardFlyer[PcompInfo],
+    flyer: "StandardFlyer[PcompInfo]",
     detectors: list[StandardDetector],
-    pcomp_info: PcompInfo,
+    pcomp_info: "PcompInfo",
     trigger_info: TriggerInfo,
 ):
     """Prepare a hardware triggered flyable and one or more detectors.
@@ -35,7 +38,7 @@ def prepare_static_pcomp_flyer_and_detectors(
 
 
 def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
-    flyer: StandardFlyer[SeqTableInfo],
+    flyer: "StandardFlyer[SeqTableInfo]",
     detectors: list[StandardDetector],
     number_of_frames: int,
     exposure: float,
@@ -54,6 +57,12 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
     This prepares all supplied detectors with the same trigger.
 
     """
+    # Local import to avoid module-level dependency on fastcs/p4p.
+    from ophyd_async.fastcs.panda import (
+        SeqTable,
+        SeqTableInfo,
+    )
+
     if not detectors:
         raise ValueError("No detectors provided. There must be at least one.")
 
@@ -101,7 +110,7 @@ def prepare_static_seq_table_flyer_and_detectors_with_same_trigger(
 
 def fly_and_collect(
     stream_name: str,
-    flyer: StandardFlyer[SeqTableInfo] | StandardFlyer[PcompInfo],
+    flyer: "StandardFlyer[SeqTableInfo] | StandardFlyer[PcompInfo]",
     detectors: list[StandardDetector],
 ):
     """Kickoff, complete and collect with a flyer and multiple detectors.
@@ -141,14 +150,17 @@ def fly_and_collect(
 
 def fly_and_collect_with_static_pcomp(
     stream_name: str,
-    flyer: StandardFlyer[PcompInfo],
+    flyer: "StandardFlyer[PcompInfo]",
     detectors: list[StandardDetector],
     number_of_pulses: int,
     pulse_width: int,
     rising_edge_step: int,
-    direction: PandaPcompDirection,
+    direction: "PandaPcompDirection",
     trigger_info: TriggerInfo,
 ):
+    # Local import to avoid module-level dependency on fastcs/p4p.
+    from ophyd_async.fastcs.panda import PcompInfo
+
     # Set up scan and prepare trigger
     pcomp_info = PcompInfo(
         start_postion=0,
@@ -167,7 +179,7 @@ def fly_and_collect_with_static_pcomp(
 
 def time_resolved_fly_and_collect_with_static_seq_table(
     stream_name: str,
-    flyer: StandardFlyer[SeqTableInfo],
+    flyer: "StandardFlyer[SeqTableInfo]",
     detectors: list[StandardDetector],
     number_of_frames: int,
     exposure: float,
