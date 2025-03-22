@@ -99,3 +99,7 @@ async def test_fly(m1: SimMotor):
     await status
     watcher.mock.assert_not_called()
     assert await m1.user_readback.get_value() == fly_end
+
+
+async def test_sim_motor_can_be_set_to_its_current_position(m1: SimMotor):
+    await m1.set(0)
