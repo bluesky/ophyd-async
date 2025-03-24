@@ -1,7 +1,6 @@
 import asyncio
 
 from ophyd_async.core import (
-    AsyncStatus,
     Device,
     DeviceVector,
     StandardReadable,
@@ -83,7 +82,6 @@ class Exploder(StandardReadable):
         self.set_all = derived_signal_w(self._set_all, derived_units="cts")
         super().__init__(name=name)
 
-    @AsyncStatus.wrap
     async def _set_all(self, value: int) -> None:
         coros = [sig.set(value) for sig in self.signals.values()]
         await asyncio.gather(*coros)

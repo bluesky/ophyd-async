@@ -11,9 +11,11 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 from ophyd_async.sim import (
-    Mirror,
-    MirrorDerived,
+    HorizontalMirror,
+    HorizontalMirrorDerived,
+    TwoJackDerived,
     TwoJackTransform,
+    VerticalMirror,
 )
 from ophyd_async.testing import (
     assert_describe_signal,
@@ -32,7 +34,7 @@ from ophyd_async.testing import (
     ],
 )
 async def test_get_returns_right_position(x1: float, x2: float, x: float, roll: float):
-    inst = Mirror("mirror")
+    inst = HorizontalMirror("mirror")
     await inst.x1.set(x1)
     await inst.x2.set(x2)
     assert inst.x.name == "mirror-x"
@@ -58,7 +60,7 @@ async def assert_mirror_readings(
 
 async def test_monitoring_position():
     results = asyncio.Queue[dict[str, Reading[float]]]()
-    inst = Mirror("mirror")
+    inst = HorizontalMirror("mirror")
     inst.x.subscribe(results.put_nowait)
     inst.roll.subscribe(results.put_nowait)
     await assert_mirror_readings(results, 0, 0)
@@ -70,12 +72,33 @@ async def test_monitoring_position():
     assert results.empty()
 
 
-async def test_setting_position():
-    inst = Mirror("mirror")
+async def test_setting_position_stright_through():
+    inst = VerticalMirror("mirror")
     # Connect in mock mode so we can see what would have been set
     await inst.connect(mock=True)
     m = get_mock(inst)
-    await inst.set(MirrorDerived(x=1.5, roll=-math.pi / 4))
+    await inst.set(TwoJackDerived(height=1.5, angle=-math.pi / 4))
+    assert m.mock_calls == [
+        call.y1.user_setpoint.put(2.0, wait=True),
+        call.y2.user_setpoint.put(1.0, wait=True),
+    ]
+    m.reset_mock()
+    # Try to move just one axis
+    await inst.height.set(0.5)
+    assert m.mock_calls == [
+        call.height.put(0.5, wait=True),
+        call.y1.user_setpoint.put(1.0, wait=True),
+        call.y2.user_setpoint.put(pytest.approx(0.0), wait=True),
+    ]
+    m.reset_mock()
+
+
+async def test_setting_position_extra_indirection():
+    inst = HorizontalMirror("mirror")
+    # Connect in mock mode so we can see what would have been set
+    await inst.connect(mock=True)
+    m = get_mock(inst)
+    await inst.set(HorizontalMirrorDerived(x=1.5, roll=-math.pi / 4))
     assert m.mock_calls == [
         call.x1.user_setpoint.put(2.0, wait=True),
         call.x2.user_setpoint.put(1.0, wait=True),

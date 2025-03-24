@@ -31,10 +31,14 @@ To create the derived signals, we make a [](#DerivedSignalFactory) instance that
 
 In the below example we see this is action:
 
-```{literalinclude} ../../src/ophyd_async/sim/_mirror.py
+```{literalinclude} ../../src/ophyd_async/sim/_mirror_vertical.py
 :language: python
 ```
 
-```{note}
-We do the mapping of the publically accessible names (`x` and `roll`) to the transform names (`height` and `angle`) in the public `set()` method. If those names were the same we wouldn't need the `_set_mirror` method which took the transform names, we could both pass the `set()` method to `DerivedSignalFactory`, and use it as the public interface for moving multiple axes concurrently.
+In `VerticalMirror` we use the names of the `Derived` classes (`height` and `angle`) as externally accessible names for both the derived signals, and the dictionary passed to the `set()` method. If this is not desired, either because the names don't make sense in this particular Device, or because you are composing derived signals from multiple transforms together in the same Device, then you can pass an internal set method to the `DerivedSignalFactory` that uses the `Transform` names. This leaves you free to create a public `set()` method using your desired names, and to name the derived signals with those same names.
+
+An example to illustrate this is below:
+
+```{literalinclude} ../../src/ophyd_async/sim/_mirror_horizontal.py
+:language: python
 ```
