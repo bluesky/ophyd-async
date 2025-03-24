@@ -66,11 +66,9 @@ class BlobDetectorWriter(DetectorWriter):
         }
         return describe
 
-    @property
-    def hints(self) -> Hints:
+    def get_hints(self, name: str) -> Hints:
         """The hints to be used for the detector."""
-        # TODO
-        return {"fields": [self.name_provider()]}
+        return {"fields": [name]}
 
     async def get_indices_written(self) -> int:
         return self.pattern_generator.get_last_index()

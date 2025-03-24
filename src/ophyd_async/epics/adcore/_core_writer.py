@@ -212,5 +212,4 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._capture_status = None
 
     def get_hints(self, name: str) -> Hints:
-        # TODO fix
-        return {"fields": [self._name_provider()]}
+        return {"fields": [name]}
