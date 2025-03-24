@@ -57,7 +57,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._mimetype = mimetype
         self._last_emitted = 0
         self._emitted_resource = None
-        self.name = ""
+        # TODO check instances where I am assigning this because it might not be correct
+        self._name = ""
 
         self._capture_status: AsyncStatus | None = None
         self._multiplier = 1
