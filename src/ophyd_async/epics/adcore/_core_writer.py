@@ -57,8 +57,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._mimetype = mimetype
         self._last_emitted = 0
         self._emitted_resource = None
-        # TODO check instances where I am assigning this because it might not be correct
-        self.name = ""
 
         self._capture_status: AsyncStatus | None = None
         self._multiplier = 1
@@ -85,7 +83,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         return writer
 
     async def begin_capture(self) -> None:
-        info = self._path_provider(device_name=self.name)
+        # TODO fix
+        info = self._path_provider(device_name=self._name_provider())
 
         await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
 
@@ -119,7 +118,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         )
 
     async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
-        self.name = name
         self._emitted_resource = None
         self._last_emitted = 0
         self._multiplier = multiplier
@@ -129,7 +127,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         await self.begin_capture()
 
         describe = {
-            self.name: DataKey(
+            name: DataKey(
                 source=self.fileio.full_file_name.source,
                 shape=list(frame_shape),
                 dtype="array",
@@ -177,7 +175,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                 self._emitted_resource = bundler_composer(
                     mimetype=self._mimetype,
                     uri=uri,
-                    data_key=self.name,
+                    # TODO fix
+                    data_key=self._name_provider(),
                     parameters={
                         # Assume that we always write 1 frame per file/chunk
                         "chunk_shape": (1, *frame_shape),
@@ -213,4 +212,5 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._capture_status = None
 
     def get_hints(self, name: str) -> Hints:
-        return {"fields": [self.name]}
+        # TODO fix
+        return {"fields": [self._name_provider()]}
