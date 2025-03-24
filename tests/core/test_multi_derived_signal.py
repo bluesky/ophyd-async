@@ -72,7 +72,7 @@ async def test_monitoring_position():
     assert results.empty()
 
 
-async def test_setting_position_stright_through():
+async def test_setting_position_straight_through():
     inst = VerticalMirror("mirror")
     # Connect in mock mode so we can see what would have been set
     await inst.connect(mock=True)
