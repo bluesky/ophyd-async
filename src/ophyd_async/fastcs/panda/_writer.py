@@ -3,8 +3,7 @@ from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
 
 from bluesky.protocols import StreamAsset
-from event_model import DataKey  # type: ignore
-from p4p.client.thread import Context  # type: ignore
+from event_model import DataKey
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -22,8 +21,6 @@ from ._block import DataBlock, PandaCaptureMode
 
 class PandaHDFWriter(DetectorWriter):
     """For writing for PandA data from the `DataBlock`."""
-
-    _ctxt: Context | None = None
 
     def __init__(
         self,
