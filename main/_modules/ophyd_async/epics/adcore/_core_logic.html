@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.9.1.dev39+gbefee427 documentation</title>
+    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.9.1.dev40+gd3ea0c91 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=8387a366"></script>
+    <script src="../../../../_static/documentation_options.js?v=bdafd04c"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev39+gbefee427 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev39+gbefee427 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev40+gd3ea0c91 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev40+gd3ea0c91 documentation - Home"/>
   
   
 </a></div>
@@ -475,7 +475,13 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">set_and_wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._core_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">ADState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._core_io</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ADBaseIO</span><span class="p">,</span>
+    <span class="n">ADCallbacks</span><span class="p">,</span>
+    <span class="n">ADState</span><span class="p">,</span>
+    <span class="n">NDCBFlushOnSoftTrgMode</span><span class="p">,</span>
+    <span class="n">NDPluginCBIO</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADImageMode</span><span class="p">,</span> <span class="n">stop_busy_record</span>
 
 <span class="c1"># Default set of states that we should consider &quot;good&quot; i.e. the acquisition</span>
@@ -597,6 +603,106 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">complete_acquisition</span><span class="p">())</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ADBaseContAcqController">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseContAcqController">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ADBaseContAcqController</span><span class="p">(</span><span class="n">ADBaseController</span><span class="p">[</span><span class="n">ADBaseIO</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Continuous acquisition interface for an AreaDetector.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">:</span> <span class="n">NDPluginCBIO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span> <span class="o">=</span> <span class="n">cb_plugin</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ADBaseContAcqController.get_deadtime">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseContAcqController.get_deadtime">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">):</span>
+        <span class="c1"># For now just set this to something until we can decide how to pass this in</span>
+        <span class="k">return</span> <span class="mf">0.001</span></div>
+
+
+<div class="viewcode-block" id="ADBaseContAcqController.ensure_acquisition_settings_valid">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseContAcqController.ensure_acquisition_settings_valid">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ensure_acquisition_settings_valid</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure the trigger mode is valid for the detector.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
+            <span class="c1"># Note that not all detectors will use the `DetectorTrigger` enum</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;The continuous acq interface only supports internal triggering.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Not all detectors allow for changing exposure times during an acquisition,</span>
+        <span class="c1"># so in this least-common-denominator implementation check to see if</span>
+        <span class="c1"># exposure time matches the current exposure time.</span>
+        <span class="n">exposure_time</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="o">!=</span> <span class="n">exposure_time</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Detector exposure time currently set to </span><span class="si">{</span><span class="n">exposure_time</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but requested exposure is </span><span class="si">{</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ADBaseContAcqController.ensure_in_continuous_acquisition_mode">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseContAcqController.ensure_in_continuous_acquisition_mode">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ensure_in_continuous_acquisition_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure the detector is in continuous acquisition mode.&quot;&quot;&quot;</span>
+        <span class="n">image_mode</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">image_mode</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="n">acquiring</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">image_mode</span> <span class="o">!=</span> <span class="n">ADImageMode</span><span class="o">.</span><span class="n">CONTINUOUS</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">acquiring</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Driver must be acquiring in continuous mode to use the &quot;</span>
+                <span class="s2">&quot;cont acq interface&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ADBaseContAcqController.prepare">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseContAcqController.prepare">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># These are broken out into seperate functions to make it easier to</span>
+        <span class="c1"># override them in subclasses, for example if you want `prepare` to</span>
+        <span class="c1"># setup the detector in continuous mode if it isn&#39;t already (for now,</span>
+        <span class="c1"># we assume it already is). If your detector uses different enums</span>
+        <span class="c1"># for `ImageMode` or `DetectorTrigger`, you should also override these.</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_acquisition_settings_valid</span><span class="p">(</span><span class="n">trigger_info</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_in_continuous_acquisition_mode</span><span class="p">()</span>
+
+        <span class="c1"># Configure the CB plugin to collect the correct number of triggers</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">enable_callbacks</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ADCallbacks</span><span class="o">.</span><span class="n">ENABLE</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">pre_count</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">post_count</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">total_number_of_triggers</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">preset_trigger_count</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">flush_on_soft_trg</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">NDCBFlushOnSoftTrgMode</span><span class="o">.</span><span class="n">ON_NEW_IMAGE</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ADBaseContAcqController.arm">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseContAcqController.arm">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Start the CB plugin&#39;s capture, and cache it in the arm status attr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">capture</span><span class="p">,</span>
+            <span class="kc">True</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+            <span class="n">wait_for_set_completion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Send the trigger to begin acquisition</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">trigger</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ADBaseContAcqController.disarm">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseContAcqController.disarm">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="n">stop_busy_record</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">capture</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span> <span class="o">=</span> <span class="kc">None</span></div>
 </div>
 
 </pre></div>

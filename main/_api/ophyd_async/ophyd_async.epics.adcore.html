@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.9.1.dev39+gbefee427 documentation</title>
+    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.9.1.dev40+gd3ea0c91 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=8387a366"></script>
+    <script src="../../_static/documentation_options.js?v=bdafd04c"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev39+gbefee427 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev39+gbefee427 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev40+gd3ea0c91 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev40+gd3ea0c91 documentation - Home"/>
   
   
 </a></div>
@@ -538,11 +538,17 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADCompression" title="ophyd_async.epics.adcore._core_io.ADCompression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADCompression</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.AreaDetector" title="ophyd_async.epics.adcore._core_detector.AreaDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AreaDetector</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseContAcqController" title="ophyd_async.epics.adcore._core_logic.ADBaseContAcqController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseContAcqController</span></code></a></p></td>
+<td><p>Continuous acquisition interface for an AreaDetector.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.AreaDetector" title="ophyd_async.epics.adcore._core_detector.AreaDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AreaDetector</span></code></a></p></td>
 <td><p>Detector base class for step and fly scanning detectors.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADState" title="ophyd_async.epics.adcore._core_io.ADState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADState</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADState" title="ophyd_async.epics.adcore._core_io.ADState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADState</span></code></a></p></td>
 <td><p>Default set of states of an AreaDetector driver.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ContAcqAreaDetector" title="ophyd_async.epics.adcore._core_detector.ContAcqAreaDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContAcqAreaDetector</span></code></a></p></td>
+<td><p>Ophyd-async implementation of a continuously acquiring AreaDetector.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore._core_io.NDArrayBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDArrayBaseIO</span></code></a></p></td>
 <td><p>Class responsible for passing detector data from drivers to pluglins.</p></td>
@@ -600,6 +606,12 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributePvDbrType" title="ophyd_async.epics.adcore._utils.NDAttributePvDbrType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributePvDbrType</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode" title="ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDCBFlushOnSoftTrgMode</span></code></a></p></td>
+<td><p>All members should exist in the Backend, and there will be no extras.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginCBIO" title="ophyd_async.epics.adcore._core_io.NDPluginCBIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDPluginCBIO</span></code></a></p></td>
+<td><p>Base class from which plugins are derived.</p></td>
 </tr>
 </tbody>
 </table>
@@ -743,6 +755,54 @@ See HTML docs at https://areadetector.github.io/areaDetector/ADCore/ADDriver.htm
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseContAcqController">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADBaseContAcqController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore._core_io.ADBaseIO"><span class="pre">ADBaseIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cb_plugin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginCBIO" title="ophyd_async.epics.adcore._core_io.NDPluginCBIO"><span class="pre">NDPluginCBIO</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_logic.html#ADBaseContAcqController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseContAcqController" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseController" title="ophyd_async.epics.adcore._core_logic.ADBaseController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_logic.ADBaseController</span></code></a>[<a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore._core_io.ADBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_io.ADBaseIO</span></code></a>]</p>
+<p>Continuous acquisition interface for an AreaDetector.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseContAcqController.get_deadtime">
+<span class="sig-name descname"><span class="pre">get_deadtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_logic.html#ADBaseContAcqController.get_deadtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseContAcqController.get_deadtime" title="Link to this definition">#</a></dt>
+<dd><p>For a given exposure, how long should the time between exposures be.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseContAcqController.ensure_acquisition_settings_valid">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ensure_acquisition_settings_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trigger_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><span class="pre">TriggerInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_logic.html#ADBaseContAcqController.ensure_acquisition_settings_valid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseContAcqController.ensure_acquisition_settings_valid" title="Link to this definition">#</a></dt>
+<dd><p>Ensure the trigger mode is valid for the detector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseContAcqController.ensure_in_continuous_acquisition_mode">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ensure_in_continuous_acquisition_mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_logic.html#ADBaseContAcqController.ensure_in_continuous_acquisition_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseContAcqController.ensure_in_continuous_acquisition_mode" title="Link to this definition">#</a></dt>
+<dd><p>Ensure the detector is in continuous acquisition mode.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseContAcqController.prepare">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trigger_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><span class="pre">TriggerInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_logic.html#ADBaseContAcqController.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseContAcqController.prepare" title="Link to this definition">#</a></dt>
+<dd><p>Do all necessary steps to prepare the detector for triggers.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trigger_info</strong> – The sort of triggers to expect.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseContAcqController.arm">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_logic.html#ADBaseContAcqController.arm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseContAcqController.arm" title="Link to this definition">#</a></dt>
+<dd><p>Arm the detector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseContAcqController.disarm">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disarm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_logic.html#ADBaseContAcqController.disarm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseContAcqController.disarm" title="Link to this definition">#</a></dt>
+<dd><p>Disarm the detector, return detector to an idle state.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.AreaDetector">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">AreaDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">controller</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ADBaseControllerT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adcore.ADWriter" title="ophyd_async.epics.adcore._core_writer.ADWriter"><span class="pre">ADWriter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore._core_io.NDPluginBaseIO"><span class="pre">NDPluginBaseIO</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_sigs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_detector.html#AreaDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.AreaDetector" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StandardDetector</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_logic.ADBaseControllerT</span></code>, <a class="reference internal" href="#ophyd_async.epics.adcore.ADWriter" title="ophyd_async.epics.adcore._core_writer.ADWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_writer.ADWriter</span></code></a>]</p>
@@ -837,6 +897,13 @@ See HTML docs at https://areadetector.github.io/areaDetector/ADCore/ADDriver.htm
 <dd><p>‘Aborted’</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ContAcqAreaDetector">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ContAcqAreaDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.PathProvider" title="ophyd_async.core._providers.PathProvider"><span class="pre">PathProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">drv_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore._core_io.ADBaseIO"><span class="pre">ADBaseIO</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ADBaseIO</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drv_suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'cam1:'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cb_suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'CB1:'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adcore.ADWriter" title="ophyd_async.epics.adcore._core_writer.ADWriter"><span class="pre">ADWriter</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">ADHDFWriter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fileio_suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plugins</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore._core_io.NDPluginBaseIO"><span class="pre">NDPluginBaseIO</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_sigs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_detector.html#ContAcqAreaDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ContAcqAreaDetector" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.adcore.AreaDetector" title="ophyd_async.epics.adcore._core_detector.AreaDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_detector.AreaDetector</span></code></a>[<a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseContAcqController" title="ophyd_async.epics.adcore._core_logic.ADBaseContAcqController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_logic.ADBaseContAcqController</span></code></a>]</p>
+<p>Ophyd-async implementation of a continuously acquiring AreaDetector.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -1695,6 +1762,70 @@ subsequent raising (if applicable) due to detector state.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">NDCBFlushOnSoftTrgMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_io.html#NDCBFlushOnSoftTrgMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>All members should exist in the Backend, and there will be no extras.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE">
+<span class="sig-name descname"><span class="pre">ON_NEW_IMAGE</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE" title="Link to this definition">#</a></dt>
+<dd><p>‘OnNewImage’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode.IMMEDIATELY">
+<span class="sig-name descname"><span class="pre">IMMEDIATELY</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode.IMMEDIATELY" title="Link to this definition">#</a></dt>
+<dd><p>‘Immediately’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginCBIO">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">NDPluginCBIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_io.html#NDPluginCBIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginCBIO" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore._core_io.NDPluginBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_io.NDPluginBaseIO</span></code></a></p>
+<p>Base class from which plugins are derived.</p>
+<p>This mirrors the interface provided by ADCore/db/NDPluginBase.template.
+See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginDriver.html</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginCBIO.pre_count">
+<span class="sig-name descname"><span class="pre">pre_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'PreCount'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginCBIO.pre_count" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginCBIO.post_count">
+<span class="sig-name descname"><span class="pre">post_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'PostCount'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginCBIO.post_count" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginCBIO.preset_trigger_count">
+<span class="sig-name descname"><span class="pre">preset_trigger_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'PresetTriggerCount'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginCBIO.preset_trigger_count" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginCBIO.trigger">
+<span class="sig-name descname"><span class="pre">trigger</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'Trigger'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginCBIO.trigger" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginCBIO.capture">
+<span class="sig-name descname"><span class="pre">capture</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'Capture'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginCBIO.capture" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDPluginCBIO.flush_on_soft_trg">
+<span class="sig-name descname"><span class="pre">flush_on_soft_trg</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode" title="ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode"><span class="pre">NDCBFlushOnSoftTrgMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'FlushOnSoftTrg'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adcore.NDPluginCBIO.flush_on_soft_trg" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -1775,6 +1906,15 @@ subsequent raising (if applicable) due to detector state.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADCompression.JPEG"><code class="docutils literal notranslate"><span class="pre">ADCompression.JPEG</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseContAcqController"><code class="docutils literal notranslate"><span class="pre">ADBaseContAcqController</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseContAcqController.get_deadtime"><code class="docutils literal notranslate"><span class="pre">ADBaseContAcqController.get_deadtime()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseContAcqController.ensure_acquisition_settings_valid"><code class="docutils literal notranslate"><span class="pre">ADBaseContAcqController.ensure_acquisition_settings_valid()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseContAcqController.ensure_in_continuous_acquisition_mode"><code class="docutils literal notranslate"><span class="pre">ADBaseContAcqController.ensure_in_continuous_acquisition_mode()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseContAcqController.prepare"><code class="docutils literal notranslate"><span class="pre">ADBaseContAcqController.prepare()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseContAcqController.arm"><code class="docutils literal notranslate"><span class="pre">ADBaseContAcqController.arm()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseContAcqController.disarm"><code class="docutils literal notranslate"><span class="pre">ADBaseContAcqController.disarm()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.AreaDetector"><code class="docutils literal notranslate"><span class="pre">AreaDetector</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.AreaDetector.get_plugin"><code class="docutils literal notranslate"><span class="pre">AreaDetector.get_plugin()</span></code></a></li>
 </ul>
@@ -1793,6 +1933,7 @@ subsequent raising (if applicable) due to detector state.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADState.ABORTED"><code class="docutils literal notranslate"><span class="pre">ADState.ABORTED</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ContAcqAreaDetector"><code class="docutils literal notranslate"><span class="pre">ContAcqAreaDetector</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDArrayBaseIO"><code class="docutils literal notranslate"><span class="pre">NDArrayBaseIO</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDArrayBaseIO.unique_id"><code class="docutils literal notranslate"><span class="pre">NDArrayBaseIO.unique_id</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDArrayBaseIO.nd_attributes_file"><code class="docutils literal notranslate"><span class="pre">NDArrayBaseIO.nd_attributes_file</span></code></a></li>
@@ -1961,6 +2102,20 @@ subsequent raising (if applicable) due to detector state.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDAttributePvDbrType.DBR_DOUBLE"><code class="docutils literal notranslate"><span class="pre">NDAttributePvDbrType.DBR_DOUBLE</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDAttributePvDbrType.DBR_STRING"><code class="docutils literal notranslate"><span class="pre">NDAttributePvDbrType.DBR_STRING</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDAttributePvDbrType.DBR_CHAR"><code class="docutils literal notranslate"><span class="pre">NDAttributePvDbrType.DBR_CHAR</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode"><code class="docutils literal notranslate"><span class="pre">NDCBFlushOnSoftTrgMode</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE"><code class="docutils literal notranslate"><span class="pre">NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode.IMMEDIATELY"><code class="docutils literal notranslate"><span class="pre">NDCBFlushOnSoftTrgMode.IMMEDIATELY</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDPluginCBIO"><code class="docutils literal notranslate"><span class="pre">NDPluginCBIO</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDPluginCBIO.pre_count"><code class="docutils literal notranslate"><span class="pre">NDPluginCBIO.pre_count</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDPluginCBIO.post_count"><code class="docutils literal notranslate"><span class="pre">NDPluginCBIO.post_count</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDPluginCBIO.preset_trigger_count"><code class="docutils literal notranslate"><span class="pre">NDPluginCBIO.preset_trigger_count</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDPluginCBIO.trigger"><code class="docutils literal notranslate"><span class="pre">NDPluginCBIO.trigger</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDPluginCBIO.capture"><code class="docutils literal notranslate"><span class="pre">NDPluginCBIO.capture</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDPluginCBIO.flush_on_soft_trg"><code class="docutils literal notranslate"><span class="pre">NDPluginCBIO.flush_on_soft_trg</span></code></a></li>
 </ul>
 </li>
 </ul>

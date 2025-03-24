@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.9.1.dev39+gbefee427 documentation</title>
+    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.9.1.dev40+gd3ea0c91 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=8387a366"></script>
+    <script src="../_static/documentation_options.js?v=bdafd04c"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev39+gbefee427 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev39+gbefee427 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev40+gd3ea0c91 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev40+gd3ea0c91 documentation - Home"/>
   
   
 </a></div>
@@ -690,6 +690,28 @@
 </pre></div>
 </div>
 </section>
+<section id="continuously-acquiring-detector">
+<h2>Continuously acquiring detector<a class="headerlink" href="#continuously-acquiring-detector" title="Link to this heading">#</a></h2>
+<p>In the event that you need to be able to collect data from a detector that is continuously acquiring, you should use the <code class="docutils literal notranslate"><span class="pre">ContAcqAreaDetector</span></code> class.
+This uses the builtin <code class="docutils literal notranslate"><span class="pre">areaDetector</span></code> <a class="reference external" href="https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html">circular buffer plugin</a> to act as the acquisition start/stop replacement, while the detector runs continuously.</p>
+<p>Your AD IOC will require at least one instance of this plugin to be configured, and the output of the plugin should be fed to the file writer of your choosing.
+The expectation is that the detector is already acquiring in continuous mode with the expected exposure time prior to using an instance of <code class="docutils literal notranslate"><span class="pre">ContAcqAreaDetector</span></code>.</p>
+<p>To instantiate a detector instance, import it and create it like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adcore</span>
+
+<span class="n">det</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ContAcqAreaDetector</span><span class="p">(</span>
+   <span class="s2">&quot;PREFIX:&quot;</span><span class="p">,</span> 
+   <span class="n">path_provider</span><span class="p">,</span> 
+   <span class="n">drv_cls</span><span class="o">=</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">,</span>
+   <span class="n">drv_suffix</span><span class="o">=</span><span class="s2">&quot;DRV:&quot;</span><span class="p">,</span> 
+   <span class="n">cb_suffix</span><span class="o">=</span><span class="s2">&quot;CB:&quot;</span><span class="p">,</span>
+   <span class="n">writer_cls</span><span class="o">=</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADHDFWriter</span><span class="p">,</span> 
+   <span class="n">fileio_suffix</span><span class="o">=</span><span class="s2">&quot;HDF:&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that typically the only changes from a typical detector are the additional <code class="docutils literal notranslate"><span class="pre">cb_suffix</span></code> kwarg, which is used to identify the prefix to use when instantiating the circular buffer (CB) plugin instance, and the <code class="docutils literal notranslate"><span class="pre">drv_cls</span></code> kwarg, which allows you to specify the driver to use, with the default being the <code class="docutils literal notranslate"><span class="pre">ADBaseIO</span></code> class.</p>
+</section>
 </section>
 
 
@@ -746,6 +768,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#make-it-importable">Make it importable</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#write-tests">Write tests</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#continuously-acquiring-detector">Continuously acquiring detector</a></li>
 </ul>
   </nav></div>
 
