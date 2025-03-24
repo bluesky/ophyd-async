@@ -95,7 +95,6 @@ async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
     async with init_devices(mock=True):
         writer = PandaHDFWriter(
             path_provider=dp,
-            name_provider=lambda: mock_panda.name,
             panda_data_block=mock_panda.data,
         )
 
@@ -215,7 +214,6 @@ async def test_oserror_when_hdf_dir_does_not_exist(tmp_path, mock_panda):
     async with init_devices(mock=True):
         writer = PandaHDFWriter(
             path_provider=dp,
-            name_provider=lambda: "test-panda",
             panda_data_block=mock_panda.data,
         )
 
