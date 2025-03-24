@@ -3,11 +3,12 @@ import contextlib
 import time
 
 import numpy as np
-from bluesky.protocols import Movable, Stoppable
+from bluesky.protocols import Location, Reading, Stoppable, Subscribable
 from pydantic import BaseModel, ConfigDict, Field
 
 from ophyd_async.core import (
     AsyncStatus,
+    Callback,
     StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
@@ -49,7 +50,7 @@ class FlySimMotorInfo(BaseModel):
         return self.cv_end + acceleration_time * self.velocity / 2
 
 
-class SimMotor(StandardReadable, Movable, Stoppable):
+class SimMotor(StandardReadable, Stoppable, Subscribable[float]):
     """For usage when simulating a motor."""
 
     def __init__(self, name="", instant=True) -> None:
@@ -93,6 +94,19 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         await self.set(value.start_position(await self.acceleration_time.get_value()))
         # Set the velocity for the actual move
         await self.velocity.set(value.velocity)
+
+    async def locate(self) -> Location[float]:
+        """Return the current setpoint and readback of the motor."""
+        setpoint, readback = await asyncio.gather(
+            self.user_setpoint.get_value(), self.user_readback.get_value()
+        )
+        return Location(setpoint=setpoint, readback=readback)
+
+    def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
+        self.user_readback.subscribe(function)
+
+    def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
+        self.user_readback.clear_sub(function)
 
     @AsyncStatus.wrap
     async def kickoff(self):
@@ -177,12 +191,17 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         """Asynchronously move the motor to a new position."""
         new_position = value
         # Make sure any existing move tasks are stopped
-        await self.stop()
+        if self._move_status:
+            self._move_status.task.cancel()
+            self._move_status = None
+        # work out where we were
         old_position, units, velocity = await asyncio.gather(
             self.user_setpoint.get_value(),
             self.units.get_value(),
             self.velocity.get_value(),
         )
+        # update the setpoint to where we want to be
+        await self.user_setpoint.set(new_position)
         # If zero velocity, do instant move
         if velocity == 0:
             self._user_readback_set(new_position)

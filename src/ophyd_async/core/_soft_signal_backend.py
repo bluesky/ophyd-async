@@ -20,9 +20,9 @@ from ._signal_backend import (
     SignalBackend,
     SignalDatatype,
     SignalDatatypeT,
-    SignalMetadata,
     TableT,
     make_datakey,
+    make_metadata,
 )
 from ._table import Table
 from ._utils import Callback, get_dtype, get_enum_cls
@@ -136,13 +136,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         # Create the right converter for the datatype
         self.converter = make_converter(datatype or float)
         # Add the extra static metadata to the dictionary
-        self.metadata: SignalMetadata = {}
-        if units is not None:
-            self.metadata["units"] = units
-        if precision is not None:
-            self.metadata["precision"] = precision
-        if enum_cls := get_enum_cls(datatype):
-            self.metadata["choices"] = [v.value for v in enum_cls]
+        self.metadata = make_metadata(datatype, units, precision)
         # Create and set the initial value
         self.initial_value = self.converter.write_value(initial_value)
         self.reading: Reading[SignalDatatypeT]
