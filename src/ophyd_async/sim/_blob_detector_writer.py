@@ -9,7 +9,6 @@ from ophyd_async.core import (
     DetectorWriter,
     HDFDatasetDescription,
     HDFDocumentComposer,
-    NameProvider,
     PathProvider,
 )
 
@@ -24,17 +23,16 @@ class BlobDetectorWriter(DetectorWriter):
         self,
         pattern_generator: PatternGenerator,
         path_provider: PathProvider,
-        name_provider: NameProvider,
     ) -> None:
         self.pattern_generator = pattern_generator
         self.path_provider = path_provider
-        self.name_provider = name_provider
         self.path: Path | None = None
         self.composer: HDFDocumentComposer | None = None
         self.datasets: list[HDFDatasetDescription] = []
+        self.name = ""
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
-        name = self.name_provider()
+    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
+        self.name = name
         path_info = self.path_provider(name)
         self.path = path_info.directory_path / f"{path_info.filename}.h5"
         self.pattern_generator.open_file(self.path, WIDTH, HEIGHT)
@@ -73,7 +71,7 @@ class BlobDetectorWriter(DetectorWriter):
     @property
     def hints(self) -> Hints:
         """The hints to be used for the detector."""
-        return {"fields": [self.name_provider()]}
+        return {"fields": [self.name]}
 
     async def get_indices_written(self) -> int:
         return self.pattern_generator.get_last_index()

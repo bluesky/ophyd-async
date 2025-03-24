@@ -10,7 +10,6 @@ from ophyd_async.core import (
     DatasetDescriber,
     HDFDatasetDescription,
     HDFDocumentComposer,
-    NameProvider,
     PathProvider,
 )
 
@@ -31,14 +30,12 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self,
         fileio: NDFileHDFIO,
         path_provider: PathProvider,
-        name_provider: NameProvider,
         dataset_describer: DatasetDescriber,
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         super().__init__(
             fileio,
             path_provider,
-            name_provider,
             dataset_describer,
             plugins=plugins,
             file_extension=".h5",
@@ -48,7 +45,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self._composer: HDFDocumentComposer | None = None
         self._filename_template = "%s%s"
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
         self._composer = None
 
         # Setting HDF writer specific signals
@@ -66,7 +63,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         # Set common AD file plugin params, begin capturing
         await self.begin_capture()
 
-        name = self._name_provider()
+        name = name
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()
         self._multiplier = multiplier
