@@ -113,6 +113,8 @@ class SimMotor(StandardReadable, Movable, Stoppable):
         return self._fly_status
 
     async def _move(self, old_position: float, new_position: float, velocity: float):
+        if old_position == new_position:
+            return
         start = time.monotonic()
         acceleration_time = abs(await self.acceleration_time.get_value())
         sign = np.sign(new_position - old_position)
