@@ -8,13 +8,14 @@ from ophyd_async.epics.eiger._odin_io import Odin, OdinWriter, Writing  # noqa: 
 from ophyd_async.testing import get_mock_put, set_mock_value
 
 OdinDriverAndWriter = tuple[Odin, OdinWriter]
+ODIN_DETECTOR_NAME = "odin_detector"
 
 
 @pytest.fixture
 def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
     with init_devices(mock=True):
         driver = Odin("")
-        writer = OdinWriter(MagicMock(), lambda: "odin", driver)
+        writer = OdinWriter(MagicMock(), driver)
     return driver, writer
 
 
@@ -27,7 +28,8 @@ async def test_when_open_called_then_file_correctly_set(
     path_info.directory_path = tmp_path
     path_info.filename = expected_filename
 
-    await writer.open()
+    # TODO we pass any name in the tests when there is no reference to the detector?
+    await writer.open(ODIN_DETECTOR_NAME)
 
     get_mock_put(driver.file_path).assert_called_once_with(str(tmp_path), wait=ANY)
     get_mock_put(driver.file_name).assert_called_once_with(expected_filename, wait=ANY)
@@ -37,7 +39,7 @@ async def test_when_open_called_then_all_expected_signals_set(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
     driver, writer = odin_driver_and_writer
-    await writer.open()
+    await writer.open(ODIN_DETECTOR_NAME)
 
     get_mock_put(driver.data_type).assert_called_once_with("uint16", wait=ANY)
     get_mock_put(driver.num_to_capture).assert_called_once_with(0, wait=ANY)
@@ -51,7 +53,7 @@ async def test_given_data_shape_set_when_open_called_then_describe_has_correct_s
     driver, writer = odin_driver_and_writer
     set_mock_value(driver.image_width, 1024)
     set_mock_value(driver.image_height, 768)
-    description = await writer.open()
+    description = await writer.open(ODIN_DETECTOR_NAME)
     assert description["data"]["shape"] == [768, 1024]
 
 

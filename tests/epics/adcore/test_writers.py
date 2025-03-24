@@ -16,6 +16,8 @@ from ophyd_async.epics.core import epics_signal_r
 from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
 from ophyd_async.testing import set_mock_value
 
+DETECTOR_NAME = "detector"
+
 
 class DummyDatasetDescriber(DatasetDescriber):
     async def np_datatype(self) -> str:
@@ -35,7 +37,6 @@ async def hdf_writer(
     return adcore.ADHDFWriter(
         hdf,
         static_path_provider,
-        lambda: "test",
         DummyDatasetDescriber(),
         {},
     )
@@ -48,9 +49,7 @@ async def tiff_writer(
     async with init_devices(mock=True):
         tiff = adcore.NDFileIO("TIFF:")
 
-    return adcore.ADTIFFWriter(
-        tiff, static_path_provider, lambda: "test", DummyDatasetDescriber(), {}
-    )
+    return adcore.ADTIFFWriter(tiff, static_path_provider, DummyDatasetDescriber(), {})
 
 
 @pytest.fixture
@@ -67,7 +66,6 @@ async def hdf_writer_with_stats(
     return adcore.ADHDFWriter(
         hdf,
         static_path_provider,
-        lambda: "test",
         DummyDatasetDescriber(),
         {"stats": stats},
     )
@@ -94,7 +92,7 @@ async def test_hdf_writer_file_not_found(hdf_writer: adcore.ADHDFWriter):
     with pytest.raises(
         FileNotFoundError, match=r"File path .* for file plugin does not exist"
     ):
-        await hdf_writer.open()
+        await hdf_writer.open(DETECTOR_NAME)
 
 
 async def test_hdf_writer_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
@@ -135,7 +133,7 @@ async def test_stats_describe_when_plugin_configured(
 """,
     )
     with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
-        descriptor = await hdf_writer_with_stats.open()
+        descriptor = await hdf_writer_with_stats.open(DETECTOR_NAME)
 
     assert descriptor == {
         "test": {
@@ -183,7 +181,7 @@ async def test_stats_describe_raises_error_with_dbr_native(
     )
     with pytest.raises(ValueError) as e:
         with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
-            await hdf_writer_with_stats.open()
+            await hdf_writer_with_stats.open(DETECTOR_NAME)
     await hdf_writer_with_stats.close()
     assert str(e.value) == "Don't support DBR_NATIVE yet"
 
