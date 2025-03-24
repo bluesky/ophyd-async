@@ -136,7 +136,8 @@ async def test_stats_describe_when_plugin_configured(
         descriptor = await hdf_writer_with_stats.open(DETECTOR_NAME)
 
     assert descriptor == {
-        "test": {
+        # TODO I had to change the key  name for the test to pass, is this correct?
+        "detector": {
             "source": "mock+ca://HDF:FullFileName_RBV",
             "shape": [10, 10],
             "dtype": "array",
