@@ -34,18 +34,15 @@ class PandaHDFWriter(DetectorWriter):
         self._datasets: list[HDFDatasetDescription] = []
         self._composer: HDFDocumentComposer | None = None
         self._multiplier = 1
-        # TODO _name/name or no field
-        self.name = ""
 
     # Triggered on PCAP arm
     async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
-        self.name = name
         """Retrieve and get descriptor of all PandA signals marked for capture."""
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
         self._composer = None
-        info = self._path_provider(device_name=self.name)
+        info = self._path_provider(device_name=name)
 
         # Set create dir depth first to guarantee that callback when setting
         # directory path has correct value
@@ -115,7 +112,7 @@ class PandaHDFWriter(DetectorWriter):
         if len(self._datasets) == 0:
             self.panda_data_block.log.warning(
                 # TODO this could be empty?
-                f"PandA {self.name} DATASETS table is empty! "
+                f"PandA {self._name_provider()} DATASETS table is empty! "
                 "No stream resource docs will be generated. "
                 "Make sure captured positions have their corresponding "
                 "*:DATASET PV set to a scientifically relevant name."

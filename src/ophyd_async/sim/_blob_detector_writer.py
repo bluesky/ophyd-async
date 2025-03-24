@@ -29,10 +29,8 @@ class BlobDetectorWriter(DetectorWriter):
         self.path: Path | None = None
         self.composer: HDFDocumentComposer | None = None
         self.datasets: list[HDFDatasetDescription] = []
-        self.name = ""
 
     async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
-        self.name = name
         path_info = self.path_provider(name)
         self.path = path_info.directory_path / f"{path_info.filename}.h5"
         self.pattern_generator.open_file(self.path, WIDTH, HEIGHT)
@@ -71,7 +69,8 @@ class BlobDetectorWriter(DetectorWriter):
     @property
     def hints(self) -> Hints:
         """The hints to be used for the detector."""
-        return {"fields": [self.name]}
+        # TODO
+        return {"fields": [self.name_provider()]}
 
     async def get_indices_written(self) -> int:
         return self.pattern_generator.get_last_index()
