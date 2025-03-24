@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.testing &#8212; ophyd-async 0.9.1.dev38+g34357306 documentation</title>
+    <title>ophyd_async.testing &#8212; ophyd-async 0.9.1.dev39+gbefee427 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=e492f0b1"></script>
+    <script src="../../_static/documentation_options.js?v=8387a366"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev38+g34357306 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev38+g34357306 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev39+gbefee427 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev39+gbefee427 documentation - Home"/>
   
   
 </a></div>
@@ -546,6 +546,18 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.StatusWatcher" title="ophyd_async.testing._assert.StatusWatcher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StatusWatcher</span></code></a></p></td>
 <td><p>Watches an <code class="docutils literal notranslate"><span class="pre">AsyncStatus</span></code>, storing the calls within.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.BeamstopPosition" title="ophyd_async.testing._single_derived.BeamstopPosition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BeamstopPosition</span></code></a></p></td>
+<td><p>All members should exist in the Backend, and there will be no extras.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.Exploder" title="ophyd_async.testing._single_derived.Exploder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Exploder</span></code></a></p></td>
+<td><p>This one takes a value and sets all its signal to that value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.testing.MovableBeamstop" title="ophyd_async.testing._single_derived.MovableBeamstop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MovableBeamstop</span></code></a></p></td>
+<td><p>As well as reads, this one allows you to move it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.testing.ReadOnlyBeamstop" title="ophyd_async.testing._single_derived.ReadOnlyBeamstop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadOnlyBeamstop</span></code></a></p></td>
+<td><p>Reads from 2 motors to work out if the beamstop is in position.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -948,6 +960,50 @@ with a timeout</p></li>
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">float_array_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DTypeScalar_co" title="ophyd_async.core.DTypeScalar_co"><span class="pre">DTypeScalar_co</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_one_of_everything.html#float_array_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.float_array_value" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.testing.BeamstopPosition">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">BeamstopPosition</span></span><a class="reference internal" href="../../_modules/ophyd_async/testing/_single_derived.html#BeamstopPosition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.BeamstopPosition" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>All members should exist in the Backend, and there will be no extras.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.testing.BeamstopPosition.IN_POSITION">
+<span class="sig-name descname"><span class="pre">IN_POSITION</span></span><a class="headerlink" href="#ophyd_async.testing.BeamstopPosition.IN_POSITION" title="Link to this definition">#</a></dt>
+<dd><p>‘In position’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.testing.BeamstopPosition.OUT_OF_POSITION">
+<span class="sig-name descname"><span class="pre">OUT_OF_POSITION</span></span><a class="headerlink" href="#ophyd_async.testing.BeamstopPosition.OUT_OF_POSITION" title="Link to this definition">#</a></dt>
+<dd><p>‘Out of position’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.testing.Exploder">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">Exploder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_single_derived.html#Exploder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.Exploder" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StandardReadable</span></code></a></p>
+<p>This one takes a value and sets all its signal to that value.</p>
+<p>This allows convenience “set all” functions, while the individual
+signals are still free to be set to different values.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.testing.MovableBeamstop">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">MovableBeamstop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_single_derived.html#MovableBeamstop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.MovableBeamstop" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>As well as reads, this one allows you to move it.</p>
+<p>E.g. bps.mv(beamstop.position, BeamstopPosition.IN_POSITION)</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.testing.ReadOnlyBeamstop">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.testing.</span></span><span class="sig-name descname"><span class="pre">ReadOnlyBeamstop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/testing/_single_derived.html#ReadOnlyBeamstop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.testing.ReadOnlyBeamstop" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>Reads from 2 motors to work out if the beamstop is in position.</p>
+<p>E.g. bps.rd(beamstop.position)</p>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -1051,6 +1107,14 @@ with a timeout</p></li>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.int_array_value"><code class="docutils literal notranslate"><span class="pre">int_array_value()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.float_array_value"><code class="docutils literal notranslate"><span class="pre">float_array_value()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.BeamstopPosition"><code class="docutils literal notranslate"><span class="pre">BeamstopPosition</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.BeamstopPosition.IN_POSITION"><code class="docutils literal notranslate"><span class="pre">BeamstopPosition.IN_POSITION</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.BeamstopPosition.OUT_OF_POSITION"><code class="docutils literal notranslate"><span class="pre">BeamstopPosition.OUT_OF_POSITION</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.Exploder"><code class="docutils literal notranslate"><span class="pre">Exploder</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.MovableBeamstop"><code class="docutils literal notranslate"><span class="pre">MovableBeamstop</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.testing.ReadOnlyBeamstop"><code class="docutils literal notranslate"><span class="pre">ReadOnlyBeamstop</span></code></a></li>
 </ul>
 </li>
 </ul>

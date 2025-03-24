@@ -223,6 +223,14 @@
   - ```{autodoc2-docstring} ophyd_async.core._signal.Ignore
     :summary:
     ```
+* - {py:obj}`Transform <ophyd_async.core._derived_signal_backend.Transform>`
+  - ```{autodoc2-docstring} ophyd_async.core._derived_signal_backend.Transform
+    :summary:
+    ```
+* - {py:obj}`DerivedSignalFactory <ophyd_async.core._derived_signal.DerivedSignalFactory>`
+  - ```{autodoc2-docstring} ophyd_async.core._derived_signal.DerivedSignalFactory
+    :summary:
+    ```
 ````
 
 ### Functions
@@ -305,6 +313,18 @@
     ```
 * - {py:obj}`wait_for_connection <ophyd_async.core._utils.wait_for_connection>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.wait_for_connection
+    :summary:
+    ```
+* - {py:obj}`derived_signal_r <ophyd_async.core._derived_signal.derived_signal_r>`
+  - ```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_r
+    :summary:
+    ```
+* - {py:obj}`derived_signal_rw <ophyd_async.core._derived_signal.derived_signal_rw>`
+  - ```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_rw
+    :summary:
+    ```
+* - {py:obj}`derived_signal_w <ophyd_async.core._derived_signal.derived_signal_w>`
+  - ```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_w
     :summary:
     ```
 ````
@@ -870,7 +890,7 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 
 ````
 
-````{py:method} subscribe(function: ~ophyd_async.core._utils.Callback[dict[str, ~bluesky.protocols.Reading]]) -> None
+````{py:method} subscribe(function: ~ophyd_async.core._utils.Callback[dict[str, ~bluesky.protocols.Reading[~ophyd_async.core._signal_backend.SignalDatatypeT]]]) -> None
 :canonical: ophyd_async.core._signal.SignalR.subscribe
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.subscribe
@@ -2591,7 +2611,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 
 ````
 
-````{py:function} gather_dict(coros: dict[~ophyd_async.core._utils.T, ~collections.abc.Awaitable[~ophyd_async.core._utils.V]]) -> dict[~ophyd_async.core._utils.T, ~ophyd_async.core._utils.V]
+````{py:function} gather_dict(coros: ~collections.abc.Mapping[~ophyd_async.core._utils.T, ~collections.abc.Awaitable[~ophyd_async.core._utils.V]]) -> dict[~ophyd_async.core._utils.T, ~ophyd_async.core._utils.V]
 :canonical: ophyd_async.core._utils.gather_dict
 :async:
 
@@ -2642,6 +2662,88 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 ```
 ````
 
+````{py:class} Ignore
+:canonical: ophyd_async.core._signal.Ignore
+
+```{autodoc2-docstring} ophyd_async.core._signal.Ignore
+```
+
+````
+
+````{py:function} derived_signal_r(raw_to_derived: ~collections.abc.Callable[..., ~ophyd_async.core._signal_backend.SignalDatatypeT], derived_units: str | None = None, derived_precision: int | None = None, **raw_devices: ~ophyd_async.core._device.Device) -> ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._derived_signal.derived_signal_r
+
+```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_r
+```
+````
+
+````{py:function} derived_signal_rw(raw_to_derived: ~collections.abc.Callable[..., ~ophyd_async.core._signal_backend.SignalDatatypeT], set_derived: ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], ~collections.abc.Awaitable[None]], derived_units: str | None = None, derived_precision: int | None = None, **raw_devices: ~ophyd_async.core._device.Device) -> ~ophyd_async.core._signal.SignalRW[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._derived_signal.derived_signal_rw
+
+```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_rw
+```
+````
+
+````{py:function} derived_signal_w(set_derived: ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], ~collections.abc.Awaitable[None]], derived_units: str | None = None, derived_precision: int | None = None) -> ~ophyd_async.core._signal.SignalW[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._derived_signal.derived_signal_w
+
+```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_w
+```
+````
+
+````{py:class} Transform(/, **data: ~typing.Any)
+:canonical: ophyd_async.core._derived_signal_backend.Transform
+
+Bases: {py:obj}`pydantic.BaseModel`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._derived_signal_backend.RawT`\, {py:obj}`ophyd_async.core._derived_signal_backend.DerivedT`\]
+
+```{autodoc2-docstring} ophyd_async.core._derived_signal_backend.Transform
+```
+
+````
+
+`````{py:class} DerivedSignalFactory(transform_cls: type[~ophyd_async.core._derived_signal_backend.TransformT], set_derived: ~collections.abc.Callable[..., ~collections.abc.Awaitable[None]] | None = None, **raw_and_transform_devices)
+:canonical: ophyd_async.core._derived_signal.DerivedSignalFactory
+
+Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._derived_signal_backend.TransformT`\]
+
+```{autodoc2-docstring} ophyd_async.core._derived_signal.DerivedSignalFactory
+```
+
+````{py:method} derived_signal_r(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT], name: str, units: str | None = None, precision: int | None = None) -> ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._derived_signal.DerivedSignalFactory.derived_signal_r
+
+```{autodoc2-docstring} ophyd_async.core._derived_signal.DerivedSignalFactory.derived_signal_r
+```
+
+````
+
+````{py:method} derived_signal_w(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT], name: str, units: str | None = None, precision: int | None = None) -> ~ophyd_async.core._signal.SignalW[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._derived_signal.DerivedSignalFactory.derived_signal_w
+
+```{autodoc2-docstring} ophyd_async.core._derived_signal.DerivedSignalFactory.derived_signal_w
+```
+
+````
+
+````{py:method} derived_signal_rw(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT], name: str, units: str | None = None, precision: int | None = None) -> ~ophyd_async.core._signal.SignalRW[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._derived_signal.DerivedSignalFactory.derived_signal_rw
+
+```{autodoc2-docstring} ophyd_async.core._derived_signal.DerivedSignalFactory.derived_signal_rw
+```
+
+````
+
+````{py:method} transform() -> ~ophyd_async.core._derived_signal_backend.TransformT
+:canonical: ophyd_async.core._derived_signal.DerivedSignalFactory.transform
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._derived_signal.DerivedSignalFactory.transform
+```
+
+````
+
+`````
+
 ````{py:data} ConfigSignal
 :canonical: ophyd_async.core._readable.ConfigSignal
 :value: >
@@ -2659,14 +2761,6 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
    '_compat_format(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._readable.HintedSignal
-```
-
-````
-
-````{py:class} Ignore
-:canonical: ophyd_async.core._signal.Ignore
-
-```{autodoc2-docstring} ophyd_async.core._signal.Ignore
 ```
 
 ````

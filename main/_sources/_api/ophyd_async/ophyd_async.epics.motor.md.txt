@@ -94,7 +94,7 @@ Bases: {py:obj}`pydantic.BaseModel`
 `````{py:class} Motor(prefix: str, name='')
 :canonical: ophyd_async.epics.motor.Motor
 
-Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Locatable`, {py:obj}`bluesky.protocols.Stoppable`, {py:obj}`bluesky.protocols.Flyable`, {py:obj}`bluesky.protocols.Preparable`
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Locatable`\[{py:obj}`float`\], {py:obj}`bluesky.protocols.Stoppable`, {py:obj}`bluesky.protocols.Flyable`, {py:obj}`bluesky.protocols.Preparable`, {py:obj}`bluesky.protocols.Subscribable`\[{py:obj}`float`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.motor.Motor
 ```
@@ -156,6 +156,22 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.L
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.motor.Motor.locate
+```
+
+````
+
+````{py:method} subscribe(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
+:canonical: ophyd_async.epics.motor.Motor.subscribe
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.subscribe
+```
+
+````
+
+````{py:method} clear_sub(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
+:canonical: ophyd_async.epics.motor.Motor.clear_sub
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.clear_sub
 ```
 
 ````

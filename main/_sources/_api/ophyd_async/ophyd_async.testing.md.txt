@@ -43,6 +43,22 @@
   - ```{autodoc2-docstring} ophyd_async.testing._assert.StatusWatcher
     :summary:
     ```
+* - {py:obj}`BeamstopPosition <ophyd_async.testing._single_derived.BeamstopPosition>`
+  - ```{autodoc2-docstring} ophyd_async.testing._single_derived.BeamstopPosition
+    :summary:
+    ```
+* - {py:obj}`Exploder <ophyd_async.testing._single_derived.Exploder>`
+  - ```{autodoc2-docstring} ophyd_async.testing._single_derived.Exploder
+    :summary:
+    ```
+* - {py:obj}`MovableBeamstop <ophyd_async.testing._single_derived.MovableBeamstop>`
+  - ```{autodoc2-docstring} ophyd_async.testing._single_derived.MovableBeamstop
+    :summary:
+    ```
+* - {py:obj}`ReadOnlyBeamstop <ophyd_async.testing._single_derived.ReadOnlyBeamstop>`
+  - ```{autodoc2-docstring} ophyd_async.testing._single_derived.ReadOnlyBeamstop
+    :summary:
+    ```
 ````
 
 ### Functions
@@ -433,4 +449,64 @@ Bases: {py:obj}`ophyd_async.core.Watcher`\[{py:obj}`ophyd_async.testing._utils.T
 
 ```{autodoc2-docstring} ophyd_async.testing._one_of_everything.float_array_value
 ```
+````
+
+`````{py:class} BeamstopPosition()
+:canonical: ophyd_async.testing._single_derived.BeamstopPosition
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.testing._single_derived.BeamstopPosition
+```
+
+````{py:attribute} IN_POSITION
+:canonical: ophyd_async.testing._single_derived.BeamstopPosition.IN_POSITION
+:value: >
+   'In position'
+
+```{autodoc2-docstring} ophyd_async.testing._single_derived.BeamstopPosition.IN_POSITION
+```
+
+````
+
+````{py:attribute} OUT_OF_POSITION
+:canonical: ophyd_async.testing._single_derived.BeamstopPosition.OUT_OF_POSITION
+:value: >
+   'Out of position'
+
+```{autodoc2-docstring} ophyd_async.testing._single_derived.BeamstopPosition.OUT_OF_POSITION
+```
+
+````
+
+`````
+
+````{py:class} Exploder(num_signals: int, name='')
+:canonical: ophyd_async.testing._single_derived.Exploder
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.testing._single_derived.Exploder
+```
+
+````
+
+````{py:class} MovableBeamstop(name='')
+:canonical: ophyd_async.testing._single_derived.MovableBeamstop
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.testing._single_derived.MovableBeamstop
+```
+
+````
+
+````{py:class} ReadOnlyBeamstop(name='')
+:canonical: ophyd_async.testing._single_derived.ReadOnlyBeamstop
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.testing._single_derived.ReadOnlyBeamstop
+```
+
 ````

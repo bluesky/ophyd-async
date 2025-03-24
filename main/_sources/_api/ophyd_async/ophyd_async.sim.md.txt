@@ -39,6 +39,30 @@
   - ```{autodoc2-docstring} ophyd_async.sim._blob_detector.SimBlobDetector
     :summary:
     ```
+* - {py:obj}`VerticalMirror <ophyd_async.sim._mirror_vertical.VerticalMirror>`
+  - ```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.VerticalMirror
+    :summary:
+    ```
+* - {py:obj}`HorizontalMirror <ophyd_async.sim._mirror_horizontal.HorizontalMirror>`
+  - ```{autodoc2-docstring} ophyd_async.sim._mirror_horizontal.HorizontalMirror
+    :summary:
+    ```
+* - {py:obj}`HorizontalMirrorDerived <ophyd_async.sim._mirror_horizontal.HorizontalMirrorDerived>`
+  - ```{autodoc2-docstring} ophyd_async.sim._mirror_horizontal.HorizontalMirrorDerived
+    :summary:
+    ```
+* - {py:obj}`TwoJackTransform <ophyd_async.sim._mirror_vertical.TwoJackTransform>`
+  - ```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackTransform
+    :summary:
+    ```
+* - {py:obj}`TwoJackDerived <ophyd_async.sim._mirror_vertical.TwoJackDerived>`
+  - ```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackDerived
+    :summary:
+    ```
+* - {py:obj}`TwoJackRaw <ophyd_async.sim._mirror_vertical.TwoJackRaw>`
+  - ```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackRaw
+    :summary:
+    ```
 ````
 
 ### API
@@ -46,7 +70,7 @@
 `````{py:class} SimMotor(name='', instant=True)
 :canonical: ophyd_async.sim._motor.SimMotor
 
-Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Movable`, {py:obj}`bluesky.protocols.Stoppable`
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Stoppable`, {py:obj}`bluesky.protocols.Subscribable`\[{py:obj}`float`\]
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor
 ```
@@ -64,6 +88,31 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.M
 :async:
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.prepare
+```
+
+````
+
+````{py:method} locate() -> ~bluesky.protocols.Location[float]
+:canonical: ophyd_async.sim._motor.SimMotor.locate
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.locate
+```
+
+````
+
+````{py:method} subscribe(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
+:canonical: ophyd_async.sim._motor.SimMotor.subscribe
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.subscribe
+```
+
+````
+
+````{py:method} clear_sub(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
+:canonical: ophyd_async.sim._motor.SimMotor.clear_sub
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.clear_sub
 ```
 
 ````
@@ -295,3 +344,174 @@ Bases: {py:obj}`ophyd_async.core.StandardDetector`
 ```
 
 ````
+
+`````{py:class} VerticalMirror(name='')
+:canonical: ophyd_async.sim._mirror_vertical.VerticalMirror
+
+Bases: {py:obj}`ophyd_async.core.Device`, {py:obj}`bluesky.protocols.Movable`\[{py:obj}`ophyd_async.sim._mirror_vertical.TwoJackDerived`\]
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.VerticalMirror
+```
+
+````{py:method} set(derived: ~ophyd_async.sim._mirror_vertical.TwoJackDerived) -> None
+:canonical: ophyd_async.sim._mirror_vertical.VerticalMirror.set
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.VerticalMirror.set
+```
+
+````
+
+`````
+
+`````{py:class} HorizontalMirror(name='')
+:canonical: ophyd_async.sim._mirror_horizontal.HorizontalMirror
+
+Bases: {py:obj}`ophyd_async.core.Device`, {py:obj}`bluesky.protocols.Movable`
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_horizontal.HorizontalMirror
+```
+
+````{py:method} set(value: ~ophyd_async.sim._mirror_horizontal.HorizontalMirrorDerived) -> None
+:canonical: ophyd_async.sim._mirror_horizontal.HorizontalMirror.set
+:async:
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_horizontal.HorizontalMirror.set
+```
+
+````
+
+`````
+
+`````{py:class} HorizontalMirrorDerived()
+:canonical: ophyd_async.sim._mirror_horizontal.HorizontalMirrorDerived
+
+Bases: {py:obj}`typing.TypedDict`
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_horizontal.HorizontalMirrorDerived
+```
+
+````{py:attribute} x
+:canonical: ophyd_async.sim._mirror_horizontal.HorizontalMirrorDerived.x
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_horizontal.HorizontalMirrorDerived.x
+```
+
+````
+
+````{py:attribute} roll
+:canonical: ophyd_async.sim._mirror_horizontal.HorizontalMirrorDerived.roll
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_horizontal.HorizontalMirrorDerived.roll
+```
+
+````
+
+`````
+
+`````{py:class} TwoJackTransform(/, **data: ~typing.Any)
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackTransform
+
+Bases: {py:obj}`ophyd_async.core.Transform`
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackTransform
+```
+
+````{py:attribute} distance
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackTransform.distance
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackTransform.distance
+```
+
+````
+
+````{py:method} raw_to_derived(*, jack1: float, jack2: float) -> ~ophyd_async.sim._mirror_vertical.TwoJackDerived
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackTransform.raw_to_derived
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackTransform.raw_to_derived
+```
+
+````
+
+````{py:method} derived_to_raw(*, height: float, angle: float) -> ~ophyd_async.sim._mirror_vertical.TwoJackRaw
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackTransform.derived_to_raw
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackTransform.derived_to_raw
+```
+
+````
+
+`````
+
+`````{py:class} TwoJackDerived()
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackDerived
+
+Bases: {py:obj}`typing.TypedDict`
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackDerived
+```
+
+````{py:attribute} height
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackDerived.height
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackDerived.height
+```
+
+````
+
+````{py:attribute} angle
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackDerived.angle
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackDerived.angle
+```
+
+````
+
+`````
+
+`````{py:class} TwoJackRaw()
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackRaw
+
+Bases: {py:obj}`typing.TypedDict`
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackRaw
+```
+
+````{py:attribute} jack1
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackRaw.jack1
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackRaw.jack1
+```
+
+````
+
+````{py:attribute} jack2
+:canonical: ophyd_async.sim._mirror_vertical.TwoJackRaw.jack2
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.sim._mirror_vertical.TwoJackRaw.jack2
+```
+
+````
+
+`````
