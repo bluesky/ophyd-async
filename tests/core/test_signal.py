@@ -10,9 +10,12 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 from bluesky.protocols import Reading
+from event_model import DataKey
 
 from ophyd_async.core import (
     Array1D,
+    AsyncReadable,
+    Device,
     SignalR,
     SignalRW,
     SoftSignalBackend,
@@ -799,6 +802,17 @@ async def test_failed_assert_reading(
     }
     with pytest.raises(AssertionError):
         await assert_reading(mock_readable, dummy_reading)
+
+
+async def test_assert_reading_without_severity():
+    class Thing(Device, AsyncReadable):
+        async def describe(self) -> dict[str, DataKey]:
+            return {}
+
+        async def read(self) -> dict[str, Reading]:
+            return {"foo": {"value": 42, "timestamp": 0.1}}
+
+    await assert_reading(Thing(), {"foo": {"value": 42}})
 
 
 async def test_assert_configuration(mock_readable: DummyReadableArray):
