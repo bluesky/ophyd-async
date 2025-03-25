@@ -1,0 +1,179 @@
+# {py:mod}`ophyd_async.epics.motor`
+
+```{py:module} ophyd_async.epics.motor
+```
+
+```{autodoc2-docstring} ophyd_async.epics.motor
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`FlyMotorInfo <ophyd_async.epics.motor.FlyMotorInfo>`
+  - ```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo
+    :summary:
+    ```
+* - {py:obj}`Motor <ophyd_async.epics.motor.Motor>`
+  - ```{autodoc2-docstring} ophyd_async.epics.motor.Motor
+    :summary:
+    ```
+````
+
+### API
+
+````{py:exception} MotorLimitsException()
+:canonical: ophyd_async.epics.motor.MotorLimitsException
+
+Bases: {py:obj}`Exception`
+
+```{autodoc2-docstring} ophyd_async.epics.motor.MotorLimitsException
+```
+
+````
+
+`````{py:class} FlyMotorInfo(/, **data: ~typing.Any)
+:canonical: ophyd_async.epics.motor.FlyMotorInfo
+
+Bases: {py:obj}`pydantic.BaseModel`
+
+```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo
+```
+
+````{py:attribute} start_position
+:canonical: ophyd_async.epics.motor.FlyMotorInfo.start_position
+:type: float
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo.start_position
+```
+
+````
+
+````{py:attribute} end_position
+:canonical: ophyd_async.epics.motor.FlyMotorInfo.end_position
+:type: float
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo.end_position
+```
+
+````
+
+````{py:attribute} time_for_move
+:canonical: ophyd_async.epics.motor.FlyMotorInfo.time_for_move
+:type: float
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo.time_for_move
+```
+
+````
+
+````{py:attribute} timeout
+:canonical: ophyd_async.epics.motor.FlyMotorInfo.timeout
+:type: ~ophyd_async.core.CalculatableTimeout
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo.timeout
+```
+
+````
+
+`````
+
+`````{py:class} Motor(prefix: str, name='')
+:canonical: ophyd_async.epics.motor.Motor
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Locatable`\[{py:obj}`float`\], {py:obj}`bluesky.protocols.Stoppable`, {py:obj}`bluesky.protocols.Flyable`, {py:obj}`bluesky.protocols.Preparable`, {py:obj}`bluesky.protocols.Subscribable`\[{py:obj}`float`\]
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor
+```
+
+````{py:method} set_name(name: str, *, child_name_separator: str | None = None) -> None
+:canonical: ophyd_async.epics.motor.Motor.set_name
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.set_name
+```
+
+````
+
+````{py:method} prepare(value: ~ophyd_async.epics.motor.FlyMotorInfo)
+:canonical: ophyd_async.epics.motor.Motor.prepare
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.prepare
+```
+
+````
+
+````{py:method} kickoff()
+:canonical: ophyd_async.epics.motor.Motor.kickoff
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.kickoff
+```
+
+````
+
+````{py:method} complete() -> ~ophyd_async.core.WatchableAsyncStatus
+:canonical: ophyd_async.epics.motor.Motor.complete
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.complete
+```
+
+````
+
+````{py:method} set(new_position: float, timeout: ~ophyd_async.core.CalculatableTimeout = CALCULATE_TIMEOUT)
+:canonical: ophyd_async.epics.motor.Motor.set
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.set
+```
+
+````
+
+````{py:method} stop(success=False)
+:canonical: ophyd_async.epics.motor.Motor.stop
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.stop
+```
+
+````
+
+````{py:method} locate() -> ~bluesky.protocols.Location[float]
+:canonical: ophyd_async.epics.motor.Motor.locate
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.locate
+```
+
+````
+
+````{py:method} subscribe(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
+:canonical: ophyd_async.epics.motor.Motor.subscribe
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.subscribe
+```
+
+````
+
+````{py:method} clear_sub(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
+:canonical: ophyd_async.epics.motor.Motor.clear_sub
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.clear_sub
+```
+
+````
+
+`````

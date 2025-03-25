@@ -1,0 +1,19 @@
+# {py:mod}`ophyd_async.tango`
+
+```{py:module} ophyd_async.tango
+```
+
+```{autodoc2-docstring} ophyd_async.tango
+:allowtitles:
+```
+
+## Subpackages
+
+```{toctree}
+:titlesonly:
+:maxdepth: 3
+
+ophyd_async.tango.demo
+ophyd_async.tango.testing
+ophyd_async.tango.core
+```

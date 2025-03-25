@@ -1,0 +1,8 @@
+# {py:mod}`ophyd_async.fastcs.odin`
+
+```{py:module} ophyd_async.fastcs.odin
+```
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin
+:allowtitles:
+```
