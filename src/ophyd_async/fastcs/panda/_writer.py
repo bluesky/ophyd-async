@@ -68,11 +68,11 @@ class PandaHDFWriter(DetectorWriter):
                 "All PandA datasets should be scalar, multiplier should be 1"
             )
 
-        return await self._describe()
+        return await self._describe(name)
 
-    async def _describe(self) -> dict[str, DataKey]:
+    async def _describe(self, name: str) -> dict[str, DataKey]:
         """Return a describe based on the datasets PV."""
-        await self._update_datasets()
+        await self._update_datasets(name)
         describe = {
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
@@ -86,7 +86,7 @@ class PandaHDFWriter(DetectorWriter):
         }
         return describe
 
-    async def _update_datasets(self) -> None:
+    async def _update_datasets(self, name: str) -> None:
         # Load data from the datasets PV on the panda, update internal
         # representation of datasets that the panda will write.
         capture_table = await self.panda_data_block.datasets.get_value()
@@ -108,8 +108,7 @@ class PandaHDFWriter(DetectorWriter):
         # i.e. no stream resources will be generated
         if len(self._datasets) == 0:
             self.panda_data_block.log.warning(
-                # TODO no reference to detector's name
-                f"PandA {self._name_provider()} DATASETS table is empty! "
+                f"PandA {name} DATASETS table is empty! "
                 "No stream resource docs will be generated. "
                 "Make sure captured positions have their corresponding "
                 "*:DATASET PV set to a scientifically relevant name."
