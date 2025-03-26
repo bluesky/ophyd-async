@@ -68,7 +68,6 @@ def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
     return adcore.ADHDFWriter(
         hdf,
         static_path_provider,
-        lambda: "test",
         adcore.ADBaseDatasetDescriber(hdf),
         {},
     )
