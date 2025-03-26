@@ -214,6 +214,5 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             await self._capture_status
         self._capture_status = None
 
-    @property
-    def hints(self) -> Hints:
-        return {"fields": [self._name_provider()]}
+    def get_hints(self, name: str) -> Hints:
+        return {"fields": [name]}

@@ -135,8 +135,8 @@ class DetectorWriter(ABC):
         :return: Output for ``describe()``
         """
 
-    @property
-    def hints(self) -> Hints:
+    @abstractmethod
+    def get_hints(self, name: str) -> Hints:
         """The hints to be used for the detector."""
         return {}
 
@@ -394,4 +394,4 @@ class StandardDetector(
 
     @property
     def hints(self) -> Hints:
-        return self._writer.hints
+        return self._writer.get_hints(self.name)
