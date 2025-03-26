@@ -8,7 +8,6 @@ from ophyd_async.core import (
     DetectorWriter,
     Device,
     DeviceVector,
-    NameProvider,
     PathProvider,
     StrictEnum,
     observe_value,
@@ -68,12 +67,10 @@ class OdinWriter(DetectorWriter):
     def __init__(
         self,
         path_provider: PathProvider,
-        name_provider: NameProvider,
         odin_driver: Odin,
     ) -> None:
         self._drv = odin_driver
         self._path_provider = path_provider
-        self._name_provider = name_provider
         super().__init__()
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:

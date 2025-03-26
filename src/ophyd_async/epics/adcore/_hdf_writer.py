@@ -10,7 +10,6 @@ from ophyd_async.core import (
     DatasetDescriber,
     HDFDatasetDescription,
     HDFDocumentComposer,
-    NameProvider,
     PathProvider,
 )
 
@@ -31,14 +30,12 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self,
         fileio: NDFileHDFIO,
         path_provider: PathProvider,
-        name_provider: NameProvider,
         dataset_describer: DatasetDescriber,
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         super().__init__(
             fileio,
             path_provider,
-            name_provider,
             dataset_describer,
             plugins=plugins,
             file_extension=".h5",

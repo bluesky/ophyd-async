@@ -10,7 +10,6 @@ from ophyd_async.core import (
     DetectorWriter,
     HDFDatasetDescription,
     HDFDocumentComposer,
-    NameProvider,
     PathProvider,
     observe_value,
     wait_for_value,
@@ -25,12 +24,10 @@ class PandaHDFWriter(DetectorWriter):
     def __init__(
         self,
         path_provider: PathProvider,
-        name_provider: NameProvider,
         panda_data_block: DataBlock,
     ) -> None:
         self.panda_data_block = panda_data_block
         self._path_provider = path_provider
-        self._name_provider = name_provider
         self._datasets: list[HDFDatasetDescription] = []
         self._composer: HDFDocumentComposer | None = None
         self._multiplier = 1
