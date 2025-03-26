@@ -12,7 +12,7 @@ from event_model import (
 )
 
 from ophyd_async.core._detector import DetectorWriter
-from ophyd_async.core._providers import DatasetDescriber, NameProvider, PathProvider
+from ophyd_async.core._providers import DatasetDescriber, PathProvider
 from ophyd_async.core._signal import (
     observe_value,
     set_and_wait_for_value,
@@ -44,7 +44,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self,
         fileio: NDFileIOT,
         path_provider: PathProvider,
-        name_provider: NameProvider,
         dataset_describer: DatasetDescriber,
         file_extension: str = "",
         mimetype: str = "",
@@ -53,7 +52,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._plugins = plugins or {}
         self.fileio = fileio
         self._path_provider = path_provider
-        self._name_provider = name_provider
         self._dataset_describer = dataset_describer
         self._file_extension = file_extension
         self._mimetype = mimetype
@@ -81,18 +79,11 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         fileio = fileio_cls(prefix + (fileio_suffix or cls.default_suffix))
         dataset_describer = ADBaseDatasetDescriber(dataset_source or fileio)
 
-        def name_provider() -> str:
-            if fileio.parent == "Not attached to a detector":
-                raise RuntimeError("Initializing writer without parent detector!")
-            return fileio.parent.name
-
-        writer = cls(
-            fileio, path_provider, name_provider, dataset_describer, plugins=plugins
-        )
+        writer = cls(fileio, path_provider, dataset_describer, plugins=plugins)
         return writer
 
-    async def begin_capture(self) -> None:
-        info = self._path_provider(device_name=self._name_provider())
+    async def begin_capture(self, name: str) -> None:
+        info = self._path_provider(device_name=name)
 
         await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
 
@@ -125,17 +116,17 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             self.fileio.capture, True, wait_for_set_completion=False
         )
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
         self._emitted_resource = None
         self._last_emitted = 0
         self._multiplier = multiplier
         frame_shape = await self._dataset_describer.shape()
         dtype_numpy = await self._dataset_describer.np_datatype()
 
-        await self.begin_capture()
+        await self.begin_capture(name)
 
         describe = {
-            self._name_provider(): DataKey(
+            name: DataKey(
                 source=self.fileio.full_file_name.source,
                 shape=list(frame_shape),
                 dtype="array",
@@ -157,7 +148,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         return num_captured // self._multiplier
 
     async def collect_stream_docs(
-        self, indices_written: int
+        self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._emitted_resource:
@@ -183,7 +174,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                 self._emitted_resource = bundler_composer(
                     mimetype=self._mimetype,
                     uri=uri,
-                    data_key=self._name_provider(),
+                    # TODO no reference to detector's name
+                    data_key=name,
                     parameters={
                         # Assume that we always write 1 frame per file/chunk
                         "chunk_shape": (1, *frame_shape),
@@ -218,6 +210,5 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             await self._capture_status
         self._capture_status = None
 
-    @property
-    def hints(self) -> Hints:
-        return {"fields": [self._name_provider()]}
+    def get_hints(self, name: str) -> Hints:
+        return {"fields": [name]}

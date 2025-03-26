@@ -55,7 +55,7 @@ async def test_can_read(
     assert (await test_det.read()) == {}
 
 
-async def test_decribe_describes_writer_dataset(
+async def test_describes_writer_dataset(
     ad_standard_det_factory,
     detector_cls: type[adcore.AreaDetector],
     writer_cls: type[adcore.ADWriter],

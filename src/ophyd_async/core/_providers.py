@@ -220,14 +220,6 @@ class YMDPathProvider(PathProvider):
         )
 
 
-class NameProvider(Protocol):
-    """Base class for callable classes providing data keys."""
-
-    @abstractmethod
-    def __call__(self) -> str:
-        """Get the name to be used as a data_key in the descriptor document."""
-
-
 class DatasetDescriber(Protocol):
     """For describing datasets in file writing."""
 

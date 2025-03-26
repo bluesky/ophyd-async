@@ -30,7 +30,6 @@ class HDFPanda(
         controller = PandaPcapController(pcap=self.pcap)
         writer = PandaHDFWriter(
             path_provider=path_provider,
-            name_provider=lambda: name,
             panda_data_block=self.data,
         )
         super().__init__(

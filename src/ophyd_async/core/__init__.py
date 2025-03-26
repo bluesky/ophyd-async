@@ -26,7 +26,6 @@ from ._providers import (
     AutoIncrementingPathProvider,
     DatasetDescriber,
     FilenameProvider,
-    NameProvider,
     PathInfo,
     PathProvider,
     StaticFilenameProvider,
@@ -160,7 +159,6 @@ __all__ = [
     "AutoIncrementFilenameProvider",
     "UUIDFilenameProvider",
     # Datatset
-    "NameProvider",
     "DatasetDescriber",
     "HDFDatasetDescription",
     "HDFDocumentComposer",

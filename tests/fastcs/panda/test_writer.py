@@ -23,6 +23,8 @@ from ophyd_async.fastcs.panda import (
 )
 from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
+PANDA_DETECTOR_NAME = "mock_panda"
+
 TABLES = [
     DatasetTable(
         name=[],
@@ -95,7 +97,6 @@ async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
     async with init_devices(mock=True):
         writer = PandaHDFWriter(
             path_provider=dp,
-            name_provider=lambda: mock_panda.name,
             panda_data_block=mock_panda.data,
         )
 
@@ -113,7 +114,9 @@ async def test_open_returns_correct_descriptors(
     )
 
     with caplog.at_level(logging.WARNING):
-        description = await mock_writer.open()  # to make capturing status not time out
+        description = await mock_writer.open(
+            PANDA_DETECTOR_NAME
+        )  # to make capturing status not time out
 
         # Check if empty datasets table leads to warning log message
         if len(table.name) == 0:
@@ -133,34 +136,34 @@ async def test_open_returns_correct_descriptors(
 
 
 async def test_open_close_sets_capture(mock_writer: PandaHDFWriter):
-    assert isinstance(await mock_writer.open(), dict)
+    assert isinstance(await mock_writer.open(PANDA_DETECTOR_NAME), dict)
     assert await mock_writer.panda_data_block.capture.get_value()
     await mock_writer.close()
     assert not await mock_writer.panda_data_block.capture.get_value()
 
 
 async def test_open_sets_file_path_and_name(mock_writer: PandaHDFWriter, tmp_path):
-    await mock_writer.open()
+    await mock_writer.open(PANDA_DETECTOR_NAME)
     path = await mock_writer.panda_data_block.hdf_directory.get_value()
-    assert path == str(tmp_path / mock_writer._name_provider())
+    assert path == str(tmp_path / PANDA_DETECTOR_NAME)
     name = await mock_writer.panda_data_block.hdf_file_name.get_value()
     assert name == "data.h5"
 
 
 async def test_open_errors_when_multiplier_not_one(mock_writer: PandaHDFWriter):
     with pytest.raises(ValueError):
-        await mock_writer.open(2)
+        await mock_writer.open(PANDA_DETECTOR_NAME, 2)
 
 
 async def test_get_indices_written(mock_writer: PandaHDFWriter):
-    await mock_writer.open()
+    await mock_writer.open(PANDA_DETECTOR_NAME)
     set_mock_value(mock_writer.panda_data_block.num_captured, 4)
     written = await mock_writer.get_indices_written()
     assert written == 4
 
 
 async def test_wait_for_index(mock_writer: PandaHDFWriter):
-    await mock_writer.open()
+    await mock_writer.open(PANDA_DETECTOR_NAME)
     set_mock_value(mock_writer.panda_data_block.num_captured, 3)
     await mock_writer.wait_for_index(3, timeout=1)
     set_mock_value(mock_writer.panda_data_block.num_captured, 2)
@@ -177,7 +180,7 @@ async def test_collect_stream_docs(
     # Give the mock writer datasets
     set_mock_value(mock_writer.panda_data_block.datasets, table)
 
-    await mock_writer.open()
+    await mock_writer.open(PANDA_DETECTOR_NAME)
 
     def assert_resource_document(name, resource_doc):
         assert resource_doc == {
@@ -194,7 +197,7 @@ async def test_collect_stream_docs(
         }
         assert os.path.join("mock_panda", "data.h5") in resource_doc["uri"]
 
-    [item async for item in mock_writer.collect_stream_docs(1)]
+    [item async for item in mock_writer.collect_stream_docs(PANDA_DETECTOR_NAME, 1)]
     assert type(mock_writer._composer) is HDFDocumentComposer
     assert mock_writer._composer._last_emitted == 1
 
@@ -215,9 +218,8 @@ async def test_oserror_when_hdf_dir_does_not_exist(tmp_path, mock_panda):
     async with init_devices(mock=True):
         writer = PandaHDFWriter(
             path_provider=dp,
-            name_provider=lambda: "test-panda",
             panda_data_block=mock_panda.data,
         )
 
     with pytest.raises(OSError):
-        await writer.open()
+        await writer.open(PANDA_DETECTOR_NAME)

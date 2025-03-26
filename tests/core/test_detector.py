@@ -47,8 +47,13 @@ async def test_prepare_internal_trigger(standard_detector: StandardDetector) -> 
     assert standard_detector._trigger_info == trigger_info
     assert standard_detector._number_of_triggers_iter is not None
     assert standard_detector._initial_frame == 0
-    standard_detector._writer.open.assert_called_once_with(trigger_info.multiplier)  # type: ignore
-    standard_detector._controller.prepare.assert_called_once_with(trigger_info)  # type: ignore
+    assert standard_detector._name == "test_detector"
+    standard_detector._writer.open.assert_called_once_with(
+        standard_detector.name, trigger_info.multiplier
+    )  # type: ignore
+    standard_detector._controller.prepare.assert_called_once_with(
+        standard_detector.name, trigger_info
+    )  # type: ignore
 
 
 async def test_prepare_external_trigger(standard_detector: StandardDetector) -> None:
@@ -63,8 +68,12 @@ async def test_prepare_external_trigger(standard_detector: StandardDetector) -> 
     assert standard_detector._trigger_info == trigger_info
     assert standard_detector._number_of_triggers_iter is not None
     assert standard_detector._initial_frame == 0
-    standard_detector._writer.open.assert_called_once_with(trigger_info.multiplier)  # type: ignore
-    standard_detector._controller.prepare.assert_called_once_with(trigger_info)  # type: ignore
+    standard_detector._writer.open.assert_called_once_with(
+        standard_detector.name, trigger_info.multiplier
+    )  # type: ignore
+    standard_detector._controller.prepare.assert_called_once_with(
+        standard_detector.name, trigger_info
+    )  # type: ignore
     standard_detector._controller.arm.assert_called_once()  # type: ignore
 
 

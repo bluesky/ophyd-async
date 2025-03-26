@@ -47,7 +47,7 @@ class DummyWriter(DetectorWriter):
         self.index = 0
         self.observe_indices_written_timeout_log = []
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
         return {
             self._name: DataKey(
                 source="soft://some-source",
@@ -69,7 +69,7 @@ class DummyWriter(DetectorWriter):
         return self.index
 
     async def collect_stream_docs(
-        self, indices_written: int
+        self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._file:

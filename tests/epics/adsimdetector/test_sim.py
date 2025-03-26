@@ -161,8 +161,8 @@ async def test_two_detectors_step(
     controller_a = two_test_adsimdetectors[0]._controller
     writer_a = two_test_adsimdetectors[0]._writer
     writer_b = two_test_adsimdetectors[1]._writer
-    info_a = writer_a._path_provider(device_name=writer_a._name_provider())
-    info_b = writer_b._path_provider(device_name=writer_b._name_provider())
+    info_a = writer_a._path_provider(device_name=two_test_adsimdetectors[0].name)
+    info_b = writer_b._path_provider(device_name=two_test_adsimdetectors[1].name)
     file_name_a = None
     file_name_b = None
 
