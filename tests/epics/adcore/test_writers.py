@@ -49,9 +49,7 @@ async def tiff_writer(
     async with init_devices(mock=True):
         tiff = adcore.NDFileIO("TIFF:")
 
-    return adcore.ADTIFFWriter(
-        tiff, static_path_provider, lambda: "test", DummyDatasetDescriber(), {}
-    )
+    return adcore.ADTIFFWriter(tiff, static_path_provider, DummyDatasetDescriber(), {})
 
 
 @pytest.fixture
