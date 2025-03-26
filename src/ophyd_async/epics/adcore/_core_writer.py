@@ -83,6 +83,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         return writer
 
     async def begin_capture(self) -> None:
+        # TODO no reference to detector's name
         info = self._path_provider(device_name=self._name_provider())
 
         await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
@@ -174,6 +175,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                 self._emitted_resource = bundler_composer(
                     mimetype=self._mimetype,
                     uri=uri,
+                    # TODO no reference to detector's name
                     data_key=self._name_provider(),
                     parameters={
                         # Assume that we always write 1 frame per file/chunk

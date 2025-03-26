@@ -108,6 +108,7 @@ class PandaHDFWriter(DetectorWriter):
         # i.e. no stream resources will be generated
         if len(self._datasets) == 0:
             self.panda_data_block.log.warning(
+                # TODO no reference to detector's name
                 f"PandA {self._name_provider()} DATASETS table is empty! "
                 "No stream resource docs will be generated. "
                 "Make sure captured positions have their corresponding "
