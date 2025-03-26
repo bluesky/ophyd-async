@@ -12,7 +12,7 @@ from event_model import (
 )
 
 from ophyd_async.core._detector import DetectorWriter
-from ophyd_async.core._providers import DatasetDescriber, NameProvider, PathProvider
+from ophyd_async.core._providers import DatasetDescriber, PathProvider
 from ophyd_async.core._signal import (
     observe_value,
     set_and_wait_for_value,
@@ -44,7 +44,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self,
         fileio: NDFileIOT,
         path_provider: PathProvider,
-        name_provider: NameProvider,
         dataset_describer: DatasetDescriber,
         file_extension: str = "",
         mimetype: str = "",
@@ -53,7 +52,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._plugins = plugins or {}
         self.fileio = fileio
         self._path_provider = path_provider
-        self._name_provider = name_provider
         self._dataset_describer = dataset_describer
         self._file_extension = file_extension
         self._mimetype = mimetype
@@ -86,9 +84,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                 raise RuntimeError("Initializing writer without parent detector!")
             return fileio.parent.name
 
-        writer = cls(
-            fileio, path_provider, name_provider, dataset_describer, plugins=plugins
-        )
+        writer = cls(fileio, path_provider, dataset_describer, plugins=plugins)
         return writer
 
     async def begin_capture(self) -> None:
