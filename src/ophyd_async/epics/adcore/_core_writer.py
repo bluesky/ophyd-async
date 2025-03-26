@@ -79,11 +79,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         fileio = fileio_cls(prefix + (fileio_suffix or cls.default_suffix))
         dataset_describer = ADBaseDatasetDescriber(dataset_source or fileio)
 
-        def name_provider() -> str:
-            if fileio.parent == "Not attached to a detector":
-                raise RuntimeError("Initializing writer without parent detector!")
-            return fileio.parent.name
-
         writer = cls(fileio, path_provider, dataset_describer, plugins=plugins)
         return writer
 
@@ -131,7 +126,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         await self.begin_capture()
 
         describe = {
-            self._name_provider(): DataKey(
+            name: DataKey(
                 source=self.fileio.full_file_name.source,
                 shape=list(frame_shape),
                 dtype="array",

@@ -39,7 +39,7 @@ class PandaHDFWriter(DetectorWriter):
         await self.panda_data_block.flush_period.set(0)
 
         self._composer = None
-        info = self._path_provider(device_name=self._name_provider())
+        info = self._path_provider(device_name=name)
 
         # Set create dir depth first to guarantee that callback when setting
         # directory path has correct value

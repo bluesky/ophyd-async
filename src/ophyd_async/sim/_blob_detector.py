@@ -26,7 +26,6 @@ class SimBlobDetector(StandardDetector):
             writer=BlobDetectorWriter(
                 pattern_generator=self.pattern_generator,
                 path_provider=path_provider,
-                name_provider=lambda: self.name,
             ),
             config_sigs=config_sigs,
             name=name,

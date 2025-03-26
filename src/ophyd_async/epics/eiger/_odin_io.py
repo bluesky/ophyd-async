@@ -74,7 +74,7 @@ class OdinWriter(DetectorWriter):
         super().__init__()
 
     async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
-        info = self._path_provider(device_name=self._name_provider())
+        info = self._path_provider(device_name=name)
 
         await asyncio.gather(
             self._drv.file_path.set(str(info.directory_path)),

@@ -31,7 +31,6 @@ class BlobDetectorWriter(DetectorWriter):
         self.datasets: list[HDFDatasetDescription] = []
 
     async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
-        name = self.name_provider()
         path_info = self.path_provider(name)
         self.path = path_info.directory_path / f"{path_info.filename}.h5"
         self.pattern_generator.open_file(self.path, WIDTH, HEIGHT)
