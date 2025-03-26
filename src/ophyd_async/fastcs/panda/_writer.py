@@ -33,7 +33,7 @@ class PandaHDFWriter(DetectorWriter):
         self._multiplier = 1
 
     # Triggered on PCAP arm
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture."""
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)

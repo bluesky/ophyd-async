@@ -121,7 +121,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             self.fileio.capture, True, wait_for_set_completion=False
         )
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
         self._emitted_resource = None
         self._last_emitted = 0
         self._multiplier = multiplier

@@ -30,7 +30,7 @@ class BlobDetectorWriter(DetectorWriter):
         self.composer: HDFDocumentComposer | None = None
         self.datasets: list[HDFDatasetDescription] = []
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
         name = self.name_provider()
         path_info = self.path_provider(name)
         self.path = path_info.directory_path / f"{path_info.filename}.h5"

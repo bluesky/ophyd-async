@@ -47,7 +47,7 @@ class DummyWriter(DetectorWriter):
         self.index = 0
         self.observe_indices_written_timeout_log = []
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
         return {
             self._name: DataKey(
                 source="soft://some-source",

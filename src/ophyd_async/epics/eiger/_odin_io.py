@@ -73,7 +73,7 @@ class OdinWriter(DetectorWriter):
         self._path_provider = path_provider
         super().__init__()
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
         info = self._path_provider(device_name=self._name_provider())
 
         await asyncio.gather(
