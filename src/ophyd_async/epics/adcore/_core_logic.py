@@ -7,7 +7,8 @@ from ophyd_async.core import (
     DetectorController,
     DetectorTrigger,
     TriggerInfo,
-    set_and_wait_for_value,
+    observe_value,
+    set_and_wait_for_value
 )
 
 from ._core_io import (
@@ -111,11 +112,17 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
             # NOTE: possible race condition here between the callback from
             # set_and_wait_for_value and the detector state updating.
             await status
-            state = await self.driver.detector_state.get_value()
-            if state not in self.good_states:
+            state = None
+            try:
+                async for state in observe_value(
+                    self.driver.detector_state, done_timeout=DEFAULT_TIMEOUT
+                ):
+                    if state in self.good_states:
+                        return
+            except asyncio.TimeoutError:
                 raise ValueError(
-                    f"Final detector state {state.value} not "
-                    "in valid end states: {self.good_states}"
+                    f"Final detector state {state.value} not in valid end "
+                    f"states: {self.good_states}"
                 )
 
         return AsyncStatus(complete_acquisition())
