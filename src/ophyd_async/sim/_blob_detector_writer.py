@@ -81,7 +81,7 @@ class BlobDetectorWriter(DetectorWriter):
             await self.pattern_generator.wait_for_next_index(timeout)
 
     async def collect_stream_docs(
-        self, indices_written: int
+        self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # When we have written something to the file
         if indices_written:

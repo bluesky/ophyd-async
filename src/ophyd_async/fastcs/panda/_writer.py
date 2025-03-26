@@ -138,7 +138,7 @@ class PandaHDFWriter(DetectorWriter):
             yield num_captured // self._multiplier
 
     async def collect_stream_docs(
-        self, indices_written: int
+        self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
         if indices_written:

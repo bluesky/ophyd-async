@@ -83,7 +83,7 @@ class DummyWriter(DetectorWriter):
         return self.index
 
     async def collect_stream_docs(
-        self, indices_written: int
+        self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._file:

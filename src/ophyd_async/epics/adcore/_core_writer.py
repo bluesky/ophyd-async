@@ -148,7 +148,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         return num_captured // self._multiplier
 
     async def collect_stream_docs(
-        self, indices_written: int
+        self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._emitted_resource:
@@ -175,7 +175,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                     mimetype=self._mimetype,
                     uri=uri,
                     # TODO no reference to detector's name
-                    data_key=self._name_provider(),
+                    data_key=name,
                     parameters={
                         # Assume that we always write 1 frame per file/chunk
                         "chunk_shape": (1, *frame_shape),

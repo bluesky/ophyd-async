@@ -197,7 +197,7 @@ async def test_collect_stream_docs(
         }
         assert os.path.join("mock_panda", "data.h5") in resource_doc["uri"]
 
-    [item async for item in mock_writer.collect_stream_docs(1)]
+    [item async for item in mock_writer.collect_stream_docs(PANDA_DETECTOR_NAME, 1)]
     assert type(mock_writer._composer) is HDFDocumentComposer
     assert mock_writer._composer._last_emitted == 1
 

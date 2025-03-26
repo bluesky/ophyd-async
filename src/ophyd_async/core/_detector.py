@@ -152,7 +152,9 @@ class DetectorWriter(ABC):
         """Yield the index of each frame (or equivalent data point) as it is written."""
 
     @abstractmethod
-    def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
+    def collect_stream_docs(
+        self, name: str, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
         """Create Stream docs up to given number written."""
 
     @abstractmethod
@@ -385,7 +387,7 @@ class StandardDetector(
         # retrieved for step scans.
         if index is None:
             index = await self._writer.get_indices_written()
-        async for doc in self._writer.collect_stream_docs(index):
+        async for doc in self._writer.collect_stream_docs(self.name, index):
             yield doc
 
     async def get_index(self) -> int:

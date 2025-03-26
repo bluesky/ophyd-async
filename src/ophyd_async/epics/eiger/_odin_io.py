@@ -114,7 +114,9 @@ class OdinWriter(DetectorWriter):
     async def get_indices_written(self) -> int:
         return await self._drv.num_captured.get_value()
 
-    def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
+    def collect_stream_docs(
+        self, name: str, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
         # TODO: Correctly return stream https://github.com/bluesky/ophyd-async/issues/530
         raise NotImplementedError()
 

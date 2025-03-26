@@ -125,7 +125,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         return describe
 
     async def collect_stream_docs(
-        self, indices_written: int
+        self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
         await self.fileio.flush_now.set(True)
