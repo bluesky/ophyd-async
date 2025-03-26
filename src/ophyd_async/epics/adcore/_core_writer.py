@@ -82,9 +82,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         writer = cls(fileio, path_provider, dataset_describer, plugins=plugins)
         return writer
 
-    async def begin_capture(self) -> None:
-        # TODO no reference to detector's name
-        info = self._path_provider(device_name=self._name_provider())
+    async def begin_capture(self, name: str) -> None:
+        info = self._path_provider(device_name=name)
 
         await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
 
@@ -124,7 +123,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         frame_shape = await self._dataset_describer.shape()
         dtype_numpy = await self._dataset_describer.np_datatype()
 
-        await self.begin_capture()
+        await self.begin_capture(name)
 
         describe = {
             name: DataKey(

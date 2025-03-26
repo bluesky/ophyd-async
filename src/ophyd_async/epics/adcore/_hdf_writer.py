@@ -61,7 +61,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         )
 
         # Set common AD file plugin params, begin capturing
-        await self.begin_capture()
+        await self.begin_capture(name)
 
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()
