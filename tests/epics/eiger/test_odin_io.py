@@ -16,7 +16,7 @@ OdinDriverAndWriter = tuple[Odin, OdinWriter]
 def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
     with init_devices(mock=True):
         driver = Odin("")
-        writer = OdinWriter(MagicMock(), lambda: "odin", driver)
+        writer = OdinWriter(MagicMock(), driver)
     return driver, writer
 
 
