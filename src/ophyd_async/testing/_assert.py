@@ -1,6 +1,7 @@
 import asyncio
+from collections.abc import Mapping
 from contextlib import AbstractContextManager
-from typing import Any
+from typing import Any, cast
 from unittest.mock import Mock, call
 
 import pytest
@@ -43,7 +44,7 @@ async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
 
 async def assert_reading(
     readable: AsyncReadable,
-    expected_reading: dict[str, dict[str, Any]],
+    expected_reading: Mapping[str, Mapping[str, Any]],
 ) -> None:
     """Assert that a readable Device has the given reading.
 
@@ -54,20 +55,25 @@ async def assert_reading(
     _assert_readings_approx_equal(expected_reading, actual_reading)
 
 
-def _assert_readings_approx_equal(expected, actual):
-    assert expected.keys() == actual.keys()
-    approx_expected_reading = {
-        k: dict(
-            v,
-            value=approx_value(v["value"]),
-            timestamp=pytest.approx(v["timestamp"], rel=0.1)
-            if "timestamp" in v
-            else actual[k]["timestamp"],
-            alarm_severity=v.get("alarm_severity", actual[k]["alarm_severity"]),
-        )
-        for k, v in expected.items()
+def _approx_reading(expected: Mapping[str, Any], actual: Reading) -> Reading:
+    ret = dict(
+        expected,
+        value=approx_value(expected["value"]),
+        timestamp=pytest.approx(expected["timestamp"], rel=0.1)
+        if "timestamp" in expected
+        else actual["timestamp"],
+    )
+    if "alarm_severity" in actual and "alarm_severity" not in expected:
+        ret["alarm_severity"] = actual["alarm_severity"]
+    return cast(Reading, ret)
+
+
+def _assert_readings_approx_equal(
+    expected: Mapping[str, Mapping[str, Any]], actual: Mapping[str, Reading]
+):
+    assert actual == {
+        k: _approx_reading(v, actual[k]) for k, v in expected.items() if k in actual
     }
-    assert actual == approx_expected_reading
 
 
 async def assert_configuration(
