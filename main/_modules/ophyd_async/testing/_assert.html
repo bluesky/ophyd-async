@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.testing._assert &#8212; ophyd-async 0.9.1.dev40+gd3ea0c91 documentation</title>
+    <title>ophyd_async.testing._assert &#8212; ophyd-async 0.10.0a2.dev1+gf4a36872 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=bdafd04c"></script>
+    <script src="../../../_static/documentation_options.js?v=52fad37e"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.9.1.dev40+gd3ea0c91 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.9.1.dev40+gd3ea0c91 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a2.dev1+gf4a36872 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a2.dev1+gf4a36872 documentation - Home"/>
   
   
 </a></div>
@@ -464,8 +464,9 @@ window.addEventListener("load", () => mermaid.run());
                   
   <h1>Source code for ophyd_async.testing._assert</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractContextManager</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">cast</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unittest.mock</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mock</span><span class="p">,</span> <span class="n">call</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
@@ -516,7 +517,7 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.assert_reading">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">assert_reading</span><span class="p">(</span>
     <span class="n">readable</span><span class="p">:</span> <span class="n">AsyncReadable</span><span class="p">,</span>
-    <span class="n">expected_reading</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+    <span class="n">expected_reading</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Assert that a readable Device has the given reading.</span>
 
@@ -528,20 +529,25 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_assert_readings_approx_equal</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">actual</span><span class="p">):</span>
-    <span class="k">assert</span> <span class="n">expected</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">==</span> <span class="n">actual</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-    <span class="n">approx_expected_reading</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span>
-            <span class="n">v</span><span class="p">,</span>
-            <span class="n">value</span><span class="o">=</span><span class="n">approx_value</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]),</span>
-            <span class="n">timestamp</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span> <span class="n">rel</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s2">&quot;timestamp&quot;</span> <span class="ow">in</span> <span class="n">v</span>
-            <span class="k">else</span> <span class="n">actual</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span>
-            <span class="n">alarm_severity</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alarm_severity&quot;</span><span class="p">,</span> <span class="n">actual</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s2">&quot;alarm_severity&quot;</span><span class="p">]),</span>
-        <span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_approx_reading</span><span class="p">(</span><span class="n">expected</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">actual</span><span class="p">:</span> <span class="n">Reading</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">expected</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">=</span><span class="n">approx_value</span><span class="p">(</span><span class="n">expected</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]),</span>
+        <span class="n">timestamp</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="n">expected</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span> <span class="n">rel</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;timestamp&quot;</span> <span class="ow">in</span> <span class="n">expected</span>
+        <span class="k">else</span> <span class="n">actual</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;alarm_severity&quot;</span> <span class="ow">in</span> <span class="n">actual</span> <span class="ow">and</span> <span class="s2">&quot;alarm_severity&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">expected</span><span class="p">:</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;alarm_severity&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">actual</span><span class="p">[</span><span class="s2">&quot;alarm_severity&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">Reading</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_assert_readings_approx_equal</span><span class="p">(</span>
+    <span class="n">expected</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">actual</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]</span>
+<span class="p">):</span>
+    <span class="k">assert</span> <span class="n">actual</span> <span class="o">==</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">_approx_reading</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">actual</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">actual</span>
     <span class="p">}</span>
-    <span class="k">assert</span> <span class="n">actual</span> <span class="o">==</span> <span class="n">approx_expected_reading</span>
 
 
 <div class="viewcode-block" id="assert_configuration">
