@@ -1,0 +1,716 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to interact with signals while implementing bluesky verbs &#8212; ophyd-async 0.10.0a2 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=ac0ab41f"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'how-to/interact-with-signals';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.10.0a2';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to use settings to put devices back in their original state" href="put-device-back.html" />
+    <link rel="prev" title="How to implement a Device for an EPICS areaDetector" href="implement-ad-detector.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.10.0a2" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a2 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a2 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="choose-right-baseclass.html">How to choose the right base class when implementing a new Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">How to contribute to the project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="derive-one-signal-from-others.html">How to derive one signal from others</a></li>
+<li class="toctree-l1"><a class="reference internal" href="implement-ad-detector.html">How to implement a Device for an EPICS areaDetector</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to interact with signals while implementing bluesky verbs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="put-device-back.html">How to use settings to put devices back in their original state</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store-and-retrieve.html">How to store and retrieve device settings</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../how-to.html" class="nav-link">How-to Guides</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">How to interact with signals while implementing bluesky verbs</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="how-to-interact-with-signals-while-implementing-bluesky-verbs">
+<span id="interact-with-signals"></span><h1>How to interact with signals while implementing bluesky verbs<a class="headerlink" href="#how-to-interact-with-signals-while-implementing-bluesky-verbs" title="Link to this heading">#</a></h1>
+<p>To implement bluesky verbs, you typically need to interact with Signals. This guide will show you how to do the following operations on a Signal:</p>
+<ul class="simple">
+<li><p>Get the value</p></li>
+<li><p>Set the value</p></li>
+<li><p>Observe every value change</p></li>
+<li><p>Wait for the value to match some expected value</p></li>
+</ul>
+<section id="get-the-value">
+<h2>Get the value<a class="headerlink" href="#get-the-value" title="Link to this heading">#</a></h2>
+<p>To get a single signal value, you can call <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.get_value" title="ophyd_async.core.SignalR.get_value"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalR.get_value</span></code></a>, awaiting the response:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can wrap these with <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.gather" title="Python 3.13"><code class="iref myst docutils literal notranslate"><span class="pre">asyncio.gather</span></code></a> if you need to get multiple values at the same time:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">value1</span><span class="p">,</span> <span class="n">value2</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">signal1</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span> <span class="n">signal2</span><span class="o">.</span><span class="n">get_value</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="set-the-value">
+<h2>Set the value<a class="headerlink" href="#set-the-value" title="Link to this heading">#</a></h2>
+<p>To set a single value and wait for it to complete (for up to a timeout) you can call <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW.set" title="ophyd_async.core.SignalW.set"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalW.set</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want to do something else while waiting for it to complete you can store the signal it returns and await it later:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+<span class="c1"># do something else here</span>
+<span class="k">await</span> <span class="n">status</span>
+</pre></div>
+</div>
+<p>Rarely there are operations (like telling an EPICS motor to stop) where you have to tell the control system not to wait for the operation to complete, otherwise it will deadlock with the operation that started it moving in the first place:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">stop_signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="observe-every-value-change">
+<h2>Observe every value change<a class="headerlink" href="#observe-every-value-change" title="Link to this heading">#</a></h2>
+<p>To observe every value change and run a function on that value you can use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.observe_value" title="ophyd_async.core.observe_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">observe_value</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">signal</span><span class="p">):</span>
+    <span class="n">do_something_with</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will run until you <code class="docutils literal notranslate"><span class="pre">break</span></code> out of the loop. If you would like to break out of the loop when some other operation is complete you can pass an <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a> that you create yourself or from the result of setting a signal, which will break out of the loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">signal2</span><span class="p">,</span> <span class="n">done_status</span><span class="o">=</span><span class="n">status</span><span class="p">):</span>
+    <span class="n">do_something_with</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="c1"># when signal.set() completes the loop will break out here</span>
+</pre></div>
+</div>
+<p>You can pass <code class="docutils literal notranslate"><span class="pre">timeout</span></code> to specify how the maximum time to wait for a single update, and <code class="docutils literal notranslate"><span class="pre">done_timeout</span></code> to specify the maximum time to wait for <code class="docutils literal notranslate"><span class="pre">done_status</span></code>.</p>
+<p>If you want to wait for multiple signals you can use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.observe_signals_value" title="ophyd_async.core.observe_signals_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">observe_signals_value</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">signal</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">signal1</span><span class="p">,</span> <span class="n">signal2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">signal</span> <span class="ow">is</span> <span class="n">signal1</span><span class="p">:</span>
+        <span class="n">do_something_with</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">signal</span> <span class="ow">is</span> <span class="n">signal2</span><span class="p">:</span>
+        <span class="n">do_something_else_with</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="wait-for-the-value-to-match-some-expected-value">
+<h2>Wait for the value to match some expected value<a class="headerlink" href="#wait-for-the-value-to-match-some-expected-value" title="Link to this heading">#</a></h2>
+<p>If you don’t need to run code for every signal update, but just want to wait until the signal matches some expected value, you can use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.wait_for_value" title="ophyd_async.core.wait_for_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">wait_for_value</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">acquiring</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or you can pass a function that returns True if the value matches a given condition:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">45</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Which you can use to implement a tolerance check using <a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.isclose.html#numpy.isclose" title="NumPy 2.3.dev0"><code class="iref myst docutils literal notranslate"><span class="pre">numpy.isclose</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">temperature</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mf">32.79</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.01</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Some control systems (like some EPICS StreamDevice implementations) return immediately when a signal is set, and require you to wait for that signal to match the value to know when it is complete. You can use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_value" title="ophyd_async.core.set_and_wait_for_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_and_wait_for_value</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_and_wait_for_other_value" title="ophyd_async.core.set_and_wait_for_other_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_and_wait_for_other_value</span></code></a> to do this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or if you have to wait for another signal to match a value:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">await</span> <span class="n">set_and_wait_for_other_value</span><span class="p">(</span><span class="n">signal1</span><span class="p">,</span> <span class="n">value1</span><span class="p">,</span> <span class="n">signal2</span><span class="p">,</span> <span class="n">value2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can pass <code class="docutils literal notranslate"><span class="pre">timeout</span></code> to specify how long to wait for signal2 to match value2, and <code class="docutils literal notranslate"><span class="pre">set_timeout</span></code> to specify how long to wait</p>
+<p>Some control systems (like EPICS areaDetector) return when an operation is complete, rather than when the operation has started. To support this you can ask not to <code class="docutils literal notranslate"><span class="pre">wait_for_set_completion</span></code>, just wait until the signal reaches the required value:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">arm_status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span><span class="n">driver</span><span class="o">.</span><span class="n">acquiring</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">wait_for_set_completion</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># the detector is now armed, do something else</span>
+<span class="k">await</span> <span class="n">arm_status</span>
+<span class="c1"># the detector is now disarmed</span>
+</pre></div>
+</div>
+<p>This is better illustrated with a diagram:</p>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 670.4673658150261 320.6114832985918" width="670.4673658150261" height="320.6114832985918">
+  <!-- svg-source:excalidraw -->
+  <!-- payload-type:application/vnd.excalidraw+json --><!-- payload-version:2 --><!-- payload-start -->eyJ2ZXJzaW9uIjoiMSIsImVuY29kaW5nIjoiYnN0cmluZyIsImNvbXByZXNzZWQiOnRydWUsImVuY29kZWQiOiJ4nO1aa2/bxlx1MDAxMv3uXyGoX+vNvlx1MDAxZlx1MDAwNYqL2m5jO45rR8lccuyLXCKgpbXMilwiXHUwMDE5kvIjRf57ZylFS1GiZMdSol5UXHUwMDAy9NhZ7s7uzpk5M+RfO61Wu3hIbfunVtved4Mo7GXBXftH135rszxMYlx1MDAxMNHyf56Msm7Z86Yo0vynXHUwMDE3L4ZBNrBFXHUwMDFhXHUwMDA1XYtuw3xcdTAwMTREeTHqhVx06ibDXHUwMDE3YWGH+X/c52kwtD+nybBXZMhPsmt7YZFk47lsZIc2LnJcdTAwMTj9f/C/1fqr/KxoXHUwMDE3ZFkyVqxs9spJweqtp0lcXCrKMJOKcU2mXHUwMDFkwvxcdTAwMDCmKmxcdTAwMGak16Cu9Vx1MDAxMtfUfp3SU/z27lbfyd1cdTAwMTM+XHUwMDE4vOlcdTAwMWZ9wH7W6zCKOsVDVGqUJ7BcdTAwMTAvy4ssXHUwMDE52Pdhr7j5smWV9qarsmTUv4lt7lbu1UzSoFx1MDAxYlx1MDAxNlx1MDAwZq5ccuNpa1x1MDAxMPfLMXzLPfxTmiNqXHUwMDE4lkpcdTAwMTmtXHJcdTAwMTFT6fh6Q1x1MDAxMTRcbsxcdTAwMTSjWuuaXvtJXHUwMDA0Z1x1MDAwMHr9QKx7e82ugu6gXHUwMDBm6sW9aZ9cIlx1MDAwYuI8XHIyOCnf726yYkKQYJpcdTAwMTEsMcGEXHUwMDFh41x1MDAxNbmxYf+mcH2EQUIoxoRUWmIupVfHlodCXHTBSmpG/aE6JdKjXmlcdTAwMWJ/+KPIwKqO3CXxKIqq+1x1MDAxOfcm+/nFhrxcdTAwMTXRSctnv0rX/9eK9flcdTAwMTlGaS9cdTAwMThbXG5RTCliuCSaeb2iMFx1MDAxZdSnj5LuYIFx5UWQXHUwMDE1e2HcXHUwMDBi4379XHUwMDEyXHUwMDFi97ykovJcdTAwMDRcdTAwMTLlXHUwMDEy27/t37zrvLzg9+nlSXxE7y6SkehPz8BtR9JcdTAwMWQ5/THChlx1MDAwYmxcdTAwMTRhRrnzMKbSq1x1MDAxZqRuOXO7XHUwMDEwXHUwMDA1ebGfXGaHYVx1MDAwMVx1MDAwYj5Lwrioa1mu4Fx1MDAxN4fBXHUwMDFiXHUwMDFizO06rKEqq4M1dSN6bLuX/9Xy9lxc/pn+/uPHhb2b7ayUzlmYXHUwMDFmb6f6PVn8nJ8p7H2xyM1cYmrqrVM3Q4WgXGbjx7uZXfvxsHjJXlx1MDAxZqvLo0J3wpOzM3a23W5GY4OU4IYxLsGlKr9cdTAwMWLl9UQrZGCPXGbF0kgwvs35XHUwMDE5hpFkRivFXGJoI1xmn/cz1PueiV8hTEqsuJZ+9V/tV2ZcdTAwMDRPcSCCgIP2qj3BgVxcJ3HRXHQ/lT5cZs+0/lx1MDAxNlxmw+hh5lhLXHUwMDEzhm18s/ff1uug6N7YiiU44S9R2Hc23Y7s9ayxXHUwMDE3IYTnqbhIUi/twmRBXHUwMDE422x+c5Is7IdxXHUwMDEwvV02MazWXHUwMDFlTlx1MDAwM1x1MDAwMapcdTAwMWPRVZBbJ3Xt+qvAXHSG0Fx1MDAwNE6iqYG4J/x0q8B58bL77uH8z+vfR5+O9jvnx/dnr4Zvtlx1MDAxYpySXHUwMDEyXHUwMDA0sFx1MDAxNIpjKjxcdTAwMWXGXHUwMDE3c4awMpRcdTAwMTHtYEM3x1x1MDAwMIxCwlx1MDAwMFx1MDAwN+GYMYpcdTAwMTnx619cdTAwMDZMoTCGmKW95P9cdTAwMWWYXHUwMDFkW7RywFhcdTAwMTB9W1xcLpp3o7CkpN7qYSkgilCl1KNx+SY+4KMjcZLln+jZK315/CpcdTAwMTidbzcuXHQhXHUwMDEygVx1MDAwN2KOPVx1MDAxYVxm9HFcdTAwMTabVCikXGawXHUwMDE17uCim4OmXHUwMDA1OSPPgCbEbsCmVJhcdTAwMDNpXHUwMDEyclx1MDAwMTT5PDQpkCiiXHUwMDA09We0IWhOOZrnv9NjT49cdTAwMGav0oP3p4f4XHUwMDEwv/3z+nL/pdr7WKG+rXqOOJV8/kL4Vlx1MDAwMF9WwfBcdTAwMTXAZ3KmdVx08Mm3xTt5XCLMXHUwMDE5/SqYU9VIjVx1MDAwMVwijEHwNY/nxstTna2EudJcZjEuhGRMaUKUn3mCcoY4gVxiXHUwMDA3lJVTXFyxt3XDnFxuoMZcdTAwMTT2XFxpTpSRlXR/XHTOjVx1MDAwMWZcZlpvnFx1MDAxYS+D+fLKy4xcdTAwMWRuPczpt4U5XS/My15cdTAwMGJgXHUwMDBlQaxcdTAwMTHmlGDg2KSSI6+C+SCmcmD6/cPw4cPgIcxuLq/O1XbDXHUwMDFj6DPSXG4zXHJpJ5ZC1CttiiNBpISMXHUwMDE0YqzmqqbY+og2ZLKIcFxuXHUwMDBlZfy5IJorSFxifFx1MDAwN/isg55cdTAwMDI1UUBcdNT35N1lRY1XrXftXHUwMDE1tdnB1lvnmpGtt8iFKaqenjbVy8HLa844ODWJNbyp3SX8eUPuSoNM9bVyPM45qlqYr4yW49VcZpDJZ45HnjpeI0hcdTAwMTZcdTAwMGWntVx1MDAxZm+n+v1kMlTh1jUvXHRcdTAwMDFZSlwiXHUwMDFm7yOTbHTI3lx1MDAxZqvT24POMLzat6f7+1x1MDAwN1vuIyl3dUBphJFM8Vxup1x1MDAxOJdcdCmYmYBQ4UqJnLNmKvTsMiEty1x1MDAxZVpygYFcdTAwMDA8slx1MDAxYeEqm1xmvPfGM55Nk5XHXHUwMDE3I8pC3XcpRyyeeVx1MDAxZFx1MDAwNYkmXG4jmKq3TilcZqNcdTAwMDZLxeXjXHUwMDBihZfvzkn3WI8+MXGU60CLLJCDLYcnx0hgyiB+XHUwMDEwolx1MDAwNff5wVx1MDAxOJ5cdTAwMTJ8sIAkRVx1MDAwMYaVrtw4XTuFYTWCsprC+C5cdTAwMTOwSvC1IPqulcN/XHUwMDE5TFx1MDAxM93gTcdXSlx1MDAxMURwLTXsISVcdTAwMTBcdTAwMTMxXHUwMDAzXG7DVo85S2GUro5Zp1x1MDAxY5SuXHUwMDFhj1O8bFx1MDAwMLZSofpcdTAwMDCkpp9azVKacDBcdTAwMWXvuSyl8alcdEhjmjwhxVx1MDAxMJole4onXFxeo9tKT1xiXHSrQFxmU8nBJzJcdTAwMDFZWy2bk1xmXHUwMDE5ilx1MDAxOYWdMFxubHVjrpBSXHUwMDA0xFBriilQI6BMXHUwMDBimFxuMVxmXHUwMDAx5YeTMZIzUimnTW+jSKIoN1x1MDAxNXa5Xc9NbNZHNj03sfyeQcs/N7FLXHUwMDEwJFSSXHUwMDEyMFx1MDAwNlx1MDAwNWGF0cpjXHUwMDA1k+cmXHUwMDE0MoTCKVxiXCLAdVx1MDAxMTO3Kf+kxyiarc695uztiX6nKTviS27UXG5pXGa4OPX4/CjrX368Z8Uhv9jrXHUwMDEwae/Nibr4sOVuXHUwMDA3aFx1MDAxN9JcZkJcdTAwMWU3QipMandr3cZz7lx1MDAxZSfRsFx1MDAxNUJs8HktoIKw49plYdjZtPdwy27XcmI0MMN1PJ/1T8mQ3G1TgHU6NsVvmlwiNUz9pFx1MDAxY2ln4lx1MDAwM9pBmnZcbtjJqb+Eo1x1MDAwYnuT7fBqtG9De7c3b00/XFyXL1d4L2Hv8GXLePF55/Pf/3dBdyJ9<!-- payload-end -->
+  <defs>
+    <style class="style-fonts">
+      @font-face {
+        font-family: "Virgil";
+        src: url("https://file%2B.vscode-resource.vscode-cdn.net/home/tmc43/.vscode/extensions/pomdtr.excalidraw-editor-3.7.4/public//dist/excalidraw-assets/Virgil.woff2");
+      }
+      @font-face {
+        font-family: "Cascadia";
+        src: url("https://file%2B.vscode-resource.vscode-cdn.net/home/tmc43/.vscode/extensions/pomdtr.excalidraw-editor-3.7.4/public//dist/excalidraw-assets/Cascadia.woff2");
+      }
+      @font-face {
+        font-family: "Assistant";
+        src: url("https://file%2B.vscode-resource.vscode-cdn.net/home/tmc43/.vscode/extensions/pomdtr.excalidraw-editor-3.7.4/public//dist/excalidraw-assets/Assistant-Regular.woff2");
+      }
+    </style>
+    
+  </defs>
+  <rect x="0" y="0" width="670.4673658150261" height="320.6114832985918" fill="#ffffff"></rect><g stroke-linecap="round"><g transform="translate(172.82949377349144 100.72965300019086) rotate(0 5.7691553005064975 79.77866783930233)"><path d="M-0.92 1.14 C0.77 28.09, 8.47 134.2, 10.66 160.49 M0.8 0.7 C2.82 27.42, 11.07 132.33, 12.91 158.86" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(172.82949377349144 100.72965300019086) rotate(0 5.7691553005064975 79.77866783930233)"><path d="M0.58 131.51 C6.45 139.53, 10.34 151.54, 12.91 158.86 M0.58 131.51 C3.09 138.7, 6.39 144.62, 12.91 158.86" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(172.82949377349144 100.72965300019086) rotate(0 5.7691553005064975 79.77866783930233)"><path d="M21.05 129.99 C19.88 138.37, 16.74 150.91, 12.91 158.86 M21.05 129.99 C18.5 137.73, 16.72 144.02, 12.91 158.86" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g transform="translate(198.29135943808785 195.76714133691667) rotate(0 65.31993865966797 12.5)"><text x="0" y="0" font-family="Virgil, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">RBV Matched</text></g><g transform="translate(10 50.89338113128565) rotate(0 48.79994201660156 12.5)"><text x="0" y="0" font-family="Virgil, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">Set signal</text></g><g transform="translate(504.71879792361824 265.6114832985918) rotate(0 4.877998352050781 22.5)"><text x="0" y="0" font-family="Virgil, Segoe UI Emoji" font-size="36px" fill="#e03131" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">1</text></g><g transform="translate(171.88198935271714 261.2290070015124) rotate(0 12.816001892089844 22.5)"><text x="0" y="0" font-family="Virgil, Segoe UI Emoji" font-size="36px" fill="#e03131" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">2</text></g><g stroke-linecap="round"><g transform="translate(28.406815305255463 82.33080867748754) rotate(0 303.5714285714286 -35.714285714285666)"><path d="M0 0 C26.86 0.41, 57.33 -1.48, 102.86 0 M0 0 C35.07 0.23, 70.19 0.89, 102.86 0 M102.86 0 C102.3 -24.77, 100.54 -51.51, 102.86 -70 M102.86 0 C103.75 -15.29, 103.43 -32.69, 102.86 -70 M102.86 -70 C195.21 -72.07, 286.82 -73.26, 444.29 -71.43 M102.86 -70 C234.72 -71.93, 366.8 -72.53, 444.29 -71.43 M444.29 -71.43 C443.86 -47.17, 443.29 -24.09, 444.29 -11.43 M444.29 -71.43 C443.28 -52.63, 443.84 -33.58, 444.29 -11.43 M444.29 -11.43 C477.06 -11.96, 513.35 -9.61, 607.14 -11.43 M444.29 -11.43 C478.6 -11.9, 511.79 -11.1, 607.14 -11.43" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g transform="translate(13.489121938342123 137.77300681674637) rotate(0 61.53993225097656 12.5)"><text x="0" y="0" font-family="Virgil, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">Match signal</text></g><g stroke-linecap="round"><g transform="translate(29.03879438645481 172.06757722009093) rotate(0 315.71428571428567 -35.714285714285666)"><path d="M0 0 C37.34 -0.64, 74.39 -0.91, 141.43 0 M0 0 C44.16 -1.64, 90.24 -0.85, 141.43 0 M141.43 0 C142.19 -21.33, 140.27 -46.38, 142.86 -71.43 M141.43 0 C142.04 -15.14, 141.26 -31.31, 142.86 -71.43 M142.86 -71.43 C214.54 -72.03, 286.05 -72.08, 420 -71.43 M142.86 -71.43 C212.71 -73.49, 282.45 -73.37, 420 -71.43 M420 -71.43 C420.39 -56.99, 419 -40.38, 420 -12.86 M420 -71.43 C419.89 -51.16, 420.17 -31.95, 420 -12.86 M420 -12.86 C493.42 -13.72, 565.06 -13.5, 631.43 -11.43 M420 -12.86 C503.79 -10.74, 586.7 -9.63, 631.43 -11.43" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g stroke-linecap="round"><g transform="translate(473.83907237816584 71.73447561707144) rotate(0 11.483441014792106 96.92152498215955)"><path d="M0.08 -0.41 C4.01 32.15, 19.48 162.43, 23.24 194.7 M-1.33 -1.68 C2.49 30.62, 18.59 160.39, 22.44 193.03" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(473.83907237816584 71.73447561707144) rotate(0 11.483441014792106 96.92152498215955)"><path d="M8.86 166.28 C11.69 173.97, 17.49 180.24, 22.44 193.03 M8.86 166.28 C11.31 172.18, 15.23 179.59, 22.44 193.03" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g><g transform="translate(473.83907237816584 71.73447561707144) rotate(0 11.483441014792106 96.92152498215955)"><path d="M29.23 163.81 C26.53 172.18, 26.82 179.12, 22.44 193.03 M29.23 163.81 C26.62 170.49, 25.48 178.52, 22.44 193.03" stroke="#1e1e1e" stroke-width="2" fill="none"></path></g></g><mask></mask><g transform="translate(507.3725909313014 201.25938010605864) rotate(0 70.34992218017578 12.5)"><text x="0" y="0" font-family="Virgil, Segoe UI Emoji" font-size="20px" fill="#1e1e1e" text-anchor="start" style="white-space: pre;" direction="ltr" dominant-baseline="text-before-edge">Set Completed</text></g></svg>
+<ul class="simple">
+<li><p><strong>If <code class="docutils literal notranslate"><span class="pre">wait_for_set_completion</span> <span class="pre">=</span> <span class="pre">True</span></code>:</strong><br />
+The function returns at <strong>1</strong> (see diagram below), which occurs when the “set operation” is complete.</p></li>
+<li><p><strong>If <code class="docutils literal notranslate"><span class="pre">wait_for_set_completion</span> <span class="pre">=</span> <span class="pre">False</span></code>:</strong><br />
+The function returns at <strong>2</strong>, which occurs when the <code class="docutils literal notranslate"><span class="pre">match_signal</span></code> reaches the <code class="docutils literal notranslate"><span class="pre">match_value</span></code>.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="implement-ad-detector.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">How to implement a Device for an EPICS areaDetector</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="put-device-back.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">How to use settings to put devices back in their original state</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-the-value">Get the value</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#set-the-value">Set the value</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#observe-every-value-change">Observe every value change</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wait-for-the-value-to-match-some-expected-value">Wait for the value to match some expected value</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/0.10.0a2/docs/how-to/interact-with-signals.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/how-to/interact-with-signals.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

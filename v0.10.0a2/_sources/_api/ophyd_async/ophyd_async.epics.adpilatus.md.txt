@@ -1,0 +1,208 @@
+# {py:mod}`ophyd_async.epics.adpilatus`
+
+```{py:module} ophyd_async.epics.adpilatus
+```
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`PilatusDetector <ophyd_async.epics.adpilatus._pilatus.PilatusDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus.PilatusDetector
+    :summary:
+    ```
+* - {py:obj}`PilatusReadoutTime <ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime
+    :summary:
+    ```
+* - {py:obj}`PilatusController <ophyd_async.epics.adpilatus._pilatus_controller.PilatusController>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController
+    :summary:
+    ```
+* - {py:obj}`PilatusDriverIO <ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO
+    :summary:
+    ```
+* - {py:obj}`PilatusTriggerMode <ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} PilatusDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, readout_time: ~ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime = PilatusReadoutTime.PILATUS3, drv_suffix: str = 'cam1:', writer_cls: type[~ophyd_async.epics.adcore._core_writer.ADWriter] = ADHDFWriter, fileio_suffix: str | None = None, name: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core._signal.SignalR] = ())
+:canonical: ophyd_async.epics.adpilatus._pilatus.PilatusDetector
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_detector.AreaDetector`\[{py:obj}`ophyd_async.epics.adpilatus._pilatus_controller.PilatusController`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus.PilatusDetector
+```
+
+````
+
+`````{py:class} PilatusReadoutTime()
+:canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime
+
+Bases: {py:obj}`float`, {py:obj}`enum.Enum`
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime
+```
+
+````{py:attribute} PILATUS2
+:canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime.PILATUS2
+:value: >
+   0.00228
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime.PILATUS2
+```
+
+````
+
+````{py:attribute} PILATUS3
+:canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime.PILATUS3
+:value: >
+   0.00095
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime.PILATUS3
+```
+
+````
+
+`````
+
+`````{py:class} PilatusController(driver: ~ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO, good_states: frozenset[~ophyd_async.epics.adcore.ADState] = adcore.DEFAULT_GOOD_STATES, readout_time: float = PilatusReadoutTime.PILATUS3)
+:canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusController
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController
+```
+
+````{py:method} get_deadtime(exposure: float | None) -> float
+:canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.get_deadtime
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.get_deadtime
+```
+
+````
+
+````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo)
+:canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.prepare
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.prepare
+```
+
+````
+
+````{py:method} arm()
+:canonical: ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.arm
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_controller.PilatusController.arm
+```
+
+````
+
+`````
+
+`````{py:class} PilatusDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO
+```
+
+````{py:attribute} trigger_mode
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO.trigger_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO.trigger_mode
+```
+
+````
+
+````{py:attribute} armed
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO.armed
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[bool], ophyd_async.epics.core.PvSuffix.rbv('Armed_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO.armed
+```
+
+````
+
+`````
+
+`````{py:class} PilatusTriggerMode()
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode
+```
+
+````{py:attribute} INTERNAL
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.INTERNAL
+:value: >
+   'Internal'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.INTERNAL
+```
+
+````
+
+````{py:attribute} EXT_ENABLE
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.EXT_ENABLE
+:value: >
+   'Ext. Enable'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.EXT_ENABLE
+```
+
+````
+
+````{py:attribute} EXT_TRIGGER
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.EXT_TRIGGER
+:value: >
+   'Ext. Trigger'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.EXT_TRIGGER
+```
+
+````
+
+````{py:attribute} MULT_TRIGGER
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.MULT_TRIGGER
+:value: >
+   'Mult. Trigger'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.MULT_TRIGGER
+```
+
+````
+
+````{py:attribute} ALIGNMENT
+:canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.ALIGNMENT
+:value: >
+   'Alignment'
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus_io.PilatusTriggerMode.ALIGNMENT
+```
+
+````
+
+`````
