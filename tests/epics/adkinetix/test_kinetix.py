@@ -28,7 +28,7 @@ async def test_trigger_modes(test_adkinetix: adkinetix.KinetixDetector):
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_adkinetix._controller.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=trig_mode)
+            TriggerInfo(number_of_events=1, trigger=trig_mode)
         )
         await test_adkinetix._controller.arm()
         await test_adkinetix._controller.wait_for_idle()
