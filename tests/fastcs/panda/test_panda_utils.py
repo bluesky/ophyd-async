@@ -92,8 +92,12 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
         "pcomp.2.width": 0,
         "pulse.1.delay": 0.0,
         "pulse.1.width": 0.0,
+        "pulse.1.step": 0.0,
+        "pulse.1.pulses": 0,
         "pulse.2.delay": 0.0,
         "pulse.2.width": 0.0,
+        "pulse.2.step": 0.0,
+        "pulse.2.pulses": 0,
         "seq.1.table": {
             "outa1": [False],
             "outa2": [False],
