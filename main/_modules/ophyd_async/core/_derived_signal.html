@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._derived_signal &#8212; ophyd-async 0.10.0a2.dev1+gf4a36872 documentation</title>
+    <title>ophyd_async.core._derived_signal &#8212; ophyd-async 0.10.0a2.dev2+g48324168 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=52fad37e"></script>
+    <script src="../../../_static/documentation_options.js?v=64c52af5"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a2.dev1+gf4a36872 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a2.dev1+gf4a36872 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a2.dev2+g48324168 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a2.dev2+g48324168 documentation - Home"/>
   
   
 </a></div>
@@ -653,7 +653,7 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="c1"># Update the signature for raw_to_derived to match what we are passed as this</span>
         <span class="c1"># will be checked in DerivedSignalFactory</span>
-        <span class="n">DerivedTransform</span><span class="o">.</span><span class="n">raw_to_derived</span><span class="o">.</span><span class="vm">__annotations__</span> <span class="o">=</span> <span class="n">raw_to_derived</span><span class="o">.</span><span class="vm">__annotations__</span>
+        <span class="n">DerivedTransform</span><span class="o">.</span><span class="n">raw_to_derived</span><span class="o">.</span><span class="vm">__annotations__</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">raw_to_derived</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">DerivedSignalFactory</span><span class="p">(</span>
             <span class="n">DerivedTransform</span><span class="p">,</span> <span class="n">set_derived</span><span class="o">=</span><span class="n">set_derived</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">raw_devices</span> <span class="ow">or</span> <span class="p">{})</span>
