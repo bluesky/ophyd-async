@@ -38,6 +38,8 @@ class PulseBlock(Device):
     """Used for configuring pulses in the PandA."""
 
     delay: SignalRW[float]
+    pulses: SignalRW[int]
+    step: SignalRW[float]
     width: SignalRW[float]
 
 
