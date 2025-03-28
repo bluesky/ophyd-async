@@ -783,4 +783,4 @@ async def test_pva_put_completion(RE, ioc_devices: EpicsTestIocAndDevices):
     start = time.time()
     await slow_seq_pva.set(2, wait=True)
     stop = time.time()
-    assert stop - start > 5
+    assert stop - start == pytest.approx(5)
