@@ -112,6 +112,11 @@ record(mbbo, "$(device)enum_str_fallback") {
   field(PINI, "YES")
 }
 
+record(seq, "$(device)slowseq") {
+  field(DLY1, "5")
+  field(LNK1, "$(device)slowseq.DESC")
+}
+
 record(waveform, "$(device)uint8a") {
   field(NELM, "3")
   field(FTVL, "UCHAR")

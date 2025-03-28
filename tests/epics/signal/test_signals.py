@@ -766,3 +766,21 @@ async def test_retrieve_apply_store_settings(
                 assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
 
     RE(a_plan())
+
+
+async def test_pva_put_completion(RE, ioc_devices: EpicsTestIocAndDevices):
+    # Check that we can put to a PVA signal and use block=True
+    slow_seq_pva = ioc_devices.pva_device.slowseq
+
+    # First, do a put without blocking
+    start = time.time()
+    await slow_seq_pva.set(1, wait=False)
+    stop = time.time()
+    assert stop - start < 0.1
+    time.sleep(5)
+
+    # Now, do one with blocking and make sure it takes a while
+    start = time.time()
+    await slow_seq_pva.set(2, wait=True)
+    stop = time.time()
+    assert stop - start > 5
