@@ -93,18 +93,19 @@ class Table(BaseModel):
 
     def __add__(self, right: TableSubclass) -> TableSubclass:
         """Concatenate the arrays in field values."""
-        if type(right) is not type(self):
+        cls = type(right)
+        if type(self) is not cls:
             raise RuntimeError(
                 f"{right} is not a `Table`, or is not the same "
                 f"type of `Table` as {self}."
             )
 
-        return type(right)(
+        return cls(
             **{
                 field_name: _concat(
                     getattr(self, field_name), getattr(right, field_name)
                 )
-                for field_name in self.model_fields
+                for field_name in cls.model_fields
             }
         )
 
