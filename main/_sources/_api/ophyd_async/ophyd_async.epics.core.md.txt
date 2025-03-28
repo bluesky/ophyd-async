@@ -71,6 +71,17 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector
 ```
 
+````{py:attribute} mock_device_vector_len
+:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.mock_device_vector_len
+:type: int
+:value: >
+   2
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.mock_device_vector_len
+```
+
+````
+
 ````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device)
 :canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.create_children_from_annotations
 

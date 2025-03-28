@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.core._pvi_connector &#8212; ophyd-async 0.10.0a2.dev2+g48324168 documentation</title>
+    <title>ophyd_async.epics.core._pvi_connector &#8212; ophyd-async 0.10.0a3.dev1+gf37968eb documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=64c52af5"></script>
+    <script src="../../../../_static/documentation_options.js?v=3e0a9005"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a2.dev2+g48324168 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a2.dev2+g48324168 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev1+gf37968eb documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev1+gf37968eb documentation - Home"/>
   
   
 </a></div>
@@ -544,6 +544,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        hinted Signals are not present.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">mock_device_vector_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">error_hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># TODO: what happens if we get a leading &quot;pva://&quot; here?</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
@@ -582,7 +584,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="PviDeviceConnector.connect_mock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PviDeviceConnector.connect_mock">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">mock</span><span class="p">:</span> <span class="n">LazyMock</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_device_vector_entries_to_mock</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filler</span><span class="o">.</span><span class="n">create_device_vector_entries_to_mock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mock_device_vector_len</span><span class="p">)</span>
         <span class="c1"># Set the name of the device to name all children</span>
         <span class="n">device</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect_mock</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">mock</span><span class="p">)</span></div>

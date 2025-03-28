@@ -536,6 +536,28 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ````
 
+````{py:attribute} pulses
+:canonical: ophyd_async.fastcs.panda._block.PulseBlock.pulses
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PulseBlock.pulses
+```
+
+````
+
+````{py:attribute} step
+:canonical: ophyd_async.fastcs.panda._block.PulseBlock.step
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PulseBlock.step
+```
+
+````
+
 ````{py:attribute} width
 :canonical: ophyd_async.fastcs.panda._block.PulseBlock.width
 :type: ~ophyd_async.core.SignalRW[float]

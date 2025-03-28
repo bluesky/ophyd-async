@@ -560,7 +560,7 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`int`\, {py:obj}`ophyd_
 
 `````
 
-````{py:function} init_devices(set_name=True, child_name_separator: str = '-', connect=True, mock=False, timeout: float = 10.0)
+````{py:function} init_devices(set_name: bool = True, child_name_separator: str = '-', connect: bool = True, mock: bool = False, timeout: float = 10.0)
 :canonical: ophyd_async.core._device.init_devices
 
 ```{autodoc2-docstring} ophyd_async.core._device.init_devices
