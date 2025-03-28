@@ -48,6 +48,7 @@ class EpicsTestCaDevice(EpicsDevice):
     longstr: A[SignalRW[str], PvSuffix("longstr")]
     longstr2: A[SignalRW[str], PvSuffix("longstr2.VAL$")]
     a_bool: A[SignalRW[bool], PvSuffix("bool")]
+    slowseq: A[SignalRW[int], PvSuffix("slowseq")]
     enum: A[SignalRW[EpicsTestEnum], PvSuffix("enum")]
     enum2: A[SignalRW[EpicsTestEnum], PvSuffix("enum2")]
     subset_enum: A[SignalRW[EpicsTestSubsetEnum], PvSuffix("subset_enum")]
