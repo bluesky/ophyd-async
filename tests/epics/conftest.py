@@ -1,5 +1,6 @@
 import os
 from collections.abc import Callable
+from typing import cast
 
 import pytest
 from bluesky.run_engine import RunEngine
@@ -58,6 +59,21 @@ def ad_standard_det_factory(
         set_mock_value(test_adstandard_det.driver.acquire_period, float(number))
         set_mock_value(test_adstandard_det.fileio.capture, True)
         set_mock_value(test_adstandard_det.driver.data_type, data_type)
+
+        # Set image mode to continuous to mimic a real detector setup
+        set_mock_value(
+            test_adstandard_det.driver.image_mode, adcore.ADImageMode.CONTINUOUS
+        )
+
+        if detector_cls == adcore.ContAcqAreaDetector:
+            det = cast(adcore.ContAcqAreaDetector, test_adstandard_det)
+            # For cont acq detectors, assume we are already acquiring
+            set_mock_value(det.driver.acquire, True)
+
+            # Also, setup the cb plugin with some reasonable values
+            set_mock_value(det.cb_plugin.array_size_x, (9 + number))
+            set_mock_value(det.cb_plugin.array_size_y, (9 + number))
+            set_mock_value(det.cb_plugin.data_type, data_type)
 
         # Set number of frames per chunk and frame dimensions to something reasonable
         set_mock_value(test_adstandard_det.driver.array_size_x, (9 + number))

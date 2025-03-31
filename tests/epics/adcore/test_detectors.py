@@ -21,6 +21,7 @@ DETECTOR_CLASSES: list[type[adcore.AreaDetector]] = [
     adaravis.AravisDetector,
     adkinetix.KinetixDetector,
     adpilatus.PilatusDetector,
+    adcore.ContAcqAreaDetector,
 ]
 
 WRITER_CLASSES: list[type[adcore.ADWriter]] = [

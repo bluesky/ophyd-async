@@ -274,7 +274,7 @@ async def merge_gathered_dicts(
     return ret
 
 
-async def gather_dict(coros: dict[T, Awaitable[V]]) -> dict[T, V]:
+async def gather_dict(coros: Mapping[T, Awaitable[V]]) -> dict[T, V]:
     """Take named coros and return a dict of their name to their return value."""
     values = await asyncio.gather(*coros.values())
     return dict(zip(coros, values, strict=True))
