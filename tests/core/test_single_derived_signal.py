@@ -1,6 +1,8 @@
 import asyncio
 import re
 from unittest.mock import call
+from unittest.mock import patch
+import typing
 
 import pytest
 
@@ -120,22 +122,21 @@ def test_mismatching_args():
             _get_position, foo=soft_signal_rw(float), bar=soft_signal_rw(float)
         )
 
+@patch("typing.TYPE_CHECKING", True)
 def test_validate_by_type():
     movable_beamstop = MovableBeamstop("mvb")
     movable_beamstop2 = MovableBeamstop("mvb2")
     readable_beamstop = ReadOnlyBeamstop("rdb")
     
+    invalid_devices_dict = {device.name: device for device in [movable_beamstop, readable_beamstop]}
     with pytest.raises(Exception) as e_info:
-        validate_by_type({movable_beamstop.name: movable_beamstop,
-                          readable_beamstop.name: readable_beamstop},
-                          MovableBeamstop)
+        validate_by_type(invalid_devices_dict, MovableBeamstop)
     assert type(e_info.value) == TypeError
+
+    valid_devices_dict = {device.name: device for device in [movable_beamstop, movable_beamstop2]}
+    assert validate_by_type(valid_devices_dict, MovableBeamstop) == valid_devices_dict
 
     with pytest.raises(Exception) as e_info:
         validate_by_type({movable_beamstop.name: movable_beamstop}, ReadOnlyBeamstop)
     assert type(e_info.value) == TypeError
-
-    assert validate_by_type({movable_beamstop.name: movable_beamstop,
-                             movable_beamstop2.name: movable_beamstop2},
-                             MovableBeamstop) == {movable_beamstop.name: movable_beamstop,
-                                                movable_beamstop2.name:movable_beamstop2}
+    
