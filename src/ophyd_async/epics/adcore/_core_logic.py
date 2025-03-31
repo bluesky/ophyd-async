@@ -176,7 +176,7 @@ class ADBaseContAcqController(ADBaseController[ADBaseIO]):
         await asyncio.gather(
             self.cb_plugin.enable_callbacks.set(ADCallbacks.ENABLE),
             self.cb_plugin.pre_count.set(0),
-            self.cb_plugin.post_count.set(trigger_info.total_number_of_triggers),
+            self.cb_plugin.post_count.set(trigger_info.total_number_of_exposures),
             self.cb_plugin.preset_trigger_count.set(1),
             self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
         )
