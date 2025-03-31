@@ -180,6 +180,17 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 ````
 
+````{py:attribute} slowseq
+:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.slowseq
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], PvSuffix('slowseq')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.slowseq
+```
+
+````
+
 ````{py:attribute} enum
 :canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.enum
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.testing._example_ioc.EpicsTestEnum], PvSuffix('enum')]
