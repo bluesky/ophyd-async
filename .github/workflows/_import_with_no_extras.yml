@@ -11,6 +11,7 @@ jobs:
         with:
           # Need this to get version number from last tag
           fetch-depth: 0
+          ref: ${{ github.ref }}
 
       - name: Install (with no extras)
         uses: ./.github/actions/install_requirements
