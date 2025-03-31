@@ -56,7 +56,9 @@ class DummyWriter(DetectorWriter):
         return {
             self._name: DataKey(
                 source="soft://some-source",
-                shape=[exposures_per_event, *self._shape],
+                shape=[exposures_per_event, *self._shape]
+                if exposures_per_event > 1 or len(self._shape) > 0
+                else [],
                 dtype="number",
                 external="STREAM:",
             )

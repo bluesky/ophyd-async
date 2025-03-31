@@ -76,7 +76,9 @@ class PandaHDFWriter(DetectorWriter):
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
                 shape=list(ds.shape),
-                dtype="array" if len(ds.shape) > 1 else "number",
+                dtype="array"
+                if self._exposures_per_event > 1 or len(ds.shape) > 1
+                else "number",
                 # PandA data should always be written as Float64
                 dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
@@ -95,7 +97,9 @@ class PandaHDFWriter(DetectorWriter):
             HDFDatasetDescription(
                 data_key=dataset_name,
                 dataset="/" + dataset_name,
-                shape=(self._exposures_per_event,),
+                shape=(self._exposures_per_event,)
+                if self._exposures_per_event > 1
+                else (),
                 dtype_numpy="<f8",
                 chunk_shape=(1024,),
             )

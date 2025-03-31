@@ -108,7 +108,9 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                         HDFDatasetDescription(
                             data_key=data_key,
                             dataset=f"/entry/instrument/NDAttributes/{data_key}",
-                            shape=(exposures_per_event,),
+                            shape=(exposures_per_event,)
+                            if exposures_per_event > 1
+                            else (),
                             dtype_numpy=np_datatype,
                             # NDAttributes appear to always be configured with
                             # this chunk size
@@ -120,7 +122,9 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             ds.data_key: DataKey(
                 source=self.fileio.full_file_name.source,
                 shape=list(ds.shape),
-                dtype="array" if len(ds.shape) > 1 else "number",
+                dtype="array"
+                if exposures_per_event > 1 or len(ds.shape) > 1
+                else "number",
                 dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
