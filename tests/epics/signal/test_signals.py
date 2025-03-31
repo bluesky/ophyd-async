@@ -654,6 +654,26 @@ def test_signal_helpers():
     assert _get_epics_backend(execute).write_pv == "Execute"
 
 
+def test_signal_helpers_explicit_read_timeout():
+    # Check that we can adjust the _timeout attribute, which is used
+    # for example during await signal.get_value()
+
+    read_write = epics_signal_rw(int, "ReadWrite", timeout=123)
+    assert read_write._timeout == 123
+
+    read_write_rbv = epics_signal_rw_rbv(int, "ReadWrite", timeout=456)
+    assert read_write_rbv._timeout == 456
+
+    read = epics_signal_r(int, "Read", timeout=789)
+    assert read._timeout == 789
+
+    write = epics_signal_w(int, "Write", timeout=987)
+    assert write._timeout == 987
+
+    execute = epics_signal_x("Execute", timeout=654)
+    assert execute._timeout == 654
+
+
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_signals_created_for_not_prec_0_float_cannot_use_int(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol

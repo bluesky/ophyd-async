@@ -139,11 +139,14 @@ nitpicky = True
 # domain name if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
 obj_ignore = [
+    "ophyd_async.core._derived_signal_backend.RawT",
+    "ophyd_async.core._derived_signal_backend.DerivedT",
     "ophyd_async.core._detector.DetectorControllerT",
     "ophyd_async.core._detector.DetectorWriterT",
     "ophyd_async.core._device.DeviceT",
     "ophyd_async.core._device_filler.SignalBackendT",
     "ophyd_async.core._device_filler.DeviceConnectorT",
+    "ophyd_async.core._derived_signal_backend.TransformT",
     "ophyd_async.core._protocol.C",
     "ophyd_async.core._signal_backend.SignalDatatypeV",
     "ophyd_async.core._status.AsyncStatusBase",
@@ -159,6 +162,8 @@ obj_ignore = [
     "ophyd_async.tango.core._tango_transport.R",
     "ophyd_async.tango.core._tango_transport.TangoProxy",
     "ophyd_async.testing._utils.T",
+    "ophyd_async.sim._mirror.TwoJackRaw",
+    "ophyd_async.sim._mirror.TwoJackDerived",
     "0.1",
     "1.0",
 ]

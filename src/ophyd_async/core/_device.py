@@ -346,10 +346,10 @@ class DeviceProcessor:
 
 
 def init_devices(
-    set_name=True,
+    set_name: bool = True,
     child_name_separator: str = "-",
-    connect=True,
-    mock=False,
+    connect: bool = True,
+    mock: bool = False,
     timeout: float = 10.0,
 ):
     """Auto initialize top level Device instances: to be used as a context manager.

@@ -5,6 +5,8 @@ The [](#bluesky.run_engine.RunEngine) facing interface is defined by the [bluesk
 ## Device and DeviceConnector
 
 ```{mermaid}
+:config: { "theme": "neutral" }
+:align: center
 classDiagram
 Device *-- DeviceConnector
 Device : connect(mock)
@@ -36,6 +38,8 @@ The base `DeviceConnector` provides suitable methods for use with non-introspect
 ## Signal and SignalBackend
 
 ```{mermaid}
+:config: { "theme": "neutral" }
+:align: center
 classDiagram
 Device <|-- Signal
 Signal : source
@@ -87,6 +91,8 @@ my_signal = my_cs_signal_r(int, "something")
 ## "Standard" Device subclasses
 
 ```{mermaid}
+:config: { "theme": "neutral" }
+:align: center
 classDiagram
 Device <|-- StandardReadable
 Device <|-- StandardDetector

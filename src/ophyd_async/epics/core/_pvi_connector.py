@@ -77,6 +77,8 @@ class PviDeviceConnector(DeviceConnector):
         hinted Signals are not present.
     """
 
+    mock_device_vector_len: int = 2
+
     def __init__(self, prefix: str = "", error_hint: str = "") -> None:
         # TODO: what happens if we get a leading "pva://" here?
         self.prefix = prefix
@@ -110,7 +112,7 @@ class PviDeviceConnector(DeviceConnector):
             backend.write_pv = write_pv
 
     async def connect_mock(self, device: Device, mock: LazyMock):
-        self.filler.create_device_vector_entries_to_mock(2)
+        self.filler.create_device_vector_entries_to_mock(self.mock_device_vector_len)
         # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_mock(device, mock)

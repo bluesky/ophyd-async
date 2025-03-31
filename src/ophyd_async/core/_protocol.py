@@ -10,8 +10,10 @@ from typing import (
     runtime_checkable,
 )
 
-from bluesky.protocols import HasName, Reading
+from bluesky.protocols import HasName, Location, Reading, T_co
 from event_model import DataKey
+
+from ._utils import T
 
 if TYPE_CHECKING:
     from ._status import AsyncStatus
@@ -93,6 +95,26 @@ class AsyncStageable(Protocol):
         """Clean up the device after acquisition.
 
         :return: An `AsyncStatus` that is marked done when the device is done unstaging.
+        """
+
+
+@runtime_checkable
+class AsyncMovable(Protocol[T_co]):
+    @abstractmethod
+    def set(self, value: T_co) -> AsyncStatus:
+        """Return a ``Status`` that is marked done when the device is done moving."""
+
+
+@runtime_checkable
+class AsyncLocatable(AsyncMovable[T], Protocol):
+    @abstractmethod
+    async def locate(self) -> Location[T]:
+        """Return the current location of a Device.
+
+        While a ``Readable`` reports many values, a ``Movable`` will have the
+        concept of location. This is where the Device currently is, and where it
+        was last requested to move to. This protocol formalizes how to get the
+        location from a ``Movable``.
         """
 
 
