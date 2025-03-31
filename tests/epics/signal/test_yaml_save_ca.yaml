@@ -2,6 +2,7 @@ bool_unnamed: true
 enum: Bbb
 enum2: Bbb
 enum_str_fallback: Bbb
+slowseq: 0
 float32a: [1.9999999949504854e-06, -123.12300109863281]
 float64a: [0.1, -12345678.123]
 float_prec_0: 3
