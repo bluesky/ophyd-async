@@ -113,7 +113,7 @@ record(mbbo, "$(device)enum_str_fallback") {
 }
 
 record(seq, "$(device)slowseq") {
-  field(DLY1, "5")
+  field(DLY1, "0.5")
   field(LNK1, "$(device)slowseq.DESC")
 }
 

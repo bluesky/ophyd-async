@@ -768,19 +768,23 @@ async def test_retrieve_apply_store_settings(
     RE(a_plan())
 
 
-async def test_pva_put_completion(RE, ioc_devices: EpicsTestIocAndDevices):
-    # Check that we can put to a PVA signal and use block=True
-    slow_seq_pva = ioc_devices.pva_device.slowseq
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_put_completion(
+    RE, ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+):
+    # Check that we can put to an epics signal and wait for put completion
+    slow_seq_pv = ioc_devices.get_pv(protocol, "slowseq")
+    slow_seq = epics_signal_rw(int, slow_seq_pv)
+    await slow_seq.connect()
 
-    # First, do a put without blocking
+    # First, do a set with blocking and make sure it takes a while
     start = time.time()
-    await slow_seq_pva.set(1, wait=False)
+    await slow_seq.set(1, wait=True)
+    stop = time.time()
+    assert stop - start == pytest.approx(0.5, rel=0.1)
+
+    # Then, make sure if we don't wait it returns ~instantly
+    start = time.time()
+    await slow_seq.set(2, wait=False)
     stop = time.time()
     assert stop - start < 0.1
-    time.sleep(5)
-
-    # Now, do one with blocking and make sure it takes a while
-    start = time.time()
-    await slow_seq_pva.set(2, wait=True)
-    stop = time.time()
-    assert stop - start == pytest.approx(5, rel=0.1)
