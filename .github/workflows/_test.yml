@@ -25,8 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # Need this to get version number from last tag
-          fetch-depth: 0
+          fetch-tags: true
           ref: ${{ github.ref }}
 
       - if: inputs.python-version == 'dev'
