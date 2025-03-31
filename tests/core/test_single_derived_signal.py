@@ -19,6 +19,7 @@ from ophyd_async.testing import (
     get_mock,
 )
 
+from ophyd_async.core._derived_signal_backend import validate_by_type
 
 @pytest.mark.parametrize(
     "x, y, position",
@@ -118,3 +119,23 @@ def test_mismatching_args():
         derived_signal_r(
             _get_position, foo=soft_signal_rw(float), bar=soft_signal_rw(float)
         )
+
+def test_validate_by_type():
+    movable_beamstop = MovableBeamstop("mvb")
+    movable_beamstop2 = MovableBeamstop("mvb2")
+    readable_beamstop = ReadOnlyBeamstop("rdb")
+    
+    with pytest.raises(Exception) as e_info:
+        validate_by_type({movable_beamstop.name: movable_beamstop,
+                          readable_beamstop.name: readable_beamstop},
+                          MovableBeamstop)
+    assert type(e_info.value) == TypeError
+
+    with pytest.raises(Exception) as e_info:
+        validate_by_type({movable_beamstop.name: movable_beamstop}, ReadOnlyBeamstop)
+    assert type(e_info.value) == TypeError
+
+    assert validate_by_type({movable_beamstop.name: movable_beamstop,
+                             movable_beamstop2.name: movable_beamstop2},
+                             MovableBeamstop) == {movable_beamstop.name: movable_beamstop,
+                                                movable_beamstop2.name:movable_beamstop2}

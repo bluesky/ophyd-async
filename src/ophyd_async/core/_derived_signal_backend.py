@@ -61,7 +61,7 @@ class Transform(BaseModel, Generic[RawT, DerivedT]):
 TransformT = TypeVar("TransformT", bound=Transform)
 
 
-def filter_by_type(raw_devices: Mapping[str, Any], type_: type[T]) -> dict[str, T]:
+def validate_by_type(raw_devices: Mapping[str, Any], type_: type[T]) -> dict[str, T]:
     filtered_devices: dict[str, T] = {}
     for name, device in raw_devices.items():
         if not isinstance(device, type_):
@@ -91,21 +91,21 @@ class SignalTransformer(Generic[TransformT]):
 
     @cached_property
     def raw_locatables(self) -> dict[str, AsyncLocatable]:
-        return filter_by_type(self._raw_devices, AsyncLocatable)
+        return validate_by_type(self._raw_devices, AsyncLocatable)
 
     @cached_property
     def transform_readables(self) -> dict[str, AsyncReadable]:
-        return filter_by_type(self._transform_devices, AsyncReadable)
+        return validate_by_type(self._transform_devices, AsyncReadable)
 
     @cached_property
     def raw_and_transform_readables(self) -> dict[str, AsyncReadable]:
-        return filter_by_type(
+        return validate_by_type(
             self._raw_devices | self._transform_devices, AsyncReadable
         )
 
     @cached_property
     def raw_and_transform_subscribables(self) -> dict[str, Subscribable]:
-        return filter_by_type(self._raw_devices | self._transform_devices, Subscribable)
+        return validate_by_type(self._raw_devices | self._transform_devices, Subscribable)
 
     def _complete_cached_reading(self) -> dict[str, Reading] | None:
         if self._cached_readings and len(self._cached_readings) == len(
