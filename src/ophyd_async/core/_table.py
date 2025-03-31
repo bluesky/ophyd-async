@@ -104,7 +104,7 @@ class Table(BaseModel):
                 field_name: _concat(
                     getattr(self, field_name), getattr(right, field_name)
                 )
-                for field_name in self.model_fields
+                for field_name in self.__class__.model_fields
             }
         )
 
