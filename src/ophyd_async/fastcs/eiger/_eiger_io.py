@@ -24,12 +24,13 @@ class EigerStreamIO(Device):
 
 class EigerDetectorIO(Device):
     bit_depth_readout: SignalR[int]
-    stale_parameters: SignalR[bool]
     state: SignalR[str]
     count_time: SignalRW[float]
     frame_time: SignalRW[float]
     nimages: SignalRW[int]
+    nexpi: SignalRW[int]
     trigger_mode: SignalRW[str]
+    roi_mode: SignalRW[str]
     photon_energy: SignalRW[float]
     beam_center_x: SignalRW[float]
     beam_center_y: SignalRW[float]
@@ -43,6 +44,7 @@ class EigerDetectorIO(Device):
 class EigerDriverIO(Device):
     """Contains signals for handling IO on the Eiger detector."""
 
+    stale_parameters: SignalR[bool]
     monitor: EigerMonitorIO
     stream: EigerStreamIO
     detector: EigerDetectorIO
