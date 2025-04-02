@@ -1,7 +1,6 @@
 from pydantic import Field
 
 from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector, TriggerInfo
-from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.odin._odin_io import OdinHdfIO, OdinWriter
 
 from ._eiger_controller import EigerController
