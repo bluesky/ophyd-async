@@ -1,5 +1,5 @@
 from pathlib import Path
-from unittest.mock import ANY, MagicMock
+from unittest.mock import ANY, AsyncMock, MagicMock
 
 import pytest
 
@@ -12,9 +12,10 @@ OdinDriverAndWriter = tuple[OdinHdfIO, OdinWriter]
 
 @pytest.fixture
 def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
+    eiger_bit_depth = AsyncMock(get_value=AsyncMock(return_value=16))
     with init_devices(mock=True):
         driver = OdinHdfIO("")
-        writer = OdinWriter(MagicMock(), lambda: "odin", driver)
+        writer = OdinWriter(MagicMock(), lambda: "odin", driver, eiger_bit_depth)
     return driver, writer
 
 

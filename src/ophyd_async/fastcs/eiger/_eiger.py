@@ -30,13 +30,16 @@ class EigerDetector(StandardDetector):
 
         super().__init__(
             EigerController(self.drv),
-            OdinWriter(path_provider, lambda: self.name, self.odin),
+            OdinWriter(
+                path_provider,
+                lambda: self.name,
+                self.odin,
+                self.drv.detector.bit_depth_readout,
+            ),
             name=name,
         )
 
     @AsyncStatus.wrap
     async def prepare(self, value: EigerTriggerInfo) -> None:  # type: ignore
         await self._controller.set_energy(value.energy_ev)
-        bit_depth = await self.drv.bit_depth.get_value()
-        await self.odin.data_type.set(f"UInt{bit_depth}")
         await super().prepare(value)

@@ -46,10 +46,12 @@ class OdinWriter(DetectorWriter):
         path_provider: PathProvider,
         name_provider: NameProvider,
         odin_driver: OdinHdfIO,
+        eiger_bit_depth: SignalR[int],
     ) -> None:
         self._drv = odin_driver
         self._path_provider = path_provider
         self._name_provider = name_provider
+        self.eiger_bit_depth = eiger_bit_depth
         super().__init__()
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
@@ -59,8 +61,8 @@ class OdinWriter(DetectorWriter):
             self._drv.file_path.set(str(info.directory_path)),
             self._drv.file_prefix.set(info.filename),
             self._drv.data_datatype.set(
-                "uint16"
-            ),  # TODO: Get from eiger https://github.com/bluesky/ophyd-async/issues/529
+                f"uint{await self.eiger_bit_depth.get_value()}"
+            ),
             self._drv.frames.set(0),
         )
 
