@@ -383,7 +383,7 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
 
     async def put(self, value: SignalDatatypeT | None, wait: bool):
         if value is None:
-            write_value = self.initial_values[self.write_pv]
+            write_value = self.initial_values[self.write_pv]["value"]
         else:
             write_value = self.converter.write_value(value)
         await context().put(self.write_pv, {"value": write_value}, wait=wait)
