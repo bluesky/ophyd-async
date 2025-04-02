@@ -26,7 +26,6 @@ class EigerDetector(StandardDetector):
         hdf_suffix="-EA-ODIN-01:",
         name="",
     ):
-        connector = fastcs_connector(self, prefix)
         self.drv = EigerDriverIO(prefix + drv_suffix)
         self.odin = OdinHdfIO(prefix + hdf_suffix + "FP:")
 
@@ -34,7 +33,6 @@ class EigerDetector(StandardDetector):
             EigerController(self.drv),
             OdinWriter(path_provider, lambda: self.name, self.odin),
             name=name,
-            connector=connector,
         )
 
     @AsyncStatus.wrap

@@ -11,10 +11,9 @@ from ophyd_async.core import (
     PathProvider,
     SignalR,
     SignalRW,
-    SignalW,
     StrictEnum,
     observe_value,
-    set_and_wait_for_other_value,
+    set_and_wait_for_value,
 )
 from ophyd_async.fastcs.core import fastcs_connector
 
@@ -25,10 +24,9 @@ class Writing(StrictEnum):
 
 
 class OdinHdfIO(Device):
-    writing: SignalR[Writing]
-    config_hdf_write: SignalW[Writing]
+    config_hdf_write: SignalRW[Writing]
     frames_written: SignalR[int]
-    frames: SignalW[int]
+    frames: SignalRW[int]
     data_dims_0: SignalRW[int]
     data_dims_1: SignalRW[int]
     data_chunks_0: SignalRW[int]
@@ -101,6 +99,4 @@ class OdinWriter(DetectorWriter):
         raise NotImplementedError()
 
     async def close(self) -> None:
-        await set_and_wait_for_other_value(
-            self._drv.config_hdf_write, Writing.OFF, self._drv.writing, Writing.OFF
-        )
+        await set_and_wait_for_value(self._drv.config_hdf_write, Writing.OFF)

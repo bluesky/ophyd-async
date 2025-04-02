@@ -5,7 +5,7 @@ import pytest
 
 from ophyd_async.core import init_devices
 from ophyd_async.fastcs.odin import OdinHdfIO, OdinWriter, Writing  # noqa: PLC2701
-from ophyd_async.testing import callback_on_mock_put, get_mock_put, set_mock_value
+from ophyd_async.testing import get_mock_put, set_mock_value
 
 OdinDriverAndWriter = tuple[OdinHdfIO, OdinWriter]
 
@@ -61,11 +61,6 @@ async def test_when_closed_then_data_capture_turned_off(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
     driver, writer = odin_driver_and_writer
-
-    def set_writing_signal(value, *args, **kwargs):
-        set_mock_value(driver.writing, value)
-
-    callback_on_mock_put(driver.config_hdf_write, set_writing_signal)
 
     await writer.close()
     get_mock_put(driver.config_hdf_write).assert_called_once_with(Writing.OFF, wait=ANY)
