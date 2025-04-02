@@ -1,5 +1,3 @@
-from unittest.mock import AsyncMock, patch
-
 import pytest
 
 from ophyd_async.core import (
