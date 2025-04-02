@@ -12,7 +12,7 @@ from ._pilatus_io import PilatusDriverIO
 
 
 class PilatusDetector(AreaDetector[PilatusController]):
-    """A Pilatus StandardDetector writing HDF files"""
+    """A Pilatus StandardDetector writing HDF files."""
 
     def __init__(
         self,

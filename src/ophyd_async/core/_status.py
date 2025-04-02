@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import functools
 import time
-from collections.abc import AsyncIterator, Callable, Coroutine
+from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
 from dataclasses import asdict, replace
 from typing import Generic
 
@@ -16,8 +16,8 @@ from ._protocol import Watcher
 from ._utils import Callback, P, T, WatcherUpdate
 
 
-class AsyncStatusBase(Status):
-    """Convert asyncio awaitable to bluesky Status interface"""
+class AsyncStatusBase(Status, Awaitable[None]):
+    """Convert asyncio awaitable to bluesky Status interface."""
 
     def __init__(self, awaitable: Coroutine | asyncio.Task, name: str | None = None):
         if isinstance(awaitable, asyncio.Task):
@@ -42,6 +42,12 @@ class AsyncStatusBase(Status):
             callback(self)
 
     def exception(self, timeout: float | None = 0.0) -> BaseException | None:
+        """Return any exception raised by the task.
+
+        :param timeout:
+            Taken for compatibility with the Status interface, but must be 0.0 as we
+            cannot wait for an async function in a sync call.
+        """
         if timeout != 0.0:
             raise ValueError(
                 "cannot honour any timeout other than 0 in an asynchronous function"
@@ -83,11 +89,34 @@ class AsyncStatusBase(Status):
 
 
 class AsyncStatus(AsyncStatusBase):
-    """Convert asyncio awaitable to bluesky Status interface"""
+    """Convert an asyncio awaitable to bluesky Status interface.
+
+    :param awaitable: The coroutine or task to await.
+    :param name: The name of the device, if available.
+
+    For example:
+    ```python
+    status = AsyncStatus(asyncio.sleep(1))
+    assert not status.done
+    await status # waits for 1 second
+    assert status.done
+    ```
+    """
 
     @classmethod
     def wrap(cls, f: Callable[P, Coroutine]) -> Callable[P, AsyncStatus]:
-        """Wrap an async function in an AsyncStatus."""
+        """Wrap an async function in an AsyncStatus and return it.
+
+        Used to make an async function conform to a bluesky protocol.
+
+        For example:
+        ```python
+        class MyDevice(Device):
+            @AsyncStatus.wrap
+            async def trigger(self):
+                await asyncio.sleep(1)
+        ```
+        """
 
         @functools.wraps(f)
         def wrap_f(*args: P.args, **kwargs: P.kwargs) -> AsyncStatus:
@@ -97,13 +126,15 @@ class AsyncStatus(AsyncStatusBase):
                 name = None
             return cls(f(*args, **kwargs), name=name)
 
-        # type is actually functools._Wrapped[P, Awaitable, P, AS]
-        # but functools._Wrapped is not necessarily available
         return wrap_f
 
 
 class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
-    """Convert AsyncIterator of WatcherUpdates to bluesky Status interface."""
+    """Convert an asyncio async iterable to bluesky Status and Watcher interface.
+
+    :param iterator: The async iterable to await.
+    :param name: The name of the device, if available.
+    """
 
     def __init__(
         self, iterator: AsyncIterator[WatcherUpdate[T]], name: str | None = None
@@ -130,8 +161,13 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
         watcher(**vals)
 
     def watch(self, watcher: Watcher):
-        self._watchers.append(watcher)
+        """Add a watcher to the status.
 
+        It is called:
+        - immediately if there has already been an update
+        - on every subsequent update
+        """
+        self._watchers.append(watcher)
         if self._last_update:
             self._update_watcher(watcher, self._last_update)
 
@@ -140,7 +176,19 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
         cls,
         f: Callable[P, AsyncIterator[WatcherUpdate[T]]],
     ) -> Callable[P, WatchableAsyncStatus[T]]:
-        """Wrap an AsyncIterator in a WatchableAsyncStatus."""
+        """Wrap an AsyncIterator in a WatchableAsyncStatus.
+
+        For example:
+        ```python
+        class MyDevice(Device):
+            @WatchableAsyncStatus.wrap
+            async def trigger(self):
+                # sleep for a second, updating on progress every 0.1 seconds
+                for i in range(10):
+                    yield WatcherUpdate(initial=0, current=i*0.1, target=1)
+                    await asyncio.sleep(0.1)
+        ```
+        """
 
         @functools.wraps(f)
         def wrap_f(*args: P.args, **kwargs: P.kwargs) -> WatchableAsyncStatus[T]:
@@ -155,7 +203,10 @@ class WatchableAsyncStatus(AsyncStatusBase, Generic[T]):
 
 @AsyncStatus.wrap
 async def completed_status(exception: Exception | None = None):
-    """For raising the exception from a completed asyncio task if one exists."""
+    """Return a completed AsyncStatus.
+
+    :param exception: If given, then raise this exception when awaited.
+    """
     if exception:
         raise exception
     return None

@@ -26,6 +26,14 @@ from ._one_of_everything import (
     ExampleTable,
     OneOfEverythingDevice,
     ParentOfEverythingDevice,
+    float_array_value,
+    int_array_value,
+)
+from ._single_derived import (
+    BeamstopPosition,
+    Exploder,
+    MovableBeamstop,
+    ReadOnlyBeamstop,
 )
 from ._wait_for_pending import wait_for_pending_wakeups
 
@@ -56,4 +64,11 @@ __all__ = [
     "MonitorQueue",
     "ApproxTable",
     "StatusWatcher",
+    "int_array_value",
+    "float_array_value",
+    # Derived examples
+    "BeamstopPosition",
+    "Exploder",
+    "MovableBeamstop",
+    "ReadOnlyBeamstop",
 ]

@@ -1,3 +1,4 @@
+(interact-with-signals)=
 # How to interact with signals while implementing bluesky verbs
 
 To implement bluesky verbs, you typically need to interact with Signals. This guide will show you how to do the following operations on a Signal:
@@ -35,7 +36,7 @@ Rarely there are operations (like telling an EPICS motor to stop) where you have
 await stop_signal.set(value, wait=False)
 ```
 
-# Observe every value change
+## Observe every value change
 
 To observe every value change and run a function on that value you can use [](#observe_value):
 ```python
@@ -62,7 +63,7 @@ async for signal, value in observe_value(signal1, signal2):
         do_something_else_with(value)
 ```
 
-# Wait for the value to match some expected value
+## Wait for the value to match some expected value
 
 If you don't need to run code for every signal update, but just want to wait until the signal matches some expected value, you can use [](#wait_for_value):
 ```python

@@ -1,5 +1,12 @@
 """The building blocks for making devices."""
 
+from ._derived_signal import (
+    DerivedSignalFactory,
+    derived_signal_r,
+    derived_signal_rw,
+    derived_signal_w,
+)
+from ._derived_signal_backend import Transform
 from ._detector import (
     DetectorController,
     DetectorTrigger,
@@ -10,7 +17,7 @@ from ._detector import (
 from ._device import Device, DeviceConnector, DeviceVector, init_devices
 from ._device_filler import DeviceFiller
 from ._flyer import FlyerController, StandardFlyer
-from ._hdf_dataset import HDFDataset, HDFFile
+from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable, Watcher
@@ -35,6 +42,7 @@ from ._readable import (
 )
 from ._settings import Settings, SettingsProvider
 from ._signal import (
+    Ignore,
     Signal,
     SignalConnector,
     SignalR,
@@ -48,6 +56,7 @@ from ._signal import (
     soft_signal_r_and_setter,
     soft_signal_rw,
     wait_for_value,
+    walk_config_signals,
     walk_rw_signals,
 )
 from ._signal_backend import (
@@ -130,6 +139,7 @@ __all__ = [
     "set_and_wait_for_value",
     "set_and_wait_for_other_value",
     "walk_rw_signals",
+    "walk_config_signals",
     # Readable
     "StandardReadable",
     "StandardReadableFormat",
@@ -152,8 +162,8 @@ __all__ = [
     # Datatset
     "NameProvider",
     "DatasetDescriber",
-    "HDFDataset",
-    "HDFFile",
+    "HDFDatasetDescription",
+    "HDFDocumentComposer",
     # Flyer
     "StandardFlyer",
     "FlyerController",
@@ -176,6 +186,13 @@ __all__ = [
     "in_micros",
     "make_datakey",
     "wait_for_connection",
+    "Ignore",
+    # Derived signal
+    "derived_signal_r",
+    "derived_signal_rw",
+    "derived_signal_w",
+    "Transform",
+    "DerivedSignalFactory",
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",

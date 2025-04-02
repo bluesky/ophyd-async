@@ -21,10 +21,11 @@ from ._pattern_generator import PatternGenerator
 class EnergyMode(StrictEnum):
     """Energy mode for `SimPointDetector`."""
 
-    #: Low energy mode
     LOW = "Low Energy"
-    #: High energy mode
+    """Low energy mode"""
+
     HIGH = "High Energy"
+    """High energy mode"""
 
 
 class SimPointDetectorChannel(StandardReadable):
@@ -80,8 +81,6 @@ class SimPointDetector(StandardReadable):
 
     @AsyncStatus.wrap
     async def trigger(self):
-        start = time.time()
         for setter in self._value_signals.values():
             setter(0)
         await self._update_values(await self.acquire_time.get_value())
-        print("Trigger took", time.time() - start)

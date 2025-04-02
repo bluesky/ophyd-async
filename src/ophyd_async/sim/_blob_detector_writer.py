@@ -1,11 +1,17 @@
 from collections.abc import AsyncGenerator, AsyncIterator
 from pathlib import Path
 
-from bluesky.protocols import StreamAsset
+import numpy as np
+from bluesky.protocols import Hints, StreamAsset
 from event_model import DataKey
 
-from ophyd_async.core import DEFAULT_TIMEOUT, DetectorWriter, NameProvider, PathProvider
-from ophyd_async.core._hdf_dataset import HDFDataset, HDFFile
+from ophyd_async.core import (
+    DetectorWriter,
+    HDFDatasetDescription,
+    HDFDocumentComposer,
+    NameProvider,
+    PathProvider,
+)
 
 from ._pattern_generator import DATA_PATH, SUM_PATH, PatternGenerator
 
@@ -24,8 +30,8 @@ class BlobDetectorWriter(DetectorWriter):
         self.path_provider = path_provider
         self.name_provider = name_provider
         self.path: Path | None = None
-        self.composer: HDFFile | None = None
-        self.datasets: list[HDFDataset] = []
+        self.composer: HDFDocumentComposer | None = None
+        self.datasets: list[HDFDatasetDescription] = []
 
     async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
         name = self.name_provider()
@@ -34,17 +40,21 @@ class BlobDetectorWriter(DetectorWriter):
         self.pattern_generator.open_file(self.path, WIDTH, HEIGHT)
         # We know it will write data and sum, so emit those
         self.datasets = [
-            HDFDataset(
+            HDFDatasetDescription(
                 data_key=name,
                 dataset=DATA_PATH,
                 shape=(HEIGHT, WIDTH),
+                dtype_numpy=np.dtype(np.uint8).str,
+                chunk_shape=(HEIGHT, WIDTH),
                 multiplier=multiplier,
             ),
-            HDFDataset(
-                f"{name}-sum",
+            HDFDatasetDescription(
+                data_key=f"{name}-sum",
                 dataset=SUM_PATH,
                 shape=(),
+                dtype_numpy=np.dtype(np.int64).str,
                 multiplier=multiplier,
+                chunk_shape=(1024,),
             ),
         ]
         self.composer = None
@@ -60,8 +70,20 @@ class BlobDetectorWriter(DetectorWriter):
         }
         return describe
 
-    async def close(self) -> None:
-        self.pattern_generator.close_file()
+    @property
+    def hints(self) -> Hints:
+        """The hints to be used for the detector."""
+        return {"fields": [self.name_provider()]}
+
+    async def get_indices_written(self) -> int:
+        return self.pattern_generator.get_last_index()
+
+    async def observe_indices_written(
+        self, timeout: float
+    ) -> AsyncGenerator[int, None]:
+        while True:
+            yield self.pattern_generator.get_last_index()
+            await self.pattern_generator.wait_for_next_index(timeout)
 
     async def collect_stream_docs(
         self, indices_written: int
@@ -73,17 +95,11 @@ class BlobDetectorWriter(DetectorWriter):
             if not self.composer:
                 if not self.path:
                     raise RuntimeError(f"open() not called on {self}")
-                self.composer = HDFFile(self.path, self.datasets)
+                self.composer = HDFDocumentComposer(self.path, self.datasets)
                 for doc in self.composer.stream_resources():
                     yield "stream_resource", doc
             for doc in self.composer.stream_data(indices_written):
                 yield "stream_datum", doc
 
-    async def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
-    ) -> AsyncGenerator[int, None]:
-        async for index in self.pattern_generator.observe_indices_written(timeout):
-            yield index
-
-    async def get_indices_written(self) -> int:
-        return await self.pattern_generator.get_last_index()
+    async def close(self) -> None:
+        self.pattern_generator.close_file()

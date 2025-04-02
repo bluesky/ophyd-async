@@ -1,10 +1,11 @@
 import asyncio
 import functools
+import logging
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
-from typing import Any, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
 from bluesky.protocols import Reading
@@ -16,6 +17,7 @@ from ophyd_async.core import (
     NotConnected,
     SignalBackend,
     SignalDatatypeT,
+    StrictEnum,
     get_dtype,
     get_unique,
     wait_for_connection,
@@ -38,25 +40,37 @@ from tango.asyncio_executor import (
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
+from ._converters import (
+    TangoConverter,
+    TangoDevStateArrayConverter,
+    TangoDevStateConverter,
+    TangoEnumArrayConverter,
+    TangoEnumConverter,
+)
+from ._utils import DevStateEnum, get_device_trl_and_attr
+
+logger = logging.getLogger("ophyd_async")
+
 # time constant to wait for timeout
 A_BIT = 1e-5
 
+P = ParamSpec("P")
 R = TypeVar("R")
 
 
 def ensure_proper_executor(
-    func: Callable[..., Coroutine[Any, Any, R]],
-) -> Callable[..., Coroutine[Any, Any, R]]:
-    """Ensures decorated method has a proper asyncio executor."""
+    func: Callable[P, Coroutine[Any, Any, R]],
+) -> Callable[P, Coroutine[Any, Any, R]]:
+    """Ensure decorated method has a proper asyncio executor."""
 
     @functools.wraps(func)
-    async def wrapper(self: Any, *args: Any, **kwargs: Any) -> R:
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         current_executor: AsyncioExecutor = get_global_executor()  # type: ignore
         if not current_executor.in_executor_context():  # type: ignore
             set_global_executor(AsyncioExecutor())
-        return await func(self, *args, **kwargs)
+        return await func(*args, **kwargs)
 
-    return cast(Callable[..., Coroutine[Any, Any, R]], wrapper)
+    return wrapper
 
 
 def get_python_type(tango_type: CmdArgType) -> tuple[bool, object, str]:
@@ -87,48 +101,51 @@ class TangoProxy:
     support_events: bool = True
     _proxy: DeviceProxy
     _name: str
+    _converter: TangoConverter = TangoConverter()
 
     def __init__(self, device_proxy: DeviceProxy, name: str):
         self._proxy = device_proxy
         self._name = name
 
     async def connect(self) -> None:
-        """perform actions after proxy is connected, e.g. checks if signal
-        can be subscribed"""
+        """Perform actions after proxy is connected.
+
+        e.g. check if signal can be subscribed.
+        """
 
     @abstractmethod
     async def get(self) -> object:
-        """Get value from TRL"""
+        """Get value from TRL."""
 
     @abstractmethod
     async def get_w_value(self) -> object:
-        """Get last written value from TRL"""
+        """Get last written value from TRL."""
 
     @abstractmethod
     async def put(
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
-        """Put value to TRL"""
+        """Put value to TRL."""
 
     @abstractmethod
     async def get_config(self) -> AttributeInfoEx | CommandInfo:
-        """Get TRL config async"""
+        """Get TRL config async."""
 
     @abstractmethod
     async def get_reading(self) -> Reading:
-        """Get reading from TRL"""
+        """Get reading from TRL."""
 
     @abstractmethod
     def has_subscription(self) -> bool:
-        """indicates, that this trl already subscribed"""
+        """Indicate that this trl already subscribed."""
 
     @abstractmethod
     def subscribe_callback(self, callback: Callback | None):
-        """subscribe tango CHANGE event to callback"""
+        """Subscribe tango CHANGE event to callback."""
 
     @abstractmethod
     def unsubscribe_callback(self):
-        """delete CHANGE event subscription"""
+        """Delete CHANGE event subscription."""
 
     @abstractmethod
     def set_polling(
@@ -138,7 +155,10 @@ class TangoProxy:
         abs_change=None,
         rel_change=None,
     ):
-        """Set polling parameters"""
+        """Set polling parameters."""
+
+    def set_converter(self, converter: "TangoConverter"):
+        self._converter = converter
 
 
 class AttributeProxy(TangoProxy):
@@ -169,20 +189,21 @@ class AttributeProxy(TangoProxy):
             pass
 
     @ensure_proper_executor
-    async def get(self) -> Coroutine[Any, Any, object]:
+    async def get(self) -> object:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
-        return attr.value
+        return self._converter.value(attr.value)
 
     @ensure_proper_executor
-    async def get_w_value(self) -> object:
+    async def get_w_value(self) -> object:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
-        return attr.w_value
+        return self._converter.value(attr.w_value)
 
     @ensure_proper_executor
-    async def put(
+    async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
         # TODO: remove the timeout from this as it is handled at the signal level
+        value = self._converter.write_value(value)
         if wait:
             try:
 
@@ -226,14 +247,16 @@ class AttributeProxy(TangoProxy):
             return AsyncStatus(wait_for_reply(rid, timeout))
 
     @ensure_proper_executor
-    async def get_config(self) -> AttributeInfoEx:
+    async def get_config(self) -> AttributeInfoEx:  # type: ignore
         return await self._proxy.get_attribute_config(self._name)
 
     @ensure_proper_executor
-    async def get_reading(self) -> Reading:
+    async def get_reading(self) -> Reading:  # type: ignore
         attr = await self._proxy.read_attribute(self._name)
         reading = Reading(
-            value=attr.value, timestamp=attr.time.totime(), alarm_severity=attr.quality
+            value=self._converter.value(attr.value),
+            timestamp=attr.time.totime(),
+            alarm_severity=attr.quality,
         )
         self._last_reading = reading
         return reading
@@ -296,7 +319,7 @@ class AttributeProxy(TangoProxy):
     def _event_processor(self, event):
         if not event.err:
             reading = Reading(
-                value=event.attr_value.value,
+                value=self._converter.value(event.attr_value.value),
                 timestamp=event.get_date().totime(),
                 alarm_severity=event.attr_value.quality,
             )
@@ -304,10 +327,11 @@ class AttributeProxy(TangoProxy):
                 self._callback(reading)
 
     async def poll(self):
-        """
-        Poll the attribute and call the callback if the value has changed by more
-        than the absolute or relative change. This function is used when an attribute
-        that does not support events is cached or a callback is passed to it.
+        """Poll the attribute and call the callback if the value has changed.
+
+        Only callback if value has changed by more than the absolute or relative
+        change. This function is used when an attribute that does not support
+        events is cached or a callback is passed to it.
         """
         try:
             last_reading = await self.get_reading()
@@ -382,9 +406,7 @@ class AttributeProxy(TangoProxy):
         abs_change: float | None = None,
         rel_change: float | None = 0.1,
     ):
-        """
-        Set the polling parameters.
-        """
+        """Set the polling parameters."""
         self._allow_polling = allow_polling
         self._polling_period = polling_period
         self._abs_change = abs_change
@@ -412,9 +434,10 @@ class CommandProxy(TangoProxy):
         pass
 
     @ensure_proper_executor
-    async def put(
+    async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
+        value = self._converter.write_value(value)
         if wait:
             try:
 
@@ -424,7 +447,9 @@ class CommandProxy(TangoProxy):
                 task = asyncio.create_task(_put())
                 val = await asyncio.wait_for(task, timeout)
                 self._last_reading = Reading(
-                    value=val, timestamp=time.time(), alarm_severity=0
+                    value=self._converter.value(val),
+                    timestamp=time.time(),
+                    alarm_severity=0,
                 )
             except asyncio.TimeoutError as te:
                 raise TimeoutError(f"{self._name} command failed: Timeout") from te
@@ -440,7 +465,9 @@ class CommandProxy(TangoProxy):
                 start_time = time.time()
                 while True:
                     try:
-                        reply_value = self._proxy.command_inout_reply(rd)
+                        reply_value = self._converter.value(
+                            self._proxy.command_inout_reply(rd)
+                        )
                         self._last_reading = Reading(
                             value=reply_value, timestamp=time.time(), alarm_severity=0
                         )
@@ -460,7 +487,7 @@ class CommandProxy(TangoProxy):
             return AsyncStatus(wait_for_reply(rid, timeout))
 
     @ensure_proper_executor
-    async def get_config(self) -> CommandInfo:
+    async def get_config(self) -> CommandInfo:  # type: ignore
         return await self._proxy.get_command_config(self._name)
 
     async def get_reading(self) -> Reading:
@@ -486,7 +513,7 @@ def get_dtype_extended(datatype) -> object | None:
     # DevState tango type does not have numpy equivalents
     dtype = get_dtype(datatype)
     if dtype == np.object_:
-        if datatype.__args__[1].__args__[0] == DevState:
+        if datatype.__args__[1].__args__[0] in [DevStateEnum, DevState]:
             dtype = CmdArgType.DevState
     return dtype
 
@@ -496,8 +523,7 @@ def get_trl_descriptor(
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
 ) -> DataKey:
-    """Creates a descriptor from a tango resource locator."""
-
+    """Create a descriptor from a tango resource locator."""
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
@@ -592,11 +618,10 @@ def get_trl_descriptor(
 async def get_tango_trl(
     full_trl: str, device_proxy: DeviceProxy | TangoProxy | None, timeout: float
 ) -> TangoProxy:
-    """Gets the tango resource locator."""
-
+    """Get the tango resource locator."""
     if isinstance(device_proxy, TangoProxy):
         return device_proxy
-    device_trl, trl_name = full_trl.rsplit("/", 1)
+    device_trl, trl_name = get_device_trl_and_attr(full_trl)
     trl_name = trl_name.lower()
     if device_proxy is None:
         device_proxy = await AsyncDeviceProxy(device_trl, timeout=timeout)
@@ -618,14 +643,46 @@ async def get_tango_trl(
     if trl_name in all_cmds:
         return CommandProxy(device_proxy, trl_name)
 
-    # If version is below tango 9, then pipes are not supported
-    if device_proxy.info().server_version >= 9:
-        # all pipes can be always accessible with low register
-        all_pipes = [pipe_name.lower() for pipe_name in device_proxy.get_pipe_list()]
-        if trl_name in all_pipes:
-            raise NotImplementedError("Pipes are not supported")
-
     raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
+
+
+def make_converter(info: AttributeInfoEx | CommandInfo, datatype) -> TangoConverter:
+    if isinstance(info, AttributeInfoEx):
+        match info.data_type:
+            case CmdArgType.DevEnum:
+                if datatype and issubclass(datatype, StrictEnum):
+                    labels = [e.value for e in datatype]
+                else:  # get from enum_labels metadata
+                    labels = list(info.enum_labels)
+                if info.data_format == AttrDataFormat.SCALAR:
+                    return TangoEnumConverter(labels)
+                elif info.data_format in [
+                    AttrDataFormat.SPECTRUM,
+                    AttrDataFormat.IMAGE,
+                ]:
+                    return TangoEnumArrayConverter(labels)
+            case CmdArgType.DevState:
+                if info.data_format == AttrDataFormat.SCALAR:
+                    return TangoDevStateConverter()
+                elif info.data_format in [
+                    AttrDataFormat.SPECTRUM,
+                    AttrDataFormat.IMAGE,
+                ]:
+                    return TangoDevStateArrayConverter()
+    else:  # command info
+        match info.in_type:
+            case CmdArgType.DevState:
+                return TangoDevStateConverter()
+            case CmdArgType.DevEnum:
+                if datatype and issubclass(datatype, StrictEnum):
+                    labels = [e.value for e in datatype]
+                    return TangoEnumConverter(labels)
+                else:
+                    logger.warning(
+                        "No override enum class provided for Tango enum command"
+                    )
+    # default case return trivial converter
+    return TangoConverter()
 
 
 class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
@@ -655,11 +712,12 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         )
         self.support_events: bool = True
         self.status: AsyncStatus | None = None
+        self.converter = TangoConverter()  # gets replaced at connect
         super().__init__(datatype)
 
     @classmethod
     def datatype_allowed(cls, dtype: Any) -> bool:
-        return dtype in (int, float, str, bool, np.ndarray, Enum, DevState)
+        return dtype in (int, float, str, bool, np.ndarray, StrictEnum)
 
     def set_trl(self, read_trl: str = "", write_trl: str = ""):
         self.read_trl = read_trl
@@ -700,6 +758,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             # The same, so only need to connect one
             await self._connect_and_store_config(self.read_trl, timeout)
         self.proxies[self.read_trl].set_polling(*self._polling)  # type: ignore
+        self.converter = make_converter(self.trl_configs[self.read_trl], self.datatype)
+        self.proxies[self.read_trl].set_converter(self.converter)  # type: ignore
         self.descriptor = get_trl_descriptor(
             self.datatype, self.read_trl, self.trl_configs
         )
@@ -717,7 +777,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
     async def get_reading(self) -> Reading[SignalDatatypeT]:
         if self.proxies[self.read_trl] is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
-        return await self.proxies[self.read_trl].get_reading()  # type: ignore
+        reading = await self.proxies[self.read_trl].get_reading()  # type: ignore
+        return reading
 
     async def get_value(self) -> SignalDatatypeT:
         if self.proxies[self.read_trl] is None:
@@ -725,7 +786,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         proxy = self.proxies[self.read_trl]
         if proxy is None:
             raise NotConnected(f"Not connected to {self.read_trl}")
-        return cast(SignalDatatypeT, await proxy.get())
+        value = await proxy.get()
+        return cast(SignalDatatypeT, value)
 
     async def get_setpoint(self) -> SignalDatatypeT:
         if self.proxies[self.write_trl] is None:
@@ -733,7 +795,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         proxy = self.proxies[self.write_trl]
         if proxy is None:
             raise NotConnected(f"Not connected to {self.write_trl}")
-        return cast(SignalDatatypeT, await proxy.get_w_value())
+        w_value = await proxy.get_w_value()
+        return cast(SignalDatatypeT, w_value)
 
     def set_callback(self, callback: Callback | None) -> None:
         if self.proxies[self.read_trl] is None:

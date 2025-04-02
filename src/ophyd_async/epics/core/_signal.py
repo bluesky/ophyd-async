@@ -1,10 +1,11 @@
-"""EPICS Signals over CA or PVA"""
+"""EPICS Signals over CA or PVA."""
 
 from __future__ import annotations
 
 from enum import Enum
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     SignalBackend,
     SignalDatatypeT,
     SignalR,
@@ -73,6 +74,7 @@ def get_signal_backend_type(protocol: EpicsProtocol) -> type[EpicsSignalBackend]
             return CaSignalBackend
         case EpicsProtocol.PVA:
             return PvaSignalBackend
+    raise TypeError(f"Unsupported protocol: {protocol}")
 
 
 def _epics_signal_backend(
@@ -91,20 +93,18 @@ def epics_signal_rw(
     read_pv: str,
     write_pv: str | None = None,
     name: str = "",
+    timeout: float = DEFAULT_TIMEOUT,
 ) -> SignalRW[SignalDatatypeT]:
-    """Create a `SignalRW` backed by 1 or 2 EPICS PVs
+    """Create a `SignalRW` backed by 1 or 2 EPICS PVs.
 
-    Parameters
-    ----------
-    datatype:
-        Check that the PV is of this type
-    read_pv:
-        The PV to read and monitor
-    write_pv:
-        If given, use this PV to write to, otherwise use read_pv
+    :param datatype: Check that the PV is of this type
+    :param read_pv: The PV to read and monitor
+    :param write_pv: If given, use this PV to write to, otherwise use read_pv
+    :param name: The name of the signal (defaults to empty string)
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(datatype, read_pv, write_pv or read_pv)
-    return SignalRW(backend, name=name)
+    return SignalRW(backend, name=name, timeout=timeout)
 
 
 def epics_signal_rw_rbv(
@@ -112,67 +112,67 @@ def epics_signal_rw_rbv(
     write_pv: str,
     read_suffix: str = "_RBV",
     name: str = "",
+    timeout: float = DEFAULT_TIMEOUT,
 ) -> SignalRW[SignalDatatypeT]:
-    """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv
+    """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv.
 
-    Parameters
-    ----------
-    datatype:
-        Check that the PV is of this type
-    write_pv:
-        The PV to write to
-    read_suffix:
-        Append this suffix to the write pv to create the readback pv
+    :param datatype: Check that the PV is of this type
+    :param write_pv: The PV to write to
+    :param read_suffix: Append this suffix to the write pv to create the readback pv
+    :param name: The name of the signal (defaults to empty string)
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
-
     base_pv, field = get_pv_basename_and_field(write_pv)
     if field is not None:
         read_pv = f"{base_pv}{read_suffix}.{field}"
     else:
         read_pv = f"{write_pv}{read_suffix}"
 
-    return epics_signal_rw(datatype, read_pv, write_pv, name)
+    return epics_signal_rw(datatype, read_pv, write_pv, name, timeout=timeout)
 
 
 def epics_signal_r(
-    datatype: type[SignalDatatypeT], read_pv: str, name: str = ""
+    datatype: type[SignalDatatypeT],
+    read_pv: str,
+    name: str = "",
+    timeout: float = DEFAULT_TIMEOUT,
 ) -> SignalR[SignalDatatypeT]:
-    """Create a `SignalR` backed by 1 EPICS PV
+    """Create a `SignalR` backed by 1 EPICS PV.
 
-    Parameters
-    ----------
-    datatype
-        Check that the PV is of this type
-    read_pv:
-        The PV to read and monitor
+    :param datatype: Check that the PV is of this type
+    :param read_pv: The PV to read from
+    :param name: The name of the signal (defaults to empty string)
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(datatype, read_pv, read_pv)
-    return SignalR(backend, name=name)
+    return SignalR(backend, name=name, timeout=timeout)
 
 
 def epics_signal_w(
-    datatype: type[SignalDatatypeT], write_pv: str, name: str = ""
+    datatype: type[SignalDatatypeT],
+    write_pv: str,
+    name: str = "",
+    timeout: float = DEFAULT_TIMEOUT,
 ) -> SignalW[SignalDatatypeT]:
-    """Create a `SignalW` backed by 1 EPICS PVs
+    """Create a `SignalW` backed by 1 EPICS PVs.
 
-    Parameters
-    ----------
-    datatype:
-        Check that the PV is of this type
-    write_pv:
-        The PV to write to
+    :param datatype: Check that the PV is of this type
+    :param write_pv: The PV to write to
+    :param name: The name of the signal (defaults to empty string)
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(datatype, write_pv, write_pv)
-    return SignalW(backend, name=name)
+    return SignalW(backend, name=name, timeout=timeout)
 
 
-def epics_signal_x(write_pv: str, name: str = "") -> SignalX:
-    """Create a `SignalX` backed by 1 EPICS PVs
+def epics_signal_x(
+    write_pv: str, name: str = "", timeout: float = DEFAULT_TIMEOUT
+) -> SignalX:
+    """Create a `SignalX` backed by 1 EPICS PVs.
 
-    Parameters
-    ----------
-    write_pv:
-        The PV to write its initial value to on trigger
+    :param write_pv: The PV to write its initial value to on trigger
+    :param name: The name of the signal
+    :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(None, write_pv, write_pv)
-    return SignalX(backend, name=name)
+    return SignalX(backend, name=name, timeout=timeout)

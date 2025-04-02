@@ -12,12 +12,8 @@ from ophyd_async.epics import adcore
 from ._pilatus_io import PilatusDriverIO, PilatusTriggerMode
 
 
-#: Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
-#: The required minimum time difference between ExpPeriod and ExpTime
-#: (readout time) is 2.28 ms
-#: We provide an option to override for newer Pilatus models
 class PilatusReadoutTime(float, Enum):
-    """Pilatus readout time per model in ms"""
+    """Pilatus readout time per model in ms."""
 
     # Cite: https://media.dectris.com/User_Manual-PILATUS2-V1_4.pdf
     PILATUS2 = 2.28e-3
@@ -27,7 +23,7 @@ class PilatusReadoutTime(float, Enum):
 
 
 class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
-    """Controller for ADPilatus detector."""
+    """`DetectorController` for a `PilatusDriverIO`."""
 
     _supported_trigger_types = {
         DetectorTrigger.INTERNAL: PilatusTriggerMode.INTERNAL,
@@ -59,7 +55,7 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
                 if trigger_info.total_number_of_triggers == 0
                 else trigger_info.total_number_of_triggers
             ),
-            self.driver.image_mode.set(adcore.ImageMode.MULTIPLE),
+            self.driver.image_mode.set(adcore.ADImageMode.MULTIPLE),
         )
 
     async def arm(self):

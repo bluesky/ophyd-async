@@ -12,6 +12,33 @@ record(ao, "$(IOC_NAME=PANDAQSRV):PULSE1:DELAY")
     })
 }
 
+record(ao, "$(IOC_NAME=PANDAQSRV):PULSE1:STEP")
+{
+    field(EGU,  "us")
+    # Add to PULSE1:PVI PVA structure
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):PULSE1:PVI": {
+            "value.step.rw": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
+record(ao, "$(IOC_NAME=PANDAQSRV):PULSE1:PULSES")
+{
+    # Add to PULSE1:PVI PVA structure
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):PULSE1:PVI": {
+            "value.pulses.rw": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
 
 #if EXCLUDE_WIDTH is set to "#", this bit is commented out.
 $(EXCLUDE_WIDTH=)record(ao, "$(IOC_NAME=PANDAQSRV):PULSE1:WIDTH")

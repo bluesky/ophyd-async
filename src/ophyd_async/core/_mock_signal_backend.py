@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock
 from bluesky.protocols import Reading
 from event_model import DataKey
 
+from ._derived_signal_backend import DerivedSignalBackend
 from ._signal_backend import SignalBackend, SignalDatatypeT
 from ._soft_signal_backend import SoftSignalBackend
 from ._utils import Callback, LazyMock
@@ -24,7 +25,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
         self.initial_backend = initial_backend
 
-        if isinstance(self.initial_backend, SoftSignalBackend):
+        if isinstance(self.initial_backend, SoftSignalBackend | DerivedSignalBackend):
             # Backend is already a SoftSignalBackend, so use it
             self.soft_backend = self.initial_backend
         else:
@@ -39,11 +40,13 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
     @cached_property
     def put_mock(self) -> AsyncMock:
+        """Return the mock that will track calls to `put()`."""
         put_mock = AsyncMock(name="put", spec=Callable)
         self.mock().attach_mock(put_mock, "put")
         return put_mock
 
     def set_value(self, value: SignalDatatypeT):
+        """Set the value of the signal."""
         self.soft_backend.set_value(value)
 
     def source(self, name: str, read: bool) -> str:
@@ -54,6 +57,10 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
     @cached_property
     def put_proceeds(self) -> asyncio.Event:
+        """Return an Event that will block `put()` until set.
+
+        The Event is initially set, but can be unset to block `put()`.
+        """
         put_proceeds = asyncio.Event()
         put_proceeds.set()
         return put_proceeds

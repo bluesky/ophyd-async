@@ -29,7 +29,7 @@ from ._core_io import (
     NDFileIO,
     NDPluginBaseIO,
 )
-from ._utils import FileWriteMode
+from ._utils import ADFileWriteMode
 
 NDFileIOT = TypeVar("NDFileIOT", bound=NDFileIO)
 ADWriterT = TypeVar("ADWriterT", bound="ADWriter")
@@ -104,7 +104,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             # See https://github.com/bluesky/ophyd-async/issues/122
             self.fileio.file_path.set(str(info.directory_path)),
             self.fileio.file_name.set(info.filename),
-            self.fileio.file_write_mode.set(FileWriteMode.STREAM),
+            self.fileio.file_write_mode.set(ADFileWriteMode.STREAM),
             # For non-HDF file writers, use AD file templating mechanism
             # for generating multi-image datasets
             self.fileio.file_template.set(
@@ -136,7 +136,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
         describe = {
             self._name_provider(): DataKey(
-                source=self._name_provider(),
+                source=self.fileio.full_file_name.source,
                 shape=list(frame_shape),
                 dtype="array",
                 dtype_numpy=dtype_numpy,
@@ -146,9 +146,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         return describe
 
     async def observe_indices_written(
-        self, timeout=DEFAULT_TIMEOUT
+        self, timeout: float
     ) -> AsyncGenerator[int, None]:
-        """Wait until a specific index is ready to be collected"""
+        """Wait until a specific index is ready to be collected."""
         async for num_captured in observe_value(self.fileio.num_captured, timeout):
             yield num_captured // self._multiplier
 
@@ -189,6 +189,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
                         "chunk_shape": (1, *frame_shape),
                         # Include file template for reconstruction in consolidator
                         "template": file_template,
+                        "multiplier": self._multiplier,
                     },
                     uid=None,
                     validate=True,
@@ -212,9 +213,10 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         # Already done a caput callback in _capture_status, so can't do one here
         await self.fileio.capture.set(False, wait=False)
         await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
-        if self._capture_status:
+        if self._capture_status and not self._capture_status.done:
             # We kicked off an open, so wait for it to return
             await self._capture_status
+        self._capture_status = None
 
     @property
     def hints(self) -> Hints:

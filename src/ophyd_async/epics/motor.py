@@ -1,3 +1,8 @@
+"""Support for EPICS motor record.
+
+https://github.com/epics-modules/motor
+"""
+
 import asyncio
 
 from bluesky.protocols import (
@@ -5,7 +10,9 @@ from bluesky.protocols import (
     Locatable,
     Location,
     Preparable,
+    Reading,
     Stoppable,
+    Subscribable,
 )
 from pydantic import BaseModel, Field
 
@@ -14,7 +21,9 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
+    Callback,
     StandardReadable,
+    StrictEnum,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
@@ -31,38 +40,45 @@ class MotorLimitsException(Exception):
     pass
 
 
-class InvalidFlyMotorException(Exception):
-    """Exception for invalid motor."""
-
-    pass
-
-
-DEFAULT_MOTOR_FLY_TIMEOUT = 60
-DEFAULT_WATCHER_UPDATE_FREQUENCY = 0.2
-
-
 class FlyMotorInfo(BaseModel):
-    """Minimal set of information required to fly a motor:"""
+    """Minimal set of information required to fly a motor."""
 
-    #: Absolute position of the motor once it finishes accelerating to desired
-    #: velocity, in motor EGUs
     start_position: float = Field(frozen=True)
+    """Absolute position of the motor once it finishes accelerating to desired
+    velocity, in motor EGUs"""
 
-    #: Absolute position of the motor once it begins decelerating from desired
-    #: velocity, in EGUs
     end_position: float = Field(frozen=True)
+    """Absolute position of the motor once it begins decelerating from desired
+    velocity, in EGUs"""
 
-    #: Time taken for the motor to get from start_position to end_position, excluding
-    #: run-up and run-down, in seconds.
     time_for_move: float = Field(frozen=True, gt=0)
+    """Time taken for the motor to get from start_position to end_position, excluding
+    run-up and run-down, in seconds."""
 
-    #: Maximum time for the complete motor move, including run up and run down.
-    #: Defaults to `time_for_move` + run up and run down times + 10s.
     timeout: CalculatableTimeout = Field(frozen=True, default=CALCULATE_TIMEOUT)
+    """Maximum time for the complete motor move, including run up and run down.
+    Defaults to `time_for_move` + run up and run down times + 10s."""
 
 
-class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
-    """Device that moves a motor record"""
+class OffsetMode(StrictEnum):
+    VARIABLE = "Variable"
+    FROZEN = "Frozen"
+
+
+class UseSetMode(StrictEnum):
+    USE = "Use"
+    SET = "Set"
+
+
+class Motor(
+    StandardReadable,
+    Locatable[float],
+    Stoppable,
+    Flyable,
+    Preparable,
+    Subscribable[float],
+):
+    """Device that moves a motor record."""
 
     def __init__(self, prefix: str, name="") -> None:
         # Define some signals
@@ -82,11 +98,16 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         self.motor_done_move = epics_signal_r(int, prefix + ".DMOV")
         self.low_limit_travel = epics_signal_rw(float, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
+        self.offset_freeze_switch = epics_signal_rw(OffsetMode, prefix + ".FOFF")
+        self.high_limit_switch = epics_signal_r(int, prefix + ".HLS")
+        self.low_limit_switch = epics_signal_r(int, prefix + ".LLS")
+        self.set_use_switch = epics_signal_rw(UseSetMode, prefix + ".SET")
 
         # Note:cannot use epics_signal_x here, as the motor record specifies that
         # we must write 1 to stop the motor. Simply processing the record is not
         # sufficient.
         self.motor_stop = epics_signal_w(int, prefix + ".STOP")
+
         # Whether set() should complete successfully or not
         self._set_success = True
 
@@ -102,15 +123,14 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         super().__init__(name=name)
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
+        """Set name of the motor and its children."""
         super().set_name(name, child_name_separator=child_name_separator)
         # Readback should be named the same as its parent in read()
         self.user_readback.set_name(name)
 
     @AsyncStatus.wrap
     async def prepare(self, value: FlyMotorInfo):
-        """Calculate required velocity and run-up distance, then if motor limits aren't
-        breached, move to start position minus run-up distance"""
-
+        """Move to the beginning of a suitable run-up distance ready for a flyscan."""
         self._fly_timeout = value.timeout
 
         # Velocity, at which motor travels from start_position to end_position, in motor
@@ -148,8 +168,10 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         return self._fly_status
 
     @WatchableAsyncStatus.wrap
-    async def set(self, value: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT):
-        new_position = value
+    async def set(  # type: ignore
+        self, new_position: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
+    ):
+        """Move motor to the given value."""
         self._set_success = True
         (
             old_position,
@@ -192,6 +214,7 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
             raise RuntimeError("Motor was stopped")
 
     async def stop(self, success=False):
+        """Request to stop moving and return immediately."""
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
@@ -214,11 +237,19 @@ class Motor(StandardReadable, Locatable, Stoppable, Flyable, Preparable):
         return fly_velocity
 
     async def locate(self) -> Location[float]:
-        location: Location = {
-            "setpoint": await self.user_setpoint.get_value(),
-            "readback": await self.user_readback.get_value(),
-        }
-        return location
+        """Return the current setpoint and readback of the motor."""
+        setpoint, readback = await asyncio.gather(
+            self.user_setpoint.get_value(), self.user_readback.get_value()
+        )
+        return Location(setpoint=setpoint, readback=readback)
+
+    def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
+        """Subscribe."""
+        self.user_readback.subscribe(function)
+
+    def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
+        """Unsubscribe."""
+        self.user_readback.clear_sub(function)
 
     async def _prepare_motor_path(
         self, fly_velocity: float, start_position: float, end_position: float

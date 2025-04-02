@@ -79,13 +79,13 @@ def convert_param_dtype_to_np(datatype: str) -> str:
     return np_datatype
 
 
-class FileWriteMode(StrictEnum):
+class ADFileWriteMode(StrictEnum):
     SINGLE = "Single"
     CAPTURE = "Capture"
     STREAM = "Stream"
 
 
-class ImageMode(SubsetEnum):
+class ADImageMode(SubsetEnum):
     SINGLE = "Single"
     MULTIPLE = "Multiple"
     CONTINUOUS = "Continuous"

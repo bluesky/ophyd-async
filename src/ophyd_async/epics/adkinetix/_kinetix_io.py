@@ -1,6 +1,8 @@
-from ophyd_async.core import StrictEnum
+from typing import Annotated as A
+
+from ophyd_async.core import SignalRW, StrictEnum
 from ophyd_async.epics import adcore
-from ophyd_async.epics.core import epics_signal_rw_rbv
+from ophyd_async.epics.core import PvSuffix
 
 
 class KinetixTriggerMode(StrictEnum):
@@ -12,6 +14,8 @@ class KinetixTriggerMode(StrictEnum):
 
 
 class KinetixReadoutMode(StrictEnum):
+    """Readout mode for ADKinetix detector."""
+
     SENSITIVITY = 1
     SPEED = 2
     DYNAMIC_RANGE = 3
@@ -19,14 +23,7 @@ class KinetixReadoutMode(StrictEnum):
 
 
 class KinetixDriverIO(adcore.ADBaseIO):
-    """This mirrors the interface provided by ADKinetix/db/ADKinetix.template."""
+    """Mirrors the interface provided by ADKinetix/db/ADKinetix.template."""
 
-    def __init__(self, prefix: str, name: str = "") -> None:
-        # self.pixel_format = epics_signal_rw_rbv(PixelFormat, prefix + "PixelFormat")
-        self.trigger_mode = epics_signal_rw_rbv(
-            KinetixTriggerMode, prefix + "TriggerMode"
-        )
-        self.readout_port_idx = epics_signal_rw_rbv(
-            KinetixReadoutMode, prefix + "ReadoutPortIdx"
-        )
-        super().__init__(prefix, name=name)
+    trigger_mode: A[SignalRW[KinetixTriggerMode], PvSuffix("TriggerMode")]
+    readout_port_idx: A[SignalRW[KinetixReadoutMode], PvSuffix("ReadoutPortIdx")]

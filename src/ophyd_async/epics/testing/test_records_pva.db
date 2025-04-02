@@ -1,36 +1,37 @@
 record(waveform, "$(device)int8a") {
-  field(NELM, "3")
+  field(NELM, "7")
   field(FTVL, "CHAR")
-  field(INP, {const:[-128, 127]})
+  field(INP, {const:[-128, 127, 0, 1, 2, 3, 4]})
   field(PINI, "YES")
 }
 
 record(waveform, "$(device)uint16a") {
-  field(NELM, "3")
+  field(NELM, "7")
   field(FTVL, "USHORT")
-  field(INP, {const:[0, 65535]})
+  field(INP, {const:[0, 65535, 0, 1, 2, 3, 4]})
   field(PINI, "YES")
 }
 
 record(waveform, "$(device)uint32a") {
-  field(NELM, "3")
+  field(NELM, "7")
   field(FTVL, "ULONG")
-  field(INP, {const:[0, 4294967295]})
+  field(INP, {const:[0, 4294967295, 0, 1, 2, 3, 4]})
   field(PINI, "YES")
 }
 
 record(waveform, "$(device)int64a") {
-  field(NELM, "3")
+  field(NELM, "7")
   field(FTVL, "INT64")
-  # Can't do 64-bit int with JSON numbers in a const link...
-  field(INP, {const:[-2147483649, 2147483648]})
+  # limit of range appears to be +/-(2^63 - 1)
+  field(INP, {const:[-9223372036854775807, 9223372036854775807, 0, 1, 2, 3, 4]})
   field(PINI, "YES")
 }
 
 record(waveform, "$(device)uint64a") {
-  field(NELM, "3")
+  field(NELM, "7")
   field(FTVL, "UINT64")
-  field(INP, {const:[0, 4294967297]})
+  # limit of range appears to be 0 to +(2^63 - 1)
+  field(INP, {const:[0, 9223372036854775807, 0, 1, 2, 3, 4]})
   field(PINI, "YES")
 }
 

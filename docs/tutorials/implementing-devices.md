@@ -52,7 +52,7 @@ Ophyd-async ships with some demo devices that do the same thing for each control
 :sync: epics
 
 ```
-$ ipython -i -m ophyd_async.epics.demo
+$ ipython --matplotlib=qt6 -i -m ophyd_async.epics.demo
 Python 3.11.11 (main, Dec  4 2024, 20:38:25) [GCC 12.2.0]
 Type 'copyright', 'credits' or 'license' for more information
 IPython 8.30.0 -- An enhanced Interactive Python. Type '?' for help.
@@ -146,6 +146,8 @@ TODO
 
 The demo creates the following structure of Devices:
 ```{mermaid}
+:config: { "theme": "neutral" }
+:align: center
 flowchart LR
     DemoPointDetector-- channel ---DeviceVector
     DeviceVector-- 1 ---pdet.1(DemoPointDetectorChannel)
@@ -170,7 +172,7 @@ We specify to the Device baseclass that we would like a Signal of a given type (
 [](#SignalDatatypeT) defines the list of all possible datatypes you can use for Signals
 ```
 
-We also [annotate](#typing.Annotated) this type hint with some additional information, like [`Format`](#StandardReadableFormat). This will tell the [](#StandardReadable) baseclass which Signals are important in a plan like `bp.grid_scan`. In this case we specify that `mode` should be reported as a [configuration parameter](#StandardReadableFormat.CONFIG_SIGNAL) once at the start of the scan, and `value` should be [fetched without caching and plotted](#StandardReadableFormat.HINTED_UNCACHED_SIGNAL) at each point of the scan.
+We can optionally [annotate](#typing.Annotated) this type hint with some additional information, like [`Format`](#StandardReadableFormat). This will tell the [](#StandardReadable) baseclass which Signals are important in a plan like `bp.grid_scan`. In this case we specify that `mode` should be reported as a [configuration parameter](#StandardReadableFormat.CONFIG_SIGNAL) once at the start of the scan, and `value` should be [fetched without caching and plotted](#StandardReadableFormat.HINTED_UNCACHED_SIGNAL) at each point of the scan.
 
 ::::{tab-set}
 :sync-group: cs
@@ -214,7 +216,7 @@ We also have a [](#DeviceVector) called `channel` with `DemoPointDetectorChannel
 Finally, we need to communicate to bluesky that it has to `trigger()` and acquisition before it can `read()` from the underlying channels. We do this by implementing the [`Triggerable`](#bluesky.protocols.Triggerable) protocol. This involves writing a `trigger()` method with the logic that must be run, calling [](#SignalX.trigger), [](#SignalW.set) and [](#SignalR.get_value) to manipulate the values of the underlying Signals, returning when complete. This is wrapped in an [](#AsyncStatus), which is used by bluesky to run this operation in the background and know when it is complete.
 
 ```{seealso}
-[](#../how-to/interact-with-signals)
+[](../how-to/interact-with-signals)
 ```
 
 ::::{tab-set}
@@ -247,7 +249,7 @@ TODO
 ::::
 
 ```{seealso}
-For more information on when to construct Devices declaratively using type hints, and when to construct them procedurally with an `__init__` method, see [](#../explanations/declarative-vs-procedural)
+For more information on when to construct Devices declaratively using type hints, and when to construct them procedurally with an `__init__` method, see [](../explanations/declarative-vs-procedural)
 ```
 
 ### `DemoMotor`

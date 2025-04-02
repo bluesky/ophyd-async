@@ -1,0 +1,26 @@
+on:
+  workflow_call:
+
+jobs:
+  run:
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Need this to get version number from last tag
+          fetch-depth: 0
+
+      - name: Install (with no extras)
+        uses: ./.github/actions/install_requirements
+        with:
+          pip-install: "."
+
+      - name: Check APIs are importable
+        run: |
+          python -c "import ophyd_async"
+          python -c "import ophyd_async.core"
+          python -c "import ophyd_async.epics.core"
+          python -c "import ophyd_async.epics.motor"
+          python -c "import ophyd_async.plan_stubs"

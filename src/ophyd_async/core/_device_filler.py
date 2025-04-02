@@ -16,7 +16,7 @@ from typing import (
 )
 
 from ._device import Device, DeviceConnector, DeviceVector
-from ._signal import Signal, SignalX
+from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
 from ._utils import get_origin_class
 
@@ -33,6 +33,7 @@ def _get_datatype(annotation: Any) -> type | None:
     args = get_args(annotation)
     if len(args) == 1 and get_origin_class(args[0]):
         return args[0]
+    return None
 
 
 def _logical(name: UniqueName) -> LogicalName:
@@ -53,7 +54,12 @@ class DeviceAnnotation(Protocol):
 
 
 class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
-    """For filling signals on introspected devices."""
+    """For filling signals on introspected devices.
+
+    :param device: The device to fill.
+    :param signal_backend_factory: A callable that returns a SignalBackend.
+    :param device_connector_factory: A callable that returns a DeviceConnector.
+    """
 
     def __init__(
         self,
@@ -70,6 +76,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
         self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
+        self.ignored_signals: set[str] = set()
         # Backends and Connectors stored ready for the connection phase
         self._unfilled_backends: dict[
             LogicalName, tuple[SignalBackendT, type[Signal]]
@@ -110,6 +117,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         # Get hints with Annotated for wrapping signals and backends
         extra_hints = get_type_hints(cls, include_extras=True)
         for attr_name, annotation in hints.items():
+            if annotation is Ignore:
+                self.ignored_signals.add(attr_name)
             name = UniqueName(attr_name)
             origin = get_origin_class(annotation)
             if (
@@ -153,17 +162,12 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     ) -> Iterator[tuple[SignalBackendT, list[Any]]]:
         """Create all Signals from annotations.
 
-        Parameters
-        ----------
-        filled
+        :param filled:
             If True then the Signals created should be considered already filled
             with connection data. If False then `fill_child_signal` needs
             calling at device connection time before the signal can be
             connected.
-
-        Yields
-        ------
-        (backend, extras):
+        :yields: `(backend, extras)`
             The `SignalBackend` that has been created for this Signal, and the
             list of extra annotations that could be used to customize it. For
             example an `EpicsDeviceConnector` consumes `PvSuffix` extras to set the
@@ -192,17 +196,12 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     ) -> Iterator[tuple[DeviceConnectorT, list[Any]]]:
         """Create all Signals from annotations.
 
-        Parameters
-        ----------
-        filled
+        :param filled:
             If True then the Devices created should be considered already filled
             with connection data. If False then `fill_child_device` needs
             calling at parent device connection time before the child Device can
             be connected.
-
-        Yields
-        ------
-        (connector, extras):
+        :yields: `(connector, extras)`
             The `DeviceConnector` that has been created for this Signal, and the list of
             extra annotations that could be used to customize it.
         """
@@ -237,13 +236,10 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                     self._raise(name, f"Can't make {cls}")
 
     def check_filled(self, source: str):
-        """Check that all the created Signals and Devices are filled
+        """Check that all the created Signals and Devices are filled.
 
-        Parameters
-        ----------
-        source
-            The source of the data that should have done the filling, for
-            reporting as an error message
+        :param source: The source of the data that should have done the filling, for
+                       reporting as an error message
         """
         unfilled = sorted(set(self._unfilled_connectors).union(self._unfilled_backends))
         if unfilled:
@@ -269,14 +265,12 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     ) -> SignalBackendT:
         """Mark a Signal as filled, and return its backend for filling.
 
-        Parameters
-        ----------
-        name:
+        :param name:
             The name without trailing underscore, the name in the control system
-        signal_type:
+        :param signal_type:
             One of the types `SignalR`, `SignalW`, `SignalRW` or `SignalX`
-        vector_index:
-            If the child is in a `DeviceVector` then what index is it
+        :param vector_index: If the child is in a `DeviceVector` then what index is it
+        :return: The SignalBackend for the filled Signal.
         """
         name = cast(LogicalName, name)
         if name in self._unfilled_backends:
@@ -315,14 +309,11 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     ) -> DeviceConnectorT:
         """Mark a Device as filled, and return its connector for filling.
 
-        Parameters
-        ----------
-        name:
+        :param name:
             The name without trailing underscore, the name in the control system
-        device_type:
-            The `Device` subclass to be created
-        vector_index:
-            If the child is in a `DeviceVector` then what index is it
+        :param device_type: The `Device` subclass to be created
+        :param vector_index: If the child is in a `DeviceVector` then what index is it
+        :return: The DeviceConnector for the filled Device.
         """
         name = cast(LogicalName, name)
         if name in self._unfilled_connectors:

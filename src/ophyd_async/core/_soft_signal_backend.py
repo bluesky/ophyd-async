@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+import typing
 from abc import abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -19,9 +20,9 @@ from ._signal_backend import (
     SignalBackend,
     SignalDatatype,
     SignalDatatypeT,
-    SignalMetadata,
     TableT,
     make_datakey,
+    make_metadata,
 )
 from ._table import Table
 from ._utils import Callback, get_dtype, get_enum_cls
@@ -94,9 +95,9 @@ class TableSoftConverter(SoftConverter[TableT]):
 @lru_cache
 def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     enum_cls = get_enum_cls(datatype)
-    if datatype == Sequence[str]:
+    if datatype in (Sequence[str], typing.Sequence[str]):
         return SequenceStrSoftConverter()
-    elif get_origin(datatype) == Sequence and enum_cls:
+    elif get_origin(datatype) in (Sequence, typing.Sequence) and enum_cls:
         return SequenceEnumSoftConverter(enum_cls)
     elif datatype is np.ndarray:
         return NDArraySoftConverter()
@@ -114,7 +115,16 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
 
 
 class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
-    """An backend to a soft Signal, for test signals see ``MockSignalBackend``."""
+    """An backend to a soft Signal, for test signals see [](#MockSignalBackend).
+
+    :param datatype: The datatype of the signal, defaults to float if not given.
+    :param initial_value:
+        The initial value of the signal, defaults to the "empty", "zero" or
+        "default" value of the datatype if not given.
+    :param units: The units for numeric datatypes.
+    :param precision:
+        The number of digits after the decimal place to display for a float datatype.
+    """
 
     def __init__(
         self,
@@ -126,13 +136,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         # Create the right converter for the datatype
         self.converter = make_converter(datatype or float)
         # Add the extra static metadata to the dictionary
-        self.metadata: SignalMetadata = {}
-        if units is not None:
-            self.metadata["units"] = units
-        if precision is not None:
-            self.metadata["precision"] = precision
-        if enum_cls := get_enum_cls(datatype):
-            self.metadata["choices"] = [v.value for v in enum_cls]
+        self.metadata = make_metadata(datatype, units, precision)
         # Create and set the initial value
         self.initial_value = self.converter.write_value(initial_value)
         self.reading: Reading[SignalDatatypeT]
@@ -141,6 +145,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         super().__init__(datatype)
 
     def set_value(self, value: SignalDatatypeT):
+        """Set the current value, alarm and timestamp."""
         self.reading = Reading(
             value=self.converter.write_value(value),
             timestamp=time.monotonic(),
