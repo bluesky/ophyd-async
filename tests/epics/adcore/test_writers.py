@@ -181,7 +181,7 @@ async def test_stats_describe_raises_error_with_dbr_native(
     )
     with pytest.raises(ValueError) as e:
         with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
-            await hdf_writer_with_stats.open()
+            await hdf_writer_with_stats.open(DETECTOR_NAME)
     await hdf_writer_with_stats.close()
     assert str(e.value) == "Don't support DBR_NATIVE yet"
 
