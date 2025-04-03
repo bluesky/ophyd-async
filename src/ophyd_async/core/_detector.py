@@ -319,7 +319,8 @@ class StandardDetector(
             else [value.number_of_triggers]
         )
         self._describe, _ = await asyncio.gather(
-            self._writer.open(value.multiplier), self._controller.prepare(value)
+            self._writer.open(self.name, value.multiplier),
+            self._controller.prepare(value),
         )
         self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
