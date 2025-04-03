@@ -10,6 +10,10 @@ from ophyd_async.core import (
     DerivedSignalFactory,
     soft_signal_rw,
 )
+from ophyd_async.core._derived_signal import _make_factory
+from ophyd_async.core._derived_signal_backend import DerivedSignalBackend, SignalTransformer, Transform
+from ophyd_async.core._signal import SignalRW
+from ophyd_async.core._table import Table
 from ophyd_async.sim import (
     HorizontalMirror,
     HorizontalMirrorDerived,
@@ -128,3 +132,45 @@ def test_mismatching_args():
             jack22=soft_signal_rw(float),
             distance=soft_signal_rw(float),
         )
+
+@pytest.fixture
+def derived_signal_backend() -> DerivedSignalBackend:
+    return DerivedSignalBackend(Table, "derived_backend", 
+                                SignalTransformer(Transform, None, None))
+
+
+async def test_derived_signal_backend_connect_pass(
+    derived_signal_backend:DerivedSignalBackend
+) -> None:
+    result = await derived_signal_backend.connect(0.0)
+    assert result == None
+
+
+def test_derived_signal_backend_set_value(
+    derived_signal_backend:DerivedSignalBackend
+) -> None:
+    with pytest.raises(RuntimeError):
+        derived_signal_backend.set_value(0.0)
+
+
+async def test_derived_signal_backend_put_fails(
+    derived_signal_backend:DerivedSignalBackend
+) -> None:
+    with pytest.raises(RuntimeError):
+        await derived_signal_backend.put(value = None, wait = False)
+    with pytest.raises(RuntimeError):
+        await derived_signal_backend.put(value = None, wait = True)
+
+def test_make_rw_signal_type_mismatch():
+    factory = DerivedSignalFactory(
+            TwoJackTransform,
+            set_derived = None,
+            distance=soft_signal_rw(float),
+            jack1=soft_signal_rw(float),
+            jack2=soft_signal_rw(float),
+        )
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Must define a set_derived method to support derived")
+        ):
+        factory._make_signal(signal_cls=SignalRW, datatype=Table, name="")

@@ -23,9 +23,20 @@ from ophyd_async.testing import (
     get_mock,
 )
 
-from ophyd_async.core._derived_signal_backend import DerivedSignalBackend, SignalTransformer, Transform, validate_by_type
+from ophyd_async.core._derived_signal_backend import DerivedSignalBackend, SignalTransformer, SignalTransformer, Transform, validate_by_type
 from ophyd_async.core._utils import StrictEnumMeta
 from bluesky.protocols import Reading
+
+
+@pytest.fixture
+def movable_beamstop() -> MovableBeamstop:
+    return  MovableBeamstop("device")
+
+
+@pytest.fixture
+def readonly_beamstop() -> ReadOnlyBeamstop:
+    return  ReadOnlyBeamstop("device")
+
 
 @pytest.mark.parametrize(
     "x, y, position",
@@ -76,13 +87,6 @@ async def test_monitoring_position(cls: type[ReadOnlyBeamstop | MovableBeamstop]
     assert await results.get() == BeamstopPosition.IN_POSITION
     assert results.empty()
 
-@pytest.fixture
-def movable_beamstop() -> MovableBeamstop:
-    return  MovableBeamstop("device")
-
-@pytest.fixture
-def readonly_beamstop() -> ReadOnlyBeamstop:
-    return  ReadOnlyBeamstop("device")
 
 async def test_setting_position(movable_beamstop:MovableBeamstop):
     # Connect in mock mode so we can see what would have been set
@@ -132,128 +136,104 @@ def test_mismatching_args():
             _get_position, foo=soft_signal_rw(float), bar=soft_signal_rw(float)
         )
 
+
 @patch("ophyd_async.core._derived_signal_backend.TYPE_CHECKING", True)
 def test_validate_by_type(
     movable_beamstop:MovableBeamstop,
     readonly_beamstop: ReadOnlyBeamstop
 ) -> None:
-    movable_beamstop2 = MovableBeamstop("mvb2")
-    invalid_devices_dict = {device.name: device for device in [movable_beamstop, readonly_beamstop]}
-    with pytest.raises(Exception) as e_info:
+    invalid_devices_dict = {device.name: device for device in [movable_beamstop, 
+                                                               readonly_beamstop]}
+    with pytest.raises(TypeError):
         validate_by_type(invalid_devices_dict, MovableBeamstop)
-    assert type(e_info.value) == TypeError
-
-    valid_devices_dict = {device.name: device for device in [movable_beamstop, movable_beamstop2]}
+    with pytest.raises(TypeError):
+        validate_by_type({movable_beamstop.name: movable_beamstop}, ReadOnlyBeamstop)
+    valid_devices_dict = {device.name: device for device in [movable_beamstop,
+                                                             MovableBeamstop("mvb2")]}
     assert validate_by_type(valid_devices_dict, MovableBeamstop) == valid_devices_dict
 
-    with pytest.raises(Exception) as e_info:
-        validate_by_type({movable_beamstop.name: movable_beamstop}, ReadOnlyBeamstop)
-    assert type(e_info.value) == TypeError
 
 @pytest.fixture
-def transformer() -> SignalTransformer:
+def null_transformer() -> SignalTransformer:
     return  SignalTransformer(Transform, None, None)
+
 
 @pytest.fixture
 def new_readings() -> dict[str, Reading]:
     return  {"device-position": Reading(value=0.0,timestamp=0.0)}
 
-@pytest.fixture
-def derived_signal_backend(transformer: SignalTransformer) -> DerivedSignalBackend:
-    return DerivedSignalBackend(Table, "derived_backend", transformer)
 
-async def test_set_derived_not_initialized(
-    transformer : SignalTransformer
-) -> None:
-    with pytest.raises(Exception) as e_info:
-        await transformer.set_derived("name",None)
-    assert type(e_info.value) == RuntimeError
+async def test_set_derived_not_initialized(null_transformer : SignalTransformer):
+    with pytest.raises(RuntimeError):
+        await null_transformer.set_derived("name",None)
+
 
 async def test_get_transform_cached(
-    transformer : SignalTransformer,
+    null_transformer : SignalTransformer,
     new_readings: dict[str, Reading]
 ) -> None:
-    with patch.object(transformer, '_cached_readings', new_readings):
-        with patch.object(transformer, 'raw_and_transform_subscribables', {"device":SignalR}):
-            assert transformer._cached_readings == new_readings
-            r = await transformer.get_transform()
+    with patch.object(null_transformer, '_cached_readings', new_readings):
+        with patch.object(null_transformer, 'raw_and_transform_subscribables', {"device":SignalR}):
+            assert null_transformer._cached_readings == new_readings
+            r = await null_transformer.get_transform()
             assert isinstance(r,Transform)
 
+
 def test_update_cached_reading_non_initialized(
-    transformer : SignalTransformer,
+    null_transformer : SignalTransformer,
     new_readings: dict[str, Reading]
 ) -> None:
-    with pytest.raises(Exception) as e_info:
-        transformer._update_cached_reading(new_readings)
-    assert type(e_info.value) == RuntimeError
+    with pytest.raises(RuntimeError):
+        null_transformer._update_cached_reading(new_readings)
+
 
 def test_update_cached_reading_initialized(
-    transformer : SignalTransformer,
+    null_transformer : SignalTransformer,
     new_readings: dict[str, Reading]
 ) -> None:
-    transformer._cached_readings = {}
-    transformer._update_cached_reading(new_readings)
-    assert transformer._cached_readings == new_readings
+    null_transformer._cached_readings = {}
+    null_transformer._update_cached_reading(new_readings)
+    assert null_transformer._cached_readings == new_readings
+
 
 @patch("ophyd_async.core._utils.Callback")
 def test_set_callback_already_set(
     mock_class,
-    transformer : SignalTransformer
+    null_transformer : SignalTransformer
 ) -> None:
     device_name = "device"
-    with patch.object(transformer, '_derived_callbacks', {device_name:mock_class}):
-        with pytest.raises(Exception) as e_info:
-            transformer.set_callback(device_name,mock_class)
-        assert type(e_info.value) == RuntimeError
+    with patch.object(null_transformer, '_derived_callbacks', {device_name:mock_class}):
+        with pytest.raises(
+            RuntimeError,
+            match = re.escape(f"Callback already set for {device_name}")
+            ):
+            null_transformer.set_callback(device_name,mock_class)
 
-async def test_derived_signal_backend_connect_pass(
-    derived_signal_backend:DerivedSignalBackend
-) -> None:
-    result = await derived_signal_backend.connect(0.0)
-    assert result == None
-
-def test_derived_signal_backend_set_value(
-    derived_signal_backend:DerivedSignalBackend
-) -> None:
-    with pytest.raises(Exception) as e_info:
-        derived_signal_backend.set_value(0.0)
-    assert type(e_info.value) == RuntimeError
-
-async def test_derived_signal_backend_put_fails(
-    derived_signal_backend:DerivedSignalBackend
-) -> None:
-    with pytest.raises(Exception) as e_info:
-        await derived_signal_backend.put(value = None, wait = False)
-    assert type(e_info.value) == RuntimeError
-    
-    with pytest.raises(Exception) as e_info:
-        await derived_signal_backend.put(value = None, wait = True)
-    assert type(e_info.value) == RuntimeError
 
 @patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
 def test_get_return_datatype_no_type(movable_beamstop:MovableBeamstop):
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(
+        TypeError,
+        match = re.escape("does not have a type hint for it's return value")
+        ):
         _get_return_datatype(movable_beamstop._get_position)
-    assert type(e_info.value) == TypeError
+
 
 def test_get_return_datatype(movable_beamstop:MovableBeamstop):
     result = _get_return_datatype(movable_beamstop._get_position)
     assert isinstance(result,StrictEnumMeta)
 
+
 @patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
 def test_get_first_arg_datatype_no_type(movable_beamstop:MovableBeamstop):
-    with pytest.raises(Exception) as e_info:
+    with pytest.raises(
+        TypeError,
+        match = re.escape("does not have a type hinted argument")
+        ):
         _get_first_arg_datatype(movable_beamstop._set_from_position)
-    assert type(e_info.value) == TypeError
+
 
 def test_derived_signal_rw_type_error(movable_beamstop:MovableBeamstop):
     with patch.object(movable_beamstop, '_set_from_position', movable_beamstop._get_position):
-        with pytest.raises(Exception) as e_info:
+        with pytest.raises(TypeError):
             derived_signal_rw(movable_beamstop._get_position,movable_beamstop._set_from_position)
-        assert type(e_info.value) == TypeError
-
-def test_make_rw_signal_type_mismatch(movable_beamstop:MovableBeamstop):
-    factory = _make_factory(movable_beamstop._get_position, None, {"x":movable_beamstop.x, "y":movable_beamstop.y})
-    with pytest.raises(Exception) as e_info:
-        factory._make_signal(signal_cls=SignalRW, datatype=BeamstopPosition, name="")
-    assert type(e_info.value) == ValueError
