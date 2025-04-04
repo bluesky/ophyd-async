@@ -105,7 +105,9 @@ class SignalTransformer(Generic[TransformT]):
 
     @cached_property
     def raw_and_transform_subscribables(self) -> dict[str, Subscribable]:
-        return validate_by_type(self._raw_devices | self._transform_devices, Subscribable)  # noqa: E501
+        return validate_by_type(
+            self._raw_devices | self._transform_devices, Subscribable
+        )  # noqa: E501
 
     def _complete_cached_reading(self) -> dict[str, Reading] | None:
         if self._cached_readings and len(self._cached_readings) == len(

@@ -144,17 +144,18 @@ def test_mismatching_args():
 
 @patch("ophyd_async.core._derived_signal_backend.TYPE_CHECKING", True)
 def test_validate_by_type(
-    movable_beamstop: MovableBeamstop,
-    readonly_beamstop: ReadOnlyBeamstop
+    movable_beamstop: MovableBeamstop, readonly_beamstop: ReadOnlyBeamstop
 ) -> None:
-    invalid_devices_dict = {device.name: device for device in [movable_beamstop,
-                                                               readonly_beamstop]}
+    invalid_devices_dict = {
+        device.name: device for device in [movable_beamstop, readonly_beamstop]
+    }
     with pytest.raises(TypeError):
         validate_by_type(invalid_devices_dict, MovableBeamstop)
     with pytest.raises(TypeError):
         validate_by_type({movable_beamstop.name: movable_beamstop}, ReadOnlyBeamstop)
-    valid_devices_dict = {device.name: device for device in [movable_beamstop,
-                                                             MovableBeamstop("mvb2")]}
+    valid_devices_dict = {
+        device.name: device for device in [movable_beamstop, MovableBeamstop("mvb2")]
+    }
     assert validate_by_type(valid_devices_dict, MovableBeamstop) == valid_devices_dict
 
 
@@ -174,27 +175,26 @@ async def test_set_derived_not_initialized(null_transformer: SignalTransformer):
 
 
 async def test_get_transform_cached(
-    null_transformer: SignalTransformer,
-    new_readings: dict[str, Reading]
+    null_transformer: SignalTransformer, new_readings: dict[str, Reading]
 ) -> None:
-    with patch.object(null_transformer, '_cached_readings', new_readings):
-        with patch.object(null_transformer, 'raw_and_transform_subscribables', {"device": SignalR}):  # noqa: E501
+    with patch.object(null_transformer, "_cached_readings", new_readings):
+        with patch.object(
+            null_transformer, "raw_and_transform_subscribables", {"device": SignalR}
+        ):  # noqa: E501
             assert null_transformer._cached_readings == new_readings
             r = await null_transformer.get_transform()
             assert isinstance(r, Transform)
 
 
 def test_update_cached_reading_non_initialized(
-    null_transformer: SignalTransformer,
-    new_readings: dict[str, Reading]
+    null_transformer: SignalTransformer, new_readings: dict[str, Reading]
 ) -> None:
     with pytest.raises(RuntimeError):
         null_transformer._update_cached_reading(new_readings)
 
 
 def test_update_cached_reading_initialized(
-    null_transformer: SignalTransformer,
-    new_readings: dict[str, Reading]
+    null_transformer: SignalTransformer, new_readings: dict[str, Reading]
 ) -> None:
     null_transformer._cached_readings = {}
     null_transformer._update_cached_reading(new_readings)
@@ -203,24 +203,23 @@ def test_update_cached_reading_initialized(
 
 @patch("ophyd_async.core._utils.Callback")
 def test_set_callback_already_set(
-    mock_class,
-    null_transformer: SignalTransformer
+    mock_class, null_transformer: SignalTransformer
 ) -> None:
     device_name = "device"
-    with patch.object(null_transformer, '_derived_callbacks', {device_name: mock_class}):  # noqa: E501
+    with patch.object(
+        null_transformer, "_derived_callbacks", {device_name: mock_class}
+    ):  # noqa: E501
         with pytest.raises(
-            RuntimeError,
-            match=re.escape(f"Callback already set for {device_name}")
-            ):
+            RuntimeError, match=re.escape(f"Callback already set for {device_name}")
+        ):
             null_transformer.set_callback(device_name, mock_class)
 
 
 @patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
 def test_get_return_datatype_no_type(movable_beamstop: MovableBeamstop):
     with pytest.raises(
-        TypeError,
-        match=re.escape("does not have a type hint for it's return value")
-        ):
+        TypeError, match=re.escape("does not have a type hint for it's return value")
+    ):
         _get_return_datatype(movable_beamstop._get_position)
 
 
@@ -232,13 +231,16 @@ def test_get_return_datatype(movable_beamstop: MovableBeamstop):
 @patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
 def test_get_first_arg_datatype_no_type(movable_beamstop: MovableBeamstop):
     with pytest.raises(
-        TypeError,
-        match=re.escape("does not have a type hinted argument")
-        ):
+        TypeError, match=re.escape("does not have a type hinted argument")
+    ):
         _get_first_arg_datatype(movable_beamstop._set_from_position)
 
 
 def test_derived_signal_rw_type_error(movable_beamstop: MovableBeamstop):
-    with patch.object(movable_beamstop, '_set_from_position', movable_beamstop._get_position):  # noqa: E501
+    with patch.object(
+        movable_beamstop, "_set_from_position", movable_beamstop._get_position
+    ):  # noqa: E501
         with pytest.raises(TypeError):
-            derived_signal_rw(movable_beamstop._get_position, movable_beamstop._set_from_position)  # noqa: E501
+            derived_signal_rw(
+                movable_beamstop._get_position, movable_beamstop._set_from_position
+            )  # noqa: E501
