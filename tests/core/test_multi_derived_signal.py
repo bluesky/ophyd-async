@@ -10,10 +10,13 @@ from ophyd_async.core import (
     DerivedSignalFactory,
     soft_signal_rw,
 )
-from ophyd_async.core._derived_signal import _make_factory
-from ophyd_async.core._derived_signal_backend import DerivedSignalBackend, SignalTransformer, Transform
-from ophyd_async.core._signal import SignalRW
-from ophyd_async.core._table import Table
+from ophyd_async.core._derived_signal_backend import (
+    DerivedSignalBackend,  # noqa: PLC2701
+    SignalTransformer,  # noqa: PLC2701
+    Transform,  # noqa: PLC2701
+)
+from ophyd_async.core._signal import SignalRW  # noqa: PLC2701
+from ophyd_async.core._table import Table  # noqa: PLC2701
 from ophyd_async.sim import (
     HorizontalMirror,
     HorizontalMirrorDerived,
@@ -133,38 +136,40 @@ def test_mismatching_args():
             distance=soft_signal_rw(float),
         )
 
+
 @pytest.fixture
 def derived_signal_backend() -> DerivedSignalBackend:
-    return DerivedSignalBackend(Table, "derived_backend", 
+    return DerivedSignalBackend(Table, "derived_backend",
                                 SignalTransformer(Transform, None, None))
 
 
 async def test_derived_signal_backend_connect_pass(
-    derived_signal_backend:DerivedSignalBackend
+    derived_signal_backend: DerivedSignalBackend
 ) -> None:
     result = await derived_signal_backend.connect(0.0)
-    assert result == None
+    assert result is None
 
 
 def test_derived_signal_backend_set_value(
-    derived_signal_backend:DerivedSignalBackend
+    derived_signal_backend: DerivedSignalBackend
 ) -> None:
     with pytest.raises(RuntimeError):
         derived_signal_backend.set_value(0.0)
 
 
 async def test_derived_signal_backend_put_fails(
-    derived_signal_backend:DerivedSignalBackend
+    derived_signal_backend: DerivedSignalBackend
 ) -> None:
     with pytest.raises(RuntimeError):
-        await derived_signal_backend.put(value = None, wait = False)
+        await derived_signal_backend.put(value=None, wait=False)
     with pytest.raises(RuntimeError):
-        await derived_signal_backend.put(value = None, wait = True)
+        await derived_signal_backend.put(value=None, wait=True)
+
 
 def test_make_rw_signal_type_mismatch():
     factory = DerivedSignalFactory(
             TwoJackTransform,
-            set_derived = None,
+            set_derived=None,
             distance=soft_signal_rw(float),
             jack1=soft_signal_rw(float),
             jack2=soft_signal_rw(float),
