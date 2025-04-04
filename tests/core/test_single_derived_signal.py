@@ -207,7 +207,7 @@ def test_set_callback_already_set(
     null_transformer: SignalTransformer
 ) -> None:
     device_name = "device"
-    with patch.object(null_transformer, '_derived_callbacks', {device_name: mock_class}):
+    with patch.object(null_transformer, '_derived_callbacks', {device_name: mock_class}):  # noqa: E501
         with pytest.raises(
             RuntimeError,
             match=re.escape(f"Callback already set for {device_name}")
