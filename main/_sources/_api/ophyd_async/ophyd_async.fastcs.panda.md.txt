@@ -707,7 +707,7 @@ Bases: {py:obj}`ophyd_async.fastcs.panda._block.CommonPandaBlocks`, {py:obj}`oph
 
 ````
 
-`````{py:class} PandaHDFWriter(path_provider: ~ophyd_async.core.PathProvider, name_provider: ~ophyd_async.core.NameProvider, panda_data_block: ~ophyd_async.fastcs.panda._block.DataBlock)
+`````{py:class} PandaHDFWriter(path_provider: ~ophyd_async.core.PathProvider, panda_data_block: ~ophyd_async.fastcs.panda._block.DataBlock)
 :canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter
 
 Bases: {py:obj}`ophyd_async.core.DetectorWriter`
@@ -715,7 +715,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorWriter`
 ```{autodoc2-docstring} ophyd_async.fastcs.panda._writer.PandaHDFWriter
 ```
 
-````{py:method} open(multiplier: int = 1) -> dict[str, ~event_model.DataKey]
+````{py:method} open(name: str, multiplier: int = 1) -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.open
 :async:
 
@@ -751,7 +751,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorWriter`
 
 ````
 
-````{py:method} collect_stream_docs(indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
+````{py:method} collect_stream_docs(name: str, indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
 :canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.collect_stream_docs
 :async:
 

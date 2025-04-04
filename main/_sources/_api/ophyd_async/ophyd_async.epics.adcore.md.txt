@@ -1265,7 +1265,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorController`, {py:obj}`typing.Generic`\[
 
 `````
 
-`````{py:class} ADWriter(fileio: ~ophyd_async.epics.adcore._core_writer.NDFileIOT, path_provider: ~ophyd_async.core._providers.PathProvider, name_provider: ~ophyd_async.core._providers.NameProvider, dataset_describer: ~ophyd_async.core._providers.DatasetDescriber, file_extension: str = '', mimetype: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+`````{py:class} ADWriter(fileio: ~ophyd_async.epics.adcore._core_writer.NDFileIOT, path_provider: ~ophyd_async.core._providers.PathProvider, dataset_describer: ~ophyd_async.core._providers.DatasetDescriber, file_extension: str = '', mimetype: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
 :canonical: ophyd_async.epics.adcore._core_writer.ADWriter
 
 Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._core_writer.NDFileIOT`\]
@@ -1293,7 +1293,7 @@ Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Gene
 
 ````
 
-````{py:method} begin_capture() -> None
+````{py:method} begin_capture(name: str) -> None
 :canonical: ophyd_async.epics.adcore._core_writer.ADWriter.begin_capture
 :async:
 
@@ -1302,7 +1302,7 @@ Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Gene
 
 ````
 
-````{py:method} open(multiplier: int = 1) -> dict[str, ~event_model.DataKey]
+````{py:method} open(name: str, multiplier: int = 1) -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.epics.adcore._core_writer.ADWriter.open
 :async:
 
@@ -1329,7 +1329,7 @@ Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Gene
 
 ````
 
-````{py:method} collect_stream_docs(indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
+````{py:method} collect_stream_docs(name: str, indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
 :canonical: ophyd_async.epics.adcore._core_writer.ADWriter.collect_stream_docs
 :async:
 
@@ -1347,18 +1347,17 @@ Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Gene
 
 ````
 
-````{py:property} hints
-:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.hints
-:type: ~bluesky.protocols.Hints
+````{py:method} get_hints(name: str) -> ~bluesky.protocols.Hints
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.get_hints
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.hints
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.get_hints
 ```
 
 ````
 
 `````
 
-`````{py:class} ADHDFWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileHDFIO, path_provider: ~ophyd_async.core.PathProvider, name_provider: ~ophyd_async.core.NameProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+`````{py:class} ADHDFWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileHDFIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
 :canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter
 
 Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFileHDFIO`\]
@@ -1377,7 +1376,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} open(multiplier: int = 1) -> dict[str, ~event_model.DataKey]
+````{py:method} open(name: str, multiplier: int = 1) -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.open
 :async:
 
@@ -1386,7 +1385,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} collect_stream_docs(indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
+````{py:method} collect_stream_docs(name: str, indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
 :canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.collect_stream_docs
 :async:
 
@@ -1397,7 +1396,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_
 
 `````
 
-`````{py:class} ADTIFFWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileIO, path_provider: ~ophyd_async.core.PathProvider, name_provider: ~ophyd_async.core.NameProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+`````{py:class} ADTIFFWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
 :canonical: ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter
 
 Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFileIO`\]
@@ -1418,7 +1417,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_
 
 `````
 
-`````{py:class} ADJPEGWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileIO, path_provider: ~ophyd_async.core.PathProvider, name_provider: ~ophyd_async.core.NameProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+`````{py:class} ADJPEGWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
 :canonical: ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter
 
 Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFileIO`\]

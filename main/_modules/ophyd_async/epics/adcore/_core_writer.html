@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_writer &#8212; ophyd-async 0.10.0a3.dev2+g2984ea49 documentation</title>
+    <title>ophyd_async.epics.adcore._core_writer &#8212; ophyd-async 0.10.0a3.dev3+g96cd45fb documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=249c2408"></script>
+    <script src="../../../../_static/documentation_options.js?v=d95354af"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev2+g2984ea49 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev2+g2984ea49 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev3+g96cd45fb documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev3+g96cd45fb documentation - Home"/>
   
   
 </a></div>
@@ -477,7 +477,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorWriter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._providers</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetDescriber</span><span class="p">,</span> <span class="n">NameProvider</span><span class="p">,</span> <span class="n">PathProvider</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._providers</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetDescriber</span><span class="p">,</span> <span class="n">PathProvider</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._signal</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">observe_value</span><span class="p">,</span>
     <span class="n">set_and_wait_for_value</span><span class="p">,</span>
@@ -511,7 +511,6 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">fileio</span><span class="p">:</span> <span class="n">NDFileIOT</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
-        <span class="n">name_provider</span><span class="p">:</span> <span class="n">NameProvider</span><span class="p">,</span>
         <span class="n">dataset_describer</span><span class="p">:</span> <span class="n">DatasetDescriber</span><span class="p">,</span>
         <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">mimetype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -520,7 +519,6 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">_plugins</span> <span class="o">=</span> <span class="n">plugins</span> <span class="ow">or</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fileio</span> <span class="o">=</span> <span class="n">fileio</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span> <span class="o">=</span> <span class="n">path_provider</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span> <span class="o">=</span> <span class="n">name_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_describer</span> <span class="o">=</span> <span class="n">dataset_describer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_file_extension</span> <span class="o">=</span> <span class="n">file_extension</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mimetype</span> <span class="o">=</span> <span class="n">mimetype</span>
@@ -550,21 +548,14 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">fileio</span> <span class="o">=</span> <span class="n">fileio_cls</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="p">(</span><span class="n">fileio_suffix</span> <span class="ow">or</span> <span class="bp">cls</span><span class="o">.</span><span class="n">default_suffix</span><span class="p">))</span>
         <span class="n">dataset_describer</span> <span class="o">=</span> <span class="n">ADBaseDatasetDescriber</span><span class="p">(</span><span class="n">dataset_source</span> <span class="ow">or</span> <span class="n">fileio</span><span class="p">)</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">name_provider</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">fileio</span><span class="o">.</span><span class="n">parent</span> <span class="o">==</span> <span class="s2">&quot;Not attached to a detector&quot;</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Initializing writer without parent detector!&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">fileio</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span>
-
-        <span class="n">writer</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
-            <span class="n">fileio</span><span class="p">,</span> <span class="n">path_provider</span><span class="p">,</span> <span class="n">name_provider</span><span class="p">,</span> <span class="n">dataset_describer</span><span class="p">,</span> <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span>
-        <span class="p">)</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">fileio</span><span class="p">,</span> <span class="n">path_provider</span><span class="p">,</span> <span class="n">dataset_describer</span><span class="p">,</span> <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">writer</span></div>
 
 
 <div class="viewcode-block" id="ADWriter.begin_capture">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriter.begin_capture">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">begin_capture</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span><span class="p">(</span><span class="n">device_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">())</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">begin_capture</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_provider</span><span class="p">(</span><span class="n">device_name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileio</span><span class="o">.</span><span class="n">enable_callbacks</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">ADCallbacks</span><span class="o">.</span><span class="n">ENABLE</span><span class="p">)</span>
 
@@ -600,17 +591,17 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="ADWriter.open">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriter.open">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_emitted_resource</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_emitted</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="n">multiplier</span>
         <span class="n">frame_shape</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_describer</span><span class="o">.</span><span class="n">shape</span><span class="p">()</span>
         <span class="n">dtype_numpy</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_describer</span><span class="o">.</span><span class="n">np_datatype</span><span class="p">()</span>
 
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">begin_capture</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">begin_capture</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
         <span class="n">describe</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">():</span> <span class="n">DataKey</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">:</span> <span class="n">DataKey</span><span class="p">(</span>
                 <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fileio</span><span class="o">.</span><span class="n">full_file_name</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
                 <span class="n">shape</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">frame_shape</span><span class="p">),</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span><span class="p">,</span>
@@ -641,7 +632,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="ADWriter.collect_stream_docs">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriter.collect_stream_docs">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">collect_stream_docs</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">indices_written</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_emitted_resource</span><span class="p">:</span>
@@ -667,7 +658,8 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="bp">self</span><span class="o">.</span><span class="n">_emitted_resource</span> <span class="o">=</span> <span class="n">bundler_composer</span><span class="p">(</span>
                     <span class="n">mimetype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_mimetype</span><span class="p">,</span>
                     <span class="n">uri</span><span class="o">=</span><span class="n">uri</span><span class="p">,</span>
-                    <span class="n">data_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">(),</span>
+                    <span class="c1"># TODO no reference to detector&#39;s name</span>
+                    <span class="n">data_key</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                     <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
                         <span class="c1"># Assume that we always write 1 frame per file/chunk</span>
                         <span class="s2">&quot;chunk_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">frame_shape</span><span class="p">),</span>
@@ -706,9 +698,11 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_name_provider</span><span class="p">()]}</span></div>
+<div class="viewcode-block" id="ADWriter.get_hints">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriter.get_hints">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">name</span><span class="p">]}</span></div>
+</div>
 
 </pre></div>
 

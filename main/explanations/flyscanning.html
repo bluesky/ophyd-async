@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Flyscanning &#8212; ophyd-async 0.10.0a3.dev2+g2984ea49 documentation</title>
+    <title>Flyscanning &#8212; ophyd-async 0.10.0a3.dev3+g96cd45fb documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=249c2408"></script>
+    <script src="../_static/documentation_options.js?v=d95354af"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev2+g2984ea49 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev2+g2984ea49 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev3+g96cd45fb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev3+g96cd45fb documentation - Home"/>
   
   
 </a></div>
@@ -495,12 +495,12 @@
 <ul class="simple">
 <li><p>Step scanning: The system performs a sequence of discrete operations: move to the next position, settle, acquire data, repeat.
 This ensures well-defined data points but may result in longer total acquisition times.
-Bluesky plans specify this type of measurement through devices’ <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.13.2.dev52+g59204bf3"><span class="xref myst">Movable</span></a>,
-<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.13.2.dev52+g59204bf3"><span class="xref myst">Triggerable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Collectable" title="bluesky 1.13.2.dev52+g59204bf3"><span class="xref myst">Collectable</span></a> protocols.</p></li>
+Bluesky plans specify this type of measurement through devices’ <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.13.2.dev54+g2151c663"><span class="xref myst">Movable</span></a>,
+<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.13.2.dev54+g2151c663"><span class="xref myst">Triggerable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Collectable" title="bluesky 1.13.2.dev54+g2151c663"><span class="xref myst">Collectable</span></a> protocols.</p></li>
 <li><p>Fly scanning: Short for “on-the-fly scanning,” this method involves continuous motion during data acquisition. The motion and data collection processes
-happen simultaneously, enabling faster scans and smoother coverage of the scanned domain without any significant adverse effects on data quality. Devices capable of this mode implement the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.13.2.dev52+g59204bf3"><span class="xref myst">Flyable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Collectable" title="bluesky 1.13.2.dev52+g59204bf3"><span class="xref myst">Collectable</span></a> protocols.</p></li>
+happen simultaneously, enabling faster scans and smoother coverage of the scanned domain without any significant adverse effects on data quality. Devices capable of this mode implement the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.13.2.dev54+g2151c663"><span class="xref myst">Flyable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Collectable" title="bluesky 1.13.2.dev54+g2151c663"><span class="xref myst">Collectable</span></a> protocols.</p></li>
 </ul>
-<p>Filewriting detectors additionally implement <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.WritesStreamAssets" title="bluesky 1.13.2.dev52+g59204bf3"><span class="xref myst">WritesStreamAssets</span></a> to report the data written to disk during the scan, either at each data point in a step scan, or periodically during a flyscan.</p>
+<p>Filewriting detectors additionally implement <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.WritesStreamAssets" title="bluesky 1.13.2.dev54+g2151c663"><span class="xref myst">WritesStreamAssets</span></a> to report the data written to disk during the scan, either at each data point in a step scan, or periodically during a flyscan.</p>
 <section id="scan-frames-and-collection-windows">
 <h2>Scan frames and collection windows<a class="headerlink" href="#scan-frames-and-collection-windows" title="Link to this heading">#</a></h2>
 <p>Consider some trajectory in 2D space:</p>
