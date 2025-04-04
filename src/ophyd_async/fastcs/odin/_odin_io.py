@@ -18,13 +18,13 @@ from ophyd_async.core import (
 from ophyd_async.fastcs.core import fastcs_connector
 
 
-class Writing(StrictEnum):
+class OdinWriting(StrictEnum):
     ON = "ON"
     OFF = "OFF"
 
 
 class OdinHdfIO(Device):
-    config_hdf_write: SignalRW[Writing]
+    config_hdf_write: SignalRW[OdinWriting]
     frames_written: SignalR[int]
     frames: SignalRW[int]
     data_dims_0: SignalRW[int]
@@ -64,7 +64,7 @@ class OdinWriter(DetectorWriter):
             self._drv.frames.set(0),
         )
 
-        await self._drv.config_hdf_write.set(Writing.ON)
+        await self._drv.config_hdf_write.set(OdinWriting.ON)
 
         return await self._describe()
 
@@ -99,4 +99,4 @@ class OdinWriter(DetectorWriter):
         raise NotImplementedError()
 
     async def close(self) -> None:
-        await set_and_wait_for_value(self._drv.config_hdf_write, Writing.OFF)
+        await set_and_wait_for_value(self._drv.config_hdf_write, OdinWriting.OFF)
