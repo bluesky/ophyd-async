@@ -272,3 +272,20 @@ def test_standard_readable_add_children_multi_nested():
     with outer.add_children_as_readables():
         outer.inner = inner
     assert outer
+
+
+async def test_duplicate_readable_raises_exception():
+    class DummyBaseDevice(StandardReadable):
+        def __init__(self, name):
+            with self.add_children_as_readables():
+                self.twin = soft_signal_rw(float)
+            super().__init__(name)
+
+    class DummyDerivedDevice(DummyBaseDevice):
+        def __init__(self, name):
+            with self.add_children_as_readables():
+                self.twin = soft_signal_rw(float)
+            super().__init__(name)
+
+    with pytest.raises(KeyError):
+        DummyDerivedDevice("test_duplicates")

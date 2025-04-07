@@ -179,8 +179,20 @@ class StandardReadable(
 
         yield
 
-        # Set symmetric difference operator gives all newly added keys
+        # Set symmetric difference operator gives all newly added keys.
         new_dict = dict(self.children())
+        for key, value in new_dict.items():
+            # Check if key already exists in dict_copy and if the value has changed.
+            if key in dict_copy and value != dict_copy[key]:
+                error_msg = (
+                    f"Duplicate readable device found: '{key}' in {value.parent}. "
+                    "Derived class must not redefine a readable. "
+                    "See: https://github.com/bluesky/ophyd-async/issues/848. "
+                    "If this functionality is required, please raise an issue: "
+                    "https://github.com/bluesky/ophyd-async"
+                )
+                raise KeyError(error_msg)
+
         new_keys = dict_copy.keys() ^ new_dict.keys()
         new_values = [new_dict[key] for key in new_keys]
 
