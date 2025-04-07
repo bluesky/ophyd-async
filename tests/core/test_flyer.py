@@ -65,7 +65,7 @@ class DummyWriter(DetectorWriter):
         self._last_emitted = 0
         self.index = 0
 
-    async def open(self, exposures_per_event: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         self._exposures_per_event = exposures_per_event
         return {
             self._name: DataKey(
@@ -88,7 +88,7 @@ class DummyWriter(DetectorWriter):
         return self.index // self._exposures_per_event
 
     async def collect_stream_docs(
-        self, indices_written: int
+        self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         if indices_written:
             if not self._file:

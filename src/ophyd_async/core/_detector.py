@@ -130,7 +130,7 @@ class DetectorWriter(ABC):
     """Logic for making detector write data to somewhere persistent (e.g. HDF5 file)."""
 
     @abstractmethod
-    async def open(self, exposures_per_event: PositiveInt = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, exposures_per_event: PositiveInt = 1) -> dict[str, DataKey]:
         """Open writer and wait for it to be ready for data.
 
         :param exposures_per_event:
@@ -138,8 +138,7 @@ class DetectorWriter(ABC):
         :return: Output for ``describe()``
         """
 
-    @property
-    def hints(self) -> Hints:
+    def get_hints(self, name: str) -> Hints:
         """The hints to be used for the detector."""
         return {}
 
@@ -156,7 +155,9 @@ class DetectorWriter(ABC):
         """Yield the index of each frame (or equivalent data point) as it is written."""
 
     @abstractmethod
-    def collect_stream_docs(self, indices_written: int) -> AsyncIterator[StreamAsset]:
+    def collect_stream_docs(
+        self, name: str, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
         """Create Stream docs up to given number written."""
 
     @abstractmethod
@@ -326,7 +327,7 @@ class StandardDetector(
             else [value.number_of_events]
         )
         self._describe, _ = await asyncio.gather(
-            self._writer.open(value.exposures_per_event),
+            self._writer.open(self.name, value.exposures_per_event),
             self._controller.prepare(value),
         )
         self._initial_frame = await self._writer.get_indices_written()
@@ -397,7 +398,7 @@ class StandardDetector(
         # retrieved for step scans.
         if index is None:
             index = await self._writer.get_indices_written()
-        async for doc in self._writer.collect_stream_docs(index):
+        async for doc in self._writer.collect_stream_docs(self.name, index):
             yield doc
 
     async def get_index(self) -> int:
@@ -405,4 +406,4 @@ class StandardDetector(
 
     @property
     def hints(self) -> Hints:
-        return self._writer.hints
+        return self._writer.get_hints(self.name)
