@@ -6,6 +6,8 @@ import pytest
 
 from ophyd_async.core import (
     derived_signal_r,
+    derived_signal_rw,
+    soft_signal_r_and_setter,
     soft_signal_rw,
 )
 from ophyd_async.testing import (
@@ -118,3 +120,16 @@ def test_mismatching_args():
         derived_signal_r(
             _get_position, foo=soft_signal_rw(float), bar=soft_signal_rw(float)
         )
+
+
+async def test_derived_signal_rw_works_with_signal_r():
+    signal_r, _ = soft_signal_r_and_setter(int, initial_value=4)
+
+    def _get(ts: int) -> float:
+        return ts
+
+    async def _put(value: float) -> None:
+        pass
+
+    derived = derived_signal_rw(_get, _put, ts=signal_r)
+    assert await derived.get_value() == 4
