@@ -134,3 +134,36 @@ async def test_observe_value_uses_correct_timeout():
     with pytest.raises(asyncio.TimeoutError):
         await watch(timeout=0.3, done_timeout=0.15)
     assert time.time() - start == pytest.approx(0.15, abs=0.05)
+
+
+async def test_observe_signals_value_timeout_message():
+    """
+    Test creates a queue of 1 signal.
+    It must timeout for successfull test.
+    """
+    sig1, setter1 = soft_signal_r_and_setter(float)
+    recv1 = []
+    time_delay_sec = 0.2
+
+    # task to set values and stop when all done
+    async def tick():
+        for i in range(2):
+            setter1(i + 10.0)
+            await asyncio.sleep(time_delay_sec)
+
+    status = AsyncStatus(tick())
+
+    async def watch(timeout, done_timeout, done_status):
+        async for signal, value in observe_signals_value(
+            sig1, timeout=timeout, done_timeout=done_timeout, done_status=done_status
+        ):
+            if signal is sig1:
+                recv1.append(value)
+
+    with pytest.raises(asyncio.TimeoutError, match="Timeouts"):
+        await watch(timeout=time_delay_sec / 2, done_timeout=None, done_status=status)
+
+    # let the tick() task finish correctly
+    await asyncio.sleep(time_delay_sec * 1.5)
+
+    assert recv1 == [0.0, 10.0]

@@ -468,6 +468,7 @@ async def observe_signals_value(
         done_status.add_callback(q.put_nowait)
     overall_deadline = time.monotonic() + done_timeout if done_timeout else None
     try:
+        last_item = ()
         while True:
             if overall_deadline and time.monotonic() >= overall_deadline:
                 raise asyncio.TimeoutError(
@@ -476,14 +477,23 @@ async def observe_signals_value(
                     f"timeout {done_timeout}s"
                 )
             iteration_timeout = _get_iteration_timeout(timeout, overall_deadline)
-            item = await asyncio.wait_for(q.get(), iteration_timeout)
+            queue_item = q.get()
+            try:
+                item = await asyncio.wait_for(queue_item, iteration_timeout)
+            except TimeoutError as exc:
+                raise asyncio.TimeoutError(
+                    f"Timeout Error while waiting {iteration_timeout}s to update "
+                    f"{queue_item}. "
+                    f"Last observed signal and value were {last_item}"
+                ) from exc
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc
                 else:
                     break
             else:
-                yield cast(tuple[SignalR[SignalDatatypeT], SignalDatatypeT], item)
+                last_item = cast(tuple[SignalR[SignalDatatypeT], SignalDatatypeT], item)
+                yield last_item
     finally:
         for signal, cb in cbs.items():
             signal.clear_sub(cb)
