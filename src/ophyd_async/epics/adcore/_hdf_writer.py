@@ -46,7 +46,9 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self._composer: HDFDocumentComposer | None = None
         self._filename_template = "%s%s"
 
-    async def open(self, name: str, exposures_per_event: PositiveInt = 1) -> dict[str, DataKey]:
+    async def open(
+        self, name: str, exposures_per_event: PositiveInt = 1
+    ) -> dict[str, DataKey]:
         self._composer = None
 
         # Setting HDF writer specific signals

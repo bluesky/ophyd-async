@@ -122,7 +122,8 @@ async def test_unsupported_trigger_excepts(test_adpilatus: adpilatus.PilatusDete
 async def test_exposure_time_and_acquire_period_set(
     test_adpilatus: adpilatus.PilatusDetector,
 ):
-    async def dummy_open(name: str, exposures_per_event: int = 0):
+    async def dummy_open(name: str, exposures_per_event: int = 1):
+        test_adpilatus._writer._exposures_per_event = exposures_per_event
         return {}
 
     test_adpilatus._writer.open = dummy_open

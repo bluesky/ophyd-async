@@ -130,7 +130,9 @@ class DetectorWriter(ABC):
     """Logic for making detector write data to somewhere persistent (e.g. HDF5 file)."""
 
     @abstractmethod
-    async def open(self, name: str, exposures_per_event: PositiveInt = 1) -> dict[str, DataKey]:
+    async def open(
+        self, name: str, exposures_per_event: PositiveInt = 1
+    ) -> dict[str, DataKey]:
         """Open writer and wait for it to be ready for data.
 
         :param exposures_per_event:

@@ -116,7 +116,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
             self.fileio.capture, True, wait_for_set_completion=False
         )
 
-    async def open(self, name: str, exposures_per_event: PositiveInt = 1) -> dict[str, DataKey]:
+    async def open(
+        self, name: str, exposures_per_event: PositiveInt = 1
+    ) -> dict[str, DataKey]:
         self._emitted_resource = None
         self._last_emitted = 0
         self._exposures_per_event = exposures_per_event

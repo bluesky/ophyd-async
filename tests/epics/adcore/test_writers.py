@@ -62,7 +62,7 @@ async def tiff_writer(
         tiff = adcore.NDFileIO("TIFF:")
 
     writer = adcore.ADTIFFWriter(
-        tiff, static_path_provider, lambda: "test", DummyDatasetDescriber(), {}
+        tiff, static_path_provider, DummyDatasetDescriber(), {}
     )
 
     def on_set_file_path_callback(value: str, wait: bool = True):
