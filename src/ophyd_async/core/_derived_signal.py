@@ -35,17 +35,22 @@ class DerivedSignalFactory(Generic[TransformT]):
         self._set_derived = set_derived
         # Check the raw and transform devices match the input arguments of the Transform
         if transform_cls is not Transform:
-            expected = list(transform_cls.model_fields) + [
-                x
-                for x in get_type_hints(transform_cls.raw_to_derived)
-                if x not in ["self", "return"]
-            ]
-            if set(expected) != set(raw_and_transform_devices):
+            expected = {
+                k: v
+                for k, v in get_type_hints(transform_cls.raw_to_derived).items()
+                if k not in {"self", "return"}
+            }
+
+            # received = {k: v.datatype for k, v in raw_and_transform_devices.items()}
+            received = {k: v for k, v in raw_and_transform_devices.items()}
+
+            if expected != received:
                 msg = (
-                    f"Expected devices to be passed as keyword arguments {expected}, "
-                    f"got {list(raw_and_transform_devices)}"
+                    f"Expected devices to be passed as keyword arguments "
+                    f"{expected}, got {received}"
                 )
                 raise TypeError(msg)
+
         set_derived_datatype = (
             _get_first_arg_datatype(set_derived) if set_derived else None
         )
