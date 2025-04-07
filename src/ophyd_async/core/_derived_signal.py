@@ -41,8 +41,7 @@ class DerivedSignalFactory(Generic[TransformT]):
                 if k not in {"self", "return"}
             }
 
-            # received = {k: v.datatype for k, v in raw_and_transform_devices.items()}
-            received = {k: v for k, v in raw_and_transform_devices.items()}
+            received = {k: v.datatype for k, v in raw_and_transform_devices.items()}
 
             if expected != received:
                 msg = (
