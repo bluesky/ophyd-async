@@ -8,6 +8,7 @@ from ophyd_async.core import (
     observe_signals_value,
     observe_value,
     soft_signal_r_and_setter,
+    soft_signal_rw,
 )
 
 
@@ -138,32 +139,53 @@ async def test_observe_value_uses_correct_timeout():
 
 async def test_observe_signals_value_timeout_message():
     """
-    Test creates a queue of 1 signal.
-    It must timeout for successfull test.
+    Test creates a queue of 2 signals which update with
+    different rate.
+    1. If global timeout is less then both timeouts -> values only zeros
+    2. If global timout more than one but less than other -> values for both signals
+    received until faster is completely finished
+    3. If global timeout is more than both -> all values received.
     """
-    sig1, setter1 = soft_signal_r_and_setter(float)
+    sig1 = soft_signal_rw(float)
+    sig2 = soft_signal_rw(float)
     recv1 = []
-    time_delay_sec = 0.2
+    recv2 = []
+    time_delay_sec1 = 0.7
+    time_delay_sec2 = 0.3
+    time_delay = (time_delay_sec1 + time_delay_sec2) * 0.5
 
-    # task to set values and stop when all done
-    async def tick():
-        for i in range(2):
-            setter1(i + 10.0)
-            await asyncio.sleep(time_delay_sec)
+    N = 4
 
-    status = AsyncStatus(tick())
+    # task to set values
+    async def tick1():
+        for i in range(N):
+            await asyncio.sleep(time_delay_sec1)
+            sig1.set(i + 10.0, False)
 
-    async def watch(timeout, done_timeout, done_status):
+    # task to set values
+    async def tick2():
+        for i in range(N):
+            await asyncio.sleep(time_delay_sec2)
+            sig2.set(i + 100.0, False)
+
+    async def watch(timeout, done_timeout):
         async for signal, value in observe_signals_value(
-            sig1, timeout=timeout, done_timeout=done_timeout, done_status=done_status
+            sig1, sig2, timeout=timeout, done_timeout=done_timeout
         ):
             if signal is sig1:
                 recv1.append(value)
+            if signal is sig2:
+                recv2.append(value)
 
-    with pytest.raises(asyncio.TimeoutError, match="Timeouts"):
-        await watch(timeout=time_delay_sec / 2, done_timeout=None, done_status=status)
+    async def main_test(time_delay):
+        await asyncio.gather(
+            tick2(), tick1(), watch(timeout=time_delay, done_timeout=None)
+        )
 
-    # let the tick() task finish correctly
-    await asyncio.sleep(time_delay_sec * 1.5)
+    with pytest.raises(asyncio.TimeoutError):
+        await main_test(time_delay)
+    assert recv2 == [0.0] + [i + 100 for i in range(N)]
+    assert recv1 == [0.0, 10.0, 11.0]
 
-    assert recv1 == [0.0, 10.0]
+    # let all tasks cancel correctly
+    await asyncio.sleep(max(time_delay_sec1, time_delay_sec2) * 1.5)

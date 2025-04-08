@@ -477,13 +477,12 @@ async def observe_signals_value(
                     f"timeout {done_timeout}s"
                 )
             iteration_timeout = _get_iteration_timeout(timeout, overall_deadline)
-            queue_item = q.get()
             try:
-                item = await asyncio.wait_for(queue_item, iteration_timeout)
+                item = await asyncio.wait_for(q.get(), iteration_timeout)
             except TimeoutError as exc:
                 raise asyncio.TimeoutError(
                     f"Timeout Error while waiting {iteration_timeout}s to update "
-                    f"{queue_item}. "
+                    f"{[signal.source for signal in signals]}. "
                     f"Last observed signal and value were {last_item}"
                 ) from exc
             if done_status and item is done_status:
