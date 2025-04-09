@@ -1815,13 +1815,13 @@ Bases: {py:obj}`pydantic.BaseModel`
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo
 ```
 
-````{py:attribute} number_of_triggers
-:canonical: ophyd_async.core._detector.TriggerInfo.number_of_triggers
+````{py:attribute} number_of_events
+:canonical: ophyd_async.core._detector.TriggerInfo.number_of_events
 :type: ~pydantic.NonNegativeInt | list[~pydantic.NonNegativeInt]
 :value: >
    'Field(...)'
 
-```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.number_of_triggers
+```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.number_of_events
 ```
 
 ````
@@ -1859,32 +1859,32 @@ Bases: {py:obj}`pydantic.BaseModel`
 
 ````
 
-````{py:attribute} frame_timeout
-:canonical: ophyd_async.core._detector.TriggerInfo.frame_timeout
+````{py:attribute} exposure_timeout
+:canonical: ophyd_async.core._detector.TriggerInfo.exposure_timeout
 :type: float | None
 :value: >
    'Field(...)'
 
-```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.frame_timeout
+```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.exposure_timeout
 ```
 
 ````
 
-````{py:attribute} multiplier
-:canonical: ophyd_async.core._detector.TriggerInfo.multiplier
-:type: int
+````{py:attribute} exposures_per_event
+:canonical: ophyd_async.core._detector.TriggerInfo.exposures_per_event
+:type: ~pydantic.PositiveInt
 :value: >
    1
 
-```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.multiplier
+```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.exposures_per_event
 ```
 
 ````
 
-````{py:method} total_number_of_triggers() -> int
-:canonical: ophyd_async.core._detector.TriggerInfo.total_number_of_triggers
+````{py:method} total_number_of_exposures() -> int
+:canonical: ophyd_async.core._detector.TriggerInfo.total_number_of_exposures
 
-```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.total_number_of_triggers
+```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo.total_number_of_exposures
 ```
 
 ````
@@ -2008,7 +2008,7 @@ Bases: {py:obj}`abc.ABC`
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorWriter
 ```
 
-````{py:method} open(name: str, multiplier: int = 1) -> dict[str, ~event_model.DataKey]
+````{py:method} open(name: str, exposures_per_event: ~pydantic.PositiveInt = 1) -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.core._detector.DetectorWriter.open
 :abstractmethod:
 :async:
@@ -2275,17 +2275,6 @@ Bases: {py:obj}`pydantic.BaseModel`
    None
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription.chunk_shape
-```
-
-````
-
-````{py:attribute} multiplier
-:canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription.multiplier
-:type: int
-:value: >
-   1
-
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription.multiplier
 ```
 
 ````

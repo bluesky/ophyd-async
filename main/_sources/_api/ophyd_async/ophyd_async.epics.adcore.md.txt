@@ -1302,7 +1302,7 @@ Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Gene
 
 ````
 
-````{py:method} open(name: str, multiplier: int = 1) -> dict[str, ~event_model.DataKey]
+````{py:method} open(name: str, exposures_per_event: ~pydantic.PositiveInt = 1) -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.epics.adcore._core_writer.ADWriter.open
 :async:
 
@@ -1376,7 +1376,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} open(name: str, multiplier: int = 1) -> dict[str, ~event_model.DataKey]
+````{py:method} open(name: str, exposures_per_event: ~pydantic.PositiveInt = 1) -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.open
 :async:
 

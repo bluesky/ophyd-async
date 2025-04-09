@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.10.0a3.dev5+gfe81adda documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.10.0a3.dev6+g48236a91 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=c9d904a1"></script>
+    <script src="../../../_static/documentation_options.js?v=3a376f02"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev5+gfe81adda documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev5+gfe81adda documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev6+g48236a91 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev6+g48236a91 documentation - Home"/>
   
   
 </a></div>
@@ -488,7 +488,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">WritesStreamAssets</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataKey</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">NonNegativeInt</span><span class="p">,</span> <span class="n">computed_field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">NonNegativeInt</span><span class="p">,</span> <span class="n">PositiveInt</span><span class="p">,</span> <span class="n">computed_field</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
@@ -521,49 +521,52 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">class</span><span class="w"> </span><span class="nc">TriggerInfo</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to setup triggering on a detector.&quot;&quot;&quot;</span>
 
-    <span class="n">number_of_triggers</span><span class="p">:</span> <span class="n">NonNegativeInt</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">NonNegativeInt</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of triggers that will be sent, (0 means infinite).</span>
+    <span class="n">number_of_events</span><span class="p">:</span> <span class="n">NonNegativeInt</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">NonNegativeInt</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of events that will be processed, (0 means infinite).</span>
 
 <span class="sd">    Can be:</span>
 <span class="sd">    - A single integer or</span>
-<span class="sd">    - A list of integers for multiple triggers</span>
+<span class="sd">    - A list of integers for multiple events</span>
 
-<span class="sd">    Example for tomography: ``TriggerInfo(number=[2,3,100,3])``.</span>
-<span class="sd">    This would trigger:</span>
+<span class="sd">    Example for tomography: ``TriggerInfo(number_of_events=[2,3,100,3])``.</span>
+<span class="sd">    This would process:</span>
 
-<span class="sd">    - 2 times for dark field images</span>
-<span class="sd">    - 3 times for initial flat field images</span>
-<span class="sd">    - 100 times for projections</span>
-<span class="sd">    - 3 times for final flat field images</span>
+<span class="sd">    - 2 events for dark field images</span>
+<span class="sd">    - 3 events for initial flat field images</span>
+<span class="sd">    - 100 events for projections</span>
+<span class="sd">    - 3 events for final flat field images</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">)</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sort of triggers that will be sent&quot;&quot;&quot;</span>
 
     <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the minimum deadtime between triggers&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the minimum deadtime between exposures&quot;&quot;&quot;</span>
 
     <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the maximum high time of the triggers&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the maximum high time of the exposures&quot;&quot;&quot;</span>
 
-    <span class="n">frame_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the maximum timeout on waiting for a frame&quot;&quot;&quot;</span>
+    <span class="n">exposure_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the maximum timeout on waiting for an exposure&quot;&quot;&quot;</span>
 
-    <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;How many triggers make up a single StreamDatum index, to allow multiple frames</span>
-<span class="sd">    from a faster detector to be zipped with a single frame from a slow detector</span>
-<span class="sd">    e.g. if num=10 and multiplier=5 then the detector will take 10 frames,</span>
-<span class="sd">    but publish 2 indices, and describe() will show a shape of (5, h, w)</span>
+    <span class="n">exposures_per_event</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The number of exposures that are grouped into a single StreamDatum index.</span>
+<span class="sd">    A exposures_per_event &gt; 1 can be useful to have exposures from a faster detector</span>
+<span class="sd">    able to be zipped with a single exposure from a slower detector. E.g. if</span>
+<span class="sd">    number_of_events=10 and exposures_per_event=5 then the detector will take</span>
+<span class="sd">    10 exposures, but publish 2 StreamDatum indices, and describe() will show a</span>
+<span class="sd">    shape of (5, h, w) for each.</span>
+<span class="sd">    Default is 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@computed_field</span>
     <span class="nd">@cached_property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">total_number_of_triggers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">total_number_of_exposures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
-            <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
-            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_triggers</span>
-        <span class="p">)</span></div>
+            <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_events</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposures_per_event</span></div>
 
 
 
@@ -620,10 +623,12 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="DetectorWriter.open">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter.open">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exposures_per_event</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Open writer and wait for it to be ready for data.</span>
 
-<span class="sd">        :param multiplier:</span>
+<span class="sd">        :param exposures_per_event:</span>
 <span class="sd">            Each StreamDatum index corresponds to this many written exposures</span>
 <span class="sd">        :return: Output for ``describe()``</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
@@ -728,11 +733,11 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">WatchableAsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="c1"># Represents the total number of frames that will have been completed at the</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Represents the total number of exposures that will have been completed at the</span>
         <span class="c1"># end of the next `complete`.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_completable_frames</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_completable_exposures</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">)</span>
 
@@ -802,15 +807,19 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
                 <span class="n">TriggerInfo</span><span class="p">(</span>
-                    <span class="n">number_of_triggers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">number_of_events</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                     <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
-
         <span class="n">trigger_info</span> <span class="o">=</span> <span class="n">_ensure_trigger_info_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The trigger method can only be called with INTERNAL triggering&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_events</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Triggering is not supported for multiple events, the detector was &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;prepared with number_of_events=</span><span class="si">{</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_events</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Arm the detector and wait for it to finish.</span>
         <span class="n">indices_written</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
@@ -848,13 +857,14 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">:</span>
             <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span>
-            <span class="n">value</span><span class="o">.</span><span class="n">number_of_triggers</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
-            <span class="k">else</span> <span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_triggers</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span>
+            <span class="n">value</span><span class="o">.</span><span class="n">number_of_events</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">]</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">multiplier</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">exposures_per_event</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">value</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
@@ -867,18 +877,20 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.kickoff">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Prepare must be called before kickoff!&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="o">==</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_completable_frames</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_completable_exposures</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">exposures_per_event</span>
+            <span class="p">)</span>
         <span class="k">except</span> <span class="ne">StopIteration</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Kickoff called more than the configured number of &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">total_number_of_triggers</span><span class="si">}</span><span class="s2"> iteration(s)!&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">total_number_of_exposures</span><span class="si">}</span><span class="s2"> iteration(s)!&quot;</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span></div>
 
 
@@ -888,7 +900,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">trigger_info</span> <span class="o">=</span> <span class="n">_ensure_trigger_info_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">)</span>
         <span class="n">indices_written</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
-            <span class="n">trigger_info</span><span class="o">.</span><span class="n">frame_timeout</span>
+            <span class="n">trigger_info</span><span class="o">.</span><span class="n">exposure_timeout</span>
             <span class="ow">or</span> <span class="p">(</span>
                 <span class="n">DEFAULT_TIMEOUT</span>
                 <span class="o">+</span> <span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
@@ -901,21 +913,21 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                     <span class="n">current</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
                     <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">,</span>
-                    <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span><span class="p">,</span>
+                    <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span><span class="p">,</span>
                     <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
                     <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                     <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span>
                     <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="p">)</span>
-                <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span><span class="p">:</span>
                     <span class="k">break</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">indices_written</span><span class="o">.</span><span class="n">aclose</span><span class="p">()</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_completable_frames</span> <span class="o">&gt;=</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">total_number_of_triggers</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_completable_frames</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_frames_to_complete</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_triggers_iter</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_completable_exposures</span> <span class="o">&gt;=</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">total_number_of_exposures</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_completable_exposures</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">wait_for_idle</span><span class="p">()</span></div>
 
 

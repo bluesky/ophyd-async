@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.10.0a3.dev5+gfe81adda documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.10.0a3.dev6+g48236a91 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=c9d904a1"></script>
+    <script src="../../_static/documentation_options.js?v=3a376f02"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev5+gfe81adda documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev5+gfe81adda documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev6+g48236a91 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev6+g48236a91 documentation - Home"/>
   
   
 </a></div>
@@ -2456,22 +2456,22 @@ in from the plan level.</p>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
 <p>Minimal set of information required to setup triggering on a detector.</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.number_of_triggers">
-<span class="sig-name descname"><span class="pre">number_of_triggers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">NonNegativeInt</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">NonNegativeInt</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.core.TriggerInfo.number_of_triggers" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.number_of_events">
+<span class="sig-name descname"><span class="pre">number_of_events</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">NonNegativeInt</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">NonNegativeInt</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.core.TriggerInfo.number_of_events" title="Link to this definition">#</a></dt>
 <dd><p>‘Field(…)’</p>
-<p>Number of triggers that will be sent, (0 means infinite).</p>
+<p>Number of events that will be processed, (0 means infinite).</p>
 <p>Can be:</p>
 <ul class="simple">
 <li><p>A single integer or</p></li>
-<li><p>A list of integers for multiple triggers</p></li>
+<li><p>A list of integers for multiple events</p></li>
 </ul>
-<p>Example for tomography: <code class="docutils literal notranslate"><span class="pre">TriggerInfo(number=[2,3,100,3])</span></code>.
-This would trigger:</p>
+<p>Example for tomography: <code class="docutils literal notranslate"><span class="pre">TriggerInfo(number_of_events=[2,3,100,3])</span></code>.
+This would process:</p>
 <ul class="simple">
-<li><p>2 times for dark field images</p></li>
-<li><p>3 times for initial flat field images</p></li>
-<li><p>100 times for projections</p></li>
-<li><p>3 times for final flat field images</p></li>
+<li><p>2 events for dark field images</p></li>
+<li><p>3 events for initial flat field images</p></li>
+<li><p>100 events for projections</p></li>
+<li><p>3 events for final flat field images</p></li>
 </ul>
 </dd></dl>
 
@@ -2486,36 +2486,39 @@ This would trigger:</p>
 <dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.deadtime">
 <span class="sig-name descname"><span class="pre">deadtime</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#ophyd_async.core.TriggerInfo.deadtime" title="Link to this definition">#</a></dt>
 <dd><p>‘Field(…)’</p>
-<p>What is the minimum deadtime between triggers</p>
+<p>What is the minimum deadtime between exposures</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.livetime">
 <span class="sig-name descname"><span class="pre">livetime</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#ophyd_async.core.TriggerInfo.livetime" title="Link to this definition">#</a></dt>
 <dd><p>‘Field(…)’</p>
-<p>What is the maximum high time of the triggers</p>
+<p>What is the maximum high time of the exposures</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.frame_timeout">
-<span class="sig-name descname"><span class="pre">frame_timeout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#ophyd_async.core.TriggerInfo.frame_timeout" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.exposure_timeout">
+<span class="sig-name descname"><span class="pre">exposure_timeout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#ophyd_async.core.TriggerInfo.exposure_timeout" title="Link to this definition">#</a></dt>
 <dd><p>‘Field(…)’</p>
-<p>What is the maximum timeout on waiting for a frame</p>
+<p>What is the maximum timeout on waiting for an exposure</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.multiplier">
-<span class="sig-name descname"><span class="pre">multiplier</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#ophyd_async.core.TriggerInfo.multiplier" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.exposures_per_event">
+<span class="sig-name descname"><span class="pre">exposures_per_event</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">PositiveInt</span></em><a class="headerlink" href="#ophyd_async.core.TriggerInfo.exposures_per_event" title="Link to this definition">#</a></dt>
 <dd><p>1</p>
-<p>How many triggers make up a single StreamDatum index, to allow multiple frames
-from a faster detector to be zipped with a single frame from a slow detector
-e.g. if num=10 and multiplier=5 then the detector will take 10 frames,
-but publish 2 indices, and describe() will show a shape of (5, h, w)</p>
+<p>The number of exposures that are grouped into a single StreamDatum index.
+A exposures_per_event &gt; 1 can be useful to have exposures from a faster detector
+able to be zipped with a single exposure from a slower detector. E.g. if
+number_of_events=10 and exposures_per_event=5 then the detector will take
+10 exposures, but publish 2 StreamDatum indices, and describe() will show a
+shape of (5, h, w) for each.
+Default is 1.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.total_number_of_triggers">
-<span class="sig-name descname"><span class="pre">total_number_of_triggers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#ophyd_async.core.TriggerInfo.total_number_of_triggers" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.total_number_of_exposures">
+<span class="sig-name descname"><span class="pre">total_number_of_exposures</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="headerlink" href="#ophyd_async.core.TriggerInfo.total_number_of_exposures" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2604,11 +2607,11 @@ but publish 2 indices, and describe() will show a shape of (5, h, w)</p>
 <p>Logic for making detector write data to somewhere persistent (e.g. HDF5 file).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.DetectorWriter.open">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiplier</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.DataKey" title="(in event-model vmain)"><span class="pre">DataKey</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_detector.html#DetectorWriter.open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DetectorWriter.open" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposures_per_event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PositiveInt</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.DataKey" title="(in event-model vmain)"><span class="pre">DataKey</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_detector.html#DetectorWriter.open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DetectorWriter.open" title="Link to this definition">#</a></dt>
 <dd><p>Open writer and wait for it to be ready for data.</p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>multiplier</strong> – Each StreamDatum index corresponds to this many written exposures</p>
+<dd class="field-odd"><p><strong>exposures_per_event</strong> – Each StreamDatum index corresponds to this many written exposures</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Output for <code class="docutils literal notranslate"><span class="pre">describe()</span></code></p>
@@ -2798,13 +2801,6 @@ e.g. &lt;i2 or &lt;f8</p>
 <span class="sig-name descname"><span class="pre">chunk_shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.core.HDFDatasetDescription.chunk_shape" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 <p>The explicit chunk size written to disk</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.core.HDFDatasetDescription.multiplier">
-<span class="sig-name descname"><span class="pre">multiplier</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#ophyd_async.core.HDFDatasetDescription.multiplier" title="Link to this definition">#</a></dt>
-<dd><p>1</p>
-<p>Won’t be used soon.</p>
 </dd></dl>
 
 </dd></dl>
@@ -3677,13 +3673,13 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo"><code class="docutils literal notranslate"><span class="pre">TriggerInfo</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.number_of_triggers"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.number_of_triggers</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.number_of_events"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.number_of_events</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.trigger"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.trigger</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.deadtime"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.deadtime</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.livetime"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.livetime</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.frame_timeout"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.frame_timeout</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.multiplier"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.multiplier</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.total_number_of_triggers"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.total_number_of_triggers()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.exposure_timeout"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.exposure_timeout</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.exposures_per_event"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.exposures_per_event</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TriggerInfo.total_number_of_exposures"><code class="docutils literal notranslate"><span class="pre">TriggerInfo.total_number_of_exposures()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorTrigger"><code class="docutils literal notranslate"><span class="pre">DetectorTrigger</span></code></a><ul class="nav section-nav flex-column">
@@ -3735,7 +3731,6 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.HDFDatasetDescription.shape"><code class="docutils literal notranslate"><span class="pre">HDFDatasetDescription.shape</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.HDFDatasetDescription.dtype_numpy"><code class="docutils literal notranslate"><span class="pre">HDFDatasetDescription.dtype_numpy</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.HDFDatasetDescription.chunk_shape"><code class="docutils literal notranslate"><span class="pre">HDFDatasetDescription.chunk_shape</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.HDFDatasetDescription.multiplier"><code class="docutils literal notranslate"><span class="pre">HDFDatasetDescription.multiplier</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.HDFDocumentComposer"><code class="docutils literal notranslate"><span class="pre">HDFDocumentComposer</span></code></a><ul class="nav section-nav flex-column">

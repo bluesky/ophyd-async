@@ -715,7 +715,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorWriter`
 ```{autodoc2-docstring} ophyd_async.fastcs.panda._writer.PandaHDFWriter
 ```
 
-````{py:method} open(name: str, multiplier: int = 1) -> dict[str, ~event_model.DataKey]
+````{py:method} open(name: str, exposures_per_event: int = 1) -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.fastcs.panda._writer.PandaHDFWriter.open
 :async:
 

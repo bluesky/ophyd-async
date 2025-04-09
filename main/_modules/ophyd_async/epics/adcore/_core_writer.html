@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_writer &#8212; ophyd-async 0.10.0a3.dev5+gfe81adda documentation</title>
+    <title>ophyd_async.epics.adcore._core_writer &#8212; ophyd-async 0.10.0a3.dev6+g48236a91 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=c9d904a1"></script>
+    <script src="../../../../_static/documentation_options.js?v=3a376f02"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev5+gfe81adda documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev5+gfe81adda documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev6+g48236a91 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev6+g48236a91 documentation - Home"/>
   
   
 </a></div>
@@ -470,11 +470,12 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlunparse</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Hints</span><span class="p">,</span> <span class="n">StreamAsset</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># type: ignore</span>
     <span class="n">ComposeStreamResource</span><span class="p">,</span>
     <span class="n">DataKey</span><span class="p">,</span>
     <span class="n">StreamRange</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">PositiveInt</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorWriter</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._providers</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetDescriber</span><span class="p">,</span> <span class="n">PathProvider</span>
@@ -526,7 +527,6 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">_emitted_resource</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_capture_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename_template</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">_</span><span class="si">%6.6d</span><span class="s2">&quot;</span>
 
 <div class="viewcode-block" id="ADWriter.with_io">
@@ -591,10 +591,12 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="ADWriter.open">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriter.open">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exposures_per_event</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_emitted_resource</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_emitted</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="n">multiplier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exposures_per_event</span> <span class="o">=</span> <span class="n">exposures_per_event</span>
         <span class="n">frame_shape</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_describer</span><span class="o">.</span><span class="n">shape</span><span class="p">()</span>
         <span class="n">dtype_numpy</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_describer</span><span class="o">.</span><span class="n">np_datatype</span><span class="p">()</span>
 
@@ -603,7 +605,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">describe</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">name</span><span class="p">:</span> <span class="n">DataKey</span><span class="p">(</span>
                 <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fileio</span><span class="o">.</span><span class="n">full_file_name</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
-                <span class="n">shape</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">frame_shape</span><span class="p">),</span>
+                <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">exposures_per_event</span><span class="p">,</span> <span class="o">*</span><span class="n">frame_shape</span><span class="p">],</span>
                 <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span><span class="p">,</span>
                 <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">dtype_numpy</span><span class="p">,</span>
                 <span class="n">external</span><span class="o">=</span><span class="s2">&quot;STREAM:&quot;</span><span class="p">,</span>
@@ -619,14 +621,14 @@ window.addEventListener("load", () => mermaid.run());
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait until a specific index is ready to be collected.&quot;&quot;&quot;</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">num_captured</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fileio</span><span class="o">.</span><span class="n">num_captured</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">num_captured</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span></div>
+            <span class="k">yield</span> <span class="n">num_captured</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures_per_event</span></div>
 
 
 <div class="viewcode-block" id="ADWriter.get_indices_written">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriter.get_indices_written">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">num_captured</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileio</span><span class="o">.</span><span class="n">num_captured</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">num_captured</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span></div>
+        <span class="k">return</span> <span class="n">num_captured</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exposures_per_event</span></div>
 
 
 <div class="viewcode-block" id="ADWriter.collect_stream_docs">
@@ -661,11 +663,11 @@ window.addEventListener("load", () => mermaid.run());
                     <span class="c1"># TODO no reference to detector&#39;s name</span>
                     <span class="n">data_key</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                     <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
-                        <span class="c1"># Assume that we always write 1 frame per file/chunk</span>
+                        <span class="c1"># Assume that we always write 1 frame per file/chunk, this</span>
+                        <span class="c1"># may change to self._exposures_per_event in the future</span>
                         <span class="s2">&quot;chunk_shape&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">frame_shape</span><span class="p">),</span>
                         <span class="c1"># Include file template for reconstruction in consolidator</span>
                         <span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="n">file_template</span><span class="p">,</span>
-                        <span class="s2">&quot;multiplier&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span><span class="p">,</span>
                     <span class="p">},</span>
                     <span class="n">uid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>

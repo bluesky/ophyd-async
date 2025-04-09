@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._hdf_dataset &#8212; ophyd-async 0.10.0a3.dev5+gfe81adda documentation</title>
+    <title>ophyd_async.core._hdf_dataset &#8212; ophyd-async 0.10.0a3.dev6+g48236a91 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=c9d904a1"></script>
+    <script src="../../../_static/documentation_options.js?v=3a376f02"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev5+gfe81adda documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev5+gfe81adda documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev6+g48236a91 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev6+g48236a91 documentation - Home"/>
   
   
 </a></div>
@@ -467,7 +467,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlunparse</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># type: ignore</span>
     <span class="n">ComposeStreamResource</span><span class="p">,</span>
     <span class="n">ComposeStreamResourceBundle</span><span class="p">,</span>
     <span class="n">StreamDatum</span><span class="p">,</span>
@@ -499,10 +499,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    e.g. &lt;i2 or &lt;f8&quot;&quot;&quot;</span>
 
     <span class="n">chunk_shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The explicit chunk size written to disk&quot;&quot;&quot;</span>
-
-    <span class="n">multiplier</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Won&#39;t be used soon.&quot;&quot;&quot;</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The explicit chunk size written to disk&quot;&quot;&quot;</span></div>
 
 
 
@@ -544,7 +541,6 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="n">data_key</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">data_key</span><span class="p">,</span>
                 <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
                     <span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
-                    <span class="s2">&quot;multiplier&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="o">.</span><span class="n">multiplier</span><span class="p">,</span>
                     <span class="s2">&quot;chunk_shape&quot;</span><span class="p">:</span> <span class="n">ds</span><span class="o">.</span><span class="n">chunk_shape</span><span class="p">,</span>
                 <span class="p">},</span>
                 <span class="n">uid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
