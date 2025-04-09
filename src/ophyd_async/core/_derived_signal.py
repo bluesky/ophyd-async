@@ -1,5 +1,7 @@
 from collections.abc import Awaitable, Callable
-from typing import Any, Generic, get_type_hints
+from typing import Any, Generic, get_args, get_origin, get_type_hints
+
+from bluesky.protocols import Locatable
 
 from ._derived_signal_backend import (
     DerivedSignalBackend,
@@ -35,13 +37,22 @@ class DerivedSignalFactory(Generic[TransformT]):
         self._set_derived = set_derived
         # Check the raw and transform devices match the input arguments of the Transform
         if transform_cls is not Transform:
+            # Populate expected parameters and types
             expected = {
-                k: v
-                for k, v in get_type_hints(transform_cls.raw_to_derived).items()
-                if k not in {"self", "return"}
+                **{k: f.annotation for k, f in transform_cls.model_fields.items()},
+                **{
+                    k: v
+                    for k, v in get_type_hints(transform_cls.raw_to_derived).items()
+                    if k not in {"self", "return"}
+                },
             }
 
-            received = {k: v.datatype for k, v in raw_and_transform_devices.items()}
+            # Populate received parameters and types
+            # Use Signal datatype, or Locatable datatype, or set type as None
+            received = {
+                k: v.datatype if hasattr(v, "datatype") else get_locatable_type(v)
+                for k, v in raw_and_transform_devices.items()
+            }
 
             if expected != received:
                 msg = (
@@ -273,3 +284,17 @@ def derived_signal_w(
         units=derived_units,
         precision=derived_precision,
     )
+
+
+def get_locatable_type(obj: object) -> type | None:
+    """Extract datatype from Locatable parent class.
+
+    :param obj: Object with possible Locatable inheritance
+    :return: Type hint associated with Locatable, or None if not found.
+    """
+    for base in getattr(obj.__class__, "__orig_bases__", []):
+        if get_origin(base) is Locatable:
+            args = get_args(base)
+            if args:
+                return args[0]
+    return None
