@@ -33,7 +33,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         driver: ADBaseIOT,
         good_states: frozenset[ADState] = DEFAULT_GOOD_STATES,
     ) -> None:
-        self.driver = driver
+        self.driver: ADBaseIOT = driver
         self.good_states = good_states
         self.frame_timeout = DEFAULT_TIMEOUT
         self._arm_status: AsyncStatus | None = None
@@ -49,7 +49,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
             DEFAULT_TIMEOUT + await self.driver.acquire_time.get_value()
         )
         await asyncio.gather(
-            self.driver.num_images.set(trigger_info.total_number_of_triggers),
+            self.driver.num_images.set(trigger_info.total_number_of_exposures),
             self.driver.image_mode.set(ADImageMode.MULTIPLE),
         )
 
@@ -176,7 +176,7 @@ class ADBaseContAcqController(ADBaseController[ADBaseIO]):
         await asyncio.gather(
             self.cb_plugin.enable_callbacks.set(ADCallbacks.ENABLE),
             self.cb_plugin.pre_count.set(0),
-            self.cb_plugin.post_count.set(trigger_info.total_number_of_triggers),
+            self.cb_plugin.post_count.set(trigger_info.total_number_of_exposures),
             self.cb_plugin.preset_trigger_count.set(1),
             self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
         )

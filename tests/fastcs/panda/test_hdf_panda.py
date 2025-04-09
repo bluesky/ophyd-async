@@ -114,7 +114,7 @@ async def test_hdf_panda_hardware_triggered_flyable(
         yield from bps.wait(group="complete")
         yield from bps.close_run()
         # Verify that _completable_frames is reset to 0 after the final complete.
-        assert mock_hdf_panda._completable_frames == 0
+        assert mock_hdf_panda._completable_exposures == 0
         yield from bps.unstage_all(flyer, mock_hdf_panda)
         yield from bps.wait_for([lambda: mock_hdf_panda._controller.disarm()])
 
@@ -145,7 +145,6 @@ async def test_hdf_panda_hardware_triggered_flyable(
             "uri": "file://localhost/" + str(tmp_path / "test-panda.h5").lstrip("/"),
             "parameters": {
                 "dataset": f"/{dataset_name}",
-                "multiplier": 1,
                 "chunk_shape": (1024,),
             },
         }

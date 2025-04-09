@@ -102,7 +102,7 @@ def test_hdf_writer_fails_on_timeout_with_flyscan(
 
     flyer = StandardFlyer(trigger_logic, name="flyer")
     trigger_info = TriggerInfo(
-        number_of_triggers=1,
+        number_of_events=1,
         trigger=DetectorTrigger.CONSTANT_GATE,
         deadtime=2,
         livetime=2,
@@ -139,5 +139,5 @@ async def test_ad_sim_controller_raise(controller: adsimdetector.SimController):
         match=r"fly scanning .* is not supported for this device",
     ):
         await controller.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=DetectorTrigger.EDGE_TRIGGER)
+            TriggerInfo(number_of_events=1, trigger=DetectorTrigger.EDGE_TRIGGER)
         )
