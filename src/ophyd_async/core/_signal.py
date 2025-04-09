@@ -431,8 +431,8 @@ async def observe_signals_value(
         Call subscribe_value on all the signals at the start, and clear_sub on
         it at the end.
     :param timeout:
-        If given, how long to wait for each updated value in seconds. If an
-        update is not produced in this time then raise asyncio.TimeoutError.
+        If given, how long to wait for ANY updated value from shared queue in seconds.
+        If an update is not produced in this time then raise asyncio.TimeoutError.
     :param done_status:
         If this status is complete, stop observing and make the iterator return.
         If it raises an exception then this exception will be raised by the
@@ -454,8 +454,10 @@ async def observe_signals_value(
     q: asyncio.Queue[tuple[SignalR[SignalDatatypeT], SignalDatatypeT] | Status] = (
         asyncio.Queue()
     )
-
+    # dict to store signal subscription to remove it later
     cbs: dict[SignalR, Callback] = {}
+
+    # subscribe signal to update queue and fill cbs dict
     for signal in signals:
 
         def queue_value(value: SignalDatatypeT, signal=signal):

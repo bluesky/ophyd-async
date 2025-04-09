@@ -1,4 +1,5 @@
 import asyncio
+import re
 import time
 
 import pytest
@@ -140,33 +141,26 @@ async def test_observe_value_uses_correct_timeout():
 async def test_observe_signals_value_timeout_message():
     """
     Test creates a queue of 2 signals which update with
-    different rate.
-    1. If global timeout is less then both timeouts -> values only zeros
-    2. If global timout more than one but less than other -> values for both signals
-    received until faster is completely finished
-    3. If global timeout is more than both -> all values received.
+    different rate and observe with smaller timeout.
     """
     sig1 = soft_signal_rw(float)
     sig2 = soft_signal_rw(float)
     recv1 = []
     recv2 = []
-    time_delay_sec1 = 0.7
-    time_delay_sec2 = 0.3
-    time_delay = (time_delay_sec1 + time_delay_sec2) * 0.5
+    time_delay_sec1 = 0.3
+    time_delay_sec2 = 0.5
+    time_delay = 0.1
+    n_updates = 2
 
-    N = 4
-
-    # task to set values
     async def tick1():
-        for i in range(N):
-            await asyncio.sleep(time_delay_sec1)
+        for i in range(n_updates):
             sig1.set(i + 10.0, False)
+            await asyncio.sleep(time_delay_sec1)
 
-    # task to set values
     async def tick2():
-        for i in range(N):
-            await asyncio.sleep(time_delay_sec2)
+        for i in range(n_updates):
             sig2.set(i + 100.0, False)
+            await asyncio.sleep(time_delay_sec2)
 
     async def watch(timeout, done_timeout):
         async for signal, value in observe_signals_value(
@@ -177,15 +171,22 @@ async def test_observe_signals_value_timeout_message():
             if signal is sig2:
                 recv2.append(value)
 
-    async def main_test(time_delay):
-        await asyncio.gather(
-            tick2(), tick1(), watch(timeout=time_delay, done_timeout=None)
-        )
+    async def main_test(tmo):
+        await asyncio.gather(tick2(), tick1(), watch(timeout=tmo, done_timeout=None))
 
-    with pytest.raises(asyncio.TimeoutError):
+    with pytest.raises(
+        asyncio.TimeoutError,
+        match=re.escape(
+            f"Timeout Error while waiting {time_delay}s "
+            "to update ['soft://', 'soft://']. "
+            "Last observed signal and value were"
+        ),
+    ):
         await main_test(time_delay)
-    assert recv2 == [0.0] + [i + 100 for i in range(N)]
-    assert recv1 == [0.0, 10.0, 11.0]
 
-    # let all tasks cancel correctly
-    await asyncio.sleep(max(time_delay_sec1, time_delay_sec2) * 1.5)
+    # Assert first default and set values only
+    assert recv1 == [0.0, 10.0]
+    assert recv2 == [0.0, 100.0]
+
+    # let all tasks finish correctly
+    await asyncio.sleep(max(time_delay_sec1, time_delay_sec2) * 2)
