@@ -3,7 +3,7 @@ import contextlib
 import time
 
 import numpy as np
-from bluesky.protocols import Location, Reading, Stoppable, Subscribable
+from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
 from pydantic import BaseModel, ConfigDict, Field
 
 from ophyd_async.core import (
@@ -50,7 +50,7 @@ class FlySimMotorInfo(BaseModel):
         return self.cv_end + acceleration_time * self.velocity / 2
 
 
-class SimMotor(StandardReadable, Stoppable, Subscribable[float]):
+class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float]):
     """For usage when simulating a motor."""
 
     def __init__(self, name="", instant=True) -> None:

@@ -22,6 +22,20 @@ from ophyd_async.testing import (
 )
 
 
+def _get_position(foo: float, bar: float) -> BeamstopPosition:
+    if abs(foo) < 1 and abs(bar) < 2:
+        return BeamstopPosition.IN_POSITION
+    else:
+        return BeamstopPosition.OUT_OF_POSITION
+
+
+def _get_position_wrong_args(x: float, y: float) -> BeamstopPosition:
+    if abs(x) < 1 and abs(y) < 2:
+        return BeamstopPosition.IN_POSITION
+    else:
+        return BeamstopPosition.OUT_OF_POSITION
+
+
 @pytest.mark.parametrize(
     "x, y, position",
     [
@@ -103,23 +117,31 @@ async def test_setting_all():
     )
 
 
-def test_mismatching_args():
-    def _get_position(x: float, y: float) -> BeamstopPosition:
-        if abs(x) < 1 and abs(y) < 2:
-            return BeamstopPosition.IN_POSITION
-        else:
-            return BeamstopPosition.OUT_OF_POSITION
-
-    with pytest.raises(
-        TypeError,
-        match=re.escape(
-            "Expected devices to be passed as keyword arguments ['x', 'y'], "
-            "got ['foo', 'bar']"
+@pytest.mark.parametrize(
+    "func, expected_msg, args",
+    [
+        (
+            _get_position_wrong_args,
+            "Expected devices to be passed as keyword arguments "
+            "{'x': <class 'float'>, 'y': <class 'float'>}, "
+            "got {'foo': <class 'float'>, 'bar': <class 'float'>}",
+            {"foo": soft_signal_rw(float), "bar": soft_signal_rw(float)},
         ),
-    ):
-        derived_signal_r(
-            _get_position, foo=soft_signal_rw(float), bar=soft_signal_rw(float)
-        )
+        (
+            _get_position,
+            "Expected devices to be passed as keyword arguments "
+            "{'foo': <class 'float'>, 'bar': <class 'float'>}, "
+            "got {'foo': <class 'int'>, 'bar': <class 'int'>}",
+            {
+                "foo": soft_signal_rw(int),
+                "bar": soft_signal_rw(int),
+            },  # Signals are of wrong type.
+        ),
+    ],
+)
+def test_mismatching_args_and_types(func, expected_msg, args):
+    with pytest.raises(TypeError, match=re.escape(expected_msg)):
+        derived_signal_r(func, **args)
 
 
 async def test_derived_signal_rw_works_with_signal_r():

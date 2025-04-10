@@ -118,8 +118,11 @@ def test_mismatching_args():
     with pytest.raises(
         TypeError,
         match=re.escape(
-            "Expected devices to be passed as keyword arguments "
-            "['distance', 'jack1', 'jack2'], got ['jack1', 'jack22', 'distance']"
+            "Expected devices to be passed as keyword arguments"
+            " {'distance': <class 'float'>, 'jack1': <class 'float'>, "
+            "'jack2': <class 'float'>}, "
+            "got {'jack1': <class 'float'>, 'jack22': <class 'float'>, "
+            "'distance': <class 'float'>}"
         ),
     ):
         DerivedSignalFactory(
