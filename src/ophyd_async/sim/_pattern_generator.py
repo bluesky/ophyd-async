@@ -45,12 +45,14 @@ class PatternFile:
             shape=(0, height, width),
             dtype=np.uint8,
             maxshape=(None, height, width),
+            chunks=(1024, height, width),
         )
         self.sum = self.file.create_dataset(
             name=SUM_PATH,
             shape=(0,),
             dtype=np.int64,
             maxshape=(None,),
+            chunks=(1024,),
         )
         # Once datasets written, can switch the model to single writer multiple reader
         self.file.swmr_mode = True

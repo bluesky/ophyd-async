@@ -1,5 +1,5 @@
 from collections.abc import Awaitable, Callable
-from typing import Any, Generic, get_args, get_origin, get_type_hints
+from typing import Any, Generic, get_args, get_origin, get_type_hints, is_typeddict
 
 from bluesky.protocols import Locatable
 
@@ -60,14 +60,13 @@ class DerivedSignalFactory(Generic[TransformT]):
                     f"{expected}, got {received}"
                 )
                 raise TypeError(msg)
-
-        set_derived_datatype = (
-            _get_first_arg_datatype(set_derived) if set_derived else None
+        self._set_derived_takes_dict = (
+            is_typeddict(_get_first_arg_datatype(set_derived)) if set_derived else False
         )
         self._transformer = SignalTransformer(
             transform_cls,
             set_derived,
-            set_derived_datatype,
+            self._set_derived_takes_dict,
             **raw_and_transform_devices,
         )
 
@@ -90,7 +89,7 @@ class DerivedSignalFactory(Generic[TransformT]):
                 f"{signal_cls.__name__}s"
             )
             raise ValueError(msg)
-        if issubclass(signal_cls, SignalRW):
+        if issubclass(signal_cls, SignalRW) and self._set_derived_takes_dict:
             self._transformer.raw_locatables  # noqa: B018
         backend = DerivedSignalBackend(
             datatype, name, self._transformer, units, precision

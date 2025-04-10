@@ -30,11 +30,11 @@ class PandaHDFWriter(DetectorWriter):
         self._path_provider = path_provider
         self._datasets: list[HDFDatasetDescription] = []
         self._composer: HDFDocumentComposer | None = None
-        self._multiplier = 1
 
     # Triggered on PCAP arm
-    async def open(self, name: str, multiplier: int = 1) -> dict[str, DataKey]:
+    async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         """Retrieve and get descriptor of all PandA signals marked for capture."""
+        self._exposures_per_event = exposures_per_event
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
@@ -63,10 +63,6 @@ class PandaHDFWriter(DetectorWriter):
 
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.panda_data_block.capture.set(True)
-        if multiplier > 1:
-            raise ValueError(
-                "All PandA datasets should be scalar, multiplier should be 1"
-            )
 
         return await self._describe(name)
 
@@ -77,7 +73,9 @@ class PandaHDFWriter(DetectorWriter):
             ds.data_key: DataKey(
                 source=self.panda_data_block.hdf_directory.source,
                 shape=list(ds.shape),
-                dtype="number",
+                dtype="array"
+                if self._exposures_per_event > 1 or len(ds.shape) > 1
+                else "number",
                 # PandA data should always be written as Float64
                 dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
@@ -96,9 +94,10 @@ class PandaHDFWriter(DetectorWriter):
             HDFDatasetDescription(
                 data_key=dataset_name,
                 dataset="/" + dataset_name,
-                shape=(),
+                shape=(self._exposures_per_event,)
+                if self._exposures_per_event > 1
+                else (),
                 dtype_numpy="<f8",
-                multiplier=1,
                 chunk_shape=(1024,),
             )
             for dataset_name in capture_table.name
@@ -118,7 +117,9 @@ class PandaHDFWriter(DetectorWriter):
     # StandardDetector behavior
     async def wait_for_index(self, index: int, timeout: float | None = DEFAULT_TIMEOUT):
         def matcher(value: int) -> bool:
-            return value >= index
+            # Index is already divided by exposures_per_event, so we need to also
+            # divide the value by exposures_per_event to get the correct index
+            return value // self._exposures_per_event >= index
 
         matcher.__name__ = f"index_at_least_{index}"
         await wait_for_value(
@@ -126,7 +127,10 @@ class PandaHDFWriter(DetectorWriter):
         )
 
     async def get_indices_written(self) -> int:
-        return await self.panda_data_block.num_captured.get_value()
+        return (
+            await self.panda_data_block.num_captured.get_value()
+            // self._exposures_per_event
+        )
 
     async def observe_indices_written(
         self, timeout: float
@@ -135,7 +139,7 @@ class PandaHDFWriter(DetectorWriter):
         async for num_captured in observe_value(
             self.panda_data_block.num_captured, timeout
         ):
-            yield num_captured // self._multiplier
+            yield num_captured // self._exposures_per_event
 
     async def collect_stream_docs(
         self, name: str, indices_written: int

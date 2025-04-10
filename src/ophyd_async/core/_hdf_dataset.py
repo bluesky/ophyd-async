@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from urllib.parse import urlunparse
 
-from event_model import (
+from event_model import (  # type: ignore
     ComposeStreamResource,
     ComposeStreamResourceBundle,
     StreamDatum,
@@ -33,9 +33,6 @@ class HDFDatasetDescription(BaseModel):
 
     chunk_shape: tuple[int, ...]
     """The explicit chunk size written to disk"""
-
-    multiplier: int = 1
-    """Won't be used soon."""
 
 
 SLICE_NAME = "AD_HDF5_SWMR_SLICE"
@@ -74,7 +71,6 @@ class HDFDocumentComposer:
                 data_key=ds.data_key,
                 parameters={
                     "dataset": ds.dataset,
-                    "multiplier": ds.multiplier,
                     "chunk_shape": ds.chunk_shape,
                 },
                 uid=None,

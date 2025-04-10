@@ -14,7 +14,7 @@ from ophyd_async.epics import adaravis, adcore, adkinetix, adpilatus, advimba
 from ophyd_async.epics.adpilatus import PilatusReadoutTime
 from ophyd_async.epics.core import epics_signal_r
 from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
-from ophyd_async.testing import set_mock_value
+from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
 DETECTOR_NAME = "test"
 
@@ -34,12 +34,24 @@ async def hdf_writer(
     async with init_devices(mock=True):
         hdf = adcore.NDFileHDFIO("HDF:")
 
-    return adcore.ADHDFWriter(
+    writer = adcore.ADHDFWriter(
         hdf,
         static_path_provider,
         DummyDatasetDescriber(),
         {},
     )
+
+    def on_set_file_path_callback(value: str, wait: bool = True):
+        """Mock a successful directory & file creation"""
+        set_mock_value(writer.fileio.file_path_exists, True)
+        set_mock_value(
+            writer.fileio.full_file_name,
+            f"{value}/{static_path_provider._filename_provider()}{writer._file_extension}",
+        )
+
+    callback_on_mock_put(writer.fileio.file_path, on_set_file_path_callback)
+
+    return writer
 
 
 @pytest.fixture
@@ -49,7 +61,21 @@ async def tiff_writer(
     async with init_devices(mock=True):
         tiff = adcore.NDFileIO("TIFF:")
 
-    return adcore.ADTIFFWriter(tiff, static_path_provider, DummyDatasetDescriber(), {})
+    writer = adcore.ADTIFFWriter(
+        tiff, static_path_provider, DummyDatasetDescriber(), {}
+    )
+
+    def on_set_file_path_callback(value: str, wait: bool = True):
+        """Mock a successful directory & file creation"""
+        set_mock_value(writer.fileio.file_path_exists, True)
+        set_mock_value(
+            writer.fileio.full_file_name,
+            f"{value}/{static_path_provider._filename_provider()}{writer._file_extension}",
+        )
+
+    callback_on_mock_put(writer.fileio.file_path, on_set_file_path_callback)
+
+    return writer
 
 
 @pytest.fixture
@@ -63,12 +89,24 @@ async def hdf_writer_with_stats(
     # Set number of frames per chunk to something reasonable
     set_mock_value(hdf.num_frames_chunks, 2)
 
-    return adcore.ADHDFWriter(
+    writer = adcore.ADHDFWriter(
         hdf,
         static_path_provider,
         DummyDatasetDescriber(),
         {"stats": stats},
     )
+
+    def on_set_file_path_callback(value: str, wait: bool = True):
+        """Mock a successful directory & file creation"""
+        set_mock_value(writer.fileio.file_path_exists, True)
+        set_mock_value(
+            writer.fileio.full_file_name,
+            f"{value}/{static_path_provider._filename_provider()}{writer._file_extension}",
+        )
+
+    callback_on_mock_put(writer.fileio.file_path, on_set_file_path_callback)
+
+    return writer
 
 
 @pytest.fixture
@@ -89,6 +127,7 @@ async def detectors(
 
 
 async def test_hdf_writer_file_not_found(hdf_writer: adcore.ADHDFWriter):
+    callback_on_mock_put(hdf_writer.fileio.file_path, lambda value, wait: None)
     with pytest.raises(
         FileNotFoundError, match=r"File path .* for file plugin does not exist"
     ):
@@ -97,13 +136,15 @@ async def test_hdf_writer_file_not_found(hdf_writer: adcore.ADHDFWriter):
 
 async def test_hdf_writer_collect_stream_docs(hdf_writer: adcore.ADHDFWriter):
     assert hdf_writer._composer is None
-
+    await hdf_writer.open("test", exposures_per_event=1)
     [item async for item in hdf_writer.collect_stream_docs(DETECTOR_NAME, 1)]
+
     assert hdf_writer._composer
 
 
 async def test_tiff_writer_collect_stream_docs(tiff_writer: adcore.ADTIFFWriter):
     assert tiff_writer._emitted_resource is None
+    await tiff_writer.open("test", exposures_per_event=1)
     [item async for item in tiff_writer.collect_stream_docs(DETECTOR_NAME, 1)]
     assert tiff_writer._emitted_resource
 
@@ -138,7 +179,7 @@ async def test_stats_describe_when_plugin_configured(
     assert descriptor == {
         "test": {
             "source": "mock+ca://HDF:FullFileName_RBV",
-            "shape": [10, 10],
+            "shape": [1, 10, 10],
             "dtype": "array",
             "dtype_numpy": "<u2",
             "external": "STREAM:",

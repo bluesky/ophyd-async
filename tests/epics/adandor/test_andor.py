@@ -35,11 +35,11 @@ async def test_unsupported_trigger_excepts(test_adandor: adandor.Andor2Detector)
         ):
             await test_adandor.prepare(
                 TriggerInfo(
-                    number_of_triggers=0,
+                    number_of_events=0,
                     trigger=DetectorTrigger.VARIABLE_GATE,
                     deadtime=1.1,
                     livetime=1,
-                    frame_timeout=3,
+                    exposure_timeout=3,
                 )
             )
 

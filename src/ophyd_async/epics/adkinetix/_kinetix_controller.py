@@ -34,7 +34,7 @@ class KinetixController(adcore.ADBaseController[KinetixDriverIO]):
             self.driver.trigger_mode.set(
                 KINETIX_TRIGGER_MODE_MAP[trigger_info.trigger]
             ),
-            self.driver.num_images.set(trigger_info.total_number_of_triggers),
+            self.driver.num_images.set(trigger_info.total_number_of_exposures),
             self.driver.image_mode.set(adcore.ADImageMode.MULTIPLE),
         )
         if trigger_info.livetime is not None and trigger_info.trigger not in [
