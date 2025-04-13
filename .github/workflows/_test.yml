@@ -51,7 +51,7 @@ jobs:
           pip-install: ".[dev]"
 
       - name: Run tests
-        run: tox -e tests
+        run: tox -e tests -- --ctrf report.json
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -60,3 +60,19 @@ jobs:
           files: cov.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Comment on PR test status
+        run: npx github-actions-ctrf summary report.json --pr-comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish CTRF Historical results table
+        run: npx github-actions-ctrf historical report.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.python-version }}-${{ inputs.runs-on }}-ctrf-report
+          path: report.json
