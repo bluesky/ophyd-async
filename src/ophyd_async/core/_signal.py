@@ -481,7 +481,7 @@ async def observe_signals_value(
             iteration_timeout = _get_iteration_timeout(timeout, overall_deadline)
             try:
                 item = await asyncio.wait_for(q.get(), iteration_timeout)
-            except TimeoutError as exc:
+            except asyncio.TimeoutError as exc:
                 raise asyncio.TimeoutError(
                     f"Timeout Error while waiting {iteration_timeout}s to update "
                     f"{[signal.source for signal in signals]}. "
