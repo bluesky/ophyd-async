@@ -8,15 +8,12 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
+    SignalBackend,
+    SignalDatatype,
+    SignalRW,
+    Table,
     soft_signal_rw,
 )
-from ophyd_async.core._derived_signal_backend import (
-    DerivedSignalBackend,  # noqa: PLC2701
-    SignalTransformer,  # noqa: PLC2701
-    Transform,  # noqa: PLC2701
-)
-from ophyd_async.core._signal import SignalRW  # noqa: PLC2701
-from ophyd_async.core._table import Table  # noqa: PLC2701
 from ophyd_async.sim import (
     HorizontalMirror,
     HorizontalMirrorDerived,
@@ -138,31 +135,41 @@ def test_mismatching_args():
 
 
 @pytest.fixture
-def derived_signal_backend() -> DerivedSignalBackend:
-    return DerivedSignalBackend(
-        Table, "derived_backend", SignalTransformer(Transform, None, None)
+def derived_signal_backend() -> SignalBackend[SignalDatatype]:
+    df = DerivedSignalFactory(
+        TwoJackTransform,
+        distance=soft_signal_rw(float),
+        set_derived=None,
+        jack1=soft_signal_rw(float),
+        jack2=soft_signal_rw(float),
     )
+    return df.derived_signal_r(datatype=Table, name="device")._get_cache().backend
 
 
 async def test_derived_signal_backend_connect_pass(
-    derived_signal_backend: DerivedSignalBackend,
-) -> None:
-    result = await derived_signal_backend.connect(0.0)
+    derived_signal_backend: SignalBackend,
+):
+    result = await derived_signal_backend.connect(0.1)
     assert result is None
 
 
 def test_derived_signal_backend_set_value(
-    derived_signal_backend: DerivedSignalBackend,
+    derived_signal_backend: SignalBackend,
 ) -> None:
     with pytest.raises(RuntimeError):
-        derived_signal_backend.set_value(0.0)
+        derived_signal_backend.set_value(1.0)  # type: ignore
 
 
-async def test_derived_signal_backend_put_fails(
-    derived_signal_backend: DerivedSignalBackend,
+async def test_derived_signal_backend_put_wait_fails(
+    derived_signal_backend: SignalBackend,
 ) -> None:
     with pytest.raises(RuntimeError):
         await derived_signal_backend.put(value=None, wait=False)
+
+
+async def test_derived_signal_backend_put_value_fails(
+    derived_signal_backend: SignalBackend,
+) -> None:
     with pytest.raises(RuntimeError):
         await derived_signal_backend.put(value=None, wait=True)
 
