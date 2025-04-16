@@ -10,6 +10,7 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
+from ophyd_async.epics.core import epics_signal_r
 from ophyd_async.testing import (
     BeamstopPosition,
     Exploder,
@@ -133,3 +134,18 @@ async def test_derived_signal_rw_works_with_signal_r():
 
     derived = derived_signal_rw(_get, _put, ts=signal_r)
     assert await derived.get_value() == 4
+
+
+async def test_derived_signal_allowes_literals_as_raw_devices():
+    _underlying_signal = epics_signal_r(int, "TEST")
+
+    def _add_const_to_value(signal: int, const: int) -> int:
+        return const
+
+    signal_r = derived_signal_r(
+        _add_const_to_value,
+        signal=_underlying_signal,
+        const=24,
+    )
+    await _underlying_signal.connect(mock=True)
+    assert await signal_r.get_value() == 24
