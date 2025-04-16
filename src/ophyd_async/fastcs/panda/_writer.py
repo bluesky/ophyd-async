@@ -113,12 +113,6 @@ class PandaHDFWriter(DetectorWriter):
                 "*:DATASET PV set to a scientifically relevant name."
             )
 
-        self._composer = HDFDocumentComposer(
-            Path(await self.panda_data_block.hdf_directory.get_value())
-            / Path(await self.panda_data_block.hdf_file_name.get_value()),
-            self._datasets,
-        )
-
     # Next few functions are exactly the same as AD writer. Could move as default
     # StandardDetector behavior
     async def wait_for_index(self, index: int, timeout: float | None = DEFAULT_TIMEOUT):
@@ -151,9 +145,14 @@ class PandaHDFWriter(DetectorWriter):
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
-        if self._composer:
-            async for doc in self._composer.collect_stream_docs(indices_written):
-                yield doc
+        if not self._composer:
+            self._composer = HDFDocumentComposer(
+                Path(await self.panda_data_block.hdf_directory.get_value())
+                / Path(await self.panda_data_block.hdf_file_name.get_value()),
+                self._datasets,
+            )
+        async for doc in self._composer.collect_stream_docs(indices_written):
+            yield doc
 
     # Could put this function as default for StandardDetector
     async def close(self):
