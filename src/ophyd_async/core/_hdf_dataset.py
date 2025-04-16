@@ -80,21 +80,6 @@ class HDFDocumentComposer:
             for ds in datasets
         ]
 
-    def stream_resources(self) -> Iterator[StreamResource]:
-        for bundle in self._bundles:
-            yield bundle.stream_resource_doc
-
-    def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
-        # Indices are relative to resource
-        if indices_written > self._last_emitted:
-            indices: StreamRange = {
-                "start": self._last_emitted,
-                "stop": indices_written,
-            }
-            self._last_emitted = indices_written
-            for bundle in self._bundles:
-                yield bundle.compose_stream_datum(indices)
-
     async def collect_stream_docs(
         self, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
