@@ -49,14 +49,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
     async def open(
         self, name: str, exposures_per_event: PositiveInt = 1
     ) -> dict[str, DataKey]:
-        self._composer = HDFDocumentComposer(
-            # See https://github.com/bluesky/ophyd-async/issues/122
-            Path(await self.fileio.full_file_name.get_value()),
-            self._datasets,
-        )
-
         # Setting HDF writer specific signals
-
         # Make sure we are using chunk auto-sizing
         await asyncio.gather(self.fileio.chunk_size_auto.set(True))
 
@@ -89,6 +82,12 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
+
+        self._composer = HDFDocumentComposer(
+            # See https://github.com/bluesky/ophyd-async/issues/122
+            Path(await self.fileio.full_file_name.get_value()),
+            self._datasets,
+        )
 
         # And all the scalar datasets
         for plugin in self._plugins.values():

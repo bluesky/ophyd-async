@@ -33,16 +33,12 @@ class PandaHDFWriter(DetectorWriter):
 
     # Triggered on PCAP arm
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
+        self._composer = None
         """Retrieve and get descriptor of all PandA signals marked for capture."""
         self._exposures_per_event = exposures_per_event
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
-        self._composer = HDFDocumentComposer(
-            Path(await self.panda_data_block.hdf_directory.get_value())
-            / Path(await self.panda_data_block.hdf_file_name.get_value()),
-            self._datasets,
-        )
         info = self._path_provider(device_name=name)
 
         # Set create dir depth first to guarantee that callback when setting
@@ -116,6 +112,12 @@ class PandaHDFWriter(DetectorWriter):
                 "Make sure captured positions have their corresponding "
                 "*:DATASET PV set to a scientifically relevant name."
             )
+
+        self._composer = HDFDocumentComposer(
+            Path(await self.panda_data_block.hdf_directory.get_value())
+            / Path(await self.panda_data_block.hdf_file_name.get_value()),
+            self._datasets,
+        )
 
     # Next few functions are exactly the same as AD writer. Could move as default
     # StandardDetector behavior

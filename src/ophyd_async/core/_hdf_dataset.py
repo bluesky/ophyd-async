@@ -99,7 +99,7 @@ class HDFDocumentComposer:
         self, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
-        if indices_written:
+        if indices_written and not self._last_emitted:
             for bundle in self._bundles:
                 yield "stream_resource", bundle.stream_resource_doc
 
