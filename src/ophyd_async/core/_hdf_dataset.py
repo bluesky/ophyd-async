@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator, Iterator
+from collections.abc import AsyncIterator
 from pathlib import Path
 from urllib.parse import urlunparse
 
@@ -6,9 +6,7 @@ from bluesky.protocols import StreamAsset
 from event_model import (  # type: ignore
     ComposeStreamResource,
     ComposeStreamResourceBundle,
-    StreamDatum,
     StreamRange,
-    StreamResource,
 )
 from pydantic import BaseModel, Field
 
