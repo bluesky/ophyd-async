@@ -1,7 +1,8 @@
-from collections.abc import Iterator
+from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
 from urllib.parse import urlunparse
 
+from bluesky.protocols import StreamAsset
 from event_model import (  # type: ignore
     ComposeStreamResource,
     ComposeStreamResourceBundle,
@@ -93,3 +94,20 @@ class HDFDocumentComposer:
             self._last_emitted = indices_written
             for bundle in self._bundles:
                 yield bundle.compose_stream_datum(indices)
+
+    async def collect_stream_docs(
+        self, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
+        # TODO: fail if we get dropped frames
+        if indices_written:
+            for bundle in self._bundles:
+                yield "stream_resource", bundle.stream_resource_doc
+
+        if indices_written > self._last_emitted:
+            indices: StreamRange = {
+                "start": self._last_emitted,
+                "stop": indices_written,
+            }
+            self._last_emitted = indices_written
+            for bundle in self._bundles:
+                yield "stream_datum", bundle.compose_stream_datum(indices)

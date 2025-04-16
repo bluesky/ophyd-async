@@ -38,7 +38,11 @@ class PandaHDFWriter(DetectorWriter):
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
-        self._composer = None
+        self._composer = HDFDocumentComposer(
+            Path(await self.panda_data_block.hdf_directory.get_value())
+            / Path(await self.panda_data_block.hdf_file_name.get_value()),
+            self._datasets,
+        )
         info = self._path_provider(device_name=name)
 
         # Set create dir depth first to guarantee that callback when setting
@@ -145,17 +149,9 @@ class PandaHDFWriter(DetectorWriter):
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
-        if indices_written:
-            if not self._composer:
-                self._composer = HDFDocumentComposer(
-                    Path(await self.panda_data_block.hdf_directory.get_value())
-                    / Path(await self.panda_data_block.hdf_file_name.get_value()),
-                    self._datasets,
-                )
-                for doc in self._composer.stream_resources():
-                    yield "stream_resource", doc
-            for doc in self._composer.stream_data(indices_written):
-                yield "stream_datum", doc
+        if self._composer:
+            async for doc in self._composer.collect_stream_docs(indices_written):
+                yield doc
 
     # Could put this function as default for StandardDetector
     async def close(self):
