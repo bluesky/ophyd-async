@@ -87,14 +87,18 @@ class SignalTransformer(Generic[TransformT]):
             k: raw_and_transform_devices.pop(k) for k in transform_cls.model_fields
         }
 
-        self._raw_devices = {
-            k: v for k, v in raw_and_transform_devices.items() if isinstance(v, Device)
-        }
-        self._raw_constants = {
-            k: v
-            for k, v in raw_and_transform_devices.items()
-            if k not in self._raw_devices
-        }
+        self._raw_devices, self._raw_constants = (
+            {
+                k: v
+                for k, v in raw_and_transform_devices.items()
+                if isinstance(v, Device)
+            },
+            {
+                k: v
+                for k, v in raw_and_transform_devices.items()
+                if isinstance(v, int | bool | str | float)
+            },
+        )
 
         self._derived_callbacks: dict[str, Callback[Reading]] = {}
         self._cached_readings: dict[str, Reading] | None = None
