@@ -133,3 +133,19 @@ async def test_derived_signal_rw_works_with_signal_r():
 
     derived = derived_signal_rw(_get, _put, ts=signal_r)
     assert await derived.get_value() == 4
+
+
+async def test_derived_signal_allows_literal_as_raw_devices():
+    signal_rw = soft_signal_rw(int, 0, "TEST")
+
+    def _add_const_to_value(signal: int, const: int) -> int:
+        return const + signal
+
+    signal_r = derived_signal_r(
+        _add_const_to_value,
+        signal=signal_rw,
+        const=24,
+    )
+    assert await signal_r.get_value() == 24
+    await signal_rw.set(10)
+    assert await signal_r.get_value() == 34

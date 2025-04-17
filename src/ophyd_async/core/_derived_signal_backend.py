@@ -9,6 +9,7 @@ from bluesky.protocols import Location, Reading, Subscribable
 from event_model import DataKey
 from pydantic import BaseModel
 
+from ._device import Device
 from ._protocol import AsyncLocatable, AsyncReadable
 from ._signal_backend import SignalBackend, SignalDatatypeT, make_datakey, make_metadata
 from ._utils import Callback, T, gather_dict, merge_gathered_dicts
@@ -85,7 +86,20 @@ class SignalTransformer(Generic[TransformT]):
         self._transform_devices = {
             k: raw_and_transform_devices.pop(k) for k in transform_cls.model_fields
         }
-        self._raw_devices = raw_and_transform_devices
+
+        self._raw_devices, self._raw_constants = (
+            {
+                k: v
+                for k, v in raw_and_transform_devices.items()
+                if isinstance(v, Device)
+            },
+            {
+                k: v
+                for k, v in raw_and_transform_devices.items()
+                if isinstance(v, int | bool | str | float)
+            },
+        )
+
         self._derived_callbacks: dict[str, Callback[Reading]] = {}
         self._cached_readings: dict[str, Reading] | None = None
 
@@ -141,9 +155,13 @@ class SignalTransformer(Generic[TransformT]):
         # Create the raw values from the rest then calculate the derived readings
         # using the transform
         raw_values = {
-            k: raw_and_transform_readings[sig.name]["value"]
-            for k, sig in self._raw_devices.items()
+            **{
+                k: raw_and_transform_readings[sig.name]["value"]
+                for k, sig in self._raw_devices.items()
+            },
+            **self._raw_constants,
         }
+
         derived_readings = {
             name: Reading(
                 value=derived, timestamp=timestamp, alarm_severity=alarm_severity

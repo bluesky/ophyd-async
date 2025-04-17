@@ -163,7 +163,7 @@ def _get_first_arg_datatype(
 def _make_factory(
     raw_to_derived: Callable[..., SignalDatatypeT] | None = None,
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]] | None = None,
-    raw_devices: dict[str, Device] | None = None,
+    raw_devices: dict[str, Device | int | bool | float | str] | None = None,
 ) -> DerivedSignalFactory:
     if raw_to_derived:
 
@@ -186,7 +186,7 @@ def derived_signal_r(
     raw_to_derived: Callable[..., SignalDatatypeT],
     derived_units: str | None = None,
     derived_precision: int | None = None,
-    **raw_devices: Device,
+    **raw_devices: Device | int | bool | float | str,
 ) -> SignalR[SignalDatatypeT]:
     """Create a read only derived signal.
 
@@ -213,7 +213,7 @@ def derived_signal_rw(
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]],
     derived_units: str | None = None,
     derived_precision: int | None = None,
-    **raw_devices: Device,
+    **raw_devices: Device | int | bool | float | str,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a read-write derived signal.
 
