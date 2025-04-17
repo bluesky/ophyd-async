@@ -184,7 +184,7 @@ class SignalTransformer(Generic[TransformT]):
             raw_and_transform_readings = await merge_gathered_dicts(
                 device.read() for device in self.raw_and_transform_readables.values()
             )
-        return self._make_derived_readings({**raw_and_transform_readings})
+        return self._make_derived_readings(raw_and_transform_readings)
 
     async def get_derived_values(self) -> dict[str, Any]:
         derived_readings = await self.get_derived_readings()
