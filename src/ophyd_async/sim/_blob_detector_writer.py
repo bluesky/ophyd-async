@@ -9,7 +9,6 @@ from ophyd_async.core import (
     DetectorWriter,
     HDFDatasetDescription,
     HDFDocumentComposer,
-    NameProvider,
     PathProvider,
 )
 
@@ -24,69 +23,66 @@ class BlobDetectorWriter(DetectorWriter):
         self,
         pattern_generator: PatternGenerator,
         path_provider: PathProvider,
-        name_provider: NameProvider,
     ) -> None:
         self.pattern_generator = pattern_generator
         self.path_provider = path_provider
-        self.name_provider = name_provider
         self.path: Path | None = None
         self.composer: HDFDocumentComposer | None = None
         self.datasets: list[HDFDatasetDescription] = []
 
-    async def open(self, multiplier: int = 1) -> dict[str, DataKey]:
-        name = self.name_provider()
+    async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         path_info = self.path_provider(name)
         self.path = path_info.directory_path / f"{path_info.filename}.h5"
         self.pattern_generator.open_file(self.path, WIDTH, HEIGHT)
+        self.exposures_per_event = exposures_per_event
         # We know it will write data and sum, so emit those
         self.datasets = [
             HDFDatasetDescription(
                 data_key=name,
                 dataset=DATA_PATH,
-                shape=(HEIGHT, WIDTH),
+                shape=(exposures_per_event, HEIGHT, WIDTH),
                 dtype_numpy=np.dtype(np.uint8).str,
-                chunk_shape=(HEIGHT, WIDTH),
-                multiplier=multiplier,
+                chunk_shape=(1024,),
             ),
             HDFDatasetDescription(
                 data_key=f"{name}-sum",
                 dataset=SUM_PATH,
-                shape=(),
+                shape=(exposures_per_event,) if exposures_per_event > 1 else (),
                 dtype_numpy=np.dtype(np.int64).str,
-                multiplier=multiplier,
                 chunk_shape=(1024,),
             ),
         ]
         self.composer = None
-        outer_shape = (multiplier,) if multiplier > 1 else ()
         describe = {
             ds.data_key: DataKey(
                 source="sim://pattern-generator-hdf-file",
-                shape=list(outer_shape) + list(ds.shape),
-                dtype="array" if ds.shape else "number",
+                shape=list(ds.shape),
+                dtype="array"
+                if exposures_per_event > 1 or len(ds.shape) > 1
+                else "number",
+                dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
             for ds in self.datasets
         }
         return describe
 
-    @property
-    def hints(self) -> Hints:
+    def get_hints(self, name: str) -> Hints:
         """The hints to be used for the detector."""
-        return {"fields": [self.name_provider()]}
+        return {"fields": [name]}
 
     async def get_indices_written(self) -> int:
-        return self.pattern_generator.get_last_index()
+        return self.pattern_generator.get_last_index() // self.exposures_per_event
 
     async def observe_indices_written(
         self, timeout: float
     ) -> AsyncGenerator[int, None]:
         while True:
-            yield self.pattern_generator.get_last_index()
+            yield self.pattern_generator.get_last_index() // self.exposures_per_event
             await self.pattern_generator.wait_for_next_index(timeout)
 
     async def collect_stream_docs(
-        self, indices_written: int
+        self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # When we have written something to the file
         if indices_written:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Awaitable, Callable, Mapping
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, is_typeddict
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from bluesky.protocols import Location, Reading, Subscribable
 from event_model import DataKey
@@ -76,12 +76,12 @@ class SignalTransformer(Generic[TransformT]):
         self,
         transform_cls: type[TransformT],
         set_derived: Callable[..., Awaitable[None]] | None,
-        set_derived_datatype: type | None,
+        set_derived_takes_dict: bool,
         **raw_and_transform_devices,
     ):
         self._transform_cls = transform_cls
         self._set_derived = set_derived
-        self._need_dict = is_typeddict(set_derived_datatype)
+        self._set_derived_takes_dict = set_derived_takes_dict
         self._transform_devices = {
             k: raw_and_transform_devices.pop(k) for k in transform_cls.model_fields
         }
@@ -231,7 +231,7 @@ class SignalTransformer(Generic[TransformT]):
         if self._set_derived is None:
             msg = "Cannot put as no set_derived method given"
             raise RuntimeError(msg)
-        if self._need_dict:
+        if self._set_derived_takes_dict:
             # Need to get the other derived values and update the one that's changing
             derived = await self.get_locations()
             setpoints = {k: v["setpoint"] for k, v in derived.items()}

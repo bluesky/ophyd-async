@@ -36,7 +36,7 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
         await test_advimba._controller.prepare(
-            TriggerInfo(number_of_triggers=1, trigger=trig_mode)
+            TriggerInfo(number_of_events=1, trigger=trig_mode)
         )
         await test_advimba._controller.arm()
         await test_advimba._controller.wait_for_idle()
