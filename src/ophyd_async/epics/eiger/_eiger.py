@@ -1,10 +1,10 @@
 from pydantic import Field
 
 from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector, TriggerInfo
+from ophyd_async.epics.eiger._odin_io import OdinFileWriterMX
 
 from ._eiger_controller import EigerController
 from ._eiger_io import EigerDriverIO
-from ._odin_io import Odin, OdinWriter
 
 
 class EigerTriggerInfo(TriggerInfo):
@@ -15,7 +15,7 @@ class EigerDetector(StandardDetector):
     """Ophyd-async implementation of an Eiger Detector."""
 
     _controller: EigerController
-    _writer: Odin
+    _writer: OdinFileWriterMX
 
     def __init__(
         self,
@@ -26,11 +26,12 @@ class EigerDetector(StandardDetector):
         name="",
     ):
         self.drv = EigerDriverIO(prefix + drv_suffix)
-        self.odin = Odin(prefix + hdf_suffix + "FP:")
-
+        self.odin = OdinFileWriterMX(
+            path_provider, prefix + hdf_suffix + "FP:", name=""
+        )
         super().__init__(
             EigerController(self.drv),
-            OdinWriter(path_provider, self.odin),
+            self.odin,
             name=name,
         )
 
