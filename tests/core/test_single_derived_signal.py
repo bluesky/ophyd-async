@@ -7,12 +7,13 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     derived_signal_r,
+    derived_signal_rw,
+    soft_signal_r_and_setter,
     soft_signal_rw,
 )
 from ophyd_async.core._derived_signal import (
     _get_first_arg_datatype,  # noqa: PLC2701
     _get_return_datatype,  # noqa: PLC2701
-    derived_signal_rw,  # noqa: PLC2701
 )
 from ophyd_async.core._derived_signal_backend import (
     SignalTransformer,  # noqa: PLC2701
@@ -31,16 +32,6 @@ from ophyd_async.testing import (
     assert_value,
     get_mock,
 )
-
-
-@pytest.fixture
-def movable_beamstop() -> MovableBeamstop:
-    return MovableBeamstop("device")
-
-
-@pytest.fixture
-def readonly_beamstop() -> ReadOnlyBeamstop:
-    return ReadOnlyBeamstop("device")
 
 
 @pytest.mark.parametrize(
@@ -93,18 +84,19 @@ async def test_monitoring_position(cls: type[ReadOnlyBeamstop | MovableBeamstop]
     assert results.empty()
 
 
-async def test_setting_position(movable_beamstop: MovableBeamstop):
+async def test_setting_position():
+    inst = MovableBeamstop("inst")
     # Connect in mock mode so we can see what would have been set
-    await movable_beamstop.connect(mock=True)
-    m = get_mock(movable_beamstop)
-    await movable_beamstop.position.set(BeamstopPosition.OUT_OF_POSITION)
+    await inst.connect(mock=True)
+    m = get_mock(inst)
+    await inst.position.set(BeamstopPosition.OUT_OF_POSITION)
     assert m.mock_calls == [
         call.position.put(BeamstopPosition.OUT_OF_POSITION, wait=True),
         call.x.put(3, wait=True),
         call.y.put(5, wait=True),
     ]
     m.reset_mock()
-    await movable_beamstop.position.set(BeamstopPosition.IN_POSITION)
+    await inst.position.set(BeamstopPosition.IN_POSITION)
     assert m.mock_calls == [
         call.position.put(BeamstopPosition.IN_POSITION, wait=True),
         call.x.put(0, wait=True),
@@ -140,6 +132,19 @@ def test_mismatching_args():
         derived_signal_r(
             _get_position, foo=soft_signal_rw(float), bar=soft_signal_rw(float)
         )
+
+
+async def test_derived_signal_rw_works_with_signal_r():
+    signal_r, _ = soft_signal_r_and_setter(int, initial_value=4)
+
+    def _get(ts: int) -> float:
+        return ts
+
+    async def _put(value: float) -> None:
+        pass
+
+    derived = derived_signal_rw(_get, _put, ts=signal_r)
+    assert await derived.get_value() == 4
 
 
 @patch("ophyd_async.core._derived_signal_backend.TYPE_CHECKING", True)
