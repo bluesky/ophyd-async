@@ -12,6 +12,7 @@ from ophyd_async.core import (
     SignalDatatype,
     SignalRW,
     Table,
+    derived_signal_rw,
     soft_signal_rw,
 )
 from ophyd_async.sim import (
@@ -136,14 +137,16 @@ def test_mismatching_args():
 
 @pytest.fixture
 def derived_signal_backend() -> SignalBackend[SignalDatatype]:
-    df = DerivedSignalFactory(
-        TwoJackTransform,
-        distance=soft_signal_rw(float),
-        set_derived=None,
-        jack1=soft_signal_rw(float),
-        jack2=soft_signal_rw(float),
-    )
-    return df.derived_signal_r(datatype=Table, name="device")._get_cache().backend
+    signal_r = soft_signal_rw(int, initial_value=4)
+
+    def _get(ts: int) -> float:
+        return ts
+
+    async def _put(value: float) -> None:
+        pass
+
+    derived = derived_signal_rw(_get, _put, ts=signal_r)
+    return derived._get_cache().backend
 
 
 async def test_derived_signal_backend_connect_pass(
