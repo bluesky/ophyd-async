@@ -2,15 +2,15 @@
 import asyncio
 from functools import partial, reduce
 
+from dodal.devices.status import await_value
 from event_model import DataKey
 from ophyd import Component, EpicsSignal, EpicsSignalRO, EpicsSignalWithRBV
 from ophyd.areadetector.plugins import HDF5Plugin_V22
 from ophyd.sim import NullStatus
 from ophyd.status import StatusBase, SubscriptionStatus
+
 from ophyd_async.core import Device, PathProvider, StrictEnum, set_and_wait_for_value
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_rw_rbv
-
-from dodal.devices.status import await_value
 
 
 class OdinWriting(StrictEnum):
@@ -203,6 +203,9 @@ class OdinFileWriterMX(Device):  # HDF5Plugin_V22
         self.capture = epics_signal_rw(OdinWriting, prefix + "Capture")
         self.num_row_chunks = epics_signal_rw(OdinWriting, prefix + "NumRowChunks")
         self.num_col_chunks = epics_signal_rw(OdinWriting, prefix + "NumColChunks")
+        self.num_frames_chunks = epics_signal_rw(
+            OdinWriting, prefix + "NumFramesChunks"
+        )
         self.num_to_capture = epics_signal_rw
         self._path_provider = _path_provider
         super().__init__(name=name)
