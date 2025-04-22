@@ -38,7 +38,8 @@ class OdinMetaListener(Device):
     def __init__(self, prefix="", name=""):
         self.initialised = epics_signal_r(int, prefix + "ProcessConnected_RBV")
         self.ready = epics_signal_r(int, prefix + "Writing_RBV")
-        # file_name should not be set. Set the filewriter file_name and this will be updated in EPICS
+        # file_name should not be set.
+        # Set the filewriter file_name and this will be updated in EPICS
         self.file_name = epics_signal_r(str, prefix + "FileName")
         self.stop_writing = epics_signal_rw(int, prefix + "Stop")
         self.active = epics_signal_r(int, prefix + "AcquisitionActive_RBV")
@@ -47,7 +48,8 @@ class OdinMetaListener(Device):
 
 class OdinFileWriter(HDF5Plugin_V22):
     start_timeout = Component(EpicsSignal, "StartTimeout")
-    # id should not be set. Set the filewriter file_name and this will be updated in EPICS
+    # id should not be set.
+    # Set the filewriter file_name and this will be updated in EPICS
     id = Component(EpicsSignalRO, "AcquisitionID_RBV", string=True)
     image_height = Component(EpicsSignalWithRBV, "ImageHeight")
     image_width = Component(EpicsSignalWithRBV, "ImageWidth")
@@ -188,7 +190,8 @@ class EigerOdin(Device):
 class OdinFileWriterMX(Device):  # HDF5Plugin_V22
     def __init__(self, _path_provider: PathProvider, prefix="", name=""):
         self.start_timeout = epics_signal_rw(int, prefix + "StartTimeout")
-        # id should not be set. Set the filewriter file_name and this will be updated in EPICS
+        # id should not be set.
+        # Set the filewriter file_name and this will be updated in EPICS
         self.id = epics_signal_r(int, prefix + "AcquisitionID_RBV")
         self.image_height = epics_signal_rw(int, prefix + "ImageHeight")
         self.image_width = epics_signal_rw_rbv(int, prefix + "ImageWidth")

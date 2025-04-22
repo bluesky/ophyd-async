@@ -4,7 +4,7 @@ import pytest
 from ophyd.status import Status
 
 from ophyd_async.core import DetectorTrigger, init_devices
-from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
+from ophyd_async.fastcs.eiger import EigerDetector, EigerTriggerInfo
 from ophyd_async.testing import get_mock_put
 
 

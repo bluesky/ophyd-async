@@ -6,7 +6,7 @@ from ophyd_async.core import (
     TriggerInfo,
     init_devices,
 )
-from ophyd_async.epics.eiger import EigerController, EigerDriverIO
+from ophyd_async.fastcs.eiger import EigerController, EigerDriverIO
 from ophyd_async.testing import get_mock_put, set_mock_value
 
 DriverAndController = tuple[EigerDriverIO, EigerController]
