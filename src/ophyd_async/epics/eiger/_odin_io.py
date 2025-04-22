@@ -9,11 +9,23 @@ from ophyd.areadetector.plugins import HDF5Plugin_V22
 from ophyd.sim import NullStatus
 from ophyd.status import StatusBase, SubscriptionStatus
 
-from ophyd_async.core import Device, PathProvider, StrictEnum, set_and_wait_for_value
-from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_rw_rbv
+from ophyd_async.core import (
+    Device,
+    PathProvider,
+    SubsetEnum,
+    set_and_wait_for_other_value,
+    set_and_wait_for_value,
+    wait_for_value,
+)
+from ophyd_async.epics.core import (
+    epics_signal_r,
+    epics_signal_rw,
+    epics_signal_rw_rbv,
+    epics_signal_w,
+)
 
 
-class OdinWriting(StrictEnum):
+class OdinWriting(SubsetEnum):
     ON = "ON"
     OFF = "OFF"
 
@@ -189,10 +201,10 @@ class EigerOdin(Device):
 
 class OdinFileWriterMX(Device):  # HDF5Plugin_V22
     def __init__(self, _path_provider: PathProvider, prefix="", name=""):
-        self.start_timeout = epics_signal_rw(int, prefix + "StartTimeout")
+        self.start_timeout = epics_signal_rw(str, prefix + "StartTimeout")
         # id should not be set.
         # Set the filewriter file_name and this will be updated in EPICS
-        self.id = epics_signal_r(int, prefix + "AcquisitionID_RBV")
+        # self.id = epics_signal_r(int, prefix + "AcquisitionID_RBV")
         self.image_height = epics_signal_rw(int, prefix + "ImageHeight")
         self.image_width = epics_signal_rw_rbv(int, prefix + "ImageWidth")
         self.file_path = epics_signal_rw(str, prefix + "FilePath")
@@ -200,13 +212,13 @@ class OdinFileWriterMX(Device):  # HDF5Plugin_V22
         self.data_type = epics_signal_rw(str, prefix + "DataType")
         self.num_capture = epics_signal_rw(int, prefix + "NumCapture")
         self.num_captured = epics_signal_rw(int, prefix + "NumCapture_RBV")
-        self.capture = epics_signal_rw(OdinWriting, prefix + "Capture")
-        self.num_row_chunks = epics_signal_rw(OdinWriting, prefix + "NumRowChunks")
-        self.num_col_chunks = epics_signal_rw(OdinWriting, prefix + "NumColChunks")
-        self.num_frames_chunks = epics_signal_rw(
-            OdinWriting, prefix + "NumFramesChunks"
-        )
-        self.num_to_capture = epics_signal_rw
+        self.capture = epics_signal_w(str, prefix + "Capture")
+        self.capture_rbv = epics_signal_r(str, prefix + "Capture_RBV")
+        self.num_row_chunks = epics_signal_rw(int, prefix + "NumRowChunks")
+        self.num_col_chunks = epics_signal_rw(int, prefix + "NumColChunks")
+        self.num_frames_chunks = epics_signal_rw(int, prefix + "NumFramesChunks")
+        self.meta_actve = epics_signal_r(str, prefix + "META:AcquisitionActive_RBV")
+        self.meta_writing = epics_signal_r(str, prefix + "META:Writing_RBV")
         self._path_provider = _path_provider
         super().__init__(name=name)
 
@@ -217,12 +229,29 @@ class OdinFileWriterMX(Device):  # HDF5Plugin_V22
             self.file_path.set(str(info.directory_path)),
             self.file_name.set(info.filename),
             self.data_type.set(
-                "uint16"
+                "UInt16"
             ),  # TODO: Get from eiger https://github.com/bluesky/ophyd-async/issues/529
             self.num_capture.set(0),
         )
+        # Wait for BL03I-EA-EIGER-01:OD:META:AcquisitionActive_RBV to be true
 
-        await self.capture.set(OdinWriting.ON)
+        await wait_for_value(self.meta_actve, "Active", timeout=10)
+
+        # await self.capture.set(
+        #    "Capture", wait=False, timeout=None
+        # )  # Why is put callback here not working?
+
+        # Wait for BL03I-EA-EIGER-01:OD:Capture_RBV to go to Capturing
+        await set_and_wait_for_other_value(
+            self.capture,
+            "Capture",
+            self.capture_rbv,
+            "Capturing",
+            set_timeout=None,
+            wait_for_set_completion=False,
+        )
+
+        await wait_for_value(self.meta_writing, "Writing", timeout=10)
 
         return await self._describe()
 

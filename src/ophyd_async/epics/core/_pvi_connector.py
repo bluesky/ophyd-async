@@ -43,14 +43,14 @@ FastCSPVIVector = dict[Literal["d"], Entry]
 
 def _get_signal_details(entry: Entry) -> tuple[type[Signal], str, str]:
     match entry:
-        case {"r": read_pv}:
-            return SignalR, read_pv, read_pv
-        case {"r": read_pv, "w": write_pv}:
-            return SignalRW, read_pv, write_pv
-        case {"w": write_pv}:
-            return SignalW, write_pv, write_pv
         case {"rw": read_write_pv}:
             return SignalRW, read_write_pv, read_write_pv
+        case {"r": read_pv, "w": write_pv}:
+            return SignalRW, read_pv, write_pv
+        case {"r": read_pv}:
+            return SignalR, read_pv, read_pv
+        case {"w": write_pv}:
+            return SignalW, write_pv, write_pv
         case {"x": execute_pv}:
             return SignalX, execute_pv, execute_pv
         case _:

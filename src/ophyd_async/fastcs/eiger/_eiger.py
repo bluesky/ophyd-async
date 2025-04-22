@@ -21,14 +21,16 @@ class EigerDetector(StandardDetector):
         self,
         prefix: str,
         path_provider: PathProvider,
-        drv_suffix="-EA-EIGER-01:",
-        hdf_suffix="-EA-ODIN-01:",
+        drv_suffix="-EA-EIGER-02:",
+        hdf_suffix="-EA-EIGER-01:",
         name="",
     ):
-        self.drv = EigerDriverIO(prefix + drv_suffix)
-        self.odin = OdinFileWriterMX(
-            path_provider, prefix + hdf_suffix + "FP:", name=""
-        )
+        # self.drv = EigerDriverIO(prefix + drv_suffix)
+        # self.odin = OdinFileWriterMX(
+        #     path_provider, prefix + hdf_suffix + "OD:", name=""
+        # )
+        self.drv = EigerDriverIO("BL03I-EA-EIGER-02:")
+        self.odin = OdinFileWriterMX(path_provider, "BL03I-EA-EIGER-01:OD:", name="")
         super().__init__(
             EigerController(self.drv),
             self.odin,
