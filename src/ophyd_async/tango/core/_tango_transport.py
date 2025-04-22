@@ -2,6 +2,7 @@ import asyncio
 import functools
 import logging
 import time
+import copy
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
@@ -517,8 +518,18 @@ def get_dtype_extended(datatype) -> object | None:
             dtype = CmdArgType.DevState
     return dtype
 
+def try_to_cast_as_float(value: Any) -> float | None:
+    """Attempt to cast a value to float, returning None on failure."""
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None
 
-def get_trl_descriptor(
+def _update_descriptor(descriptor, **kwargs):
+    """Update the descriptor with non-empty key-value pairs."""
+    descriptor.update({key: value for key, value in kwargs.items() if value})
+
+def get_simple_datakey(
     datatype: type | None,
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
@@ -565,8 +576,6 @@ def get_trl_descriptor(
         if hasattr(trl_config, "max_dim_y")
         else np.iinfo(np.int32).max
     )
-    # is_attr = hasattr(trl_config, "enum_labels")
-    # trl_choices = list(trl_config.enum_labels) if is_attr else []
 
     if tr_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
         # This is an array
@@ -587,22 +596,11 @@ def get_trl_descriptor(
 
     else:
         if tr_dtype in (Enum, CmdArgType.DevState):
-            # if tr_dtype == CmdArgType.DevState:
-            #     trl_choices = list(DevState.names.keys())
-
             if datatype:
                 if not issubclass(datatype, Enum | DevState):
                     raise TypeError(
                         f"{tango_resource} has type Enum not {datatype.__name__}"
                     )
-                # if tr_dtype == Enum and is_attr:
-                #     if isinstance(datatype, DevState):
-                #         choices = tuple(v.name for v in datatype)
-                #         if set(choices) != set(trl_choices):
-                #             raise TypeError(
-                #                 f"{tango_resource} has choices {trl_choices} "
-                #                 f"not {choices}"
-                #             )
             return DataKey(source=tango_resource, dtype="string", shape=[])
         else:
             if datatype and not issubclass(tr_dtype, datatype):
@@ -614,6 +612,64 @@ def get_trl_descriptor(
 
     raise RuntimeError(f"Error getting descriptor for {tango_resource}")
 
+def get_trl_descriptor(
+    datatype: type | None,
+    tango_resource: str,
+    tr_configs: dict[str, AttributeInfoEx | CommandInfo],
+) -> DataKey:
+
+    descriptor = get_simple_datakey(datatype, tango_resource, tr_configs)
+
+    for _, config in tr_configs.items():
+        if isinstance(config, AttributeInfoEx):
+            alarm_info = config.alarms
+            _limits = {
+                key: {
+                    "low": try_to_cast_as_float(getattr(config, f"min_{key}", None)),
+                    "high": try_to_cast_as_float(getattr(config, f"max_{key}", None)),
+                }
+                for key in ["control", "display", "warning", "alarm"]
+            }
+            _limits["hysteresis"] = try_to_cast_as_float(alarm_info.delta_val)  # type: ignore
+            _limits["rds"] = None  # type: ignore
+
+            _choices = list(config.enum_labels) if config.enum_labels else []
+            _dims = []
+            if config.data_format == AttrDataFormat.SPECTRUM:
+                _dims = ["x"]
+            elif config.data_format == AttrDataFormat.IMAGE:
+                _dims = ["y", "x"]
+
+            arr, tr_dtype, json_type = get_python_type(config.data_type)
+
+            if tr_dtype == CmdArgType.DevState:
+                _choices = list(DevState.names.keys())
+
+            _precision = None
+            if config.format:
+                try:
+                    _precision = int(config.format.split(".")[1].split("f")[0])
+                except (ValueError, IndexError):
+                    pass
+
+            _update_descriptor(
+                descriptor,
+                limits=_limits,
+                choices=_choices,
+                dims=_dims,
+                external="",
+                object_name=config.name,
+                precision=_precision,
+                source=tango_resource,
+                units=config.unit,
+            )
+
+        elif isinstance(config, CommandInfo):
+            _update_descriptor(
+                descriptor,
+                object_name=config.cmd_name,
+            )
+    return DataKey(**descriptor)
 
 async def get_tango_trl(
     full_trl: str, device_proxy: DeviceProxy | TangoProxy | None, timeout: float

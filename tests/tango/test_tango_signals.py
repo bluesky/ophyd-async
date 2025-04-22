@@ -118,7 +118,10 @@ async def assert_monitor_then_put(
     backend = signal._connector.backend
     # Make a monitor queue that will monitor for updates
     with MonitorQueue(signal) as q:
-        assert dict(source=source, **descriptor) == await backend.get_datakey("")
+        test_descriptor = dict(source=source, **descriptor)
+        backend_datakey = await backend.get_datakey("")
+        for key, value in test_descriptor.items():
+            assert backend_datakey[key] == value, f"Key {key} mismatch: {value} != {backend_datakey[key]}"
         # Check initial value
         await q.assert_updates(initial_value)
         # Put to new value and check that
@@ -161,8 +164,10 @@ async def assert_put_read(
     datatype: type[T] | None = None,  # TODO reimplement this
 ):
     backend = signal._connector.backend
-    # Make a monitor queue that will monitor for updates
-    assert dict(source=source, **descriptor) == await backend.get_datakey("")
+    test_descriptor = dict(source=source, **descriptor)
+    backend_descriptor = await backend.get_datakey("")
+    for key, value in test_descriptor.items():
+        assert backend_descriptor[key] == value, f"Key {key} mismatch: {value} != {backend_descriptor[key]}"
     # Put to new value and check that
     await backend.put(put_value, wait=True)
 
