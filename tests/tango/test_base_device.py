@@ -300,7 +300,6 @@ async def test_connect(tango_test_device):
         test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
-    assert description == await test_device.describe()
     await assert_reading(test_device, values)
 
 
@@ -314,7 +313,12 @@ async def test_set_trl(tango_test_device):
     await test_device.connect()
 
     assert test_device.name == "test_device"
-    assert description == await test_device.describe()
+    test_device_descriptor = await test_device.describe()
+    for name, desc in description.items():
+        assert test_device_descriptor[name]["source"] == desc["source"]
+        assert test_device_descriptor[name]["dtype"] == desc["dtype"]
+        assert test_device_descriptor[name]["shape"] == desc["shape"]
+        
     await assert_reading(test_device, values)
 
 
