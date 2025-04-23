@@ -47,7 +47,7 @@ from ._converters import (
     TangoEnumArrayConverter,
     TangoEnumConverter,
 )
-from ._utils import DevStateEnum, get_device_trl_and_attr
+from ._utils import DevStateEnum, get_device_trl_and_attr, try_to_cast_as_float
 
 logger = logging.getLogger("ophyd_async")
 
@@ -81,7 +81,7 @@ def get_python_type(tango_type: CmdArgType) -> tuple[bool, object, str]:
     if is_float(tango_type, True):
         return array, float, "number"
     if is_bool(tango_type, True):
-        return array, bool, "integer"
+        return array, bool, "boolean"
     if is_str(tango_type, True):
         return array, str, "string"
     if is_binary(tango_type, True):
@@ -518,19 +518,6 @@ def get_dtype_extended(datatype) -> object | None:
     return dtype
 
 
-def try_to_cast_as_float(value: Any) -> float | None:
-    """Attempt to cast a value to float, returning None on failure."""
-    try:
-        return float(value)
-    except (ValueError, TypeError):
-        return None
-
-
-def _update_descriptor(descriptor, **kwargs):
-    """Update the descriptor with non-empty key-value pairs."""
-    descriptor.update({key: value for key, value in kwargs.items() if value})
-
-
 def get_simple_datakey(
     datatype: type | None,
     tango_resource: str,
@@ -620,7 +607,9 @@ def get_trl_descriptor(
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
 ) -> DataKey:
-
+    def _update_descriptor(desc, **kwargs):
+        """Update the descriptor with non-empty key-value pairs."""
+        desc.update({key: value for key, value in kwargs.items() if value})
     descriptor = get_simple_datakey(datatype, tango_resource, tr_configs)
 
     for _, config in tr_configs.items():

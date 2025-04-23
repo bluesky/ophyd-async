@@ -23,6 +23,7 @@ from ophyd_async.tango.core import (
     get_python_type,
     get_tango_trl,
     get_trl_descriptor,
+    try_to_cast_as_float,
 )
 from ophyd_async.tango.testing import OneOfEverythingTangoDevice
 from tango import (
@@ -84,7 +85,7 @@ async def test_ensure_proper_executor():
     "tango_type, expected",
     [
         (CmdArgType.DevVoid, (False, None, "string")),
-        (CmdArgType.DevBoolean, (False, bool, "integer")),
+        (CmdArgType.DevBoolean, (False, bool, "boolean")),
         (CmdArgType.DevShort, (False, int, "integer")),
         (CmdArgType.DevLong, (False, int, "integer")),
         (CmdArgType.DevFloat, (False, float, "number")),
@@ -104,7 +105,7 @@ async def test_ensure_proper_executor():
         # (CmdArgType.DevVarDoubleStringArray, (True, str, "string")),
         (CmdArgType.DevState, (False, CmdArgType.DevState, "string")),
         (CmdArgType.ConstDevString, (False, str, "string")),
-        (CmdArgType.DevVarBooleanArray, (True, bool, "integer")),
+        (CmdArgType.DevVarBooleanArray, (True, bool, "boolean")),
         (CmdArgType.DevUChar, (False, int, "integer")),
         (CmdArgType.DevLong64, (False, int, "integer")),
         (CmdArgType.DevULong64, (False, int, "integer")),
@@ -124,6 +125,25 @@ def test_get_python_type(tango_type, expected):
         with pytest.raises(TypeError) as exc_info:
             get_python_type(tango_type)
         assert str(exc_info.value) == "Unknown TangoType"
+
+
+# --------------------------------------------------------------------
+def test_try_to_cast_as_float():
+    # Test with a valid float value
+    result = try_to_cast_as_float(3.14)
+    assert result == 3.14
+
+    # Test with a valid integer value
+    result = try_to_cast_as_float(42)
+    assert result == 42.0
+
+    # Test with a string that can be converted to float
+    result = try_to_cast_as_float("2.718")
+    assert result == 2.718
+
+    # Test with a string that cannot be converted to float
+    result = try_to_cast_as_float("not_a_number")
+    assert result is None
 
 
 # --------------------------------------------------------------------

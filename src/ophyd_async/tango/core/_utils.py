@@ -1,4 +1,5 @@
 import re
+from typing import Any
 
 from ophyd_async.core import StrictEnum
 
@@ -45,3 +46,11 @@ def get_device_trl_and_attr(name: str):
     groups[2] = groups[2].removesuffix("/")  # remove trailing slash from device name
     device = "".join(groups)
     return device, attr
+
+
+def try_to_cast_as_float(value: Any) -> float | None:
+    """Attempt to cast a value to float, returning None on failure."""
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        return None

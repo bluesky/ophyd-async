@@ -77,7 +77,9 @@ async def everything_device(everything_device_trl):
 #               helpers to run tests
 # --------------------------------------------------------------------
 def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
-    if python_type in [bool, int]:
+    if python_type in [bool]:
+        return {"dtype": "boolean", "shape": []}
+    if python_type in [int]:
         return {"dtype": "integer", "shape": []}
     if python_type in [float]:
         return {"dtype": "number", "shape": []}
