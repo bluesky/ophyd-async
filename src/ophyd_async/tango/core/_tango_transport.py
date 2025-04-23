@@ -623,10 +623,16 @@ def get_trl_descriptor(
                 }
                 for key in ["control", "display", "warning", "alarm"]
             }
-            _limits["rds"] = {
-                "time_difference": try_to_cast_as_float(alarm_info.delta_t),
-                "value_difference": try_to_cast_as_float(alarm_info.delta_val),
-            }
+
+            _limits["rds"] = {}
+            delta_t = try_to_cast_as_float(alarm_info.delta_t)
+            if delta_t is not None:
+                _limits["rds"]["time_difference"] = delta_t
+            delta_val = try_to_cast_as_float(alarm_info.delta_val)
+            if delta_val is not None:
+                _limits["rds"]["value_difference"] = delta_val
+            if _limits["rds"] == {}:
+                del _limits["rds"]
 
             _choices = list(config.enum_labels) if config.enum_labels else []
             _dims = []
