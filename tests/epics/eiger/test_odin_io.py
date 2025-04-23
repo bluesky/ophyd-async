@@ -4,7 +4,7 @@ from unittest.mock import ANY, MagicMock
 import pytest
 
 from ophyd_async.core import init_devices
-from ophyd_async.epics.eiger._odin_io import Odin, OdinWriter, Writing  # noqa: PLC2701
+from ophyd_async.epics.eiger import Odin, OdinWriter, Writing
 from ophyd_async.testing import get_mock_put, set_mock_value
 
 ODIN_DETECTOR_NAME = "odin_detector"
@@ -24,7 +24,7 @@ async def test_when_open_called_then_file_correctly_set(
     odin_driver_and_writer: OdinDriverAndWriter, tmp_path: Path
 ):
     driver, writer = odin_driver_and_writer
-    path_info = writer._path_provider.return_value
+    path_info = writer._path_provider.return_value  # type: ignore
     expected_filename = "filename.h5"
     path_info.directory_path = tmp_path
     path_info.filename = expected_filename
