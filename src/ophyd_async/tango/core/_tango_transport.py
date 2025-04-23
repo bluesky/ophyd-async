@@ -610,6 +610,7 @@ def get_trl_descriptor(
     def _update_descriptor(desc, **kwargs):
         """Update the descriptor with non-empty key-value pairs."""
         desc.update({key: value for key, value in kwargs.items() if value})
+
     descriptor = get_simple_datakey(datatype, tango_resource, tr_configs)
 
     for _, config in tr_configs.items():
