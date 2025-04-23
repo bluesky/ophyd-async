@@ -136,7 +136,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 ````{py:attribute} armed
 :canonical: ophyd_async.epics.adpilatus._pilatus_io.PilatusDriverIO.armed
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[bool], ophyd_async.epics.core.PvSuffix.rbv('Armed_RBV')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[bool], PvSuffix('Armed')]
 :value: >
    None
 
