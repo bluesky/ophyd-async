@@ -295,7 +295,7 @@ def sim_test_context_trls(subprocess_helper):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
-    values, description = await describe_class(tango_test_device)
+    values, _ = await describe_class(tango_test_device)
     async with init_devices():
         test_device = TestTangoReadable(tango_test_device)
 
@@ -318,7 +318,7 @@ async def test_set_trl(tango_test_device):
         assert test_device_descriptor[name]["source"] == desc["source"]
         assert test_device_descriptor[name]["dtype"] == desc["dtype"]
         assert test_device_descriptor[name]["shape"] == desc["shape"]
-        
+
     await assert_reading(test_device, values)
 
 

@@ -121,7 +121,8 @@ async def assert_monitor_then_put(
         test_descriptor = dict(source=source, **descriptor)
         backend_datakey = await backend.get_datakey("")
         for key, value in test_descriptor.items():
-            assert backend_datakey[key] == value, f"Key {key} mismatch: {value} != {backend_datakey[key]}"
+            assert backend_datakey[key] == value, \
+                f"Key {key} mismatch: {value} != {backend_datakey[key]}"
         # Check initial value
         await q.assert_updates(initial_value)
         # Put to new value and check that
@@ -167,7 +168,8 @@ async def assert_put_read(
     test_descriptor = dict(source=source, **descriptor)
     backend_descriptor = await backend.get_datakey("")
     for key, value in test_descriptor.items():
-        assert backend_descriptor[key] == value, f"Key {key} mismatch: {value} != {backend_descriptor[key]}"
+        assert backend_descriptor[key] == value,\
+            f"Key {key} mismatch: {value} != {backend_descriptor[key]}"
     # Put to new value and check that
     await backend.put(put_value, wait=True)
 

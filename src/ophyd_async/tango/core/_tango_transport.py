@@ -2,7 +2,6 @@ import asyncio
 import functools
 import logging
 import time
-import copy
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
@@ -518,6 +517,7 @@ def get_dtype_extended(datatype) -> object | None:
             dtype = CmdArgType.DevState
     return dtype
 
+
 def try_to_cast_as_float(value: Any) -> float | None:
     """Attempt to cast a value to float, returning None on failure."""
     try:
@@ -525,9 +525,11 @@ def try_to_cast_as_float(value: Any) -> float | None:
     except (ValueError, TypeError):
         return None
 
+
 def _update_descriptor(descriptor, **kwargs):
     """Update the descriptor with non-empty key-value pairs."""
     descriptor.update({key: value for key, value in kwargs.items() if value})
+
 
 def get_simple_datakey(
     datatype: type | None,
@@ -612,6 +614,7 @@ def get_simple_datakey(
 
     raise RuntimeError(f"Error getting descriptor for {tango_resource}")
 
+
 def get_trl_descriptor(
     datatype: type | None,
     tango_resource: str,
@@ -640,7 +643,7 @@ def get_trl_descriptor(
             elif config.data_format == AttrDataFormat.IMAGE:
                 _dims = ["y", "x"]
 
-            arr, tr_dtype, json_type = get_python_type(config.data_type)
+            _, tr_dtype, _ = get_python_type(config.data_type)
 
             if tr_dtype == CmdArgType.DevState:
                 _choices = list(DevState.names.keys())
@@ -670,6 +673,7 @@ def get_trl_descriptor(
                 object_name=config.cmd_name,
             )
     return DataKey(**descriptor)
+
 
 async def get_tango_trl(
     full_trl: str, device_proxy: DeviceProxy | TangoProxy | None, timeout: float
