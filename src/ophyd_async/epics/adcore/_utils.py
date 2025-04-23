@@ -7,11 +7,12 @@ from ophyd_async.core import (
     SignalRW,
     StrictEnum,
     SubsetEnum,
+    SupersetEnum,
     wait_for_value,
 )
 
 
-class ADBaseDataType(StrictEnum):
+class ADBaseDataType(SupersetEnum):
     INT8 = "Int8"
     UINT8 = "UInt8"
     INT16 = "Int16"

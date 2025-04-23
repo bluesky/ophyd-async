@@ -80,6 +80,8 @@ from ._utils import (
     Reference,
     StrictEnum,
     SubsetEnum,
+    EnumTypes,
+    SupersetEnum,
     WatcherUpdate,
     gather_dict,
     get_dtype,
@@ -122,6 +124,8 @@ __all__ = [
     "Array1D",
     "StrictEnum",
     "SubsetEnum",
+    "SupersetEnum",
+    "EnumTypes",
     "Table",
     "SignalMetadata",
     # Soft signal

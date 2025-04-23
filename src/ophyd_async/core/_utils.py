@@ -5,7 +5,15 @@ import logging
 from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
-from typing import Any, Generic, Literal, ParamSpec, TypeVar, get_args, get_origin
+from typing import (
+    Any,
+    Generic,
+    Literal,
+    ParamSpec,
+    TypeVar,
+    get_args,
+    get_origin,
+)
 from unittest.mock import Mock
 
 import numpy as np
@@ -28,8 +36,24 @@ class StrictEnumMeta(EnumMeta):
         return ret
 
 
-class StrictEnum(str, Enum, metaclass=StrictEnumMeta):
+class UppercaseNameEnumMeta(EnumMeta):
+    def __new__(metacls, *args, **kwargs):
+        ret = super().__new__(metacls, *args, **kwargs)
+        lowercase_names = [x.name for x in ret if not x.name.isupper()]  # type: ignore
+        if lowercase_names:
+            raise TypeError(f"Names {lowercase_names} should be uppercase")
+        return ret
+
+
+class StrictEnum(str, Enum, metaclass=UppercaseNameEnumMeta):
     """All members should exist in the Backend, and there will be no extras."""
+
+
+class AnyStringUppercaseNameEnumMeta(UppercaseNameEnumMeta):
+    def __call__(self, value, *args, **kwargs):  # type: ignore
+        if isinstance(value, str) and not isinstance(value, self):
+            return value
+        return super().__call__(value, *args, **kwargs)
 
 
 class SubsetEnumMeta(StrictEnumMeta):
@@ -54,8 +78,15 @@ class SubsetEnumMeta(StrictEnumMeta):
         return super().__call__(value, *args, **kwargs)
 
 
-class SubsetEnum(StrictEnum, metaclass=SubsetEnumMeta):
+class SubsetEnum(str, Enum, metaclass=AnyStringUppercaseNameEnumMeta):
     """All members should exist in the Backend, but there may be extras."""
+
+
+class SupersetEnum(str, Enum, metaclass=UppercaseNameEnumMeta):
+    """Some members should exist in the Backend, and there should be no extras."""
+
+
+EnumTypes = StrictEnum | SubsetEnum | SupersetEnum
 
 
 CALCULATE_TIMEOUT = "CALCULATE_TIMEOUT"
@@ -207,10 +238,11 @@ def get_dtype(datatype: type) -> np.dtype:
     return np.dtype(get_args(get_args(datatype)[1])[0])
 
 
-def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
+def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
     """Get the enum class from a datatype.
 
-    :raises TypeError: if type is not a [](#StrictEnum) or [](#SubsetEnum) subclass
+    :raises TypeError: if type is not a [](#StrictEnum) or [](#SubsetEnum)
+    or [](#SupersetEnum) subclass
     ```python
     >>> from ophyd_async.core import StrictEnum
     >>> from collections.abc import Sequence
@@ -227,10 +259,11 @@ def get_enum_cls(datatype: type | None) -> type[StrictEnum] | None:
     if get_origin(datatype) is Sequence:
         datatype = get_args(datatype)[0]
     if datatype and issubclass(datatype, Enum):
-        if not issubclass(datatype, StrictEnum):
+        if not issubclass(datatype, EnumTypes):
             raise TypeError(
                 f"{datatype} should inherit from ophyd_async.core.SubsetEnum "
-                "or ophyd_async.core.StrictEnum"
+                "or ophyd_async.core.StrictEnum "
+                "or ophyd_async.core.SupersetEnum."
             )
         return datatype
     return None
