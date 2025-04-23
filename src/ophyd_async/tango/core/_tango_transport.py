@@ -625,6 +625,9 @@ def get_trl_descriptor(
             }
             _limits["hysteresis"] = try_to_cast_as_float(alarm_info.delta_val)  # type: ignore
             _limits["rds"] = None  # type: ignore
+            # If the hysteresis key is None, delete it
+            if _limits["hysteresis"] is None:
+                del _limits["hysteresis"]
 
             _choices = list(config.enum_labels) if config.enum_labels else []
             _dims = []
