@@ -17,6 +17,11 @@ def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
     with init_devices(mock=True):
         driver = Odin("")
         writer = OdinWriter(MagicMock(), driver)
+
+    # Set meta and capturing pvs high
+    set_mock_value(driver.meta_active, "Active")
+    set_mock_value(driver.capture_rbv, "Capturing")
+    set_mock_value(driver.meta_writing, "Writing")
     return driver, writer
 
 
@@ -41,10 +46,10 @@ async def test_when_open_called_then_all_expected_signals_set(
     driver, writer = odin_driver_and_writer
     await writer.open(ODIN_DETECTOR_NAME)
 
-    get_mock_put(driver.data_type).assert_called_once_with("uint16", wait=ANY)
+    get_mock_put(driver.data_type).assert_called_once_with("UInt16", wait=ANY)
     get_mock_put(driver.num_to_capture).assert_called_once_with(0, wait=ANY)
 
-    get_mock_put(driver.capture).assert_called_once_with(Writing.ON, wait=ANY)
+    get_mock_put(driver.capture).assert_called_once_with(Writing.CAPTURE, wait=ANY)
 
 
 async def test_given_data_shape_set_when_open_called_then_describe_has_correct_shape(
@@ -62,4 +67,4 @@ async def test_when_closed_then_data_capture_turned_off(
 ):
     driver, writer = odin_driver_and_writer
     await writer.close()
-    get_mock_put(driver.capture).assert_called_once_with(Writing.OFF, wait=ANY)
+    get_mock_put(driver.capture).assert_called_once_with(Writing.DONE, wait=ANY)
