@@ -134,7 +134,6 @@ class TestDevice(Device):
         max_warning=4,
         max_alarm=5,
         max_value=6,
-        delta_value=0.1,
     )
     def limitedvalue(self) -> float:
         return self._limitedvalue
