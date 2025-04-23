@@ -6,7 +6,9 @@ import numpy as np
 from ophyd_async.core import (
     SignalBackend,
     SignalDatatypeT,
+    StrictEnum,
     SubsetEnum,
+    SupersetEnum,
     get_dtype,
     get_enum_cls,
 )
@@ -34,9 +36,12 @@ def get_supported_values(
     if issubclass(enum_cls, SubsetEnum):
         if not set(choices).issubset(pv_choices):
             raise TypeError(error_msg + "to be a subset of them.")
-    else:
+    elif issubclass(enum_cls, StrictEnum):
         if set(choices) != set(pv_choices):
             raise TypeError(error_msg + "to be strictly equal to them.")
+    elif issubclass(enum_cls, SupersetEnum):
+        if len(set(choices).intersection(pv_choices)) == 0:
+            raise TypeError(error_msg + ". None of them match.")
 
     # Take order from the pv choices
     supported_values = {x: x for x in pv_choices}
