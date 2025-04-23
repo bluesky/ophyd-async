@@ -44,11 +44,11 @@ SignalDatatype = (
 """The supported [](#Signal) datatypes:
 
 - A python primitive [](#bool), [](#int), [](#float), [](#str)
-- A [](#StrictEnum) or [](#SubsetEnum) or SupersetEnum subclass
+- A [](#EnumTypes) or subclass
 - A fixed datatype [](#Array1D) of numpy bool, signed and unsigned integers or float
 - A [](#numpy.ndarray) which can change dimensions and datatype at runtime
 - A sequence of [](#str)
-- A sequence of [](#EnumTypes) or [](#SubsetEnum) or [](#SupersetEnum) subclass
+- A sequence of [](#EnumTypes) or subclass
 - A [](#Table) subclass
 """
 # TODO: These typevars will not be needed when we drop python 3.11
