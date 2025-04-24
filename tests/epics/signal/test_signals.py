@@ -788,3 +788,24 @@ async def test_put_completion(
     await slow_seq.set(2, wait=False)
     stop = time.time()
     assert stop - start < 0.1
+
+
+async def test_setting_with_none_uses_initial_value_of_pv(
+    ioc_devices: EpicsTestIocAndDevices,
+):
+    sig_rw = epics_signal_rw(int, ioc_devices.get_pv("pva", "slowseq"))
+    await sig_rw.connect()
+    initial_data = await sig_rw.read()
+    initial_value, initial_timestamp = (
+        initial_data[""]["value"],
+        initial_data[""]["timestamp"],
+    )
+
+    # This mimics triggering a SignalX
+    await sig_rw.set(None)  # type: ignore
+
+    current_data = await sig_rw.read()
+    assert (
+        initial_value == current_data[""]["value"]
+        and initial_timestamp != current_data[""]["timestamp"]
+    )
