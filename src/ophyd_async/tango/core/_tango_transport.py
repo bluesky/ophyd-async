@@ -628,11 +628,9 @@ def get_trl_descriptor(
                 ),
             )
 
-            delta_t, delta_val = map(try_to_cast_as_float,
-                                     (alarm_info.delta_t,
-                                      alarm_info.delta_val
-                                      )
-                                     )
+            delta_t, delta_val = map(
+                try_to_cast_as_float, (alarm_info.delta_t, alarm_info.delta_val)
+            )
             limits_rds = RdsRange(
                 time_difference=delta_t or 0.0,
                 value_difference=delta_val or 0.0,
