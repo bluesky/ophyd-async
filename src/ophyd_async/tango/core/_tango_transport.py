@@ -9,7 +9,7 @@ from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
 from bluesky.protocols import Reading
-from event_model import DataKey
+from event_model import DataKey, LimitsRange
 
 from ophyd_async.core import (
     AsyncStatus,
@@ -522,7 +522,7 @@ def get_simple_datakey(
     datatype: type | None,
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
-) -> DataKey:
+) -> dict:
     """Create a descriptor from a tango resource locator."""
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
@@ -579,9 +579,9 @@ def get_simple_datakey(
                 raise TypeError(f"{tango_resource} has type [{tr_dtype}] not [{dtype}]")
 
         if tr_format == AttrDataFormat.SPECTRUM:
-            return DataKey(source=tango_resource, dtype="array", shape=[max_x])
+            return {"source": tango_resource, "dtype": "array", "shape": [max_x]}
         elif tr_format == AttrDataFormat.IMAGE:
-            return DataKey(source=tango_resource, dtype="array", shape=[max_y, max_x])
+            return {"source": tango_resource, "dtype": "array", "shape": [max_y, max_x]}
 
     else:
         if tr_dtype in (Enum, CmdArgType.DevState):
@@ -590,14 +590,14 @@ def get_simple_datakey(
                     raise TypeError(
                         f"{tango_resource} has type Enum not {datatype.__name__}"
                     )
-            return DataKey(source=tango_resource, dtype="string", shape=[])
+            return {"source": tango_resource, "dtype": "string", "shape": []}
         else:
             if datatype and not issubclass(tr_dtype, datatype):
                 raise TypeError(
                     f"{tango_resource} has type {tr_dtype.__name__} "
                     f"not {datatype.__name__}"
                 )
-            return DataKey(source=tango_resource, dtype=tr_dtype_desc, shape=[])
+            return {"source": tango_resource, "dtype": tr_dtype_desc, "shape": []}
 
     raise RuntimeError(f"Error getting descriptor for {tango_resource}")
 
@@ -607,32 +607,33 @@ def get_trl_descriptor(
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
 ) -> DataKey:
-    def _update_descriptor(desc, **kwargs):
-        """Update the descriptor with non-empty key-value pairs."""
-        desc.update({key: value for key, value in kwargs.items() if value})
-
     descriptor = get_simple_datakey(datatype, tango_resource, tr_configs)
 
     for _, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
             alarm_info = config.alarms
-            _limits = {
+            _limits: dict[str, LimitsRange | dict[str, float]] = {
                 key: {
                     "low": try_to_cast_as_float(getattr(config, f"min_{key}", None)),
                     "high": try_to_cast_as_float(getattr(config, f"max_{key}", None)),
                 }
                 for key in ["control", "display", "warning", "alarm"]
             }
+            _limits = {
+                key: value
+                for key, value in _limits.items()
+                if value != {"low": None, "high": None}
+            }
 
-            _limits["rds"] = {}
+            limits_rds = {}
             delta_t = try_to_cast_as_float(alarm_info.delta_t)
             if delta_t is not None:
-                _limits["rds"]["time_difference"] = delta_t
+                limits_rds["time_difference"] = delta_t
             delta_val = try_to_cast_as_float(alarm_info.delta_val)
             if delta_val is not None:
-                _limits["rds"]["value_difference"] = delta_val
-            if _limits["rds"] == {}:
-                del _limits["rds"]
+                limits_rds["value_difference"] = delta_val
+            if limits_rds:
+                _limits["rds"] = limits_rds
 
             _choices = list(config.enum_labels) if config.enum_labels else []
             _dims = []
@@ -653,23 +654,23 @@ def get_trl_descriptor(
                 except (ValueError, IndexError):
                     pass
 
-            _update_descriptor(
-                descriptor,
-                limits=_limits,
-                choices=_choices,
-                dims=_dims,
-                external="",
-                object_name=config.name,
-                precision=_precision,
-                source=tango_resource,
-                units=config.unit,
-            )
+            if _limits:
+                descriptor["limits"] = _limits
+            if _choices:
+                descriptor["choices"] = _choices
+            if _dims:
+                descriptor["dims"] = _dims
+            if _precision:
+                descriptor["precision"] = _precision
+            if config.unit:
+                descriptor["units"] = config.unit
+            if config.name:
+                descriptor["object_name"] = config.name
 
         elif isinstance(config, CommandInfo):
-            _update_descriptor(
-                descriptor,
-                object_name=config.cmd_name,
-            )
+            if config.cmd_name:
+                descriptor["object_name"] = config.cmd_name
+
     return DataKey(**descriptor)
 
 
