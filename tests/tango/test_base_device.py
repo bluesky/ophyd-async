@@ -126,14 +126,16 @@ class TestDevice(Device):
         self._array = array
 
     @attribute(
-        dtype=float,
         access=AttrWriteType.READ_WRITE,
-        min_value=0,
-        min_alarm=1,
-        min_warning=2,
-        max_warning=4,
-        max_alarm=5,
-        max_value=6,
+        min_value=0.0,
+        min_alarm=1.0,
+        min_warning=2.0,
+        max_warning=4.0,
+        max_alarm=5.0,
+        max_value=6.0,
+        unit="cm",
+        delta_val="1",
+        delta_t="1",
     )
     def limitedvalue(self) -> float:
         return self._limitedvalue
