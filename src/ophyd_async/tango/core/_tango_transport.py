@@ -653,7 +653,8 @@ def get_trl_descriptor(
                     _precision = int(config.format.split(".")[1].split("f")[0])
                 except (ValueError, IndexError) as e:
                     # If parsing config.format fails, _precision remains None.
-                    logger.warning("Failed to parse precision from config.format: %s. Error: %s", config.format, e)
+                    logger.warning("Failed to parse precision from config.format:"
+                                   " %s. Error: %s", config.format, e)
 
             if _limits:
                 descriptor["limits"] = _limits
