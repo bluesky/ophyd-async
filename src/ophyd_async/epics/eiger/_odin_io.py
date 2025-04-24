@@ -30,22 +30,32 @@ class Writing(StrictEnum):
 
 class OdinNode(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.writing = epics_signal_r(Writing, f"{prefix}HDF:Writing")
-        self.connected = epics_signal_r(bool, f"{prefix}Connected")
+        self.writing = epics_signal_r(str, f"{prefix}Writing_RBV")
+        self.frames_dropped = epics_signal_r(int, f"{prefix}FramesDropped_RBV")
+        self.frames_time_out = epics_signal_r(int, f"{prefix}FramesTimedOut_RBV")
+        self.error_status = epics_signal_r(str, f"{prefix}FPErrorState_RBV")
+        self.fp_initialised = epics_signal_r(int, f"{prefix}FPProcessConnected_RBV")
+        self.fr_initialised = epics_signal_r(int, f"{prefix}FRProcessConnected_RBV")
+        self.num_captured = epics_signal_r(int, f"{prefix}NumCaptured_RBV")
+        self.clear_errors = epics_signal_rw(int, f"{prefix}FPClearErrors")
+        self.error_message = epics_signal_rw(str, f"{prefix}FPErrorMessage_RBV")
 
         super().__init__(name)
 
 
 class Odin(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.nodes = DeviceVector({i: OdinNode(f"{prefix}FP{i}:") for i in range(4)})
+        self.nodes = DeviceVector(
+            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(4)}
+        )
 
         self.capture = epics_signal_rw(Writing, f"{prefix}Capture")
         self.capture_rbv = epics_signal_r(str, prefix + "Capture_RBV")
         self.num_captured = epics_signal_r(int, f"{prefix}NumCapture_RBV")
         self.num_to_capture = epics_signal_rw_rbv(int, f"{prefix}NumCapture")
 
-        self.start_timeout = epics_signal_rw_rbv(int, f"{prefix}StartTimeout")
+        self.start_timeout = epics_signal_rw(str, f"{prefix}StartTimeout")
+        self.timeout_active_rbv = epics_signal_r(str, f"{prefix}TimeoutActive_RBV")
 
         self.image_height = epics_signal_rw_rbv(int, f"{prefix}ImageHeight")
         self.image_width = epics_signal_rw_rbv(int, f"{prefix}ImageWidth")
@@ -97,7 +107,7 @@ class OdinWriter(DetectorWriter):
             "Capturing",
             set_timeout=None,
             wait_for_set_completion=False,
-        )
+        )  # TODO: Investigate why we do not get a put callback when setting capture pv https://github.com/bluesky/ophyd-async/issues/866
 
         await wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT)
 

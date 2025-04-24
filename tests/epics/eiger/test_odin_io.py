@@ -1,9 +1,9 @@
 from pathlib import Path
-from unittest.mock import ANY, MagicMock
+from unittest.mock import ANY, AsyncMock, MagicMock, call, patch
 
 import pytest
 
-from ophyd_async.core import init_devices
+from ophyd_async.core import DEFAULT_TIMEOUT, init_devices
 from ophyd_async.epics.eiger import Odin, OdinWriter, Writing
 from ophyd_async.testing import get_mock_put, set_mock_value
 
@@ -68,3 +68,39 @@ async def test_when_closed_then_data_capture_turned_off(
     driver, writer = odin_driver_and_writer
     await writer.close()
     get_mock_put(driver.capture).assert_called_once_with(Writing.DONE, wait=ANY)
+
+
+@pytest.mark.asyncio
+@patch("ophyd_async.epics.eiger._odin_io.wait_for_value")
+@patch("ophyd_async.epics.eiger._odin_io.set_and_wait_for_other_value")
+async def test_wait_for_active_before_capture_then_wait_for_writing(
+    mock_set_and_wait_for_other_value,
+    mock_wait_for_value,
+    odin_driver_and_writer,
+):
+    driver, writer = odin_driver_and_writer
+
+    mock_manager = AsyncMock()
+    mock_manager.attach_mock(mock_wait_for_value, "mock_wait_for_value")
+    mock_manager.attach_mock(
+        mock_set_and_wait_for_other_value, "mock_set_and_wait_for_other_value"
+    )
+
+    await writer.open(ODIN_DETECTOR_NAME)
+
+    expected_calls = [
+        call.mock_wait_for_value(driver.meta_active, "Active", timeout=DEFAULT_TIMEOUT),
+        call.mock_set_and_wait_for_other_value(
+            driver.capture,
+            Writing.CAPTURE,
+            driver.capture_rbv,
+            "Capturing",
+            set_timeout=None,
+            wait_for_set_completion=False,
+        ),
+        call.mock_wait_for_value(
+            driver.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT
+        ),
+    ]
+
+    assert mock_manager.mock_calls == expected_calls
