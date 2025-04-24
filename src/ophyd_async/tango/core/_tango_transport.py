@@ -9,7 +9,8 @@ from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
 from bluesky.protocols import Reading
-from event_model import DataKey, LimitsRange
+from event_model import DataKey, Limits, LimitsRange
+from event_model.documents.event_descriptor import RdsRange
 
 from ophyd_async.core import (
     AsyncStatus,
@@ -522,7 +523,7 @@ def get_simple_datakey(
     datatype: type | None,
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
-) -> dict:
+) -> DataKey:
     """Create a descriptor from a tango resource locator."""
     tr_dtype = {}
     for tr_name, config in tr_configs.items():
@@ -579,9 +580,9 @@ def get_simple_datakey(
                 raise TypeError(f"{tango_resource} has type [{tr_dtype}] not [{dtype}]")
 
         if tr_format == AttrDataFormat.SPECTRUM:
-            return {"source": tango_resource, "dtype": "array", "shape": [max_x]}
+            return DataKey(source=tango_resource, dtype="array", shape=[max_x])
         elif tr_format == AttrDataFormat.IMAGE:
-            return {"source": tango_resource, "dtype": "array", "shape": [max_y, max_x]}
+            return DataKey(source=tango_resource, dtype="array", shape=[max_y, max_x])
 
     else:
         if tr_dtype in (Enum, CmdArgType.DevState):
@@ -590,14 +591,14 @@ def get_simple_datakey(
                     raise TypeError(
                         f"{tango_resource} has type Enum not {datatype.__name__}"
                     )
-            return {"source": tango_resource, "dtype": "string", "shape": []}
+            return DataKey(source=tango_resource, dtype="string", shape=[])
         else:
             if datatype and not issubclass(tr_dtype, datatype):
                 raise TypeError(
                     f"{tango_resource} has type {tr_dtype.__name__} "
                     f"not {datatype.__name__}"
                 )
-            return {"source": tango_resource, "dtype": tr_dtype_desc, "shape": []}
+            return DataKey(source=tango_resource, dtype=tr_dtype_desc, shape=[])
 
     raise RuntimeError(f"Error getting descriptor for {tango_resource}")
 
@@ -612,27 +613,32 @@ def get_trl_descriptor(
     for _, config in tr_configs.items():
         if isinstance(config, AttributeInfoEx):
             alarm_info = config.alarms
-            _limits: dict[str, LimitsRange | dict[str, float]] = {
-                key: {
-                    "low": try_to_cast_as_float(getattr(config, f"min_{key}", None)),
-                    "high": try_to_cast_as_float(getattr(config, f"max_{key}", None)),
-                }
-                for key in ["control", "display", "warning", "alarm"]
-            }
-            _limits = {
-                key: value
-                for key, value in _limits.items()
-                if value != {"low": None, "high": None}
-            }
+            _limits = Limits(
+                control=LimitsRange(
+                    low=try_to_cast_as_float(config.min_value),
+                    high=try_to_cast_as_float(config.max_value),
+                ),
+                warning=LimitsRange(
+                    low=try_to_cast_as_float(alarm_info.min_warning),
+                    high=try_to_cast_as_float(alarm_info.max_warning),
+                ),
+                alarm=LimitsRange(
+                    low=try_to_cast_as_float(alarm_info.min_alarm),
+                    high=try_to_cast_as_float(alarm_info.max_alarm),
+                ),
+            )
 
-            limits_rds = {}
-            delta_t = try_to_cast_as_float(alarm_info.delta_t)
-            if delta_t is not None:
-                limits_rds["time_difference"] = delta_t
-            delta_val = try_to_cast_as_float(alarm_info.delta_val)
-            if delta_val is not None:
-                limits_rds["value_difference"] = delta_val
-            if limits_rds:
+            delta_t, delta_val = map(try_to_cast_as_float,
+                                     (alarm_info.delta_t,
+                                      alarm_info.delta_val
+                                      )
+                                     )
+            limits_rds = RdsRange(
+                time_difference=delta_t or 0.0,
+                value_difference=delta_val or 0.0,
+            )
+
+            if any((delta_t, delta_val)):
                 _limits["rds"] = limits_rds
 
             _choices = list(config.enum_labels) if config.enum_labels else []
@@ -669,12 +675,6 @@ def get_trl_descriptor(
                 descriptor["precision"] = _precision
             if config.unit:
                 descriptor["units"] = config.unit
-            if config.name:
-                descriptor["object_name"] = config.name
-
-        elif isinstance(config, CommandInfo):
-            if config.cmd_name:
-                descriptor["object_name"] = config.cmd_name
 
     return DataKey(**descriptor)
 
