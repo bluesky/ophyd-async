@@ -44,7 +44,7 @@ SignalDatatype = (
 """The supported [](#Signal) datatypes:
 
 - A python primitive [](#bool), [](#int), [](#float), [](#str)
-- A [](#EnumTypes) or subclass
+- An [](#EnumTypes) subclass
 - A fixed datatype [](#Array1D) of numpy bool, signed and unsigned integers or float
 - A [](#numpy.ndarray) which can change dimensions and datatype at runtime
 - A sequence of [](#str)
