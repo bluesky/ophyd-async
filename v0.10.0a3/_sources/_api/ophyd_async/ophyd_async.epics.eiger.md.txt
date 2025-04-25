@@ -1,0 +1,127 @@
+# {py:mod}`ophyd_async.epics.eiger`
+
+```{py:module} ophyd_async.epics.eiger
+```
+
+```{autodoc2-docstring} ophyd_async.epics.eiger
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`Odin <ophyd_async.epics.eiger._odin_io.Odin>`
+  - ```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Odin
+    :summary:
+    ```
+* - {py:obj}`OdinWriter <ophyd_async.epics.eiger._odin_io.OdinWriter>`
+  - ```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.OdinWriter
+    :summary:
+    ```
+* - {py:obj}`Writing <ophyd_async.epics.eiger._odin_io.Writing>`
+  - ```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Writing
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} Odin(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.eiger._odin_io.Odin
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Odin
+```
+
+````
+
+`````{py:class} OdinWriter(path_provider: ~ophyd_async.core.PathProvider, odin_driver: ~ophyd_async.epics.eiger._odin_io.Odin)
+:canonical: ophyd_async.epics.eiger._odin_io.OdinWriter
+
+Bases: {py:obj}`ophyd_async.core.DetectorWriter`
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.OdinWriter
+```
+
+````{py:method} open(name: str, exposures_per_event: int = 1) -> dict[str, ~event_model.DataKey]
+:canonical: ophyd_async.epics.eiger._odin_io.OdinWriter.open
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.OdinWriter.open
+```
+
+````
+
+````{py:method} observe_indices_written(timeout: float) -> ~collections.abc.AsyncGenerator[int, None]
+:canonical: ophyd_async.epics.eiger._odin_io.OdinWriter.observe_indices_written
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.OdinWriter.observe_indices_written
+```
+
+````
+
+````{py:method} get_indices_written() -> int
+:canonical: ophyd_async.epics.eiger._odin_io.OdinWriter.get_indices_written
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.OdinWriter.get_indices_written
+```
+
+````
+
+````{py:method} collect_stream_docs(name: str, indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
+:canonical: ophyd_async.epics.eiger._odin_io.OdinWriter.collect_stream_docs
+:abstractmethod:
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.OdinWriter.collect_stream_docs
+```
+
+````
+
+````{py:method} close() -> None
+:canonical: ophyd_async.epics.eiger._odin_io.OdinWriter.close
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.OdinWriter.close
+```
+
+````
+
+`````
+
+`````{py:class} Writing()
+:canonical: ophyd_async.epics.eiger._odin_io.Writing
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Writing
+```
+
+````{py:attribute} CAPTURE
+:canonical: ophyd_async.epics.eiger._odin_io.Writing.CAPTURE
+:value: >
+   'Capture'
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Writing.CAPTURE
+```
+
+````
+
+````{py:attribute} DONE
+:canonical: ophyd_async.epics.eiger._odin_io.Writing.DONE
+:value: >
+   'Done'
+
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Writing.DONE
+```
+
+````
+
+`````

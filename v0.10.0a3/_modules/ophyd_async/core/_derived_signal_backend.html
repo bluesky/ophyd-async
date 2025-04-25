@@ -1,0 +1,820 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ophyd_async.core._derived_signal_backend &#8212; ophyd-async 0.10.0a3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../_static/documentation_options.js?v=08723006"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/core/_derived_signal_backend';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.10.0a3';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.10.0a3" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.core._derived_signal_backend</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for ophyd_async.core._derived_signal_backend</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Location</span><span class="p">,</span> <span class="n">Reading</span><span class="p">,</span> <span class="n">Subscribable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncLocatable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalBackend</span><span class="p">,</span> <span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">make_datakey</span><span class="p">,</span> <span class="n">make_metadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">gather_dict</span><span class="p">,</span> <span class="n">merge_gathered_dicts</span>
+
+<span class="n">RawT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;RawT&quot;</span><span class="p">)</span>
+<span class="n">DerivedT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DerivedT&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Transform">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Transform">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Transform</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">RawT</span><span class="p">,</span> <span class="n">DerivedT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Baseclass for bidirectional transforms for Derived Signals.</span>
+
+<span class="sd">    Subclass and add:</span>
+<span class="sd">    - type hinted parameters that should be fetched from Signals</span>
+<span class="sd">    - a raw_to_derived method that takes the elements of RawT and returns a DerivedT</span>
+<span class="sd">    - a derived_to_raw method that takes the elements of DerivedT and returns a RawT</span>
+
+<span class="sd">    :example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    class MyRaw(TypedDict):</span>
+<span class="sd">        raw1: float</span>
+<span class="sd">        raw2: float</span>
+
+<span class="sd">    class MyDerived(TypedDict):</span>
+<span class="sd">        derived1: float</span>
+<span class="sd">        derived2: float</span>
+
+<span class="sd">    class MyTransform(Transform):</span>
+<span class="sd">        param1: float</span>
+
+<span class="sd">        def raw_to_derived(self, *, raw1: float, raw2: float) -&gt; MyDerived:</span>
+<span class="sd">            derived1, derived2 = some_maths(self.param1, raw1, raw2)</span>
+<span class="sd">            return MyDerived(derived1=derived1, derived2=derived2)</span>
+
+<span class="sd">        def derived_to_raw(self, *, derived1: float, derived2: float) -&gt; MyRaw:</span>
+<span class="sd">            raw1, raw2 = some_inverse_maths(self.param1, derived1, derived2)</span>
+<span class="sd">            return MyRaw(raw1=raw1, raw2=raw2)</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+        <span class="c1"># Guard with if type checking so they don&#39;t appear in pydantic argument list</span>
+        <span class="c1"># Ideally they would be:</span>
+        <span class="c1">#     def raw_to_derived(self, **kwargs: Unpack[RawT]) -&gt; DerivedT: ...</span>
+        <span class="c1"># but TypedDicts are not valid as generics</span>
+        <span class="c1"># https://github.com/microsoft/pyright/discussions/7317</span>
+        <span class="n">raw_to_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">DerivedT</span><span class="p">]</span>
+        <span class="n">derived_to_raw</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">RawT</span><span class="p">]</span></div>
+
+
+
+<span class="n">TransformT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TransformT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Transform</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">filter_by_type</span><span class="p">(</span><span class="n">raw_devices</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">type_</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span><span class="p">]:</span>
+    <span class="n">filtered_devices</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">device</span> <span class="ow">in</span> <span class="n">raw_devices</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">type_</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> is not an instance of </span><span class="si">{</span><span class="n">type_</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">filtered_devices</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">device</span>
+    <span class="k">return</span> <span class="n">filtered_devices</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SignalTransformer</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TransformT</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">transform_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TransformT</span><span class="p">],</span>
+        <span class="n">set_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">set_derived_takes_dict</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">raw_and_transform_devices</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transform_cls</span> <span class="o">=</span> <span class="n">transform_cls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived</span> <span class="o">=</span> <span class="n">set_derived</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived_takes_dict</span> <span class="o">=</span> <span class="n">set_derived_takes_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transform_devices</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">raw_and_transform_devices</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">transform_cls</span><span class="o">.</span><span class="n">model_fields</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_devices</span> <span class="o">=</span> <span class="n">raw_and_transform_devices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_derived_callbacks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callback</span><span class="p">[</span><span class="n">Reading</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">raw_locatables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AsyncLocatable</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">filter_by_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_devices</span><span class="p">,</span> <span class="n">AsyncLocatable</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transform_readables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">filter_by_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transform_devices</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">raw_and_transform_readables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AsyncReadable</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">filter_by_type</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_raw_devices</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_devices</span><span class="p">,</span> <span class="n">AsyncReadable</span>
+        <span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">raw_and_transform_subscribables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Subscribable</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">filter_by_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_devices</span> <span class="o">|</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_devices</span><span class="p">,</span> <span class="n">Subscribable</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_complete_cached_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">raw_and_transform_subscribables</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_transform_from_readings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">transform_readings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransformT</span><span class="p">:</span>
+        <span class="c1"># Make the transform using the values from the readings for those args</span>
+        <span class="n">transform_args</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">transform_readings</span><span class="p">[</span><span class="n">sig</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_readables</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_cls</span><span class="p">(</span><span class="o">**</span><span class="n">transform_args</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_derived_readings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">raw_and_transform_readings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="c1"># Calculate the latest timestamp and max severity from them</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">raw_and_transform_readings</span><span class="p">[</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;timestamp&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_and_transform_subscribables</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">alarm_severity</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">raw_and_transform_readings</span><span class="p">[</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alarm_severity&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_and_transform_subscribables</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="c1"># Make the transform using the values from the readings for those args</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_transform_from_readings</span><span class="p">(</span><span class="n">raw_and_transform_readings</span><span class="p">)</span>
+        <span class="c1"># Create the raw values from the rest then calculate the derived readings</span>
+        <span class="c1"># using the transform</span>
+        <span class="n">raw_values</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">raw_and_transform_readings</span><span class="p">[</span><span class="n">sig</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raw_devices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="n">derived_readings</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">name</span><span class="p">:</span> <span class="n">Reading</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">derived</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">alarm_severity</span><span class="o">=</span><span class="n">alarm_severity</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">derived</span> <span class="ow">in</span> <span class="n">transform</span><span class="o">.</span><span class="n">raw_to_derived</span><span class="p">(</span><span class="o">**</span><span class="n">raw_values</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">derived_readings</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransformT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">raw_and_transform_readings</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_cached_reading</span><span class="p">():</span>
+            <span class="n">transform_readings</span> <span class="o">=</span> <span class="n">raw_and_transform_readings</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">transform_readings</span> <span class="o">=</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span>
+                <span class="n">device</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_readables</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_transform_from_readings</span><span class="p">(</span><span class="n">transform_readings</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_derived_readings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">raw_and_transform_readings</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_cached_reading</span><span class="p">()):</span>
+            <span class="n">raw_and_transform_readings</span> <span class="o">=</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span>
+                <span class="n">device</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="k">for</span> <span class="n">device</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_and_transform_readables</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_derived_readings</span><span class="p">(</span><span class="n">raw_and_transform_readings</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_derived_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="n">derived_readings</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_derived_readings</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">derived_readings</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_cached_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot update cached reading as it has not been initialised&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_cached_reading</span><span class="p">():</span>
+            <span class="c1"># We&#39;ve got a complete set of values, callback on them</span>
+            <span class="n">derived_readings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_derived_readings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_derived_callbacks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">callback</span><span class="p">(</span><span class="n">derived_readings</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="n">Reading</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_derived_callbacks</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_derived_callbacks</span><span class="p">:</span>
+                <span class="c1"># Remove the callbacks to all the raw devices</span>
+                <span class="k">for</span> <span class="n">raw</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_and_transform_subscribables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">raw</span><span class="o">.</span><span class="n">clear_sub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_update_cached_reading</span><span class="p">)</span>
+                <span class="c1"># and clear the cached readings that will now be stale</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_derived_callbacks</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Callback already set for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_derived_callbacks</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">callback</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Add the callbacks to all the raw devices, this will run the first</span>
+                <span class="c1"># callback</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">raw</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_and_transform_subscribables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">raw</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_update_cached_reading</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_cached_reading</span><span class="p">():</span>
+                <span class="c1"># Callback on the last complete set of readings</span>
+                <span class="n">derived_readings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_derived_readings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span><span class="p">)</span>
+                <span class="n">callback</span><span class="p">(</span><span class="n">derived_readings</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Location</span><span class="p">]:</span>
+        <span class="n">locations</span><span class="p">,</span> <span class="n">transform</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="n">gather_dict</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">sig</span><span class="o">.</span><span class="n">locate</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_locatables</span><span class="o">.</span><span class="n">items</span><span class="p">()}),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_transform</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="n">raw_setpoints</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;setpoint&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">locations</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">raw_readbacks</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;readback&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">locations</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">derived_setpoints</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">raw_to_derived</span><span class="p">(</span><span class="o">**</span><span class="n">raw_setpoints</span><span class="p">)</span>
+        <span class="n">derived_readbacks</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">raw_to_derived</span><span class="p">(</span><span class="o">**</span><span class="n">raw_readbacks</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="n">name</span><span class="p">:</span> <span class="n">Location</span><span class="p">(</span>
+                <span class="n">setpoint</span><span class="o">=</span><span class="n">derived_setpoints</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                <span class="n">readback</span><span class="o">=</span><span class="n">derived_readbacks</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">derived_setpoints</span>
+        <span class="p">}</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set_derived</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot put as no set_derived method given&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived_takes_dict</span><span class="p">:</span>
+            <span class="c1"># Need to get the other derived values and update the one that&#39;s changing</span>
+            <span class="n">derived</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_locations</span><span class="p">()</span>
+            <span class="n">setpoints</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;setpoint&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">derived</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+            <span class="n">setpoints</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived</span><span class="p">(</span><span class="n">setpoints</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Only one derived signal, so pass it directly</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DerivedSignalBackend</span><span class="p">(</span><span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">transformer</span><span class="p">:</span> <span class="n">SignalTransformer</span><span class="p">,</span>
+        <span class="n">units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">transformer</span>
+        <span class="c1"># Add the extra static metadata to the dictionary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">make_metadata</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">read</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;derived://</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="c1"># Assume that the underlying signals are already connected</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Cannot set the value of a derived signal, &quot;</span>
+            <span class="s2">&quot;set the underlying raw signals instead&quot;</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">wait</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot put with wait=False&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Must be given a value to put&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">set_derived</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">make_datakey</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span> <span class="ow">or</span> <span class="nb">float</span><span class="p">,</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span> <span class="n">source</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span>
+        <span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
+        <span class="n">readings</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">get_derived_readings</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">readings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
+        <span class="n">derived</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">get_derived_values</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">derived</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
+        <span class="c1"># TODO: should be get_location</span>
+        <span class="n">locations</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">get_locations</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">locations</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;setpoint&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

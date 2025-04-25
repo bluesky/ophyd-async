@@ -1,0 +1,836 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>How to derive one signal from others &#8212; ophyd-async 0.10.0a3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=08723006"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'how-to/derive-one-signal-from-others';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.10.0a3';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How to implement a Device for an EPICS areaDetector" href="implement-ad-detector.html" />
+    <link rel="prev" title="How to contribute to the project" href="contribute.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.10.0a3" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="choose-right-baseclass.html">How to choose the right base class when implementing a new Device</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute.html">How to contribute to the project</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">How to derive one signal from others</a></li>
+<li class="toctree-l1"><a class="reference internal" href="implement-ad-detector.html">How to implement a Device for an EPICS areaDetector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interact-with-signals.html">How to interact with signals while implementing bluesky verbs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="put-device-back.html">How to use settings to put devices back in their original state</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store-and-retrieve.html">How to store and retrieve device settings</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../how-to.html" class="nav-link">How-to Guides</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">How to derive one signal from others</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="how-to-derive-one-signal-from-others">
+<h1>How to derive one signal from others<a class="headerlink" href="#how-to-derive-one-signal-from-others" title="Link to this heading">#</a></h1>
+<p>Sometimes the low level Signal interface of a Device is not very user friendly. You may wish to provide a layer of Signals above that calculate their values from low level Signals, and are capable of setting their values too. We call this a Derived Signal. This article will show how they are constructed and how they can be used.</p>
+<section id="single-derived-signal">
+<h2>Single Derived Signal<a class="headerlink" href="#single-derived-signal" title="Link to this heading">#</a></h2>
+<p>The simplest API involves mapping a single Derived Signal to many low level Signal. There are 3 helpers to create these Derived signals:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.derived_signal_r" title="ophyd_async.core.derived_signal_r"><span class="xref myst py py-func"><code class="docutils literal notranslate"><span class="pre">derived_signal_r</span></code></span></a></p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.derived_signal_rw" title="ophyd_async.core.derived_signal_rw"><span class="xref myst py py-func"><code class="docutils literal notranslate"><span class="pre">derived_signal_rw</span></code></span></a></p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.derived_signal_w" title="ophyd_async.core.derived_signal_w"><span class="xref myst py py-func"><code class="docutils literal notranslate"><span class="pre">derived_signal_w</span></code></span></a></p></li>
+</ul>
+<p>If a signal is readable, then it requires a <code class="docutils literal notranslate"><span class="pre">raw_to_derived</span></code> function that maps the raw values of low level Signals into the datatype of the Derived Signal and the <code class="docutils literal notranslate"><span class="pre">raw_devices</span></code> that will be read/monitored to give those values.</p>
+<p>If a signal is writeable, then it requires a <code class="docutils literal notranslate"><span class="pre">set_derived</span></code> async function that sets the raw signals based on the derived value.</p>
+<p>In the below example we see all 3 of these helpers in action:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Device</span><span class="p">,</span>
+    <span class="n">DeviceVector</span><span class="p">,</span>
+    <span class="n">StandardReadable</span><span class="p">,</span>
+    <span class="n">StrictEnum</span><span class="p">,</span>
+    <span class="n">derived_signal_r</span><span class="p">,</span>
+    <span class="n">derived_signal_rw</span><span class="p">,</span>
+    <span class="n">derived_signal_w</span><span class="p">,</span>
+    <span class="n">soft_signal_rw</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BeamstopPosition</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">IN_POSITION</span> <span class="o">=</span> <span class="s2">&quot;In position&quot;</span>
+    <span class="n">OUT_OF_POSITION</span> <span class="o">=</span> <span class="s2">&quot;Out of position&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">ReadOnlyBeamstop</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reads from 2 motors to work out if the beamstop is in position.</span>
+
+<span class="sd">    E.g. bps.rd(beamstop.position)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="c1"># Raw signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="c1"># Derived signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">derived_signal_r</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_position</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamstopPosition</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">BeamstopPosition</span><span class="o">.</span><span class="n">IN_POSITION</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">BeamstopPosition</span><span class="o">.</span><span class="n">OUT_OF_POSITION</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MovableBeamstop</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;As well as reads, this one allows you to move it.</span>
+
+<span class="sd">    E.g. bps.mv(beamstop.position, BeamstopPosition.IN_POSITION)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="c1"># Raw signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="c1"># Derived signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">derived_signal_rw</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_from_position</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span>
+        <span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BeamstopPosition</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">BeamstopPosition</span><span class="o">.</span><span class="n">IN_POSITION</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">BeamstopPosition</span><span class="o">.</span><span class="n">OUT_OF_POSITION</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_set_from_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">BeamstopPosition</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">position</span> <span class="o">==</span> <span class="n">BeamstopPosition</span><span class="o">.</span><span class="n">IN_POSITION</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Exploder</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This one takes a value and sets all its signal to that value.</span>
+
+<span class="sd">    This allows convenience &quot;set all&quot; functions, while the individual</span>
+<span class="sd">    signals are still free to be set to different values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_signals</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signals</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">(</span>
+                <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;cts&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_signals</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_all</span> <span class="o">=</span> <span class="n">derived_signal_w</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set_all</span><span class="p">,</span> <span class="n">derived_units</span><span class="o">=</span><span class="s2">&quot;cts&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_set_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">coros</span> <span class="o">=</span> <span class="p">[</span><span class="n">sig</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">signals</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These examples show the low level Signals and Derived Signals in the same Device, but they could equally be separated into different Devices</p>
+</div>
+</section>
+<section id="multi-derived-signal">
+<h2>Multi Derived Signal<a class="headerlink" href="#multi-derived-signal" title="Link to this heading">#</a></h2>
+<p>The more general API involves a two way mapping between many Derived Signals and many low level Signals. This is done by implementing a <code class="docutils literal notranslate"><span class="pre">Raw</span></code> <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="Python 3.13"><code class="iref myst docutils literal notranslate"><span class="pre">typing.TypedDict</span></code></a> subclass with the names and datatypes of the low level Signals, a <code class="docutils literal notranslate"><span class="pre">Derived</span></code> <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="Python 3.13"><code class="iref myst docutils literal notranslate"><span class="pre">typing.TypedDict</span></code></a> subclass with the names and datatypes of the derived Signals, and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Transform" title="ophyd_async.core.Transform"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Transform</span></code></a> class with <code class="docutils literal notranslate"><span class="pre">raw_to_derived</span></code> and <code class="docutils literal notranslate"><span class="pre">derived_to_raw</span></code> methods to convert between the two. Some transforms will also require parameters which get their values from other Signals for both methods. These should be put in as type hints on the <code class="docutils literal notranslate"><span class="pre">Transform</span></code> subclass.</p>
+<p>To create the derived signals, we make a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DerivedSignalFactory" title="ophyd_async.core.DerivedSignalFactory"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DerivedSignalFactory</span></code></a> instance that knows about the <code class="docutils literal notranslate"><span class="pre">Transform</span></code> class, the <code class="docutils literal notranslate"><span class="pre">raw_devices</span></code> that will be read/monitored to provide the raw values for the transform, and optionally the <code class="docutils literal notranslate"><span class="pre">set_derived</span></code> method to set them. The methods like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DerivedSignalFactory.derived_signal_rw" title="ophyd_async.core.DerivedSignalFactory.derived_signal_rw"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DerivedSignalFactory.derived_signal_rw</span></code></a> allow Derived signals to be created for each attribute in the <code class="docutils literal notranslate"><span class="pre">Derived</span></code> TypedDict subclass.</p>
+<p>In the below example we see this is action:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypedDict</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Movable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncStatus</span><span class="p">,</span>
+    <span class="n">DerivedSignalFactory</span><span class="p">,</span>
+    <span class="n">Device</span><span class="p">,</span>
+    <span class="n">Transform</span><span class="p">,</span>
+    <span class="n">soft_signal_rw</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._motor</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimMotor</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TwoJackRaw</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="n">jack1</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">jack2</span><span class="p">:</span> <span class="nb">float</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TwoJackDerived</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="n">height</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TwoJackTransform</span><span class="p">(</span><span class="n">Transform</span><span class="p">):</span>
+    <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">raw_to_derived</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">jack1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">jack2</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TwoJackDerived</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">jack2</span> <span class="o">-</span> <span class="n">jack1</span>
+        <span class="k">return</span> <span class="n">TwoJackDerived</span><span class="p">(</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">jack1</span> <span class="o">+</span> <span class="n">diff</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="c1"># need the cast as returns numpy float rather than float64, but this</span>
+            <span class="c1"># is ok at runtime</span>
+            <span class="n">angle</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">atan</span><span class="p">(</span><span class="n">diff</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">derived_to_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TwoJackRaw</span><span class="p">:</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span>
+        <span class="k">return</span> <span class="n">TwoJackRaw</span><span class="p">(</span>
+            <span class="n">jack1</span><span class="o">=</span><span class="n">height</span> <span class="o">-</span> <span class="n">diff</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">jack2</span><span class="o">=</span><span class="n">height</span> <span class="o">+</span> <span class="n">diff</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">VerticalMirror</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">Movable</span><span class="p">[</span><span class="n">TwoJackDerived</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="c1"># Raw signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y1</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">()</span>
+        <span class="c1"># Parameter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y1_y2_distance</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Derived signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">DerivedSignalFactory</span><span class="p">(</span>
+            <span class="n">TwoJackTransform</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">,</span>
+            <span class="n">jack1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y1</span><span class="p">,</span>
+            <span class="n">jack2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y2</span><span class="p">,</span>
+            <span class="n">distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y1_y2_distance</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">derived_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">derived_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;angle&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">derived</span><span class="p">:</span> <span class="n">TwoJackDerived</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore until bluesky 1.13.2</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">derived_to_raw</span><span class="p">(</span><span class="o">**</span><span class="n">derived</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y1</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="s2">&quot;jack1&quot;</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y2</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="s2">&quot;jack2&quot;</span><span class="p">]),</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>In <code class="docutils literal notranslate"><span class="pre">VerticalMirror</span></code> we use the names of the <code class="docutils literal notranslate"><span class="pre">Derived</span></code> classes (<code class="docutils literal notranslate"><span class="pre">height</span></code> and <code class="docutils literal notranslate"><span class="pre">angle</span></code>) as externally accessible names for both the derived signals, and the dictionary passed to the <code class="docutils literal notranslate"><span class="pre">set()</span></code> method. If this is not desired, either because the names don’t make sense in this particular Device, or because you are composing derived signals from multiple transforms together in the same Device, then you can pass an internal set method to the <code class="docutils literal notranslate"><span class="pre">DerivedSignalFactory</span></code> that uses the <code class="docutils literal notranslate"><span class="pre">Transform</span></code> names. This leaves you free to create a public <code class="docutils literal notranslate"><span class="pre">set()</span></code> method using your desired names, and to name the derived signals with those same names.</p>
+<p>An example to illustrate this is below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypedDict</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Movable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">DerivedSignalFactory</span><span class="p">,</span> <span class="n">Device</span><span class="p">,</span> <span class="n">soft_signal_rw</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._mirror_vertical</span><span class="w"> </span><span class="kn">import</span> <span class="n">TwoJackDerived</span><span class="p">,</span> <span class="n">TwoJackTransform</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._motor</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimMotor</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">HorizontalMirrorDerived</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">roll</span><span class="p">:</span> <span class="nb">float</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">HorizontalMirror</span><span class="p">(</span><span class="n">Device</span><span class="p">,</span> <span class="n">Movable</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="c1"># Raw signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x1</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">()</span>
+        <span class="c1"># Parameter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x1_x2_distance</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Derived signals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">DerivedSignalFactory</span><span class="p">(</span>
+            <span class="n">TwoJackTransform</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_mirror</span><span class="p">,</span>
+            <span class="n">jack1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="p">,</span>
+            <span class="n">jack2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x2</span><span class="p">,</span>
+            <span class="n">distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x1_x2_distance</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">derived_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;height&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">roll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">derived_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;angle&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_set_mirror</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">derived</span><span class="p">:</span> <span class="n">TwoJackDerived</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">derived_to_raw</span><span class="p">(</span><span class="o">**</span><span class="n">derived</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x1</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="s2">&quot;jack1&quot;</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x2</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="s2">&quot;jack2&quot;</span><span class="p">]),</span>
+        <span class="p">)</span>
+
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">HorizontalMirrorDerived</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_mirror</span><span class="p">(</span><span class="n">TwoJackDerived</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">angle</span><span class="o">=</span><span class="n">value</span><span class="p">[</span><span class="s2">&quot;roll&quot;</span><span class="p">]))</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="contribute.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">How to contribute to the project</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="implement-ad-detector.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">How to implement a Device for an EPICS areaDetector</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#single-derived-signal">Single Derived Signal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multi-derived-signal">Multi Derived Signal</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/0.10.0a3/docs/how-to/derive-one-signal-from-others.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/how-to/derive-one-signal-from-others.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

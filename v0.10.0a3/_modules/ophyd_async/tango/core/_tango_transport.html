@@ -1,0 +1,1473 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.10.0a3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../../../_static/documentation_options.js?v=08723006"></script>
+    <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/tango/core/_tango_transport';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.10.0a3';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../../../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.10.0a3" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.tango.core._tango_transport</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for ophyd_async.tango.core._tango_transport</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ParamSpec</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Reading</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataKey</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncStatus</span><span class="p">,</span>
+    <span class="n">Callback</span><span class="p">,</span>
+    <span class="n">NotConnected</span><span class="p">,</span>
+    <span class="n">SignalBackend</span><span class="p">,</span>
+    <span class="n">SignalDatatypeT</span><span class="p">,</span>
+    <span class="n">StrictEnum</span><span class="p">,</span>
+    <span class="n">get_dtype</span><span class="p">,</span>
+    <span class="n">get_unique</span><span class="p">,</span>
+    <span class="n">wait_for_connection</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AttrDataFormat</span><span class="p">,</span>
+    <span class="n">AttributeInfoEx</span><span class="p">,</span>
+    <span class="n">CmdArgType</span><span class="p">,</span>
+    <span class="n">CommandInfo</span><span class="p">,</span>
+    <span class="n">DevFailed</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+    <span class="n">DeviceProxy</span><span class="p">,</span>
+    <span class="n">DevState</span><span class="p">,</span>
+    <span class="n">EventType</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">AsyncDeviceProxy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango.asyncio_executor</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AsyncioExecutor</span><span class="p">,</span>
+    <span class="n">get_global_executor</span><span class="p">,</span>
+    <span class="n">set_global_executor</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_array</span><span class="p">,</span> <span class="n">is_binary</span><span class="p">,</span> <span class="n">is_bool</span><span class="p">,</span> <span class="n">is_float</span><span class="p">,</span> <span class="n">is_int</span><span class="p">,</span> <span class="n">is_str</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._converters</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TangoConverter</span><span class="p">,</span>
+    <span class="n">TangoDevStateArrayConverter</span><span class="p">,</span>
+    <span class="n">TangoDevStateConverter</span><span class="p">,</span>
+    <span class="n">TangoEnumArrayConverter</span><span class="p">,</span>
+    <span class="n">TangoEnumConverter</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DevStateEnum</span><span class="p">,</span> <span class="n">get_device_trl_and_attr</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ophyd_async&quot;</span><span class="p">)</span>
+
+<span class="c1"># time constant to wait for timeout</span>
+<span class="n">A_BIT</span> <span class="o">=</span> <span class="mf">1e-5</span>
+
+<span class="n">P</span> <span class="o">=</span> <span class="n">ParamSpec</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
+<span class="n">R</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;R&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ensure_proper_executor">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.ensure_proper_executor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ensure_proper_executor</span><span class="p">(</span>
+    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">R</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">R</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure decorated method has a proper asyncio executor.&quot;&quot;&quot;</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
+        <span class="n">current_executor</span><span class="p">:</span> <span class="n">AsyncioExecutor</span> <span class="o">=</span> <span class="n">get_global_executor</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">current_executor</span><span class="o">.</span><span class="n">in_executor_context</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
+            <span class="n">set_global_executor</span><span class="p">(</span><span class="n">AsyncioExecutor</span><span class="p">())</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+
+<div class="viewcode-block" id="get_python_type">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.get_python_type">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_python_type</span><span class="p">(</span><span class="n">tango_type</span><span class="p">:</span> <span class="n">CmdArgType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">object</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For converting between recieved tango types and python primatives.&quot;&quot;&quot;</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">is_array</span><span class="p">(</span><span class="n">tango_type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_int</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span>
+    <span class="k">if</span> <span class="n">is_float</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;number&quot;</span>
+    <span class="k">if</span> <span class="n">is_bool</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span>
+    <span class="k">if</span> <span class="n">is_str</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span>
+    <span class="k">if</span> <span class="n">is_binary</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="s2">&quot;string&quot;</span>
+    <span class="k">if</span> <span class="n">tango_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevEnum</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="n">Enum</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span>
+    <span class="k">if</span> <span class="n">tango_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span>
+    <span class="k">if</span> <span class="n">tango_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevUChar</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;integer&quot;</span>
+    <span class="k">if</span> <span class="n">tango_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;string&quot;</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unknown TangoType&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">TangoProxy</span><span class="p">:</span>
+    <span class="n">support_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span>
+    <span class="n">_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">_converter</span><span class="p">:</span> <span class="n">TangoConverter</span> <span class="o">=</span> <span class="n">TangoConverter</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span> <span class="o">=</span> <span class="n">device_proxy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform actions after proxy is connected.</span>
+
+<span class="sd">        e.g. check if signal can be subscribed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get value from TRL.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_w_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get last written value from TRL.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Put value to TRL.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get TRL config async.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get reading from TRL.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_subscription</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Indicate that this trl already subscribed.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe tango CHANGE event to callback.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete CHANGE event subscription.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_polling</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">allow_polling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">polling_period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">abs_change</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">rel_change</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set polling parameters.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_converter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">converter</span><span class="p">:</span> <span class="s2">&quot;TangoConverter&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span> <span class="o">=</span> <span class="n">converter</span>
+
+
+<div class="viewcode-block" id="AttributeProxy">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AttributeProxy</span><span class="p">(</span><span class="n">TangoProxy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used by the tango transport.&quot;&quot;&quot;</span>
+
+    <span class="n">_callback</span><span class="p">:</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_eid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_poll_task</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_abs_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_rel_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">_polling_period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">_allow_polling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">exception</span><span class="p">:</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_last_reading</span><span class="p">:</span> <span class="n">Reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alarm_severity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AttributeProxy.connect">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.connect">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># I have to typehint proxy as tango.DeviceProxy because</span>
+            <span class="c1"># tango.asyncio.DeviceProxy cannot be used as a typehint.</span>
+            <span class="c1"># This means pyright will not be able to see that</span>
+            <span class="c1"># subscribe_event is awaitable.</span>
+            <span class="n">eid</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">subscribe_event</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">EventType</span><span class="o">.</span><span class="n">CHANGE_EVENT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_processor</span>
+            <span class="p">)</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">unsubscribe_event</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="AttributeProxy.get">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get">[docs]</a>
+    <span class="nd">@ensure_proper_executor</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AttributeProxy.get_w_value">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_w_value">[docs]</a>
+    <span class="nd">@ensure_proper_executor</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_w_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">w_value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AttributeProxy.put">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.put">[docs]</a>
+    <span class="nd">@ensure_proper_executor</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># TODO: remove the timeout from this as it is handled at the signal level</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wait</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+
+                <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_write</span><span class="p">():</span>
+                    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">write_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+                <span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">_write</span><span class="p">())</span>
+                <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">te</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> attr put failed: Timeout&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">te</span>
+            <span class="k">except</span> <span class="n">DevFailed</span> <span class="k">as</span> <span class="n">de</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> device failure: </span><span class="si">{</span><span class="n">de</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">desc</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">de</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rid</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">write_attribute_asynch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+            <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_reply</span><span class="p">(</span><span class="n">rd</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">to</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="c1"># I have to typehint proxy as tango.DeviceProxy because</span>
+                        <span class="c1"># tango.asyncio.DeviceProxy cannot be used as a typehint.</span>
+                        <span class="c1"># This means pyright will not be able to see that</span>
+                        <span class="c1"># write_attribute_reply is awaitable.</span>
+                        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">write_attribute_reply</span><span class="p">(</span><span class="n">rd</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                        <span class="k">break</span>
+                    <span class="k">except</span> <span class="n">DevFailed</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;API_AsynReplyNotArrived&quot;</span><span class="p">:</span>
+                            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">A_BIT</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">to</span> <span class="ow">and</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">to</span><span class="p">):</span>
+                                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
+                                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> attr put failed: Timeout&quot;</span>
+                                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> device failure: </span><span class="si">{</span><span class="n">exc</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">desc</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+            <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">wait_for_reply</span><span class="p">(</span><span class="n">rid</span><span class="p">,</span> <span class="n">timeout</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="AttributeProxy.get_config">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_config">[docs]</a>
+    <span class="nd">@ensure_proper_executor</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeInfoEx</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AttributeProxy.get_reading">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_reading">[docs]</a>
+    <span class="nd">@ensure_proper_executor</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="n">reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span>
+            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+            <span class="n">timestamp</span><span class="o">=</span><span class="n">attr</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">totime</span><span class="p">(),</span>
+            <span class="n">alarm_severity</span><span class="o">=</span><span class="n">attr</span><span class="o">.</span><span class="n">quality</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span> <span class="o">=</span> <span class="n">reading</span>
+        <span class="k">return</span> <span class="n">reading</span></div>
+
+
+<div class="viewcode-block" id="AttributeProxy.has_subscription">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.has_subscription">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_subscription</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AttributeProxy.subscribe_callback">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.subscribe_callback">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># If the attribute supports events, then we can subscribe to them</span>
+        <span class="c1"># If the callback is not a callable, then we raise an error</span>
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">callback</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Callback must be a callable&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="o">=</span> <span class="n">callback</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;add user callback to CHANGE event subscription&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">subscribe_event</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span>
+                    <span class="n">EventType</span><span class="o">.</span><span class="n">CHANGE_EVENT</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_event_processor</span><span class="p">,</span>
+                    <span class="n">green_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_allow_polling</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;start polling if no events supported&quot;&quot;&quot;</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_poll</span><span class="p">():</span>
+                    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+                        <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="n">exc</span>
+                            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_poll_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">_poll</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unsubscribe_callback</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot set event for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="s2">&quot;Cannot set a callback on an attribute that does not support events and&quot;</span>
+                <span class="s2">&quot; for which polling is disabled.&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AttributeProxy.unsubscribe_callback">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.unsubscribe_callback">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">unsubscribe_event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">,</span> <span class="n">green_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poll_task</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_poll_task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_poll_task</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Call the callback with the last reading</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_event_processor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">event</span><span class="o">.</span><span class="n">err</span><span class="p">:</span>
+            <span class="n">reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">attr_value</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                <span class="n">timestamp</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">get_date</span><span class="p">()</span><span class="o">.</span><span class="n">totime</span><span class="p">(),</span>
+                <span class="n">alarm_severity</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">attr_value</span><span class="o">.</span><span class="n">quality</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="n">reading</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AttributeProxy.poll">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.poll">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">poll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Poll the attribute and call the callback if the value has changed.</span>
+
+<span class="sd">        Only callback if value has changed by more than the absolute or relative</span>
+<span class="sd">        change. This function is used when an attribute that does not support</span>
+<span class="sd">        events is cached or a callback is passed to it.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">last_reading</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1"># Initial reading</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="n">last_reading</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not poll the attribute: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># If the value is a number, we can check for changes</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span><span class="p">):</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_polling_period</span><span class="p">)</span>
+                    <span class="n">reading</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">reading</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abs_change</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">diff</span> <span class="o">&gt;=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_abs_change</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="n">reading</span><span class="p">)</span>
+                            <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span>
+
+                    <span class="k">elif</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_rel_change</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="n">diff</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rel_change</span> <span class="o">*</span> <span class="nb">abs</span><span class="p">(</span><span class="n">last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span>
+                    <span class="p">):</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="n">reading</span><span class="p">)</span>
+                            <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span>
+
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">flag</span> <span class="o">=</span> <span class="p">(</span><span class="n">flag</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span>
+                        <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="n">reading</span><span class="p">)</span>
+
+                    <span class="n">last_reading</span> <span class="o">=</span> <span class="n">reading</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">break</span>
+            <span class="c1"># If the value is not a number, we can only poll</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_polling_period</span><span class="p">)</span>
+                    <span class="n">flag</span> <span class="o">=</span> <span class="p">(</span><span class="n">flag</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span>
+                    <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">reading</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">reading</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span>
+                                <span class="n">reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+                            <span class="p">):</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="n">reading</span><span class="p">)</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="k">break</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]:</span>
+                                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="n">reading</span><span class="p">)</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="k">break</span>
+                        <span class="n">last_reading</span> <span class="o">=</span> <span class="n">reading</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not poll the attribute: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span></div>
+
+
+<div class="viewcode-block" id="AttributeProxy.set_polling">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.set_polling">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_polling</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">allow_polling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">polling_period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">abs_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rel_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the polling parameters.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_allow_polling</span> <span class="o">=</span> <span class="n">allow_polling</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polling_period</span> <span class="o">=</span> <span class="n">polling_period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_abs_change</span> <span class="o">=</span> <span class="n">abs_change</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rel_change</span> <span class="o">=</span> <span class="n">rel_change</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CommandProxy">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CommandProxy</span><span class="p">(</span><span class="n">TangoProxy</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tango proxy for commands.&quot;&quot;&quot;</span>
+
+    <span class="n">_last_reading</span><span class="p">:</span> <span class="n">Reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alarm_severity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CommandProxy.subscribe_callback">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.subscribe_callback">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Cannot subscribe to commands&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CommandProxy.unsubscribe_callback">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.unsubscribe_callback">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Cannot unsubscribe from commands&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CommandProxy.get">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="CommandProxy.get_w_value">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get_w_value">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_w_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="CommandProxy.connect">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.connect">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="CommandProxy.put">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.put">[docs]</a>
+    <span class="nd">@ensure_proper_executor</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wait</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+
+                <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_put</span><span class="p">():</span>
+                    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">command_inout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+                <span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">_put</span><span class="p">())</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span>
+                    <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">val</span><span class="p">),</span>
+                    <span class="n">timestamp</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
+                    <span class="n">alarm_severity</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">te</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> command failed: Timeout&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">te</span>
+            <span class="k">except</span> <span class="n">DevFailed</span> <span class="k">as</span> <span class="n">de</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> device failure: </span><span class="si">{</span><span class="n">de</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">desc</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">de</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">command_inout_asynch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+            <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_reply</span><span class="p">(</span><span class="n">rd</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">to</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">reply_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">command_inout_reply</span><span class="p">(</span><span class="n">rd</span><span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span>
+                            <span class="n">value</span><span class="o">=</span><span class="n">reply_value</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span> <span class="n">alarm_severity</span><span class="o">=</span><span class="mi">0</span>
+                        <span class="p">)</span>
+                        <span class="k">break</span>
+                    <span class="k">except</span> <span class="n">DevFailed</span> <span class="k">as</span> <span class="n">de_exc</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">de_exc</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;API_AsynReplyNotArrived&quot;</span><span class="p">:</span>
+                            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">A_BIT</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">to</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span> <span class="o">&gt;</span> <span class="n">to</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
+                                    <span class="s2">&quot;Timeout while waiting for command reply&quot;</span>
+                                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">de_exc</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> device failure: </span><span class="si">{</span><span class="n">de_exc</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">desc</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">de_exc</span>
+
+            <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">wait_for_reply</span><span class="p">(</span><span class="n">rid</span><span class="p">,</span> <span class="n">timeout</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="CommandProxy.get_config">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get_config">[docs]</a>
+    <span class="nd">@ensure_proper_executor</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandInfo</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CommandProxy.get_reading">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get_reading">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>
+        <span class="n">reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span>
+            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span>
+            <span class="n">timestamp</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">],</span>
+            <span class="n">alarm_severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alarm_severity&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">reading</span></div>
+
+
+<div class="viewcode-block" id="CommandProxy.set_polling">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.set_polling">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_polling</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">allow_polling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">polling_period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">abs_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rel_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="get_dtype_extended">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.get_dtype_extended">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_dtype_extended</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For converting tango types to numpy datatype formats.&quot;&quot;&quot;</span>
+    <span class="c1"># DevState tango type does not have numpy equivalents</span>
+    <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">object_</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">datatype</span><span class="o">.</span><span class="n">__args__</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">__args__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="n">DevStateEnum</span><span class="p">,</span> <span class="n">DevState</span><span class="p">]:</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span>
+    <span class="k">return</span> <span class="n">dtype</span></div>
+
+
+
+<div class="viewcode-block" id="get_trl_descriptor">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.get_trl_descriptor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_trl_descriptor</span><span class="p">(</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tango_resource</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">tr_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a descriptor from a tango resource locator.&quot;&quot;&quot;</span>
+    <span class="n">tr_dtype</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">tr_name</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">tr_configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">AttributeInfoEx</span><span class="p">):</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">descr</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">data_type</span><span class="p">)</span>
+            <span class="n">tr_dtype</span><span class="p">[</span><span class="n">tr_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">data_format</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">descr</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">CommandInfo</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">in_type</span> <span class="o">!=</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span>
+                <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">out_type</span> <span class="o">!=</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span>
+                <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">in_type</span> <span class="o">!=</span> <span class="n">config</span><span class="o">.</span><span class="n">out_type</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;Commands with different in and out dtypes are not supported&quot;</span>
+                <span class="p">)</span>
+            <span class="n">array</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">descr</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">in_type</span>
+                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">in_type</span> <span class="o">!=</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span>
+                <span class="k">else</span> <span class="n">config</span><span class="o">.</span><span class="n">out_type</span>
+            <span class="p">)</span>
+            <span class="n">tr_dtype</span><span class="p">[</span><span class="n">tr_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span> <span class="k">if</span> <span class="n">array</span> <span class="k">else</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SCALAR</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="p">,</span>
+                <span class="n">descr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown config type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">tr_format</span><span class="p">,</span> <span class="n">tr_dtype</span><span class="p">,</span> <span class="n">tr_dtype_desc</span> <span class="o">=</span> <span class="n">get_unique</span><span class="p">(</span><span class="n">tr_dtype</span><span class="p">,</span> <span class="s2">&quot;typeids&quot;</span><span class="p">)</span>
+
+    <span class="c1"># tango commands are limited in functionality:</span>
+    <span class="c1"># they do not have info about shape and Enum labels</span>
+    <span class="n">trl_config</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tr_configs</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">max_x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">trl_config</span><span class="o">.</span><span class="n">max_dim_x</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">trl_config</span><span class="p">,</span> <span class="s2">&quot;max_dim_x&quot;</span><span class="p">)</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
+    <span class="p">)</span>
+    <span class="n">max_y</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">trl_config</span><span class="o">.</span><span class="n">max_dim_y</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">trl_config</span><span class="p">,</span> <span class="s2">&quot;max_dim_y&quot;</span><span class="p">)</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">max</span>
+    <span class="p">)</span>
+    <span class="c1"># is_attr = hasattr(trl_config, &quot;enum_labels&quot;)</span>
+    <span class="c1"># trl_choices = list(trl_config.enum_labels) if is_attr else []</span>
+
+    <span class="k">if</span> <span class="n">tr_format</span> <span class="ow">in</span> <span class="p">[</span><span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">]:</span>
+        <span class="c1"># This is an array</span>
+        <span class="k">if</span> <span class="n">datatype</span><span class="p">:</span>
+            <span class="c1"># Check we wanted an array of this type</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype_extended</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dtype</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tango_resource</span><span class="si">}</span><span class="s2"> has type [</span><span class="si">{</span><span class="n">tr_dtype</span><span class="si">}</span><span class="s2">] not </span><span class="si">{</span><span class="n">datatype</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">dtype</span> <span class="o">!=</span> <span class="n">tr_dtype</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tango_resource</span><span class="si">}</span><span class="s2"> has type [</span><span class="si">{</span><span class="n">tr_dtype</span><span class="si">}</span><span class="s2">] not [</span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">tr_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DataKey</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">tango_resource</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">max_x</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">tr_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DataKey</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">tango_resource</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">max_y</span><span class="p">,</span> <span class="n">max_x</span><span class="p">])</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tr_dtype</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Enum</span><span class="p">,</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span><span class="p">):</span>
+            <span class="c1"># if tr_dtype == CmdArgType.DevState:</span>
+            <span class="c1">#     trl_choices = list(DevState.names.keys())</span>
+
+            <span class="k">if</span> <span class="n">datatype</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">Enum</span> <span class="o">|</span> <span class="n">DevState</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tango_resource</span><span class="si">}</span><span class="s2"> has type Enum not </span><span class="si">{</span><span class="n">datatype</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="c1"># if tr_dtype == Enum and is_attr:</span>
+                <span class="c1">#     if isinstance(datatype, DevState):</span>
+                <span class="c1">#         choices = tuple(v.name for v in datatype)</span>
+                <span class="c1">#         if set(choices) != set(trl_choices):</span>
+                <span class="c1">#             raise TypeError(</span>
+                <span class="c1">#                 f&quot;{tango_resource} has choices {trl_choices} &quot;</span>
+                <span class="c1">#                 f&quot;not {choices}&quot;</span>
+                <span class="c1">#             )</span>
+            <span class="k">return</span> <span class="n">DataKey</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">tango_resource</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">datatype</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">tr_dtype</span><span class="p">,</span> <span class="n">datatype</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tango_resource</span><span class="si">}</span><span class="s2"> has type </span><span class="si">{</span><span class="n">tr_dtype</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;not </span><span class="si">{</span><span class="n">datatype</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">DataKey</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">tango_resource</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tr_dtype_desc</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[])</span>
+
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting descriptor for </span><span class="si">{</span><span class="n">tango_resource</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_tango_trl">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.get_tango_trl">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_tango_trl</span><span class="p">(</span>
+    <span class="n">full_trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="n">TangoProxy</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TangoProxy</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the tango resource locator.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device_proxy</span><span class="p">,</span> <span class="n">TangoProxy</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">device_proxy</span>
+    <span class="n">device_trl</span><span class="p">,</span> <span class="n">trl_name</span> <span class="o">=</span> <span class="n">get_device_trl_and_attr</span><span class="p">(</span><span class="n">full_trl</span><span class="p">)</span>
+    <span class="n">trl_name</span> <span class="o">=</span> <span class="n">trl_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">device_proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">device_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+
+    <span class="c1"># all attributes can be always accessible with low register</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device_proxy</span><span class="p">,</span> <span class="n">DeviceProxy</span><span class="p">):</span>
+        <span class="n">all_attrs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">attr_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">attr_name</span> <span class="ow">in</span> <span class="n">device_proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">()</span>
+        <span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;device_proxy must be an instance of DeviceProxy for </span><span class="si">{</span><span class="n">full_trl</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">trl_name</span> <span class="ow">in</span> <span class="n">all_attrs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">AttributeProxy</span><span class="p">(</span><span class="n">device_proxy</span><span class="p">,</span> <span class="n">trl_name</span><span class="p">)</span>
+
+    <span class="c1"># all commands can be always accessible with low register</span>
+    <span class="n">all_cmds</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmd_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">cmd_name</span> <span class="ow">in</span> <span class="n">device_proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">()]</span>
+    <span class="k">if</span> <span class="n">trl_name</span> <span class="ow">in</span> <span class="n">all_cmds</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">CommandProxy</span><span class="p">(</span><span class="n">device_proxy</span><span class="p">,</span> <span class="n">trl_name</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trl_name</span><span class="si">}</span><span class="s2"> cannot be found in </span><span class="si">{</span><span class="n">device_proxy</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">make_converter</span><span class="p">(</span><span class="n">info</span><span class="p">:</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">,</span> <span class="n">datatype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TangoConverter</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">AttributeInfoEx</span><span class="p">):</span>
+        <span class="k">match</span> <span class="n">info</span><span class="o">.</span><span class="n">data_type</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevEnum</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">datatype</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
+                    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">datatype</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># get from enum_labels metadata</span>
+                    <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">enum_labels</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">data_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SCALAR</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">TangoEnumConverter</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">info</span><span class="o">.</span><span class="n">data_format</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span>
+                    <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
+                <span class="p">]:</span>
+                    <span class="k">return</span> <span class="n">TangoEnumArrayConverter</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+            <span class="k">case</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">data_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SCALAR</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">TangoDevStateConverter</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">info</span><span class="o">.</span><span class="n">data_format</span> <span class="ow">in</span> <span class="p">[</span>
+                    <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span>
+                    <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">,</span>
+                <span class="p">]:</span>
+                    <span class="k">return</span> <span class="n">TangoDevStateArrayConverter</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># command info</span>
+        <span class="k">match</span> <span class="n">info</span><span class="o">.</span><span class="n">in_type</span><span class="p">:</span>
+            <span class="k">case</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">TangoDevStateConverter</span><span class="p">()</span>
+            <span class="k">case</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevEnum</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">datatype</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
+                    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">datatype</span><span class="p">]</span>
+                    <span class="k">return</span> <span class="n">TangoEnumConverter</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;No override enum class provided for Tango enum command&quot;</span>
+                    <span class="p">)</span>
+    <span class="c1"># default case return trivial converter</span>
+    <span class="k">return</span> <span class="n">TangoConverter</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="TangoSignalBackend">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TangoSignalBackend</span><span class="p">(</span><span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tango backend to connect signals over tango.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">read_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span> <span class="o">=</span> <span class="n">device_proxy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span> <span class="o">=</span> <span class="n">read_trl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span> <span class="o">=</span> <span class="n">write_trl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TangoProxy</span> <span class="o">|</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">read_trl</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="p">,</span>
+            <span class="n">write_trl</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trl_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeInfoEx</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">descriptor</span><span class="p">:</span> <span class="n">DataKey</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="mf">0.1</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="mf">0.1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converter</span> <span class="o">=</span> <span class="n">TangoConverter</span><span class="p">()</span>  <span class="c1"># gets replaced at connect</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TangoSignalBackend.datatype_allowed">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.datatype_allowed">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">datatype_allowed</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.set_trl">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.set_trl">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_trl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">write_trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span> <span class="o">=</span> <span class="n">read_trl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span> <span class="o">=</span> <span class="n">write_trl</span> <span class="k">if</span> <span class="n">write_trl</span> <span class="k">else</span> <span class="n">read_trl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">read_trl</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="p">,</span>
+            <span class="n">write_trl</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="p">,</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.source">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.source">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">read</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span> <span class="k">if</span> <span class="n">read</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_connect_and_store_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trl</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;trl not set for </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_tango_trl</span><span class="p">(</span><span class="n">trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">],</span> <span class="n">timeout</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="n">trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># Pyright does not believe that self.proxies[trl] is not None despite</span>
+            <span class="c1"># the check above</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trl_configs</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span><span class="o">.</span><span class="n">support_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">ce</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tango://</span><span class="si">{</span><span class="n">trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ce</span>
+
+<div class="viewcode-block" id="TangoSignalBackend.connect">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.connect">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;trl not set for </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">:</span>
+            <span class="c1"># Different, need to connect both</span>
+            <span class="k">await</span> <span class="n">wait_for_connection</span><span class="p">(</span>
+                <span class="n">read_trl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_connect_and_store_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">,</span> <span class="n">timeout</span><span class="p">),</span>
+                <span class="n">write_trl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_connect_and_store_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">,</span> <span class="n">timeout</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># The same, so only need to connect one</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_and_store_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span><span class="o">.</span><span class="n">set_polling</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converter</span> <span class="o">=</span> <span class="n">make_converter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trl_configs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span><span class="o">.</span><span class="n">set_converter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">converter</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">descriptor</span> <span class="o">=</span> <span class="n">get_trl_descriptor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trl_configs</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.put">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.put">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">put_status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">put_status</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.get_datakey">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.get_datakey">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.get_reading">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.get_reading">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">reading</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="n">reading</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.get_value">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.get_value">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">proxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">proxy</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.get_setpoint">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.get_setpoint">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">proxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">w_value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">proxy</span><span class="o">.</span><span class="n">get_w_value</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">w_value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.set_callback">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.set_callback">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot set event for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="s2">&quot;Cannot set a callback on an attribute that does not support events and&quot;</span>
+                <span class="s2">&quot; for which polling is disabled.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">callback</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span><span class="o">.</span><span class="n">has_subscription</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot set a callback when one is already set&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span><span class="o">.</span><span class="n">has_subscription</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span><span class="o">.</span><span class="n">unsubscribe_callback</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">if</span> <span class="n">callback</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span><span class="o">.</span><span class="n">subscribe_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot set callback for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">. </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.set_polling">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.set_polling">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_polling</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">allow_polling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">polling_period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">abs_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rel_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polling</span> <span class="o">=</span> <span class="p">(</span><span class="n">allow_polling</span><span class="p">,</span> <span class="n">polling_period</span><span class="p">,</span> <span class="n">abs_change</span><span class="p">,</span> <span class="n">rel_change</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TangoSignalBackend.allow_events">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.allow_events">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">allow_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span> <span class="o">=</span> <span class="n">allow</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

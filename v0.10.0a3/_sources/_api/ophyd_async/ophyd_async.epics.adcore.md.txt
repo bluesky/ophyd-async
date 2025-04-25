@@ -1,0 +1,2014 @@
+# {py:mod}`ophyd_async.epics.adcore`
+
+```{py:module} ophyd_async.epics.adcore
+```
+
+```{autodoc2-docstring} ophyd_async.epics.adcore
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`ADBaseIO <ophyd_async.epics.adcore._core_io.ADBaseIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseIO
+    :summary:
+    ```
+* - {py:obj}`ADCallbacks <ophyd_async.epics.adcore._core_io.ADCallbacks>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCallbacks
+    :summary:
+    ```
+* - {py:obj}`ADCompression <ophyd_async.epics.adcore._core_io.ADCompression>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression
+    :summary:
+    ```
+* - {py:obj}`ADBaseContAcqController <ophyd_async.epics.adcore._core_logic.ADBaseContAcqController>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseContAcqController
+    :summary:
+    ```
+* - {py:obj}`AreaDetector <ophyd_async.epics.adcore._core_detector.AreaDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_detector.AreaDetector
+    :summary:
+    ```
+* - {py:obj}`ADState <ophyd_async.epics.adcore._core_io.ADState>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState
+    :summary:
+    ```
+* - {py:obj}`ContAcqAreaDetector <ophyd_async.epics.adcore._core_detector.ContAcqAreaDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_detector.ContAcqAreaDetector
+    :summary:
+    ```
+* - {py:obj}`NDArrayBaseIO <ophyd_async.epics.adcore._core_io.NDArrayBaseIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO
+    :summary:
+    ```
+* - {py:obj}`NDFileIO <ophyd_async.epics.adcore._core_io.NDFileIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO
+    :summary:
+    ```
+* - {py:obj}`NDFileHDFIO <ophyd_async.epics.adcore._core_io.NDFileHDFIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO
+    :summary:
+    ```
+* - {py:obj}`NDPluginBaseIO <ophyd_async.epics.adcore._core_io.NDPluginBaseIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginBaseIO
+    :summary:
+    ```
+* - {py:obj}`NDPluginStatsIO <ophyd_async.epics.adcore._core_io.NDPluginStatsIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO
+    :summary:
+    ```
+* - {py:obj}`ADBaseDatasetDescriber <ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber
+    :summary:
+    ```
+* - {py:obj}`ADBaseController <ophyd_async.epics.adcore._core_logic.ADBaseController>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseController
+    :summary:
+    ```
+* - {py:obj}`ADWriter <ophyd_async.epics.adcore._core_writer.ADWriter>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter
+    :summary:
+    ```
+* - {py:obj}`ADHDFWriter <ophyd_async.epics.adcore._hdf_writer.ADHDFWriter>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._hdf_writer.ADHDFWriter
+    :summary:
+    ```
+* - {py:obj}`ADTIFFWriter <ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter
+    :summary:
+    ```
+* - {py:obj}`ADJPEGWriter <ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter
+    :summary:
+    ```
+* - {py:obj}`SingleTriggerDetector <ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector
+    :summary:
+    ```
+* - {py:obj}`ADBaseDataType <ophyd_async.epics.adcore._utils.ADBaseDataType>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType
+    :summary:
+    ```
+* - {py:obj}`ADFileWriteMode <ophyd_async.epics.adcore._utils.ADFileWriteMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode
+    :summary:
+    ```
+* - {py:obj}`ADImageMode <ophyd_async.epics.adcore._utils.ADImageMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode
+    :summary:
+    ```
+* - {py:obj}`NDAttributePv <ophyd_async.epics.adcore._utils.NDAttributePv>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePv
+    :summary:
+    ```
+* - {py:obj}`NDAttributeParam <ophyd_async.epics.adcore._utils.NDAttributeParam>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeParam
+    :summary:
+    ```
+* - {py:obj}`NDAttributeDataType <ophyd_async.epics.adcore._utils.NDAttributeDataType>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeDataType
+    :summary:
+    ```
+* - {py:obj}`NDAttributePvDbrType <ophyd_async.epics.adcore._utils.NDAttributePvDbrType>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType
+    :summary:
+    ```
+* - {py:obj}`NDCBFlushOnSoftTrgMode <ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode
+    :summary:
+    ```
+* - {py:obj}`NDPluginCBIO <ophyd_async.epics.adcore._core_io.NDPluginCBIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginCBIO
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`stop_busy_record <ophyd_async.epics.adcore._utils.stop_busy_record>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.stop_busy_record
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`DEFAULT_GOOD_STATES <ophyd_async.epics.adcore._core_logic.DEFAULT_GOOD_STATES>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.DEFAULT_GOOD_STATES
+    :summary:
+    ```
+````
+
+### API
+
+`````{py:class} ADBaseIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adcore._core_io.ADBaseIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDArrayBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseIO
+```
+
+````{py:attribute} acquire_time
+:canonical: ophyd_async.epics.adcore._core_io.ADBaseIO.acquire_time
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ophyd_async.epics.core.PvSuffix.rbv('AcquireTime')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseIO.acquire_time
+```
+
+````
+
+````{py:attribute} acquire_period
+:canonical: ophyd_async.epics.adcore._core_io.ADBaseIO.acquire_period
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ophyd_async.epics.core.PvSuffix.rbv('AcquirePeriod')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseIO.acquire_period
+```
+
+````
+
+````{py:attribute} num_images
+:canonical: ophyd_async.epics.adcore._core_io.ADBaseIO.num_images
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('NumImages')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseIO.num_images
+```
+
+````
+
+````{py:attribute} image_mode
+:canonical: ophyd_async.epics.adcore._core_io.ADBaseIO.image_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._utils.ADImageMode], ophyd_async.epics.core.PvSuffix.rbv('ImageMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseIO.image_mode
+```
+
+````
+
+````{py:attribute} detector_state
+:canonical: ophyd_async.epics.adcore._core_io.ADBaseIO.detector_state
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[~ophyd_async.epics.adcore._core_io.ADState], PvSuffix('DetectorState_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseIO.detector_state
+```
+
+````
+
+`````
+
+`````{py:class} ADCallbacks()
+:canonical: ophyd_async.epics.adcore._core_io.ADCallbacks
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCallbacks
+```
+
+````{py:attribute} ENABLE
+:canonical: ophyd_async.epics.adcore._core_io.ADCallbacks.ENABLE
+:value: >
+   'Enable'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCallbacks.ENABLE
+```
+
+````
+
+````{py:attribute} DISABLE
+:canonical: ophyd_async.epics.adcore._core_io.ADCallbacks.DISABLE
+:value: >
+   'Disable'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCallbacks.DISABLE
+```
+
+````
+
+`````
+
+`````{py:class} ADCompression()
+:canonical: ophyd_async.epics.adcore._core_io.ADCompression
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression
+```
+
+````{py:attribute} NONE
+:canonical: ophyd_async.epics.adcore._core_io.ADCompression.NONE
+:value: >
+   'None'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression.NONE
+```
+
+````
+
+````{py:attribute} NBIT
+:canonical: ophyd_async.epics.adcore._core_io.ADCompression.NBIT
+:value: >
+   'N-bit'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression.NBIT
+```
+
+````
+
+````{py:attribute} SZIP
+:canonical: ophyd_async.epics.adcore._core_io.ADCompression.SZIP
+:value: >
+   'szip'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression.SZIP
+```
+
+````
+
+````{py:attribute} ZLIB
+:canonical: ophyd_async.epics.adcore._core_io.ADCompression.ZLIB
+:value: >
+   'zlib'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression.ZLIB
+```
+
+````
+
+````{py:attribute} BLOSC
+:canonical: ophyd_async.epics.adcore._core_io.ADCompression.BLOSC
+:value: >
+   'Blosc'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression.BLOSC
+```
+
+````
+
+````{py:attribute} BSLZ4
+:canonical: ophyd_async.epics.adcore._core_io.ADCompression.BSLZ4
+:value: >
+   'BSLZ4'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression.BSLZ4
+```
+
+````
+
+````{py:attribute} LZ4
+:canonical: ophyd_async.epics.adcore._core_io.ADCompression.LZ4
+:value: >
+   'LZ4'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression.LZ4
+```
+
+````
+
+````{py:attribute} JPEG
+:canonical: ophyd_async.epics.adcore._core_io.ADCompression.JPEG
+:value: >
+   'JPEG'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression.JPEG
+```
+
+````
+
+`````
+
+`````{py:class} ADBaseContAcqController(driver: ~ophyd_async.epics.adcore._core_io.ADBaseIO, cb_plugin: ~ophyd_async.epics.adcore._core_io.NDPluginCBIO)
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseContAcqController
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_logic.ADBaseController`\[{py:obj}`ophyd_async.epics.adcore._core_io.ADBaseIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseContAcqController
+```
+
+````{py:method} get_deadtime(exposure)
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.get_deadtime
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.get_deadtime
+```
+
+````
+
+````{py:method} ensure_acquisition_settings_valid(trigger_info: ~ophyd_async.core.TriggerInfo) -> None
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.ensure_acquisition_settings_valid
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.ensure_acquisition_settings_valid
+```
+
+````
+
+````{py:method} ensure_in_continuous_acquisition_mode() -> None
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.ensure_in_continuous_acquisition_mode
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.ensure_in_continuous_acquisition_mode
+```
+
+````
+
+````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo) -> None
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.prepare
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.prepare
+```
+
+````
+
+````{py:method} arm() -> None
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.arm
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.arm
+```
+
+````
+
+````{py:method} disarm() -> None
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.disarm
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseContAcqController.disarm
+```
+
+````
+
+`````
+
+`````{py:class} AreaDetector(controller: ~ophyd_async.epics.adcore._core_logic.ADBaseControllerT, writer: ~ophyd_async.epics.adcore._core_writer.ADWriter, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+:canonical: ophyd_async.epics.adcore._core_detector.AreaDetector
+
+Bases: {py:obj}`ophyd_async.core.StandardDetector`\[{py:obj}`ophyd_async.epics.adcore._core_logic.ADBaseControllerT`\, {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_detector.AreaDetector
+```
+
+````{py:method} get_plugin(name: str, plugin_type: type[~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] = NDPluginBaseIO) -> ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO
+:canonical: ophyd_async.epics.adcore._core_detector.AreaDetector.get_plugin
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_detector.AreaDetector.get_plugin
+```
+
+````
+
+`````
+
+`````{py:class} ADState()
+:canonical: ophyd_async.epics.adcore._core_io.ADState
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState
+```
+
+````{py:attribute} IDLE
+:canonical: ophyd_async.epics.adcore._core_io.ADState.IDLE
+:value: >
+   'Idle'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.IDLE
+```
+
+````
+
+````{py:attribute} ACQUIRE
+:canonical: ophyd_async.epics.adcore._core_io.ADState.ACQUIRE
+:value: >
+   'Acquire'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.ACQUIRE
+```
+
+````
+
+````{py:attribute} READOUT
+:canonical: ophyd_async.epics.adcore._core_io.ADState.READOUT
+:value: >
+   'Readout'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.READOUT
+```
+
+````
+
+````{py:attribute} CORRECT
+:canonical: ophyd_async.epics.adcore._core_io.ADState.CORRECT
+:value: >
+   'Correct'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.CORRECT
+```
+
+````
+
+````{py:attribute} SAVING
+:canonical: ophyd_async.epics.adcore._core_io.ADState.SAVING
+:value: >
+   'Saving'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.SAVING
+```
+
+````
+
+````{py:attribute} ABORTING
+:canonical: ophyd_async.epics.adcore._core_io.ADState.ABORTING
+:value: >
+   'Aborting'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.ABORTING
+```
+
+````
+
+````{py:attribute} ERROR
+:canonical: ophyd_async.epics.adcore._core_io.ADState.ERROR
+:value: >
+   'Error'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.ERROR
+```
+
+````
+
+````{py:attribute} WAITING
+:canonical: ophyd_async.epics.adcore._core_io.ADState.WAITING
+:value: >
+   'Waiting'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.WAITING
+```
+
+````
+
+````{py:attribute} INITIALIZING
+:canonical: ophyd_async.epics.adcore._core_io.ADState.INITIALIZING
+:value: >
+   'Initializing'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.INITIALIZING
+```
+
+````
+
+````{py:attribute} DISCONNECTED
+:canonical: ophyd_async.epics.adcore._core_io.ADState.DISCONNECTED
+:value: >
+   'Disconnected'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.DISCONNECTED
+```
+
+````
+
+````{py:attribute} ABORTED
+:canonical: ophyd_async.epics.adcore._core_io.ADState.ABORTED
+:value: >
+   'Aborted'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADState.ABORTED
+```
+
+````
+
+`````
+
+````{py:class} ContAcqAreaDetector(prefix: str, path_provider: ~ophyd_async.core._providers.PathProvider, drv_cls: type[~ophyd_async.epics.adcore._core_io.ADBaseIO] = ADBaseIO, drv_suffix: str = 'cam1:', cb_suffix: str = 'CB1:', writer_cls: type[~ophyd_async.epics.adcore._core_writer.ADWriter] = ADHDFWriter, fileio_suffix: str | None = None, name: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = ())
+:canonical: ophyd_async.epics.adcore._core_detector.ContAcqAreaDetector
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_detector.AreaDetector`\[{py:obj}`ophyd_async.epics.adcore._core_logic.ADBaseContAcqController`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_detector.ContAcqAreaDetector
+```
+
+````
+
+`````{py:class} NDArrayBaseIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO
+
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO
+```
+
+````{py:attribute} unique_id
+:canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO.unique_id
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('UniqueId_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO.unique_id
+```
+
+````
+
+````{py:attribute} nd_attributes_file
+:canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO.nd_attributes_file
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], PvSuffix('NDAttributesFile')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO.nd_attributes_file
+```
+
+````
+
+````{py:attribute} acquire
+:canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO.acquire
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Acquire')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO.acquire
+```
+
+````
+
+````{py:attribute} array_size_x
+:canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO.array_size_x
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('ArraySizeX_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO.array_size_x
+```
+
+````
+
+````{py:attribute} array_size_y
+:canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO.array_size_y
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('ArraySizeY_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO.array_size_y
+```
+
+````
+
+````{py:attribute} data_type
+:canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO.data_type
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[~ophyd_async.epics.adcore._utils.ADBaseDataType], PvSuffix('DataType_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO.data_type
+```
+
+````
+
+````{py:attribute} array_counter
+:canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO.array_counter
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('ArrayCounter')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO.array_counter
+```
+
+````
+
+````{py:attribute} wait_for_plugins
+:canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO.wait_for_plugins
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], PvSuffix('WaitForPlugins')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDArrayBaseIO.wait_for_plugins
+```
+
+````
+
+`````
+
+`````{py:class} NDFileIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO
+```
+
+````{py:attribute} file_path
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.file_path
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], ophyd_async.epics.core.PvSuffix.rbv('FilePath')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.file_path
+```
+
+````
+
+````{py:attribute} file_name
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.file_name
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], ophyd_async.epics.core.PvSuffix.rbv('FileName')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.file_name
+```
+
+````
+
+````{py:attribute} file_path_exists
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.file_path_exists
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[bool], PvSuffix('FilePathExists_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.file_path_exists
+```
+
+````
+
+````{py:attribute} file_template
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.file_template
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], ophyd_async.epics.core.PvSuffix.rbv('FileTemplate')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.file_template
+```
+
+````
+
+````{py:attribute} full_file_name
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.full_file_name
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('FullFileName_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.full_file_name
+```
+
+````
+
+````{py:attribute} file_number
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.file_number
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], PvSuffix('FileNumber')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.file_number
+```
+
+````
+
+````{py:attribute} auto_increment
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.auto_increment
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], PvSuffix('AutoIncrement')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.auto_increment
+```
+
+````
+
+````{py:attribute} file_write_mode
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.file_write_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._utils.ADFileWriteMode], ophyd_async.epics.core.PvSuffix.rbv('FileWriteMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.file_write_mode
+```
+
+````
+
+````{py:attribute} num_capture
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.num_capture
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('NumCapture')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.num_capture
+```
+
+````
+
+````{py:attribute} num_captured
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.num_captured
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('NumCaptured_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.num_captured
+```
+
+````
+
+````{py:attribute} capture
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.capture
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Capture')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.capture
+```
+
+````
+
+````{py:attribute} array_size0
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.array_size0
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('ArraySize0')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.array_size0
+```
+
+````
+
+````{py:attribute} array_size1
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.array_size1
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('ArraySize1')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.array_size1
+```
+
+````
+
+````{py:attribute} create_directory
+:canonical: ophyd_async.epics.adcore._core_io.NDFileIO.create_directory
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], PvSuffix('CreateDirectory')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO.create_directory
+```
+
+````
+
+`````
+
+`````{py:class} NDFileHDFIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDFileIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO
+```
+
+````{py:attribute} position_mode
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.position_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('PositionMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO.position_mode
+```
+
+````
+
+````{py:attribute} compression
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.compression
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._core_io.ADCompression], ophyd_async.epics.core.PvSuffix.rbv('Compression')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO.compression
+```
+
+````
+
+````{py:attribute} num_extra_dims
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.num_extra_dims
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('NumExtraDims')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO.num_extra_dims
+```
+
+````
+
+````{py:attribute} swmr_mode
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.swmr_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('SWMRMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO.swmr_mode
+```
+
+````
+
+````{py:attribute} flush_now
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.flush_now
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], PvSuffix('FlushNow')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO.flush_now
+```
+
+````
+
+````{py:attribute} xml_file_name
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.xml_file_name
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], ophyd_async.epics.core.PvSuffix.rbv('XMLFileName')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO.xml_file_name
+```
+
+````
+
+````{py:attribute} num_frames_chunks
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.num_frames_chunks
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('NumFramesChunks_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO.num_frames_chunks
+```
+
+````
+
+````{py:attribute} chunk_size_auto
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.chunk_size_auto
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('ChunkSizeAuto')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO.chunk_size_auto
+```
+
+````
+
+````{py:attribute} lazy_open
+:canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.lazy_open
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('LazyOpen')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO.lazy_open
+```
+
+````
+
+`````
+
+`````{py:class} NDPluginBaseIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginBaseIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDArrayBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginBaseIO
+```
+
+````{py:attribute} nd_array_port
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginBaseIO.nd_array_port
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[str], ophyd_async.epics.core.PvSuffix.rbv('NDArrayPort')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginBaseIO.nd_array_port
+```
+
+````
+
+````{py:attribute} enable_callbacks
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginBaseIO.enable_callbacks
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._core_io.ADCallbacks], ophyd_async.epics.core.PvSuffix.rbv('EnableCallbacks')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginBaseIO.enable_callbacks
+```
+
+````
+
+````{py:attribute} nd_array_address
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginBaseIO.nd_array_address
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('NDArrayAddress')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginBaseIO.nd_array_address
+```
+
+````
+
+````{py:attribute} array_size0
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginBaseIO.array_size0
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('ArraySize0_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginBaseIO.array_size0
+```
+
+````
+
+````{py:attribute} array_size1
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginBaseIO.array_size1
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('ArraySize1_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginBaseIO.array_size1
+```
+
+````
+
+````{py:attribute} queue_size
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginBaseIO.queue_size
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('QueueSize')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginBaseIO.queue_size
+```
+
+````
+
+`````
+
+`````{py:class} NDPluginStatsIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO
+```
+
+````{py:attribute} compute_statistics
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.compute_statistics
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('ComputeStatistics')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.compute_statistics
+```
+
+````
+
+````{py:attribute} bgd_width
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.bgd_width
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('BgdWidth')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.bgd_width
+```
+
+````
+
+````{py:attribute} total_array
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.total_array
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ophyd_async.epics.core.PvSuffix.rbv('TotalArray')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.total_array
+```
+
+````
+
+````{py:attribute} compute_centroid
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.compute_centroid
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('ComputeCentroid')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.compute_centroid
+```
+
+````
+
+````{py:attribute} centroid_threshold
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.centroid_threshold
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ophyd_async.epics.core.PvSuffix.rbv('CentroidThreshold')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.centroid_threshold
+```
+
+````
+
+````{py:attribute} compute_profiles
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.compute_profiles
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('ComputeProfiles')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.compute_profiles
+```
+
+````
+
+````{py:attribute} profile_size_x
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.profile_size_x
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('ProfileSizeX')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.profile_size_x
+```
+
+````
+
+````{py:attribute} profile_size_y
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.profile_size_y
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('ProfileSizeY')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.profile_size_y
+```
+
+````
+
+````{py:attribute} cursor_x
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.cursor_x
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('CursorX')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.cursor_x
+```
+
+````
+
+````{py:attribute} cursor_y
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.cursor_y
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('CursorY')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.cursor_y
+```
+
+````
+
+````{py:attribute} compute_histogram
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.compute_histogram
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('ComputeHistogram')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.compute_histogram
+```
+
+````
+
+````{py:attribute} hist_size
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.hist_size
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('HistSize')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.hist_size
+```
+
+````
+
+````{py:attribute} hist_min
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.hist_min
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ophyd_async.epics.core.PvSuffix.rbv('HistMin')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.hist_min
+```
+
+````
+
+````{py:attribute} hist_max
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginStatsIO.hist_max
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ophyd_async.epics.core.PvSuffix.rbv('HistMax')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO.hist_max
+```
+
+````
+
+`````
+
+````{py:data} DEFAULT_GOOD_STATES
+:canonical: ophyd_async.epics.adcore._core_logic.DEFAULT_GOOD_STATES
+:type: frozenset[~ophyd_async.epics.adcore._core_io.ADState]
+:value: >
+   'frozenset(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.DEFAULT_GOOD_STATES
+```
+
+````
+
+`````{py:class} ADBaseDatasetDescriber(driver: ~ophyd_async.epics.adcore._core_io.NDArrayBaseIO)
+:canonical: ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber
+
+Bases: {py:obj}`ophyd_async.core.DatasetDescriber`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber
+```
+
+````{py:method} np_datatype() -> str
+:canonical: ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber.np_datatype
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber.np_datatype
+```
+
+````
+
+````{py:method} shape() -> tuple[int, int]
+:canonical: ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber.shape
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber.shape
+```
+
+````
+
+`````
+
+`````{py:class} ADBaseController(driver: ~ophyd_async.epics.adcore._core_logic.ADBaseIOT, good_states: frozenset[~ophyd_async.epics.adcore._core_io.ADState] = DEFAULT_GOOD_STATES)
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseController
+
+Bases: {py:obj}`ophyd_async.core.DetectorController`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._core_logic.ADBaseIOT`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseController
+```
+
+````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo) -> None
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseController.prepare
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseController.prepare
+```
+
+````
+
+````{py:method} arm()
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseController.arm
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseController.arm
+```
+
+````
+
+````{py:method} wait_for_idle()
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseController.wait_for_idle
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseController.wait_for_idle
+```
+
+````
+
+````{py:method} disarm()
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseController.disarm
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseController.disarm
+```
+
+````
+
+````{py:method} set_exposure_time_and_acquire_period_if_supplied(exposure: float | None = None, timeout: float = DEFAULT_TIMEOUT) -> None
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseController.set_exposure_time_and_acquire_period_if_supplied
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseController.set_exposure_time_and_acquire_period_if_supplied
+```
+
+````
+
+````{py:method} start_acquiring_driver_and_ensure_status() -> ~ophyd_async.core.AsyncStatus
+:canonical: ophyd_async.epics.adcore._core_logic.ADBaseController.start_acquiring_driver_and_ensure_status
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_logic.ADBaseController.start_acquiring_driver_and_ensure_status
+```
+
+````
+
+`````
+
+`````{py:class} ADWriter(fileio: ~ophyd_async.epics.adcore._core_writer.NDFileIOT, path_provider: ~ophyd_async.core._providers.PathProvider, dataset_describer: ~ophyd_async.core._providers.DatasetDescriber, file_extension: str = '', mimetype: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter
+
+Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._core_writer.NDFileIOT`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter
+```
+
+````{py:attribute} default_suffix
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.default_suffix
+:type: str
+:value: >
+   'FILE1:'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.default_suffix
+```
+
+````
+
+````{py:method} with_io(prefix: str, path_provider: ~ophyd_async.core._providers.PathProvider, dataset_source: ~ophyd_async.epics.adcore._core_io.NDArrayBaseIO | None = None, fileio_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None) -> ~ophyd_async.epics.adcore._core_writer.ADWriterT
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.with_io
+:classmethod:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.with_io
+```
+
+````
+
+````{py:method} begin_capture(name: str) -> None
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.begin_capture
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.begin_capture
+```
+
+````
+
+````{py:method} open(name: str, exposures_per_event: ~pydantic.PositiveInt = 1) -> dict[str, ~event_model.DataKey]
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.open
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.open
+```
+
+````
+
+````{py:method} observe_indices_written(timeout: float) -> ~collections.abc.AsyncGenerator[int, None]
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.observe_indices_written
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.observe_indices_written
+```
+
+````
+
+````{py:method} get_indices_written() -> int
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.get_indices_written
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.get_indices_written
+```
+
+````
+
+````{py:method} collect_stream_docs(name: str, indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.collect_stream_docs
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.collect_stream_docs
+```
+
+````
+
+````{py:method} close()
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.close
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.close
+```
+
+````
+
+````{py:method} get_hints(name: str) -> ~bluesky.protocols.Hints
+:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.get_hints
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.get_hints
+```
+
+````
+
+`````
+
+`````{py:class} ADHDFWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileHDFIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+:canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFileHDFIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._hdf_writer.ADHDFWriter
+```
+
+````{py:attribute} default_suffix
+:canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.default_suffix
+:type: str
+:value: >
+   'HDF1:'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.default_suffix
+```
+
+````
+
+````{py:method} open(name: str, exposures_per_event: ~pydantic.PositiveInt = 1) -> dict[str, ~event_model.DataKey]
+:canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.open
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.open
+```
+
+````
+
+````{py:method} collect_stream_docs(name: str, indices_written: int) -> ~collections.abc.AsyncIterator[~bluesky.protocols.StreamAsset]
+:canonical: ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.collect_stream_docs
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.collect_stream_docs
+```
+
+````
+
+`````
+
+`````{py:class} ADTIFFWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+:canonical: ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFileIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter
+```
+
+````{py:attribute} default_suffix
+:canonical: ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter.default_suffix
+:type: str
+:value: >
+   'TIFF1:'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter.default_suffix
+```
+
+````
+
+`````
+
+`````{py:class} ADJPEGWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+:canonical: ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFileIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter
+```
+
+````{py:attribute} default_suffix
+:canonical: ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter.default_suffix
+:type: str
+:value: >
+   'JPEG1:'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter.default_suffix
+```
+
+````
+
+`````
+
+`````{py:class} SingleTriggerDetector(drv: ~ophyd_async.epics.adcore._core_io.ADBaseIO, read_uncached: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name='', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+:canonical: ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Triggerable`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector
+```
+
+````{py:method} stage() -> None
+:canonical: ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector.stage
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector.stage
+```
+
+````
+
+````{py:method} trigger() -> None
+:canonical: ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector.trigger
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector.trigger
+```
+
+````
+
+`````
+
+`````{py:class} ADBaseDataType()
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType
+```
+
+````{py:attribute} INT8
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.INT8
+:value: >
+   'Int8'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.INT8
+```
+
+````
+
+````{py:attribute} UINT8
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.UINT8
+:value: >
+   'UInt8'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.UINT8
+```
+
+````
+
+````{py:attribute} INT16
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.INT16
+:value: >
+   'Int16'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.INT16
+```
+
+````
+
+````{py:attribute} UINT16
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.UINT16
+:value: >
+   'UInt16'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.UINT16
+```
+
+````
+
+````{py:attribute} INT32
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.INT32
+:value: >
+   'Int32'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.INT32
+```
+
+````
+
+````{py:attribute} UINT32
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.UINT32
+:value: >
+   'UInt32'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.UINT32
+```
+
+````
+
+````{py:attribute} INT64
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.INT64
+:value: >
+   'Int64'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.INT64
+```
+
+````
+
+````{py:attribute} UINT64
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.UINT64
+:value: >
+   'UInt64'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.UINT64
+```
+
+````
+
+````{py:attribute} FLOAT32
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.FLOAT32
+:value: >
+   'Float32'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.FLOAT32
+```
+
+````
+
+````{py:attribute} FLOAT64
+:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.FLOAT64
+:value: >
+   'Float64'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.FLOAT64
+```
+
+````
+
+`````
+
+`````{py:class} ADFileWriteMode()
+:canonical: ophyd_async.epics.adcore._utils.ADFileWriteMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode
+```
+
+````{py:attribute} SINGLE
+:canonical: ophyd_async.epics.adcore._utils.ADFileWriteMode.SINGLE
+:value: >
+   'Single'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode.SINGLE
+```
+
+````
+
+````{py:attribute} CAPTURE
+:canonical: ophyd_async.epics.adcore._utils.ADFileWriteMode.CAPTURE
+:value: >
+   'Capture'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode.CAPTURE
+```
+
+````
+
+````{py:attribute} STREAM
+:canonical: ophyd_async.epics.adcore._utils.ADFileWriteMode.STREAM
+:value: >
+   'Stream'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADFileWriteMode.STREAM
+```
+
+````
+
+`````
+
+`````{py:class} ADImageMode()
+:canonical: ophyd_async.epics.adcore._utils.ADImageMode
+
+Bases: {py:obj}`ophyd_async.core.SubsetEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode
+```
+
+````{py:attribute} SINGLE
+:canonical: ophyd_async.epics.adcore._utils.ADImageMode.SINGLE
+:value: >
+   'Single'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode.SINGLE
+```
+
+````
+
+````{py:attribute} MULTIPLE
+:canonical: ophyd_async.epics.adcore._utils.ADImageMode.MULTIPLE
+:value: >
+   'Multiple'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode.MULTIPLE
+```
+
+````
+
+````{py:attribute} CONTINUOUS
+:canonical: ophyd_async.epics.adcore._utils.ADImageMode.CONTINUOUS
+:value: >
+   'Continuous'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADImageMode.CONTINUOUS
+```
+
+````
+
+`````
+
+`````{py:class} NDAttributePv
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePv
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePv
+```
+
+````{py:attribute} name
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePv.name
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePv.name
+```
+
+````
+
+````{py:attribute} signal
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePv.signal
+:type: ~ophyd_async.core.SignalR
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePv.signal
+```
+
+````
+
+````{py:attribute} dbrtype
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePv.dbrtype
+:type: ~ophyd_async.epics.adcore._utils.NDAttributePvDbrType
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePv.dbrtype
+```
+
+````
+
+````{py:attribute} description
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePv.description
+:type: str
+:value: <Multiline-String>
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePv.description
+```
+
+````
+
+`````
+
+`````{py:class} NDAttributeParam
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeParam
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeParam
+```
+
+````{py:attribute} name
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeParam.name
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeParam.name
+```
+
+````
+
+````{py:attribute} param
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeParam.param
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeParam.param
+```
+
+````
+
+````{py:attribute} datatype
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeParam.datatype
+:type: ~ophyd_async.epics.adcore._utils.NDAttributeDataType
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeParam.datatype
+```
+
+````
+
+````{py:attribute} addr
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeParam.addr
+:type: int
+:value: >
+   0
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeParam.addr
+```
+
+````
+
+````{py:attribute} description
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeParam.description
+:type: str
+:value: <Multiline-String>
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeParam.description
+```
+
+````
+
+`````
+
+`````{py:class} NDAttributeDataType()
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeDataType
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeDataType
+```
+
+````{py:attribute} INT
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeDataType.INT
+:value: >
+   'INT'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeDataType.INT
+```
+
+````
+
+````{py:attribute} DOUBLE
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeDataType.DOUBLE
+:value: >
+   'DOUBLE'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeDataType.DOUBLE
+```
+
+````
+
+````{py:attribute} STRING
+:canonical: ophyd_async.epics.adcore._utils.NDAttributeDataType.STRING
+:value: >
+   'STRING'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributeDataType.STRING
+```
+
+````
+
+`````
+
+````{py:function} stop_busy_record(signal: ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT], value: ~ophyd_async.core.SignalDatatypeT, timeout: float = DEFAULT_TIMEOUT, status_timeout: float | None = None) -> None
+:canonical: ophyd_async.epics.adcore._utils.stop_busy_record
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.stop_busy_record
+```
+````
+
+`````{py:class} NDAttributePvDbrType()
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePvDbrType
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType
+```
+
+````{py:attribute} DBR_SHORT
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_SHORT
+:value: >
+   'DBR_SHORT'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_SHORT
+```
+
+````
+
+````{py:attribute} DBR_ENUM
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_ENUM
+:value: >
+   'DBR_ENUM'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_ENUM
+```
+
+````
+
+````{py:attribute} DBR_INT
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_INT
+:value: >
+   'DBR_INT'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_INT
+```
+
+````
+
+````{py:attribute} DBR_LONG
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_LONG
+:value: >
+   'DBR_LONG'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_LONG
+```
+
+````
+
+````{py:attribute} DBR_FLOAT
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_FLOAT
+:value: >
+   'DBR_FLOAT'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_FLOAT
+```
+
+````
+
+````{py:attribute} DBR_DOUBLE
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_DOUBLE
+:value: >
+   'DBR_DOUBLE'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_DOUBLE
+```
+
+````
+
+````{py:attribute} DBR_STRING
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_STRING
+:value: >
+   'DBR_STRING'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_STRING
+```
+
+````
+
+````{py:attribute} DBR_CHAR
+:canonical: ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_CHAR
+:value: >
+   'DBR_CHAR'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.NDAttributePvDbrType.DBR_CHAR
+```
+
+````
+
+`````
+
+`````{py:class} NDCBFlushOnSoftTrgMode()
+:canonical: ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode
+```
+
+````{py:attribute} ON_NEW_IMAGE
+:canonical: ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE
+:value: >
+   'OnNewImage'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE
+```
+
+````
+
+````{py:attribute} IMMEDIATELY
+:canonical: ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode.IMMEDIATELY
+:value: >
+   'Immediately'
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode.IMMEDIATELY
+```
+
+````
+
+`````
+
+`````{py:class} NDPluginCBIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginCBIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginCBIO
+```
+
+````{py:attribute} pre_count
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginCBIO.pre_count
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('PreCount')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginCBIO.pre_count
+```
+
+````
+
+````{py:attribute} post_count
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginCBIO.post_count
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('PostCount')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginCBIO.post_count
+```
+
+````
+
+````{py:attribute} preset_trigger_count
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginCBIO.preset_trigger_count
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('PresetTriggerCount')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginCBIO.preset_trigger_count
+```
+
+````
+
+````{py:attribute} trigger
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginCBIO.trigger
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Trigger')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginCBIO.trigger
+```
+
+````
+
+````{py:attribute} capture
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginCBIO.capture
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Capture')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginCBIO.capture
+```
+
+````
+
+````{py:attribute} flush_on_soft_trg
+:canonical: ophyd_async.epics.adcore._core_io.NDPluginCBIO.flush_on_soft_trg
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode], ophyd_async.epics.core.PvSuffix.rbv('FlushOnSoftTrg')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginCBIO.flush_on_soft_trg
+```
+
+````
+
+`````

@@ -1,0 +1,1067 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Implementing Devices &#8212; ophyd-async 0.10.0a3 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=08723006"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/implementing-devices';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.10.0a3';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Writing Tests for Devices" href="writing-tests-for-devices.html" />
+    <link rel="prev" title="Using Devices" href="using-devices.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.10.0a3" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-devices.html">Using Devices</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Implementing Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing-tests-for-devices.html">Writing Tests for Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="implementing-detectors.html">Implementing File Writing Detectors</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../tutorials.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Implementing Devices</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="implementing-devices">
+<span id="id1"></span><h1>Implementing Devices<a class="headerlink" href="#implementing-devices" title="Link to this heading">#</a></h1>
+<p>In <a class="reference internal" href="using-devices.html"><span class="std std-doc">Using Devices</span></a> we learned how to instantiate some existing ophyd-async Devices. These Devices were ophyd level simulations, so did not talk to any underlying control system. In this tutorial we will instantiate some demo Devices that talk to underlying control system implementations, then explore how the Devices themselves are implemented.</p>
+<section id="pick-your-control-system">
+<h2>Pick your control system<a class="headerlink" href="#pick-your-control-system" title="Link to this heading">#</a></h2>
+<p>Most bluesky users will be interfacing to an underlying control system like EPICS or Tango. The underlying control system will provide functionality like Engineering display screens and historical archiving of control system data. It is possibly to use ophyd-async with multiple control systems, so this tutorial is written with tabbed sections to allow us to only show the information relevant to one particular control system.</p>
+<p>To summarize what each control system does:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-0">
+EPICS</label><div class="sd-tab-content docutils">
+<p><a class="reference external" href="https://epics-controls.org">EPICS</a> is a set of software tools and applications which provide a software infrastructure for use in building distributed control systems to operate devices such as Particle Accelerators, Large Experiments and major Telescopes. Such distributed control systems typically comprise tens or even hundreds of computers, networked together to allow communication between them and to provide control and feedback of the various parts of the device from a central control room.</p>
+<p>EPICS uses Client/Server and Publish/Subscribe techniques to communicate between the various computers. Most servers (called Input/Output Controllers or IOCs) perform real-world I/O and local control tasks, and publish this information to clients using robust, EPICS specific network protocols Channel Access and pvAccess. Clients use a process variable (PV) as an identifier to get, put or monitor the value and metadata of a particular control system variable without knowing which server hosts that variable.</p>
+<p>EPICS has a flat architecture where any client can request the PV of any server. Sites typically introduce hierarchy by imposing a naming convention on these PVs.</p>
+</div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-1">
+Tango</label><div class="sd-tab-content docutils">
+<p><a class="reference external" href="https://www.tango-controls.org/">Tango</a> is an Open Source solution for SCADA and DCS. Open Source means you get all the source code under an Open Source free licence (LGPL and GPL). Supervisory Control and Data Acquisition (SCADA) systems are typically industrial type systems using standard hardware. Distributed Control Systems (DCS) are more flexible control systems used in more complex environments. Sardana is a good example of a Tango based Beamline SCADA.</p>
+<p>Tango is typically deployed with a central database, which provides a nameserver to lookup which distributed server provides access to the Device. Once located, the Device server can be introspected to see what Attributes of the Device exist.</p>
+</div>
+<input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="fastcs" for="sd-tab-item-2">
+FastCS</label><div class="sd-tab-content docutils">
+<p><a class="reference external" href="https://diamondlightsource.github.io/FastCS">FastCS</a> is a control system agnostic framework for building Device support in Python that will work for both EPICS and Tango without depending on either. It allows Device support to be written once in a declarative way, then at runtime the control system can be selected. It also adds support for multi-device introspection to both EPICS and Tango, which allows the same ophyd-async Device and the same FastCS Device to use either EPICS or Tango as a transport layer.</p>
+<p>FastCS is currently in an early phase of development, being used for <a class="reference external" href="https://github.com/PandABlocks/fastcs-PandABlocks">PandA</a> and <a class="reference external" href="https://github.com/DiamondLightSource/fastcs-odin">Odin</a> Devices within ophyd-async.</p>
+</div>
+</div>
+</section>
+<section id="run-the-demo">
+<h2>Run the demo<a class="headerlink" href="#run-the-demo" title="Link to this heading">#</a></h2>
+<p>Ophyd-async ships with some demo devices that do the same thing for each control system, and a script that will create them along with a RunEngine. Let’s run it in an interactive <a class="reference external" href="https://ipython.org">ipython</a> shell:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-3">
+EPICS</label><div class="sd-tab-content docutils">
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ipython --matplotlib=qt6 -i -m ophyd_async.epics.demo
+Python 3.11.11 (main, Dec  4 2024, 20:38:25) [GCC 12.2.0]
+Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information
+IPython 8.30.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.
+
+In [1]: 
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-4" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-4">
+Tango</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+<input id="sd-tab-item-5" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="fastcs" for="sd-tab-item-5">
+FastCS</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+</div>
+<p>We can now go ahead and run the same grid scan <a class="reference internal" href="using-devices.html#demo-grid-scan"><span class="std std-ref">we did in the previous tutorial</span></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="n">Transient</span> <span class="n">Scan</span> <span class="n">ID</span><span class="p">:</span> <span class="mi">1</span>     <span class="n">Time</span><span class="p">:</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">14</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mi">05</span>
+<span class="n">Persistent</span> <span class="n">Unique</span> <span class="n">Scan</span> <span class="n">ID</span><span class="p">:</span> <span class="s1">&#39;2e0e75d8-33dd-430f-8cd8-6d6ae053c429&#39;</span>
+<span class="n">New</span> <span class="n">stream</span><span class="p">:</span> <span class="s1">&#39;primary&#39;</span>
+<span class="o">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
+<span class="o">|</span>   <span class="n">seq_num</span> <span class="o">|</span>       <span class="n">time</span> <span class="o">|</span>    <span class="n">stage</span><span class="o">-</span><span class="n">x</span> <span class="o">|</span>    <span class="n">stage</span><span class="o">-</span><span class="n">y</span> <span class="o">|</span> <span class="n">pdet</span><span class="o">-</span><span class="n">channel</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">value</span> <span class="o">|</span> <span class="n">pdet</span><span class="o">-</span><span class="n">channel</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="n">value</span> <span class="o">|</span> <span class="n">pdet</span><span class="o">-</span><span class="n">channel</span><span class="o">-</span><span class="mi">3</span><span class="o">-</span><span class="n">value</span> <span class="o">|</span>
+<span class="o">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
+<span class="o">|</span>         <span class="mi">1</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">05.7</span> <span class="o">|</span>      <span class="mf">1.000</span> <span class="o">|</span>      <span class="mf">2.000</span> <span class="o">|</span>                  <span class="mi">921</span> <span class="o">|</span>                  <span class="mi">887</span> <span class="o">|</span>                  <span class="mi">859</span> <span class="o">|</span>
+<span class="o">|</span>         <span class="mi">2</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">06.6</span> <span class="o">|</span>      <span class="mf">1.000</span> <span class="o">|</span>      <span class="mf">2.500</span> <span class="o">|</span>                  <span class="mi">959</span> <span class="o">|</span>                  <span class="mi">926</span> <span class="o">|</span>                  <span class="mi">898</span> <span class="o">|</span>
+<span class="o">|</span>         <span class="mi">3</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">07.5</span> <span class="o">|</span>      <span class="mf">1.000</span> <span class="o">|</span>      <span class="mf">3.000</span> <span class="o">|</span>                  <span class="mi">937</span> <span class="o">|</span>                  <span class="mi">903</span> <span class="o">|</span>                  <span class="mi">875</span> <span class="o">|</span>
+<span class="o">|</span>         <span class="mi">4</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">08.3</span> <span class="o">|</span>      <span class="mf">1.500</span> <span class="o">|</span>      <span class="mf">2.000</span> <span class="o">|</span>                  <span class="mi">976</span> <span class="o">|</span>                  <span class="mi">975</span> <span class="o">|</span>                  <span class="mi">974</span> <span class="o">|</span>
+<span class="o">|</span>         <span class="mi">5</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">09.1</span> <span class="o">|</span>      <span class="mf">1.500</span> <span class="o">|</span>      <span class="mf">2.500</span> <span class="o">|</span>                  <span class="mi">843</span> <span class="o">|</span>                  <span class="mi">843</span> <span class="o">|</span>                  <span class="mi">842</span> <span class="o">|</span>
+<span class="o">|</span>         <span class="mi">6</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">09.8</span> <span class="o">|</span>      <span class="mf">1.500</span> <span class="o">|</span>      <span class="mf">3.000</span> <span class="o">|</span>                  <span class="mi">660</span> <span class="o">|</span>                  <span class="mi">660</span> <span class="o">|</span>                  <span class="mi">659</span> <span class="o">|</span>
+<span class="o">|</span>         <span class="mi">7</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">10.6</span> <span class="o">|</span>      <span class="mf">2.000</span> <span class="o">|</span>      <span class="mf">2.000</span> <span class="o">|</span>                  <span class="mi">761</span> <span class="o">|</span>                  <span class="mi">740</span> <span class="o">|</span>                  <span class="mi">722</span> <span class="o">|</span>
+<span class="o">|</span>         <span class="mi">8</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">11.4</span> <span class="o">|</span>      <span class="mf">2.000</span> <span class="o">|</span>      <span class="mf">2.500</span> <span class="o">|</span>                  <span class="mi">537</span> <span class="o">|</span>                  <span class="mi">516</span> <span class="o">|</span>                  <span class="mi">498</span> <span class="o">|</span>
+<span class="o">|</span>         <span class="mi">9</span> <span class="o">|</span> <span class="mi">11</span><span class="p">:</span><span class="mi">29</span><span class="p">:</span><span class="mf">12.2</span> <span class="o">|</span>      <span class="mf">2.000</span> <span class="o">|</span>      <span class="mf">3.000</span> <span class="o">|</span>                  <span class="mi">487</span> <span class="o">|</span>                  <span class="mi">467</span> <span class="o">|</span>                  <span class="mi">448</span> <span class="o">|</span>
+<span class="o">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
+<span class="n">generator</span> <span class="n">grid_scan</span> <span class="p">[</span><span class="s1">&#39;2e0e75d8&#39;</span><span class="p">]</span> <span class="p">(</span><span class="n">scan</span> <span class="n">num</span><span class="p">:</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">RunEngineResult</span><span class="p">(</span><span class="n">run_start_uids</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;2e0e75d8-33dd-430f-8cd8-6d6ae053c429&#39;</span><span class="p">,),</span> <span class="n">plan_result</span><span class="o">=</span><span class="s1">&#39;2e0e75d8-33dd-430f-8cd8-6d6ae053c429&#39;</span><span class="p">,</span> <span class="n">exit_status</span><span class="o">=</span><span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="n">interrupted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="see-how-devices-are-instantiated">
+<h2>See how Devices are instantiated<a class="headerlink" href="#see-how-devices-are-instantiated" title="Link to this heading">#</a></h2>
+<p>Now we will take a look at the demo script and see how it is instantiated. The beginning section with imports is the same as in the first tutorial, but then the control system specific differences appear.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-6" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-6">
+EPICS</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Used for tutorial `Implementing Devices`.&quot;&quot;&quot;</span>
+
+<span class="c1"># Import bluesky and ophyd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plan_stubs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bps</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plans</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bp</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.callbacks.best_effort</span><span class="w"> </span><span class="kn">import</span> <span class="n">BestEffortCallback</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.run_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunEngine</span><span class="p">,</span> <span class="n">autoawait_in_bluesky_event_loop</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_devices</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">demo</span><span class="p">,</span> <span class="n">testing</span>
+
+<span class="c1"># Create a run engine and make ipython use it for `await` commands</span>
+<span class="n">RE</span> <span class="o">=</span> <span class="n">RunEngine</span><span class="p">(</span><span class="n">call_returns_result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">autoawait_in_bluesky_event_loop</span><span class="p">()</span>
+
+<span class="c1"># Add a callback for plotting</span>
+<span class="n">bec</span> <span class="o">=</span> <span class="n">BestEffortCallback</span><span class="p">()</span>
+<span class="hll"><span class="n">RE</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">bec</span><span class="p">)</span>
+</span><span class="hll">
+</span><span class="hll"><span class="c1"># Start IOC with demo pvs in subprocess</span>
+</span><span class="hll"><span class="n">prefix</span> <span class="o">=</span> <span class="n">testing</span><span class="o">.</span><span class="n">generate_random_pv_prefix</span><span class="p">()</span>
+</span><span class="hll"><span class="n">ioc</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">start_ioc_subprocess</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span class="hll">
+</span><span class="hll"><span class="c1"># All Devices created within this block will be</span>
+</span><span class="hll"><span class="c1"># connected and named at the end of the with block</span>
+</span><span class="hll"><span class="k">with</span> <span class="n">init_devices</span><span class="p">():</span>
+</span><span class="hll">    <span class="c1"># Create a sample stage with X and Y motors</span>
+</span><span class="hll">    <span class="n">stage</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoStage</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">STAGE:&quot;</span><span class="p">)</span>
+</span><span class="hll">    <span class="c1"># Create a multi channel counter with the same number</span>
+</span><span class="hll">    <span class="c1"># of counters as the IOC</span>
+</span><span class="hll">    <span class="n">pdet</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoPointDetector</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">DET:&quot;</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>EPICS PVs are normally broadcast to your entire network subnet. To avoid PV name clashes, we pick a random prefix, then start the demo IOC using this PV  prefix. Starting an IOC here is done just for the demo, in production the IOC would already be running before you started bluesky.</p>
+<p>We then pass the PV prefix for each Device down using prior knowledge about the PVs that this particular IOC creates. For example, we know that there will be a <code class="docutils literal notranslate"><span class="pre">DemoStage</span></code>, and all its PVs will start with <code class="docutils literal notranslate"><span class="pre">prefix</span> <span class="pre">+</span> <span class="pre">&quot;STAGE:&quot;</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is no introspection of PVs in a device in EPICS, if we tell the IOC to make 3 channels on the point detector, we must also tell the ophyd-async device that the point detector has 3 channels.</p>
+</div>
+</div>
+<input id="sd-tab-item-7" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-7">
+Tango</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+<input id="sd-tab-item-8" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="fastcs" for="sd-tab-item-8">
+FastCS</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+</div>
+</section>
+<section id="look-at-the-device-implementations">
+<h2>Look at the Device implementations<a class="headerlink" href="#look-at-the-device-implementations" title="Link to this heading">#</a></h2>
+<p>The demo creates the following structure of Devices:</p>
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+flowchart LR
+    DemoPointDetector-- channel ---DeviceVector
+    DeviceVector-- 1 ---pdet.1(DemoPointDetectorChannel)
+    DeviceVector-- 2 ---pdet.2(DemoPointDetectorChannel)
+    DeviceVector-- 3 ---pdet.3(DemoPointDetectorChannel)
+    DemoStage-- x ---stage.x(DemoMotor)
+    DemoStage-- y ---stage.y(DemoMotor)
+    </pre><p>The <code class="docutils literal notranslate"><span class="pre">DemoStage</span></code> contains two <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>s, called <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>. The <code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code> contains a <code class="docutils literal notranslate"><span class="pre">DeviceVector</span></code> called <code class="docutils literal notranslate"><span class="pre">channel</span></code> that contains 3 <code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code>s, called <code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code> and <code class="docutils literal notranslate"><span class="pre">3</span></code>.</p>
+<p>We will now inspect the <code class="docutils literal notranslate"><span class="pre">Demo</span></code> classes in the diagram to see how they talk to the underlying control system.</p>
+<section id="demopointdetectorchannel">
+<h3><code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code><a class="headerlink" href="#demopointdetectorchannel" title="Link to this heading">#</a></h3>
+<p>Let’s start with the lowest level sort of Device, a single channel of our point detector. It contains Signals, which are the smallest sort of Device in ophyd-async, with a current value of a given datatype. In this case, there are two:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">value</span></code>: the current value of the channel in integer counts</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mode</span></code>: a configuration enum which varies the output of the channel</p></li>
+</ul>
+<p>We specify to the Device baseclass that we would like a Signal of a given type (e.g. <code class="docutils literal notranslate"><span class="pre">SignalR[int]</span></code>) via a type hint, and it will create that signal for us in a control system specific way. The type of <code class="docutils literal notranslate"><span class="pre">value</span></code> is the python builtin <code class="docutils literal notranslate"><span class="pre">int</span></code>, and the type of <code class="docutils literal notranslate"><span class="pre">mode</span></code> is an <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><span class="xref myst py py-class">enum</span></a> we have declared ourselves, where the string values must exactly match what the control system produces.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">SignalDatatypeT</span></code></a> defines the list of all possible datatypes you can use for Signals</p>
+</div>
+<p>We can optionally <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="Python 3.13"><span class="xref myst">annotate</span></a> this type hint with some additional information, like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat" title="ophyd_async.core.StandardReadableFormat"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">Format</span></code></span></a>. This will tell the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> baseclass which Signals are important in a plan like <code class="docutils literal notranslate"><span class="pre">bp.grid_scan</span></code>. In this case we specify that <code class="docutils literal notranslate"><span class="pre">mode</span></code> should be reported as a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL" title="ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL"><span class="xref myst py py-attr">configuration parameter</span></a> once at the start of the scan, and <code class="docutils literal notranslate"><span class="pre">value</span></code> should be <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL" title="ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL"><span class="xref myst py py-attr">fetched without caching and plotted</span></a> at each point of the scan.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-9" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-9">
+EPICS</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">StrictEnum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">EnergyMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Energy mode for `DemoPointDetectorChannel`.&quot;&quot;&quot;</span>
+
+    <span class="n">LOW</span> <span class="o">=</span> <span class="s2">&quot;Low Energy&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Low energy mode&quot;&quot;&quot;</span>
+
+    <span class="n">HIGH</span> <span class="o">=</span> <span class="s2">&quot;High Energy&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;High energy mode&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DemoPointDetectorChannel</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A channel for `DemoPointDetector` with int value based on X and Y Motors.&quot;&quot;&quot;</span>
+
+    <span class="n">value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Value&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_UNCACHED_SIGNAL</span><span class="p">]</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnergyMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>When the Device is instantiated, the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.EpicsDevice" title="ophyd_async.epics.core.EpicsDevice"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">EpicsDevice</span></code></a> baseclass will look at all the type hints for annotations with a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a>. It will append that to the PV prefix that is passed into the device. In this case if we made a <code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel(prefix=&quot;PREFIX:&quot;)</span></code>, then <code class="docutils literal notranslate"><span class="pre">value</span></code> would have PV <code class="docutils literal notranslate"><span class="pre">PREFIX:Value</span></code>. <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PvSuffix</span></code></a> also allows you to specify different suffixes for the read and write PVs if they are different.</p>
+</div>
+<input id="sd-tab-item-10" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-10">
+Tango</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+<input id="sd-tab-item-11" name="sd-tab-set-3" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="fastcs" for="sd-tab-item-11">
+FastCS</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+</div>
+</section>
+<section id="demopointdetector">
+<h3><code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code><a class="headerlink" href="#demopointdetector" title="Link to this heading">#</a></h3>
+<p>Moving up a level, we have the point detector itself. This also has some Signals to control acquisition which are created in the same way as above:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">acquire_time</span></code>: a configuration float saying how long each point should be acquired for</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start</span></code>: an executable to start a single acquisition</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">acquiring</span></code>: a boolean that is True when acquiring</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reset</span></code>: an executable to reset the counts on all channels</p></li>
+</ul>
+<p>We also have a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceVector</span></code></a> called <code class="docutils literal notranslate"><span class="pre">channel</span></code> with <code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code> instances within it. These will all contribute their configuration values at the start of scan, and their values at every point in the scan.</p>
+<p>Finally, we need to communicate to bluesky that it has to <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> and acquisition before it can <code class="docutils literal notranslate"><span class="pre">read()</span></code> from the underlying channels. We do this by implementing the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.13.2.dev56+g985b14a7"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Triggerable</span></code></span></a> protocol. This involves writing a <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> method with the logic that must be run, calling <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalX.trigger" title="ophyd_async.core.SignalX.trigger"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalX.trigger</span></code></a>, <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW.set" title="ophyd_async.core.SignalW.set"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalW.set</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.get_value" title="ophyd_async.core.SignalR.get_value"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalR.get_value</span></code></a> to manipulate the values of the underlying Signals, returning when complete. This is wrapped in an <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a>, which is used by bluesky to run this operation in the background and know when it is complete.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../how-to/interact-with-signals.html"><span class="doc std std-doc">How to interact with signals while implementing bluesky verbs</span></a></p>
+</div>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-12" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-12">
+EPICS</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Triggerable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">AsyncStatus</span><span class="p">,</span>
+    <span class="n">DeviceVector</span><span class="p">,</span>
+    <span class="n">SignalR</span><span class="p">,</span>
+    <span class="n">SignalRW</span><span class="p">,</span>
+    <span class="n">SignalX</span><span class="p">,</span>
+    <span class="n">StandardReadable</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._point_detector_channel</span><span class="w"> </span><span class="kn">import</span> <span class="n">DemoPointDetectorChannel</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DemoPointDetector</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">,</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">Triggerable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo detector that produces a point values based on X and Y motors.&quot;&quot;&quot;</span>
+
+    <span class="n">acquire_time</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;AcquireTime&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalX</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Start.PROC&quot;</span><span class="p">)]</span>
+    <span class="n">acquiring</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Acquiring&quot;</span><span class="p">)]</span>
+    <span class="n">reset</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalX</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Reset.PROC&quot;</span><span class="p">)]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">channel</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="n">i</span><span class="p">:</span> <span class="n">DemoPointDetectorChannel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_channels</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">trigger</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Although the Signals are declared via type hints, the DeviceVector requires explicit instantiation in an <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method. This is because it requires the <code class="docutils literal notranslate"><span class="pre">num_channels</span></code> to be passed in to the constructor to know how many channels require creation. This means that we also need to do the PV concatenation ourselves, so if the PV prefix for the device as <code class="docutils literal notranslate"><span class="pre">PREFIX:</span></code> then the first channel would have prefix <code class="docutils literal notranslate"><span class="pre">PREFIX:CHAN1:</span></code>. We also register them with <code class="docutils literal notranslate"><span class="pre">StandardReadable</span></code> in a different way, adding them within a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables" title="ophyd_async.core.StandardReadable.add_children_as_readables"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardReadable.add_children_as_readables</span></code></a> context manager which adds all the children created within its body.</p>
+</div>
+<input id="sd-tab-item-13" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-13">
+Tango</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+<input id="sd-tab-item-14" name="sd-tab-set-4" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="fastcs" for="sd-tab-item-14">
+FastCS</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>For more information on when to construct Devices declaratively using type hints, and when to construct them procedurally with an <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method, see <a class="reference internal" href="../explanations/declarative-vs-procedural.html"><span class="doc std std-doc">Declarative vs Procedural Devices</span></a></p>
+</div>
+</section>
+<section id="demomotor">
+<h3><code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code><a class="headerlink" href="#demomotor" title="Link to this heading">#</a></h3>
+<p>Moving onto the motion side, we have <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>. This has a few more signals:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">readback</span></code>: the current position of the motor as a float</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">velocity</span></code>: a configuration parameter for the velocity in units/s</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">units</span></code>: the string units of the position</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setpoint</span></code>: the position the motor has been requested to move to as a float, it returns as soon as it’s been set</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">precision</span></code>: the number of points after the decimal place of the position that are relevant</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stop_</span></code>: an executable to stop the move immediately</p></li>
+</ul>
+<p>At each point in the scan it will report the <code class="docutils literal notranslate"><span class="pre">readback</span></code>, but we override the <code class="docutils literal notranslate"><span class="pre">set_name()</span></code> method so that it reports its position as <code class="docutils literal notranslate"><span class="pre">stage.x</span></code> rather than <code class="docutils literal notranslate"><span class="pre">stage.x.readback</span></code>.</p>
+<p>If we consider how we would use this in a scan, we could <code class="docutils literal notranslate"><span class="pre">bp.scan(stage.x.setpoint,</span> <span class="pre">...)</span></code> directly, but that would only start the motor moving, not wait for it to complete the move. To do this, we need to implement another protocol: <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.13.2.dev56+g985b14a7"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Movable</span></code></span></a>. This requires implementing a <code class="docutils literal notranslate"><span class="pre">set()</span></code> method (again wrapped in an <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a>) that does the following:</p>
+<ul class="simple">
+<li><p>Work out where to move to</p></li>
+<li><p>Start the motor moving</p></li>
+<li><p>Optionally report back updates on how far the motor has moved so bluesky can provide a progress bar</p></li>
+<li><p>Wait until the motor is at the target position</p></li>
+</ul>
+<p>Finally, we implement <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Stoppable" title="bluesky 1.13.2.dev56+g985b14a7"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Stoppable</span></code></span></a> which tells bluesky what to do if the user aborts a plan. This requires implementing <code class="docutils literal notranslate"><span class="pre">stop()</span></code> to execute the <code class="docutils literal notranslate"><span class="pre">stop_</span></code> signal and tell <code class="docutils literal notranslate"><span class="pre">set()</span></code> whether the move should be reported as successful completion, or if it should raise an error.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-15" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-15">
+EPICS</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">CalculatableTimeout</span><span class="p">,</span>
+    <span class="n">SignalR</span><span class="p">,</span>
+    <span class="n">SignalRW</span><span class="p">,</span>
+    <span class="n">SignalX</span><span class="p">,</span>
+    <span class="n">StandardReadable</span><span class="p">,</span>
+    <span class="n">WatchableAsyncStatus</span><span class="p">,</span>
+    <span class="n">WatcherUpdate</span><span class="p">,</span>
+    <span class="n">observe_value</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DemoMotor</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Whether set() should complete successfully or not</span>
+    <span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1"># Define some signals</span>
+    <span class="n">readback</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
+    <span class="n">velocity</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Velocity&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
+    <span class="n">units</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback.EGU&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
+    <span class="n">setpoint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Setpoint&quot;</span><span class="p">)]</span>
+    <span class="n">precision</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback.PREC&quot;</span><span class="p">)]</span>
+    <span class="c1"># If a signal name clashes with a bluesky verb add _ to the attribute name</span>
+    <span class="n">stop_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalX</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Stop.PROC&quot;</span><span class="p">)]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="o">=</span><span class="n">child_name_separator</span><span class="p">)</span>
+        <span class="c1"># Readback should be named the same as its parent in read()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span>
+    <span class="p">):</span>
+        <span class="c1"># The move should complete successfully unless stop(success=False) is called</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Get some variables for the progress bar reporting</span>
+        <span class="n">old_position</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">velocity</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="c1"># If not supplied, calculate a suitable timeout for the move</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">velocity</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span>
+        <span class="c1"># Wait for the value to set, but don&#39;t wait for put completion callback</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_position</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># Observe the readback Signal, and on each new position...</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="n">done_timeout</span><span class="o">=</span><span class="n">timeout</span>
+        <span class="p">):</span>
+            <span class="c1"># Emit a progress bar update</span>
+            <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+                <span class="n">current</span><span class="o">=</span><span class="n">current_position</span><span class="p">,</span>
+                <span class="n">initial</span><span class="o">=</span><span class="n">old_position</span><span class="p">,</span>
+                <span class="n">target</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># If we are at the desired position the break</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">current_position</span><span class="p">,</span> <span class="n">new_position</span><span class="p">):</span>
+                <span class="k">break</span>
+        <span class="c1"># If we were told to stop and report an error then do so</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Motor was stopped&quot;</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="n">success</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<input id="sd-tab-item-16" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-16">
+Tango</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+<input id="sd-tab-item-17" name="sd-tab-set-5" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="fastcs" for="sd-tab-item-17">
+FastCS</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+</div>
+</section>
+<section id="demostage">
+<h3><code class="docutils literal notranslate"><span class="pre">DemoStage</span></code><a class="headerlink" href="#demostage" title="Link to this heading">#</a></h3>
+<p>Finally we get to the <code class="docutils literal notranslate"><span class="pre">DemoStage</span></code>, which is responsible for instantiating two <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>s. It also inherits from <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a>, which allows it to be used in plans that <code class="docutils literal notranslate"><span class="pre">read()</span></code> devices. It ensures that the output of <code class="docutils literal notranslate"><span class="pre">read()</span></code> is the same as if you were to <code class="docutils literal notranslate"><span class="pre">read()</span></code> both the <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>s, and merge the result:</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-18" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-18">
+EPICS</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadable</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._motor</span><span class="w"> </span><span class="kn">import</span> <span class="n">DemoMotor</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DemoStage</span><span class="p">(</span><span class="n">StandardReadable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A simulated sample stage with X and Y movables.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Define some child Devices</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">DemoMotor</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;X:&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">DemoMotor</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;Y:&quot;</span><span class="p">)</span>
+        <span class="c1"># Set name of device and child devices</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Like <code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code>, the PV concatenation is done explicitly in code, and the children are added within a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables" title="ophyd_async.core.StandardReadable.add_children_as_readables"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardReadable.add_children_as_readables</span></code></a> context manager.</p>
+</div>
+<input id="sd-tab-item-19" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-19">
+Tango</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+<input id="sd-tab-item-20" name="sd-tab-set-6" type="radio">
+<label class="sd-tab-label" data-sync-group="cs" data-sync-id="fastcs" for="sd-tab-item-20">
+FastCS</label><div class="sd-tab-content docutils">
+<p>TODO</p>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>In this tutorial we have seen how to create some Devices that are backed by a Control system implementation. Read on to see how we would write some tests to ensure that they behave correctly.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="using-devices.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Using Devices</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="writing-tests-for-devices.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Writing Tests for Devices</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pick-your-control-system">Pick your control system</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-the-demo">Run the demo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#see-how-devices-are-instantiated">See how Devices are instantiated</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#look-at-the-device-implementations">Look at the Device implementations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#demopointdetectorchannel"><code class="docutils literal notranslate"><span class="pre">DemoPointDetectorChannel</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#demopointdetector"><code class="docutils literal notranslate"><span class="pre">DemoPointDetector</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#demomotor"><code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#demostage"><code class="docutils literal notranslate"><span class="pre">DemoStage</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/0.10.0a3/docs/tutorials/implementing-devices.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/implementing-devices.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
