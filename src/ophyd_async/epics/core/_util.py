@@ -41,8 +41,8 @@ def get_supported_values(
             raise TypeError(error_msg + "to be a subset of them.")
     elif issubclass(enum_cls, SupersetEnum):
         if (
-            not set(pv_choices).issubset(choices) or
-            len(set(choices).intersection(pv_choices)) == 0
+            not set(pv_choices).issubset(choices)
+            or len(set(choices).intersection(pv_choices)) == 0
         ):
             raise TypeError(
                 error_msg + ". There should be no extras and at least one match."
