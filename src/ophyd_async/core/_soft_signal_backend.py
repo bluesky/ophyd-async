@@ -14,7 +14,6 @@ from event_model import DataKey
 
 from ._signal_backend import (
     Array1D,
-    EnumT,
     Primitive,
     PrimitiveT,
     SignalBackend,
@@ -25,7 +24,7 @@ from ._signal_backend import (
     make_metadata,
 )
 from ._table import Table
-from ._utils import Callback, get_dtype, get_enum_cls
+from ._utils import Callback, EnumTypes, get_dtype, get_enum_cls
 
 
 class SoftConverter(Generic[SignalDatatypeT]):
@@ -50,10 +49,10 @@ class SequenceStrSoftConverter(SoftConverter[Sequence[str]]):
 
 
 @dataclass
-class SequenceEnumSoftConverter(SoftConverter[Sequence[EnumT]]):
-    datatype: type[EnumT]
+class SequenceEnumSoftConverter(SoftConverter[Sequence[EnumTypes]]):
+    datatype: type[EnumTypes]
 
-    def write_value(self, value: Any) -> Sequence[EnumT]:
+    def write_value(self, value: Any) -> Sequence[EnumTypes]:
         return [self.datatype(v) for v in value] if value else []
 
 
@@ -66,10 +65,10 @@ class NDArraySoftConverter(SoftConverter[Array1D]):
 
 
 @dataclass
-class EnumSoftConverter(SoftConverter[EnumT]):
-    datatype: type[EnumT]
+class EnumSoftConverter(SoftConverter[EnumTypes]):
+    datatype: type[EnumTypes]
 
-    def write_value(self, value: Any) -> EnumT:
+    def write_value(self, value: Any) -> EnumTypes:
         return (
             self.datatype(value)
             if value

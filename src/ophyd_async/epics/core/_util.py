@@ -33,21 +33,33 @@ def get_supported_values(
         raise TypeError(f"{datatype} is not an Enum")
     choices = [v.value for v in enum_cls]
     error_msg = f"{pv} has choices {pv_choices}, but {datatype} requested {choices} "
-    if issubclass(enum_cls, SubsetEnum):
-        if not set(choices).issubset(pv_choices):
-            raise TypeError(error_msg + "to be a subset of them.")
-    elif issubclass(enum_cls, StrictEnum):
+    if issubclass(enum_cls, StrictEnum):
         if set(choices) != set(pv_choices):
             raise TypeError(error_msg + "to be strictly equal to them.")
+    elif issubclass(enum_cls, SubsetEnum):
+        if not set(choices).issubset(pv_choices):
+            raise TypeError(error_msg + "to be a subset of them.")
     elif issubclass(enum_cls, SupersetEnum):
-        if len(set(choices).intersection(pv_choices)) == 0:
-            raise TypeError(error_msg + ". None of them match.")
+        if (
+            not set(pv_choices).issubset(choices) or
+            len(set(choices).intersection(pv_choices)) == 0
+        ):
+            raise TypeError(
+                error_msg + ". There should be no extras and at least one match."
+            )
 
     # Take order from the pv choices
     supported_values = {x: x for x in pv_choices}
     # But override those that we specify via the datatype
     for v in enum_cls:
         supported_values[v.value] = v
+
+    if issubclass(enum_cls, SupersetEnum):
+        # Convert to sets and use symmetric difference
+        missing_choices = list(set(pv_choices) ^ set(choices))
+        # Remove the missing choices from pv from supported values
+        for m in missing_choices:
+            del supported_values[m]
     return supported_values
 
 
