@@ -47,7 +47,7 @@
 
 ### API
 
-`````{py:class} EigerDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix='-EA-EIGER-01:', hdf_suffix='-EA-ODIN-01:', name='')
+`````{py:class} EigerDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix='-EA-EIGER-01:', hdf_suffix='-EA-EIGER-01:OD:', name='')
 :canonical: ophyd_async.fastcs.eiger._eiger.EigerDetector
 
 Bases: {py:obj}`ophyd_async.core.StandardDetector`

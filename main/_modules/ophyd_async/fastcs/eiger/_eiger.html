@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.eiger._eiger &#8212; ophyd-async 0.10.0a3.dev8+gc3a48e22 documentation</title>
+    <title>ophyd_async.fastcs.eiger._eiger &#8212; ophyd-async 0.10.0a3.dev9+ga6e46fb0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=a6253c3a"></script>
+    <script src="../../../../_static/documentation_options.js?v=6ef7afc7"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev8+gc3a48e22 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev8+gc3a48e22 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a3.dev9+ga6e46fb0 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a3.dev9+ga6e46fb0 documentation - Home"/>
   
   
 </a></div>
@@ -492,11 +492,11 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
         <span class="n">drv_suffix</span><span class="o">=</span><span class="s2">&quot;-EA-EIGER-01:&quot;</span><span class="p">,</span>
-        <span class="n">hdf_suffix</span><span class="o">=</span><span class="s2">&quot;-EA-ODIN-01:&quot;</span><span class="p">,</span>
+        <span class="n">hdf_suffix</span><span class="o">=</span><span class="s2">&quot;-EA-EIGER-01:OD:&quot;</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drv</span> <span class="o">=</span> <span class="n">EigerDriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">drv_suffix</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">odin</span> <span class="o">=</span> <span class="n">Odin</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">hdf_suffix</span> <span class="o">+</span> <span class="s2">&quot;FP:&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">odin</span> <span class="o">=</span> <span class="n">Odin</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">hdf_suffix</span><span class="p">)</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">EigerController</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">drv</span><span class="p">),</span>

@@ -104,22 +104,22 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 ```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Writing
 ```
 
-````{py:attribute} ON
-:canonical: ophyd_async.epics.eiger._odin_io.Writing.ON
+````{py:attribute} CAPTURE
+:canonical: ophyd_async.epics.eiger._odin_io.Writing.CAPTURE
 :value: >
-   'ON'
+   'Capture'
 
-```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Writing.ON
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Writing.CAPTURE
 ```
 
 ````
 
-````{py:attribute} OFF
-:canonical: ophyd_async.epics.eiger._odin_io.Writing.OFF
+````{py:attribute} DONE
+:canonical: ophyd_async.epics.eiger._odin_io.Writing.DONE
 :value: >
-   'OFF'
+   'Done'
 
-```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Writing.OFF
+```{autodoc2-docstring} ophyd_async.epics.eiger._odin_io.Writing.DONE
 ```
 
 ````
