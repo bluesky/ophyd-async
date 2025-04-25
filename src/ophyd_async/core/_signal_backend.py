@@ -48,7 +48,7 @@ SignalDatatype = (
 - A fixed datatype [](#Array1D) of numpy bool, signed and unsigned integers or float
 - A [](#numpy.ndarray) which can change dimensions and datatype at runtime
 - A sequence of [](#str)
-- A sequence of [](#EnumTypes) or subclass
+- A sequence of [](#EnumTypes) subclasses
 - A [](#Table) subclass
 """
 # TODO: These typevars will not be needed when we drop python 3.11
