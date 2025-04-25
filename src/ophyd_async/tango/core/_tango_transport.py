@@ -631,13 +631,19 @@ def get_trl_descriptor(
             delta_t, delta_val = map(
                 try_to_cast_as_float, (alarm_info.delta_t, alarm_info.delta_val)
             )
-            limits_rds = RdsRange(
-                time_difference=delta_t or 0.0,
-                value_difference=delta_val or 0.0,
-            )
-
-            if any((delta_t, delta_val)):
+            if isinstance(delta_t, float) and isinstance(delta_val, float):
+                limits_rds = RdsRange(
+                    time_difference=delta_t,
+                    value_difference=delta_val,
+                )
                 _limits["rds"] = limits_rds
+            # if only one of the two is set
+            elif isinstance(delta_t, float) ^ isinstance(delta_val, float):
+                logger.warning(
+                    f"Both delta_t and delta_val should be set for {tango_resource} "
+                    f"but only one is set. "
+                    f"delta_t: {alarm_info.delta_t}, delta_val: {alarm_info.delta_val}"
+                )
 
             _choices = list(config.enum_labels) if config.enum_labels else []
             _dims = []
