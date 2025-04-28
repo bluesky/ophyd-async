@@ -8,13 +8,14 @@ from ophyd_async.epics.eiger import Odin, OdinWriter, Writing
 from ophyd_async.testing import get_mock_put, set_mock_value
 
 ODIN_DETECTOR_NAME = "odin_detector"
+EIGER_BIT_DEPTH = 16
 
 OdinDriverAndWriter = tuple[Odin, OdinWriter]
 
 
 @pytest.fixture
 def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
-    eiger_bit_depth = AsyncMock(get_value=AsyncMock(return_value=16))
+    eiger_bit_depth = AsyncMock(get_value=AsyncMock(return_value=EIGER_BIT_DEPTH))
     with init_devices(mock=True):
         driver = Odin("")
         writer = OdinWriter(MagicMock(), driver, eiger_bit_depth)
@@ -59,10 +60,12 @@ async def test_bit_depth_is_passed_before_open_and_set_to_data_type_after_open(
 ):
     driver, writer = odin_driver_and_writer
 
-    assert await writer._eiger_bit_depth().get_value() == 16
+    assert await writer._eiger_bit_depth().get_value() == EIGER_BIT_DEPTH
     assert await driver.data_type.get_value() == ""
     await writer.open(ODIN_DETECTOR_NAME)
-    get_mock_put(driver.data_type).assert_called_once_with("UInt16", wait=ANY)
+    get_mock_put(driver.data_type).assert_called_once_with(
+        f"UInt{EIGER_BIT_DEPTH}", wait=ANY
+    )
 
 
 async def test_given_data_shape_set_when_open_called_then_describe_has_correct_shape(

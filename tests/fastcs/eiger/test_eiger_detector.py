@@ -33,7 +33,7 @@ async def test_when_prepared_with_energy_then_energy_set_on_detector(detector):
     )
 
 
-async def test_eiger_bit_depth_is_passed_and_set_in_odin(detector):
+async def test__when_prepared_eiger_bit_depth_is_passed_and_set_in_odin(detector):
     detector._controller.arm = AsyncMock()
     expected_datatype = 16
     set_mock_value(detector.drv.detector.bit_depth_readout, expected_datatype)
