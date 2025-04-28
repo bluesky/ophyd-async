@@ -41,7 +41,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ````
 
-`````{py:class} OdinWriter(path_provider: ~ophyd_async.core.PathProvider, odin_driver: ~ophyd_async.epics.eiger._odin_io.Odin)
+`````{py:class} OdinWriter(path_provider: ~ophyd_async.core.PathProvider, odin_driver: ~ophyd_async.epics.eiger._odin_io.Odin, eiger_bit_depth: ~ophyd_async.core.SignalR[int])
 :canonical: ophyd_async.epics.eiger._odin_io.OdinWriter
 
 Bases: {py:obj}`ophyd_async.core.DetectorWriter`
