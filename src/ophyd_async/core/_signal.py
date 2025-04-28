@@ -100,6 +100,11 @@ class Signal(Device, Generic[SignalDatatypeT]):
         """
         return self._connector.backend.source(self.name, read=True)
 
+    @property
+    def datatype(self) -> type[SignalDatatypeT] | None:
+        """Returns the datatype of the signal."""
+        return self._connector.backend.datatype
+
 
 SignalT = TypeVar("SignalT", bound=Signal)
 
