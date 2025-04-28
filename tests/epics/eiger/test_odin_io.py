@@ -14,9 +14,10 @@ OdinDriverAndWriter = tuple[Odin, OdinWriter]
 
 @pytest.fixture
 def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
+    eiger_bit_depth = AsyncMock(get_value=AsyncMock(return_value=16))
     with init_devices(mock=True):
         driver = Odin("")
-        writer = OdinWriter(MagicMock(), driver)
+        writer = OdinWriter(MagicMock(), driver, eiger_bit_depth)
 
     # Set meta and capturing pvs high
     set_mock_value(driver.meta_active, "Active")
