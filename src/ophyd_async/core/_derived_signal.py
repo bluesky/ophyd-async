@@ -10,7 +10,7 @@ from ._derived_signal_backend import (
     TransformT,
 )
 from ._device import Device
-from ._signal import SignalR, SignalRW, SignalT, SignalW
+from ._signal import Signal, SignalR, SignalRW, SignalT, SignalW
 from ._signal_backend import SignalDatatypeT
 
 
@@ -50,7 +50,7 @@ class DerivedSignalFactory(Generic[TransformT]):
             # Populate received parameters and types
             # Use Signal datatype, or Locatable datatype, or set type as None
             received = {
-                k: v.datatype if hasattr(v, "datatype") else get_locatable_type(v)
+                k: v.datatype if isinstance(v, Signal) else get_locatable_type(v)
                 for k, v in raw_and_transform_devices.items()
             }
 
