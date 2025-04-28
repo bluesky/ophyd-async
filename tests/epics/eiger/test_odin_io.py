@@ -45,12 +45,24 @@ async def test_when_open_called_then_all_expected_signals_set(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
     driver, writer = odin_driver_and_writer
+
     await writer.open(ODIN_DETECTOR_NAME)
 
     get_mock_put(driver.data_type).assert_called_once_with("UInt16", wait=ANY)
     get_mock_put(driver.num_to_capture).assert_called_once_with(0, wait=ANY)
 
     get_mock_put(driver.capture).assert_called_once_with(Writing.CAPTURE, wait=ANY)
+
+
+async def test_bit_depth_is_passed_before_open_and_set_to_data_type_after_open(
+    odin_driver_and_writer: OdinDriverAndWriter,
+):
+    driver, writer = odin_driver_and_writer
+
+    assert await writer._eiger_bit_depth().get_value() == 16
+    assert await driver.data_type.get_value() == ""
+    await writer.open(ODIN_DETECTOR_NAME)
+    get_mock_put(driver.data_type).assert_called_once_with("UInt16", wait=ANY)
 
 
 async def test_given_data_shape_set_when_open_called_then_describe_has_correct_shape(
