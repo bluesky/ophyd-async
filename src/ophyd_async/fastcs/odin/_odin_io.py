@@ -7,7 +7,6 @@ from event_model import DataKey
 from ophyd_async.core import (
     DetectorWriter,
     Device,
-    FilenameProvider,
     PathProvider,
     SignalR,
     SignalRW,

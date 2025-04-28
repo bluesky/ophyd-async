@@ -4,7 +4,7 @@ from unittest.mock import ANY, MagicMock
 import pytest
 
 from ophyd_async.core import init_devices
-from ophyd_async.fastcs.odin import OdinHdfIO, OdinWriter, OdinWriting  # noqa: PLC2701
+from ophyd_async.fastcs.odin import OdinHdfIO, OdinWriter, OdinWriting
 from ophyd_async.testing import get_mock_put, set_mock_value
 
 OdinDriverAndWriter = tuple[OdinHdfIO, OdinWriter]
