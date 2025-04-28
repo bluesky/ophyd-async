@@ -5,7 +5,6 @@ from ophyd_async.core import (
     DetectorController,
     DetectorTrigger,
     TriggerInfo,
-    wait_for_value,
 )
 
 from ._eiger_io import EigerDriverIO, EigerTriggerMode
@@ -52,8 +51,6 @@ class EigerController(DetectorController):
                     self._drv.detector.frame_time.set(trigger_info.livetime),
                 ]
             )
-
-        await wait_for_value(self._drv.stale_parameters, False, timeout=DEFAULT_TIMEOUT)
 
         await asyncio.gather(*coros)
 
