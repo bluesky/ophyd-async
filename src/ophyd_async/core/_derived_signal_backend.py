@@ -78,24 +78,25 @@ class SignalTransformer(Generic[TransformT]):
         transform_cls: type[TransformT],
         set_derived: Callable[..., Awaitable[None]] | None,
         set_derived_takes_dict: bool,
-        **raw_and_transform_devices,
+        **raw_and_transform_devices_and_constants,
     ):
         self._transform_cls = transform_cls
         self._set_derived = set_derived
         self._set_derived_takes_dict = set_derived_takes_dict
         self._transform_devices = {
-            k: raw_and_transform_devices.pop(k) for k in transform_cls.model_fields
+            k: raw_and_transform_devices_and_constants.pop(k)
+            for k in transform_cls.model_fields
         }
 
         self._raw_devices, self._raw_constants = (
             {
                 k: v
-                for k, v in raw_and_transform_devices.items()
+                for k, v in raw_and_transform_devices_and_constants.items()
                 if isinstance(v, Device)
             },
             {
                 k: v
-                for k, v in raw_and_transform_devices.items()
+                for k, v in raw_and_transform_devices_and_constants.items()
                 if isinstance(v, int | bool | str | float)
             },
         )
