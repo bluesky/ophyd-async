@@ -50,8 +50,12 @@ class DerivedSignalFactory(Generic[TransformT]):
             # Populate received parameters and types
             # Use Signal datatype, or Locatable datatype, or set type as None
             received = {
-                k: v.datatype if isinstance(v, Signal) else get_locatable_type(v)
-                for k, v in raw_and_transform_devices.items()
+                k: v.datatype
+                if isinstance(v, Signal)
+                else type(v)
+                if isinstance(v, int | bool | float | str)
+                else get_locatable_type(v)
+                for k, v in raw_and_transform_devices_and_constants.items()
             }
 
             if expected != received:
