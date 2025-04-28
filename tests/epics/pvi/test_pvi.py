@@ -1,5 +1,6 @@
 from typing import Annotated as A
 from typing import TypeVar
+from unittest.mock import MagicMock
 
 import pytest
 from bluesky.protocols import HasHints, Hints
@@ -7,7 +8,9 @@ from bluesky.protocols import HasHints, Hints
 from ophyd_async.core import (
     Device,
     DeviceVector,
+    SignalR,
     SignalRW,
+    SignalW,
     SignalX,
     StandardReadable,
     init_devices,
@@ -171,3 +174,30 @@ async def test_no_type_annotation_blocks(cls):
         f"{cls.__name__}.a: Expected SignalX or SignalR/W/RW[type], "
         "got <class 'ophyd_async.core._signal.SignalRW'>"
     )
+
+
+@pytest.mark.parametrize(
+    "mock_entry, expected_signal_type",
+    [
+        ({"r": "read_pv"}, SignalR),
+        ({"r": "read_pv", "w": "write_pv"}, SignalRW),
+        ({"rw": "read_and_write_pv"}, SignalRW),
+        ({"w": "write_pv"}, SignalW),
+        ({"x": "triggerable_pv"}, SignalX),
+        ({"invalid": "invalid_pv"}, None),
+    ],
+)
+async def test_correctly_setting_signal_type_from_signal_details(
+    mock_entry, expected_signal_type
+):
+    connector = PviDeviceConnector("")
+    connector.filler = MagicMock()
+    if not expected_signal_type:
+        with pytest.raises(TypeError) as e:
+            connector._fill_child("signal", mock_entry)
+        assert "Can't process entry" in str(e.value)
+    else:
+        connector._fill_child("signal", mock_entry)
+        connector.filler.fill_child_signal.assert_called_once_with(
+            "signal", expected_signal_type, None
+        )

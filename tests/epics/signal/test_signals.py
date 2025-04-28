@@ -766,3 +766,46 @@ async def test_retrieve_apply_store_settings(
                 assert yaml.safe_load(actual_file) == yaml.safe_load(expected_file)
 
     RE(a_plan())
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+async def test_put_completion(
+    RE, ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
+):
+    # Check that we can put to an epics signal and wait for put completion
+    slow_seq_pv = ioc_devices.get_pv(protocol, "slowseq")
+    slow_seq = epics_signal_rw(int, slow_seq_pv)
+    await slow_seq.connect()
+
+    # First, do a set with blocking and make sure it takes a while
+    start = time.time()
+    await slow_seq.set(1, wait=True)
+    stop = time.time()
+    assert stop - start == pytest.approx(0.5, rel=0.1)
+
+    # Then, make sure if we don't wait it returns ~instantly
+    start = time.time()
+    await slow_seq.set(2, wait=False)
+    stop = time.time()
+    assert stop - start < 0.1
+
+
+async def test_setting_with_none_uses_initial_value_of_pv(
+    ioc_devices: EpicsTestIocAndDevices,
+):
+    sig_rw = epics_signal_rw(int, ioc_devices.get_pv("pva", "slowseq"))
+    await sig_rw.connect()
+    initial_data = await sig_rw.read()
+    initial_value, initial_timestamp = (
+        initial_data[""]["value"],
+        initial_data[""]["timestamp"],
+    )
+
+    # This mimics triggering a SignalX
+    await sig_rw.set(None)  # type: ignore
+
+    current_data = await sig_rw.read()
+    assert (
+        initial_value == current_data[""]["value"]
+        and initial_timestamp != current_data[""]["timestamp"]
+    )

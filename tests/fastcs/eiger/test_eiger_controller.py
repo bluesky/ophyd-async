@@ -35,7 +35,7 @@ async def test_when_arm_with_exposure_then_time_and_period_set(
 ):
     driver, controller = eiger_driver_and_controller
     test_exposure = 0.002
-    await controller.prepare(TriggerInfo(number_of_triggers=10, livetime=test_exposure))
+    await controller.prepare(TriggerInfo(number_of_events=10, livetime=test_exposure))
     await controller.arm()
     await controller.wait_for_idle()
     assert (await driver.detector.frame_time.get_value()) == test_exposure
@@ -46,7 +46,7 @@ async def test_when_arm_with_no_exposure_then_arm_set_correctly(
     eiger_driver_and_controller: DriverAndController,
 ):
     driver, controller = eiger_driver_and_controller
-    await controller.prepare(TriggerInfo(number_of_triggers=10))
+    await controller.prepare(TriggerInfo(number_of_events=10))
     await controller.arm()
     await controller.wait_for_idle()
     get_mock_put(driver.detector.arm).assert_called_once()
@@ -57,7 +57,7 @@ async def test_when_arm_with_number_of_images_then_number_of_images_set_correctl
 ):
     driver, controller = eiger_driver_and_controller
     test_number_of_images = 40
-    await controller.prepare(TriggerInfo(number_of_triggers=test_number_of_images))
+    await controller.prepare(TriggerInfo(number_of_events=test_number_of_images))
     await controller.arm()
     await controller.wait_for_idle()
     get_mock_put(driver.detector.nimages).assert_called_once_with(

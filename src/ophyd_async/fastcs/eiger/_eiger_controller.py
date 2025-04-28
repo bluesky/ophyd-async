@@ -43,7 +43,7 @@ class EigerController(DetectorController):
             self._drv.detector.trigger_mode.set(
                 EIGER_TRIGGER_MODE_MAP[trigger_info.trigger].value
             ),
-            self._drv.detector.nimages.set(trigger_info.total_number_of_triggers),
+            self._drv.detector.nimages.set(trigger_info.total_number_of_exposures),
         ]
         if trigger_info.livetime is not None:
             coros.extend(

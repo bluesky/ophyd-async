@@ -1,5 +1,7 @@
 from collections.abc import Awaitable, Callable
-from typing import Any, Generic, get_type_hints
+from typing import Any, Generic, get_args, get_origin, get_type_hints, is_typeddict
+
+from bluesky.protocols import Locatable
 
 from ._derived_signal_backend import (
     DerivedSignalBackend,
@@ -8,7 +10,7 @@ from ._derived_signal_backend import (
     TransformT,
 )
 from ._device import Device
-from ._signal import SignalR, SignalRW, SignalT, SignalW
+from ._signal import Signal, SignalR, SignalRW, SignalT, SignalW
 from ._signal_backend import SignalDatatypeT
 
 
@@ -35,24 +37,36 @@ class DerivedSignalFactory(Generic[TransformT]):
         self._set_derived = set_derived
         # Check the raw and transform devices match the input arguments of the Transform
         if transform_cls is not Transform:
-            expected = list(transform_cls.model_fields) + [
-                x
-                for x in get_type_hints(transform_cls.raw_to_derived)
-                if x not in ["self", "return"]
-            ]
-            if set(expected) != set(raw_and_transform_devices):
+            # Populate expected parameters and types
+            expected = {
+                **{k: f.annotation for k, f in transform_cls.model_fields.items()},
+                **{
+                    k: v
+                    for k, v in get_type_hints(transform_cls.raw_to_derived).items()
+                    if k not in {"self", "return"}
+                },
+            }
+
+            # Populate received parameters and types
+            # Use Signal datatype, or Locatable datatype, or set type as None
+            received = {
+                k: v.datatype if isinstance(v, Signal) else get_locatable_type(v)
+                for k, v in raw_and_transform_devices.items()
+            }
+
+            if expected != received:
                 msg = (
-                    f"Expected devices to be passed as keyword arguments {expected}, "
-                    f"got {list(raw_and_transform_devices)}"
+                    f"Expected devices to be passed as keyword arguments "
+                    f"{expected}, got {received}"
                 )
                 raise TypeError(msg)
-        set_derived_datatype = (
-            _get_first_arg_datatype(set_derived) if set_derived else None
+        self._set_derived_takes_dict = (
+            is_typeddict(_get_first_arg_datatype(set_derived)) if set_derived else False
         )
         self._transformer = SignalTransformer(
             transform_cls,
             set_derived,
-            set_derived_datatype,
+            self._set_derived_takes_dict,
             **raw_and_transform_devices,
         )
 
@@ -75,7 +89,7 @@ class DerivedSignalFactory(Generic[TransformT]):
                 f"{signal_cls.__name__}s"
             )
             raise ValueError(msg)
-        if issubclass(signal_cls, SignalRW):
+        if issubclass(signal_cls, SignalRW) and self._set_derived_takes_dict:
             self._transformer.raw_locatables  # noqa: B018
         backend = DerivedSignalBackend(
             datatype, name, self._transformer, units, precision
@@ -269,3 +283,17 @@ def derived_signal_w(
         units=derived_units,
         precision=derived_precision,
     )
+
+
+def get_locatable_type(obj: object) -> type | None:
+    """Extract datatype from Locatable parent class.
+
+    :param obj: Object with possible Locatable inheritance
+    :return: Type hint associated with Locatable, or None if not found.
+    """
+    for base in getattr(obj.__class__, "__orig_bases__", []):
+        if get_origin(base) is Locatable:
+            args = get_args(base)
+            if args:
+                return args[0]
+    return None

@@ -30,7 +30,7 @@ class BlobDetectorController(DetectorController):
         coro = self.pattern_generator.write_images_to_file(
             exposure=livetime,
             period=livetime + self.trigger_info.deadtime,
-            number_of_frames=self.trigger_info.total_number_of_triggers,
+            number_of_frames=self.trigger_info.total_number_of_exposures,
         )
         self.task = asyncio.create_task(coro)
 
