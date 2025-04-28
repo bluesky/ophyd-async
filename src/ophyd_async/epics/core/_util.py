@@ -40,12 +40,9 @@ def get_supported_values(
         if not set(choices).issubset(pv_choices):
             raise TypeError(error_msg + "to be a subset of them.")
     elif issubclass(enum_cls, SupersetEnum):
-        if (
-            not set(pv_choices).issubset(choices)
-            or len(set(choices).intersection(pv_choices)) == 0
-        ):
+        if not choices or not set(pv_choices).issubset(set(choices)):
             raise TypeError(
-                error_msg + ". There should be no extras and at least one match."
+                error_msg + ". There should be no extras and at least one option."
             )
 
     # Take order from the pv choices

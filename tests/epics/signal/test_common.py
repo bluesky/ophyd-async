@@ -58,19 +58,26 @@ def test_given_supersetenum_that_partial_matches_are_valid():
     assert supported_vals.get(MyEnum.TEST_2) is None
 
 
-def test_given_supersetenum_that_extra_values_are_invalid():
-    class MyEnum(SupersetEnum):
-        TEST_1 = "test_1"
-        TEST_2 = "test_2"
+class MySupersetEnum(SupersetEnum):
+    TEST_1 = "test_1"
+    TEST_2 = "test_2"
 
-    with pytest.raises(TypeError):
-        get_supported_values("", MyEnum, (MyEnum.TEST_1, MyEnum.TEST_2, "extra_1"))
+
+SUPERSETENUM_ERROR_MESSAGE = "There should be no extras and at least one option."
+
+
+def test_given_supersetenum_that_all_values_plus_extra_values_are_invalid():
+    with pytest.raises(TypeError, match=SUPERSETENUM_ERROR_MESSAGE):
+        get_supported_values(
+            "", MySupersetEnum, (MySupersetEnum.TEST_1, MySupersetEnum.TEST_2, "extra_1")
+        )
+
+
+def test_given_supersetenum_that_partial_values_plus_extra_values_are_invalid():
+    with pytest.raises(TypeError, match=SUPERSETENUM_ERROR_MESSAGE):
+        get_supported_values("", MySupersetEnum, (MySupersetEnum.TEST_1, "extra_1"))
 
 
 def test_given_supersetenum_that_no_matches_is_invalid():
-    class MyEnum(SupersetEnum):
-        TEST_1 = "test_1"
-        TEST_2 = "test_2"
-
-    with pytest.raises(TypeError):
-        get_supported_values("", MyEnum, ("no_match_1", "no_match_2"))
+    with pytest.raises(TypeError, match=SUPERSETENUM_ERROR_MESSAGE):
+        get_supported_values("", MySupersetEnum, ("no_match_1", "no_match_2"))
