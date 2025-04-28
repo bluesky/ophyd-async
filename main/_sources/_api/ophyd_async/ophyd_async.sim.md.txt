@@ -70,7 +70,7 @@
 `````{py:class} SimMotor(name='', instant=True)
 :canonical: ophyd_async.sim._motor.SimMotor
 
-Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Stoppable`, {py:obj}`bluesky.protocols.Subscribable`\[{py:obj}`float`\]
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Stoppable`, {py:obj}`bluesky.protocols.Subscribable`\[{py:obj}`float`\], {py:obj}`bluesky.protocols.Locatable`\[{py:obj}`float`\]
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor
 ```

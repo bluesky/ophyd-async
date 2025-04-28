@@ -841,6 +841,15 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`typing.Generic`\[{py:
 
 ````
 
+````{py:property} datatype
+:canonical: ophyd_async.core._signal.Signal.datatype
+:type: type[~ophyd_async.core._signal_backend.SignalDatatypeT] | None
+
+```{autodoc2-docstring} ophyd_async.core._signal.Signal.datatype
+```
+
+````
+
 `````
 
 `````{py:class} SignalR(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '')
