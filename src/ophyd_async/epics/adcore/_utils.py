@@ -13,6 +13,9 @@ from ophyd_async.core import (
 
 
 class ADBaseDataType(SupersetEnum):
+    # Driver database override will blank the enum string if it doesn't
+    # support a datatype
+    UNDEFINED = ""
     INT8 = "Int8"
     UINT8 = "UInt8"
     INT16 = "Int16"
@@ -27,6 +30,7 @@ class ADBaseDataType(SupersetEnum):
 
 def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
     ad_dtype_to_np_dtype = {
+        ADBaseDataType.UNDEFINED:  "U1",
         ADBaseDataType.INT8: "|i1",
         ADBaseDataType.UINT8: "|u1",
         ADBaseDataType.INT16: "<i2",
@@ -50,7 +54,7 @@ def convert_pv_dtype_to_np(datatype: str) -> str:
         "DBR_FLOAT": ADBaseDataType.FLOAT32,
         "DBR_DOUBLE": ADBaseDataType.FLOAT64,
     }
-    if datatype in ["DBR_STRING", "DBR_CHAR"]:
+    if datatype in ["DBR_STRING", "DBR_CHAR", ""]:
         np_datatype = "s40"
     elif datatype == "DBR_NATIVE":
         raise ValueError("Don't support DBR_NATIVE yet")
@@ -68,7 +72,7 @@ def convert_param_dtype_to_np(datatype: str) -> str:
         "INT64": ADBaseDataType.INT64,
         "DOUBLE": ADBaseDataType.FLOAT64,
     }
-    if datatype in ["STRING"]:
+    if datatype in ["STRING", ""]:
         np_datatype = "s40"
     else:
         try:

@@ -39,7 +39,7 @@ class StrictEnumMeta(EnumMeta):
 class UppercaseNameEnumMeta(EnumMeta):
     def __new__(metacls, *args, **kwargs):
         ret = super().__new__(metacls, *args, **kwargs)
-        lowercase_names = [x.name for x in ret if not x.name.isupper()]  # type: ignore
+        lowercase_names = [x.name for x in ret if (not x.name.isupper() or x.name == "_")]  # type: ignore
         if lowercase_names:
             raise TypeError(f"Names {lowercase_names} should be uppercase")
         return ret

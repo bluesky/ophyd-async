@@ -7,7 +7,14 @@ from bluesky.protocols import Reading
 from event_model import DataKey, Dtype, Limits
 
 from ._table import Table
-from ._utils import Callback, EnumTypes, get_enum_cls
+from ._utils import (
+    Callback,
+    EnumTypes,
+    StrictEnum,
+    SubsetEnum,
+    SupersetEnum,
+    get_enum_cls,
+)
 
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 """A numpy dtype like [](#numpy.float64)."""
