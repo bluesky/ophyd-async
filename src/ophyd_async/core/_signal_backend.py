@@ -38,7 +38,9 @@ SignalDatatype = (
     | Array1D[np.float64]
     | np.ndarray
     | Sequence[str]
-    | Sequence[EnumTypes]
+    | Sequence[StrictEnum]
+    | Sequence[SubsetEnum]
+    | Sequence[SupersetEnum]
     | Table
 )
 """The supported [](#Signal) datatypes:
