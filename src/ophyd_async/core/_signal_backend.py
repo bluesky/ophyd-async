@@ -6,7 +6,7 @@ import numpy as np
 from bluesky.protocols import Reading
 from event_model import DataKey, Dtype, Limits
 
-from ophyd_async.core import (
+from ophyd_async.core._utils import (
     Callback,
     EnumTypes,
     StrictEnum,

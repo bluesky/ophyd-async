@@ -69,7 +69,9 @@ SUPERSETENUM_ERROR_MESSAGE = "There should be no extras and at least one option.
 def test_given_supersetenum_that_all_values_plus_extra_values_are_invalid():
     with pytest.raises(TypeError, match=SUPERSETENUM_ERROR_MESSAGE):
         get_supported_values(
-            "", MySupersetEnum, (MySupersetEnum.TEST_1, MySupersetEnum.TEST_2, "extra_1")
+            "",
+            MySupersetEnum,
+            (MySupersetEnum.TEST_1, MySupersetEnum.TEST_2, "extra_1"),
         )
 
 

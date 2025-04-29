@@ -30,7 +30,7 @@ class ADBaseDataType(SupersetEnum):
 
 def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
     ad_dtype_to_np_dtype = {
-        ADBaseDataType.UNDEFINED:  "U1",
+        ADBaseDataType.UNDEFINED: "U1",
         ADBaseDataType.INT8: "|i1",
         ADBaseDataType.UINT8: "|u1",
         ADBaseDataType.INT16: "<i2",
