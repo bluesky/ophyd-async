@@ -6,8 +6,7 @@ import numpy as np
 from bluesky.protocols import Reading
 from event_model import DataKey, Dtype, Limits
 
-from ._table import Table
-from ._utils import (
+from ophyd_async.core import (
     Callback,
     EnumTypes,
     StrictEnum,
@@ -15,6 +14,8 @@ from ._utils import (
     SupersetEnum,
     get_enum_cls,
 )
+
+from ._table import Table
 
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 """A numpy dtype like [](#numpy.float64)."""
