@@ -88,6 +88,7 @@ class SignalTransformer(Generic[TransformT]):
         self._raw_devices = raw_and_transform_devices
         self._derived_callbacks: dict[str, Callback[Reading]] = {}
         self._cached_readings: dict[str, Reading] | None = None
+        self._lock = asyncio.Lock()
 
     @cached_property
     def raw_locatables(self) -> dict[str, AsyncLocatable]:
@@ -230,11 +231,12 @@ class SignalTransformer(Generic[TransformT]):
             msg = "Cannot put as no set_derived method given"
             raise RuntimeError(msg)
         if self._set_derived_takes_dict:
-            # Need to get the other derived values and update the one that's changing
-            derived = await self.get_locations()
-            setpoints = {k: v["setpoint"] for k, v in derived.items()}
-            setpoints[name] = value
-            await self._set_derived(setpoints)
+            async with self._lock:
+                # Need to get the other derived values and update the one that's changing
+                derived = await self.get_locations()
+                setpoints = {k: v["setpoint"] for k, v in derived.items()}
+                setpoints[name] = value
+                await self._set_derived(setpoints)
         else:
             # Only one derived signal, so pass it directly
             await self._set_derived(value)
