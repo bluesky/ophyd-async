@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.10.0a4.dev3+g80e70fc31 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.10.0a4.dev4+g6e6169cce documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=5dbecfe1"></script>
+    <script src="../../_static/documentation_options.js?v=92dec540"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev3+g80e70fc31 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev3+g80e70fc31 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev4+g6e6169cce documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev4+g6e6169cce documentation - Home"/>
   
   
 </a></div>
@@ -2021,8 +2021,8 @@ value being yielded, even if it is the same as the previous value.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>signals</strong> – Call subscribe_value on all the signals at the start, and clear_sub on
 it at the end.</p></li>
-<li><p><strong>timeout</strong> – If given, how long to wait for each updated value in seconds. If an
-update is not produced in this time then raise asyncio.TimeoutError.</p></li>
+<li><p><strong>timeout</strong> – If given, how long to wait for ANY updated value from shared queue in seconds.
+If an update is not produced in this time then raise asyncio.TimeoutError.</p></li>
 <li><p><strong>done_status</strong> – If this status is complete, stop observing and make the iterator return.
 If it raises an exception then this exception will be raised by the
 iterator.</p></li>
