@@ -28,8 +28,8 @@ logger = logging.getLogger("ophyd_async")
 
 
 class StrictEnumMeta(EnumMeta):
-    def __new__(metacls, *args, **kwargs):
-        ret = super().__new__(metacls, *args, **kwargs)
+    def __new__(cls, *args, **kwargs):
+        ret = super().__new__(cls, *args, **kwargs)
         lowercase_names = [x.name for x in ret if not x.name.isupper()]  # type: ignore
         if lowercase_names:
             raise TypeError(f"Names {lowercase_names} should be uppercase")
@@ -37,8 +37,8 @@ class StrictEnumMeta(EnumMeta):
 
 
 class UppercaseNameEnumMeta(EnumMeta):
-    def __new__(metacls, *args, **kwargs):
-        ret = super().__new__(metacls, *args, **kwargs)
+    def __new__(cls, *args, **kwargs):
+        ret = super().__new__(cls, *args, **kwargs)
         lowercase_names = [x.name for x in ret if not x.name.isupper()]  # type: ignore
         if lowercase_names:
             raise TypeError(f"Names {lowercase_names} should be uppercase")
