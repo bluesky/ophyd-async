@@ -27,7 +27,6 @@ from ophyd_async.testing import (
 )
 
 
-
 @pytest.fixture
 def movable_beamstop() -> MovableBeamstop:
     return MovableBeamstop("device")
