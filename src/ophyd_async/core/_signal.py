@@ -100,6 +100,11 @@ class Signal(Device, Generic[SignalDatatypeT]):
         """
         return self._connector.backend.source(self.name, read=True)
 
+    @property
+    def datatype(self) -> type[SignalDatatypeT] | None:
+        """Returns the datatype of the signal."""
+        return self._connector.backend.datatype
+
 
 SignalT = TypeVar("SignalT", bound=Signal)
 
@@ -431,8 +436,8 @@ async def observe_signals_value(
         Call subscribe_value on all the signals at the start, and clear_sub on
         it at the end.
     :param timeout:
-        If given, how long to wait for each updated value in seconds. If an
-        update is not produced in this time then raise asyncio.TimeoutError.
+        If given, how long to wait for ANY updated value from shared queue in seconds.
+        If an update is not produced in this time then raise asyncio.TimeoutError.
     :param done_status:
         If this status is complete, stop observing and make the iterator return.
         If it raises an exception then this exception will be raised by the
@@ -454,8 +459,10 @@ async def observe_signals_value(
     q: asyncio.Queue[tuple[SignalR[SignalDatatypeT], SignalDatatypeT] | Status] = (
         asyncio.Queue()
     )
-
+    # dict to store signal subscription to remove it later
     cbs: dict[SignalR, Callback] = {}
+
+    # subscribe signal to update queue and fill cbs dict
     for signal in signals:
 
         def queue_value(value: SignalDatatypeT, signal=signal):
@@ -468,6 +475,7 @@ async def observe_signals_value(
         done_status.add_callback(q.put_nowait)
     overall_deadline = time.monotonic() + done_timeout if done_timeout else None
     try:
+        last_item = ()
         while True:
             if overall_deadline and time.monotonic() >= overall_deadline:
                 raise asyncio.TimeoutError(
@@ -476,14 +484,22 @@ async def observe_signals_value(
                     f"timeout {done_timeout}s"
                 )
             iteration_timeout = _get_iteration_timeout(timeout, overall_deadline)
-            item = await asyncio.wait_for(q.get(), iteration_timeout)
+            try:
+                item = await asyncio.wait_for(q.get(), iteration_timeout)
+            except asyncio.TimeoutError as exc:
+                raise asyncio.TimeoutError(
+                    f"Timeout Error while waiting {iteration_timeout}s to update "
+                    f"{[signal.source for signal in signals]}. "
+                    f"Last observed signal and value were {last_item}"
+                ) from exc
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc
                 else:
                     break
             else:
-                yield cast(tuple[SignalR[SignalDatatypeT], SignalDatatypeT], item)
+                last_item = cast(tuple[SignalR[SignalDatatypeT], SignalDatatypeT], item)
+                yield last_item
     finally:
         for signal, cb in cbs.items():
             signal.clear_sub(cb)

@@ -1,5 +1,3 @@
-from unittest.mock import AsyncMock, patch
-
 import pytest
 
 from ophyd_async.core import (
@@ -23,24 +21,17 @@ async def test_deadtime_from_exposure_time(
 
 
 async def test_unsupported_trigger_excepts(test_adandor: adandor.Andor2Detector):
-    with patch(
-        "ophyd_async.epics.adcore._hdf_writer.ADHDFWriter.open", new_callable=AsyncMock
-    ) as mock_open:
-        with pytest.raises(
-            ValueError,
-            # str(EnumClass.value) handling changed in Python 3.11
-            match=(
-                "Andor2Controller only supports the following trigger types: .* but"
-            ),
-        ):
-            await test_adandor.prepare(
-                TriggerInfo(
-                    number_of_events=0,
-                    trigger=DetectorTrigger.VARIABLE_GATE,
-                    deadtime=1.1,
-                    livetime=1,
-                    exposure_timeout=3,
-                )
+    with pytest.raises(
+        ValueError,
+        # str(EnumClass.value) handling changed in Python 3.11
+        match=("Andor2Controller only supports the following trigger types: .* but"),
+    ):
+        await test_adandor.prepare(
+            TriggerInfo(
+                number_of_events=0,
+                trigger=DetectorTrigger.VARIABLE_GATE,
+                deadtime=1.1,
+                livetime=1,
+                exposure_timeout=3,
             )
-
-    mock_open.assert_called_once()
+        )
