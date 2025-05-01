@@ -25,33 +25,54 @@ class JointSpace(TypedDict):  # noqa: D101
     joint_6: float
 
 
-def rotationMatrixToEulerZYX(rmatrix):  # noqa: D103
-    sy = np.sqrt(rmatrix[2, 1] ** 2 + rmatrix[2, 2] ** 2)
-    singular = sy < 1e-6
-    if not singular:
-        alpha = -np.arctan2(rmatrix[2, 1], rmatrix[2, 2])
-        beta = -np.arctan2(
-            -rmatrix[2, 0], np.sqrt(rmatrix[2, 1] ** 2 + rmatrix[2, 2] ** 2)
-        )
-        gamma = -np.arctan2(rmatrix[1, 0], rmatrix[0, 0])
+def rotationMatrixToEuler(R, convention: str):
+    """Extract Euler angles (in radians) from a rotation matrix R.
+
+    Parameters:
+      R : 3x3 array
+          Rotation matrix.
+      order : string, either "zyx" or "xyz"
+          If "zyx", extract using (approximately) the formulas from your original function:
+             alpha = -atan2(R[2,1], R[2,2])
+             beta  = -atan2(-R[2,0], sqrt(R[2,1]**2 + R[2,2]**2))
+             gamma = -atan2(R[1,0], R[0,0])
+          If "xyz", extract using one common set of formulas for that convention:
+             phi   = atan2(-R[1,2], R[2,2])
+             theta = arcsin(R[0,2])
+             psi   = atan2(-R[0,1], R[0,0])
+
+    Returns:
+      A tuple of three angles (in radians).
+    """
+    if convention.lower() == "zyx":
+        sy = np.sqrt(R[2, 1] ** 2 + R[2, 2] ** 2)
+        singular = sy < 1e-6
+        if not singular:
+            alpha = -np.arctan2(R[2, 1], R[2, 2])
+            beta = -np.arctan2(-R[2, 0], sy)
+            gamma = -np.arctan2(R[1, 0], R[0, 0])
+        else:
+            alpha = np.pi - np.arctan2(R[0, 1], R[0, 2])
+            beta = -np.arctan2(-R[2, 0], sy)
+            gamma = -np.arctan2(R[1, 0], R[0, 0])
+        return alpha, beta, gamma
+    elif convention.lower() == "xyz":
+        cp = np.sqrt(1 - R[0, 2] ** 2)
+        singular = cp < 1e-6
+        if not singular:
+            phi = np.arctan2(-R[1, 2], R[2, 2])
+            theta = np.arcsin(R[0, 2])
+            psi = np.arctan2(-R[0, 1], R[0, 0])
+        else:
+            phi = np.arctan2(R[2, 1], R[1, 1])
+            theta = np.arcsin(R[0, 2])
+            psi = 0.0
+        return phi, theta, psi
     else:
-        alpha = np.pi - np.arctan2(rmatrix[0, 1], rmatrix[0, 2])
-        beta = -np.arctan2(
-            -rmatrix[2, 0], np.sqrt(rmatrix[2, 1] ** 2 + rmatrix[2, 2] ** 2)
-        )
-        gamma = -np.arctan2(rmatrix[1, 0], rmatrix[0, 0])
-    return alpha, beta, gamma
+        raise ValueError(f"Unsupported convention: {convention}. Use 'zyx' or 'xyz'.")
 
 
-def transformation_to_pose(T):
-    x, y, z = T[0, 3], T[1, 3], T[2, 3]
-    R = T[:3, :3]
-    alpha, beta, gamma = rotationMatrixToEulerZYX(R)
-
-    return x, y, z, np.rad2deg(alpha), np.rad2deg(beta), np.rad2deg(gamma)
-
-
-def fk(joints, offset):
+def fk(joints, offset, convention: str = "xyz"):
     th = np.deg2rad(joints)
     th1, th2, th3, th4, th5, th6 = th
 
@@ -71,7 +92,11 @@ def fk(joints, offset):
 
     T06 = T01 @ T12 @ T23 @ T34 @ T45 @ T56
 
-    return transformation_to_pose(T06)
+    x, y, z = T06[0, 3], T06[1, 3], T06[2, 3]
+    R = T06[:3, :3]
+    alpha, beta, gamma = rotationMatrixToEuler(R, convention)
+
+    return x, y, z, np.rad2deg(alpha), np.rad2deg(beta), np.rad2deg(gamma)
 
 
 class RobotTransform(Transform):  # noqa: D101
@@ -86,7 +111,7 @@ class RobotTransform(Transform):  # noqa: D101
         joint_6: float,
     ) -> CartesianSpace:
         x, y, z, alpha, beta, gamma = fk(
-            [joint_1, 10, joint_3, 30, joint_5, joint_6], 70
+            [joint_1, joint_2, joint_3, joint_3, joint_5, joint_6], 70
         )
         return CartesianSpace(x=x, y=y, z=z, alpha=alpha, beta=beta, gamma=gamma)
 
@@ -99,7 +124,7 @@ class RobotTransform(Transform):  # noqa: D101
 
 
 class Meca500(Device, Movable):  # noqa: D101
-    def __init__(self, kinematic_chain, prefix="", name=""):
+    def __init__(self, prefix="", name=""):
         self.joint_1 = epics_signal_rw(float, f"{prefix}:THETA1:SP")
         self.joint_2 = epics_signal_rw(float, f"{prefix}:THETA2:SP")
         self.joint_3 = epics_signal_rw(float, f"{prefix}:THETA3:SP")
@@ -130,3 +155,8 @@ class Meca500(Device, Movable):  # noqa: D101
         transform = await self._factory.transform()
         raw = transform.derived_to_raw(**cartesian)
         self.joint_1.set(raw["joint_1"])
+        self.joint_2.set(raw["joint_2"])
+        self.joint_3.set(raw["joint_3"])
+        self.joint_4.set(raw["joint_4"])
+        self.joint_5.set(raw["joint_5"])
+        self.joint_6.set(raw["joint_6"])
