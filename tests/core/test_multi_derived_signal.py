@@ -137,11 +137,9 @@ def test_mismatching_args():
 async def test_meca500():
     robot = Meca500("test")
     await robot.connect(mock=True)
-    await robot.x.set(0)
+    await robot.z.set(0.300)
 
-    joint_1 = await robot.joint_1.get_value()
-
-    # await robot.joint_1.set(20)
+    joint_2 = await robot.joint_2.get_value()
 
     x = await robot.x.get_value()
     pass
