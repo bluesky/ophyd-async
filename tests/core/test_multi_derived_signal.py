@@ -11,6 +11,7 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 from ophyd_async.epics.meca500 import Meca500
+from ophyd_async.epics.utils import MECA_500
 from ophyd_async.sim import (
     HorizontalMirror,
     HorizontalMirrorDerived,
@@ -135,9 +136,13 @@ def test_mismatching_args():
 
 
 async def test_meca500():
-    robot = Meca500("test")
+    robot = Meca500(MECA_500, "test")
     await robot.connect(mock=True)
-    await robot.x.set(12)
+    await robot.x.set(0)
 
     joint_1 = await robot.joint_1.get_value()
+
+    # await robot.joint_1.set(20)
+
+    x = await robot.x.get_value()
     pass
