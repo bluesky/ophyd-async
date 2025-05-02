@@ -27,7 +27,7 @@ class PilatusDetector(AreaDetector[PilatusController]):
         config_sigs: Sequence[SignalR] = (),
     ):
         driver = PilatusDriverIO(prefix + drv_suffix)
-        controller = PilatusController(driver)
+        controller = PilatusController(driver, readout_time=readout_time)
 
         writer = writer_cls.with_io(
             prefix,
