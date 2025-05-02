@@ -91,6 +91,9 @@ async def test_setting_position_straight_through():
         call.y1.user_setpoint.put(1.0, wait=True),
         call.y2.user_setpoint.put(pytest.approx(0.0), wait=True),
     ]
+
+    test = await inst.height.get_value()
+
     m.reset_mock()
 
 
@@ -137,9 +140,17 @@ def test_mismatching_args():
 async def test_meca500():
     robot = Meca500("test")
     await robot.connect(mock=True)
-    await robot.z.set(0.300)
 
+    z_a = await robot.z.get_value()
+
+    z_b = await robot.z.set(0.390)
+
+    joint_1 = await robot.joint_1.get_value()
     joint_2 = await robot.joint_2.get_value()
+    joint_3 = await robot.joint_3.get_value()
+    joint_4 = await robot.joint_4.get_value()
+    joint_5 = await robot.joint_5.get_value()
+    joint_6 = await robot.joint_6.get_value()
 
-    x = await robot.x.get_value()
+    z = await robot.z.get_value()
     pass

@@ -1,3 +1,4 @@
+import asyncio
 from typing import TypedDict  # noqa: D100
 
 import numpy as np
@@ -25,19 +26,23 @@ class JointSpace(TypedDict):  # noqa: D101
     joint_6: float
 
 
-def vp_angle(v1, v2, v3):
+def _vp_angle(v1, v2, v3):
     plane_normal = np.cross(v2, v3)
     return np.arccos(
         np.dot(v1, plane_normal) / (np.linalg.norm(v1) * np.linalg.norm(plane_normal))
     )
 
 
-def vanglev(v1, v2):
+def _vanglev(v1, v2):
     angle = np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
     return angle
 
 
-def rotmat(u, angle):
+def _comparator_difference(arr, motor_pos, weighting=1):
+    return np.sum(np.abs(arr - motor_pos) * weighting)
+
+
+def _rotmat(u, angle):
     # clockwise rotation
     u = np.array(u) / np.linalg.norm(np.array(u))
     angle_rad = np.deg2rad(angle)
@@ -55,7 +60,7 @@ def rotmat(u, angle):
     return rotmat
 
 
-def rotxyz(v, u, angle):
+def _rotxyz(v, u, angle):
     u = np.array(u) / np.linalg.norm(np.array(u))
     u = np.atleast_2d(u)
     angle_rad = np.deg2rad(angle)
@@ -73,13 +78,14 @@ def rotxyz(v, u, angle):
     return (rotmat @ v.T).T
 
 
-def setEulerTarget(
+def _setEulerTarget(
     xyz,
     r_alpha,
     r_beta,
     r_gamma,
     motor_pos,
 ):
+    # Hard coded kinematic chain for the Meca500. Should be generalizable.
     v0 = np.array([0, 0.0, 0.135])
     v1 = np.array([0, 0.0, 0.135 * 2])
     v2 = np.array([0, 0, 0.34102])
@@ -104,7 +110,7 @@ def setEulerTarget(
     vy = MI[1, :]
     vz = MI[2, :]
     em = (
-        rotmat(vx, r_alpha) @ rotmat(vy, r_beta) @ rotmat(vz, r_gamma)
+        _rotmat(vx, r_alpha) @ _rotmat(vy, r_beta) @ _rotmat(vz, r_gamma)
     )  # ZYX convention
     targetmatrix = np.array(
         [
@@ -112,13 +118,13 @@ def setEulerTarget(
             np.array((em @ np.array([vy]).T).T)[0],
             np.array((em @ np.array([vz]).T).T)[0],
         ]
-    )  # To make consisten with Euler in Blender
+    )  # To make consistent with Euler in Blender
     tool = np.array(np.array([tool_offset]) @ targetmatrix)[0]
     xyz = np.array(xyz + tool)
     tv1 = list(np.array(np.array([vx]) @ targetmatrix)[0])
     tv2 = list(np.array(np.array([vy]) @ targetmatrix)[0])
     tv3 = list(np.array(np.array([vz]) @ targetmatrix)[0])
-    return i_kinematics(
+    return _inverse_kinematics(
         np.array([xyz, tv1, tv2, tv3]),
         L_vects,
         axis_vects,
@@ -130,7 +136,7 @@ def setEulerTarget(
     )
 
 
-def i_kinematics(
+def _inverse_kinematics(
     target,
     L_vects,
     axis_vects,
@@ -160,12 +166,12 @@ def i_kinematics(
     #       determine angle addition or subtraction and vector length
     # -----------------------------------------------------------------------
 
-    A1 = np.pi / 2 + vp_angle(np.array(vc1), np.array([1, 0, 0]), np.array([0, 1, 0]))
-    A2 = np.pi / 2 - vp_angle(np.array(vc1), np.array([1, 0, 0]), np.array([0, 1, 0]))
-    A1n = 3 / 2.0 * np.pi - vp_angle(
+    A1 = np.pi / 2 + _vp_angle(np.array(vc1), np.array([1, 0, 0]), np.array([0, 1, 0]))
+    A2 = np.pi / 2 - _vp_angle(np.array(vc1), np.array([1, 0, 0]), np.array([0, 1, 0]))
+    A1n = 3 / 2.0 * np.pi - _vp_angle(
         np.array(vc1), np.array([1, 0, 0]), np.array([0, 1, 0])
     )
-    A2n = vp_angle(np.array(vc1), np.array([1, 0, 0]), np.array([0, 1, 0])) - np.pi / 2
+    A2n = _vp_angle(np.array(vc1), np.array([1, 0, 0]), np.array([0, 1, 0])) - np.pi / 2
     # -----------------------------------------------------------------------
 
     b = np.linalg.norm(vc1)
@@ -200,9 +206,9 @@ def i_kinematics(
                 (L1**2 + L2**2 - vc1n**2) / (2 * L1 * L2)
             )  # law of cosines
             theta2 = theta2 - (
-                vp_angle((L_vects[3, :] + L_vects[2, :]), [1, 0, 0], [0, 1, 0])
+                _vp_angle((L_vects[3, :] + L_vects[2, :]), [1, 0, 0], [0, 1, 0])
             )
-            theta1 = -theta1 + (vp_angle(vc1, [1, 0, 0], [0, 1, 0]))
+            theta1 = -theta1 + (_vp_angle(vc1, [1, 0, 0], [0, 1, 0]))
 
         elif ii == 1 or ii == 5:
             if vc1[-1] > 0:
@@ -221,9 +227,9 @@ def i_kinematics(
                 (L1**2 + L2**2 - vc1n**2) / (2 * L1 * L2)
             )  # law of cosines
             theta2 = theta2 - (
-                vp_angle((L_vects[3, :] + L_vects[2, :]), [1, 0, 0], [0, 1, 0])
+                _vp_angle((L_vects[3, :] + L_vects[2, :]), [1, 0, 0], [0, 1, 0])
             )
-            theta1 = -theta1 - (vp_angle(vc1, [1, 0, 0], [0, 1, 0]))
+            theta1 = -theta1 - (_vp_angle(vc1, [1, 0, 0], [0, 1, 0]))
 
         elif ii == 2 or ii == 6:
             if vc1[-1] > 0:
@@ -242,11 +248,11 @@ def i_kinematics(
                 np.pi - np.arccos((L1**2 + L2**2 - vc1n**2) / (2 * L1 * L2))
             )  # law of cosines
             theta2 = theta2 - (
-                vp_angle((L_vects[3, :] + L_vects[2, :]), [1, 0, 0], [0, 1, 0])
+                _vp_angle((L_vects[3, :] + L_vects[2, :]), [1, 0, 0], [0, 1, 0])
             )
-            theta1 = -theta1 + (vp_angle(vc1, [1, 0, 0], [0, 1, 0]))
+            theta1 = -theta1 + (_vp_angle(vc1, [1, 0, 0], [0, 1, 0]))
 
-        elif ii == 3 or ii == 7:
+        else:
             if vc1[-1] > 0:
                 vc1n = a1
                 theta_c_angle_offset = theta_c_angle_offset1
@@ -263,103 +269,105 @@ def i_kinematics(
                 np.pi - np.arccos((L1**2 + L2**2 - vc1n**2) / (2 * L1 * L2))
             )  # law of cosines
             theta2 = theta2 - (
-                vp_angle((L_vects[3, :] + L_vects[2, :]), [1, 0, 0], [0, 1, 0])
+                _vp_angle((L_vects[3, :] + L_vects[2, :]), [1, 0, 0], [0, 1, 0])
             )
-            theta1 = -theta1 - (vp_angle(vc1, [1, 0, 0], [0, 1, 0]))
+            theta1 = -theta1 - (_vp_angle(vc1, [1, 0, 0], [0, 1, 0]))
 
         # -------------------------------------------------------------------------------------------#
         #           theta0 theta1 and theta2 determine position of Lvect origin
         # -------------------------------------------------------------------------------------------#
-        vec3 = rotxyz(
+        vec3 = _rotxyz(
             np.array([L_vects[3, :]]),
             np.array([axis_vects[2, :]]),
             theta2 * 180 / np.pi,
         )
 
-        vec3 = rotxyz(vec3, axis_vects[1, :], theta1 * 180 / np.pi)
-        vec3 = rotxyz(vec3, axis_vects[0, :], theta0 * 180 / np.pi)
+        vec3 = _rotxyz(vec3, axis_vects[1, :], theta1 * 180 / np.pi)
+        vec3 = _rotxyz(vec3, axis_vects[0, :], theta0 * 180 / np.pi)
 
-        av3 = rotxyz(
+        av3 = _rotxyz(
             np.array([axis_vects[4, :]]),
             np.array([axis_vects[2, :]]),
             theta2 * 180 / np.pi,
         )
-        av3 = rotxyz(av3, axis_vects[1, :], theta1 * 180 / np.pi)
-        av3 = rotxyz(av3, axis_vects[0, :], theta0 * 180 / np.pi)
+        av3 = _rotxyz(av3, axis_vects[1, :], theta1 * 180 / np.pi)
+        av3 = _rotxyz(av3, axis_vects[0, :], theta0 * 180 / np.pi)
 
         if (
             np.abs(np.dot(np.array(av3)[0], v3)) > 0.0001
         ):  # To check that av3 is not already orthoganol to v3
-            theta3i = vp_angle(np.array(av3)[0], np.array(v3), np.array(vec3)[0])
+            theta3i = _vp_angle(np.array(av3)[0], np.array(v3), np.array(vec3)[0])
             if ii < 4:
-                theta3 = vp_angle(np.array(av3)[0], np.array(v3), np.array(vec3)[0])
+                theta3 = _vp_angle(np.array(av3)[0], np.array(v3), np.array(vec3)[0])
             elif theta3i > np.pi / 2:
-                theta3 = -(vp_angle(np.array(av3)[0], np.array(vec3)[0], np.array(v3)))
+                theta3 = -(_vp_angle(np.array(av3)[0], np.array(vec3)[0], np.array(v3)))
+            else:
+                theta3 = 0
         else:
             theta3 = 0
 
         theta3 = -np.sign(np.dot(np.array(av3)[0], np.array(v3))) * theta3
-        vec4 = rotxyz(
+        vec4 = _rotxyz(
             np.array([L_vects[4, :]]),
             np.array([axis_vects[3, :]]),
             theta3 * 180 / np.pi,
         )
-        vec4 = rotxyz(vec4, axis_vects[2, :], theta2 * 180 / np.pi)
-        vec4 = rotxyz(vec4, axis_vects[1, :], theta1 * 180 / np.pi)
-        vec4 = rotxyz(vec4, axis_vects[0, :], theta0 * 180 / np.pi)
-        theta4 = vanglev(v3, np.array(vec4)[0])
+        vec4 = _rotxyz(vec4, axis_vects[2, :], theta2 * 180 / np.pi)
+        vec4 = _rotxyz(vec4, axis_vects[1, :], theta1 * 180 / np.pi)
+        vec4 = _rotxyz(vec4, axis_vects[0, :], theta0 * 180 / np.pi)
+        theta4 = _vanglev(v3, np.array(vec4)[0])
 
-        vec5 = rotxyz(
+        vec5 = _rotxyz(
             np.array([L_vects[5, :]]),
             np.array([axis_vects[4, :]]),
             theta4 * 180 / np.pi,
         )
-        vec5 = rotxyz(vec5, axis_vects[3, :], theta3 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[2, :], theta2 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[1, :], theta1 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[0, :], theta0 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[3, :], theta3 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[2, :], theta2 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[1, :], theta1 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[0, :], theta0 * 180 / np.pi)
 
-        theta4_check = np.abs(vanglev(v3, np.array(vec5)[0]) - np.pi / 2)
+        theta4_check = np.abs(_vanglev(v3, np.array(vec5)[0]) - np.pi / 2)
         if theta4_check > 0.01:
-            theta4 = -vanglev(v3, np.array(vec4)[0])
+            theta4 = -1 * _vanglev(v3, np.array(vec4)[0])
 
-        vec5 = rotxyz(
+        vec5 = _rotxyz(
             np.array([L_vects[5, :]]),
             np.array([axis_vects[4, :]]),
             theta4 * 180 / np.pi,
         )
-        vec5 = rotxyz(vec5, axis_vects[3, :], theta3 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[2, :], theta2 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[1, :], theta1 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[0, :], theta0 * 180 / np.pi)
-        theta5 = -vanglev(v1, np.array(vec5)[0])
+        vec5 = _rotxyz(vec5, axis_vects[3, :], theta3 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[2, :], theta2 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[1, :], theta1 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[0, :], theta0 * 180 / np.pi)
+        theta5 = -_vanglev(v1, np.array(vec5)[0])
 
-        vec5 = rotxyz(
+        vec5 = _rotxyz(
             np.array([L_vects[5, :]]),
             np.array([axis_vects[5, :]]),
             theta5 * 180 / np.pi,
         )
-        vec5 = rotxyz(vec5, axis_vects[4, :], theta4 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[3, :], theta3 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[2, :], theta2 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[1, :], theta1 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[0, :], theta0 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[4, :], theta4 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[3, :], theta3 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[2, :], theta2 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[1, :], theta1 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[0, :], theta0 * 180 / np.pi)
 
-        if np.abs(vanglev(v1, np.array(vec5)[0])) > 0.01:
+        if np.abs(_vanglev(v1, np.array(vec5)[0])) > 0.01:
             theta5 = -theta5
 
-        vec5 = rotxyz(
+        vec5 = _rotxyz(
             np.array([L_vects[5, :]]),
             np.array([axis_vects[5, :]]),
             theta5 * 180 / np.pi,
         )
-        vec5 = rotxyz(vec5, axis_vects[4, :], theta4 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[3, :], theta3 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[2, :], theta2 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[1, :], theta1 * 180 / np.pi)
-        vec5 = rotxyz(vec5, axis_vects[0, :], theta0 * 180 / np.pi)
-        if np.abs(vanglev(v1, np.array(vec5)[0])) > 0.01:
-            theta5 = vanglev(v1, np.array(vec5)[0]) + np.pi
+        vec5 = _rotxyz(vec5, axis_vects[4, :], theta4 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[3, :], theta3 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[2, :], theta2 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[1, :], theta1 * 180 / np.pi)
+        vec5 = _rotxyz(vec5, axis_vects[0, :], theta0 * 180 / np.pi)
+        if np.abs(_vanglev(v1, np.array(vec5)[0])) > 0.01:
+            theta5 = _vanglev(v1, np.array(vec5)[0]) + np.pi
 
         if np.isnan(theta5):
             theta5 = 0
@@ -409,56 +417,34 @@ def i_kinematics(
 
         if strategy == "minimum_movement":
             comparator = np.apply_along_axis(
-                np.sum, 1, np.abs(valid_solutions - motor_pos)
+                _comparator_difference, 1, valid_solutions, motor_pos
             )
             best_solution = valid_solutions[np.argmin(comparator)]
 
         elif strategy == "minimum_movement_weighted":
             comparator = np.apply_along_axis(
-                np.sum,
-                1,
-                np.abs(valid_solutions - motor_pos) * weighting,
+                _comparator_difference, 1, valid_solutions, motor_pos, weighting
             )
             best_solution = valid_solutions[np.argmin(comparator)]
 
-        elif strategy == "comfortable_limits":
+        else:
             limit_centres = np.mean(motor_limits, 1)
-            comparator = np.abs(
-                np.apply_along_axis(np.sum, 1, np.abs(limit_centres - valid_solutions))
+            comparator = np.apply_along_axis(
+                _comparator_difference, 1, limit_centres, valid_solutions
             )
             best_solution = valid_solutions[np.argmin(comparator)]
 
-    # # final check to make sure the solutions is consistent with the target value
-    # forward_check = self.f_kinematics(best_solution)
-    # check_target = forward_check - target[0, :]
-    # comparator = np.abs(np.apply_along_axis(np.sum, 1, (check_target)))
-
-    # if np.any(comparator < 2.0e-3):
-    #     pass
-    # else:
-    #     best_solution = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan])
-    return best_solution
+    return JointSpace(
+        joint_1=best_solution[0],
+        joint_2=best_solution[1],
+        joint_3=best_solution[2],
+        joint_4=best_solution[3],
+        joint_5=best_solution[4],
+        joint_6=best_solution[5],
+    )
 
 
-def rotationMatrixToEuler(R, convention: str):
-    """Extract Euler angles (in radians) from a rotation matrix R.
-
-    Parameters:
-      R : 3x3 array
-          Rotation matrix.
-      order : string, either "zyx" or "xyz"
-          If "zyx", extract using (approximately) the formulas from your original function:
-             alpha = -atan2(R[2,1], R[2,2])
-             beta  = -atan2(-R[2,0], sqrt(R[2,1]**2 + R[2,2]**2))
-             gamma = -atan2(R[1,0], R[0,0])
-          If "xyz", extract using one common set of formulas for that convention:
-             phi   = atan2(-R[1,2], R[2,2])
-             theta = arcsin(R[0,2])
-             psi   = atan2(-R[0,1], R[0,0])
-
-    Returns:
-      A tuple of three angles (in radians).
-    """
+def _rotationMatrixToEuler(R, convention: str):
     if convention.lower() == "zyx":
         sy = np.sqrt(R[2, 1] ** 2 + R[2, 2] ** 2)
         singular = sy < 1e-6
@@ -487,7 +473,7 @@ def rotationMatrixToEuler(R, convention: str):
         raise ValueError(f"Unsupported convention: {convention}. Use 'zyx' or 'xyz'.")
 
 
-def fk(joints, offset, convention: str = "xyz"):
+def _forward_kinematics(joints, offset, convention: str = "xyz"):
     th = np.deg2rad(joints)
     th1, th2, th3, th4, th5, th6 = th
 
@@ -509,13 +495,22 @@ def fk(joints, offset, convention: str = "xyz"):
 
     x, y, z = T06[0, 3], T06[1, 3], T06[2, 3]
     R = T06[:3, :3]
-    alpha, beta, gamma = rotationMatrixToEuler(R, convention)
+    alpha, beta, gamma = _rotationMatrixToEuler(R, convention)
 
-    return x, y, z, np.rad2deg(alpha), np.rad2deg(beta), np.rad2deg(gamma)
+    return CartesianSpace(
+        x=x / 1000,
+        y=y / 1000,
+        z=z / 1000,
+        alpha=np.rad2deg(alpha),
+        beta=np.rad2deg(beta),
+        gamma=np.rad2deg(gamma),
+    )
 
 
-class RobotTransform(Transform):  # noqa: D101
-    def raw_to_derived(  # noqa: D102
+class RobotTransform(Transform):
+    """Transform raw joints values to derived axes, and vice versa."""
+
+    def raw_to_derived(
         self,
         *,
         joint_1: float,
@@ -525,36 +520,39 @@ class RobotTransform(Transform):  # noqa: D101
         joint_5: float,
         joint_6: float,
     ) -> CartesianSpace:
-        x, y, z, alpha, beta, gamma = fk(
+        return _forward_kinematics(
             [joint_1, joint_2, joint_3, joint_3, joint_5, joint_6], 70
-        )
-        return CartesianSpace(
-            x=x / 1000, y=y / 1000, z=z / 1000, alpha=alpha, beta=beta, gamma=gamma
         )
 
     def derived_to_raw(  # noqa: D102
         self, *, x: float, y: float, z: float, alpha: float, beta: float, gamma: float
     ) -> JointSpace:
-        joints = setEulerTarget([x, y, z], alpha, beta, gamma, [0, 0, 0, 0, 0, 0])
+        try:
+            derived_readings = _setEulerTarget(
+                [x, y, z],
+                alpha,
+                beta,
+                gamma,
+                [0, 0, 0, 0, 0, 0],
+            )
+        except RuntimeWarning as err:
+            raise ValueError(
+                "Invalid tool-tip pose:"
+                f"x={x}, y={y}, z={z}, alpha={alpha}, beta={beta}, gamma{gamma}."
+                "Failed to generate joint space pose."
+            ) from err
 
-        return JointSpace(
-            joint_1=joints[0],
-            joint_2=joints[1],
-            joint_3=joints[2],
-            joint_4=joints[3],
-            joint_5=joints[4],
-            joint_6=joints[5],
-        )
+        return derived_readings
 
 
 class Meca500(Device, Movable):  # noqa: D101
     def __init__(self, prefix="", name=""):
-        self.joint_1 = epics_signal_rw(float, f"{prefix}:THETA1:SP")
-        self.joint_2 = epics_signal_rw(float, f"{prefix}:THETA2:SP")
-        self.joint_3 = epics_signal_rw(float, f"{prefix}:THETA3:SP")
-        self.joint_4 = epics_signal_rw(float, f"{prefix}:THETA4:SP")
-        self.joint_5 = epics_signal_rw(float, f"{prefix}:THETA5:SP")
-        self.joint_6 = epics_signal_rw(float, f"{prefix}:THETA6:SP")
+        self.joint_1 = epics_signal_rw(float, f"{prefix}:THETA1:SP", name="Joint1")
+        self.joint_2 = epics_signal_rw(float, f"{prefix}:THETA2:SP", name="Joint2")
+        self.joint_3 = epics_signal_rw(float, f"{prefix}:THETA3:SP", name="Joint3")
+        self.joint_4 = epics_signal_rw(float, f"{prefix}:THETA4:SP", name="Joint4")
+        self.joint_5 = epics_signal_rw(float, f"{prefix}:THETA5:SP", name="Joint5")
+        self.joint_6 = epics_signal_rw(float, f"{prefix}:THETA6:SP", name="Joint6")
 
         self._factory = DerivedSignalFactory(
             RobotTransform,
@@ -578,9 +576,11 @@ class Meca500(Device, Movable):  # noqa: D101
     async def set(self, cartesian: CartesianSpace) -> None:  # type: ignore  # noqa: D102
         transform = await self._factory.transform()
         raw = transform.derived_to_raw(**cartesian)
-        self.joint_1.set(raw["joint_1"])
-        self.joint_2.set(raw["joint_2"])
-        self.joint_3.set(raw["joint_3"])
-        self.joint_4.set(raw["joint_4"])
-        self.joint_5.set(raw["joint_5"])
-        self.joint_6.set(raw["joint_6"])
+        await asyncio.gather(
+            self.joint_1.set(raw["joint_1"]),
+            self.joint_2.set(raw["joint_2"]),
+            self.joint_3.set(raw["joint_3"]),
+            self.joint_4.set(raw["joint_4"]),
+            self.joint_5.set(raw["joint_5"]),
+            self.joint_6.set(raw["joint_6"]),
+        )
