@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adpilatus._pilatus_controller &#8212; ophyd-async 0.10.0a4.dev4+g6e6169cce documentation</title>
+    <title>ophyd_async.epics.adpilatus._pilatus_controller &#8212; ophyd-async 0.10.0a4.dev5+g256cb41d7 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=92dec540"></script>
+    <script src="../../../../_static/documentation_options.js?v=10dee1e5"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev4+g6e6169cce documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev4+g6e6169cce documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev5+g256cb41d7 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev5+g256cb41d7 documentation - Home"/>
   
   
 </a></div>
@@ -499,6 +499,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span> <span class="n">PilatusTriggerMode</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">,</span>
         <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">CONSTANT_GATE</span><span class="p">:</span> <span class="n">PilatusTriggerMode</span><span class="o">.</span><span class="n">EXT_ENABLE</span><span class="p">,</span>
         <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">VARIABLE_GATE</span><span class="p">:</span> <span class="n">PilatusTriggerMode</span><span class="o">.</span><span class="n">EXT_ENABLE</span><span class="p">,</span>
+        <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EDGE_TRIGGER</span><span class="p">:</span> <span class="n">PilatusTriggerMode</span><span class="o">.</span><span class="n">EXT_TRIGGER</span><span class="p">,</span>
     <span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
@@ -524,7 +525,9 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span>
             <span class="p">)</span>
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_trigger_mode</span><span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">)),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_supported_trigger_types</span><span class="p">[</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">]</span>
+            <span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">num_images</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
                 <span class="mi">999_999</span>
                 <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">total_number_of_exposures</span> <span class="o">==</span> <span class="mi">0</span>
@@ -548,17 +551,7 @@ window.addEventListener("load", () => mermaid.run());
             <span class="kc">True</span><span class="p">,</span>
             <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
         <span class="p">)</span></div>
-
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_trigger_mode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PilatusTriggerMode</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">trigger</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_supported_trigger_types</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> only supports the following trigger &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;types: </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">_supported_trigger_types</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2"> but was asked to &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;use </span><span class="si">{</span><span class="n">trigger</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_supported_trigger_types</span><span class="p">[</span><span class="n">trigger</span><span class="p">]</span></div>
+</div>
 
 </pre></div>
 
