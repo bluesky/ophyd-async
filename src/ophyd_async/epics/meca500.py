@@ -4,8 +4,14 @@ from typing import TypedDict  # noqa: D100
 import numpy as np
 from bluesky.protocols import Movable
 
-from ophyd_async.core import DerivedSignalFactory, Device, Transform
-from ophyd_async.epics.core import epics_signal_rw
+from ophyd_async.core import (
+    DerivedSignalFactory,
+    Device,
+    DeviceVector,
+    Transform,
+    wait_for_value,
+)
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
 
 class CartesianSpace(TypedDict):  # noqa: D101
@@ -80,9 +86,7 @@ def _rotxyz(v, u, angle):
 
 def _setEulerTarget(
     xyz,
-    r_alpha,
-    r_beta,
-    r_gamma,
+    al_be_gam,
     motor_pos,
 ):
     # Hard coded kinematic chain for the Meca500. Should be generalizable.
@@ -102,7 +106,7 @@ def _setEulerTarget(
         [[-175, 175], [-70, 90], [-135, 70], [-170, 170], [-115, 115], [-3600, 3600]]
     )
     tool_offset = [0, 0, 0]
-    strategy = "minimum_movement"
+    strategy = "minimum_movement_weighted"
     weighting = [6, 5, 4, 3, 2, 1]
 
     MI = np.identity(3)
@@ -110,7 +114,9 @@ def _setEulerTarget(
     vy = MI[1, :]
     vz = MI[2, :]
     em = (
-        _rotmat(vx, r_alpha) @ _rotmat(vy, r_beta) @ _rotmat(vz, r_gamma)
+        _rotmat(vx, al_be_gam[0])
+        @ _rotmat(vy, al_be_gam[1])
+        @ _rotmat(vz, al_be_gam[2])
     )  # ZYX convention
     targetmatrix = np.array(
         [
@@ -495,6 +501,7 @@ def _forward_kinematics(joints, offset, convention: str = "xyz"):
 
     x, y, z = T06[0, 3], T06[1, 3], T06[2, 3]
     R = T06[:3, :3]
+
     alpha, beta, gamma = _rotationMatrixToEuler(R, convention)
 
     return CartesianSpace(
@@ -521,19 +528,31 @@ class RobotTransform(Transform):
         joint_6: float,
     ) -> CartesianSpace:
         return _forward_kinematics(
-            [joint_1, joint_2, joint_3, joint_3, joint_5, joint_6], 70
+            [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6],
+            70,
         )
 
     def derived_to_raw(  # noqa: D102
-        self, *, x: float, y: float, z: float, alpha: float, beta: float, gamma: float
+        self,
+        *,
+        x: float,
+        y: float,
+        z: float,
+        alpha: float,
+        beta: float,
+        gamma: float,
+        joint_1: float,
+        joint_2: float,
+        joint_3: float,
+        joint_4: float,
+        joint_5: float,
+        joint_6: float,
     ) -> JointSpace:
         try:
             derived_readings = _setEulerTarget(
                 [x, y, z],
-                alpha,
-                beta,
-                gamma,
-                [0, 0, 0, 0, 0, 0],
+                [alpha, beta, gamma],
+                [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6],
             )
         except RuntimeWarning as err:
             raise ValueError(
@@ -547,22 +566,30 @@ class RobotTransform(Transform):
 
 class Meca500(Device, Movable):  # noqa: D101
     def __init__(self, prefix="", name=""):
-        self.joint_1 = epics_signal_rw(float, f"{prefix}:THETA1:SP", name="Joint1")
-        self.joint_2 = epics_signal_rw(float, f"{prefix}:THETA2:SP", name="Joint2")
-        self.joint_3 = epics_signal_rw(float, f"{prefix}:THETA3:SP", name="Joint3")
-        self.joint_4 = epics_signal_rw(float, f"{prefix}:THETA4:SP", name="Joint4")
-        self.joint_5 = epics_signal_rw(float, f"{prefix}:THETA5:SP", name="Joint5")
-        self.joint_6 = epics_signal_rw(float, f"{prefix}:THETA6:SP", name="Joint6")
+        self.joints = DeviceVector(
+            {
+                i: epics_signal_rw(
+                    float, f"{prefix}JOINTS:THETA{i + 1}:SP", name=f"joint_{i + 1}"
+                )
+                for i in range(0, 6)
+            }
+        )
+
+        self.move_joints_array = epics_signal_rw(
+            int, f"{prefix}PREPARE_MOVE_JOINTS_ARRAY.PROC"
+        )
+        self.busy = epics_signal_rw(str, f"{prefix}ROBOT:STATUS:BUSY")
+        self.eom = epics_signal_r(float, f"{prefix}ROBOT:STATUS:EOM")
 
         self._factory = DerivedSignalFactory(
             RobotTransform,
             self.set,
-            joint_1=self.joint_1,
-            joint_2=self.joint_2,
-            joint_3=self.joint_3,
-            joint_4=self.joint_4,
-            joint_5=self.joint_5,
-            joint_6=self.joint_6,
+            joint_1=self.joints[0],
+            joint_2=self.joints[1],
+            joint_3=self.joints[2],
+            joint_4=self.joints[3],
+            joint_5=self.joints[4],
+            joint_6=self.joints[5],
         )
 
         self.x = self._factory.derived_signal_rw(float, "x")
@@ -573,14 +600,25 @@ class Meca500(Device, Movable):  # noqa: D101
         self.gamma = self._factory.derived_signal_rw(float, "gamma")
         super().__init__(name=name)
 
-    async def set(self, cartesian: CartesianSpace) -> None:  # type: ignore  # noqa: D102
+    async def set(self, target_cartesian: CartesianSpace) -> None:  # type: ignore  # noqa: D102
         transform = await self._factory.transform()
-        raw = transform.derived_to_raw(**cartesian)
-        await asyncio.gather(
-            self.joint_1.set(raw["joint_1"]),
-            self.joint_2.set(raw["joint_2"]),
-            self.joint_3.set(raw["joint_3"]),
-            self.joint_4.set(raw["joint_4"]),
-            self.joint_5.set(raw["joint_5"]),
-            self.joint_6.set(raw["joint_6"]),
+
+        values = await asyncio.gather(
+            *(self.joints[i].get_value() for i in range(len(self.joints)))
         )
+
+        current_joint_positions = JointSpace(
+            **{f"joint_{i + 1}": value for i, value in enumerate(values)}
+        )
+
+        raw = transform.derived_to_raw(**target_cartesian, **current_joint_positions)
+
+        self.busy.set("BUSY", wait=True)
+        await asyncio.gather(
+            *(
+                self.joints[i].set(raw[self.joints[i].name])
+                for i in range(len(self.joints))
+            )
+        )
+        await self.move_joints_array.set(True)
+        await wait_for_value(self.eom, 0.0, timeout=5)

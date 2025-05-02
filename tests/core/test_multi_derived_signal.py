@@ -4,10 +4,15 @@ import re
 from unittest.mock import ANY, call
 
 import pytest
+from bluesky import RunEngine
+from bluesky.plan_stubs import mv
 from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
+    StandardReadable,
+    StaticFilenameProvider,
+    StaticPathProvider,
     soft_signal_rw,
 )
 from ophyd_async.epics.meca500 import Meca500
@@ -141,16 +146,6 @@ async def test_meca500():
     robot = Meca500("test")
     await robot.connect(mock=True)
 
-    z_a = await robot.z.get_value()
+    await robot.x.set(0.20)
 
-    z_b = await robot.z.set(0.390)
-
-    joint_1 = await robot.joint_1.get_value()
-    joint_2 = await robot.joint_2.get_value()
-    joint_3 = await robot.joint_3.get_value()
-    joint_4 = await robot.joint_4.get_value()
-    joint_5 = await robot.joint_5.get_value()
-    joint_6 = await robot.joint_6.get_value()
-
-    z = await robot.z.get_value()
     pass
