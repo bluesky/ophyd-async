@@ -19,7 +19,12 @@ from ._tango_transport import (
     get_tango_trl,
     get_trl_descriptor,
 )
-from ._utils import DevStateEnum, get_device_trl_and_attr, get_full_attr_trl
+from ._utils import (
+    DevStateEnum,
+    get_device_trl_and_attr,
+    get_full_attr_trl,
+    try_to_cast_as_float,
+)
 
 __all__ = [
     "AttributeProxy",
@@ -42,6 +47,7 @@ __all__ = [
     "TangoReadable",
     "TangoPolling",
     "TangoDeviceConnector",
+    "try_to_cast_as_float",
     "get_device_trl_and_attr",
     "get_full_attr_trl",
 ]
