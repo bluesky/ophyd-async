@@ -1,14 +1,15 @@
-import asyncio
+import asyncio  # noqa: D100
 from typing import TypedDict  # noqa: D100
 
 import numpy as np
-from bluesky.protocols import Movable
+from bluesky.protocols import Locatable, Location
 
 from ophyd_async.core import (
     DerivedSignalFactory,
-    Device,
     DeviceVector,
+    StandardReadable,
     Transform,
+    soft_signal_rw,
     wait_for_value,
 )
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
@@ -40,8 +41,9 @@ def _vp_angle(v1, v2, v3):
 
 
 def _vanglev(v1, v2):
-    angle = np.arccos(np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
-    return angle
+    cos_val = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+    cos_val = np.clip(cos_val, -1.0, 1.0)
+    return np.arccos(cos_val)
 
 
 def _comparator_difference(arr, motor_pos, weighting=1):
@@ -415,7 +417,6 @@ def _inverse_kinematics(
 
     if valid_solutions.shape[0] < 1:
         best_solution = np.array([np.nan, np.nan, np.nan, np.nan, np.nan, np.nan])
-
     else:
         # ------------------------------------------------------------------#
         #                      Solution strategy
@@ -467,42 +468,63 @@ def _rotationMatrixToEuler(R, convention: str):
         cp = np.sqrt(1 - R[0, 2] ** 2)
         singular = cp < 1e-6
         if not singular:
-            phi = np.arctan2(-R[1, 2], R[2, 2])
-            theta = np.arcsin(R[0, 2])
-            psi = np.arctan2(-R[0, 1], R[0, 0])
+            alpha = np.arctan2(-R[1, 2], R[2, 2])
+            beta = np.arcsin(R[0, 2])
+            gamma = np.pi + np.arctan2(-R[0, 1], R[0, 0])
         else:
-            phi = np.arctan2(R[2, 1], R[1, 1])
-            theta = np.arcsin(R[0, 2])
-            psi = 0.0
-        return phi, theta, psi
+            alpha = np.arctan2(R[2, 1], R[1, 1])
+            beta = np.arcsin(R[0, 2])
+            gamma = 0.0
+        return alpha, beta, gamma
     else:
         raise ValueError(f"Unsupported convention: {convention}. Use 'zyx' or 'xyz'.")
 
 
 def _forward_kinematics(joints, offset, convention: str = "xyz"):
-    th = np.deg2rad(joints)
-    th1, th2, th3, th4, th5, th6 = th
+    motor_values_in_degrees = np.deg2rad(joints)
+    joint_1, joint_2, joint_3, joint_4, joint_5, joint_6 = motor_values_in_degrees
 
-    c1, s1 = np.cos(th1), np.sin(th1)
-    c2, s2 = np.cos(th2 - np.pi / 2), np.sin(th2 - np.pi / 2)
-    c3, s3 = np.cos(th3), np.sin(th3)
-    c4, s4 = np.cos(th4), np.sin(th4)
-    c5, s5 = np.cos(th5), np.sin(th5)
-    c6, s6 = np.cos(th6), np.sin(th6)
+    c1, s1 = np.cos(joint_1), np.sin(joint_1)
+    c2, s2 = np.cos(joint_2 - np.pi / 2), np.sin(joint_2 - np.pi / 2)
+    c3, s3 = np.cos(joint_3), np.sin(joint_3)
+    c4, s4 = np.cos(joint_4), np.sin(joint_4)
+    c5, s5 = np.cos(joint_5), np.sin(joint_5)
+    c6, s6 = np.cos(joint_6), np.sin(joint_6)
 
-    T01 = np.array([[c1, -s1, 0, 0], [s1, c1, 0, 0], [0, 0, 1, 135], [0, 0, 0, 1]])
-    T12 = np.array([[c2, -s2, 0, 0], [0, 0, 1, 0], [-s2, -c2, 0, 0], [0, 0, 0, 1]])
-    T23 = np.array([[c3, -s3, 0, 135], [s3, c3, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
-    T34 = np.array([[c4, -s4, 0, 38], [0, 0, 1, 120], [-s4, -c4, 0, 0], [0, 0, 0, 1]])
-    T45 = np.array([[c5, -s5, 0, 0], [0, 0, -1, 0], [s5, c5, 0, 0], [0, 0, 0, 1]])
-    T56 = np.array([[c6, -s6, 0, 0], [0, 0, 1, offset], [-s6, -c6, 0, 0], [0, 0, 0, 1]])
+    origin_to_joint_1 = np.array(
+        [[c1, -s1, 0, 0], [s1, c1, 0, 0], [0, 0, 1, 135], [0, 0, 0, 1]]
+    )
+    joint_1_to_2 = np.array(
+        [[c2, -s2, 0, 0], [0, 0, 1, 0], [-s2, -c2, 0, 0], [0, 0, 0, 1]]
+    )
+    joint_2_to_3 = np.array(
+        [[c3, -s3, 0, 135], [s3, c3, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+    )
+    joint_3_to_4 = np.array(
+        [[c4, -s4, 0, 38], [0, 0, 1, 120], [-s4, -c4, 0, 0], [0, 0, 0, 1]]
+    )
+    joint_4_to_5 = np.array(
+        [[c5, -s5, 0, 0], [0, 0, -1, 0], [s5, c5, 0, 0], [0, 0, 0, 1]]
+    )
+    joint_5_to_6 = np.array(
+        [[c6, -s6, 0, 0], [0, 0, 1, offset], [-s6, -c6, 0, 0], [0, 0, 0, 1]]
+    )
 
-    T06 = T01 @ T12 @ T23 @ T34 @ T45 @ T56
+    origin_to_tooltip = (
+        origin_to_joint_1
+        @ joint_1_to_2
+        @ joint_2_to_3
+        @ joint_3_to_4
+        @ joint_4_to_5
+        @ joint_5_to_6
+    )
 
-    x, y, z = T06[0, 3], T06[1, 3], T06[2, 3]
-    R = T06[:3, :3]
+    x, y, z = origin_to_tooltip[0, 3], origin_to_tooltip[1, 3], origin_to_tooltip[2, 3]
+    rotation_from_origin_to_tooltip = origin_to_tooltip[:3, :3]
 
-    alpha, beta, gamma = _rotationMatrixToEuler(R, convention)
+    alpha, beta, gamma = _rotationMatrixToEuler(
+        rotation_from_origin_to_tooltip, convention
+    )
 
     return CartesianSpace(
         x=x / 1000,
@@ -527,12 +549,13 @@ class RobotTransform(Transform):
         joint_5: float,
         joint_6: float,
     ) -> CartesianSpace:
-        return _forward_kinematics(
-            [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6],
-            70,
+        """Transform joints angles to cartesian x, y, z, alpha, beta, and gamma."""
+        cartesian_pose = _forward_kinematics(
+            [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6], 70, "xyz"
         )
+        return cartesian_pose
 
-    def derived_to_raw(  # noqa: D102
+    def derived_to_raw(
         self,
         *,
         x: float,
@@ -548,6 +571,7 @@ class RobotTransform(Transform):
         joint_5: float,
         joint_6: float,
     ) -> JointSpace:
+        """Transform cartesian x, y, z, alpha, beta, and gamma to joint angles."""
         try:
             derived_readings = _setEulerTarget(
                 [x, y, z],
@@ -557,23 +581,26 @@ class RobotTransform(Transform):
         except RuntimeWarning as err:
             raise ValueError(
                 "Invalid tool-tip pose:"
-                f"x={x}, y={y}, z={z}, alpha={alpha}, beta={beta}, gamma{gamma}."
+                f"x={x}, y={y}, z={z}, alpha={alpha}, beta={beta}, gamma={gamma}."
                 "Failed to generate joint space pose."
             ) from err
 
         return derived_readings
 
 
-class Meca500(Device, Movable):  # noqa: D101
-    def __init__(self, prefix="", name=""):
-        self.joints = DeviceVector(
-            {
-                i: epics_signal_rw(
-                    float, f"{prefix}JOINTS:THETA{i + 1}:SP", name=f"joint_{i + 1}"
-                )
-                for i in range(0, 6)
-            }
-        )
+class Meca500(StandardReadable, Locatable[CartesianSpace]):
+    """Meca500 device that derives x, y, z, alpha, beta, and gamma, from joints."""
+
+    def __init__(self, prefix="", name="") -> None:
+        with self.add_children_as_readables():
+            self.joints = DeviceVector(
+                {
+                    i: epics_signal_rw(
+                        float, f"{prefix}JOINTS:THETA{i + 1}:SP", name=f"joint_{i + 1}"
+                    )
+                    for i in range(0, 6)
+                }
+            )
 
         self.move_joints_array = epics_signal_rw(
             int, f"{prefix}PREPARE_MOVE_JOINTS_ARRAY.PROC"
@@ -598,10 +625,28 @@ class Meca500(Device, Movable):  # noqa: D101
         self.alpha = self._factory.derived_signal_rw(float, "alpha")
         self.beta = self._factory.derived_signal_rw(float, "beta")
         self.gamma = self._factory.derived_signal_rw(float, "gamma")
+
+        self.x_sp = soft_signal_rw(float, name="x")
+        self.y_sp = soft_signal_rw(float, name="y")
+        self.z_sp = soft_signal_rw(float, name="z")
+        self.alpha_sp = soft_signal_rw(float, name="alpha")
+        self.beta_sp = soft_signal_rw(float, name="beta")
+        self.gamma_sp = soft_signal_rw(float, name="gamma")
+
         super().__init__(name=name)
 
     async def set(self, target_cartesian: CartesianSpace) -> None:  # type: ignore  # noqa: D102
+        """Set cartesian position of manipulator."""
         transform = await self._factory.transform()
+
+        await asyncio.gather(
+            self.x_sp.set(target_cartesian["x"]),
+            self.y_sp.set(target_cartesian["y"]),
+            self.z_sp.set(target_cartesian["z"]),
+            self.alpha_sp.set(target_cartesian["alpha"]),
+            self.beta_sp.set(target_cartesian["beta"]),
+            self.gamma_sp.set(target_cartesian["gamma"]),
+        )
 
         values = await asyncio.gather(
             *(self.joints[i].get_value() for i in range(len(self.joints)))
@@ -622,3 +667,25 @@ class Meca500(Device, Movable):  # noqa: D101
         )
         await self.move_joints_array.set(True)
         await wait_for_value(self.eom, 0.0, timeout=5)
+
+    async def locate(self) -> Location[CartesianSpace]:
+        """Return last commanded and current cartesian position of tooltip."""
+        virtual_setpoints = CartesianSpace(
+            x=await self.x_sp.get_value(),
+            y=await self.y_sp.get_value(),
+            z=await self.z_sp.get_value(),
+            alpha=await self.alpha_sp.get_value(),
+            beta=await self.beta_sp.get_value(),
+            gamma=await self.gamma_sp.get_value(),
+        )
+
+        virtual_readbacks = CartesianSpace(
+            x=await self.x.get_value(),
+            y=await self.y.get_value(),
+            z=await self.z.get_value(),
+            alpha=await self.alpha.get_value(),
+            beta=await self.beta.get_value(),
+            gamma=await self.gamma.get_value(),
+        )
+
+        return Location(setpoint=virtual_setpoints, readback=virtual_readbacks)
