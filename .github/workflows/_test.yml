@@ -51,7 +51,7 @@ jobs:
           pip-install: ".[dev]"
 
       - name: Run tests
-        run: tox -e tests
+        run: tox -e tests --timeout=1
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
