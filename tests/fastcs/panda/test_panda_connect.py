@@ -119,6 +119,7 @@ async def test_panda_children_connected(mock_panda):
     assert readback_seq == table
 
 
+@pytest.mark.timeout(3.0)
 async def test_panda_with_missing_blocks(panda_pva, panda_t):
     panda = panda_t("PANDAQSRVI:", name="mypanda")
     with pytest.raises(
@@ -132,6 +133,7 @@ async def test_panda_with_missing_blocks(panda_pva, panda_t):
         await panda.connect()
 
 
+@pytest.mark.timeout(3.1)
 async def test_panda_with_extra_blocks_and_signals(panda_pva, panda_t):
     panda = panda_t("PANDAQSRV:")
     await panda.connect()
@@ -141,6 +143,7 @@ async def test_panda_with_extra_blocks_and_signals(panda_pva, panda_t):
     assert panda.pcap.newsignal  # type: ignore
 
 
+@pytest.mark.timeout(3.1)
 async def test_panda_gets_types_from_common_class(panda_pva, panda_t):
     panda = panda_t("PANDAQSRV:")
     pcap = panda.pcap
@@ -167,6 +170,7 @@ async def test_panda_gets_types_from_common_class(panda_pva, panda_t):
     assert panda.pcap.newsignal._connector.backend.datatype is None
 
 
+@pytest.mark.timeout(3.5)
 async def test_panda_block_missing_signals(panda_pva, panda_t):
     panda = panda_t("PANDAQSRVIB:")
 

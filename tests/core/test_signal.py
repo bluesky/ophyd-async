@@ -246,7 +246,8 @@ async def test_set_and_wait_for_value_different_set_and_read_times_out():
         await asyncio.gather(wait_and_set_read(), check_set_and_wait())
 
 
-async def test_status_of_set_and_wait_for_value():
+@pytest.mark.timeout(2.5)
+async def test_status_of_set_and_wait_for_value(test_time_out):
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
 
@@ -284,6 +285,7 @@ async def test_status_of_set_and_wait_for_value():
         )
 
 
+@pytest.mark.timeout(1.5)
 async def test_callable_match_value_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
