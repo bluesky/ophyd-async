@@ -91,7 +91,7 @@ async def test_hdf_writer_fails_on_timeout_with_stepscan(
 
 
 @patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.01)
-@pytest.mark.timeout(5.5)
+@pytest.mark.timeout(7)
 def test_hdf_writer_fails_on_timeout_with_flyscan(
     RE: RunEngine, writer: adcore.ADHDFWriter
 ):

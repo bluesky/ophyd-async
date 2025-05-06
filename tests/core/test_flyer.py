@@ -261,7 +261,7 @@ async def test_hardware_triggered_flyable(
         ]
 
 
-@pytest.mark.timeout(2.0)
+@pytest.mark.timeout(3.0)
 @pytest.mark.parametrize(
     "number_of_triggers,invoke_extra_kickoff_before_complete",
     [

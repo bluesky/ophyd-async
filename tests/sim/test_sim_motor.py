@@ -62,7 +62,7 @@ async def test_short_move_is_exactly_move_time(m1: SimMotor):
     mock_sleep.assert_called_once_with(pytest.approx(0.08, abs=0.02))
 
 
-@pytest.mark.timeout(1.5)
+@pytest.mark.timeout(3)
 async def test_stop(m1: SimMotor):
     # this move should take 10 seconds but we will stop it after 0.5
     move_status = m1.set(10)

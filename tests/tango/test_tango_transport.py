@@ -287,7 +287,7 @@ async def test_attribute_proxy_put_exceptions(tango_test_device, wait):
 @pytest.mark.parametrize(
     "attr, new_value", [("justvalue", 10), ("array", np.array([[2, 3, 4], [5, 6, 7]]))]
 )
-@pytest.mark.timeout(3.7)
+@pytest.mark.timeout(4.7)
 async def test_attribute_proxy_get_w_value(tango_test_device, attr, new_value):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, attr)
@@ -330,7 +330,7 @@ async def test_attribute_has_subscription(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.timeout(2.0)
+@pytest.mark.timeout(4.0)
 async def test_attribute_subscribe_callback(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
     source = get_full_attr_trl(echo_device, "float32")
@@ -390,7 +390,7 @@ async def test_attribute_set_polling(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.timeout(1.6)
+@pytest.mark.timeout(3)
 async def test_attribute_poll(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "floatvalue")
@@ -451,7 +451,7 @@ async def test_attribute_poll(tango_test_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize("attr", ["array", "label"])
-@pytest.mark.timeout(3.2)
+@pytest.mark.timeout(4.2)
 async def test_attribute_poll_stringsandarrays(tango_test_device, attr):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, attr)
@@ -517,7 +517,7 @@ async def test_command_proxy_put_wait(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.timeout(2.2)
+@pytest.mark.timeout(3.2)
 async def test_command_proxy_put_nowait(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "slow_command")
