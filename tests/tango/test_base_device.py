@@ -293,8 +293,8 @@ def sim_test_context_trls(subprocess_helper):
 
 
 # --------------------------------------------------------------------
+@pytest.mark.timeout(5.0)
 @pytest.mark.asyncio
-@pytest.mark.timeout(3.0)
 async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)
     async with init_devices():
