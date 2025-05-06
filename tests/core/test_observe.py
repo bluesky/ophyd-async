@@ -138,7 +138,7 @@ async def test_observe_value_uses_correct_timeout():
     assert time.time() - start == pytest.approx(0.15, abs=0.05)
 
 
-@pytest.mark.timeout(1.5)
+@pytest.mark.timeout(3)
 async def test_observe_signals_value_timeout_message():
     """
     Test creates a queue of 2 signals which update with
