@@ -23,9 +23,9 @@ class DerivedSignalFactory(Generic[TransformT]):
     :param set_derived:
         An optional async function that takes the output of
         `transform_cls.raw_to_derived` and applies it to the raw devices.
-    :param raw_and_transform_devices:
-        Devices whose values will be passed as parameters to the `transform_cls`,
-        and as arguments to `transform_cls.raw_to_derived`.
+    :param raw_and_transform_devices_and_constants:
+        Devices and Primitives whose values will be passed as parameters
+        to the `transform_cls`, and as arguments to `transform_cls.raw_to_derived`.
     """
 
     def __init__(
@@ -60,7 +60,8 @@ class DerivedSignalFactory(Generic[TransformT]):
             }
 
             # Populate received parameters and types
-            # Use Signal datatype, or Locatable datatype, or set type as None
+            # Use Primitive's type, Signal's datatype,
+            # Locatable's datatype, or set type as None
             received = {
                 **{
                     k: v.datatype if isinstance(v, Signal) else get_locatable_type(v)
@@ -71,7 +72,7 @@ class DerivedSignalFactory(Generic[TransformT]):
 
             if expected != received:
                 msg = (
-                    f"Expected devices to be passed as keyword arguments "
+                    f"Expected the following to be passed as keyword arguments "
                     f"{expected}, got {received}"
                 )
                 raise TypeError(msg)
@@ -228,7 +229,7 @@ def derived_signal_r(
     :param derived_units: Engineering units for the derived signal
     :param derived_precision: Number of digits after the decimal place to display
     :param raw_devices_and_constants:
-        A dictionary of Devices and constants to provide the values for raw_to_derived.
+        A dictionary of Devices and Primitives to provide the values for raw_to_derived.
         The names of these arguments must match the arguments of raw_to_derived.
     """
     factory = _make_factory(
@@ -261,7 +262,7 @@ def derived_signal_rw(
     :param derived_units: Engineering units for the derived signal
     :param derived_precision: Number of digits after the decimal place to display
     :param raw_devices_and_constants:
-        A dictionary of Devices and constants to provide the values for raw_to_derived.
+        A dictionary of Devices and Primitives to provide the values for raw_to_derived.
         The names of these arguments must match the arguments of raw_to_derived.
     """
     raw_to_derived_datatype = _get_return_datatype(raw_to_derived)

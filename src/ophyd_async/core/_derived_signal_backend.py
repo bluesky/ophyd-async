@@ -144,6 +144,7 @@ class SignalTransformer(Generic[TransformT]):
         transform = self._make_transform_from_readings(raw_and_transform_readings)
         # Create the raw values from the rest then calculate the derived readings
         # using the transform
+        # Extend dictionary with values of any Primitives passed as arguments
         raw_values = {
             **{
                 k: raw_and_transform_readings[sig.name]["value"]
