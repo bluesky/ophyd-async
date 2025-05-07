@@ -51,6 +51,7 @@ class EigerController(DetectorController):
                     self._drv.detector.frame_time.set(trigger_info.livetime),
                 ]
             )
+
         await asyncio.gather(*coros)
 
     async def arm(self):

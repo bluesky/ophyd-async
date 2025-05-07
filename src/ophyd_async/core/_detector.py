@@ -328,10 +328,10 @@ class StandardDetector(
             if isinstance(value.number_of_events, list)
             else [value.number_of_events]
         )
-        self._describe, _ = await asyncio.gather(
-            self._writer.open(self.name, value.exposures_per_event),
-            self._controller.prepare(value),
-        )
+
+        await self._controller.prepare(value)
+        self._describe = await self._writer.open(self.name, value.exposures_per_event)
+
         self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
             await self._controller.arm()
