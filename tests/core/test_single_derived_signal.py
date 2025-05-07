@@ -122,14 +122,14 @@ async def test_setting_all():
     [
         (
             _get_position_wrong_args,
-            "Expected devices to be passed as keyword arguments "
+            "Expected the following to be passed as keyword arguments "
             "{'x': <class 'float'>, 'y': <class 'float'>}, "
             "got {'foo': <class 'float'>, 'bar': <class 'float'>}",
             {"foo": soft_signal_rw(float), "bar": soft_signal_rw(float)},
         ),
         (
             _get_position,
-            "Expected devices to be passed as keyword arguments "
+            "Expected the following to be passed as keyword arguments "
             "{'foo': <class 'float'>, 'bar': <class 'float'>}, "
             "got {'foo': <class 'int'>, 'bar': <class 'int'>}",
             {
