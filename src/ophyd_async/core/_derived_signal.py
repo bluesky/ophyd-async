@@ -35,7 +35,7 @@ class DerivedSignalFactory(Generic[TransformT]):
         **raw_and_transform_devices_and_constants,
     ):
         self._set_derived = set_derived
-        _raw_devices, _raw_constants = (
+        _raw_and_transform_devices, _raw_constants = (
             {
                 k: v
                 for k, v in raw_and_transform_devices_and_constants.items()
@@ -64,7 +64,7 @@ class DerivedSignalFactory(Generic[TransformT]):
             received = {
                 **{
                     k: v.datatype if isinstance(v, Signal) else get_locatable_type(v)
-                    for k, v in _raw_devices.items()
+                    for k, v in _raw_and_transform_devices.items()
                 },
                 **{k: type(v) for k, v in _raw_constants.items()},
             }
@@ -82,7 +82,7 @@ class DerivedSignalFactory(Generic[TransformT]):
             transform_cls,
             set_derived,
             self._set_derived_takes_dict,
-            _raw_devices,
+            _raw_and_transform_devices,
             _raw_constants,
         )
 
