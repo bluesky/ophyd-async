@@ -58,7 +58,7 @@ def convert_pv_dtype_to_np(datatype: str) -> str:
         "DBR_FLOAT": ADBaseDataType.FLOAT32,
         "DBR_DOUBLE": ADBaseDataType.FLOAT64,
     }
-    if datatype in ["DBR_STRING", "DBR_CHAR", ""]:
+    if datatype in ["DBR_STRING", "DBR_CHAR"]:
         np_datatype = "s40"
     elif datatype == "DBR_NATIVE":
         raise ValueError("Don't support DBR_NATIVE yet")
@@ -76,7 +76,7 @@ def convert_param_dtype_to_np(datatype: str) -> str:
         "INT64": ADBaseDataType.INT64,
         "DOUBLE": ADBaseDataType.FLOAT64,
     }
-    if datatype in ["STRING", ""]:
+    if datatype in ["STRING"]:
         np_datatype = "s40"
     else:
         try:
