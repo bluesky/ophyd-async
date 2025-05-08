@@ -7,7 +7,7 @@ from bluesky.protocols import Movable
 from ophyd_async.core import (
     AsyncStatus,
     DerivedSignalFactory,
-    Device,
+    StandardReadable,
     Transform,
     soft_signal_rw,
 )
@@ -45,7 +45,7 @@ class TwoJackTransform(Transform):
         )
 
 
-class VerticalMirror(Device, Movable[TwoJackDerived]):
+class VerticalMirror(StandardReadable, Movable[TwoJackDerived]):
     def __init__(self, name=""):
         # Raw signals
         self.y1 = SimMotor()
@@ -60,8 +60,9 @@ class VerticalMirror(Device, Movable[TwoJackDerived]):
             jack2=self.y2,
             distance=self.y1_y2_distance,
         )
-        self.height = self._factory.derived_signal_rw(float, "height")
-        self.angle = self._factory.derived_signal_rw(float, "angle")
+        with self.add_children_as_readables():
+            self.height = self._factory.derived_signal_rw(float, "height")
+            self.angle = self._factory.derived_signal_rw(float, "angle")
         super().__init__(name=name)
 
     @AsyncStatus.wrap
