@@ -8,7 +8,7 @@ from ophyd_async.core import (
     DetectorTrigger,
     TriggerInfo,
     observe_value,
-    set_and_wait_for_value
+    set_and_wait_for_value,
 )
 
 from ._core_io import (

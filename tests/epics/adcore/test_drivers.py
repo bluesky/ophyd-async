@@ -93,3 +93,26 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
         ValueError, match="Final detector state Disconnected not in valid end states:"
     ):
         await acquiring
+
+
+@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.2)
+async def test_start_acquiring_driver_and_ensure_status_timing(
+    controller: adsimdetector.SimController,
+):
+    """This test ensures the camera has time to return to a good state.
+
+    Real world application; there is race condition wherein the
+    detector has been asked to complete acquisition, but has not yet
+    returned to a known good state before the status check.
+
+    """
+    set_mock_value(controller.driver.detector_state, adcore.DetectorState.ACQUIRE)
+
+    acquiring = await controller.start_acquiring_driver_and_ensure_status()
+
+    async def complete_acquire():
+        """Return to idle state, but pretend the detector is slow."""
+        await asyncio.sleep(0.05)
+        set_mock_value(controller.driver.detector_state, adcore.DetectorState.IDLE)
+
+    await asyncio.gather(acquiring, complete_acquire())
