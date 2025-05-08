@@ -106,13 +106,13 @@ async def test_start_acquiring_driver_and_ensure_status_timing(
     returned to a known good state before the status check.
 
     """
-    set_mock_value(controller.driver.detector_state, adcore.DetectorState.ACQUIRE)
+    set_mock_value(controller.driver.detector_state, adcore.ADState.ACQUIRE)
 
     acquiring = await controller.start_acquiring_driver_and_ensure_status()
 
     async def complete_acquire():
         """Return to idle state, but pretend the detector is slow."""
         await asyncio.sleep(0.05)
-        set_mock_value(controller.driver.detector_state, adcore.DetectorState.IDLE)
+        set_mock_value(controller.driver.detector_state, adcore.ADState.IDLE)
 
     await asyncio.gather(acquiring, complete_acquire())

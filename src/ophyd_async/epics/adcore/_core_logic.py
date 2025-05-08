@@ -119,11 +119,14 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                 ):
                     if state in self.good_states:
                         return
-            except asyncio.TimeoutError:
-                raise ValueError(
-                    f"Final detector state {state.value} not in valid end "
-                    f"states: {self.good_states}"
-                )
+            except asyncio.TimeoutError as exc:
+                if state is None:
+                    raise exc
+                else:
+                    raise ValueError(
+                        f"Final detector state {state.value} not in valid end "
+                        f"states: {self.good_states}"
+                    ) from exc
 
         return AsyncStatus(complete_acquisition())
 
