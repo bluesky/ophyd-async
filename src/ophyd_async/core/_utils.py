@@ -27,18 +27,9 @@ DEFAULT_TIMEOUT = 10.0
 logger = logging.getLogger("ophyd_async")
 
 
-class StrictEnumMeta(EnumMeta):
-    def __new__(metacls, *args, **kwargs):
-        ret = super().__new__(metacls, *args, **kwargs)
-        lowercase_names = [x.name for x in ret if not x.name.isupper()]  # type: ignore
-        if lowercase_names:
-            raise TypeError(f"Names {lowercase_names} should be uppercase")
-        return ret
-
-
 class UppercaseNameEnumMeta(EnumMeta):
-    def __new__(metacls, *args, **kwargs):
-        ret = super().__new__(metacls, *args, **kwargs)
+    def __new__(cls, *args, **kwargs):
+        ret = super().__new__(cls, *args, **kwargs)
         lowercase_names = [x.name for x in ret if not x.name.isupper()]  # type: ignore
         if lowercase_names:
             raise TypeError(f"Names {lowercase_names} should be uppercase")
@@ -50,13 +41,6 @@ class StrictEnum(str, Enum, metaclass=UppercaseNameEnumMeta):
 
 
 class AnyStringUppercaseNameEnumMeta(UppercaseNameEnumMeta):
-    def __call__(self, value, *args, **kwargs):  # type: ignore
-        if isinstance(value, str) and not isinstance(value, self):
-            return value
-        return super().__call__(value, *args, **kwargs)
-
-
-class SubsetEnumMeta(StrictEnumMeta):
     def __call__(self, value, *args, **kwargs):  # type: ignore
         """Return given value if it is a string and not a member of the enum.
 

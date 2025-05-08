@@ -45,19 +45,10 @@ def get_supported_values(
                 error_msg + ". There should be no extras and at least one option."
             )
 
-    # Take order from the pv choices
-    supported_values = {x: x for x in pv_choices}
-    # But override those that we specify via the datatype
-    for v in enum_cls:
-        supported_values[v.value] = v
-
-    if issubclass(enum_cls, SupersetEnum):
-        # Convert to sets and use symmetric difference
-        missing_choices = list(set(pv_choices) ^ set(choices))
-        # Remove the missing choices from pv from supported values
-        for m in missing_choices:
-            del supported_values[m]
-    return supported_values
+    # Take order from the pv choices, but take value from enum if it exists there
+    # This works because SubsetEnum.__call__ returns the string it is passed if
+    # it doesn't have an entry
+    return {x: str(enum_cls(x)) for x in pv_choices}
 
 
 def format_datatype(datatype: Any) -> str:

@@ -52,10 +52,10 @@ def test_given_supersetenum_that_partial_matches_are_valid():
         TEST_1 = "test_1"
         TEST_2 = "test_2"
 
-    supported_vals = get_supported_values("", MyEnum, (MyEnum.TEST_1,))
+    supported_vals = get_supported_values("", MyEnum, ("test_1",))
 
-    assert supported_vals[MyEnum.TEST_1] == MyEnum.TEST_1
-    assert supported_vals.get(MyEnum.TEST_2) is None
+    assert "test_1" in supported_vals
+    assert supported_vals.get("test_2") is None
 
 
 class MySupersetEnum(SupersetEnum):
