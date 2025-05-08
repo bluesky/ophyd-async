@@ -20,6 +20,8 @@ from ._table import (
 )
 from ._trigger import (
     PcompInfo,
+    ScanSpecInfo,
+    ScanSpecSeqTableTriggerLogic,
     SeqTableInfo,
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
@@ -35,6 +37,8 @@ __all__ = [
     "PcompBlock",
     "PandaPcompDirection",
     "PulseBlock",
+    "ScanSpecInfo",
+    "ScanSpecSeqTableTriggerLogic",
     "SeqBlock",
     "PandaTimeUnits",
     "HDFPanda",

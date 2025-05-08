@@ -1,8 +1,12 @@
 import asyncio
+from typing import Literal
 
+import numpy as np
 from pydantic import BaseModel, Field
+from scanspec.specs import Frames, Path, Spec
 
 from ophyd_async.core import FlyerController, wait_for_value
+from ophyd_async.epics import motor
 
 from ._block import (
     PandaBitMux,
@@ -11,7 +15,7 @@ from ._block import (
     PcompBlock,
     SeqBlock,
 )
-from ._table import SeqTable
+from ._table import SeqTable, SeqTrigger
 
 
 class SeqTableInfo(BaseModel):
@@ -20,6 +24,11 @@ class SeqTableInfo(BaseModel):
     sequence_table: SeqTable = Field(strict=True)
     repeats: int = Field(ge=0)
     prescale_as_us: float = Field(default=1, ge=0)  # microseconds
+
+
+class ScanSpecInfo(BaseModel):
+    spec: Spec[motor.Motor | Literal["DURATION"]] = Field(default=None)
+    deadtime: float = Field()
 
 
 class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
@@ -49,6 +58,91 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
     async def stop(self):
         await self.seq.enable.set(PandaBitMux.ZERO)
         await wait_for_value(self.seq.active, False, timeout=1)
+
+
+class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
+    def __init__(self, seq: SeqBlock, name="") -> None:
+        self.seq = seq
+        self.name = name
+
+    async def prepare(self, value: ScanSpecInfo):
+        await self.seq.enable.set(PandaBitMux.ZERO)
+        path = Path(value.spec.calculate())
+        chunk = path.consume()
+        gaps = self._calculate_gaps(chunk)
+        if gaps[0] == 0:
+            gaps = np.delete(gaps, 0)
+        scan_size = len(chunk)
+
+        gaps = np.append(gaps, scan_size)
+        fast_axis = chunk.axes()[len(chunk.axes()) - 2]
+        # Get the resolution from the PandA Encoder?
+        resolution = await fast_axis.encoder_res.get_value()
+        start = 0
+        # Wait for GPIO to go low
+        rows = SeqTable.row(trigger=SeqTrigger.BITA_0)
+        for gap in gaps:
+            # Wait for GPIO to go high
+            rows += SeqTable.row(trigger=SeqTrigger.BITA_1)
+            # Wait for position
+            if (
+                chunk.midpoints[fast_axis][gap - 1] * resolution
+                > chunk.midpoints[fast_axis][start] * resolution
+            ):
+                trig = SeqTrigger.POSA_GT
+                dir = False if resolution > 0 else True
+
+            else:
+                trig = SeqTrigger.POSA_LT
+                dir = True if resolution > 0 else False
+            rows += SeqTable.row(
+                trigger=trig,
+                position=int(
+                    chunk.lower[fast_axis][start]
+                    / await fast_axis.encoder_res.get_value()
+                ),
+            )
+
+            # Time based triggers
+            rows += SeqTable.row(
+                repeats=gap - start,
+                trigger=SeqTrigger.IMMEDIATE,
+                time1=(chunk.midpoints["DURATION"][0] - value.deadtime) * 10**6,
+                time2=int(value.deadtime * 10**6),
+                outa1=True,
+                outb1=dir,
+                outa2=False,
+                outb2=dir,
+            )
+
+            # Wait for GPIO to go low
+            rows += SeqTable.row(trigger=SeqTrigger.BITA_0)
+
+            start = gap
+        await asyncio.gather(
+            self.seq.prescale.set(1.0),
+            self.seq.prescale_units.set(PandaTimeUnits.US),
+            self.seq.repeats.set(1),
+            self.seq.table.set(rows),
+        )
+
+    async def kickoff(self) -> None:
+        await self.seq.enable.set(PandaBitMux.ONE)
+        await wait_for_value(self.seq.active, True, timeout=1)
+
+    async def complete(self) -> None:
+        await wait_for_value(self.seq.active, False, timeout=None)
+
+    async def stop(self):
+        await self.seq.enable.set(PandaBitMux.ZERO)
+        await wait_for_value(self.seq.active, False, timeout=1)
+
+    def _calculate_gaps(self, chunk: Frames[motor.Motor]):
+        inds = np.argwhere(chunk.gap)
+        if len(inds) == 0:
+            return [len(chunk)]
+        else:
+            return inds
 
 
 class PcompInfo(BaseModel):

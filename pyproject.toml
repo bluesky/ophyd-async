@@ -57,6 +57,7 @@ dev = [
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
+    "scanspec==0.7.2",
     "sphinx-autobuild",
     "sphinx-autodoc2",
     "sphinxcontrib-mermaid",
