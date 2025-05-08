@@ -109,8 +109,6 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         )
 
         async def complete_acquisition() -> None:
-            # NOTE: possible race condition here between the callback from
-            # set_and_wait_for_value and the detector state updating.
             await status
             state = None
             try:
@@ -120,13 +118,14 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                     if state in self.good_states:
                         return
             except asyncio.TimeoutError as exc:
-                if state is None:
-                    raise exc
-                else:
+                if state is not None:
                     raise ValueError(
                         f"Final detector state {state.value} not in valid end "
                         f"states: {self.good_states}"
                     ) from exc
+                else:
+                    # No updates from the detector, something else is wrong
+                    raise exc
 
         return AsyncStatus(complete_acquisition())
 

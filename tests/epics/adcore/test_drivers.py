@@ -116,3 +116,25 @@ async def test_start_acquiring_driver_and_ensure_status_timing(
         set_mock_value(controller.driver.detector_state, adcore.ADState.IDLE)
 
     await asyncio.gather(acquiring, complete_acquire())
+
+
+async def bad_observe_value(*args, **kwargs):
+    "Stub to simulate a disconnected ``observe_value()``."
+    if True:
+        raise asyncio.TimeoutError()
+    yield None  # Make it a generator
+
+
+@patch("ophyd_async.epics.adcore._core_logic.observe_value", bad_observe_value)
+@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.2)
+async def test_start_acquiring_driver_and_ensure_status_disconnected(
+    controller: adsimdetector.SimController,
+):
+    """This test ensures the function behaves gracefully if no detector
+    states are available.
+
+    """
+    acquiring = await controller.start_acquiring_driver_and_ensure_status()
+
+    with pytest.raises(asyncio.TimeoutError):
+        await acquiring
