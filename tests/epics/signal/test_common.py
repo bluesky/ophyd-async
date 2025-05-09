@@ -63,7 +63,7 @@ class MySupersetEnum(SupersetEnum):
     TEST_2 = "test_2"
 
 
-SUPERSETENUM_ERROR_MESSAGE = "There should be no extras and at least one option."
+SUPERSETENUM_ERROR_MESSAGE = "to be a superset of them."
 
 
 def test_given_supersetenum_that_all_values_plus_extra_values_are_invalid():

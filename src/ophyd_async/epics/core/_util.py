@@ -1,5 +1,5 @@
-from collections.abc import Sequence
-from typing import Any, get_args, get_origin
+from collections.abc import Mapping, Sequence
+from typing import Any, TypeVar, get_args, get_origin
 
 import numpy as np
 
@@ -13,6 +13,8 @@ from ophyd_async.core import (
     get_enum_cls,
 )
 
+T = TypeVar("T")
+
 
 def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
     """Split PV into record name and field."""
@@ -25,9 +27,9 @@ def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
 
 def get_supported_values(
     pv: str,
-    datatype: type,
+    datatype: type[T],
     pv_choices: Sequence[str],
-) -> dict[str, str]:
+) -> Mapping[str, T | str]:
     enum_cls = get_enum_cls(datatype)
     if not enum_cls:
         raise TypeError(f"{datatype} is not an Enum")
@@ -40,24 +42,15 @@ def get_supported_values(
         if not set(choices).issubset(pv_choices):
             raise TypeError(error_msg + "to be a subset of them.")
     elif issubclass(enum_cls, SupersetEnum):
-        if not choices or not set(pv_choices).issubset(set(choices)):
-            raise TypeError(
-                error_msg + ". There should be no extras and at least one option."
-            )
-
-    # Take order from the pv choices
-    supported_values = {x: x for x in pv_choices}
-    # But override those that we specify via the datatype
-    for v in enum_cls:
-        supported_values[v.value] = v
-
-    if issubclass(enum_cls, SupersetEnum):
-        # Convert to sets and use symmetric difference
-        missing_choices = list(set(pv_choices) ^ set(choices))
-        # Remove the missing choices from pv from supported values
-        for m in missing_choices:
-            del supported_values[m]
-
+        if not set(pv_choices).issubset(choices):
+            raise TypeError(error_msg + "to be a superset of them.")
+    else:
+        raise TypeError(f"{datatype} is not a StrictEnum, SubsetEnum, or SupersetEnum")
+    # Create a map from the string value to the enum instance
+    # For StrictEnum and SupersetEnum, all values here will be enum values
+    # For SubsetEnum, only the values in choices will be enum values, the rest will be
+    # strings
+    supported_values = {x: enum_cls(x) for x in pv_choices}
     return supported_values
 
 
