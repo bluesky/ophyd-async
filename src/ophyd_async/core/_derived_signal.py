@@ -11,7 +11,7 @@ from ._derived_signal_backend import (
 )
 from ._device import Device
 from ._signal import Signal, SignalR, SignalRW, SignalT, SignalW
-from ._signal_backend import Primitive, PrimitiveT, SignalDatatypeT
+from ._signal_backend import Primitive, SignalDatatypeT
 
 
 class DerivedSignalFactory(Generic[TransformT]):
@@ -35,7 +35,7 @@ class DerivedSignalFactory(Generic[TransformT]):
         **raw_and_transform_devices_and_constants,
     ):
         self._set_derived = set_derived
-        _raw_and_transform_devices, _raw_constants = (
+        _raw_and_transform_devices, _raw_and_transform_constants = (
             {
                 k: v
                 for k, v in raw_and_transform_devices_and_constants.items()
@@ -47,6 +47,7 @@ class DerivedSignalFactory(Generic[TransformT]):
                 if isinstance(v, Primitive)
             },
         )
+
         # Check the raw and transform devices match the input arguments of the Transform
         if transform_cls is not Transform:
             # Populate expected parameters and types
@@ -67,7 +68,7 @@ class DerivedSignalFactory(Generic[TransformT]):
                     k: v.datatype if isinstance(v, Signal) else get_locatable_type(v)
                     for k, v in _raw_and_transform_devices.items()
                 },
-                **{k: type(v) for k, v in _raw_constants.items()},
+                **{k: type(v) for k, v in _raw_and_transform_constants.items()},
             }
 
             if expected != received:
@@ -79,12 +80,23 @@ class DerivedSignalFactory(Generic[TransformT]):
         self._set_derived_takes_dict = (
             is_typeddict(_get_first_arg_datatype(set_derived)) if set_derived else False
         )
+
+        _raw_constants, _transform_constants = _partition_by_keys(
+            _raw_and_transform_constants, set(transform_cls.model_fields)
+        )
+
+        _raw_devices, _transform_devices = _partition_by_keys(
+            _raw_and_transform_devices, set(transform_cls.model_fields)
+        )
+
         self._transformer = SignalTransformer(
             transform_cls,
             set_derived,
             self._set_derived_takes_dict,
-            _raw_and_transform_devices,
+            _raw_devices,
             _raw_constants,
+            _transform_devices,
+            _transform_constants,
         )
 
     def _make_signal(
@@ -194,7 +206,7 @@ def _get_first_arg_datatype(
 def _make_factory(
     raw_to_derived: Callable[..., SignalDatatypeT] | None = None,
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]] | None = None,
-    raw_devices_and_constants: dict[str, Device | PrimitiveT] | None = None,
+    raw_devices_and_constants: dict[str, Device | Primitive] | None = None,
 ) -> DerivedSignalFactory:
     if raw_to_derived:
 
@@ -219,7 +231,7 @@ def derived_signal_r(
     raw_to_derived: Callable[..., SignalDatatypeT],
     derived_units: str | None = None,
     derived_precision: int | None = None,
-    **raw_devices_and_constants: Device | PrimitiveT,
+    **raw_devices_and_constants: Device | Primitive,
 ) -> SignalR[SignalDatatypeT]:
     """Create a read only derived signal.
 
@@ -249,7 +261,7 @@ def derived_signal_rw(
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]],
     derived_units: str | None = None,
     derived_precision: int | None = None,
-    **raw_devices_and_constants: Device | PrimitiveT,
+    **raw_devices_and_constants: Device | Primitive,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a read-write derived signal.
 
@@ -321,3 +333,13 @@ def get_locatable_type(obj: object) -> type | None:
             if args:
                 return args[0]
     return None
+
+
+def _partition_by_keys(data: dict, keys: set) -> tuple[dict, dict]:
+    group_excluded, group_included = {}, {}
+    for k, v in data.items():
+        if k in keys:
+            group_included[k] = v
+        else:
+            group_excluded[k] = v
+    return group_excluded, group_included

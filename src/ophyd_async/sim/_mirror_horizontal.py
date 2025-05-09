@@ -3,7 +3,7 @@ from typing import TypedDict
 
 from bluesky.protocols import Movable
 
-from ophyd_async.core import AsyncStatus, DerivedSignalFactory, Device, soft_signal_rw
+from ophyd_async.core import AsyncStatus, DerivedSignalFactory, Device
 
 from ._mirror_vertical import TwoJackDerived, TwoJackTransform
 from ._motor import SimMotor
@@ -20,7 +20,8 @@ class HorizontalMirror(Device, Movable):
         self.x1 = SimMotor()
         self.x2 = SimMotor()
         # Parameter
-        self.x1_x2_distance = soft_signal_rw(float, initial_value=1)
+        # This could also be set as 'soft_signal_rw(float, initial_value=1)'
+        self.x1_x2_distance = 1.0
         # Derived signals
         self._factory = DerivedSignalFactory(
             TwoJackTransform,

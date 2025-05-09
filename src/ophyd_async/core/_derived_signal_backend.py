@@ -77,17 +77,18 @@ class SignalTransformer(Generic[TransformT]):
         transform_cls: type[TransformT],
         set_derived: Callable[..., Awaitable[None]] | None,
         set_derived_takes_dict: bool,
-        raw_and_transform_devices,
+        raw_devices,
         raw_constants,
+        transform_devices,
+        transform_constants,
     ):
         self._transform_cls = transform_cls
         self._set_derived = set_derived
         self._set_derived_takes_dict = set_derived_takes_dict
-        self._transform_devices = {
-            k: raw_and_transform_devices.pop(k) for k in transform_cls.model_fields
-        }
 
-        self._raw_devices = raw_and_transform_devices
+        self._transform_devices = transform_devices
+        self._transform_constants = transform_constants
+        self._raw_devices = raw_devices
         self._raw_constants = raw_constants
 
         self._derived_callbacks: dict[str, Callback[Reading]] = {}
@@ -126,7 +127,7 @@ class SignalTransformer(Generic[TransformT]):
             k: transform_readings[sig.name]["value"]
             for k, sig in self.transform_readables.items()
         }
-        return self._transform_cls(**transform_args)
+        return self._transform_cls(**(transform_args | self._transform_constants))
 
     def _make_derived_readings(
         self, raw_and_transform_readings: dict[str, Reading]
