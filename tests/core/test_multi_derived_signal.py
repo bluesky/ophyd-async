@@ -8,6 +8,11 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
+    SignalBackend,
+    SignalDatatype,
+    SignalRW,
+    Table,
+    derived_signal_rw,
     soft_signal_rw,
 )
 from ophyd_async.sim import (
@@ -131,3 +136,60 @@ def test_mismatching_args():
             jack22=soft_signal_rw(float),
             distance=soft_signal_rw(float),
         )
+
+
+@pytest.fixture
+def derived_signal_backend() -> SignalBackend[SignalDatatype]:
+    signal_r = soft_signal_rw(int, initial_value=4)
+
+    def _get(ts: int) -> float:
+        return ts
+
+    async def _put(value: float) -> None:
+        pass
+
+    derived = derived_signal_rw(_get, _put, ts=signal_r)
+    return derived._get_cache().backend
+
+
+async def test_derived_signal_backend_connect_pass(
+    derived_signal_backend: SignalBackend,
+):
+    result = await derived_signal_backend.connect(0.1)
+    assert result is None
+
+
+def test_derived_signal_backend_set_value(
+    derived_signal_backend: SignalBackend,
+) -> None:
+    with pytest.raises(RuntimeError):
+        derived_signal_backend.set_value(1.0)  # type: ignore
+
+
+async def test_derived_signal_backend_put_wait_fails(
+    derived_signal_backend: SignalBackend,
+) -> None:
+    with pytest.raises(RuntimeError):
+        await derived_signal_backend.put(value=None, wait=False)
+
+
+async def test_derived_signal_backend_put_value_fails(
+    derived_signal_backend: SignalBackend,
+) -> None:
+    with pytest.raises(RuntimeError):
+        await derived_signal_backend.put(value=None, wait=True)
+
+
+def test_make_rw_signal_type_mismatch():
+    factory = DerivedSignalFactory(
+        TwoJackTransform,
+        set_derived=None,
+        distance=soft_signal_rw(float),
+        jack1=soft_signal_rw(float),
+        jack2=soft_signal_rw(float),
+    )
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Must define a set_derived method to support derived"),
+    ):
+        factory._make_signal(signal_cls=SignalRW, datatype=Table, name="")
