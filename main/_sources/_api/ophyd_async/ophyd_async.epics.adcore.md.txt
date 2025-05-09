@@ -1469,7 +1469,7 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.T
 `````{py:class} ADBaseDataType()
 :canonical: ophyd_async.epics.adcore._utils.ADBaseDataType
 
-Bases: {py:obj}`ophyd_async.core.SupersetEnum`
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType
 ```
@@ -1570,15 +1570,6 @@ Bases: {py:obj}`ophyd_async.core.SupersetEnum`
    'Float64'
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.FLOAT64
-```
-
-````
-
-````{py:attribute} UNDEFINED
-:canonical: ophyd_async.epics.adcore._utils.ADBaseDataType.UNDEFINED
-:value: <Multiline-String>
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ADBaseDataType.UNDEFINED
 ```
 
 ````

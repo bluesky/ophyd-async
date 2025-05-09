@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._utils &#8212; ophyd-async 0.10.0a4.dev7+g147fd9495 documentation</title>
+    <title>ophyd_async.epics.adcore._utils &#8212; ophyd-async 0.10.0a4.dev6+g0b00d495b documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=80e8527a"></script>
+    <script src="../../../../_static/documentation_options.js?v=2633db0f"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev7+g147fd9495 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev7+g147fd9495 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev6+g0b00d495b documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev6+g0b00d495b documentation - Home"/>
   
   
 </a></div>
@@ -472,14 +472,13 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">StrictEnum</span><span class="p">,</span>
     <span class="n">SubsetEnum</span><span class="p">,</span>
-    <span class="n">SupersetEnum</span><span class="p">,</span>
     <span class="n">wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 
 
 <div class="viewcode-block" id="ADBaseDataType">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseDataType">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ADBaseDataType</span><span class="p">(</span><span class="n">SupersetEnum</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ADBaseDataType</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
     <span class="n">INT8</span> <span class="o">=</span> <span class="s2">&quot;Int8&quot;</span>
     <span class="n">UINT8</span> <span class="o">=</span> <span class="s2">&quot;UInt8&quot;</span>
     <span class="n">INT16</span> <span class="o">=</span> <span class="s2">&quot;Int16&quot;</span>
@@ -489,10 +488,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">INT64</span> <span class="o">=</span> <span class="s2">&quot;Int64&quot;</span>
     <span class="n">UINT64</span> <span class="o">=</span> <span class="s2">&quot;UInt64&quot;</span>
     <span class="n">FLOAT32</span> <span class="o">=</span> <span class="s2">&quot;Float32&quot;</span>
-    <span class="n">FLOAT64</span> <span class="o">=</span> <span class="s2">&quot;Float64&quot;</span>
-    <span class="c1"># Driver database override will blank the enum string if it doesn&#39;t</span>
-    <span class="c1"># support a datatype</span>
-    <span class="n">UNDEFINED</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span></div>
+    <span class="n">FLOAT64</span> <span class="o">=</span> <span class="s2">&quot;Float64&quot;</span></div>
 
 
 
@@ -509,12 +505,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">FLOAT32</span><span class="p">:</span> <span class="s2">&quot;&lt;f4&quot;</span><span class="p">,</span>
         <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">FLOAT64</span><span class="p">:</span> <span class="s2">&quot;&lt;f8&quot;</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="n">np_type</span> <span class="o">=</span> <span class="n">ad_dtype_to_np_dtype</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ad_dtype</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">np_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="s2">&quot;Areadetector driver has a blank DataType, this is not supported&quot;</span>
-        <span class="p">)</span>
-    <span class="k">return</span> <span class="n">np_type</span>
+    <span class="k">return</span> <span class="n">ad_dtype_to_np_dtype</span><span class="p">[</span><span class="n">ad_dtype</span><span class="p">]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_pv_dtype_to_np</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>

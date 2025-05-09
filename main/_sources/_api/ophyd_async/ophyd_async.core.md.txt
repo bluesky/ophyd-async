@@ -95,10 +95,6 @@
   - ```{autodoc2-docstring} ophyd_async.core._utils.SubsetEnum
     :summary:
     ```
-* - {py:obj}`SupersetEnum <ophyd_async.core._utils.SupersetEnum>`
-  - ```{autodoc2-docstring} ophyd_async.core._utils.SupersetEnum
-    :summary:
-    ```
 * - {py:obj}`Table <ophyd_async.core._table.Table>`
   - ```{autodoc2-docstring} ophyd_async.core._table.Table
     :summary:
@@ -349,10 +345,6 @@
     ```
 * - {py:obj}`Array1D <ophyd_async.core._signal_backend.Array1D>`
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.Array1D
-    :summary:
-    ```
-* - {py:obj}`EnumTypes <ophyd_async.core._utils.EnumTypes>`
-  - ```{autodoc2-docstring} ophyd_async.core._utils.EnumTypes
     :summary:
     ```
 * - {py:obj}`CALCULATE_TIMEOUT <ophyd_async.core._utils.CALCULATE_TIMEOUT>`
@@ -1165,29 +1157,9 @@ Bases: {py:obj}`str`, {py:obj}`enum.Enum`
 ````{py:class} SubsetEnum()
 :canonical: ophyd_async.core._utils.SubsetEnum
 
-Bases: {py:obj}`str`, {py:obj}`enum.Enum`
+Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
 
 ```{autodoc2-docstring} ophyd_async.core._utils.SubsetEnum
-```
-
-````
-
-````{py:class} SupersetEnum()
-:canonical: ophyd_async.core._utils.SupersetEnum
-
-Bases: {py:obj}`str`, {py:obj}`enum.Enum`
-
-```{autodoc2-docstring} ophyd_async.core._utils.SupersetEnum
-```
-
-````
-
-````{py:data} EnumTypes
-:canonical: ophyd_async.core._utils.EnumTypes
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.core._utils.EnumTypes
 ```
 
 ````
@@ -2637,7 +2609,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 ```
 ````
 
-````{py:function} get_enum_cls(datatype: type | None) -> type[~ophyd_async.core._utils.EnumTypes] | None
+````{py:function} get_enum_cls(datatype: type | None) -> type[~ophyd_async.core._utils.StrictEnum] | None
 :canonical: ophyd_async.core._utils.get_enum_cls
 
 ```{autodoc2-docstring} ophyd_async.core._utils.get_enum_cls

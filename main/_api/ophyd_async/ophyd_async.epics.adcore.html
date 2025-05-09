@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.10.0a4.dev7+g147fd9495 documentation</title>
+    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.10.0a4.dev6+g0b00d495b documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=80e8527a"></script>
+    <script src="../../_static/documentation_options.js?v=2633db0f"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev7+g147fd9495 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev7+g147fd9495 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev6+g0b00d495b documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev6+g0b00d495b documentation - Home"/>
   
   
 </a></div>
@@ -588,7 +588,7 @@
 <td><p>Device that provides selected child Device values in <code class="docutils literal notranslate"><span class="pre">read()</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType" title="ophyd_async.epics.adcore._utils.ADBaseDataType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseDataType</span></code></a></p></td>
-<td><p>Some members should exist in the Backend, and there should be no extras.</p></td>
+<td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADFileWriteMode" title="ophyd_async.epics.adcore._utils.ADFileWriteMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADFileWriteMode</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
@@ -1502,8 +1502,8 @@ subsequent raising (if applicable) due to detector state.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADBaseDataType</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_utils.html#ADBaseDataType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SupersetEnum" title="ophyd_async.core.SupersetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.SupersetEnum</span></code></a></p>
-<p>Some members should exist in the Backend, and there should be no extras.</p>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>All members should exist in the Backend, and there will be no extras.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.INT8">
 <span class="sig-name descname"><span class="pre">INT8</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.INT8" title="Link to this definition">#</a></dt>
@@ -1563,11 +1563,6 @@ subsequent raising (if applicable) due to detector state.</p>
 <span class="sig-name descname"><span class="pre">FLOAT64</span></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.FLOAT64" title="Link to this definition">#</a></dt>
 <dd><p>‘Float64’</p>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADBaseDataType.UNDEFINED">
-<span class="sig-name descname"><span class="pre">UNDEFINED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Multiline-String&gt;</span></em><a class="headerlink" href="#ophyd_async.epics.adcore.ADBaseDataType.UNDEFINED" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -2063,7 +2058,6 @@ See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginDriv
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.UINT64"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.UINT64</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.FLOAT32"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.FLOAT32</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.FLOAT64"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.FLOAT64</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDataType.UNDEFINED"><code class="docutils literal notranslate"><span class="pre">ADBaseDataType.UNDEFINED</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADFileWriteMode"><code class="docutils literal notranslate"><span class="pre">ADFileWriteMode</span></code></a><ul class="nav section-nav flex-column">
