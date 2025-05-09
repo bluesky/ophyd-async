@@ -94,7 +94,7 @@ class DerivedSignalFactory(Generic[TransformT]):
         backend = DerivedSignalBackend(
             datatype, name, self._transformer, units, precision
         )
-        return signal_cls(backend)
+        return signal_cls(backend, name=name)
 
     def derived_signal_r(
         self,

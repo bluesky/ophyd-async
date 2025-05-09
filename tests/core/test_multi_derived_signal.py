@@ -131,3 +131,10 @@ def test_mismatching_args():
             jack22=soft_signal_rw(float),
             distance=soft_signal_rw(float),
         )
+
+
+async def test_standard_readable_read_on_derived_signals():
+    inst = VerticalMirror()
+    reading = await inst.read()
+
+    assert {"angle", "height"} <= set(reading.keys())
