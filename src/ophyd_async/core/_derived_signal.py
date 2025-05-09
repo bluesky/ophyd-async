@@ -11,7 +11,7 @@ from ._derived_signal_backend import (
 )
 from ._device import Device
 from ._signal import Signal, SignalR, SignalRW, SignalT, SignalW
-from ._signal_backend import Primitive, SignalDatatypeT
+from ._signal_backend import Primitive, PrimitiveT, SignalDatatypeT
 
 
 class DerivedSignalFactory(Generic[TransformT]):
@@ -194,7 +194,7 @@ def _get_first_arg_datatype(
 def _make_factory(
     raw_to_derived: Callable[..., SignalDatatypeT] | None = None,
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]] | None = None,
-    raw_devices_and_constants: dict[str, Device | Primitive] | None = None,
+    raw_devices_and_constants: dict[str, Device | PrimitiveT] | None = None,
 ) -> DerivedSignalFactory:
     if raw_to_derived:
 
@@ -219,7 +219,7 @@ def derived_signal_r(
     raw_to_derived: Callable[..., SignalDatatypeT],
     derived_units: str | None = None,
     derived_precision: int | None = None,
-    **raw_devices_and_constants: Device | Primitive,
+    **raw_devices_and_constants: Device | PrimitiveT,
 ) -> SignalR[SignalDatatypeT]:
     """Create a read only derived signal.
 
@@ -249,7 +249,7 @@ def derived_signal_rw(
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]],
     derived_units: str | None = None,
     derived_precision: int | None = None,
-    **raw_devices_and_constants: Device | Primitive,
+    **raw_devices_and_constants: Device | PrimitiveT,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a read-write derived signal.
 

@@ -61,6 +61,8 @@ from ._signal import (
 from ._signal_backend import (
     Array1D,
     DTypeScalar_co,
+    Primitive,
+    PrimitiveT,
     SignalBackend,
     SignalDatatype,
     SignalDatatypeT,
@@ -124,6 +126,8 @@ __all__ = [
     "SubsetEnum",
     "Table",
     "SignalMetadata",
+    "Primitive",
+    "PrimitiveT",
     # Soft signal
     "SoftSignalBackend",
     "soft_signal_r_and_setter",
