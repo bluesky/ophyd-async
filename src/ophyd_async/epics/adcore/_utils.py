@@ -7,11 +7,12 @@ from ophyd_async.core import (
     SignalRW,
     StrictEnum,
     SubsetEnum,
+    SupersetEnum,
     wait_for_value,
 )
 
 
-class ADBaseDataType(StrictEnum):
+class ADBaseDataType(SupersetEnum):
     INT8 = "Int8"
     UINT8 = "UInt8"
     INT16 = "Int16"
@@ -22,6 +23,9 @@ class ADBaseDataType(StrictEnum):
     UINT64 = "UInt64"
     FLOAT32 = "Float32"
     FLOAT64 = "Float64"
+    # Driver database override will blank the enum string if it doesn't
+    # support a datatype
+    UNDEFINED = ""
 
 
 def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
@@ -37,7 +41,12 @@ def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
         ADBaseDataType.FLOAT32: "<f4",
         ADBaseDataType.FLOAT64: "<f8",
     }
-    return ad_dtype_to_np_dtype[ad_dtype]
+    np_type = ad_dtype_to_np_dtype.get(ad_dtype)
+    if np_type is None:
+        raise ValueError(
+            "Areadetector driver has a blank DataType, this is not supported"
+        )
+    return np_type
 
 
 def convert_pv_dtype_to_np(datatype: str) -> str:
