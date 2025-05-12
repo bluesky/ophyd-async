@@ -186,4 +186,4 @@ def test_make_rw_signal_type_mismatch():
         ValueError,
         match=re.escape("Must define a set_derived method to support derived"),
     ):
-        factory._make_signal(signal_cls=SignalRW, datatype=Table, name="")
+        factory.derived_signal_rw(datatype=Table, name="")
