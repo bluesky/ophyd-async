@@ -136,7 +136,10 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                     ) from exc
                 else:
                     # No updates from the detector, something else is wrong
-                    raise exc
+                    raise asyncio.TimeoutError(
+                        "Could not monitor detector state: "
+                        + self.driver.detector_state.source
+                    ) from exc
 
         return AsyncStatus(complete_acquisition())
 

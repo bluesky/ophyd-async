@@ -133,5 +133,9 @@ async def test_start_acquiring_driver_and_ensure_status_disconnected(
     """
     acquiring = await controller.start_acquiring_driver_and_ensure_status(timeout=0.2)
 
-    with pytest.raises(asyncio.TimeoutError):
+    with pytest.raises(asyncio.TimeoutError) as exc:
         await acquiring
+    assert (
+        str(exc.value)
+        == "Could not monitor detector state: mock+ca://DRV:DetectorState_RBV"
+    )
