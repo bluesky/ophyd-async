@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal_backend &#8212; ophyd-async 0.10.0a4.dev6+g0b00d495b documentation</title>
+    <title>ophyd_async.core._signal_backend &#8212; ophyd-async 0.10.0a4.dev8+g9300a2c7a documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=2633db0f"></script>
+    <script src="../../../_static/documentation_options.js?v=23a324ef"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev6+g0b00d495b documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev6+g0b00d495b documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev8+g9300a2c7a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev8+g9300a2c7a documentation - Home"/>
   
   
 </a></div>
@@ -471,8 +471,16 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Reading</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataKey</span><span class="p">,</span> <span class="n">Dtype</span><span class="p">,</span> <span class="n">Limits</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Callback</span><span class="p">,</span>
+    <span class="n">EnumTypes</span><span class="p">,</span>
+    <span class="n">StrictEnum</span><span class="p">,</span>
+    <span class="n">SubsetEnum</span><span class="p">,</span>
+    <span class="n">SupersetEnum</span><span class="p">,</span>
+    <span class="n">get_enum_cls</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="kn">from</span><span class="w"> </span><span class="nn">._table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">,</span> <span class="n">get_enum_cls</span>
 
 <span class="n">DTypeScalar_co</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DTypeScalar_co&quot;</span><span class="p">,</span> <span class="n">covariant</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">generic</span><span class="p">)</span>
 <span class="sd">&quot;&quot;&quot;A numpy dtype like [](#numpy.float64).&quot;&quot;&quot;</span>
@@ -489,7 +497,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="n">Primitive</span> <span class="o">=</span> <span class="nb">bool</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span>
 <span class="n">SignalDatatype</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">Primitive</span>
-    <span class="o">|</span> <span class="n">StrictEnum</span>
+    <span class="o">|</span> <span class="n">EnumTypes</span>
     <span class="o">|</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">]</span>
     <span class="o">|</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">]</span>
     <span class="o">|</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]</span>
@@ -504,16 +512,18 @@ window.addEventListener("load", () => mermaid.run());
     <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">StrictEnum</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SubsetEnum</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SupersetEnum</span><span class="p">]</span>
     <span class="o">|</span> <span class="n">Table</span>
 <span class="p">)</span>
 <span class="sd">&quot;&quot;&quot;The supported [](#Signal) datatypes:</span>
 
 <span class="sd">- A python primitive [](#bool), [](#int), [](#float), [](#str)</span>
-<span class="sd">- A [](#StrictEnum) or [](#SubsetEnum) subclass</span>
+<span class="sd">- An [](#EnumTypes) subclass</span>
 <span class="sd">- A fixed datatype [](#Array1D) of numpy bool, signed and unsigned integers or float</span>
 <span class="sd">- A [](#numpy.ndarray) which can change dimensions and datatype at runtime</span>
 <span class="sd">- A sequence of [](#str)</span>
-<span class="sd">- A sequence of [](#StrictEnum) or [](#SubsetEnum) subclass</span>
+<span class="sd">- A sequence of [](#EnumTypes) subclasses</span>
 <span class="sd">- A [](#Table) subclass</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="c1"># TODO: These typevars will not be needed when we drop python 3.11</span>
@@ -523,7 +533,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="n">SignalDatatypeT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;SignalDatatypeT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">SignalDatatype</span><span class="p">)</span>
 <span class="sd">&quot;&quot;&quot;A typevar for a [](#SignalDatatype).&quot;&quot;&quot;</span>
 <span class="n">SignalDatatypeV</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;SignalDatatypeV&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">SignalDatatype</span><span class="p">)</span>
-<span class="n">EnumT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;EnumT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">StrictEnum</span><span class="p">)</span>
+<span class="n">EnumT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;EnumT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">EnumTypes</span><span class="p">)</span>
 <span class="n">TableT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TableT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Table</span><span class="p">)</span>
 
 
@@ -631,7 +641,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">Table</span><span class="p">)</span>
     <span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;array&quot;</span>
-    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">EnumTypes</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;string&quot;</span>
     <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">Primitive</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_primitive_dtype</span><span class="p">[</span><span class="n">datatype</span><span class="p">]</span>
@@ -648,7 +658,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">elif</span> <span class="p">(</span>
         <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sequence</span>
         <span class="ow">or</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="nb">str</span>
-        <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">EnumTypes</span><span class="p">)</span>
     <span class="p">):</span>
         <span class="c1"># TODO: use np.dtypes.StringDType when we can use in structured arrays</span>
         <span class="c1"># https://github.com/numpy/numpy/issues/25693</span>
@@ -662,7 +672,7 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_datakey_shape</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_primitive_dtype</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_primitive_dtype</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">EnumTypes</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[]</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
