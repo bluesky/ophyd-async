@@ -68,7 +68,6 @@ async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
         await acquiring
 
 
-@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.2)
 async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
     controller: adsimdetector.SimController,
 ):
@@ -87,7 +86,7 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
 
     controller.frame_timeout = 0.1
 
-    acquiring = await controller.start_acquiring_driver_and_ensure_status()
+    acquiring = await controller.start_acquiring_driver_and_ensure_status(timeout=0.2)
 
     with pytest.raises(
         ValueError, match="Final detector state Disconnected not in valid end states:"
@@ -95,7 +94,6 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
         await acquiring
 
 
-@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.2)
 async def test_start_acquiring_driver_and_ensure_status_timing(
     controller: adsimdetector.SimController,
 ):
@@ -108,7 +106,7 @@ async def test_start_acquiring_driver_and_ensure_status_timing(
     """
     set_mock_value(controller.driver.detector_state, adcore.ADState.ACQUIRE)
 
-    acquiring = await controller.start_acquiring_driver_and_ensure_status()
+    acquiring = await controller.start_acquiring_driver_and_ensure_status(timeout=0.2)
 
     async def complete_acquire():
         """Return to idle state, but pretend the detector is slow."""
@@ -126,7 +124,6 @@ async def bad_observe_value(*args, **kwargs):
 
 
 @patch("ophyd_async.epics.adcore._core_logic.observe_value", bad_observe_value)
-@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.2)
 async def test_start_acquiring_driver_and_ensure_status_disconnected(
     controller: adsimdetector.SimController,
 ):
@@ -134,7 +131,7 @@ async def test_start_acquiring_driver_and_ensure_status_disconnected(
     states are available.
 
     """
-    acquiring = await controller.start_acquiring_driver_and_ensure_status()
+    acquiring = await controller.start_acquiring_driver_and_ensure_status(timeout=0.2)
 
     with pytest.raises(asyncio.TimeoutError):
         await acquiring

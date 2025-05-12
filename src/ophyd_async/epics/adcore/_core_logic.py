@@ -1,4 +1,5 @@
 import asyncio
+import time
 from typing import Generic, TypeVar
 
 from ophyd_async.core import (
@@ -90,30 +91,40 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                 self.driver.acquire_period.set(full_frame_time, timeout=timeout),
             )
 
-    async def start_acquiring_driver_and_ensure_status(self) -> AsyncStatus:
+    async def start_acquiring_driver_and_ensure_status(
+        self, timeout: float = DEFAULT_TIMEOUT
+    ) -> AsyncStatus:
         """Start acquiring driver, raising ValueError if the detector is in a bad state.
 
         This sets driver.acquire to True, and waits for it to be True up to a timeout.
         Then, it checks that the DetectorState PV is in DEFAULT_GOOD_STATES,
         and otherwise raises a ValueError.
 
+
+        :param timeout:
+            Timeout used for waiting for the driver to start
+            acquiring, and for waiting for the detector to detector to
+            be in a good state after it stops acquiring
         :returns AsyncStatus:
             An AsyncStatus that can be awaited to set driver.acquire to True and perform
             subsequent raising (if applicable) due to detector state.
+
         """
+        t0 = time.monotonic()
         status = await set_and_wait_for_value(
             self.driver.acquire,
             True,
-            timeout=DEFAULT_TIMEOUT,
+            timeout=timeout,
             wait_for_set_completion=False,
         )
 
         async def complete_acquisition() -> None:
             await status
             state = None
+            timeout_left = timeout - (time.monotonic() - t0)
             try:
                 async for state in observe_value(
-                    self.driver.detector_state, done_timeout=DEFAULT_TIMEOUT
+                    self.driver.detector_state, done_timeout=timeout_left
                 ):
                     if state in self.good_states:
                         return
