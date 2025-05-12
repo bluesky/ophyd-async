@@ -195,8 +195,8 @@ async def test_valid_prepare_velocity(sim_motor: motor.Motor):
     [
         (1, 10, 0, 10, 30, -4.999),  # Goes below lower_limit, +ve direction
         (1, 10, 0, 10, 14.99, -10),  # Goes above upper_limit, +ve direction
-        (1, -10, 10, 0, -30, -9.999),  # Goes below lower_limit, -ve direction
-        (1, -10, 10, 0, 14.99, -10),  # Goes above upper_limit, -ve direction
+        (1, 10, 10, 0, -30, -9.999),  # Goes below lower_limit, -ve direction
+        (1, 10, 10, 0, 14.99, -10),  # Goes above upper_limit, -ve direction
     ],
 )
 async def test_prepare_motor_path_errors(
@@ -256,7 +256,7 @@ async def test_prepare(
     sim_motor: motor.Motor, target_position: float, expected_velocity: float
 ):
     set_mock_value(sim_motor.acceleration_time, 1)
-    set_mock_value(sim_motor.low_limit_travel, -10)
+    set_mock_value(sim_motor.low_limit_travel, -15)
     set_mock_value(sim_motor.high_limit_travel, 20)
     set_mock_value(sim_motor.max_velocity, 10)
     fake_set_signal = soft_signal_rw(float)
