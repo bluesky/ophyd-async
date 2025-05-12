@@ -8,8 +8,6 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
-    SignalBackend,
-    SignalDatatype,
     SignalRW,
     Table,
     derived_signal_rw,
@@ -27,6 +25,7 @@ from ophyd_async.testing import (
     assert_reading,
     assert_value,
     get_mock,
+    set_mock_value,
 )
 
 
@@ -139,7 +138,7 @@ def test_mismatching_args():
 
 
 @pytest.fixture
-def derived_signal_backend() -> SignalBackend[SignalDatatype]:
+def derived_signal() -> SignalRW[float]:
     signal_r = soft_signal_rw(int, initial_value=4)
 
     def _get(ts: int) -> float:
@@ -148,36 +147,31 @@ def derived_signal_backend() -> SignalBackend[SignalDatatype]:
     async def _put(value: float) -> None:
         pass
 
-    derived = derived_signal_rw(_get, _put, ts=signal_r)
-    return derived._get_cache().backend
+    return derived_signal_rw(_get, _put, ts=signal_r)
 
 
 async def test_derived_signal_backend_connect_pass(
-    derived_signal_backend: SignalBackend,
+    derived_signal: SignalRW,
 ):
-    result = await derived_signal_backend.connect(0.1)
+    result = await derived_signal.connect()
     assert result is None
 
 
-def test_derived_signal_backend_set_value(
-    derived_signal_backend: SignalBackend,
+async def test_derived_signal_backend_set_value(
+    derived_signal: SignalRW,
 ) -> None:
+    await derived_signal.connect(mock=True)
     with pytest.raises(RuntimeError):
-        derived_signal_backend.set_value(1.0)  # type: ignore
+        set_mock_value(derived_signal, 1.0)
 
 
 async def test_derived_signal_backend_put_wait_fails(
-    derived_signal_backend: SignalBackend,
+    derived_signal: SignalRW,
 ) -> None:
     with pytest.raises(RuntimeError):
-        await derived_signal_backend.put(value=None, wait=False)
-
-
-async def test_derived_signal_backend_put_value_fails(
-    derived_signal_backend: SignalBackend,
-) -> None:
+        await derived_signal.set(value=None, wait=False)
     with pytest.raises(RuntimeError):
-        await derived_signal_backend.put(value=None, wait=True)
+        await derived_signal.set(value=None, wait=True)
 
 
 def test_make_rw_signal_type_mismatch():
