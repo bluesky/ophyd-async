@@ -231,6 +231,18 @@ async def test_prepare_motor_path(sim_motor: motor.Motor):
         == -5
     )
     assert sim_motor._fly_completed_position == 15
+    fly_info = motor.FlyMotorInfo(
+        start_position=12,
+        end_position=2,
+        time_for_move=1,
+    )
+    assert (
+        await sim_motor._prepare_motor_path(
+            10, fly_info.start_position, fly_info.end_position
+        )
+        == 17
+    )
+    assert sim_motor._fly_completed_position == -3
 
 
 @pytest.mark.parametrize(
