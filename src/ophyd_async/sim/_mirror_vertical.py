@@ -51,6 +51,7 @@ class VerticalMirror(Device, Movable[TwoJackDerived]):
         self.y1 = SimMotor()
         self.y2 = SimMotor()
         # Parameter
+        # This could also be set as '1.0', if constant.
         self.y1_y2_distance = soft_signal_rw(float, initial_value=1)
         # Derived signals
         self._factory = DerivedSignalFactory(

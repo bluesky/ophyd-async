@@ -9,7 +9,7 @@ The simplest API involves mapping a single Derived Signal to many low level Sign
 - [`derived_signal_rw`](#ophyd_async.core.derived_signal_rw)
 - [`derived_signal_w`](#ophyd_async.core.derived_signal_w)
 
-If a signal is readable, then it requires a `raw_to_derived` function that maps the raw values of low level Signals into the datatype of the Derived Signal and the `raw_devices` that will be read/monitored to give those values.
+If a signal is readable, then it requires a `raw_to_derived` function that maps the raw values of low level Signals into the datatype of the Derived Signal and the `raw_devices_and_constants` that will be read/monitored to give those values.
 
 If a signal is writeable, then it requires a `set_derived` async function that sets the raw signals based on the derived value.
  
@@ -27,7 +27,7 @@ These examples show the low level Signals and Derived Signals in the same Device
 
 The more general API involves a two way mapping between many Derived Signals and many low level Signals. This is done by implementing a `Raw` [](#typing.TypedDict) subclass with the names and datatypes of the low level Signals, a `Derived` [](#typing.TypedDict) subclass with the names and datatypes of the derived Signals, and [](#Transform) class with `raw_to_derived` and `derived_to_raw` methods to convert between the two. Some transforms will also require parameters which get their values from other Signals for both methods. These should be put in as type hints on the `Transform` subclass.
 
-To create the derived signals, we make a [](#DerivedSignalFactory) instance that knows about the `Transform` class, the `raw_devices` that will be read/monitored to provide the raw values for the transform, and optionally the `set_derived` method to set them. The methods like [](#DerivedSignalFactory.derived_signal_rw) allow Derived signals to be created for each attribute in the `Derived` TypedDict subclass.
+To create the derived signals, we make a [](#DerivedSignalFactory) instance that knows about the `Transform` class, the `raw_devices_and_constants` that will be read/monitored to provide the raw values for the transform, and optionally the `set_derived` method to set them. The methods like [](#DerivedSignalFactory.derived_signal_rw) allow Derived signals to be created for each attribute in the `Derived` TypedDict subclass.
 
 In the below example we see this is action:
 
