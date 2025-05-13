@@ -2,9 +2,9 @@ import warnings
 from collections.abc import Awaitable, Callable, Generator, Sequence
 from contextlib import contextmanager
 from enum import Enum
-from typing import Any, cast
+from typing import Any, TypeVar, cast
 
-from bluesky.protocols import HasHints, Hints, Reading
+from bluesky.protocols import HasHints, Hints, Reading, Subscribable
 from event_model import DataKey
 
 from ._device import Device, DeviceVector
@@ -79,9 +79,13 @@ HintedSignal.uncached = _compat_format(
     "HintedSignal.uncached", StandardReadableFormat.HINTED_UNCACHED_SIGNAL
 )
 
+T = TypeVar("T")
+Callback = Callable[[dict[str, Reading[T]]], None]
+SubscribeFunc = Callable[[Callback[Any]], None]
+
 
 class StandardReadable(
-    Device, AsyncReadable, AsyncConfigurable, AsyncStageable, HasHints
+    Device, AsyncReadable, AsyncConfigurable, AsyncStageable, HasHints, Subscribable
 ):
     """Device that provides selected child Device values in `read()`.
 
@@ -100,6 +104,7 @@ class StandardReadable(
     _read_config_funcs: tuple[Callable[[], Awaitable[dict[str, Reading]]], ...] = ()
     _describe_funcs: tuple[Callable[[], Awaitable[dict[str, DataKey]]], ...] = ()
     _read_funcs: tuple[Callable[[], Awaitable[dict[str, Reading]]], ...] = ()
+    _subscribable: tuple[Subscribable, ...] = ()
     _stageables: tuple[AsyncStageable, ...] = ()
     _has_hints: tuple[HasHints, ...] = ()
 
@@ -126,6 +131,12 @@ class StandardReadable(
 
     async def read(self) -> dict[str, Reading]:
         return await merge_gathered_dicts([func() for func in self._read_funcs])
+
+    def subscribe(self, function) -> None:
+        [device.subscribe(function) for device in self._subscribable]
+
+    def clear_sub(self, function) -> None:
+        [device.clear_sub(function) for device in self._subscribable]
 
     @property
     def hints(self) -> Hints:
@@ -245,6 +256,8 @@ class StandardReadable(
                         self._stageables += (device,)
                     if isinstance(device, HasHints):
                         self._has_hints += (device,)
+                    if isinstance(device, Subscribable):
+                        self._subscribable += (device,)
                 case StandardReadableFormat.CONFIG_SIGNAL:
                     signalr_device = assert_device_is_signalr(device=device)
                     self._describe_config_funcs += (signalr_device.describe,)
@@ -253,16 +266,20 @@ class StandardReadable(
                     signalr_device = assert_device_is_signalr(device=device)
                     self._describe_funcs += (signalr_device.describe,)
                     self._read_funcs += (signalr_device.read,)
+                    self._subscribable += (signalr_device,)
                     self._stageables += (signalr_device,)
                     self._has_hints += (_HintsFromName(signalr_device),)
                 case StandardReadableFormat.UNCACHED_SIGNAL:
                     signalr_device = assert_device_is_signalr(device=device)
                     self._describe_funcs += (signalr_device.describe,)
                     self._read_funcs += (_UncachedRead(signalr_device),)
+                    self._subscribable += (signalr_device,)
+
                 case StandardReadableFormat.HINTED_UNCACHED_SIGNAL:
                     signalr_device = assert_device_is_signalr(device=device)
                     self._describe_funcs += (signalr_device.describe,)
                     self._read_funcs += (_UncachedRead(signalr_device),)
+                    self._subscribable += (signalr_device,)
                     self._has_hints += (_HintsFromName(signalr_device),)
 
 

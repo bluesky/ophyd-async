@@ -3,12 +3,11 @@ import contextlib
 import time
 
 import numpy as np
-from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
+from bluesky.protocols import Locatable, Location, Stoppable, Subscribable
 from pydantic import BaseModel, ConfigDict, Field
 
 from ophyd_async.core import (
     AsyncStatus,
-    Callback,
     StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
@@ -101,12 +100,6 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float
             self.user_setpoint.get_value(), self.user_readback.get_value()
         )
         return Location(setpoint=setpoint, readback=readback)
-
-    def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
-        self.user_readback.subscribe(function)
-
-    def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
-        self.user_readback.clear_sub(function)
 
     @AsyncStatus.wrap
     async def kickoff(self):

@@ -289,3 +289,27 @@ async def test_duplicate_readable_raises_exception():
 
     with pytest.raises(KeyError):
         DummyDerivedDevice("test_duplicates")
+
+
+async def test_standard_readable_subscribable():
+    mock_callback = MagicMock()
+
+    class DummyBaseDevice(StandardReadable):
+        def __init__(self, name):
+            with self.add_children_as_readables(Format.HINTED_SIGNAL):
+                self.subscribable_signal_one = soft_signal_rw(float)
+                self.subscribable_signal_two = soft_signal_rw(float)
+            super().__init__(name)
+
+    std_readable = DummyBaseDevice("test_subscribable")
+
+    std_readable.subscribe(mock_callback)
+
+    assert len(mock_callback.call_args_list) == 2
+
+    std_readable.clear_sub(mock_callback)
+
+    await std_readable.subscribable_signal_one.set(1.0)
+    await std_readable.subscribable_signal_two.set(1.0)
+
+    assert len(mock_callback.call_args_list) == 2
