@@ -86,7 +86,9 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
 
     controller.frame_timeout = 0.1
 
-    acquiring = await controller.start_acquiring_driver_and_ensure_status(timeout=0.2)
+    acquiring = await controller.start_acquiring_driver_and_ensure_status(
+        start_timeout=0.2, state_timeout=0.2
+    )
 
     with pytest.raises(
         ValueError, match="Final detector state Disconnected not in valid end states:"
@@ -106,7 +108,9 @@ async def test_start_acquiring_driver_and_ensure_status_timing(
     """
     set_mock_value(controller.driver.detector_state, adcore.ADState.ACQUIRE)
 
-    acquiring = await controller.start_acquiring_driver_and_ensure_status(timeout=0.2)
+    acquiring = await controller.start_acquiring_driver_and_ensure_status(
+        start_timeout=0.2, state_timeout=0.2
+    )
 
     async def complete_acquire():
         """Return to idle state, but pretend the detector is slow."""
@@ -131,7 +135,9 @@ async def test_start_acquiring_driver_and_ensure_status_disconnected(
     states are available.
 
     """
-    acquiring = await controller.start_acquiring_driver_and_ensure_status(timeout=0.2)
+    acquiring = await controller.start_acquiring_driver_and_ensure_status(
+        start_timeout=0.2, state_timeout=0.2
+    )
 
     with pytest.raises(asyncio.TimeoutError) as exc:
         await acquiring

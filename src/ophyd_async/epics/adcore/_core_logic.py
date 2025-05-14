@@ -1,5 +1,4 @@
 import asyncio
-import time
 from typing import Generic, TypeVar
 
 from ophyd_async.core import (
@@ -92,7 +91,9 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
             )
 
     async def start_acquiring_driver_and_ensure_status(
-        self, timeout: float = DEFAULT_TIMEOUT
+        self,
+        start_timeout: float = DEFAULT_TIMEOUT,
+        state_timeout: float = DEFAULT_TIMEOUT,
     ) -> AsyncStatus:
         """Start acquiring driver, raising ValueError if the detector is in a bad state.
 
@@ -101,30 +102,30 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         and otherwise raises a ValueError.
 
 
-        :param timeout:
+        :param start_timeout:
             Timeout used for waiting for the driver to start
-            acquiring, and for waiting for the detector to detector to
-            be in a good state after it stops acquiring
+            acquiring.
+        :param state_timeout:
+            Timeout used for waiting for the detector to be in a good
+            state after it stops acquiring.
         :returns AsyncStatus:
             An AsyncStatus that can be awaited to set driver.acquire to True and perform
             subsequent raising (if applicable) due to detector state.
 
         """
-        t0 = time.monotonic()
         status = await set_and_wait_for_value(
             self.driver.acquire,
             True,
-            timeout=timeout,
+            timeout=start_timeout,
             wait_for_set_completion=False,
         )
 
         async def complete_acquisition() -> None:
             await status
             state = None
-            timeout_left = timeout - (time.monotonic() - t0)
             try:
                 async for state in observe_value(
-                    self.driver.detector_state, done_timeout=timeout_left
+                    self.driver.detector_state, done_timeout=state_timeout
                 ):
                     if state in self.good_states:
                         return
