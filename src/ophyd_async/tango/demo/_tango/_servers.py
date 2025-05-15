@@ -2,9 +2,9 @@ import asyncio
 import time
 
 import numpy as np
+from tango.server import Device, attribute, command
 
 from tango import AttrWriteType, DevState, GreenMode
-from tango.server import Device, attribute, command
 
 
 class DemoMover(Device):

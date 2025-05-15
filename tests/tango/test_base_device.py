@@ -9,6 +9,8 @@ import bluesky.plans as bp
 import numpy as np
 import pytest
 from bluesky import RunEngine
+from tango.asyncio import DeviceProxy as AsyncDeviceProxy
+from tango.server import Device, attribute, command
 
 import tango
 from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
@@ -27,8 +29,6 @@ from tango import (
     CmdArgType,
     DevState,
 )
-from tango.asyncio import DeviceProxy as AsyncDeviceProxy
-from tango.server import Device, attribute, command
 
 T = TypeVar("T")
 

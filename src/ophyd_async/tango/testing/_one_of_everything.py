@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
 import numpy as np
+from tango.server import Device, attribute, command
 
 from ophyd_async.core import (
     Array1D,
@@ -11,7 +12,6 @@ from ophyd_async.core import (
 )
 from ophyd_async.testing import float_array_value, int_array_value
 from tango import AttrDataFormat, AttrWriteType, DevState
-from tango.server import Device, attribute, command
 
 T = TypeVar("T")
 

@@ -6,6 +6,7 @@ import logging
 from enum import Enum, IntEnum
 
 import numpy.typing as npt
+from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -23,7 +24,6 @@ from tango import (
     DeviceProxy,
     DevState,
 )
-from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ._tango_transport import TangoSignalBackend, get_python_type
 from ._utils import get_device_trl_and_attr

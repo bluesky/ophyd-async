@@ -10,6 +10,13 @@ from typing import Any, ParamSpec, TypeVar, cast
 import numpy as np
 from bluesky.protocols import Reading
 from event_model import DataKey
+from tango.asyncio import DeviceProxy as AsyncDeviceProxy
+from tango.asyncio_executor import (
+    AsyncioExecutor,
+    get_global_executor,
+    set_global_executor,
+)
+from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
 from ophyd_async.core import (
     AsyncStatus,
@@ -32,13 +39,6 @@ from tango import (
     DevState,
     EventType,
 )
-from tango.asyncio import DeviceProxy as AsyncDeviceProxy
-from tango.asyncio_executor import (
-    AsyncioExecutor,
-    get_global_executor,
-    set_global_executor,
-)
-from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
 from ._converters import (
     TangoConverter,
