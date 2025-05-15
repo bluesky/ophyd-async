@@ -5,6 +5,7 @@ from ophyd_async.core import (
     DetectorController,
     DetectorTrigger,
     TriggerInfo,
+    wait_for_value,
 )
 
 from ._eiger_io import EigerDriverIO, EigerTriggerMode
@@ -58,7 +59,7 @@ class EigerController(DetectorController):
         await self._drv.detector.arm.trigger(timeout=DEFAULT_TIMEOUT)
 
     async def wait_for_idle(self):
-        pass
+        await wait_for_value(self._drv.detector.state, "idle", timeout=DEFAULT_TIMEOUT)
 
     async def disarm(self):
         await self._drv.detector.disarm.trigger()
