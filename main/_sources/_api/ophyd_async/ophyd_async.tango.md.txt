@@ -13,7 +13,7 @@
 :titlesonly:
 :maxdepth: 3
 
-ophyd_async.tango.core
-ophyd_async.tango.testing
 ophyd_async.tango.demo
+ophyd_async.tango.testing
+ophyd_async.tango.core
 ```
