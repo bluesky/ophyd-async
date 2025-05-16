@@ -260,10 +260,11 @@ class Motor(
             (await self.acceleration_time.get_value()) * fly_velocity * 0.5
         )
 
-        self._fly_completed_position = end_position + run_up_distance
+        direction = 1 if end_position > start_position else -1
+        self._fly_completed_position = end_position + (run_up_distance * direction)
 
         # Prepared position not used after prepare, so no need to store in self
-        fly_prepared_position = start_position - run_up_distance
+        fly_prepared_position = start_position - (run_up_distance * direction)
 
         motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
             self.low_limit_travel.get_value(),

@@ -10,18 +10,6 @@ from typing import Any, ParamSpec, TypeVar, cast
 import numpy as np
 from bluesky.protocols import Reading
 from event_model import DataKey
-
-from ophyd_async.core import (
-    AsyncStatus,
-    Callback,
-    NotConnected,
-    SignalBackend,
-    SignalDatatypeT,
-    StrictEnum,
-    get_dtype,
-    get_unique,
-    wait_for_connection,
-)
 from tango import (
     AttrDataFormat,
     AttributeInfoEx,
@@ -39,6 +27,18 @@ from tango.asyncio_executor import (
     set_global_executor,
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
+
+from ophyd_async.core import (
+    AsyncStatus,
+    Callback,
+    NotConnected,
+    SignalBackend,
+    SignalDatatypeT,
+    StrictEnum,
+    get_dtype,
+    get_unique,
+    wait_for_connection,
+)
 
 from ._converters import (
     TangoConverter,
