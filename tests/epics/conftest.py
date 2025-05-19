@@ -40,6 +40,7 @@ def ad_standard_det_factory(
                 # but the outward facing classes want a writer class type
                 writer_cls=writer_cls,  # type: ignore
                 name=name,
+                **kwargs,
             )
 
         def on_set_file_path_callback(value: str, wait: bool = True):

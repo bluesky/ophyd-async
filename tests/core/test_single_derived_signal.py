@@ -29,13 +29,6 @@ def _get_position(foo: float, bar: float) -> BeamstopPosition:
         return BeamstopPosition.OUT_OF_POSITION
 
 
-def _get_position_wrong_args(x: float, y: float) -> BeamstopPosition:
-    if abs(x) < 1 and abs(y) < 2:
-        return BeamstopPosition.IN_POSITION
-    else:
-        return BeamstopPosition.OUT_OF_POSITION
-
-
 @pytest.mark.parametrize(
     "x, y, position",
     [
@@ -121,11 +114,11 @@ async def test_setting_all():
     "func, expected_msg, args",
     [
         (
-            _get_position_wrong_args,
+            _get_position,
             "Expected devices to be passed as keyword arguments "
-            "{'x': <class 'float'>, 'y': <class 'float'>}, "
-            "got {'foo': <class 'float'>, 'bar': <class 'float'>}",
-            {"foo": soft_signal_rw(float), "bar": soft_signal_rw(float)},
+            "{'foo': <class 'float'>, 'bar': <class 'float'>}, "
+            "got {'x': <class 'float'>, 'y': <class 'float'>}",
+            {"x": soft_signal_rw(float), "y": soft_signal_rw(float)},
         ),
         (
             _get_position,

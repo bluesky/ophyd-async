@@ -10,6 +10,7 @@ from typing import Any, Generic, TypeVar
 
 import numpy as np
 import pytest
+from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
 from ophyd_async.tango.core import DevStateEnum
@@ -18,7 +19,6 @@ from ophyd_async.testing import (
     float_array_value,
     int_array_value,
 )
-from tango.asyncio_executor import set_global_executor
 
 T = TypeVar("T")
 
