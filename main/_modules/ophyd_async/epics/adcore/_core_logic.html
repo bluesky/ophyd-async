@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.10.0a4.dev12+g1c87084d5 documentation</title>
+    <title>ophyd_async.epics.adcore._core_logic &#8212; ophyd-async 0.10.0a5.dev1+gf652399e2 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=8f111eb8"></script>
+    <script src="../../../../_static/documentation_options.js?v=e03518d6"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a4.dev12+g1c87084d5 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a4.dev12+g1c87084d5 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a5.dev1+gf652399e2 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a5.dev1+gf652399e2 documentation - Home"/>
   
   
 </a></div>
@@ -472,6 +472,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">DetectorController</span><span class="p">,</span>
     <span class="n">DetectorTrigger</span><span class="p">,</span>
     <span class="n">TriggerInfo</span><span class="p">,</span>
+    <span class="n">observe_value</span><span class="p">,</span>
     <span class="n">set_and_wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -573,34 +574,57 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="ADBaseController.start_acquiring_driver_and_ensure_status">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseController.start_acquiring_driver_and_ensure_status">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_acquiring_driver_and_ensure_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_acquiring_driver_and_ensure_status</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">start_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+        <span class="n">state_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncStatus</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Start acquiring driver, raising ValueError if the detector is in a bad state.</span>
 
 <span class="sd">        This sets driver.acquire to True, and waits for it to be True up to a timeout.</span>
 <span class="sd">        Then, it checks that the DetectorState PV is in DEFAULT_GOOD_STATES,</span>
 <span class="sd">        and otherwise raises a ValueError.</span>
 
+
+<span class="sd">        :param start_timeout:</span>
+<span class="sd">            Timeout used for waiting for the driver to start</span>
+<span class="sd">            acquiring.</span>
+<span class="sd">        :param state_timeout:</span>
+<span class="sd">            Timeout used for waiting for the detector to be in a good</span>
+<span class="sd">            state after it stops acquiring.</span>
 <span class="sd">        :returns AsyncStatus:</span>
 <span class="sd">            An AsyncStatus that can be awaited to set driver.acquire to True and perform</span>
 <span class="sd">            subsequent raising (if applicable) due to detector state.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">status</span> <span class="o">=</span> <span class="k">await</span> <span class="n">set_and_wait_for_value</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span>
             <span class="kc">True</span><span class="p">,</span>
-            <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">start_timeout</span><span class="p">,</span>
             <span class="n">wait_for_set_completion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete_acquisition</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># NOTE: possible race condition here between the callback from</span>
-            <span class="c1"># set_and_wait_for_value and the detector state updating.</span>
             <span class="k">await</span> <span class="n">status</span>
-            <span class="n">state</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">detector_state</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">state</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">good_states</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Final detector state </span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> not &quot;</span>
-                    <span class="s2">&quot;in valid end states: </span><span class="si">{self.good_states}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">async</span> <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">detector_state</span><span class="p">,</span> <span class="n">done_timeout</span><span class="o">=</span><span class="n">state_timeout</span>
+                <span class="p">):</span>
+                    <span class="k">if</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">good_states</span><span class="p">:</span>
+                        <span class="k">return</span>
+            <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Final detector state </span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> not in valid end &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;states: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">good_states</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># No updates from the detector, something else is wrong</span>
+                    <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">(</span>
+                        <span class="s2">&quot;Could not monitor detector state: &quot;</span>
+                        <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">detector_state</span><span class="o">.</span><span class="n">source</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
         <span class="k">return</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">complete_acquisition</span><span class="p">())</span></div>
 </div>

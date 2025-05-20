@@ -1254,7 +1254,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorController`, {py:obj}`typing.Generic`\[
 
 ````
 
-````{py:method} start_acquiring_driver_and_ensure_status() -> ~ophyd_async.core.AsyncStatus
+````{py:method} start_acquiring_driver_and_ensure_status(start_timeout: float = DEFAULT_TIMEOUT, state_timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.AsyncStatus
 :canonical: ophyd_async.epics.adcore._core_logic.ADBaseController.start_acquiring_driver_and_ensure_status
 :async:
 
