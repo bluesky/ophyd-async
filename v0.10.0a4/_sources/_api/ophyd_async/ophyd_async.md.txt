@@ -1,0 +1,23 @@
+# {py:mod}`ophyd_async`
+
+```{py:module} ophyd_async
+```
+
+```{autodoc2-docstring} ophyd_async
+:allowtitles:
+```
+
+## Subpackages
+
+```{toctree}
+:titlesonly:
+:maxdepth: 3
+
+ophyd_async.plan_stubs
+ophyd_async.core
+ophyd_async.testing
+ophyd_async.fastcs
+ophyd_async.tango
+ophyd_async.epics
+ophyd_async.sim
+```

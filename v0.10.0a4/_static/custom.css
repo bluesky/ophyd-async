@@ -1,0 +1,5 @@
+/* allow a wider screen so we can fit 88 chars of source code on it */
+.bd-page-width {
+    max-width: 100rem;
+    /* default is 88rem */
+}

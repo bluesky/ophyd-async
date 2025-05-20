@@ -1,0 +1,806 @@
+# {py:mod}`ophyd_async.tango.core`
+
+```{py:module} ophyd_async.tango.core
+```
+
+```{autodoc2-docstring} ophyd_async.tango.core
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`AttributeProxy <ophyd_async.tango.core._tango_transport.AttributeProxy>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy
+    :summary:
+    ```
+* - {py:obj}`CommandProxy <ophyd_async.tango.core._tango_transport.CommandProxy>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy
+    :summary:
+    ```
+* - {py:obj}`DevStateEnum <ophyd_async.tango.core._utils.DevStateEnum>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum
+    :summary:
+    ```
+* - {py:obj}`TangoSignalBackend <ophyd_async.tango.core._tango_transport.TangoSignalBackend>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend
+    :summary:
+    ```
+* - {py:obj}`TangoDevice <ophyd_async.tango.core._base_device.TangoDevice>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice
+    :summary:
+    ```
+* - {py:obj}`TangoReadable <ophyd_async.tango.core._tango_readable.TangoReadable>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_readable.TangoReadable
+    :summary:
+    ```
+* - {py:obj}`TangoPolling <ophyd_async.tango.core._base_device.TangoPolling>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoPolling
+    :summary:
+    ```
+* - {py:obj}`TangoDeviceConnector <ophyd_async.tango.core._base_device.TangoDeviceConnector>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDeviceConnector
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`ensure_proper_executor <ophyd_async.tango.core._tango_transport.ensure_proper_executor>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.ensure_proper_executor
+    :summary:
+    ```
+* - {py:obj}`get_python_type <ophyd_async.tango.core._tango_transport.get_python_type>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.get_python_type
+    :summary:
+    ```
+* - {py:obj}`get_dtype_extended <ophyd_async.tango.core._tango_transport.get_dtype_extended>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.get_dtype_extended
+    :summary:
+    ```
+* - {py:obj}`get_trl_descriptor <ophyd_async.tango.core._tango_transport.get_trl_descriptor>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.get_trl_descriptor
+    :summary:
+    ```
+* - {py:obj}`get_tango_trl <ophyd_async.tango.core._tango_transport.get_tango_trl>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.get_tango_trl
+    :summary:
+    ```
+* - {py:obj}`infer_python_type <ophyd_async.tango.core._signal.infer_python_type>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._signal.infer_python_type
+    :summary:
+    ```
+* - {py:obj}`infer_signal_type <ophyd_async.tango.core._signal.infer_signal_type>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._signal.infer_signal_type
+    :summary:
+    ```
+* - {py:obj}`make_backend <ophyd_async.tango.core._signal.make_backend>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._signal.make_backend
+    :summary:
+    ```
+* - {py:obj}`tango_signal_r <ophyd_async.tango.core._signal.tango_signal_r>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._signal.tango_signal_r
+    :summary:
+    ```
+* - {py:obj}`tango_signal_rw <ophyd_async.tango.core._signal.tango_signal_rw>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._signal.tango_signal_rw
+    :summary:
+    ```
+* - {py:obj}`tango_signal_w <ophyd_async.tango.core._signal.tango_signal_w>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._signal.tango_signal_w
+    :summary:
+    ```
+* - {py:obj}`tango_signal_x <ophyd_async.tango.core._signal.tango_signal_x>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._signal.tango_signal_x
+    :summary:
+    ```
+* - {py:obj}`get_device_trl_and_attr <ophyd_async.tango.core._utils.get_device_trl_and_attr>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._utils.get_device_trl_and_attr
+    :summary:
+    ```
+* - {py:obj}`get_full_attr_trl <ophyd_async.tango.core._utils.get_full_attr_trl>`
+  - ```{autodoc2-docstring} ophyd_async.tango.core._utils.get_full_attr_trl
+    :summary:
+    ```
+````
+
+### API
+
+`````{py:class} AttributeProxy(device_proxy: ~tango.DeviceProxy, name: str)
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy
+
+Bases: {py:obj}`ophyd_async.tango.core._tango_transport.TangoProxy`
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy
+```
+
+````{py:attribute} exception
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.exception
+:type: BaseException | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.exception
+```
+
+````
+
+````{py:method} connect() -> None
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.connect
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.connect
+```
+
+````
+
+````{py:method} get() -> object
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.get
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.get
+```
+
+````
+
+````{py:method} get_w_value() -> object
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.get_w_value
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.get_w_value
+```
+
+````
+
+````{py:method} put(value: object | None, wait: bool = True, timeout: float | None = None) -> ~ophyd_async.core.AsyncStatus | None
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.put
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.put
+```
+
+````
+
+````{py:method} get_config() -> ~tango.AttributeInfoEx
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.get_config
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.get_config
+```
+
+````
+
+````{py:method} get_reading() -> ~bluesky.protocols.Reading
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.get_reading
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.get_reading
+```
+
+````
+
+````{py:method} has_subscription() -> bool
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.has_subscription
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.has_subscription
+```
+
+````
+
+````{py:method} subscribe_callback(callback: ~ophyd_async.core.Callback | None)
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.subscribe_callback
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.subscribe_callback
+```
+
+````
+
+````{py:method} unsubscribe_callback()
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.unsubscribe_callback
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.unsubscribe_callback
+```
+
+````
+
+````{py:method} poll()
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.poll
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.poll
+```
+
+````
+
+````{py:method} set_polling(allow_polling: bool = False, polling_period: float = 0.5, abs_change: float | None = None, rel_change: float | None = 0.1)
+:canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.set_polling
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.AttributeProxy.set_polling
+```
+
+````
+
+`````
+
+`````{py:class} CommandProxy(device_proxy: ~tango.DeviceProxy, name: str)
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy
+
+Bases: {py:obj}`ophyd_async.tango.core._tango_transport.TangoProxy`
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy
+```
+
+````{py:method} subscribe_callback(callback: ~ophyd_async.core.Callback | None) -> None
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.subscribe_callback
+:abstractmethod:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.subscribe_callback
+```
+
+````
+
+````{py:method} unsubscribe_callback() -> None
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.unsubscribe_callback
+:abstractmethod:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.unsubscribe_callback
+```
+
+````
+
+````{py:method} get() -> object
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.get
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.get
+```
+
+````
+
+````{py:method} get_w_value() -> object
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.get_w_value
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.get_w_value
+```
+
+````
+
+````{py:method} connect() -> None
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.connect
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.connect
+```
+
+````
+
+````{py:method} put(value: object | None, wait: bool = True, timeout: float | None = None) -> ~ophyd_async.core.AsyncStatus | None
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.put
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.put
+```
+
+````
+
+````{py:method} get_config() -> ~tango.CommandInfo
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.get_config
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.get_config
+```
+
+````
+
+````{py:method} get_reading() -> ~bluesky.protocols.Reading
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.get_reading
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.get_reading
+```
+
+````
+
+````{py:method} set_polling(allow_polling: bool = False, polling_period: float = 0.5, abs_change: float | None = None, rel_change: float | None = 0.1)
+:canonical: ophyd_async.tango.core._tango_transport.CommandProxy.set_polling
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.CommandProxy.set_polling
+```
+
+````
+
+`````
+
+`````{py:class} DevStateEnum()
+:canonical: ophyd_async.tango.core._utils.DevStateEnum
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum
+```
+
+````{py:attribute} ON
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.ON
+:value: >
+   'ON'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.ON
+```
+
+````
+
+````{py:attribute} OFF
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.OFF
+:value: >
+   'OFF'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.OFF
+```
+
+````
+
+````{py:attribute} CLOSE
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.CLOSE
+:value: >
+   'CLOSE'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.CLOSE
+```
+
+````
+
+````{py:attribute} OPEN
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.OPEN
+:value: >
+   'OPEN'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.OPEN
+```
+
+````
+
+````{py:attribute} INSERT
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.INSERT
+:value: >
+   'INSERT'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.INSERT
+```
+
+````
+
+````{py:attribute} EXTRACT
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.EXTRACT
+:value: >
+   'EXTRACT'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.EXTRACT
+```
+
+````
+
+````{py:attribute} MOVING
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.MOVING
+:value: >
+   'MOVING'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.MOVING
+```
+
+````
+
+````{py:attribute} STANDBY
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.STANDBY
+:value: >
+   'STANDBY'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.STANDBY
+```
+
+````
+
+````{py:attribute} FAULT
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.FAULT
+:value: >
+   'FAULT'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.FAULT
+```
+
+````
+
+````{py:attribute} INIT
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.INIT
+:value: >
+   'INIT'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.INIT
+```
+
+````
+
+````{py:attribute} RUNNING
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.RUNNING
+:value: >
+   'RUNNING'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.RUNNING
+```
+
+````
+
+````{py:attribute} ALARM
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.ALARM
+:value: >
+   'ALARM'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.ALARM
+```
+
+````
+
+````{py:attribute} DISABLE
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.DISABLE
+:value: >
+   'DISABLE'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.DISABLE
+```
+
+````
+
+````{py:attribute} UNKNOWN
+:canonical: ophyd_async.tango.core._utils.DevStateEnum.UNKNOWN
+:value: >
+   'UNKNOWN'
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.DevStateEnum.UNKNOWN
+```
+
+````
+
+`````
+
+````{py:function} ensure_proper_executor(func: ~collections.abc.Callable[~ophyd_async.tango.core._tango_transport.P, ~collections.abc.Coroutine[~typing.Any, ~typing.Any, ~ophyd_async.tango.core._tango_transport.R]]) -> ~collections.abc.Callable[~ophyd_async.tango.core._tango_transport.P, ~collections.abc.Coroutine[~typing.Any, ~typing.Any, ~ophyd_async.tango.core._tango_transport.R]]
+:canonical: ophyd_async.tango.core._tango_transport.ensure_proper_executor
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.ensure_proper_executor
+```
+````
+
+`````{py:class} TangoSignalBackend(datatype: type[~ophyd_async.core.SignalDatatypeT] | None, read_trl: str = '', write_trl: str = '', device_proxy: ~tango.DeviceProxy | None = None)
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend
+
+Bases: {py:obj}`ophyd_async.core.SignalBackend`\[{py:obj}`ophyd_async.core.SignalDatatypeT`\]
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend
+```
+
+````{py:method} datatype_allowed(dtype: ~typing.Any) -> bool
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.datatype_allowed
+:classmethod:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.datatype_allowed
+```
+
+````
+
+````{py:method} set_trl(read_trl: str = '', write_trl: str = '')
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.set_trl
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.set_trl
+```
+
+````
+
+````{py:method} source(name: str, read: bool) -> str
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.source
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.source
+```
+
+````
+
+````{py:method} connect(timeout: float) -> None
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.connect
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.connect
+```
+
+````
+
+````{py:method} put(value: ~ophyd_async.core.SignalDatatypeT | None, wait=True, timeout=None) -> None
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.put
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.put
+```
+
+````
+
+````{py:method} get_datakey(source: str) -> ~event_model.DataKey
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_datakey
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_datakey
+```
+
+````
+
+````{py:method} get_reading() -> ~bluesky.protocols.Reading[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_reading
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_reading
+```
+
+````
+
+````{py:method} get_value() -> ~ophyd_async.core.SignalDatatypeT
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_value
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_value
+```
+
+````
+
+````{py:method} get_setpoint() -> ~ophyd_async.core.SignalDatatypeT
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_setpoint
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.get_setpoint
+```
+
+````
+
+````{py:method} set_callback(callback: ~ophyd_async.core.Callback | None) -> None
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.set_callback
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.set_callback
+```
+
+````
+
+````{py:method} set_polling(allow_polling: bool = True, polling_period: float = 0.1, abs_change: float | None = None, rel_change: float | None = 0.1)
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.set_polling
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.set_polling
+```
+
+````
+
+````{py:method} allow_events(allow: bool = True)
+:canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.allow_events
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.TangoSignalBackend.allow_events
+```
+
+````
+
+`````
+
+````{py:function} get_python_type(tango_type: ~tango.CmdArgType) -> tuple[bool, object, str]
+:canonical: ophyd_async.tango.core._tango_transport.get_python_type
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.get_python_type
+```
+````
+
+````{py:function} get_dtype_extended(datatype) -> object | None
+:canonical: ophyd_async.tango.core._tango_transport.get_dtype_extended
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.get_dtype_extended
+```
+````
+
+````{py:function} get_trl_descriptor(datatype: type | None, tango_resource: str, tr_configs: dict[str, ~tango.AttributeInfoEx | ~tango.CommandInfo]) -> ~event_model.DataKey
+:canonical: ophyd_async.tango.core._tango_transport.get_trl_descriptor
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.get_trl_descriptor
+```
+````
+
+````{py:function} get_tango_trl(full_trl: str, device_proxy: ~tango.DeviceProxy | ~ophyd_async.tango.core._tango_transport.TangoProxy | None, timeout: float) -> ~ophyd_async.tango.core._tango_transport.TangoProxy
+:canonical: ophyd_async.tango.core._tango_transport.get_tango_trl
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_transport.get_tango_trl
+```
+````
+
+````{py:function} infer_python_type(trl: str = '', proxy: ~tango.DeviceProxy | None = None) -> object | ~numpy.typing.NDArray | type[~tango.DevState] | ~enum.IntEnum
+:canonical: ophyd_async.tango.core._signal.infer_python_type
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._signal.infer_python_type
+```
+````
+
+````{py:function} infer_signal_type(trl, proxy: ~tango.DeviceProxy | None = None) -> type[~ophyd_async.core.Signal] | None
+:canonical: ophyd_async.tango.core._signal.infer_signal_type
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._signal.infer_signal_type
+```
+````
+
+````{py:function} make_backend(datatype: type[~ophyd_async.core.SignalDatatypeT] | None, read_trl: str = '', write_trl: str = '') -> ~ophyd_async.tango.core._tango_transport.TangoSignalBackend
+:canonical: ophyd_async.tango.core._signal.make_backend
+
+```{autodoc2-docstring} ophyd_async.tango.core._signal.make_backend
+```
+````
+
+````{py:function} tango_signal_r(datatype: type[~ophyd_async.core.SignalDatatypeT], read_trl: str, timeout: float = DEFAULT_TIMEOUT, name: str = '') -> ~ophyd_async.core.SignalR[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.tango.core._signal.tango_signal_r
+
+```{autodoc2-docstring} ophyd_async.tango.core._signal.tango_signal_r
+```
+````
+
+````{py:function} tango_signal_rw(datatype: type[~ophyd_async.core.SignalDatatypeT], read_trl: str, write_trl: str = '', timeout: float = DEFAULT_TIMEOUT, name: str = '') -> ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.tango.core._signal.tango_signal_rw
+
+```{autodoc2-docstring} ophyd_async.tango.core._signal.tango_signal_rw
+```
+````
+
+````{py:function} tango_signal_w(datatype: type[~ophyd_async.core.SignalDatatypeT], write_trl: str, timeout: float = DEFAULT_TIMEOUT, name: str = '') -> ~ophyd_async.core.SignalW[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.tango.core._signal.tango_signal_w
+
+```{autodoc2-docstring} ophyd_async.tango.core._signal.tango_signal_w
+```
+````
+
+````{py:function} tango_signal_x(write_trl: str, timeout: float = DEFAULT_TIMEOUT, name: str = '') -> ~ophyd_async.core.SignalX
+:canonical: ophyd_async.tango.core._signal.tango_signal_x
+
+```{autodoc2-docstring} ophyd_async.tango.core._signal.tango_signal_x
+```
+````
+
+`````{py:class} TangoDevice(trl: str | None, support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
+:canonical: ophyd_async.tango.core._base_device.TangoDevice
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice
+```
+
+````{py:attribute} trl
+:canonical: ophyd_async.tango.core._base_device.TangoDevice.trl
+:type: str
+:value: <Multiline-String>
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice.trl
+```
+
+````
+
+````{py:attribute} proxy
+:canonical: ophyd_async.tango.core._base_device.TangoDevice.proxy
+:type: ~tango.DeviceProxy | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice.proxy
+```
+
+````
+
+`````
+
+````{py:class} TangoReadable(trl: str | None = None, name: str = '', auto_fill_signals: bool = True)
+:canonical: ophyd_async.tango.core._tango_readable.TangoReadable
+
+Bases: {py:obj}`ophyd_async.tango.core._base_device.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.tango.core._tango_readable.TangoReadable
+```
+
+````
+
+`````{py:class} TangoPolling
+:canonical: ophyd_async.tango.core._base_device.TangoPolling
+
+Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.tango.core._base_device.T`\]
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoPolling
+```
+
+````{py:attribute} ophyd_polling_period
+:canonical: ophyd_async.tango.core._base_device.TangoPolling.ophyd_polling_period
+:type: float
+:value: >
+   0.1
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoPolling.ophyd_polling_period
+```
+
+````
+
+````{py:attribute} abs_change
+:canonical: ophyd_async.tango.core._base_device.TangoPolling.abs_change
+:type: ~ophyd_async.tango.core._base_device.T | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoPolling.abs_change
+```
+
+````
+
+````{py:attribute} rel_change
+:canonical: ophyd_async.tango.core._base_device.TangoPolling.rel_change
+:type: ~ophyd_async.tango.core._base_device.T | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoPolling.rel_change
+```
+
+````
+
+`````
+
+`````{py:class} TangoDeviceConnector(trl: str | None, support_events: bool, auto_fill_signals: bool = True)
+:canonical: ophyd_async.tango.core._base_device.TangoDeviceConnector
+
+Bases: {py:obj}`ophyd_async.core.DeviceConnector`
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDeviceConnector
+```
+
+````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device)
+:canonical: ophyd_async.tango.core._base_device.TangoDeviceConnector.create_children_from_annotations
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDeviceConnector.create_children_from_annotations
+```
+
+````
+
+````{py:method} connect_mock(device: ~ophyd_async.core.Device, mock: ~ophyd_async.core.LazyMock)
+:canonical: ophyd_async.tango.core._base_device.TangoDeviceConnector.connect_mock
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDeviceConnector.connect_mock
+```
+
+````
+
+````{py:method} connect_real(device: ~ophyd_async.core.Device, timeout: float, force_reconnect: bool)
+:canonical: ophyd_async.tango.core._base_device.TangoDeviceConnector.connect_real
+:async:
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDeviceConnector.connect_real
+```
+
+````
+
+`````
+
+````{py:function} get_device_trl_and_attr(name: str)
+:canonical: ophyd_async.tango.core._utils.get_device_trl_and_attr
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.get_device_trl_and_attr
+```
+````
+
+````{py:function} get_full_attr_trl(device_trl: str, attr_name: str)
+:canonical: ophyd_async.tango.core._utils.get_full_attr_trl
+
+```{autodoc2-docstring} ophyd_async.tango.core._utils.get_full_attr_trl
+```
+````
