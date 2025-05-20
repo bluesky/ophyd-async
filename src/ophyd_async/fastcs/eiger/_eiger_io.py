@@ -39,6 +39,7 @@ class EigerDetectorIO(Device):
     omega_increment: SignalRW[float]
     arm: SignalX
     disarm: SignalX
+    trigger: SignalX
 
 
 class EigerDriverIO(Device):
