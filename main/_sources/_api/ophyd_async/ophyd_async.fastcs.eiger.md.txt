@@ -388,6 +388,17 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ````
 
+````{py:attribute} trigger
+:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.trigger
+:type: ~ophyd_async.core.SignalX
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.trigger
+```
+
+````
+
 `````
 
 ````{py:class} EigerMonitorIO(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
