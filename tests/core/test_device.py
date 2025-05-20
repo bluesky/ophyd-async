@@ -55,7 +55,7 @@ class DeviceWithNamedChild(Device):
 def test_device_signal_naming():
     device = DeviceWithNamedChild("bar")
     assert device.name == "bar"
-    assert device.child.name == "foo"
+    assert device.child.name == "bar-child"
 
 
 class DeviceWithRefToSignal(Device):
