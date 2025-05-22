@@ -176,7 +176,7 @@ def _datakey_dtype_numpy(
         raise TypeError(f"Can't make dtype_numpy for {datatype}")
 
 
-def _datakey_shape(value: SignalDatatype) -> list[int]:
+def _datakey_shape(value: SignalDatatype) -> list[int | None]:
     if type(value) in _primitive_dtype or isinstance(value, EnumTypes):
         return []
     elif isinstance(value, np.ndarray):

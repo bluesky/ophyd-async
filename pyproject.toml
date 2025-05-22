@@ -15,7 +15,8 @@ description = "Asynchronous Bluesky hardware abstraction code, compatible with c
 dependencies = [
     "numpy",
     "bluesky>=1.13.1rc2",
-    "event-model>=1.22.1",
+    # Unpin once an event-model release is made containing https://github.com/bluesky/event-model/pull/352
+    "event-model @ git+https://github.com/bluesky/event-model@18e1168c7518401ca691d86f6c5cf5030413251f",
     "pyyaml",
     "colorlog",
     "pydantic>=2.0",
