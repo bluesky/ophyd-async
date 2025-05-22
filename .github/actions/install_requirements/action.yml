@@ -13,6 +13,8 @@ runs:
   steps:
     - name: Get version of python
       run: |
+        mkdir "D:\\Temp"
+        echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV 
         PYTHON_VERSION="${{ inputs.python-version }}"
         if [ $PYTHON_VERSION == "dev" ]; then
           PYTHON_VERSION=$(sed -n "s/ARG PYTHON_VERSION=//p" Dockerfile)
