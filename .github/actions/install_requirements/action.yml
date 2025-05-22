@@ -20,9 +20,9 @@ runs:
         echo "PYTHON_VERSION=$PYTHON_VERSION" >> "$GITHUB_ENV"
       shell: bash
     - name: Set TEMP to D:/Temp
-        run: |
-          mkdir "D:\\Temp"
-          echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV       
+      run: |
+        mkdir "D:\\Temp"
+        echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV       
 
     - name: Setup python
       uses: actions/setup-python@v5
