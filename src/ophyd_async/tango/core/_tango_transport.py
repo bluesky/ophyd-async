@@ -81,7 +81,7 @@ def get_python_type(tango_type: CmdArgType) -> tuple[bool, object, str]:
     if is_float(tango_type, True):
         return array, float, "number"
     if is_bool(tango_type, True):
-        return array, bool, "integer"
+        return array, bool, "boolean"
     if is_str(tango_type, True):
         return array, str, "string"
     if is_binary(tango_type, True):
