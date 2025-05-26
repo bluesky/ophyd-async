@@ -646,11 +646,11 @@ def get_trl_descriptor(
                 )
 
             _choices = list(config.enum_labels) if config.enum_labels else []
-            _dims = []
-            if config.data_format == AttrDataFormat.SPECTRUM:
-                _dims = ["x"]
-            elif config.data_format == AttrDataFormat.IMAGE:
-                _dims = ["y", "x"]
+            # _dims = []
+            # if config.data_format == AttrDataFormat.SPECTRUM:
+            #     _dims = ["x"]
+            # elif config.data_format == AttrDataFormat.IMAGE:
+            #     _dims = ["y", "x"]
 
             _, tr_dtype, _ = get_python_type(config.data_type)
 
@@ -673,8 +673,8 @@ def get_trl_descriptor(
                 descriptor["limits"] = _limits
             if _choices:
                 descriptor["choices"] = _choices
-            if _dims:
-                descriptor["dims"] = _dims
+            # if _dims:
+            #     descriptor["dims"] = _dims
             if _precision:
                 descriptor["precision"] = _precision
             if config.unit:
