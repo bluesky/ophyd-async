@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
-from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock
 from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
+
+from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock
 
 from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
 from ._utils import get_full_attr_trl

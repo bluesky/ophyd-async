@@ -29,6 +29,7 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
         DetectorTrigger.INTERNAL: PilatusTriggerMode.INTERNAL,
         DetectorTrigger.CONSTANT_GATE: PilatusTriggerMode.EXT_ENABLE,
         DetectorTrigger.VARIABLE_GATE: PilatusTriggerMode.EXT_ENABLE,
+        DetectorTrigger.EDGE_TRIGGER: PilatusTriggerMode.EXT_TRIGGER,
     }
 
     def __init__(
@@ -49,7 +50,9 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
                 trigger_info.livetime
             )
         await asyncio.gather(
-            self.driver.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
+            self.driver.trigger_mode.set(
+                self._supported_trigger_types[trigger_info.trigger]
+            ),
             self.driver.num_images.set(
                 999_999
                 if trigger_info.total_number_of_exposures == 0
@@ -70,13 +73,3 @@ class PilatusController(adcore.ADBaseController[PilatusDriverIO]):
             True,
             timeout=DEFAULT_TIMEOUT,
         )
-
-    @classmethod
-    def _get_trigger_mode(cls, trigger: DetectorTrigger) -> PilatusTriggerMode:
-        if trigger not in cls._supported_trigger_types.keys():
-            raise ValueError(
-                f"{cls.__name__} only supports the following trigger "
-                f"types: {cls._supported_trigger_types.keys()} but was asked to "
-                f"use {trigger}"
-            )
-        return cls._supported_trigger_types[trigger]

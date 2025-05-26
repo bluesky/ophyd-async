@@ -1,7 +1,7 @@
 import logging
 import sys
 import typing
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from functools import cache
 from math import isnan, nan
 from typing import Any, Generic, cast
@@ -146,7 +146,7 @@ class CaBoolConverter(CaConverter[bool]):
 
 
 class CaEnumConverter(CaConverter[str]):
-    def __init__(self, supported_values: dict[str, str]):
+    def __init__(self, supported_values: Mapping[str, str]):
         self.supported_values = supported_values
         super().__init__(
             str, dbr.DBR_STRING, metadata=SignalMetadata(choices=list(supported_values))

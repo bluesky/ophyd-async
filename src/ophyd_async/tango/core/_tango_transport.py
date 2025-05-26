@@ -9,20 +9,7 @@ from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
 from bluesky.protocols import Reading
-from event_model import DataKey, Limits, LimitsRange
-from event_model.documents.event_descriptor import RdsRange
-
-from ophyd_async.core import (
-    AsyncStatus,
-    Callback,
-    NotConnected,
-    SignalBackend,
-    SignalDatatypeT,
-    StrictEnum,
-    get_dtype,
-    get_unique,
-    wait_for_connection,
-)
+from event_model import DataKey
 from tango import (
     AttrDataFormat,
     AttributeInfoEx,
@@ -41,6 +28,18 @@ from tango.asyncio_executor import (
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 
+from ophyd_async.core import (
+    AsyncStatus,
+    Callback,
+    NotConnected,
+    SignalBackend,
+    SignalDatatypeT,
+    StrictEnum,
+    get_dtype,
+    get_unique,
+    wait_for_connection,
+)
+
 from ._converters import (
     TangoConverter,
     TangoDevStateArrayConverter,
@@ -48,7 +47,7 @@ from ._converters import (
     TangoEnumArrayConverter,
     TangoEnumConverter,
 )
-from ._utils import DevStateEnum, get_device_trl_and_attr, try_to_cast_as_float
+from ._utils import DevStateEnum, get_device_trl_and_attr
 
 logger = logging.getLogger("ophyd_async")
 
@@ -82,7 +81,7 @@ def get_python_type(tango_type: CmdArgType) -> tuple[bool, object, str]:
     if is_float(tango_type, True):
         return array, float, "number"
     if is_bool(tango_type, True):
-        return array, bool, "boolean"
+        return array, bool, "integer"
     if is_str(tango_type, True):
         return array, str, "string"
     if is_binary(tango_type, True):
@@ -519,7 +518,7 @@ def get_dtype_extended(datatype) -> object | None:
     return dtype
 
 
-def get_simple_datakey(
+def get_trl_descriptor(
     datatype: type | None,
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
@@ -566,6 +565,8 @@ def get_simple_datakey(
         if hasattr(trl_config, "max_dim_y")
         else np.iinfo(np.int32).max
     )
+    # is_attr = hasattr(trl_config, "enum_labels")
+    # trl_choices = list(trl_config.enum_labels) if is_attr else []
 
     if tr_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
         # This is an array
@@ -586,11 +587,22 @@ def get_simple_datakey(
 
     else:
         if tr_dtype in (Enum, CmdArgType.DevState):
+            # if tr_dtype == CmdArgType.DevState:
+            #     trl_choices = list(DevState.names.keys())
+
             if datatype:
                 if not issubclass(datatype, Enum | DevState):
                     raise TypeError(
                         f"{tango_resource} has type Enum not {datatype.__name__}"
                     )
+                # if tr_dtype == Enum and is_attr:
+                #     if isinstance(datatype, DevState):
+                #         choices = tuple(v.name for v in datatype)
+                #         if set(choices) != set(trl_choices):
+                #             raise TypeError(
+                #                 f"{tango_resource} has choices {trl_choices} "
+                #                 f"not {choices}"
+                #             )
             return DataKey(source=tango_resource, dtype="string", shape=[])
         else:
             if datatype and not issubclass(tr_dtype, datatype):
@@ -601,86 +613,6 @@ def get_simple_datakey(
             return DataKey(source=tango_resource, dtype=tr_dtype_desc, shape=[])
 
     raise RuntimeError(f"Error getting descriptor for {tango_resource}")
-
-
-def get_trl_descriptor(
-    datatype: type | None,
-    tango_resource: str,
-    tr_configs: dict[str, AttributeInfoEx | CommandInfo],
-) -> DataKey:
-    descriptor = get_simple_datakey(datatype, tango_resource, tr_configs)
-
-    for _, config in tr_configs.items():
-        if isinstance(config, AttributeInfoEx):
-            alarm_info = config.alarms
-            _limits = Limits(
-                control=LimitsRange(
-                    low=try_to_cast_as_float(config.min_value),
-                    high=try_to_cast_as_float(config.max_value),
-                ),
-                warning=LimitsRange(
-                    low=try_to_cast_as_float(alarm_info.min_warning),
-                    high=try_to_cast_as_float(alarm_info.max_warning),
-                ),
-                alarm=LimitsRange(
-                    low=try_to_cast_as_float(alarm_info.min_alarm),
-                    high=try_to_cast_as_float(alarm_info.max_alarm),
-                ),
-            )
-
-            delta_t, delta_val = map(
-                try_to_cast_as_float, (alarm_info.delta_t, alarm_info.delta_val)
-            )
-            if isinstance(delta_t, float) and isinstance(delta_val, float):
-                limits_rds = RdsRange(
-                    time_difference=delta_t,
-                    value_difference=delta_val,
-                )
-                _limits["rds"] = limits_rds
-            # if only one of the two is set
-            elif isinstance(delta_t, float) ^ isinstance(delta_val, float):
-                logger.warning(
-                    f"Both delta_t and delta_val should be set for {tango_resource} "
-                    f"but only one is set. "
-                    f"delta_t: {alarm_info.delta_t}, delta_val: {alarm_info.delta_val}"
-                )
-
-            _choices = list(config.enum_labels) if config.enum_labels else []
-            # _dims = []
-            # if config.data_format == AttrDataFormat.SPECTRUM:
-            #     _dims = ["x"]
-            # elif config.data_format == AttrDataFormat.IMAGE:
-            #     _dims = ["y", "x"]
-
-            _, tr_dtype, _ = get_python_type(config.data_type)
-
-            if tr_dtype == CmdArgType.DevState:
-                _choices = list(DevState.names.keys())
-
-            _precision = None
-            if config.format:
-                try:
-                    _precision = int(config.format.split(".")[1].split("f")[0])
-                except (ValueError, IndexError) as e:
-                    # If parsing config.format fails, _precision remains None.
-                    logger.warning(
-                        "Failed to parse precision from config.format: %s. Error: %s",
-                        config.format,
-                        e,
-                    )
-
-            if _limits:
-                descriptor["limits"] = _limits
-            if _choices:
-                descriptor["choices"] = _choices
-            # if _dims:
-            #     descriptor["dims"] = _dims
-            if _precision:
-                descriptor["precision"] = _precision
-            if config.unit:
-                descriptor["units"] = config.unit
-
-    return DataKey(**descriptor)
 
 
 async def get_tango_trl(
