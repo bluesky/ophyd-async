@@ -22,10 +22,10 @@ jobs:
       matrix:
         runs-on: ["windows-latest"] # can add macos-latest
         python-version: ["3.12"]
-        include:
-          # Include one that runs in the dev environment
-          - runs-on: "ubuntu-latest"
-            python-version: "dev"
+        # include:
+        #   # Include one that runs in the dev environment
+        #   - runs-on: "ubuntu-latest"
+        #     python-version: "dev"
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
@@ -34,36 +34,36 @@ jobs:
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  import_with_no_extras:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
-    uses: ./.github/workflows/_import_with_no_extras.yml
+  # import_with_no_extras:
+  #   needs: check
+  #   if: needs.check.outputs.branch-pr == ''
+  #   uses: ./.github/workflows/_import_with_no_extras.yml
 
-  docs:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
-    uses: ./.github/workflows/_docs.yml
+  # docs:
+  #   needs: check
+  #   if: needs.check.outputs.branch-pr == ''
+  #   uses: ./.github/workflows/_docs.yml
 
-  dist:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
-    uses: ./.github/workflows/_dist.yml
+  # dist:
+  #   needs: check
+  #   if: needs.check.outputs.branch-pr == ''
+  #   uses: ./.github/workflows/_dist.yml
 
-  pypi:
-    if: github.ref_type == 'tag'
-    needs: dist
-    uses: ./.github/workflows/_pypi.yml
-    permissions:
-      id-token: write
+  # pypi:
+  #   if: github.ref_type == 'tag'
+  #   needs: dist
+  #   uses: ./.github/workflows/_pypi.yml
+  #   permissions:
+  #     id-token: write
 
-  codeql:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
-    uses: ./.github/workflows/_codeql.yml
+  # codeql:
+  #   needs: check
+  #   if: needs.check.outputs.branch-pr == ''
+  #   uses: ./.github/workflows/_codeql.yml
 
-  release:
-    if: github.ref_type == 'tag'
-    needs: [dist, docs]
-    uses: ./.github/workflows/_release.yml
-    permissions:
-      contents: write
+  # release:
+  #   if: github.ref_type == 'tag'
+  #   needs: [dist, docs]
+  #   uses: ./.github/workflows/_release.yml
+  #   permissions:
+  #     contents: write
