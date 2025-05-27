@@ -22,6 +22,12 @@ jobs:
     runs-on: ${{ inputs.runs-on }}
 
     steps:
+      - name: Set TEMP to D:/Temp
+        if: inputs.runs-on == 'windows-latest'
+        run: |
+          mkdir "D:\\Temp"
+          echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV
+          
       - name: Checkout
         uses: actions/checkout@v4
         with:
