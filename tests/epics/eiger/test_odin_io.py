@@ -88,31 +88,24 @@ async def test_when_closed_then_data_capture_turned_off(
 
 @pytest.mark.asyncio
 @patch("ophyd_async.epics.eiger._odin_io.wait_for_value")
-@patch("ophyd_async.epics.eiger._odin_io.set_and_wait_for_other_value")
 async def test_wait_for_active_before_capture_then_wait_for_writing(
-    mock_set_and_wait_for_other_value,
     mock_wait_for_value,
     odin_driver_and_writer,
 ):
     driver, writer = odin_driver_and_writer
+    writer._drv.capture.set = AsyncMock()
 
     mock_manager = AsyncMock()
     mock_manager.attach_mock(mock_wait_for_value, "mock_wait_for_value")
-    mock_manager.attach_mock(
-        mock_set_and_wait_for_other_value, "mock_set_and_wait_for_other_value"
-    )
+    mock_manager.attach_mock(writer._drv.capture.set, "mock_capture_set")
 
     await writer.open(ODIN_DETECTOR_NAME)
 
     expected_calls = [
         call.mock_wait_for_value(driver.meta_active, "Active", timeout=DEFAULT_TIMEOUT),
-        call.mock_set_and_wait_for_other_value(
-            driver.capture,
-            Writing.CAPTURE,
-            driver.capture_rbv,
-            "Capturing",
-            set_timeout=None,
-            wait_for_set_completion=False,
+        call.mock_capture_set(Writing.CAPTURE, wait=False),
+        call.mock_wait_for_value(
+            driver.capture_rbv, "Capturing", timeout=DEFAULT_TIMEOUT
         ),
         call.mock_wait_for_value(
             driver.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT
