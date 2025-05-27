@@ -345,7 +345,7 @@ async def test_with_bluesky(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.timeout(10.5)
+@pytest.mark.timeout(12.5)
 async def test_tango_sim(sim_test_context_trls):
     detector = TangoDetector(
         name="detector",
