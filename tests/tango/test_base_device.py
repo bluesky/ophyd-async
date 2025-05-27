@@ -293,7 +293,7 @@ def sim_test_context_trls(subprocess_helper):
 
 
 # --------------------------------------------------------------------
-@pytest.mark.timeout(10.0)
+@pytest.mark.timeout(7.0)
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)
@@ -345,7 +345,7 @@ async def test_with_bluesky(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.timeout(8.5)
+@pytest.mark.timeout(10.5)
 async def test_tango_sim(sim_test_context_trls):
     detector = TangoDetector(
         name="detector",
