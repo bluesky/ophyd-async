@@ -376,6 +376,7 @@ async def test_tango_sim(sim_test_context_trls):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auto_fill_signals", [True, False])
+@pytest.mark.timeout(4.0)
 async def test_signal_autofill(tango_test_device, auto_fill_signals):
     test_device = TestTangoReadable(
         trl=tango_test_device, auto_fill_signals=auto_fill_signals
