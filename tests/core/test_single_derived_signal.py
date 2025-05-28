@@ -7,6 +7,7 @@ from bluesky.protocols import Reading, Subscribable
 
 from ophyd_async.core import (
     Callback,
+    Signal,
     SignalBackend,
     SignalDatatype,
     derived_signal_r,
@@ -152,51 +153,42 @@ def test_mismatching_args_and_types(func, expected_msg, args):
         derived_signal_r(func, **args)
 
 
+def _get(ts: int) -> float:
+    return ts
+
+
+async def _put(value: float) -> None:
+    pass
+
+
+@pytest.fixture
+def derived_signal_backend() -> SignalBackend[SignalDatatype]:
+    signal_rw = soft_signal_rw(int, initial_value=4)
+    derived = derived_signal_rw(_get, _put, ts=signal_rw)
+    return derived._connector.backend
+
+
 async def test_derived_signal_rw_works_with_signal_r():
     signal_r, _ = soft_signal_r_and_setter(int, initial_value=4)
-
-    def _get(ts: int) -> float:
-        return ts
-
-    async def _put(value: float) -> None:
-        pass
-
     derived = derived_signal_rw(_get, _put, ts=signal_r)
     assert await derived.get_value() == 4
 
 
 async def test_validate_by_type(derived_signal_backend: SignalBackend):
-    with patch.object(
-        derived_signal_backend.transformer,  # type: ignore
-        "_raw_devices",
-        {"device": "test"},
-    ):
-        with pytest.raises(TypeError, match=re.escape("test is not an instance of")):
-            await derived_signal_backend.transformer.raw_locatables()  # type: ignore
-
-
-@pytest.fixture
-def derived_signal_backend() -> SignalBackend[SignalDatatype]:
-    signal_r = soft_signal_rw(int, initial_value=4)
-
-    def _get(ts: int) -> float:
+    def float_get(ts: float) -> float:
         return ts
 
-    async def _put(value: float) -> None:
-        pass
-
-    derived = derived_signal_rw(_get, _put, ts=signal_r)
-    return derived._get_cache().backend
+    with pytest.raises(TypeError, match=re.escape(" is not an instance of")):
+        derived_signal_rw(float_get, _put, ts=Signal(derived_signal_backend))
 
 
-async def test_set_derived_not_initialized(derived_signal_backend: SignalBackend):
-    with patch.object(
-        derived_signal_backend.transformer,  # type: ignore
-        "_set_derived",
-        None,
+async def test_set_derived_not_initialized():
+    sig = derived_signal_r(_get, ts=soft_signal_rw(int, initial_value=4))
+    with pytest.raises(
+        RuntimeError,
+        match="Cannot put as no set_derived method given",
     ):
-        with pytest.raises(RuntimeError):
-            await derived_signal_backend.put("name", True)
+        await sig._connector.backend.put(1.0, True)
 
 
 def test_derived_update_cached_reading_not_initialized(
@@ -239,6 +231,7 @@ def test_derived_update_cached_reading_not_initialized(
 
 async def test_set_derived_callback_already_set(derived_signal_backend: SignalBackend):
     mock_callback = MagicMock(Callback[Reading])
+    derived_signal_backend.set_callback(mock_callback)
     with pytest.raises(RuntimeError, match=re.escape("Callback already set for")):
         derived_signal_backend.set_callback(mock_callback)
 
