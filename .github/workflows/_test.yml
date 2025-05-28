@@ -58,7 +58,7 @@ jobs:
       
       - name: Run tests win
         if: inputs.runs-on == 'windows-latest'
-        run: tox -e tests -- --timeout=2
+        run: tox -e tests -- --timeout=5
       - name: None win tests
         if: inputs.runs-on != 'windows-latest'
         run: tox -e tests -- --timeout=2
