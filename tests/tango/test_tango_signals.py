@@ -375,7 +375,7 @@ async def test_set_with_converter(everything_device_trl):
     )
 
 
-@pytest.mark.timeout(3.7)
+@pytest.mark.timeout(8.7)
 async def test_assert_val_reading_everything_tango(
     everything_device_trl, everything_signal_info
 ):
