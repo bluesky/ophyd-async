@@ -33,6 +33,8 @@ def _get_datatype(annotation: Any) -> type | None:
     args = get_args(annotation)
     if len(args) == 1 and get_origin_class(args[0]):
         return args[0]
+    if len(args) == 2:
+        return args[1]
     return None
 
 
@@ -139,7 +141,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 if child_origin is None or not issubclass(child_origin, Device):
                     self._raise(
                         name,
-                        f"Expected DeviceVector[KeyType, SomeDevice], got {annotation}",
+                        f"Expected DeviceVector[Key, SomeDevice], got {annotation}.",
                     )
                 if issubclass(child_origin, Signal):
                     self._store_signal_datatype(name, child_type)
