@@ -28,7 +28,7 @@ class EpicsProceduralDevice(StandardReadable):
 and a Tango/FastCS procedural equivalent would be (if we add support to StandardReadable for Format.HINTED_SIGNAL and Format.CONFIG_SIGNAL annotations):
 ```python
 class TangoDeclarativeDevice(StandardReadable, TangoDevice):
-    value: Annotated[DeviceVector[SignalR[float]], Format.HINTED_SIGNAL]
+    value: Annotated[DeviceVector[int, SignalR[float]], Format.HINTED_SIGNAL]
     mode: Annotated[SignalRW[EnergyMode], Format.CONFIG_SIGNAL]
 ```
 
@@ -47,7 +47,7 @@ or the EPICS one could be declarative:
 ```python
 class EpicsDeclarativeDevice(StandardReadable, EpicsDevice):
     value: Annotated[
-        DeviceVector[SignalR[float]], Format.HINTED_SIGNAL, EpicsSuffix("Value%d", "num_values")
+        DeviceVector[int, SignalR[float]], Format.HINTED_SIGNAL, EpicsSuffix("Value%d", "num_values")
     ]
     mode: Annotated[SignalRW[EnergyMode], Format.CONFIG_SIGNAL, EpicsSuffix("Mode")]
 ```
