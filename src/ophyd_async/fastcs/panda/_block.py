@@ -100,8 +100,8 @@ class PcapBlock(Device):
 class CommonPandaBlocks(Device):
     """Pandablocks device with blocks which are common and required on introspection."""
 
-    pulse: DeviceVector[PulseBlock]
-    seq: DeviceVector[SeqBlock]
-    pcomp: DeviceVector[PcompBlock]
+    pulse: DeviceVector[int, PulseBlock]
+    seq: DeviceVector[int, SeqBlock]
+    pcomp: DeviceVector[int, PcompBlock]
     pcap: PcapBlock
     data: DataBlock

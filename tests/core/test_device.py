@@ -1,7 +1,7 @@
 import asyncio
 import time
 import traceback
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -35,7 +35,7 @@ class DummyDeviceGroup(Device):
     def __init__(self, name: str) -> None:
         self.child1 = DummyBaseDevice()
         self._child2 = DummyBaseDevice()
-        self.dict_with_children: DeviceVector[DummyBaseDevice] = DeviceVector(
+        self.dict_with_children: DeviceVector[int, DummyBaseDevice] = DeviceVector(
             {123: DummyBaseDevice()}
         )
         super().__init__(name)
@@ -196,7 +196,7 @@ class MotorBundle(Device):
     def __init__(self, name: str) -> None:
         self.X = motor.Motor("BLxxI-MO-TABLE-01:X")
         self.Y = motor.Motor("BLxxI-MO-TABLE-01:Y")
-        self.V: DeviceVector[motor.Motor] = DeviceVector(
+        self.V: DeviceVector[int, motor.Motor] = DeviceVector(
             {
                 0: motor.Motor("BLxxI-MO-TABLE-21:X"),
                 1: motor.Motor("BLxxI-MO-TABLE-21:Y"),
@@ -255,10 +255,30 @@ async def test_no_reconnect_signals_if_not_forced():
         assert parent.child1.connect.call_count == count
 
 
-def test_setitem_with_non_int_key():
-    device_vector = DeviceVector(children={})
-    with pytest.raises(TypeError, match="Expected int, got"):
-        device_vector["not_an_int"] = MagicMock(spec=Device)  # type: ignore
+def test_devicevector_works_with_str_as_key():
+    device1 = DummyBaseDevice()
+    device2 = DummyBaseDevice()
+    device_vector = DeviceVector(
+        name="device_vector", children={"test1": device1, "test2": device2}
+    )
+    assert device_vector["test1"] == device1
+    assert device_vector["test2"] == device2
+
+
+def test_devicevector_works_with_device_as_key():
+    energy_source1 = DummyBaseDevice()
+    shutter_source1 = DummyBaseDevice()
+
+    energy_source2 = DummyBaseDevice()
+    shutter_source2 = DummyBaseDevice()
+
+    energy_source_to_shutter = DeviceVector(
+        name="energy_source_to_shutter",
+        children={energy_source1: shutter_source1, energy_source2: shutter_source2},
+    )
+
+    assert energy_source_to_shutter[energy_source1] == shutter_source1
+    assert energy_source_to_shutter[energy_source2] == shutter_source2
 
 
 def test_setitem_with_non_device_value():

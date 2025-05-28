@@ -20,8 +20,8 @@ from ophyd_async.epics.core import PviDeviceConnector
 
 
 class Block1(Device, HasHints):
-    device_vector_signal_x: DeviceVector[SignalX]
-    device_vector_signal_rw: DeviceVector[SignalRW[float]]
+    device_vector_signal_x: DeviceVector[int, SignalX]
+    device_vector_signal_rw: DeviceVector[int, SignalRW[float]]
     signal_x: SignalX
     signal_rw: SignalRW[int]
 
@@ -31,14 +31,14 @@ class Block1(Device, HasHints):
 
 
 class Block2(Device):
-    device_vector: DeviceVector[Block1]
+    device_vector: DeviceVector[int, Block1]
     device: Block1
     signal_x: SignalX
     signal_rw: SignalRW[int]
 
 
 class Block3(Device):
-    device_vector: DeviceVector[Block2]
+    device_vector: DeviceVector[int, Block2]
     device: Block2
     signal_device: Block1
     signal_x: SignalX
@@ -46,7 +46,7 @@ class Block3(Device):
 
 
 class Block4(StandardReadable):
-    device_vector: DeviceVector[Block1]
+    device_vector: DeviceVector[int, Block1]
     device: A[Block1, Format.CHILD]
     signal_x: SignalX
     signal_rw: SignalRW[int]
@@ -163,7 +163,7 @@ class NoSignalType(Device):
 
 
 class NoSignalTypeInVector(Device):
-    a: DeviceVector[SignalRW]
+    a: DeviceVector[int, SignalRW]
 
 
 @pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector])

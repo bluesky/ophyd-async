@@ -139,7 +139,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 if child_origin is None or not issubclass(child_origin, Device):
                     self._raise(
                         name,
-                        f"Expected DeviceVector[SomeDevice], got {annotation}",
+                        f"Expected DeviceVector[KeyType, SomeDevice], got {annotation}",
                     )
                 if issubclass(child_origin, Signal):
                     self._store_signal_datatype(name, child_type)
