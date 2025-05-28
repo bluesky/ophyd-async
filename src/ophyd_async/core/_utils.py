@@ -309,10 +309,12 @@ def in_micros(t: float) -> int:
     return int(np.ceil(t * 1e6))
 
 
-def get_origin_class(annotatation: Any) -> type | None:
-    origin = get_origin(annotatation) or annotatation
-    if isinstance(origin, type):
+def get_origin_class(annotation: Any) -> type | None:
+    origin = get_origin(annotation)
+    if origin is not None:
         return origin
+    if isinstance(annotation, type):
+        return annotation
     return None
 
 

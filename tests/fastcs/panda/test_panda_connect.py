@@ -51,8 +51,8 @@ class MockCtxt:
 async def panda_t():
     class CommonPandaBlocksNoData(Device):
         pcap: PcapBlock
-        pulse: DeviceVector[PulseBlock]
-        seq: DeviceVector[SeqBlock]
+        pulse: DeviceVector[int, PulseBlock]
+        seq: DeviceVector[int, SeqBlock]
 
     class Panda(CommonPandaBlocksNoData):
         def __init__(self, uri: str, name: str = ""):

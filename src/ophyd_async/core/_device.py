@@ -215,50 +215,44 @@ _not_device_attrs = {
 
 
 DeviceT = TypeVar("DeviceT", bound=Device)
+KeyT = TypeVar("KeyT")
 
 
-class DeviceVector(MutableMapping[int, DeviceT], Device):
-    """Defines a dictionary of Device children with arbitrary integer keys.
+class DeviceVector(MutableMapping[KeyT, DeviceT], Device):
+    """Defines a dictionary of Device children with arbitrary keys of the same type.
 
     :see-also: [](#implementing-devices) for examples of how to use this class.
     """
 
     def __init__(
         self,
-        children: Mapping[int, DeviceT],
+        children: Mapping[KeyT, DeviceT],
         name: str = "",
     ) -> None:
-        self._children: dict[int, DeviceT] = {}
+        self._children: dict[KeyT, DeviceT] = {}
         self.update(children)
         super().__init__(name=name)
 
     def __setattr__(self, name: str, child: Any) -> None:
         if name != "parent" and isinstance(child, Device):
             raise AttributeError(
-                "DeviceVector can only have integer named children, "
-                "set via device_vector[i] = child"
+                "DeviceVector can only have children assigned via __setitem__."
             )
         super().__setattr__(name, child)
 
-    def __getitem__(self, key: int) -> DeviceT:
+    def __getitem__(self, key: KeyT) -> DeviceT:
         return self._children[key]
 
-    def __setitem__(self, key: int, value: DeviceT) -> None:
-        # Check the types on entry to dict to make sure we can't accidentally
-        # make a non-integer named child
-        if not isinstance(key, int):
-            msg = f"Expected int, got {key}"
-            raise TypeError(msg)
+    def __setitem__(self, key: KeyT, value: DeviceT) -> None:
         if not isinstance(value, Device):
-            msg = f"Expected Device, got {value}"
-            raise TypeError(msg)
+            raise TypeError(f"Expected Device, got {type(value).__name__}")
         self._children[key] = value
         value.parent = self
 
-    def __delitem__(self, key: int) -> None:
+    def __delitem__(self, key: KeyT) -> None:
         del self._children[key]
 
-    def __iter__(self) -> Iterator[int]:
+    def __iter__(self) -> Iterator[KeyT]:
         yield from self._children
 
     def __len__(self) -> int:
