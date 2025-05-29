@@ -23,7 +23,7 @@ class EigerStreamIO(Device):
 
 
 class EigerDetectorIO(Device):
-    bit_depth_readout: SignalR[int]
+    bit_depth_image: SignalR[int]
     state: SignalR[str]
     count_time: SignalRW[float]
     frame_time: SignalRW[float]

@@ -66,10 +66,12 @@ class Odin(Device):
 
         self.file_path = epics_signal_rw_rbv(str, f"{prefix}FilePath")
         self.file_name = epics_signal_rw_rbv(str, f"{prefix}FileName")
+        self.id = epics_signal_r(str, f"{prefix}AcquisitionID_RBV")
 
         self.num_frames_chunks = epics_signal_rw(int, prefix + "NumFramesChunks")
         self.meta_active = epics_signal_r(str, prefix + "META:AcquisitionActive_RBV")
         self.meta_writing = epics_signal_r(str, prefix + "META:Writing_RBV")
+        self.meta_file_name = epics_signal_r(str, f"{prefix}META:FileName_RBV")
 
         self.data_type = epics_signal_rw_rbv(str, f"{prefix}DataType")
 
@@ -100,6 +102,14 @@ class OdinWriter(DetectorWriter):
         )
 
         await wait_for_value(self._drv.meta_active, "Active", timeout=DEFAULT_TIMEOUT)
+
+        await asyncio.gather(
+            wait_for_value(self._drv.meta_active, "Active", timeout=DEFAULT_TIMEOUT),
+            wait_for_value(self._drv.id, info.filename, timeout=DEFAULT_TIMEOUT),
+            wait_for_value(
+                self._drv.meta_file_name, info.filename, timeout=DEFAULT_TIMEOUT
+            ),
+        )
 
         await self._drv.capture.set(
             Writing.CAPTURE, wait=False
