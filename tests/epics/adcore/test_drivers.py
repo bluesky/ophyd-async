@@ -59,6 +59,7 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_uses_deadtime(
     assert expected_acquire_period == actual_acquire_period
 
 
+@pytest.mark.timeout(18.0)
 async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
     controller: adsimdetector.SimController,
 ):
@@ -68,7 +69,6 @@ async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
         await acquiring
 
 
-@patch("ophyd_async.core._detector.DEFAULT_TIMEOUT", 0.2)
 async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
     controller: adsimdetector.SimController,
 ):
@@ -87,9 +87,62 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
 
     controller.frame_timeout = 0.1
 
-    acquiring = await controller.start_acquiring_driver_and_ensure_status()
+    acquiring = await controller.start_acquiring_driver_and_ensure_status(
+        start_timeout=0.2, state_timeout=0.2
+    )
 
     with pytest.raises(
         ValueError, match="Final detector state Disconnected not in valid end states:"
     ):
         await acquiring
+
+
+async def test_start_acquiring_driver_and_ensure_status_timing(
+    controller: adsimdetector.SimController,
+):
+    """This test ensures the camera has time to return to a good state.
+
+    Real world application; there is race condition wherein the
+    detector has been asked to complete acquisition, but has not yet
+    returned to a known good state before the status check.
+
+    """
+    set_mock_value(controller.driver.detector_state, adcore.ADState.ACQUIRE)
+
+    acquiring = await controller.start_acquiring_driver_and_ensure_status(
+        start_timeout=0.2, state_timeout=0.2
+    )
+
+    async def complete_acquire():
+        """Return to idle state, but pretend the detector is slow."""
+        await asyncio.sleep(0.05)
+        set_mock_value(controller.driver.detector_state, adcore.ADState.IDLE)
+
+    await asyncio.gather(acquiring, complete_acquire())
+
+
+async def bad_observe_value(*args, **kwargs):
+    "Stub to simulate a disconnected ``observe_value()``."
+    if True:
+        raise asyncio.TimeoutError()
+    yield None  # Make it a generator
+
+
+@patch("ophyd_async.epics.adcore._core_logic.observe_value", bad_observe_value)
+async def test_start_acquiring_driver_and_ensure_status_disconnected(
+    controller: adsimdetector.SimController,
+):
+    """This test ensures the function behaves gracefully if no detector
+    states are available.
+
+    """
+    acquiring = await controller.start_acquiring_driver_and_ensure_status(
+        start_timeout=0.2, state_timeout=0.2
+    )
+
+    with pytest.raises(asyncio.TimeoutError) as exc:
+        await acquiring
+    assert (
+        str(exc.value)
+        == "Could not monitor detector state: mock+ca://DRV:DetectorState_RBV"
+    )

@@ -2,7 +2,7 @@ from enum import Enum
 
 import pytest
 
-from ophyd_async.core import StrictEnum
+from ophyd_async.core import StrictEnum, SupersetEnum
 from ophyd_async.epics.core._util import get_supported_values  # noqa: PLC2701
 
 
@@ -45,3 +45,41 @@ def test_given_a_supplied_enum_that_matches_the_pv_choices_then_enum_type_is_ret
     assert len(supported_vals) == 2
     assert "test_1" in supported_vals
     assert "test_2" in supported_vals
+
+
+def test_given_supersetenum_that_partial_matches_are_valid():
+    class MyEnum(SupersetEnum):
+        TEST_1 = "test_1"
+        TEST_2 = "test_2"
+
+    supported_vals = get_supported_values("", MyEnum, ("test_1",))
+
+    assert "test_1" in supported_vals
+    assert supported_vals.get("test_2") is None
+
+
+class MySupersetEnum(SupersetEnum):
+    TEST_1 = "test_1"
+    TEST_2 = "test_2"
+
+
+SUPERSETENUM_ERROR_MESSAGE = "to be a superset of them."
+
+
+def test_given_supersetenum_that_all_values_plus_extra_values_are_invalid():
+    with pytest.raises(TypeError, match=SUPERSETENUM_ERROR_MESSAGE):
+        get_supported_values(
+            "",
+            MySupersetEnum,
+            (MySupersetEnum.TEST_1, MySupersetEnum.TEST_2, "extra_1"),
+        )
+
+
+def test_given_supersetenum_that_partial_values_plus_extra_values_are_invalid():
+    with pytest.raises(TypeError, match=SUPERSETENUM_ERROR_MESSAGE):
+        get_supported_values("", MySupersetEnum, (MySupersetEnum.TEST_1, "extra_1"))
+
+
+def test_given_supersetenum_that_no_matches_is_invalid():
+    with pytest.raises(TypeError, match=SUPERSETENUM_ERROR_MESSAGE):
+        get_supported_values("", MySupersetEnum, ("no_match_1", "no_match_2"))

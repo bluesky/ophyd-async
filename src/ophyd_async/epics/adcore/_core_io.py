@@ -70,14 +70,14 @@ class NDPluginStatsIO(NDPluginBaseIO):
     # Basic statistics
     compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
     bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth")]
-    total_array: A[SignalRW[float], PvSuffix.rbv("TotalArray")]
+    total: A[SignalR[float], PvSuffix.rbv("Total")]
     # Centroid statistics
     compute_centroid: A[SignalRW[bool], PvSuffix.rbv("ComputeCentroid")]
     centroid_threshold: A[SignalRW[float], PvSuffix.rbv("CentroidThreshold")]
     # X and Y Profiles
     compute_profiles: A[SignalRW[bool], PvSuffix.rbv("ComputeProfiles")]
-    profile_size_x: A[SignalRW[int], PvSuffix.rbv("ProfileSizeX")]
-    profile_size_y: A[SignalRW[int], PvSuffix.rbv("ProfileSizeY")]
+    profile_size_x: A[SignalR[int], PvSuffix.rbv("ProfileSizeX")]
+    profile_size_y: A[SignalR[int], PvSuffix.rbv("ProfileSizeY")]
     cursor_x: A[SignalRW[int], PvSuffix.rbv("CursorX")]
     cursor_y: A[SignalRW[int], PvSuffix.rbv("CursorY")]
     # Array Histogram
