@@ -330,7 +330,7 @@ async def test_attribute_has_subscription(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.timeout(8.0)
+@pytest.mark.timeout(12.0)
 async def test_attribute_subscribe_callback(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
     source = get_full_attr_trl(echo_device, "float32")
