@@ -851,6 +851,7 @@ async def test_tango_transport_read_only_trl(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.timeout(14)
 async def test_tango_transport_nonexistent_trl(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     nonexistent_trl = get_full_attr_trl(tango_test_device, "nonexistent")
