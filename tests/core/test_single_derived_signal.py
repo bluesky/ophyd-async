@@ -191,7 +191,7 @@ async def test_set_derived_not_initialized():
         await sig._connector.backend.put(1.0, True)
 
 
-def test_derived_update_cached_reading_not_initialized(
+async def test_derived_update_cached_reading_not_initialized(
     derived_signal_backend: SignalBackend,
 ):
     class test_cls(Subscribable):
@@ -207,26 +207,16 @@ def test_derived_update_cached_reading_not_initialized(
 
     with patch.object(
         derived_signal_backend.transformer,  # type: ignore
-        "_cached_readings",
-        None,
+        "raw_and_transform_subscribables",
+        {"raw_device": test_cls()},
     ):
-        with patch.object(
-            derived_signal_backend.transformer,  # type: ignore
-            "_derived_callbacks",
-            {},
-        ):
-            with patch.object(
-                derived_signal_backend.transformer,  # type: ignore
-                "raw_and_transform_subscribables",
-                {"raw_device": test_cls()},
-            ):
-                with pytest.raises(
-                    RuntimeError,
-                    match=re.escape(
-                        "Cannot update cached reading as it has not been initialised"
-                    ),
-                ):  # noqa: E501
-                    derived_signal_backend.set_callback(None)
+        with pytest.raises(
+            RuntimeError,
+            match=re.escape(
+                "Cannot update cached reading as it has not been initialised"
+            ),
+        ):  # noqa: E501
+            derived_signal_backend.set_callback(None)
 
 
 async def test_set_derived_callback_already_set(derived_signal_backend: SignalBackend):
