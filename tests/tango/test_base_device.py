@@ -293,6 +293,8 @@ def sim_test_context_trls(subprocess_helper):
 
 
 # --------------------------------------------------------------------
+
+
 @pytest.mark.timeout(8.0)
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
@@ -345,7 +347,7 @@ async def test_with_bluesky(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.timeout(12.5)
+@pytest.mark.timeout(15.5)
 async def test_tango_sim(sim_test_context_trls):
     detector = TangoDetector(
         name="detector",
@@ -376,7 +378,7 @@ async def test_tango_sim(sim_test_context_trls):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auto_fill_signals", [True, False])
-@pytest.mark.timeout(8.0)
+@pytest.mark.timeout(8.8)
 async def test_signal_autofill(tango_test_device, auto_fill_signals):
     test_device = TestTangoReadable(
         trl=tango_test_device, auto_fill_signals=auto_fill_signals

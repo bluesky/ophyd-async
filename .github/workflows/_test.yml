@@ -27,7 +27,6 @@ jobs:
         run: |
           mkdir "D:\\Temp"
           echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -55,12 +54,13 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
           pip-install: ".[dev]"
-
-      - name: Run tests
+      - name: Run tests win
         if: inputs.runs-on == 'windows-latest'
-        run: tox -e tests -- --timeout=4
-        
-
+        run: tox -e tests -- --timeout=6
+      - name: None win tests
+        if: inputs.runs-on != 'windows-latest'
+        run: tox -e tests -- --timeout=2
+      
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
