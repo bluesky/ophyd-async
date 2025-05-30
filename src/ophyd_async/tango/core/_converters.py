@@ -2,13 +2,9 @@ from typing import Any, Generic
 
 import numpy as np
 from numpy.typing import NDArray
+from tango import DevState
 
-from ophyd_async.core import (
-    SignalDatatypeT,
-)
-from tango import (
-    DevState,
-)
+from ophyd_async.core import SignalDatatypeT
 
 from ._utils import DevStateEnum
 

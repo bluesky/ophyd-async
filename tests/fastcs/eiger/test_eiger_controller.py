@@ -7,7 +7,7 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.fastcs.eiger import EigerController, EigerDriverIO
-from ophyd_async.testing import get_mock_put, set_mock_value
+from ophyd_async.testing import callback_on_mock_put, get_mock_put, set_mock_value
 
 DriverAndController = tuple[EigerDriverIO, EigerController]
 
@@ -17,6 +17,12 @@ def eiger_driver_and_controller_no_arm(RE) -> DriverAndController:
     with init_devices(mock=True):
         driver = EigerDriverIO("")
         controller = EigerController(driver)
+
+    def become_idle_after_arm(*args, **kwargs):
+        # Mocking that eiger has armed and finished taking frames.
+        set_mock_value(driver.detector.state, "idle")
+
+    callback_on_mock_put(driver.detector.arm, become_idle_after_arm)
 
     return driver, controller
 

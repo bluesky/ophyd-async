@@ -4,12 +4,21 @@ from ophyd_async.core import (
     DetectorTrigger,
     TriggerInfo,
 )
-from ophyd_async.epics import adaravis
+from ophyd_async.epics import adaravis, adcore
 
 
 @pytest.fixture
 def test_adaravis(ad_standard_det_factory) -> adaravis.AravisDetector:
-    return ad_standard_det_factory(adaravis.AravisDetector)
+    return ad_standard_det_factory(
+        adaravis.AravisDetector,
+        plugins={"stats": adcore.NDPluginStatsIO("stats_prefix")},
+    )
+
+
+async def test_aravis_name(
+    test_adaravis: adaravis.AravisDetector,
+):
+    assert test_adaravis.name == "test_adaravis1"
 
 
 @pytest.mark.parametrize("exposure_time", [0.0, 0.1, 1.0, 10.0, 100.0])

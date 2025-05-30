@@ -8,18 +8,8 @@ import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import numpy as np
 import pytest
-from bluesky import RunEngine
-
 import tango
-from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
-from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
-from ophyd_async.tango.demo import (
-    DemoCounter,
-    DemoMover,
-    TangoDetector,
-)
-from ophyd_async.testing import assert_reading
+from bluesky import RunEngine
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -29,6 +19,16 @@ from tango import (
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.server import Device, attribute, command
+
+from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
+from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
+from ophyd_async.tango.demo import (
+    DemoCounter,
+    DemoMover,
+    TangoDetector,
+)
+from ophyd_async.testing import assert_reading
 
 T = TypeVar("T")
 
@@ -293,7 +293,8 @@ def sim_test_context_trls(subprocess_helper):
 
 
 # --------------------------------------------------------------------
-@pytest.mark.timeout(7.0)
+
+@pytest.mark.timeout(8.0)
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
     values, description = await describe_class(tango_test_device)

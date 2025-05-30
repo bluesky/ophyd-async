@@ -6,8 +6,16 @@ import numpy as np
 from bluesky.protocols import Reading
 from event_model import DataKey, Dtype, Limits
 
+from ophyd_async.core._utils import (
+    Callback,
+    EnumTypes,
+    StrictEnum,
+    SubsetEnum,
+    SupersetEnum,
+    get_enum_cls,
+)
+
 from ._table import Table
-from ._utils import Callback, StrictEnum, get_enum_cls
 
 DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
 """A numpy dtype like [](#numpy.float64)."""
@@ -24,7 +32,7 @@ E.g. `Array1D[np.float64]` is a 1D numpy array of 64-bit floats."""
 Primitive = bool | int | float | str
 SignalDatatype = (
     Primitive
-    | StrictEnum
+    | EnumTypes
     | Array1D[np.bool_]
     | Array1D[np.int8]
     | Array1D[np.uint8]
@@ -39,16 +47,18 @@ SignalDatatype = (
     | np.ndarray
     | Sequence[str]
     | Sequence[StrictEnum]
+    | Sequence[SubsetEnum]
+    | Sequence[SupersetEnum]
     | Table
 )
 """The supported [](#Signal) datatypes:
 
 - A python primitive [](#bool), [](#int), [](#float), [](#str)
-- A [](#StrictEnum) or [](#SubsetEnum) subclass
+- An [](#EnumTypes) subclass
 - A fixed datatype [](#Array1D) of numpy bool, signed and unsigned integers or float
 - A [](#numpy.ndarray) which can change dimensions and datatype at runtime
 - A sequence of [](#str)
-- A sequence of [](#StrictEnum) or [](#SubsetEnum) subclass
+- A sequence of [](#EnumTypes) subclasses
 - A [](#Table) subclass
 """
 # TODO: These typevars will not be needed when we drop python 3.11
@@ -58,7 +68,7 @@ PrimitiveT = TypeVar("PrimitiveT", bound=Primitive)
 SignalDatatypeT = TypeVar("SignalDatatypeT", bound=SignalDatatype)
 """A typevar for a [](#SignalDatatype)."""
 SignalDatatypeV = TypeVar("SignalDatatypeV", bound=SignalDatatype)
-EnumT = TypeVar("EnumT", bound=StrictEnum)
+EnumT = TypeVar("EnumT", bound=EnumTypes)
 TableT = TypeVar("TableT", bound=Table)
 
 
@@ -136,7 +146,7 @@ def _datakey_dtype(datatype: type[SignalDatatype]) -> Dtype:
         or issubclass(datatype, Table)
     ):
         return "array"
-    elif issubclass(datatype, StrictEnum):
+    elif issubclass(datatype, EnumTypes):
         return "string"
     elif issubclass(datatype, Primitive):
         return _primitive_dtype[datatype]
@@ -153,7 +163,7 @@ def _datakey_dtype_numpy(
     elif (
         get_origin(datatype) is Sequence
         or datatype is str
-        or issubclass(datatype, StrictEnum)
+        or issubclass(datatype, EnumTypes)
     ):
         # TODO: use np.dtypes.StringDType when we can use in structured arrays
         # https://github.com/numpy/numpy/issues/25693
@@ -167,7 +177,7 @@ def _datakey_dtype_numpy(
 
 
 def _datakey_shape(value: SignalDatatype) -> list[int]:
-    if type(value) in _primitive_dtype or isinstance(value, StrictEnum):
+    if type(value) in _primitive_dtype or isinstance(value, EnumTypes):
         return []
     elif isinstance(value, np.ndarray):
         return list(value.shape)

@@ -134,7 +134,6 @@ commands =
 """
 
 [tool.ruff]
-src = ["src", "tests", "system_tests"]
 line-length = 88
 lint.select = [
     "B",       # flake8-bugbear - https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
