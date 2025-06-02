@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.10.0a5.dev1+gf652399e2 documentation</title>
+    <title>ophyd_async.epics.adcore._hdf_writer &#8212; ophyd-async 0.10.0a5.dev2+gffe81b96c documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=e03518d6"></script>
+    <script src="../../../../_static/documentation_options.js?v=a9594592"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a5.dev1+gf652399e2 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a5.dev1+gf652399e2 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a5.dev2+gffe81b96c documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a5.dev2+gffe81b96c documentation - Home"/>
   
   
 </a></div>
@@ -466,6 +466,7 @@ window.addEventListener("load", () => mermaid.run());
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncIterator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypeGuard</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xml.etree</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElementTree</span> <span class="k">as</span> <span class="n">ET</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamAsset</span>
@@ -485,6 +486,10 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">convert_param_dtype_to_np</span><span class="p">,</span>
     <span class="n">convert_pv_dtype_to_np</span><span class="p">,</span>
 <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_fully_described</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">TypeGuard</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+    <span class="k">return</span> <span class="kc">None</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">shape</span>
 
 
 <div class="viewcode-block" id="ADHDFWriter">
@@ -543,6 +548,16 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="c1"># Determine number of frames that will be saved per HDF chunk</span>
         <span class="n">frames_per_chunk</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileio</span><span class="o">.</span><span class="n">num_frames_chunks</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_fully_described</span><span class="p">(</span><span class="n">detector_shape</span><span class="p">):</span>
+            <span class="c1"># Questions:</span>
+            <span class="c1"># - Can AreaDetector support this?</span>
+            <span class="c1"># - How to deal with chunking?</span>
+            <span class="c1"># Don&#39;t support for now - leave option open to support it later</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Datasets with partially unknown dimensionality &quot;</span>
+                <span class="s2">&quot;are not currently supported by ADHDFWriter.&quot;</span>
+            <span class="p">)</span>
 
         <span class="c1"># Add the main data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="p">[</span>

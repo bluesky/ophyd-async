@@ -2242,7 +2242,7 @@ Bases: {py:obj}`typing.Protocol`
 
 ````
 
-````{py:method} shape() -> tuple[int, ...]
+````{py:method} shape() -> tuple[int | None, ...]
 :canonical: ophyd_async.core._providers.DatasetDescriber.shape
 :abstractmethod:
 :async:
@@ -2286,7 +2286,7 @@ Bases: {py:obj}`pydantic.BaseModel`
 
 ````{py:attribute} shape
 :canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription.shape
-:type: tuple[int, ...]
+:type: tuple[int | None, ...]
 :value: >
    'Field(...)'
 
