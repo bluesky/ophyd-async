@@ -163,7 +163,12 @@ class _SignalCache(Generic[SignalDatatypeT]):
             self._notify(function, want_value)
 
     def unsubscribe(self, function: Callback) -> bool:
-        self._listeners.pop(function)
+        _listener = self._listeners.pop(function, None)
+        if not _listener:
+            self._signal.log.warning(
+                f"Unsubscribe failed: subscriber {function} was not found "
+                f" in listeners list: {list(self._listeners)}"
+            )
         return self._staged or bool(self._listeners)
 
     def set_staged(self, staged: bool) -> bool:
