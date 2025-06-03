@@ -6,6 +6,7 @@ from event_model import DataKey  # type: ignore
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    AsyncStatus,
     DetectorWriter,
     Device,
     DeviceVector,
@@ -72,6 +73,7 @@ class Odin(Device):
         self.meta_active = epics_signal_r(str, prefix + "META:AcquisitionActive_RBV")
         self.meta_writing = epics_signal_r(str, prefix + "META:Writing_RBV")
         self.meta_file_name = epics_signal_r(str, f"{prefix}META:FileName_RBV")
+        self.meta_stop = epics_signal_rw(bool, f"{prefix}META:Stop")
 
         self.data_type = epics_signal_rw_rbv(str, f"{prefix}DataType")
 
@@ -88,6 +90,7 @@ class OdinWriter(DetectorWriter):
         self._drv = odin_driver
         self._path_provider = path_provider
         self._eiger_bit_depth = Reference(eiger_bit_depth)
+        self._capture_status: AsyncStatus | None = None
         super().__init__()
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
@@ -111,9 +114,9 @@ class OdinWriter(DetectorWriter):
             ),
         )
 
-        await self._drv.capture.set(
-            Writing.CAPTURE, wait=False
-        )  # TODO: Investigate why we do not get a put callback when setting capture pv https://github.com/bluesky/ophyd-async/issues/866
+        self._capture_status = await set_and_wait_for_value(
+            self._drv.capture, Writing.CAPTURE, wait_for_set_completion=False
+        )
 
         await asyncio.gather(
             wait_for_value(self._drv.capture_rbv, "Capturing", timeout=DEFAULT_TIMEOUT),
@@ -154,4 +157,9 @@ class OdinWriter(DetectorWriter):
         raise NotImplementedError()
 
     async def close(self) -> None:
-        await set_and_wait_for_value(self._drv.capture, Writing.DONE)
+        await self._drv.capture.set(Writing.DONE, wait=False)
+        await wait_for_value(self._drv.capture, Writing.DONE, DEFAULT_TIMEOUT)
+        await self._drv.meta_stop.set(True, wait=True)
+        if self._capture_status and not self._capture_status.done:
+            await self._capture_status
+        self._capture_status = None
