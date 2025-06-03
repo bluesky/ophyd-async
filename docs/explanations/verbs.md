@@ -85,7 +85,7 @@ This mnemonic helps remember the method sequence:
 Mermaid Process Diagram
 ------------------------
 
-```mermaid
+```{mermaid}
 graph TD
     A[stage] --> B[open_run]
     B --> C[prepare]
@@ -102,7 +102,7 @@ graph TD
 
 Mermaid Error Flowchart
 
-```mermaid
+```{mermaid}
 flowchart TD
     Start[[Start of Plan]] --> X1{stage called?}
     X1 -- No --> E1[Exception: Device not staged]
