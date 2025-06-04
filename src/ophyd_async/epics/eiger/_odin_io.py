@@ -99,23 +99,20 @@ class OdinWriter(DetectorWriter):
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
 
-        print(await self._drv.id.get_value())
         await asyncio.gather(
             self._drv.data_type.set(f"UInt{await self._eiger_bit_depth().get_value()}"),
             self._drv.num_to_capture.set(0),
+            self._drv.file_path.set(str(info.directory_path)),
+            self._drv.file_name.set(info.filename),
         )
 
-        await self._drv.file_path.set(str(info.directory_path))
-        await self._drv.file_name.set(info.filename)
-
-        await wait_for_value(
-            self._drv.meta_file_name, info.filename, timeout=DEFAULT_TIMEOUT
+        await asyncio.gather(
+            wait_for_value(
+                self._drv.meta_file_name, info.filename, timeout=DEFAULT_TIMEOUT
+            ),
+            wait_for_value(self._drv.id, info.filename, timeout=DEFAULT_TIMEOUT),
+            wait_for_value(self._drv.meta_active, "Active", timeout=DEFAULT_TIMEOUT),
         )
-        await wait_for_value(self._drv.id, info.filename, timeout=DEFAULT_TIMEOUT)
-
-        await wait_for_value(self._drv.meta_active, "Active", timeout=DEFAULT_TIMEOUT)
-
-        print(await self._drv.id.get_value())
 
         self._capture_status = await set_and_wait_for_value(
             self._drv.capture, Writing.CAPTURE, wait_for_set_completion=False
