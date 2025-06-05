@@ -38,7 +38,7 @@ class EigerDetector(StandardDetector):
             OdinWriter(
                 path_provider,
                 self.odin,
-                self.drv.detector.bit_depth_readout,
+                self.drv.detector.bit_depth_image,
             ),
             name=name,
         )
