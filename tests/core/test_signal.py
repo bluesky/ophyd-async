@@ -1013,3 +1013,9 @@ async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
 def test_signal_backend_throws_type_error() -> None:
     with pytest.raises(TypeError, match="Unsupported protocol: XYZ"):
         get_signal_backend_type("XYZ")  # type: ignore
+
+
+def test_remove_non_existing_listener():
+    signal_rw = soft_signal_rw(int, initial_value=4)
+    cbs = []
+    assert signal_rw.clear_sub(cbs.append) is None
