@@ -128,6 +128,7 @@ class PatternGenerator:
 
 class NullPatternGenerator(PatternGenerator):
     """A pattern generator that generates all zeros and saves no file."""
+
     def __init__(self, sleep=asyncio.sleep):
         super().__init__(sleep)
         self.n_images = 0
