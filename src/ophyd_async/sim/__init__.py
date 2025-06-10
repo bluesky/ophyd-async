@@ -9,7 +9,7 @@ from ._mirror_vertical import (
     VerticalMirror,
 )
 from ._motor import FlySimMotorInfo, SimMotor
-from ._pattern_generator import PatternGenerator
+from ._pattern_generator import NullPatternGenerator, PatternGenerator
 from ._point_detector import SimPointDetector
 from ._stage import SimStage
 
@@ -18,6 +18,7 @@ __all__ = [
     "FlySimMotorInfo",
     "SimStage",
     "PatternGenerator",
+    "NullPatternGenerator",
     "SimPointDetector",
     "SimBlobDetector",
     "VerticalMirror",
