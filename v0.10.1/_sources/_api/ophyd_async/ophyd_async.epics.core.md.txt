@@ -1,0 +1,213 @@
+# {py:mod}`ophyd_async.epics.core`
+
+```{py:module} ophyd_async.epics.core
+```
+
+```{autodoc2-docstring} ophyd_async.epics.core
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`PviDeviceConnector <ophyd_async.epics.core._pvi_connector.PviDeviceConnector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector
+    :summary:
+    ```
+* - {py:obj}`EpicsDeviceConnector <ophyd_async.epics.core._epics_connector.EpicsDeviceConnector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.EpicsDeviceConnector
+    :summary:
+    ```
+* - {py:obj}`PvSuffix <ophyd_async.epics.core._epics_connector.PvSuffix>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix
+    :summary:
+    ```
+* - {py:obj}`EpicsDevice <ophyd_async.epics.core._epics_device.EpicsDevice>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._epics_device.EpicsDevice
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`epics_signal_r <ophyd_async.epics.core._signal.epics_signal_r>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_r
+    :summary:
+    ```
+* - {py:obj}`epics_signal_rw <ophyd_async.epics.core._signal.epics_signal_rw>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw
+    :summary:
+    ```
+* - {py:obj}`epics_signal_rw_rbv <ophyd_async.epics.core._signal.epics_signal_rw_rbv>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw_rbv
+    :summary:
+    ```
+* - {py:obj}`epics_signal_w <ophyd_async.epics.core._signal.epics_signal_w>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_w
+    :summary:
+    ```
+* - {py:obj}`epics_signal_x <ophyd_async.epics.core._signal.epics_signal_x>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_x
+    :summary:
+    ```
+````
+
+### API
+
+`````{py:class} PviDeviceConnector(prefix: str = '', error_hint: str = '')
+:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector
+
+Bases: {py:obj}`ophyd_async.core.DeviceConnector`
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector
+```
+
+````{py:attribute} mock_device_vector_len
+:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.mock_device_vector_len
+:type: int
+:value: >
+   2
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.mock_device_vector_len
+```
+
+````
+
+````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device)
+:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.create_children_from_annotations
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.create_children_from_annotations
+```
+
+````
+
+````{py:method} connect_mock(device: ~ophyd_async.core.Device, mock: ~ophyd_async.core._utils.LazyMock)
+:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_mock
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_mock
+```
+
+````
+
+````{py:method} connect_real(device: ~ophyd_async.core.Device, timeout: float, force_reconnect: bool) -> None
+:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_real
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_real
+```
+
+````
+
+`````
+
+`````{py:class} EpicsDeviceConnector(prefix: str)
+:canonical: ophyd_async.epics.core._epics_connector.EpicsDeviceConnector
+
+Bases: {py:obj}`ophyd_async.core.DeviceConnector`
+
+```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.EpicsDeviceConnector
+```
+
+````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device)
+:canonical: ophyd_async.epics.core._epics_connector.EpicsDeviceConnector.create_children_from_annotations
+
+```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.EpicsDeviceConnector.create_children_from_annotations
+```
+
+````
+
+`````
+
+`````{py:class} PvSuffix
+:canonical: ophyd_async.epics.core._epics_connector.PvSuffix
+
+```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix
+```
+
+````{py:attribute} read_suffix
+:canonical: ophyd_async.epics.core._epics_connector.PvSuffix.read_suffix
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix.read_suffix
+```
+
+````
+
+````{py:attribute} write_suffix
+:canonical: ophyd_async.epics.core._epics_connector.PvSuffix.write_suffix
+:type: str | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix.write_suffix
+```
+
+````
+
+````{py:method} rbv(write_suffix: str, rbv_suffix: str = '_RBV') -> ~ophyd_async.epics.core._epics_connector.PvSuffix
+:canonical: ophyd_async.epics.core._epics_connector.PvSuffix.rbv
+:classmethod:
+
+```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.PvSuffix.rbv
+```
+
+````
+
+`````
+
+````{py:class} EpicsDevice(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.core._epics_device.EpicsDevice
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.epics.core._epics_device.EpicsDevice
+```
+
+````
+
+````{py:function} epics_signal_r(datatype: type[~ophyd_async.core.SignalDatatypeT], read_pv: str, name: str = '', timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.SignalR[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.epics.core._signal.epics_signal_r
+
+```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_r
+```
+````
+
+````{py:function} epics_signal_rw(datatype: type[~ophyd_async.core.SignalDatatypeT], read_pv: str, write_pv: str | None = None, name: str = '', timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.epics.core._signal.epics_signal_rw
+
+```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw
+```
+````
+
+````{py:function} epics_signal_rw_rbv(datatype: type[~ophyd_async.core.SignalDatatypeT], write_pv: str, read_suffix: str = '_RBV', name: str = '', timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.epics.core._signal.epics_signal_rw_rbv
+
+```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw_rbv
+```
+````
+
+````{py:function} epics_signal_w(datatype: type[~ophyd_async.core.SignalDatatypeT], write_pv: str, name: str = '', timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.SignalW[~ophyd_async.core.SignalDatatypeT]
+:canonical: ophyd_async.epics.core._signal.epics_signal_w
+
+```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_w
+```
+````
+
+````{py:function} epics_signal_x(write_pv: str, name: str = '', timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.SignalX
+:canonical: ophyd_async.epics.core._signal.epics_signal_x
+
+```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_x
+```
+````

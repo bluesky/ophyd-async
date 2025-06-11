@@ -1,0 +1,172 @@
+# {py:mod}`ophyd_async.tango.testing`
+
+```{py:module} ophyd_async.tango.testing
+```
+
+```{autodoc2-docstring} ophyd_async.tango.testing
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`ExampleStrEnum <ophyd_async.tango.testing._one_of_everything.ExampleStrEnum>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.ExampleStrEnum
+    :summary:
+    ```
+* - {py:obj}`OneOfEverythingTangoDevice <ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice
+    :summary:
+    ```
+````
+
+### API
+
+`````{py:class} ExampleStrEnum()
+:canonical: ophyd_async.tango.testing._one_of_everything.ExampleStrEnum
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.ExampleStrEnum
+```
+
+````{py:attribute} A
+:canonical: ophyd_async.tango.testing._one_of_everything.ExampleStrEnum.A
+:value: >
+   'AAA'
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.ExampleStrEnum.A
+```
+
+````
+
+````{py:attribute} B
+:canonical: ophyd_async.tango.testing._one_of_everything.ExampleStrEnum.B
+:value: >
+   'BBB'
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.ExampleStrEnum.B
+```
+
+````
+
+````{py:attribute} C
+:canonical: ophyd_async.tango.testing._one_of_everything.ExampleStrEnum.C
+:value: >
+   'CCC'
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.ExampleStrEnum.C
+```
+
+````
+
+`````
+
+`````{py:class} OneOfEverythingTangoDevice(cl, name)
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice
+
+Bases: {py:obj}`tango.server.Device`
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice
+```
+
+````{py:attribute} attr_values
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.attr_values
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.attr_values
+```
+
+````
+
+````{py:attribute} initial_values
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.initial_values
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.initial_values
+```
+
+````
+
+````{py:method} add_scalar_attr(name: str, dtype: str, initial_value: ~typing.Any)
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.add_scalar_attr
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.add_scalar_attr
+```
+
+````
+
+````{py:method} add_array_attrs(name: str, dtype: str, initial_value: ~numpy.ndarray)
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.add_array_attrs
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.add_array_attrs
+```
+
+````
+
+````{py:method} add_scalar_command(name: str, dtype: str)
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.add_scalar_command
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.add_scalar_command
+```
+
+````
+
+````{py:method} add_spectrum_command(name: str, dtype: str)
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.add_spectrum_command
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.add_spectrum_command
+```
+
+````
+
+````{py:method} initialize_dynamic_attributes()
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.initialize_dynamic_attributes
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.initialize_dynamic_attributes
+```
+
+````
+
+````{py:method} reset_values()
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.reset_values
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.reset_values
+```
+
+````
+
+````{py:method} read(attr)
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.read
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.read
+```
+
+````
+
+````{py:method} write(attr)
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.write
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.write
+```
+
+````
+
+````{py:attribute} echo_command_code
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.echo_command_code
+:value: >
+   'dedent(...)'
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.echo_command_code
+```
+
+````
+
+`````
