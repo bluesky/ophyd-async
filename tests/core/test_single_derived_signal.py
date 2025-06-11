@@ -29,6 +29,13 @@ def _get_position(foo: float, bar: float) -> BeamstopPosition:
         return BeamstopPosition.OUT_OF_POSITION
 
 
+def _get_position_wrong_args(x: float, y: float) -> BeamstopPosition:
+    if abs(x) < 1 and abs(y) < 2:
+        return BeamstopPosition.IN_POSITION
+    else:
+        return BeamstopPosition.OUT_OF_POSITION
+
+
 @pytest.mark.parametrize(
     "x, y, position",
     [
@@ -114,15 +121,15 @@ async def test_setting_all():
     "func, expected_msg, args",
     [
         (
-            _get_position,
-            "Expected devices to be passed as keyword arguments "
-            "{'foo': <class 'float'>, 'bar': <class 'float'>}, "
-            "got {'x': <class 'float'>, 'y': <class 'float'>}",
-            {"x": soft_signal_rw(float), "y": soft_signal_rw(float)},
+            _get_position_wrong_args,
+            "Expected the following to be passed as keyword arguments "
+            "{'x': <class 'float'>, 'y': <class 'float'>}, "
+            "got {'foo': <class 'float'>, 'bar': <class 'float'>}",
+            {"foo": soft_signal_rw(float), "bar": soft_signal_rw(float)},
         ),
         (
             _get_position,
-            "Expected devices to be passed as keyword arguments "
+            "Expected the following to be passed as keyword arguments "
             "{'foo': <class 'float'>, 'bar': <class 'float'>}, "
             "got {'foo': <class 'int'>, 'bar': <class 'int'>}",
             {
@@ -148,3 +155,19 @@ async def test_derived_signal_rw_works_with_signal_r():
 
     derived = derived_signal_rw(_get, _put, ts=signal_r)
     assert await derived.get_value() == 4
+
+
+async def test_derived_signal_allows_literals():
+    signal_rw = soft_signal_rw(int, 0, "TEST")
+
+    def _add_const_to_value(signal: int, const: int) -> int:
+        return const + signal
+
+    signal_r = derived_signal_r(
+        _add_const_to_value,
+        signal=signal_rw,
+        const=24,
+    )
+    assert await signal_r.get_value() == 24
+    await signal_rw.set(10)
+    assert await signal_r.get_value() == 34
