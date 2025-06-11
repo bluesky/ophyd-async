@@ -23,13 +23,6 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import adsimdetector
 
-
-@pytest.fixture(scope="session", autouse=True)
-def test_time_out():
-    test_time_out = 10
-    return test_time_out
-
-
 PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
 INCOMPLETE_BLOCK_RECORD = str(
     Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_block_panda.db"
