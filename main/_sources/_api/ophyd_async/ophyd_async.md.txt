@@ -13,11 +13,11 @@
 :titlesonly:
 :maxdepth: 3
 
+ophyd_async.fastcs
+ophyd_async.epics
 ophyd_async.plan_stubs
 ophyd_async.core
 ophyd_async.testing
-ophyd_async.fastcs
 ophyd_async.tango
-ophyd_async.epics
 ophyd_async.sim
 ```

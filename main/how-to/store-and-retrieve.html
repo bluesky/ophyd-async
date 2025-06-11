@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to store and retrieve device settings &#8212; ophyd-async 0.10.0a5.dev3+gce36cf6fc documentation</title>
+    <title>How to store and retrieve device settings &#8212; ophyd-async 0.10.1.dev1+g79c54b27c documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=c7aa158d"></script>
+    <script src="../_static/documentation_options.js?v=615b7ac7"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.0a5.dev3+gce36cf6fc documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.0a5.dev3+gce36cf6fc documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.1.dev1+g79c54b27c documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.1.dev1+g79c54b27c documentation - Home"/>
   
   
 </a></div>
@@ -479,7 +479,7 @@
                   
   <section id="how-to-store-and-retrieve-device-settings">
 <h1>How to store and retrieve device settings<a class="headerlink" href="#how-to-store-and-retrieve-device-settings" title="Link to this heading">#</a></h1>
-<p>Ophyd-async has the functionality to easily store the current values of all of a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Device</span></code></a>‘s <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalRW</span></code></a>s in a fully customisable format, and to load that state to the Device during a <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html" title="bluesky 1.14.2.dev6+g4fe6276e">Bluesky plan</a>. For a plan which requires a Device to be in, or close to a known state, we can, before running an experiment plan:</p>
+<p>Ophyd-async has the functionality to easily store the current values of all of a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Device</span></code></a>‘s <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalRW</span></code></a>s in a fully customisable format, and to load that state to the Device during a <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html" title="bluesky 1.14.2.dev58+gef5a5e5f">Bluesky plan</a>. For a plan which requires a Device to be in, or close to a known state, we can, before running an experiment plan:</p>
 <ol class="arabic simple">
 <li><p>Manually configure the Device to get it to the state which you want it be loaded to. This is done before running any experiment plans.</p></li>
 <li><p>Use ophyd-async’s <a class="reference internal" href="../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.store_settings" title="ophyd_async.plan_stubs.store_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">store_settings</span></code></a> plan to save this state.</p></li>
@@ -487,7 +487,7 @@
 <p>Then, within the experiment plan:</p>
 <ol class="arabic simple" start="3">
 <li><p>Use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.retrieve_settings" title="ophyd_async.plan_stubs.retrieve_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">retrieve_settings</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_settings" title="ophyd_async.plan_stubs.apply_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">apply_settings</span></code></a> to set the Device back to its saved state.</p></li>
-<li><p>Use <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html#stub-plans" title="bluesky 1.14.2.dev6+g4fe6276e">standard Bluesky plan stubs</a> to change any SignalRW which vary from the loaded state and which may change each run.</p></li>
+<li><p>Use <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html#stub-plans" title="bluesky 1.14.2.dev58+gef5a5e5f">standard Bluesky plan stubs</a> to change any SignalRW which vary from the loaded state and which may change each run.</p></li>
 </ol>
 <section id="saving-a-device-steps-1-2">
 <h2>Saving a device (steps 1-2)<a class="headerlink" href="#saving-a-device-steps-1-2" title="Link to this heading">#</a></h2>
@@ -498,7 +498,7 @@
 <span class="n">RE</span><span class="p">(</span><span class="n">store_settings</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="s2">&quot;yaml_file_name&quot;</span><span class="p">,</span> <span class="n">panda1</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>using the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.run_engine.RunEngine.html#bluesky.run_engine.RunEngine" title="bluesky 1.14.2.dev6+g4fe6276e"><span class="xref myst">RunEngine</span></a> with a connected PandA will output a yaml file mapping all of that PandA’s SignalRWs to its values at the time of saving.</p>
+<p>using the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.run_engine.RunEngine.html#bluesky.run_engine.RunEngine" title="bluesky 1.14.2.dev58+gef5a5e5f"><span class="xref myst">RunEngine</span></a> with a connected PandA will output a yaml file mapping all of that PandA’s SignalRWs to its values at the time of saving.</p>
 </section>
 <section id="loading-a-device-to-its-stored-state-step-3">
 <h2>Loading a device to its stored state (step 3)<a class="headerlink" href="#loading-a-device-to-its-stored-state-step-3" title="Link to this heading">#</a></h2>
