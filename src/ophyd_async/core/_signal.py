@@ -704,15 +704,8 @@ def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW
         A dictionary matching the string attribute path of a SignalRW with the
         signal itself.
     """
-    signals: dict[str, SignalRW[Any]] = {}
-
-    for attr_name, attr in device.children():
-        dot_path = f"{path_prefix}{attr_name}"
-        if type(attr) is SignalRW:
-            signals[dot_path] = attr
-        attr_signals = walk_rw_signals(attr, path_prefix=dot_path + ".")
-        signals.update(attr_signals)
-    return signals
+    all_devices = walk_devices(device, path_prefix)
+    return {path: dev for path, dev in all_devices.items() if type(dev) is SignalRW}
 
 
 async def walk_config_signals(
@@ -749,3 +742,34 @@ class Ignore:
     """Annotation to ignore a signal when connecting a device."""
 
     pass
+
+
+def walk_devices(device: Device, path_prefix: str = "") -> dict[str, Device]:
+    """Recursively retrieve all Devices from a device tree.
+
+    :param device: Root device to start from.
+    :param path_prefix: For internal use, leave blank when calling the method.
+    :return: A dictionary mapping dotted attribute paths to Device instances.
+    """
+    devices: dict[str, Device] = {}
+    for attr_name, attr in device.children():
+        dot_path = f"{path_prefix}{attr_name}"
+        devices[dot_path] = attr
+        devices.update(walk_devices(attr, path_prefix=dot_path + "."))
+    return devices
+
+
+def walk_signal_sources(device: Device, path_prefix: str = "") -> dict[str, str]:
+    """Recursively gather the `source` field from every Signal in a device tree.
+
+    :param device: Root device to start from.
+    :param path_prefix: For internal use, leave blank when calling the method.
+    :return: A dictionary mapping dotted attribute paths to Signal source strings.
+    """
+    sources: dict[str, str] = {}
+    for attr_name, attr in device.children():
+        dot_path = f"{path_prefix}{attr_name}"
+        if isinstance(attr, Signal):
+            sources[dot_path] = attr.source
+        sources.update(walk_signal_sources(attr, path_prefix=dot_path + "."))
+    return sources
