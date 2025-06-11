@@ -19,6 +19,7 @@ runs:
         fi
         echo "PYTHON_VERSION=$PYTHON_VERSION" >> "$GITHUB_ENV"
       shell: bash
+
     - name: Setup python
       uses: actions/setup-python@v5
       with:
