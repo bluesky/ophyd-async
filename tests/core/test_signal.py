@@ -29,7 +29,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.core._signal import _SignalCache  # noqa: PLC2701
+from ophyd_async.core._signal import _SignalCache, walk_devices  # noqa: PLC2701
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
 from ophyd_async.testing import (
@@ -1019,3 +1019,24 @@ def test_remove_non_existing_listener():
     signal_rw = soft_signal_rw(int, initial_value=4)
     cbs = []
     assert signal_rw.clear_sub(cbs.append) is None
+
+
+async def test_walk_devices_returns_all_devices(mock_readable: DummyReadableArray):
+    """
+    Test that walk_devices returns all child devices with correct dotted paths.
+    """
+
+    # Get all devices in the tree
+    devices = walk_devices(mock_readable)
+
+    # Should include all direct children and nested children
+    # Check for a few known paths
+    assert "int_value" in devices
+    assert "int_array" in devices
+    assert "float_array" in devices
+    assert "str_value" in devices
+    assert "strictEnum_value" in devices
+
+    # All returned objects should be Device instances
+    for dev in devices.values():
+        assert isinstance(dev, Device)
