@@ -89,19 +89,41 @@ This mnemonic helps remember the method sequence:
 
 ## Mermaid Process Diagram
 
+### For Hardware Scan
+
 ```{mermaid}
-graph TD
-    A[stage] --> B[open_run]
-    B --> C[prepare]
-    C --> D[kickoff]
-    D --> E[complete]
-    E --> F[collect]
-    F --> G[close_run]
-    G --> H[unstage]
+    graph TD
+        A[stage] --> B[open_run]
+        B --> C[prepare]
+        C --> D[kickoff]
+        D --> E[complete]
+        E --> F[collect]
+        F --> G[close_run]
+        G --> H[unstage]
 
-    C:::hook_sensitive
-    style C stroke:#f66,stroke-width:2px,stroke-dasharray: 5 5
+        D:::hardware_step
+        E:::hardware_step
+        F:::hardware_step
 
+        classDef hardware_step stroke:#4b8,stroke-width:2px;
+
+```
+
+### For Software Scan
+
+```{mermaid}
+    graph TD
+        A[stage] --> B[open_run]
+        B --> C[prepare]
+        C --> D[trigger]
+        D --> E[read]
+        E --> F[close_run]
+        F --> G[unstage]
+
+        D:::software_step
+        E:::software_step
+
+        classDef software_step stroke:#36f,stroke-width:2px;
 ```
 
 Mermaid Error Flowchart
