@@ -1029,13 +1029,13 @@ async def test_walk_devices_returns_all_devices(mock_readable: DummyReadableArra
     # Get all devices in the tree
     devices = walk_devices(mock_readable)
 
-    # Should include all direct children and nested children
-    # Check for a few known paths
-    assert "int_value" in devices
-    assert "int_array" in devices
-    assert "float_array" in devices
-    assert "str_value" in devices
-    assert "strictEnum_value" in devices
+    assert devices == {
+        "int_value": mock_readable.int_value,
+        "int_array": mock_readable.int_array,
+        "float_array": mock_readable.float_array,
+        "str_value": mock_readable.str_value,
+        "strictEnum_value": mock_readable.strictEnum_value,
+    }
 
     # All returned objects should be Device instances
     for dev in devices.values():
