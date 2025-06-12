@@ -46,7 +46,6 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float
         self._fly_info: FlyMotorInfo | None = None
         # Set on kickoff(), complete when motor reaches end position
         self._fly_status: WatchableAsyncStatus | None = None
-        self._fly_completed_position: float | None = None
 
         super().__init__(name=name)
 
@@ -59,26 +58,13 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float
     async def prepare(self, value: FlyMotorInfo):
         """Calculate run-up and move there, setting fly velocity when there."""
         self._fly_info = value
-
-        fly_velocity = (value.end_position - value.start_position) / value.time_for_move
-
-        run_up_distance = (
-            (await self.acceleration_time.get_value()) * fly_velocity * 0.5
-        )
-        direction = 1 if value.end_position > value.start_position else -1
-
-        # Calculate start/stop position of fly operation w/ given run up
-        fly_prepared_position = value.start_position - (run_up_distance * direction)
-        self._fly_completed_position = value.end_position + (
-            run_up_distance * direction
-        )
-
         # Move to start as fast as we can
         await self.velocity.set(0)
-        await self.set(fly_prepared_position)
-
+        await self.set(
+            value.ramp_up_start_pos(await self.acceleration_time.get_value())
+        )
         # Set the velocity for the actual move
-        await self.velocity.set(fly_velocity)
+        await self.velocity.set(value.velocity)
 
     async def locate(self) -> Location[float]:
         """Return the current setpoint and readback of the motor."""
@@ -96,11 +82,13 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float
     @AsyncStatus.wrap
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
-        if not self._fly_completed_position:
+        if not self._fly_info:
             msg = "Motor must be prepared before attempting to kickoff"
             raise RuntimeError(msg)
-
-        self._fly_status = self.set(self._fly_completed_position)
+        acceleration_time = await self.acceleration_time.get_value()
+        self._fly_status = self.set(self._fly_info.ramp_down_end_pos(acceleration_time))
+        # Wait for the acceleration time to ensure we are at velocity
+        await asyncio.sleep(acceleration_time)
 
     def complete(self) -> WatchableAsyncStatus:
         """Mark as complete once motor reaches completed position."""
