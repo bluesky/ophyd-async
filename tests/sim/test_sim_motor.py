@@ -6,7 +6,8 @@ import pytest
 from bluesky.plans import spiral_square
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.sim import FlySimMotorInfo, SimMotor
+from ophyd_async.core import FlyMotorInfo
+from ophyd_async.sim import SimMotor
 from ophyd_async.testing import StatusWatcher
 
 
@@ -79,7 +80,7 @@ async def test_stop(m1: SimMotor):
 @pytest.mark.skipif("win" in sys.platform, reason="windows CI runners too weedy")
 async def test_fly(m1: SimMotor):
     await m1.acceleration_time.set(0.1)
-    info = FlySimMotorInfo(cv_start=0, cv_end=1, cv_time=0.2)
+    info = FlyMotorInfo(start_position=0, end_position=1, time_for_move=0.2)
     fly_start, fly_end, velocity = -0.25, 1.25, 5
     await m1.prepare(info)
     assert await m1.user_readback.get_value() == fly_start

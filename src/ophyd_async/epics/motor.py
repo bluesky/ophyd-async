@@ -14,7 +14,6 @@ from bluesky.protocols import (
     Stoppable,
     Subscribable,
 )
-from pydantic import BaseModel, Field
 
 from ophyd_async.core import (
     CALCULATE_TIMEOUT,
@@ -22,6 +21,7 @@ from ophyd_async.core import (
     AsyncStatus,
     CalculatableTimeout,
     Callback,
+    FlyMotorInfo,
     StandardReadable,
     StrictEnum,
     WatchableAsyncStatus,
@@ -31,33 +31,13 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
-__all__ = ["MotorLimitsException", "FlyMotorInfo", "Motor"]
+__all__ = ["MotorLimitsException", "Motor"]
 
 
 class MotorLimitsException(Exception):
     """Exception for invalid motor limits."""
 
     pass
-
-
-class FlyMotorInfo(BaseModel):
-    """Minimal set of information required to fly a motor."""
-
-    start_position: float = Field(frozen=True)
-    """Absolute position of the motor once it finishes accelerating to desired
-    velocity, in motor EGUs"""
-
-    end_position: float = Field(frozen=True)
-    """Absolute position of the motor once it begins decelerating from desired
-    velocity, in EGUs"""
-
-    time_for_move: float = Field(frozen=True, gt=0)
-    """Time taken for the motor to get from start_position to end_position, excluding
-    run-up and run-down, in seconds."""
-
-    timeout: CalculatableTimeout = Field(frozen=True, default=CALCULATE_TIMEOUT)
-    """Maximum time for the complete motor move, including run up and run down.
-    Defaults to `time_for_move` + run up and run down times + 10s."""
 
 
 class OffsetMode(StrictEnum):
