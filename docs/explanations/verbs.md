@@ -30,22 +30,22 @@ Prepares the device for acquisition. This includes:
 
 Set the device to a target setpoint. Used in software-driven step scans.
 
-### `trigger`
+### `trigger` - ONLY IN SOFTWARE SCANS
 
 Ask the detector to take a measurement during a software step scan.
 
-### `kickoff`
+### `kickoff` - ONLY IN HARDWARE SCANS
 
 Begin a flyscan:
 
 - For **motors**, starts motion and returns once at velocity.
 - For **detectors**, may do nothing if hardware-triggered, for software triggered it starts the acquisition.
 
-### `read`
+### `read` - ONLY IN SOFTWARE SCANS
 
 Collect the data after `trigger`.
 
-### `complete`
+### `complete` - ONLY IN HARDWARE SCANS
 
 Wait for the flyscan to finish:
 
@@ -54,7 +54,7 @@ Wait for the flyscan to finish:
 
 > Must follow `kickoff`.
 
-### `collect`
+### `collect` - ONLY IN HARDWARE SCANS
 
 Collect the data after a `complete` call.
 
