@@ -29,7 +29,11 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.core._signal import _SignalCache, walk_devices  # noqa: PLC2701
+from ophyd_async.core._signal import (
+    _SignalCache,  # noqa: PLC2701
+    walk_devices,  # noqa: PLC2701
+    walk_signal_sources,  # noqa: PLC2701
+)
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
 from ophyd_async.testing import (
@@ -1040,3 +1044,35 @@ async def test_walk_devices_returns_all_devices(mock_readable: DummyReadableArra
     # All returned objects should be Device instances
     for dev in devices.values():
         assert isinstance(dev, Device)
+
+
+async def test_walk_signal_sources_returns_signal_sources(
+    mock_readable: DummyReadableArray,
+):
+    """
+    Test that walk_signal_sources returns correct mapping of dotted paths to Signal sources.
+    """
+    sources = walk_signal_sources(mock_readable)
+
+    assert "mock+ca://SIM:READABLE:int" in sources["int_value"]
+    assert "mock+ca://SIM:READABLE:Value" in sources["int_array"]
+    assert "mock+ca://SIM:READABLE:array2" in sources["strictEnum_value"]
+
+    for path, signal in [
+        ("int_value", mock_readable.int_value),
+        ("int_array", mock_readable.int_array),
+        ("float_array", mock_readable.float_array),
+        ("str_value", mock_readable.str_value),
+        ("strictEnum_value", mock_readable.strictEnum_value),
+    ]:
+        assert path in sources
+        assert sources[path] == signal.source
+
+    # No extra keys
+    assert set(sources.keys()) == {
+        "int_value",
+        "int_array",
+        "float_array",
+        "str_value",
+        "strictEnum_value",
+    }
