@@ -4,7 +4,6 @@ import time
 
 import numpy as np
 from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
-from pydantic import BaseModel, ConfigDict, Field
 
 from ophyd_async.core import (
     AsyncStatus,
@@ -18,37 +17,6 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-
-
-class FlySimMotorInfo(BaseModel):
-    """Minimal set of information required to fly a [](#SimMotor)."""
-
-    model_config = ConfigDict(frozen=True)
-
-    cv_start: float
-    """Absolute position of the motor once it finishes accelerating to desired
-    velocity, in motor EGUs"""
-
-    cv_end: float
-    """Absolute position of the motor once it begins decelerating from desired
-    velocity, in EGUs"""
-
-    cv_time: float = Field(gt=0)
-    """Time taken for the motor to get from start_position to end_position, excluding
-    run-up and run-down, in seconds."""
-
-    @property
-    def velocity(self) -> float:
-        """Calculate the velocity of the constant velocity phase."""
-        return (self.cv_end - self.cv_start) / self.cv_time
-
-    def start_position(self, acceleration_time: float) -> float:
-        """Calculate the start position with run-up distance added on."""
-        return self.cv_start - acceleration_time * self.velocity / 2
-
-    def end_position(self, acceleration_time: float) -> float:
-        """Calculate the end position with run-down distance added on."""
-        return self.cv_end + acceleration_time * self.velocity / 2
 
 
 class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float]):
