@@ -1050,7 +1050,8 @@ async def test_walk_signal_sources_returns_signal_sources(
     mock_readable: DummyReadableArray,
 ):
     """
-    Test that walk_signal_sources returns correct mapping of dotted paths to Signal sources.
+    Test that walk_signal_sources returns correct mapping
+    of dotted paths to Signal sources.
     """
     sources = walk_signal_sources(mock_readable)
 
