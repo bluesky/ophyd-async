@@ -692,7 +692,7 @@ async def set_and_wait_for_value(
     )
 
 
-def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW[Any]]:
+def walk_rw_signals(device: Device) -> dict[str, SignalRW[Any]]:
     """Retrieve all SignalRWs from a device.
 
     Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
@@ -704,12 +704,12 @@ def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW
         A dictionary matching the string attribute path of a SignalRW with the
         signal itself.
     """
-    all_devices = walk_devices(device, path_prefix)
+    all_devices = walk_devices(device)
     return {path: dev for path, dev in all_devices.items() if type(dev) is SignalRW}
 
 
 async def walk_config_signals(
-    device: Device, path_prefix: str = ""
+    device: Device,
 ) -> dict[str, SignalRW[Any]]:
     """Retrieve all configuration signals from a device.
 
@@ -717,25 +717,23 @@ async def walk_config_signals(
     part of saving and loading a device.
 
     :param device: Device to retrieve configuration signals from.
-    :param path_prefix: For internal use, leave blank when calling the method.
     :return:
         A dictionary matching the string attribute path of a SignalRW with the
         signal itself.
     """
-    signals: dict[str, SignalRW[Any]] = {}
     config_names: list[str] = []
     if isinstance(device, Configurable):
         configuration = device.read_configuration()
         if inspect.isawaitable(configuration):
             configuration = await configuration
         config_names = list(configuration.keys())
-    for attr_name, attr in device.children():
-        dot_path = f"{path_prefix}{attr_name}"
-        if isinstance(attr, SignalRW) and attr.name in config_names:
-            signals[dot_path] = attr
-        signals.update(await walk_config_signals(attr, path_prefix=dot_path + "."))
 
-    return signals
+    all_devices = walk_devices(device)
+    return {
+        path: dev
+        for path, dev in all_devices.items()
+        if isinstance(dev, SignalRW) and dev.name in config_names
+    }
 
 
 class Ignore:
@@ -759,17 +757,14 @@ def walk_devices(device: Device, path_prefix: str = "") -> dict[str, Device]:
     return devices
 
 
-def walk_signal_sources(device: Device, path_prefix: str = "") -> dict[str, str]:
+def walk_signal_sources(device: Device) -> dict[str, str]:
     """Recursively gather the `source` field from every Signal in a device tree.
 
     :param device: Root device to start from.
     :param path_prefix: For internal use, leave blank when calling the method.
     :return: A dictionary mapping dotted attribute paths to Signal source strings.
     """
-    sources: dict[str, str] = {}
-    for attr_name, attr in device.children():
-        dot_path = f"{path_prefix}{attr_name}"
-        if isinstance(attr, Signal):
-            sources[dot_path] = attr.source
-        sources.update(walk_signal_sources(attr, path_prefix=dot_path + "."))
-    return sources
+    all_devices = walk_devices(device)
+    return {
+        path: dev.source for path, dev in all_devices.items() if isinstance(dev, Signal)
+    }
