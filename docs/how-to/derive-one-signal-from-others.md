@@ -42,3 +42,32 @@ An example to illustrate this is below:
 ```{literalinclude} ../../src/ophyd_async/sim/_mirror_horizontal.py
 :language: python
 ```
+
+## Extend base class by adding Derived Signal in child class
+
+A common practice is to extend base class devices and add some extra derived signals to it, which also may depend on parent class signals/motors. It is currenly required that `super().__init__` parent method is called at the end of child `__init__` method, however it is not possible when derived signal depends on parent signal - the latter must be defined first. Then first option is to overwrite completely parent `__init__` method and copy all that required in child `__init__` method as well as add new derived signals. However if the parent class signals are all required in a child class device then one could do also the following:
+
+```
+class BaseDevice(StandardReadable):
+    def __init__(self, prefix: str, name: str = "") -> None:
+        with self.add_children_as_readables():
+            self.energy_in_kev = Motor(prefix + "ENERGY")
+            ...
+
+        super().__init__(name)
+
+
+class ChildDevice(BaseDevice):
+     def __init__(self, prefix: str, name: str = "") -> None:
+        super().__init__(prefix, name)
+        with self.add_children_as_readables():
+            self.energy_in_ev = derived_signal_r(
+                self._convert_keV_to_eV, energy_signal=self.energy_in_kev.user_readback
+            )
+        # Set name so that new child signals get correct name
+        # need to do it until https://github.com/bluesky/ophyd-async/pull/899 merged
+        self.set_name(self.name)
+
+    def _convert_keV_to_eV(self, energy_signal: float) -> float:
+        return energy_signal * 1000
+```
