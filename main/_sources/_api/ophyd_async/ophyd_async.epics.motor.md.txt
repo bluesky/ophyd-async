@@ -15,10 +15,6 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`FlyMotorInfo <ophyd_async.epics.motor.FlyMotorInfo>`
-  - ```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo
-    :summary:
-    ```
 * - {py:obj}`Motor <ophyd_async.epics.motor.Motor>`
   - ```{autodoc2-docstring} ophyd_async.epics.motor.Motor
     :summary:
@@ -37,60 +33,6 @@ Bases: {py:obj}`Exception`
 
 ````
 
-`````{py:class} FlyMotorInfo(/, **data: ~typing.Any)
-:canonical: ophyd_async.epics.motor.FlyMotorInfo
-
-Bases: {py:obj}`pydantic.BaseModel`
-
-```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo
-```
-
-````{py:attribute} start_position
-:canonical: ophyd_async.epics.motor.FlyMotorInfo.start_position
-:type: float
-:value: >
-   'Field(...)'
-
-```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo.start_position
-```
-
-````
-
-````{py:attribute} end_position
-:canonical: ophyd_async.epics.motor.FlyMotorInfo.end_position
-:type: float
-:value: >
-   'Field(...)'
-
-```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo.end_position
-```
-
-````
-
-````{py:attribute} time_for_move
-:canonical: ophyd_async.epics.motor.FlyMotorInfo.time_for_move
-:type: float
-:value: >
-   'Field(...)'
-
-```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo.time_for_move
-```
-
-````
-
-````{py:attribute} timeout
-:canonical: ophyd_async.epics.motor.FlyMotorInfo.timeout
-:type: ~ophyd_async.core.CalculatableTimeout
-:value: >
-   'Field(...)'
-
-```{autodoc2-docstring} ophyd_async.epics.motor.FlyMotorInfo.timeout
-```
-
-````
-
-`````
-
 `````{py:class} Motor(prefix: str, name='')
 :canonical: ophyd_async.epics.motor.Motor
 
@@ -107,7 +49,7 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.L
 
 ````
 
-````{py:method} prepare(value: ~ophyd_async.epics.motor.FlyMotorInfo)
+````{py:method} prepare(value: ~ophyd_async.core.FlyMotorInfo)
 :canonical: ophyd_async.epics.motor.Motor.prepare
 :async:
 

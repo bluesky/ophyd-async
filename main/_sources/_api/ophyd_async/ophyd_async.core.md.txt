@@ -199,6 +199,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer
     :summary:
     ```
+* - {py:obj}`FlyMotorInfo <ophyd_async.core._flyer.FlyMotorInfo>`
+  - ```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo
+    :summary:
+    ```
 * - {py:obj}`FlyerController <ophyd_async.core._flyer.FlyerController>`
   - ```{autodoc2-docstring} ophyd_async.core._flyer.FlyerController
     :summary:
@@ -2399,6 +2403,85 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.StandardFlyer.complete
+```
+
+````
+
+`````
+
+`````{py:class} FlyMotorInfo(/, **data: ~typing.Any)
+:canonical: ophyd_async.core._flyer.FlyMotorInfo
+
+Bases: {py:obj}`pydantic.BaseModel`
+
+```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo
+```
+
+````{py:attribute} start_position
+:canonical: ophyd_async.core._flyer.FlyMotorInfo.start_position
+:type: float
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.start_position
+```
+
+````
+
+````{py:attribute} end_position
+:canonical: ophyd_async.core._flyer.FlyMotorInfo.end_position
+:type: float
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.end_position
+```
+
+````
+
+````{py:attribute} time_for_move
+:canonical: ophyd_async.core._flyer.FlyMotorInfo.time_for_move
+:type: float
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.time_for_move
+```
+
+````
+
+````{py:attribute} timeout
+:canonical: ophyd_async.core._flyer.FlyMotorInfo.timeout
+:type: ~ophyd_async.core._utils.CalculatableTimeout
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.timeout
+```
+
+````
+
+````{py:property} velocity
+:canonical: ophyd_async.core._flyer.FlyMotorInfo.velocity
+:type: float
+
+```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.velocity
+```
+
+````
+
+````{py:method} ramp_up_start_pos(acceleration_time: float) -> float
+:canonical: ophyd_async.core._flyer.FlyMotorInfo.ramp_up_start_pos
+
+```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.ramp_up_start_pos
+```
+
+````
+
+````{py:method} ramp_down_end_pos(acceleration_time: float) -> float
+:canonical: ophyd_async.core._flyer.FlyMotorInfo.ramp_down_end_pos
+
+```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo.ramp_down_end_pos
 ```
 
 ````
