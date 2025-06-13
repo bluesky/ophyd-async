@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic
 
 from bluesky.protocols import Flyable, Preparable, Stageable
+from pydantic import BaseModel, Field
 
 from ._device import Device
 from ._status import AsyncStatus
-from ._utils import T
+from ._utils import CALCULATE_TIMEOUT, CalculatableTimeout, T
 
 
 class FlyerController(ABC, Generic[T]):
@@ -29,6 +30,39 @@ class FlyerController(ABC, Generic[T]):
     @abstractmethod
     async def stop(self):
         """Stop flying and wait everything to be stopped."""
+
+
+class FlyMotorInfo(BaseModel):
+    """Minimal set of information required to fly a motor."""
+
+    start_position: float = Field(frozen=True)
+    """Absolute position of the motor once it finishes accelerating to desired
+    velocity, in motor EGUs"""
+
+    end_position: float = Field(frozen=True)
+    """Absolute position of the motor once it begins decelerating from desired
+    velocity, in EGUs"""
+
+    time_for_move: float = Field(frozen=True, gt=0)
+    """Time taken for the motor to get from start_position to end_position, excluding
+    run-up and run-down, in seconds."""
+
+    timeout: CalculatableTimeout = Field(frozen=True, default=CALCULATE_TIMEOUT)
+    """Maximum time for the complete motor move, including run up and run down.
+    Defaults to `time_for_move` + run up and run down times + 10s."""
+
+    @property
+    def velocity(self) -> float:
+        """Calculate the velocity of the constant velocity phase."""
+        return (self.end_position - self.start_position) / self.time_for_move
+
+    def ramp_up_start_pos(self, acceleration_time: float) -> float:
+        """Calculate the start position with run-up distance added on."""
+        return self.start_position - acceleration_time * self.velocity / 2
+
+    def ramp_down_end_pos(self, acceleration_time: float) -> float:
+        """Calculate the end position with run-down distance added on."""
+        return self.end_position + acceleration_time * self.velocity / 2
 
 
 class StandardFlyer(

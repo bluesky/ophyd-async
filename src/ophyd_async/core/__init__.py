@@ -16,7 +16,7 @@ from ._detector import (
 )
 from ._device import Device, DeviceConnector, DeviceVector, init_devices
 from ._device_filler import DeviceFiller
-from ._flyer import FlyerController, StandardFlyer
+from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
 from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
@@ -168,6 +168,7 @@ __all__ = [
     "HDFDocumentComposer",
     # Flyer
     "StandardFlyer",
+    "FlyMotorInfo",
     "FlyerController",
     # Settings
     "Settings",

@@ -7,6 +7,7 @@ from bluesky.protocols import Reading
 from ophyd_async.core import (
     CALCULATE_TIMEOUT,
     AsyncStatus,
+    FlyMotorInfo,
     init_devices,
     observe_value,
     soft_signal_rw,
@@ -163,27 +164,19 @@ async def test_set(sim_motor: motor.Motor, setpoint, velocity, timeout) -> None:
     assert (await sim_motor.locate()).get("setpoint") == setpoint
 
 
-async def test_prepare_velocity_errors(sim_motor: motor.Motor):
+async def test_prepare_velocity_limit_error(sim_motor: motor.Motor):
     set_mock_value(sim_motor.max_velocity, 10)
     with pytest.raises(motor.MotorLimitsException):
-        fly_info = motor.FlyMotorInfo(
-            start_position=-10, end_position=0, time_for_move=0.9
-        )
-        await sim_motor._prepare_velocity(
-            fly_info.start_position,
-            fly_info.end_position,
-            fly_info.time_for_move,
-        )
+        fly_info = FlyMotorInfo(start_position=-10, end_position=0, time_for_move=0.9)
+        await sim_motor.prepare(fly_info)
 
 
 async def test_valid_prepare_velocity(sim_motor: motor.Motor):
+    set_mock_value(sim_motor.low_limit_travel, -10.01)
+    set_mock_value(sim_motor.high_limit_travel, 20.01)
     set_mock_value(sim_motor.max_velocity, 10)
-    fly_info = motor.FlyMotorInfo(start_position=-10, end_position=0, time_for_move=1)
-    await sim_motor._prepare_velocity(
-        fly_info.start_position,
-        fly_info.end_position,
-        fly_info.time_for_move,
-    )
+    fly_info = FlyMotorInfo(start_position=-10, end_position=0, time_for_move=1)
+    await sim_motor.prepare(fly_info)
     assert (
         await sim_motor.velocity.get_value() == await sim_motor.max_velocity.get_value()
     )
@@ -199,7 +192,7 @@ async def test_valid_prepare_velocity(sim_motor: motor.Motor):
         (1, 10, 10, 0, 14.99, -10),  # Goes above upper_limit, -ve direction
     ],
 )
-async def test_prepare_motor_path_errors(
+async def test_prepare_motor_limits_error(
     sim_motor: motor.Motor,
     acceleration_time,
     velocity,
@@ -211,38 +204,42 @@ async def test_prepare_motor_path_errors(
     set_mock_value(sim_motor.acceleration_time, acceleration_time)
     set_mock_value(sim_motor.low_limit_travel, lower_limit)
     set_mock_value(sim_motor.high_limit_travel, upper_limit)
+    time_for_move = abs(end_position - start_position) / velocity
+    fly_info = FlyMotorInfo(
+        start_position=start_position,
+        end_position=end_position,
+        time_for_move=time_for_move,
+    )
     with pytest.raises(motor.MotorLimitsException):
-        await sim_motor._prepare_motor_path(velocity, start_position, end_position)
+        await sim_motor.prepare(fly_info)
 
 
-async def test_prepare_motor_path(sim_motor: motor.Motor):
+async def test_prepare_valid_limits(sim_motor: motor.Motor):
     set_mock_value(sim_motor.acceleration_time, 1)
     set_mock_value(sim_motor.low_limit_travel, -10.01)
     set_mock_value(sim_motor.high_limit_travel, 20.01)
+    set_mock_value(sim_motor.max_velocity, 10)
     fly_info = motor.FlyMotorInfo(
         start_position=0,
         end_position=10,
         time_for_move=1,
     )
+    await sim_motor.prepare(fly_info)
+    assert await sim_motor.user_setpoint.get_value() == -5
+
     assert (
-        await sim_motor._prepare_motor_path(
-            10, fly_info.start_position, fly_info.end_position
-        )
-        == -5
+        fly_info.ramp_down_end_pos(await sim_motor.acceleration_time.get_value()) == 15
     )
-    assert sim_motor._fly_completed_position == 15
     fly_info = motor.FlyMotorInfo(
         start_position=12,
         end_position=2,
         time_for_move=1,
     )
+    await sim_motor.prepare(fly_info)
+    assert await sim_motor.user_setpoint.get_value() == 17
     assert (
-        await sim_motor._prepare_motor_path(
-            10, fly_info.start_position, fly_info.end_position
-        )
-        == 17
+        fly_info.ramp_down_end_pos(await sim_motor.acceleration_time.get_value()) == -3
     )
-    assert sim_motor._fly_completed_position == -3
 
 
 @pytest.mark.parametrize(
@@ -298,9 +295,14 @@ async def test_kickoff(sim_motor: motor.Motor):
     # TODO: why was this called _twice_?
     # with pytest.raises(RuntimeError):
     #     await sim_motor.kickoff()
-    sim_motor._fly_completed_position = 20
+    set_mock_value(sim_motor.acceleration_time, 1)
+    sim_motor._fly_info = motor.FlyMotorInfo(
+        start_position=12,
+        end_position=2,
+        time_for_move=1,
+    )
     await sim_motor.kickoff()
-    sim_motor.set.assert_called_once_with(20, timeout=CALCULATE_TIMEOUT)
+    sim_motor.set.assert_called_once_with(-3.0, timeout=CALCULATE_TIMEOUT)
 
 
 async def test_complete(sim_motor: motor.Motor) -> None:
