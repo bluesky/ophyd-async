@@ -88,7 +88,7 @@ class BlobDetectorWriter(DetectorWriter):
         if self.composer is None:
             msg = f"open() not called on {self}"
             raise RuntimeError(msg)
-        async for doc in self.composer.collect_stream_docs(indices_written):
+        for doc in self.composer.make_stream_docs(indices_written):
             yield doc
 
     async def close(self) -> None:
