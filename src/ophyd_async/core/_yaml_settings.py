@@ -6,9 +6,9 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 import yaml
-from pydantic import BaseModel
 
 from ._settings import SettingsProvider
+from ._utils import ConfinedModel
 
 
 def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.Node:
@@ -18,7 +18,7 @@ def ndarray_representer(dumper: yaml.Dumper, array: npt.NDArray[Any]) -> yaml.No
 
 
 def pydantic_model_abstraction_representer(
-    dumper: yaml.Dumper, model: BaseModel
+    dumper: yaml.Dumper, model: ConfinedModel
 ) -> yaml.Node:
     return dumper.represent_data(model.model_dump(mode="python"))
 
@@ -39,7 +39,7 @@ class YamlSettingsProvider(SettingsProvider):
     async def store(self, name: str, data: dict[str, Any]):
         yaml.add_representer(np.ndarray, ndarray_representer, Dumper=yaml.Dumper)
         yaml.add_multi_representer(
-            BaseModel,
+            ConfinedModel,
             pydantic_model_abstraction_representer,
             Dumper=yaml.Dumper,
         )

@@ -9,10 +9,12 @@ from event_model import (  # type: ignore
     StreamRange,
     StreamResource,
 )
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from ._utils import ConfinedModel
 
 
-class HDFDatasetDescription(BaseModel):
+class HDFDatasetDescription(ConfinedModel):
     """A description of the type and shape of a dataset in an HDF file."""
 
     data_key: str

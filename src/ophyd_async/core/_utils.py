@@ -17,6 +17,7 @@ from typing import (
 from unittest.mock import Mock
 
 import numpy as np
+from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
 V = TypeVar("V")
@@ -377,3 +378,11 @@ class LazyMock:
             if self.parent is not None:
                 self.parent().attach_mock(self._mock, self.name)
         return self._mock
+
+
+class ConfinedModel(BaseModel):
+    """A base class confined to explicitly defined fields in the model schema."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )

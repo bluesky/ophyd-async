@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic
 
 from bluesky.protocols import Flyable, Preparable, Stageable
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from ._device import Device
 from ._status import AsyncStatus
-from ._utils import CALCULATE_TIMEOUT, CalculatableTimeout, T
+from ._utils import CALCULATE_TIMEOUT, CalculatableTimeout, ConfinedModel, T
 
 
 class FlyerController(ABC, Generic[T]):
@@ -32,7 +32,7 @@ class FlyerController(ABC, Generic[T]):
         """Stop flying and wait everything to be stopped."""
 
 
-class FlyMotorInfo(BaseModel):
+class FlyMotorInfo(ConfinedModel):
     """Minimal set of information required to fly a motor."""
 
     start_position: float = Field(frozen=True)
