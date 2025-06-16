@@ -135,7 +135,7 @@ The above demonstrates the detector portion of a step scan, letting the things y
     @bpp.stage_decorator([bdet])
     @bpp.run_decorator()
     def fly_plan():
-        yield from bps.prepare(bdet, TriggerInfo(number_of_triggers=7), wait=True)
+        yield from bps.prepare(bdet, TriggerInfo(number_of_events=7), wait=True)
         yield from bps.declare_stream(bdet, name="primary")
         yield from bps.kickoff(bdet, wait=True)
         yield from bps.collect_while_completing(flyers=[bdet], dets=[bdet], flush_period=0.5)

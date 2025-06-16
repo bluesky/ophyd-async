@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.10.2.dev3+gc04db5c1b documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.10.2.dev4+gedc8e8c9d documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=cce88a2b"></script>
+    <script src="../../_static/documentation_options.js?v=5430b5e9"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev3+gc04db5c1b documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev3+gc04db5c1b documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev4+gedc8e8c9d documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev4+gedc8e8c9d documentation - Home"/>
   
   
 </a></div>
@@ -679,16 +679,19 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.YamlSettingsProvider" title="ophyd_async.core._yaml_settings.YamlSettingsProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">YamlSettingsProvider</span></code></a></p></td>
 <td><p>For providing settings from yaml to signals.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core._utils.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.ConfinedModel" title="ophyd_async.core._utils.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfinedModel</span></code></a></p></td>
+<td><p>A base class confined to explicitly defined fields in the model schema.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core._utils.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
 <td><p>Hide an object behind a reference.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Ignore" title="ophyd_async.core._signal.Ignore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ignore</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Ignore" title="ophyd_async.core._signal.Ignore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ignore</span></code></a></p></td>
 <td><p>Annotation to ignore a signal when connecting a device.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Transform" title="ophyd_async.core._derived_signal_backend.Transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Transform</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Transform" title="ophyd_async.core._derived_signal_backend.Transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Transform</span></code></a></p></td>
 <td><p>Baseclass for bidirectional transforms for Derived Signals.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DerivedSignalFactory" title="ophyd_async.core._derived_signal.DerivedSignalFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DerivedSignalFactory</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DerivedSignalFactory" title="ophyd_async.core._derived_signal.DerivedSignalFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DerivedSignalFactory</span></code></a></p></td>
 <td><p>A factory that makes Derived Signals using a many-many Transform.</p></td>
 </tr>
 </tbody>
@@ -1688,7 +1691,7 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.Table">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.ConfinedModel" title="ophyd_async.core._utils.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.ConfinedModel</span></code></a></p>
 <p>An abstraction of a Table where each field is a column.</p>
 <p>For example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Array1D</span>
@@ -2482,7 +2485,7 @@ in from the plan level.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">TriggerInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_detector.html#TriggerInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.TriggerInfo" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.ConfinedModel" title="ophyd_async.core._utils.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.ConfinedModel</span></code></a></p>
 <p>Minimal set of information required to setup triggering on a detector.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.core.TriggerInfo.number_of_events">
@@ -2792,7 +2795,7 @@ exist</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.HDFDatasetDescription">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">HDFDatasetDescription</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_hdf_dataset.html#HDFDatasetDescription"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.HDFDatasetDescription" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.ConfinedModel" title="ophyd_async.core._utils.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.ConfinedModel</span></code></a></p>
 <p>A description of the type and shape of a dataset in an HDF file.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.core.HDFDatasetDescription.data_key">
@@ -2929,7 +2932,7 @@ collect_asset_docs() to publish N frames
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.FlyMotorInfo">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">FlyMotorInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_flyer.html#FlyMotorInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.FlyMotorInfo" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.ConfinedModel" title="ophyd_async.core._utils.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.ConfinedModel</span></code></a></p>
 <p>Minimal set of information required to fly a motor.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.core.FlyMotorInfo.start_position">
@@ -3175,6 +3178,19 @@ timeout itself</p>
 <dd><p>None</p>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.ConfinedModel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">ConfinedModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#ConfinedModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.ConfinedModel" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<p>A base class confined to explicitly defined fields in the model schema.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.ConfinedModel.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><a class="headerlink" href="#ophyd_async.core.ConfinedModel.model_config" title="Link to this definition">#</a></dt>
+<dd><p>‘ConfigDict(…)’</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py exception">
 <dt class="sig sig-object py" id="ophyd_async.core.NotConnected">
 <em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">NotConnected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.13)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><span class="pre">Exception</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#NotConnected"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.NotConnected" title="Link to this definition">#</a></dt>
@@ -3375,7 +3391,7 @@ either be an async function, or return an <a class="reference internal" href="#o
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.Transform">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">Transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_derived_signal_backend.html#Transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Transform" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._derived_signal_backend.RawT</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._derived_signal_backend.DerivedT</span></code>]</p>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.ConfinedModel" title="ophyd_async.core._utils.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.ConfinedModel</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._derived_signal_backend.RawT</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._derived_signal_backend.DerivedT</span></code>]</p>
 <p>Baseclass for bidirectional transforms for Derived Signals.</p>
 <p>Subclass and add:</p>
 <ul class="simple">
@@ -3873,6 +3889,10 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.CalculatableTimeout"><code class="docutils literal notranslate"><span class="pre">CalculatableTimeout</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DEFAULT_TIMEOUT"><code class="docutils literal notranslate"><span class="pre">DEFAULT_TIMEOUT</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Callback"><code class="docutils literal notranslate"><span class="pre">Callback</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.ConfinedModel"><code class="docutils literal notranslate"><span class="pre">ConfinedModel</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.ConfinedModel.model_config"><code class="docutils literal notranslate"><span class="pre">ConfinedModel.model_config</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.NotConnected"><code class="docutils literal notranslate"><span class="pre">NotConnected</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.NotConnected.sub_errors"><code class="docutils literal notranslate"><span class="pre">NotConnected.sub_errors</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.NotConnected.format_error_string"><code class="docutils literal notranslate"><span class="pre">NotConnected.format_error_string()</span></code></a></li>

@@ -1236,7 +1236,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 `````{py:class} PcompInfo(/, **data: ~typing.Any)
 :canonical: ophyd_async.fastcs.panda._trigger.PcompInfo
 
-Bases: {py:obj}`pydantic.BaseModel`
+Bases: {py:obj}`ophyd_async.core.ConfinedModel`
 
 ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PcompInfo
 ```
@@ -1301,7 +1301,7 @@ Bases: {py:obj}`pydantic.BaseModel`
 `````{py:class} SeqTableInfo(/, **data: ~typing.Any)
 :canonical: ophyd_async.fastcs.panda._trigger.SeqTableInfo
 
-Bases: {py:obj}`pydantic.BaseModel`
+Bases: {py:obj}`ophyd_async.core.ConfinedModel`
 
 ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.SeqTableInfo
 ```

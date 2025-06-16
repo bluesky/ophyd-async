@@ -219,6 +219,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._yaml_settings.YamlSettingsProvider
     :summary:
     ```
+* - {py:obj}`ConfinedModel <ophyd_async.core._utils.ConfinedModel>`
+  - ```{autodoc2-docstring} ophyd_async.core._utils.ConfinedModel
+    :summary:
+    ```
 * - {py:obj}`Reference <ophyd_async.core._utils.Reference>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.Reference
     :summary:
@@ -1199,7 +1203,7 @@ Bases: {py:obj}`str`, {py:obj}`enum.Enum`
 `````{py:class} Table(**kwargs)
 :canonical: ophyd_async.core._table.Table
 
-Bases: {py:obj}`pydantic.BaseModel`
+Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
 ```{autodoc2-docstring} ophyd_async.core._table.Table
 ```
@@ -1851,7 +1855,7 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 `````{py:class} TriggerInfo(/, **data: ~typing.Any)
 :canonical: ophyd_async.core._detector.TriggerInfo
 
-Bases: {py:obj}`pydantic.BaseModel`
+Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
 ```{autodoc2-docstring} ophyd_async.core._detector.TriggerInfo
 ```
@@ -2261,7 +2265,7 @@ Bases: {py:obj}`typing.Protocol`
 `````{py:class} HDFDatasetDescription(/, **data: ~typing.Any)
 :canonical: ophyd_async.core._hdf_dataset.HDFDatasetDescription
 
-Bases: {py:obj}`pydantic.BaseModel`
+Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDatasetDescription
 ```
@@ -2412,7 +2416,7 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 `````{py:class} FlyMotorInfo(/, **data: ~typing.Any)
 :canonical: ophyd_async.core._flyer.FlyMotorInfo
 
-Bases: {py:obj}`pydantic.BaseModel`
+Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
 ```{autodoc2-docstring} ophyd_async.core._flyer.FlyMotorInfo
 ```
@@ -2659,6 +2663,26 @@ Bases: {py:obj}`ophyd_async.core._settings.SettingsProvider`
 
 ````
 
+`````{py:class} ConfinedModel(/, **data: ~typing.Any)
+:canonical: ophyd_async.core._utils.ConfinedModel
+
+Bases: {py:obj}`pydantic.BaseModel`
+
+```{autodoc2-docstring} ophyd_async.core._utils.ConfinedModel
+```
+
+````{py:attribute} model_config
+:canonical: ophyd_async.core._utils.ConfinedModel.model_config
+:value: >
+   'ConfigDict(...)'
+
+```{autodoc2-docstring} ophyd_async.core._utils.ConfinedModel.model_config
+```
+
+````
+
+`````
+
 `````{py:exception} NotConnected(errors: str | ~collections.abc.Mapping[str, Exception])
 :canonical: ophyd_async.core._utils.NotConnected
 
@@ -2788,7 +2812,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 ````{py:class} Transform(/, **data: ~typing.Any)
 :canonical: ophyd_async.core._derived_signal_backend.Transform
 
-Bases: {py:obj}`pydantic.BaseModel`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._derived_signal_backend.RawT`\, {py:obj}`ophyd_async.core._derived_signal_backend.DerivedT`\]
+Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._derived_signal_backend.RawT`\, {py:obj}`ophyd_async.core._derived_signal_backend.DerivedT`\]
 
 ```{autodoc2-docstring} ophyd_async.core._derived_signal_backend.Transform
 ```
