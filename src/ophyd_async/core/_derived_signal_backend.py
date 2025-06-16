@@ -7,17 +7,16 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from bluesky.protocols import Location, Reading, Subscribable
 from event_model import DataKey
-from pydantic import BaseModel
 
 from ._protocol import AsyncLocatable, AsyncReadable
 from ._signal_backend import SignalBackend, SignalDatatypeT, make_datakey, make_metadata
-from ._utils import Callback, T, gather_dict, merge_gathered_dicts
+from ._utils import Callback, ConfinedModel, T, gather_dict, merge_gathered_dicts
 
 RawT = TypeVar("RawT")
 DerivedT = TypeVar("DerivedT")
 
 
-class Transform(BaseModel, Generic[RawT, DerivedT]):
+class Transform(ConfinedModel, Generic[RawT, DerivedT]):
     """Baseclass for bidirectional transforms for Derived Signals.
 
     Subclass and add:
