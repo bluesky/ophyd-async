@@ -1,8 +1,8 @@
 import asyncio
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-from ophyd_async.core import FlyerController, wait_for_value
+from ophyd_async.core import ConfinedModel, FlyerController, wait_for_value
 
 from ._block import (
     PandaBitMux,
@@ -14,7 +14,7 @@ from ._block import (
 from ._table import SeqTable
 
 
-class SeqTableInfo(BaseModel):
+class SeqTableInfo(ConfinedModel):
     """Info for the PandA `SeqTable` for flyscanning."""
 
     sequence_table: SeqTable = Field(strict=True)
@@ -51,7 +51,7 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
         await wait_for_value(self.seq.active, False, timeout=1)
 
 
-class PcompInfo(BaseModel):
+class PcompInfo(ConfinedModel):
     """Info for the PandA `PcompBlock` for flyscanning."""
 
     start_postion: int = Field(description="start position in counts")

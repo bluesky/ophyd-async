@@ -4,10 +4,10 @@ from collections.abc import Callable, Sequence
 from typing import Annotated, Any, TypeVar, get_origin, get_type_hints
 
 import numpy as np
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 
-from ._utils import get_dtype
+from ._utils import ConfinedModel, get_dtype
 
 TableSubclass = TypeVar("TableSubclass", bound="Table")
 
@@ -26,7 +26,7 @@ def _make_default_factory(dtype: np.dtype) -> Callable[[], np.ndarray]:
     return numpy_array_default_factory
 
 
-class Table(BaseModel):
+class Table(ConfinedModel):
     """An abstraction of a Table where each field is a column.
 
     For example:
