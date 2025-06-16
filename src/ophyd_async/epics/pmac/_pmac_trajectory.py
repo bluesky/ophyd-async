@@ -1,4 +1,5 @@
 import time
+from dataclasses import dataclass
 from typing import Any, Literal
 
 import numpy as np
@@ -15,6 +16,18 @@ from ophyd_async.epics.pmac import Pmac, PmacMotor
 
 TICK_S = 0.000001
 MAX_MOVE_TIME = 4.0
+
+
+@dataclass
+class Trajectory:
+    position_axes: list[PmacMotor]
+    cs_port: str
+    profile_length: int
+    cs_axes: dict[PmacMotor, int]
+    positions: dict[int, npt.NDArray[np.float64]]
+    velocities: dict[int, npt.NDArray[np.float64]]
+    time_array: npt.NDArray[np.float64]
+    user_array: npt.NDArray[np.int32]
 
 
 class PmacTrajInfo(BaseModel):
@@ -34,41 +47,40 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         for i in range(len("ABCUVWXYZ")):
             await self.pmac.use_axis[i + 1].set(False)
 
-        (
-            position_axes,
-            cs_port,
-            profile_length,
-            cs_axes,
-            positions,
-            velocities,
-            time_array,
-            user_array,
-        ) = await self.prepare_trajectory(value.spec)
+        trajectory = await self.prepare_trajectory(value.spec)
 
-        for axis in position_axes:
-            await self.pmac.profile_cs_name.set(cs_port)
-            await self.pmac.points_to_build.set(profile_length)
-            await self.pmac.use_axis[cs_axes[axis] + 1].set(True)
-            await self.pmac.positions[cs_axes[axis] + 1].set(
-                positions[cs_axes[axis]][:profile_length],
+        for axis in trajectory.position_axes:
+            await self.pmac.profile_cs_name.set(trajectory.cs_port)
+            await self.pmac.points_to_build.set(trajectory.profile_length)
+            await self.pmac.use_axis[trajectory.cs_axes[axis] + 1].set(True)
+            await self.pmac.positions[trajectory.cs_axes[axis] + 1].set(
+                trajectory.positions[trajectory.cs_axes[axis]][
+                    : trajectory.profile_length
+                ],
             )
-            await self.pmac.velocities[cs_axes[axis] + 1].set(
-                velocities[cs_axes[axis]][:profile_length]
+            await self.pmac.velocities[trajectory.cs_axes[axis] + 1].set(
+                trajectory.velocities[trajectory.cs_axes[axis]][
+                    : trajectory.profile_length
+                ]
             )
 
-        await self.pmac.time_array.set(time_array[:profile_length])
-        await self.pmac.user_array.set(user_array[:profile_length])
+        await self.pmac.time_array.set(
+            trajectory.time_array[: trajectory.profile_length]
+        )
+        await self.pmac.user_array.set(
+            trajectory.user_array[: trajectory.profile_length]
+        )
 
         # Move to start
-        for axis in position_axes:
-            await axis.set(self.initial_pos[cs_axes[axis]])
+        for axis in trajectory.position_axes:
+            await axis.set(self.initial_pos[trajectory.cs_axes[axis]])
 
         # Set PMAC to use Velocity Array
         await self.pmac.profile_calc_vel.set(False)
         await self.pmac.build_profile.set(True)
         self._fly_start = time.monotonic()
 
-    async def prepare_trajectory(self, scanspec: Spec):
+    async def prepare_trajectory(self, scanspec: Spec) -> Trajectory:
         path = Path(scanspec.calculate())
         scan_slice = path.consume()
         scan_size = len(scan_slice)
@@ -231,7 +243,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         user_array[profile_length] = 8
         profile_length += 1
 
-        return (
+        return Trajectory(
             position_axes,
             cs_port,
             profile_length,
