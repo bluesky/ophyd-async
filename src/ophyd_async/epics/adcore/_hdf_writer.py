@@ -157,5 +157,5 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             msg = f"open() not called on {self}"
             raise RuntimeError(msg)
         await self.fileio.flush_now.set(True)
-        async for doc in self._composer.collect_stream_docs(indices_written):
+        for doc in self._composer.make_stream_docs(indices_written):
             yield doc

@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator
+from collections.abc import Iterator
 from pathlib import Path
 from urllib.parse import urlunparse
 
@@ -78,9 +78,7 @@ class HDFDocumentComposer:
             for ds in datasets
         ]
 
-    async def collect_stream_docs(
-        self, indices_written: int
-    ) -> AsyncIterator[StreamAsset]:
+    def make_stream_docs(self, indices_written: int) -> Iterator[StreamAsset]:
         # TODO: fail if we get dropped frames
         if indices_written and not self._last_emitted:
             for bundle in self._bundles:
