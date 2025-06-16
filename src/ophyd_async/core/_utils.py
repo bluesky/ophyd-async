@@ -388,7 +388,7 @@ class ConfinedModel(BaseModel):
     )
 
 
-def error_if_none(value: T | None, msg: str, bad_value: Any = None) -> T:
+def check_value(value: T | None, msg: str, bad_value: Any = None) -> T:
     if value is bad_value or value is None:
         raise RuntimeError(msg)
     return value

@@ -14,7 +14,7 @@ from ._utils import (
     DEFAULT_TIMEOUT,
     LazyMock,
     NotConnected,
-    error_if_none,
+    check_value,
     wait_for_connection,
 )
 
@@ -177,7 +177,7 @@ class Device(HasName):
         :param force_reconnect:
             If True, force a reconnect even if the last connect succeeded.
         """
-        self._connector = error_if_none(
+        self._connector = check_value(
             getattr(self, "_connector", None),
             f"{self}: doesn't have attribute `_connector`,"
             f" did you call `super().__init__` in your `__init__` method?",
@@ -202,7 +202,7 @@ class Device(HasName):
                 self._mock = None
                 coro = self._connector.connect_real(self, timeout, force_reconnect)
                 self._connect_task = asyncio.create_task(coro)
-            self._connect_task = error_if_none(
+            self._connect_task = check_value(
                 self._connect_task, "Connect task not created, this shouldn't happen"
             )
             # Wait for it to complete
@@ -294,7 +294,7 @@ class DeviceProcessor:
             raise ValueError
         except ValueError:
             _, _, tb = sys.exc_info()
-            tb = error_if_none(tb, "Can't get traceback, this shouldn't happen")
+            tb = check_value(tb, "Can't get traceback, this shouldn't happen")
 
             caller_frame = tb.tb_frame
             while caller_frame.f_locals.get("self", None) is self:

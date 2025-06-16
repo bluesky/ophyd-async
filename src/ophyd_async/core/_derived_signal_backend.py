@@ -14,7 +14,7 @@ from ._utils import (
     Callback,
     ConfinedModel,
     T,
-    error_if_none,
+    check_value,
     gather_dict,
     merge_gathered_dicts,
 )
@@ -181,7 +181,7 @@ class SignalTransformer(Generic[TransformT]):
         return {k: v["value"] for k, v in derived_readings.items()}
 
     def _update_cached_reading(self, value: dict[str, Reading]):
-        self._cached_readings = error_if_none(
+        self._cached_readings = check_value(
             self._cached_readings,
             "Cannot update cached reading as it has not been initialised",
         )
@@ -236,7 +236,7 @@ class SignalTransformer(Generic[TransformT]):
         }
 
     async def set_derived(self, name: str, value: Any):
-        self._set_derived = error_if_none(
+        self._set_derived = check_value(
             self._set_derived,
             "Cannot put as no set_derived method given",
         )
@@ -281,12 +281,12 @@ class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
         raise RuntimeError(msg)
 
     async def put(self, value: SignalDatatypeT | None, wait: bool) -> None:
-        wait = error_if_none(
+        wait = check_value(
             wait,
             "Cannot put with wait=False",
             bad_value=False,
         )
-        value = error_if_none(
+        value = check_value(
             value,
             "Must be given a value to put",
         )
