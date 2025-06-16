@@ -281,7 +281,7 @@ class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
         raise RuntimeError(msg)
 
     async def put(self, value: SignalDatatypeT | None, wait: bool) -> None:
-        wait = check_value(
+        check_value(
             wait,
             "Cannot put with wait=False",
             bad_value=False,
