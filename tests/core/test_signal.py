@@ -1055,25 +1055,12 @@ async def test_walk_signal_sources_returns_signal_sources(
     """
     sources = walk_signal_sources(mock_readable)
 
-    assert "mock+ca://SIM:READABLE:int" in sources["int_value"]
-    assert "mock+ca://SIM:READABLE:Value" in sources["int_array"]
-    assert "mock+ca://SIM:READABLE:array2" in sources["strictEnum_value"]
-
-    for path, signal in [
-        ("int_value", mock_readable.int_value),
-        ("int_array", mock_readable.int_array),
-        ("float_array", mock_readable.float_array),
-        ("str_value", mock_readable.str_value),
-        ("strictEnum_value", mock_readable.strictEnum_value),
-    ]:
-        assert path in sources
-        assert sources[path] == signal.source
-
-    # No extra keys
-    assert set(sources.keys()) == {
-        "int_value",
-        "int_array",
-        "float_array",
-        "str_value",
-        "strictEnum_value",
+    expected_sources = {
+        "int_value": mock_readable.int_value.source,
+        "int_array": mock_readable.int_array.source,
+        "float_array": mock_readable.float_array.source,
+        "str_value": mock_readable.str_value.source,
+        "strictEnum_value": mock_readable.strictEnum_value.source,
     }
+
+    assert sources == expected_sources
