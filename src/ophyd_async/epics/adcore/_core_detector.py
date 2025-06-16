@@ -22,8 +22,8 @@ class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
         self.fileio = writer.fileio
 
         if plugins is not None:
-            for name, plugin in plugins.items():
-                setattr(self, name, plugin)
+            for plugin_name, plugin in plugins.items():
+                setattr(self, plugin_name, plugin)
 
         super().__init__(
             controller,

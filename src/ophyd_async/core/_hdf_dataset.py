@@ -22,7 +22,7 @@ class HDFDatasetDescription(BaseModel):
     """The dataset name within the HDF file,
     e.g. /entry/data/data or /entry/instrument/NDAttributes/sum"""
 
-    shape: tuple[int, ...] = Field(default_factory=tuple)
+    shape: tuple[int | None, ...] = Field(default_factory=tuple)
     """The shape of a single event's data in the HDF file,
     e.g. (1, 768, 1024) for arrays or () for scalars"""
 

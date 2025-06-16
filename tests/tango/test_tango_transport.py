@@ -6,6 +6,15 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 import pytest
+from tango import (
+    CmdArgType,
+    DevState,
+)
+from tango.asyncio import DeviceProxy
+from tango.asyncio_executor import (
+    AsyncioExecutor,
+    get_global_executor,
+)
 from test_base_device import TestDevice
 from test_tango_signals import make_backend
 
@@ -25,15 +34,6 @@ from ophyd_async.tango.core import (
     get_trl_descriptor,
 )
 from ophyd_async.tango.testing import OneOfEverythingTangoDevice
-from tango import (
-    CmdArgType,
-    DevState,
-)
-from tango.asyncio import DeviceProxy
-from tango.asyncio_executor import (
-    AsyncioExecutor,
-    get_global_executor,
-)
 
 
 # --------------------------------------------------------------------
@@ -287,6 +287,7 @@ async def test_attribute_proxy_put_exceptions(tango_test_device, wait):
 @pytest.mark.parametrize(
     "attr, new_value", [("justvalue", 10), ("array", np.array([[2, 3, 4], [5, 6, 7]]))]
 )
+@pytest.mark.timeout(4.7)
 async def test_attribute_proxy_get_w_value(tango_test_device, attr, new_value):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, attr)
@@ -329,6 +330,7 @@ async def test_attribute_has_subscription(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.timeout(12.0)
 async def test_attribute_subscribe_callback(echo_device):
     await prepare_device(echo_device, "float32", 1.0)
     source = get_full_attr_trl(echo_device, "float32")
@@ -388,6 +390,7 @@ async def test_attribute_set_polling(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.timeout(3)
 async def test_attribute_poll(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "floatvalue")
@@ -448,6 +451,7 @@ async def test_attribute_poll(tango_test_device):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize("attr", ["array", "label"])
+@pytest.mark.timeout(4.2)
 async def test_attribute_poll_stringsandarrays(tango_test_device, attr):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, attr)
@@ -513,6 +517,7 @@ async def test_command_proxy_put_wait(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.timeout(3.2)
 async def test_command_proxy_put_nowait(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "slow_command")
@@ -846,6 +851,7 @@ async def test_tango_transport_read_only_trl(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.timeout(14)
 async def test_tango_transport_nonexistent_trl(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     nonexistent_trl = get_full_attr_trl(tango_test_device, "nonexistent")

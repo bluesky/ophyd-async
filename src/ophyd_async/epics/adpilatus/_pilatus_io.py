@@ -21,4 +21,4 @@ class PilatusDriverIO(adcore.ADBaseIO):
     """This mirrors the interface provided by ADPilatus/db/pilatus.template."""
     """See HTML docs at https://areadetector.github.io/areaDetector/ADPilatus/pilatusDoc.html"""
     trigger_mode: A[SignalRW[PilatusTriggerMode], PvSuffix.rbv("TriggerMode")]
-    armed: A[SignalR[bool], PvSuffix.rbv("Armed_RBV")]
+    armed: A[SignalR[bool], PvSuffix("Armed")]

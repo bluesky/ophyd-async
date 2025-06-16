@@ -3,12 +3,12 @@ import contextlib
 import time
 
 import numpy as np
-from bluesky.protocols import Location, Reading, Stoppable, Subscribable
-from pydantic import BaseModel, ConfigDict, Field
+from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
 
 from ophyd_async.core import (
     AsyncStatus,
     Callback,
+    FlyMotorInfo,
     StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
@@ -19,38 +19,7 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 
 
-class FlySimMotorInfo(BaseModel):
-    """Minimal set of information required to fly a [](#SimMotor)."""
-
-    model_config = ConfigDict(frozen=True)
-
-    cv_start: float
-    """Absolute position of the motor once it finishes accelerating to desired
-    velocity, in motor EGUs"""
-
-    cv_end: float
-    """Absolute position of the motor once it begins decelerating from desired
-    velocity, in EGUs"""
-
-    cv_time: float = Field(gt=0)
-    """Time taken for the motor to get from start_position to end_position, excluding
-    run-up and run-down, in seconds."""
-
-    @property
-    def velocity(self) -> float:
-        """Calculate the velocity of the constant velocity phase."""
-        return (self.cv_end - self.cv_start) / self.cv_time
-
-    def start_position(self, acceleration_time: float) -> float:
-        """Calculate the start position with run-up distance added on."""
-        return self.cv_start - acceleration_time * self.velocity / 2
-
-    def end_position(self, acceleration_time: float) -> float:
-        """Calculate the end position with run-down distance added on."""
-        return self.cv_end + acceleration_time * self.velocity / 2
-
-
-class SimMotor(StandardReadable, Stoppable, Subscribable[float]):
+class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float]):
     """For usage when simulating a motor."""
 
     def __init__(self, name="", instant=True) -> None:
@@ -74,7 +43,7 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float]):
         self._set_success = True
         self._move_status: AsyncStatus | None = None
         # Stored in prepare
-        self._fly_info: FlySimMotorInfo | None = None
+        self._fly_info: FlyMotorInfo | None = None
         # Set on kickoff(), complete when motor reaches end position
         self._fly_status: WatchableAsyncStatus | None = None
 
@@ -86,12 +55,14 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float]):
         self.user_readback.set_name(name)
 
     @AsyncStatus.wrap
-    async def prepare(self, value: FlySimMotorInfo):
+    async def prepare(self, value: FlyMotorInfo):
         """Calculate run-up and move there, setting fly velocity when there."""
         self._fly_info = value
         # Move to start as fast as we can
         await self.velocity.set(0)
-        await self.set(value.start_position(await self.acceleration_time.get_value()))
+        await self.set(
+            value.ramp_up_start_pos(await self.acceleration_time.get_value())
+        )
         # Set the velocity for the actual move
         await self.velocity.set(value.velocity)
 
@@ -115,7 +86,7 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float]):
             msg = "Motor must be prepared before attempting to kickoff"
             raise RuntimeError(msg)
         acceleration_time = await self.acceleration_time.get_value()
-        self._fly_status = self.set(self._fly_info.end_position(acceleration_time))
+        self._fly_status = self.set(self._fly_info.ramp_down_end_pos(acceleration_time))
         # Wait for the acceleration time to ensure we are at velocity
         await asyncio.sleep(acceleration_time)
 

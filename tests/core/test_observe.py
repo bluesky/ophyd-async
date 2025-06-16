@@ -1,4 +1,5 @@
 import asyncio
+import re
 import time
 
 import pytest
@@ -8,6 +9,7 @@ from ophyd_async.core import (
     observe_signals_value,
     observe_value,
     soft_signal_r_and_setter,
+    soft_signal_rw,
 )
 
 
@@ -134,3 +136,58 @@ async def test_observe_value_uses_correct_timeout():
     with pytest.raises(asyncio.TimeoutError):
         await watch(timeout=0.3, done_timeout=0.15)
     assert time.time() - start == pytest.approx(0.15, abs=0.05)
+
+
+@pytest.mark.timeout(3)
+async def test_observe_signals_value_timeout_message():
+    """
+    Test creates a queue of 2 signals which update with
+    different rate and observe with smaller timeout.
+    """
+    sig1 = soft_signal_rw(float)
+    sig2 = soft_signal_rw(float)
+    recv1 = []
+    recv2 = []
+    time_delay_sec1 = 0.3
+    time_delay_sec2 = 0.5
+    time_delay = 0.1
+    n_updates = 2
+
+    async def tick1():
+        for i in range(n_updates):
+            sig1.set(i + 10.0, False)
+            await asyncio.sleep(time_delay_sec1)
+
+    async def tick2():
+        for i in range(n_updates):
+            sig2.set(i + 100.0, False)
+            await asyncio.sleep(time_delay_sec2)
+
+    async def watch(timeout, done_timeout):
+        async for signal, value in observe_signals_value(
+            sig1, sig2, timeout=timeout, done_timeout=done_timeout
+        ):
+            if signal is sig1:
+                recv1.append(value)
+            if signal is sig2:
+                recv2.append(value)
+
+    async def main_test(tmo):
+        await asyncio.gather(tick2(), tick1(), watch(timeout=tmo, done_timeout=None))
+
+    with pytest.raises(
+        asyncio.TimeoutError,
+        match=re.escape(
+            f"Timeout Error while waiting {time_delay}s "
+            "to update ['soft://', 'soft://']. "
+            "Last observed signal and value were"
+        ),
+    ):
+        await main_test(time_delay)
+
+    # Assert first default and set values only
+    assert recv1 == [0.0, 10.0]
+    assert recv2 == [0.0, 100.0]
+
+    # let all tasks finish correctly
+    await asyncio.sleep(max(time_delay_sec1, time_delay_sec2) * 2)

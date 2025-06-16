@@ -1,6 +1,7 @@
 import asyncio
 from collections.abc import AsyncIterator
 from pathlib import Path
+from typing import TypeGuard
 from xml.etree import ElementTree as ET
 
 from bluesky.protocols import StreamAsset
@@ -20,6 +21,10 @@ from ._utils import (
     convert_param_dtype_to_np,
     convert_pv_dtype_to_np,
 )
+
+
+def _is_fully_described(shape: tuple[int | None, ...]) -> TypeGuard[tuple[int, ...]]:
+    return None not in shape
 
 
 class ADHDFWriter(ADWriter[NDFileHDFIO]):
@@ -71,6 +76,16 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
 
         # Determine number of frames that will be saved per HDF chunk
         frames_per_chunk = await self.fileio.num_frames_chunks.get_value()
+
+        if not _is_fully_described(detector_shape):
+            # Questions:
+            # - Can AreaDetector support this?
+            # - How to deal with chunking?
+            # Don't support for now - leave option open to support it later
+            raise ValueError(
+                "Datasets with partially unknown dimensionality "
+                "are not currently supported by ADHDFWriter."
+            )
 
         # Add the main data
         self._datasets = [

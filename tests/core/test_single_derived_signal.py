@@ -1,12 +1,18 @@
 import asyncio
 import re
-from unittest.mock import call
+from unittest.mock import MagicMock, call, patch
 
 import pytest
+from bluesky.protocols import Reading, Subscribable
 
 from ophyd_async.core import (
+    Callback,
+    Signal,
+    SignalBackend,
+    SignalDatatype,
     derived_signal_r,
     derived_signal_rw,
+    derived_signal_w,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
@@ -20,6 +26,23 @@ from ophyd_async.testing import (
     assert_value,
     get_mock,
 )
+
+
+@pytest.fixture
+def movable_beamstop() -> MovableBeamstop:
+    return MovableBeamstop("device")
+
+
+@pytest.fixture
+def readonly_beamstop() -> ReadOnlyBeamstop:
+    return ReadOnlyBeamstop("device")
+
+
+def _get_position(foo: float, bar: float) -> BeamstopPosition:
+    if abs(foo) < 1 and abs(bar) < 2:
+        return BeamstopPosition.IN_POSITION
+    else:
+        return BeamstopPosition.OUT_OF_POSITION
 
 
 @pytest.mark.parametrize(
@@ -103,33 +126,127 @@ async def test_setting_all():
     )
 
 
-def test_mismatching_args():
-    def _get_position(x: float, y: float) -> BeamstopPosition:
-        if abs(x) < 1 and abs(y) < 2:
-            return BeamstopPosition.IN_POSITION
-        else:
-            return BeamstopPosition.OUT_OF_POSITION
-
-    with pytest.raises(
-        TypeError,
-        match=re.escape(
-            "Expected devices to be passed as keyword arguments ['x', 'y'], "
-            "got ['foo', 'bar']"
+@pytest.mark.parametrize(
+    "func, expected_msg, args",
+    [
+        (
+            _get_position,
+            "Expected devices to be passed as keyword arguments "
+            "{'foo': <class 'float'>, 'bar': <class 'float'>}, "
+            "got {'x': <class 'float'>, 'y': <class 'float'>}",
+            {"x": soft_signal_rw(float), "y": soft_signal_rw(float)},
         ),
-    ):
-        derived_signal_r(
-            _get_position, foo=soft_signal_rw(float), bar=soft_signal_rw(float)
-        )
+        (
+            _get_position,
+            "Expected devices to be passed as keyword arguments "
+            "{'foo': <class 'float'>, 'bar': <class 'float'>}, "
+            "got {'foo': <class 'int'>, 'bar': <class 'int'>}",
+            {
+                "foo": soft_signal_rw(int),
+                "bar": soft_signal_rw(int),
+            },  # Signals are of wrong type.
+        ),
+    ],
+)
+def test_mismatching_args_and_types(func, expected_msg, args):
+    with pytest.raises(TypeError, match=re.escape(expected_msg)):
+        derived_signal_r(func, **args)
+
+
+def _get(ts: int) -> float:
+    return ts
+
+
+async def _put(value: float) -> None:
+    pass
+
+
+@pytest.fixture
+def derived_signal_backend() -> SignalBackend[SignalDatatype]:
+    signal_rw = soft_signal_rw(int, initial_value=4)
+    derived = derived_signal_rw(_get, _put, ts=signal_rw)
+    return derived._connector.backend
 
 
 async def test_derived_signal_rw_works_with_signal_r():
     signal_r, _ = soft_signal_r_and_setter(int, initial_value=4)
-
-    def _get(ts: int) -> float:
-        return ts
-
-    async def _put(value: float) -> None:
-        pass
-
     derived = derived_signal_rw(_get, _put, ts=signal_r)
     assert await derived.get_value() == 4
+
+
+async def test_validate_by_type(derived_signal_backend: SignalBackend):
+    def float_get(ts: float) -> float:
+        return ts
+
+    with pytest.raises(TypeError, match=re.escape(" is not an instance of")):
+        derived_signal_rw(float_get, _put, ts=Signal(derived_signal_backend))
+
+
+async def test_set_derived_not_initialized():
+    sig = derived_signal_r(_get, ts=soft_signal_rw(int, initial_value=4))
+    with pytest.raises(
+        RuntimeError,
+        match="Cannot put as no set_derived method given",
+    ):
+        await sig._connector.backend.put(1.0, True)
+
+
+async def test_derived_update_cached_reading_not_initialized(
+    derived_signal_backend: SignalBackend,
+):
+    class test_cls(Subscribable):
+        def subscribe(self, function: Callback) -> None:
+            pass
+
+        def clear_sub(self, function: Callback) -> None:
+            function("")
+
+        @property
+        def name(self) -> str:
+            return ""
+
+    with patch.object(
+        derived_signal_backend.transformer,  # type: ignore
+        "raw_and_transform_subscribables",
+        {"raw_device": test_cls()},
+    ):
+        with pytest.raises(
+            RuntimeError,
+            match=re.escape(
+                "Cannot update cached reading as it has not been initialised"
+            ),
+        ):  # noqa: E501
+            derived_signal_backend.set_callback(None)
+
+
+async def test_set_derived_callback_already_set(derived_signal_backend: SignalBackend):
+    mock_callback = MagicMock(Callback[Reading])
+    derived_signal_backend.set_callback(mock_callback)
+    with pytest.raises(RuntimeError, match=re.escape("Callback already set for")):
+        derived_signal_backend.set_callback(mock_callback)
+
+
+@patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
+def test_get_return_datatype_no_type(movable_beamstop: MovableBeamstop):
+    with pytest.raises(
+        TypeError, match=re.escape("does not have a type hint for it's return value")
+    ):
+        derived_signal_r(movable_beamstop._get_position)
+
+
+@patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
+def test_get_first_arg_datatype_no_type(movable_beamstop: MovableBeamstop):
+    with pytest.raises(
+        TypeError, match=re.escape("does not have a type hinted argument")
+    ):
+        derived_signal_w(movable_beamstop._set_from_position)
+
+
+def test_derived_signal_rw_type_error(movable_beamstop: MovableBeamstop):
+    with patch.object(
+        movable_beamstop, "_set_from_position", movable_beamstop._get_position
+    ):  # noqa: E501
+        with pytest.raises(TypeError):
+            derived_signal_rw(
+                movable_beamstop._get_position, movable_beamstop._set_from_position
+            )  # noqa: E501

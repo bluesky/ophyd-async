@@ -1,5 +1,3 @@
-from ._eiger import EigerDetector, EigerTriggerInfo
-from ._eiger_controller import EigerController
-from ._eiger_io import EigerDriverIO
+from ._odin_io import Odin, OdinWriter, Writing
 
-__all__ = ["EigerDetector", "EigerController", "EigerDriverIO", "EigerTriggerInfo"]
+__all__ = ["Odin", "OdinWriter", "Writing"]
