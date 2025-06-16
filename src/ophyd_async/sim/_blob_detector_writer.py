@@ -85,9 +85,11 @@ class BlobDetectorWriter(DetectorWriter):
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # When we have written something to the file
-        if self.composer:
-            async for doc in self.composer.collect_stream_docs(indices_written):
-                yield doc
+        if self.composer is None:
+            msg = f"open() not called on {self}"
+            raise RuntimeError(msg)
+        async for doc in self.composer.collect_stream_docs(indices_written):
+            yield doc
 
     async def close(self) -> None:
         self.pattern_generator.close_file()
