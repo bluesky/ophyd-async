@@ -50,13 +50,12 @@ async def sim_pmac():
     yield sim_pmac
 
 
-async def test_sim_pmac_simple_trajectory(sim_x_motor, sim_pmac) -> None:
+async def test_prepare_trajectory_simple(sim_x_motor, sim_pmac) -> None:
     # Test the generated Trajectory profile from a scanspec
     spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
-    info = PmacTrajInfo(spec=spec)
     trigger_logic = PmacTrajectoryTriggerLogic(sim_pmac)
-    await trigger_logic.prepare(info)
-    assert await trigger_logic.pmac.positions[9].get_value() == pytest.approx(
+    trajectory = await trigger_logic.prepare_trajectory(spec)
+    assert trajectory.positions[8][: trajectory.profile_length] == pytest.approx(
         [
             0.75,
             1.25,
@@ -79,7 +78,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor, sim_pmac) -> None:
             5.2625,
         ]
     )
-    assert await trigger_logic.pmac.velocities[9].get_value() == pytest.approx(
+    assert trajectory.velocities[8][: trajectory.profile_length] == pytest.approx(
         [
             0.5,
             0.5,
@@ -103,7 +102,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor, sim_pmac) -> None:
         ]
     )
     assert (
-        await trigger_logic.pmac.time_array.get_value()
+        trajectory.time_array[: trajectory.profile_length]
         == [
             50000.0,
             1000000.0,
@@ -127,7 +126,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor, sim_pmac) -> None:
         ]
     ).all()
     assert (
-        await trigger_logic.pmac.user_array.get_value()
+        trajectory.user_array[: trajectory.profile_length]
         == [
             1,
             1,
@@ -150,6 +149,15 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor, sim_pmac) -> None:
             8,
         ]
     ).all()
+
+
+async def test_prepare_simple(sim_x_motor, sim_pmac) -> None:
+    # Test the generated Trajectory profile from a scanspec
+    spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
+    info = PmacTrajInfo(spec=spec)
+    trigger_logic = PmacTrajectoryTriggerLogic(sim_pmac)
+    await trigger_logic.prepare(info)
+
     assert await trigger_logic.pmac.points_to_build.get_value() == 19
     assert await sim_x_motor.user_setpoint.get_value() == 0.7375
     assert trigger_logic.scantime == 9.1
@@ -198,13 +206,12 @@ async def test_sim_pmac_simple_linear_trajectory(sim_x_motor, sim_pmac) -> None:
     await trigger_logic.kickoff()
 
 
-async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
+async def test_prepare_trajectory_grid(sim_x_motor, sim_y_motor, sim_pmac) -> None:
     # Test the generated Trajectory profile from a scanspec
     spec = fly(Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5), 1)
-    info = PmacTrajInfo(spec=spec)
     trigger_logic = PmacTrajectoryTriggerLogic(sim_pmac)
-    await trigger_logic.prepare(info)
-    assert await trigger_logic.pmac.positions[9].get_value() == pytest.approx(
+    trajectory = await trigger_logic.prepare_trajectory(spec)
+    assert trajectory.positions[8][: trajectory.profile_length] == pytest.approx(
         [
             0.5,
             1.5,
@@ -247,7 +254,7 @@ async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
             5.55,
         ]
     )
-    assert await trigger_logic.pmac.velocities[9].get_value() == pytest.approx(
+    assert trajectory.velocities[8][: trajectory.profile_length] == pytest.approx(
         [
             1.0,
             1.0,
@@ -290,7 +297,7 @@ async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
             0.0,
         ]
     )
-    assert await trigger_logic.pmac.positions[8].get_value() == pytest.approx(
+    assert trajectory.positions[7][: trajectory.profile_length] == pytest.approx(
         [
             10.0,
             10.0,
@@ -333,7 +340,7 @@ async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
             12.0,
         ]
     )
-    assert await trigger_logic.pmac.velocities[8].get_value() == pytest.approx(
+    assert trajectory.velocities[7][: trajectory.profile_length] == pytest.approx(
         [
             0.0,
             0.0,
@@ -376,7 +383,7 @@ async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
             0.0,
         ]
     )
-    assert await trigger_logic.pmac.time_array.get_value() == pytest.approx(
+    assert trajectory.time_array[: trajectory.profile_length] == pytest.approx(
         [
             100000,
             1000000,
@@ -419,7 +426,7 @@ async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
             100000,
         ]
     )
-    assert await trigger_logic.pmac.user_array.get_value() == pytest.approx(
+    assert trajectory.user_array[: trajectory.profile_length] == pytest.approx(
         [
             1,
             1,
@@ -462,6 +469,15 @@ async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
             8,
         ]
     )
+
+
+async def test_prepare_grid(sim_x_motor, sim_y_motor, sim_pmac) -> None:
+    # Test the generated Trajectory profile from a scanspec
+    spec = fly(Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5), 1)
+    info = PmacTrajInfo(spec=spec)
+    trigger_logic = PmacTrajectoryTriggerLogic(sim_pmac)
+    await trigger_logic.prepare(info)
+
     assert await trigger_logic.pmac.points_to_build.get_value() == 39
     assert await sim_x_motor.user_setpoint.get_value() == 0.45
     assert trigger_logic.scantime == 15.2
