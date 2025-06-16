@@ -21,17 +21,20 @@ def test_pmac_io():
     # check coords PVs
     assert pmac.coord[1].defer_moves.source == "ca://BL47P-MO-BRICK-01:CS1:DeferMoves"
     assert (
-        pmac.coord[1].cs_axis[2].source == "ca://BL47P-MO-BRICK-01:CS1:M2:DirectDemand"
+        pmac.coord[1].cs_axis_setpoint[2].source
+        == "ca://BL47P-MO-BRICK-01:CS1:M2:DirectDemand"
     )
     assert (
-        pmac.coord[1].cs_axis[1].source == "ca://BL47P-MO-BRICK-01:CS1:M1:DirectDemand"
+        pmac.coord[1].cs_axis_setpoint[1].source
+        == "ca://BL47P-MO-BRICK-01:CS1:M1:DirectDemand"
     )
     assert (
-        pmac.coord[9].cs_axis[2].source == "ca://BL47P-MO-BRICK-01:CS9:M2:DirectDemand"
+        pmac.coord[9].cs_axis_setpoint[2].source
+        == "ca://BL47P-MO-BRICK-01:CS9:M2:DirectDemand"
     )
 
     # check axes PVs
-    assert pmac.axis[1].cs_axis.source == "ca://BL47P-MO-BRICK-01:M1:CsAxis_RBV"
+    assert pmac.axis[1].cs_axis_letter.source == "ca://BL47P-MO-BRICK-01:M1:CsAxis_RBV"
     assert pmac.axis[1].cs_port.source == "ca://BL47P-MO-BRICK-01:M1:CsPort_RBV"
 
     # check trajectory scan PVs
@@ -71,7 +74,7 @@ def test_pmac_axis_io():
     pmac_axis = PmacAxisIO(prefix="BL47P-MO-BRICK-01:M1", name="p47-brick-01-axis")
 
     assert pmac_axis.name == "p47-brick-01-axis"
-    assert pmac_axis.cs_axis.source == "ca://BL47P-MO-BRICK-01:M1:CsAxis_RBV"
+    assert pmac_axis.cs_axis_letter.source == "ca://BL47P-MO-BRICK-01:M1:CsAxis_RBV"
     assert pmac_axis.cs_port.source == "ca://BL47P-MO-BRICK-01:M1:CsPort_RBV"
 
 
@@ -82,4 +85,7 @@ def test_pmac_coord_io():
 
     assert pmac_coord.name == "p47-brick-01-coord"
     assert pmac_coord.defer_moves.source == "ca://BL47P-MO-BRICK-01:CS1:DeferMoves"
-    assert pmac_coord.cs_axis[1].source == "ca://BL47P-MO-BRICK-01:CS1:M1:DirectDemand"
+    assert (
+        pmac_coord.cs_axis_setpoint[1].source
+        == "ca://BL47P-MO-BRICK-01:CS1:M1:DirectDemand"
+    )
