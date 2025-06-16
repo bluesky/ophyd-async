@@ -54,10 +54,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
     async def open(
         self, name: str, exposures_per_event: PositiveInt = 1
     ) -> dict[str, DataKey]:
-        self._composer = None
-
         # Setting HDF writer specific signals
-
         # Make sure we are using chunk auto-sizing
         await asyncio.gather(self.fileio.chunk_size_auto.set(True))
 
@@ -100,6 +97,13 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
+
+        self._composer = HDFDocumentComposer(
+            # See https://github.com/bluesky/ophyd-async/issues/122
+            Path(await self.fileio.full_file_name.get_value()),
+            self._datasets,
+        )
+
         # And all the scalar datasets
         for plugin in self._plugins.values():
             maybe_xml = await plugin.nd_attributes_file.get_value()
@@ -149,20 +153,9 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
+        if self._composer is None:
+            msg = f"open() not called on {self}"
+            raise RuntimeError(msg)
         await self.fileio.flush_now.set(True)
-        if indices_written:
-            if not self._composer:
-                path = Path(await self.fileio.full_file_name.get_value())
-                self._composer = HDFDocumentComposer(
-                    # See https://github.com/bluesky/ophyd-async/issues/122
-                    path,
-                    self._datasets,
-                )
-                # stream resource says "here is a dataset",
-                # stream datum says "here are N frames in that stream resource",
-                # you get one stream resource and many stream datums per scan
-
-                for doc in self._composer.stream_resources():
-                    yield "stream_resource", doc
-            for doc in self._composer.stream_data(indices_written):
-                yield "stream_datum", doc
+        for doc in self._composer.make_stream_docs(indices_written):
+            yield doc

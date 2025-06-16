@@ -2,12 +2,11 @@ from collections.abc import Iterator
 from pathlib import Path
 from urllib.parse import urlunparse
 
+from bluesky.protocols import StreamAsset
 from event_model import (  # type: ignore
     ComposeStreamResource,
     ComposeStreamResourceBundle,
-    StreamDatum,
     StreamRange,
-    StreamResource,
 )
 from pydantic import Field
 
@@ -81,12 +80,12 @@ class HDFDocumentComposer:
             for ds in datasets
         ]
 
-    def stream_resources(self) -> Iterator[StreamResource]:
-        for bundle in self._bundles:
-            yield bundle.stream_resource_doc
+    def make_stream_docs(self, indices_written: int) -> Iterator[StreamAsset]:
+        # TODO: fail if we get dropped frames
+        if indices_written and not self._last_emitted:
+            for bundle in self._bundles:
+                yield "stream_resource", bundle.stream_resource_doc
 
-    def stream_data(self, indices_written: int) -> Iterator[StreamDatum]:
-        # Indices are relative to resource
         if indices_written > self._last_emitted:
             indices: StreamRange = {
                 "start": self._last_emitted,
@@ -94,4 +93,4 @@ class HDFDocumentComposer:
             }
             self._last_emitted = indices_written
             for bundle in self._bundles:
-                yield bundle.compose_stream_datum(indices)
+                yield "stream_datum", bundle.compose_stream_datum(indices)
