@@ -23,7 +23,7 @@ The `Device` class is the base of all ophyd-async objects that are published to 
 - a [](#Device.parent) read-write property to read it's parent Device if it exists
 - a [](#Device.children) to iterate through the Device attributes, yielding the `(name, child)` child Devices
 - a `setattr` override that detects whether the attribute is also a Device and sets its parent
-- a [](#Device.set_name) method to set its name and also set the names of its children using the parent name as a prefix
+- a [](#Device.set_name) method to set its name and also set the names of its children using the parent name as a prefix, called at init and also when a new child is attached to an already named Device
 - a [](#Device.connect) method that connects it and its children
 
 All the above methods are concrete, but `connect()` calls out to a [](#DeviceConnector) to actually do the connection, only handling caching itself. This enables plug-in behavior on connect (like the introspection of child Attributes in Tango or PVI, or the special case for `Signal` we will see later).
