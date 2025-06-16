@@ -2332,18 +2332,10 @@ Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDocumentComposer
 ```
 
-````{py:method} stream_resources() -> ~collections.abc.Iterator[~event_model.StreamResource]
-:canonical: ophyd_async.core._hdf_dataset.HDFDocumentComposer.stream_resources
+````{py:method} make_stream_docs(indices_written: int) -> ~collections.abc.Iterator[~bluesky.protocols.StreamAsset]
+:canonical: ophyd_async.core._hdf_dataset.HDFDocumentComposer.make_stream_docs
 
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDocumentComposer.stream_resources
-```
-
-````
-
-````{py:method} stream_data(indices_written: int) -> ~collections.abc.Iterator[~event_model.StreamDatum]
-:canonical: ophyd_async.core._hdf_dataset.HDFDocumentComposer.stream_data
-
-```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDocumentComposer.stream_data
+```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDocumentComposer.make_stream_docs
 ```
 
 ````
