@@ -37,6 +37,7 @@ class EigerDetectorIO(Device):
     detector_distance: SignalRW[float]
     omega_start: SignalRW[float]
     omega_increment: SignalRW[float]
+    stale_parameters: SignalR[bool]
     arm: SignalX
     disarm: SignalX
     trigger: SignalX

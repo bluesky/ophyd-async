@@ -53,6 +53,10 @@ class EigerController(DetectorController):
                 ]
             )
 
+        await wait_for_value(
+            self._drv.detector.stale_parameters, False, timeout=DEFAULT_TIMEOUT
+        )
+
         await asyncio.gather(*coros)
 
     async def arm(self):
