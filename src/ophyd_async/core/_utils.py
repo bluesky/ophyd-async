@@ -386,3 +386,9 @@ class ConfinedModel(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+
+
+def error_if_none(value: T | None, msg: str, bad_value: Any = None) -> T:
+    if value is bad_value or value is None:
+        raise RuntimeError(msg)
+    return value
