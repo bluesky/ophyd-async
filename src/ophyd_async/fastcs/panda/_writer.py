@@ -153,7 +153,7 @@ class PandaHDFWriter(DetectorWriter):
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
-        if not self._composer:
+        if self._composer is None:
             msg = f"open() not called on {self}"
             raise RuntimeError(msg)
         async for doc in self._composer.collect_stream_docs(indices_written):
