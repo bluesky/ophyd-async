@@ -53,11 +53,11 @@ class EigerController(DetectorController):
                 ]
             )
 
+        await asyncio.gather(*coros)
+
         await wait_for_value(
             self._drv.detector.stale_parameters, False, timeout=DEFAULT_TIMEOUT
         )
-
-        await asyncio.gather(*coros)
 
     async def arm(self):
         # NOTE: This will return immedietly on FastCS 0.8.0,
