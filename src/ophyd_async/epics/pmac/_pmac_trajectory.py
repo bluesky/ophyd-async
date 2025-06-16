@@ -53,6 +53,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
             await self.pmac.profile_cs_name.set(trajectory.cs_port)
             await self.pmac.points_to_build.set(trajectory.profile_length)
             await self.pmac.use_axis[trajectory.cs_axes[axis] + 1].set(True)
+            # TODO: Should this be truncated to profile_length before now?
             await self.pmac.positions[trajectory.cs_axes[axis] + 1].set(
                 trajectory.positions[trajectory.cs_axes[axis]][
                     : trajectory.profile_length
@@ -119,6 +120,16 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
 
         assert len(cs_ports) == 1, "Motors in more than one CS"  # noqa
         cs_port = cs_ports.pop()
+
+        # TODO:
+        # - Move everything above here should move out and be passed in?
+        #   - Initialise a Trajectory and pass in
+        #   Move some preamble back to prepare
+        # - Might be cleaner if this method does not know about PmacMotor, only indices
+        #   - Pass in a list of active CS indices
+        #   - positions[cs_axes[axis]] -> positions[cs_idx]
+        # - This method should be static if possible
+        #   - Pass scantime back via Trajectory
 
         # Starting points
 
@@ -203,7 +214,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
 
         # Calculate Starting and end Position to allow ramp up and trail off velocity
 
-        self.initial_pos = {}
+        initial_pos = {}
         run_up_time = 0
         final_time = 0
         profile_length = profile_index
@@ -213,7 +224,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
                 0,
                 velocities[cs_axes[axis]][0],
             )
-            self.initial_pos[cs_axes[axis]] = positions[cs_axes[axis]][0] - run_up_disp
+            initial_pos[cs_axes[axis]] = positions[cs_axes[axis]][0] - run_up_disp
 
             # trail off position and tim
             if (
