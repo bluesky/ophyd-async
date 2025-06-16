@@ -64,7 +64,15 @@ class PandaHDFWriter(DetectorWriter):
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.panda_data_block.capture.set(True)
 
-        return await self._describe(name)
+        describe = await self._describe(name)
+
+        self._composer = HDFDocumentComposer(
+            Path(await self.panda_data_block.hdf_directory.get_value())
+            / Path(await self.panda_data_block.hdf_file_name.get_value()),
+            self._datasets,
+        )
+
+        return describe
 
     async def _describe(self, name: str) -> dict[str, DataKey]:
         """Return a describe based on the datasets PV."""
@@ -146,11 +154,8 @@ class PandaHDFWriter(DetectorWriter):
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
         if not self._composer:
-            self._composer = HDFDocumentComposer(
-                Path(await self.panda_data_block.hdf_directory.get_value())
-                / Path(await self.panda_data_block.hdf_file_name.get_value()),
-                self._datasets,
-            )
+            msg = f"open() not called on {self}"
+            raise RuntimeError(msg)
         async for doc in self._composer.collect_stream_docs(indices_written):
             yield doc
 
