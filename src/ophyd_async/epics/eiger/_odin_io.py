@@ -45,9 +45,9 @@ class OdinNode(Device):
 
 
 class Odin(Device):
-    def __init__(self, prefix: str, name: str = "") -> None:
+    def __init__(self, prefix: str, name: str = "", nodes: int = 4) -> None:
         self.nodes = DeviceVector(
-            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(4)}
+            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(nodes)}
         )
 
         self.capture = epics_signal_rw(Writing, f"{prefix}Capture")
