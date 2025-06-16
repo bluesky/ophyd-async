@@ -34,7 +34,42 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         for i in range(len("ABCUVWXYZ")):
             await self.pmac.use_axis[i + 1].set(False)
 
-        path = Path(value.spec.calculate())
+        (
+            position_axes,
+            cs_port,
+            profile_length,
+            cs_axes,
+            positions,
+            velocities,
+            time_array,
+            user_array,
+        ) = await self.prepare_trajectory(value.spec)
+
+        for axis in position_axes:
+            await self.pmac.profile_cs_name.set(cs_port)
+            await self.pmac.points_to_build.set(profile_length)
+            await self.pmac.use_axis[cs_axes[axis] + 1].set(True)
+            await self.pmac.positions[cs_axes[axis] + 1].set(
+                positions[cs_axes[axis]][:profile_length],
+            )
+            await self.pmac.velocities[cs_axes[axis] + 1].set(
+                velocities[cs_axes[axis]][:profile_length]
+            )
+
+        await self.pmac.time_array.set(time_array[:profile_length])
+        await self.pmac.user_array.set(user_array[:profile_length])
+
+        # Move to start
+        for axis in position_axes:
+            await axis.set(self.initial_pos[cs_axes[axis]])
+
+        # Set PMAC to use Velocity Array
+        await self.pmac.profile_calc_vel.set(False)
+        await self.pmac.build_profile.set(True)
+        self._fly_start = time.monotonic()
+
+    async def prepare_trajectory(self, scanspec: Spec):
+        path = Path(scanspec.calculate())
         scan_slice = path.consume()
         scan_size = len(scan_slice)
 
@@ -73,13 +108,9 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         assert len(cs_ports) == 1, "Motors in more than one CS"  # noqa
         cs_port = cs_ports.pop()
 
-        # Calc Velocity
-
-        gap_indices = np.append(gap_indices, scan_size)
-        start = 0
-        added_point = 0
-
         # Starting points
+
+        start = 0
         for axis in position_axes:
             positions[cs_axes[axis]][start] = scan_slice.lower[axis][start]
             positions[cs_axes[axis]][start + 1] = scan_slice.upper[axis][start]
@@ -100,7 +131,9 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
 
         # Add points for gaps
 
+        gap_indices = np.append(gap_indices, scan_size)
         start = 1
+        added_point = 0
         profile_index = 2 * start
         for gap in gap_indices:
             profile_start = profile_index
@@ -157,6 +190,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
             start = gap
 
         # Calculate Starting and end Position to allow ramp up and trail off velocity
+
         self.initial_pos = {}
         run_up_time = 0
         final_time = 0
@@ -197,28 +231,16 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         user_array[profile_length] = 8
         profile_length += 1
 
-        for axis in position_axes:
-            await self.pmac.profile_cs_name.set(cs_port)
-            await self.pmac.points_to_build.set(profile_length)
-            await self.pmac.use_axis[cs_axes[axis] + 1].set(True)
-            await self.pmac.positions[cs_axes[axis] + 1].set(
-                positions[cs_axes[axis]][:profile_length],
-            )
-            await self.pmac.velocities[cs_axes[axis] + 1].set(
-                velocities[cs_axes[axis]][:profile_length]
-            )
-
-        await self.pmac.time_array.set(time_array[:profile_length])
-        await self.pmac.user_array.set(user_array[:profile_length])
-
-        # MOVE TO START
-        for axis in position_axes:
-            await axis.set(self.initial_pos[cs_axes[axis]])
-
-        # Set PMAC to use Velocity Array
-        await self.pmac.profile_calc_vel.set(False)
-        await self.pmac.build_profile.set(True)
-        self._fly_start = time.monotonic()
+        return (
+            position_axes,
+            cs_port,
+            profile_length,
+            cs_axes,
+            positions,
+            velocities,
+            time_array,
+            user_array,
+        )
 
     async def kickoff(self):
         self.status = await self.pmac.execute_profile.set(
