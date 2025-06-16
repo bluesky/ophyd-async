@@ -10,8 +10,8 @@ def test_pmac_io():
     """Instantiate a PmacIO object that looks like the P47 training beamline"""
 
     pmac = PmacIO(
-        axes=[1, 2],
-        coords=[1, 9],
+        axis_nums=[1, 2],
+        coord_nums=[1, 9],
         prefix="BL47P-MO-BRICK-01",
         name="p47-brick-01",
     )
@@ -19,15 +19,15 @@ def test_pmac_io():
     assert pmac.name == "p47-brick-01"
 
     # check coords PVs
-    assert pmac.coords[1].defer_moves.source == "ca://BL47P-MO-BRICK-01:CS1:DeferMoves"
+    assert pmac.coord[1].defer_moves.source == "ca://BL47P-MO-BRICK-01:CS1:DeferMoves"
     assert (
-        pmac.coords[1].cs_axis[2].source == "ca://BL47P-MO-BRICK-01:CS1:M2:DirectDemand"
+        pmac.coord[1].cs_axis[2].source == "ca://BL47P-MO-BRICK-01:CS1:M2:DirectDemand"
     )
     assert (
-        pmac.coords[1].cs_axis[1].source == "ca://BL47P-MO-BRICK-01:CS1:M1:DirectDemand"
+        pmac.coord[1].cs_axis[1].source == "ca://BL47P-MO-BRICK-01:CS1:M1:DirectDemand"
     )
     assert (
-        pmac.coords[9].cs_axis[2].source == "ca://BL47P-MO-BRICK-01:CS9:M2:DirectDemand"
+        pmac.coord[9].cs_axis[2].source == "ca://BL47P-MO-BRICK-01:CS9:M2:DirectDemand"
     )
 
     # check axes PVs
@@ -40,6 +40,10 @@ def test_pmac_io():
         == "ca://BL47P-MO-BRICK-01:ProfilePointsToBuild"
     )
     assert pmac.trajectory.build_profile.source == "ca://BL47P-MO-BRICK-01:ProfileBuild"
+    assert (
+        pmac.trajectory.execute_profile.source
+        == "ca://BL47P-MO-BRICK-01:ProfileExecute"
+    )
 
 
 def test_pmac_trajectory_io():

@@ -83,14 +83,19 @@ class PmacIO(Device):
     """Device that represents a pmac controller."""
 
     def __init__(
-        self, prefix: str, axes: Sequence[int], coords: Sequence[int], name: str = ""
+        self,
+        prefix: str,
+        axis_nums: Sequence[int],
+        coord_nums: Sequence[int],
+        name: str = "",
     ) -> None:
         self.axis = DeviceVector(
-            {axis: PmacAxisIO(f"{prefix}:M{axis}") for axis in axes}
+            {axis: PmacAxisIO(f"{prefix}:M{axis}") for axis in axis_nums}
+        )
+        self.coord = DeviceVector(
+            {coord: PmacCoordIO(f"{prefix}:CS{coord}") for coord in coord_nums}
         )
         # Trajectory PVs have the same prefix as the pmac device
         self.trajectory = PmacTrajectoryIO(prefix)
-        self.coords = DeviceVector(
-            {coord: PmacCoordIO(f"{prefix}:CS{coord}") for coord in coords}
-        )
+
         super().__init__(name=name)
