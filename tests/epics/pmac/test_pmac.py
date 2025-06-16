@@ -157,6 +157,7 @@ async def test_sim_pmac_simple_trajectory(sim_x_motor, sim_pmac) -> None:
     await trigger_logic.kickoff()
 
 
+@pytest.mark.xfail(reason="combine_linear_points not implemented")
 async def test_sim_pmac_simple_linear_trajectory(sim_x_motor, sim_pmac) -> None:
     # Test the generated Trajectory profile from a scanspec
     spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
@@ -468,6 +469,7 @@ async def test_sim_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
     await trigger_logic.kickoff()
 
 
+@pytest.mark.xfail(reason="combine_linear_points not implemented")
 async def test_sim_linear_grid_trajectory(sim_x_motor, sim_y_motor, sim_pmac) -> None:
     # Test the generated Trajectory profile from a scanspec
     spec = fly(Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5), 1)

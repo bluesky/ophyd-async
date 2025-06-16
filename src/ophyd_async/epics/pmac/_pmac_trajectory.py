@@ -1,5 +1,4 @@
 import time
-from math import ceil
 from typing import Any, Literal
 
 import numpy as np
@@ -24,7 +23,7 @@ class PmacTrajInfo(BaseModel):
 
 
 class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
-    """Device that moves a PMAC Motor record"""
+    """Device that moves a PMAC Motor record."""
 
     def __init__(self, pmac: Pmac) -> None:
         # Make a dict of which motors are for which cs axis
@@ -36,149 +35,125 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
             await self.pmac.use_axis[i + 1].set(False)
 
         path = Path(value.spec.calculate())
-        chunk = path.consume()
-        gaps = self._calculate_gaps(chunk)
-        if gaps[0] == 0:
-            gaps = np.delete(gaps, 0)
-        scan_size = len(chunk)
+        scan_slice = path.consume()
+        scan_size = len(scan_slice)
+
+        gap_indices = self._find_gap_indices(scan_slice)
+        position_axes: list[PmacMotor] = [
+            axis for axis in scan_slice.axes() if axis != "DURATION"
+        ]
+        duration_axis = scan_slice.midpoints["DURATION"]
+        self.scantime = sum(duration_axis)
 
         cs_ports = set()
         positions: dict[int, npt.NDArray[np.float64]] = {}
         velocities: dict[int, npt.NDArray[np.float64]] = {}
         cs_axes: dict[PmacMotor, int] = {}
         time_array: npt.NDArray[np.float64] = np.empty(
-            2 * scan_size + ((len(gaps) + 1) * 5) + 1, dtype=np.float64
+            2 * scan_size + ((len(gap_indices) + 1) * 5) + 1, dtype=np.float64
         )
         user_array: npt.NDArray[np.int32] = np.empty(
-            2 * scan_size + ((len(gaps) + 1) * 5) + 1, dtype=np.int32
+            2 * scan_size + ((len(gap_indices) + 1) * 5) + 1, dtype=np.int32
         )
+
         # Which Axes are in use?
-        scan_axes = chunk.axes()
-        for axis in scan_axes:
-            if axis != "DURATION":
-                cs_port, cs_index = await self.get_cs_info(axis)
-                # Initialise numpy arrays for Positions, velocities and time within dict
-                # for each axis in scan
-                positions[cs_index] = np.empty(
-                    2 * scan_size + ((len(gaps) + 1) * 5) + 1, dtype=np.float64
-                )
-                velocities[cs_index] = np.empty(
-                    2 * scan_size + ((len(gaps) + 1) * 5) + 1, dtype=np.float64
-                )
-                cs_ports.add(cs_port)
-                cs_axes[axis] = cs_index
-        assert len(cs_ports) == 1, "Motors in more than one CS"
+        for axis in position_axes:
+            cs_port, cs_index = await self.get_cs_info(axis)
+            # Initialise numpy arrays for Positions, velocities and time within dict
+            # for each axis in scan
+            positions[cs_index] = np.empty(
+                2 * scan_size + ((len(gap_indices) + 1) * 5) + 1, dtype=np.float64
+            )
+            velocities[cs_index] = np.empty(
+                2 * scan_size + ((len(gap_indices) + 1) * 5) + 1, dtype=np.float64
+            )
+            cs_ports.add(cs_port)
+            cs_axes[axis] = cs_index
+
+        assert len(cs_ports) == 1, "Motors in more than one CS"  # noqa
         cs_port = cs_ports.pop()
-        self.scantime = sum(chunk.midpoints["DURATION"])
 
         # Calc Velocity
 
-        gaps = np.append(gaps, scan_size)
+        gap_indices = np.append(gap_indices, scan_size)
         start = 0
         added_point = 0
 
         # Starting points
-        for axis in scan_axes:
-            if axis != "DURATION":
-                positions[cs_axes[axis]][start] = chunk.lower[axis][start]
-                positions[cs_axes[axis]][start + 1] = chunk.upper[axis][start]
-                # Set veloci
-                velocities[cs_axes[axis]][start : start + 2] = np.repeat(
-                    (chunk.upper[axis][start] - chunk.lower[axis][start])
-                    / chunk.midpoints["DURATION"][start],
+        for axis in position_axes:
+            positions[cs_axes[axis]][start] = scan_slice.lower[axis][start]
+            positions[cs_axes[axis]][start + 1] = scan_slice.upper[axis][start]
+            # Set veloci
+            velocities[cs_axes[axis]][start : start + 2] = np.repeat(
+                (scan_slice.upper[axis][start] - scan_slice.lower[axis][start])
+                / duration_axis[start],
+                2,
+                axis=0,
+            )
+
+        # Half the time per point and duplicate the values
+        # for interleaved positions
+        time_array[start] = 0
+        time_array[start + 1] = duration_axis[start] / TICK_S
+        user_array[start] = 1
+        user_array[start + 1] = 1
+
+        # Add points for gaps
+
+        start = 1
+        profile_index = 2 * start
+        for gap in gap_indices:
+            profile_start = profile_index
+            profile_gap = (2 * gap) + added_point
+            for axis in position_axes:
+                # Interleave Midpoints and upper points into position array
+                positions[cs_axes[axis]][profile_start:profile_gap:2] = (
+                    scan_slice.midpoints[axis][start:gap]
+                )
+                positions[cs_axes[axis]][profile_start + 1 : profile_gap : 2] = (
+                    scan_slice.upper[axis][start:gap]
+                )
+
+                # Duplicate velocity values for interleaved positions
+                velocities[cs_axes[axis]][profile_start:profile_gap] = np.repeat(
+                    (
+                        scan_slice.upper[axis][start:gap]
+                        - scan_slice.lower[axis][start:gap]
+                    )
+                    / duration_axis[start:gap],
                     2,
                     axis=0,
                 )
-            else:
-                # Half the time per point and duplicate the values
-                # for interleaved positions
-                time_array[start] = 0
-                time_array[start + 1] = chunk.midpoints["DURATION"][start] / TICK_S
-                user_array[start] = 1
-                user_array[start + 1] = 1
-        start = 1
-        profile_index = 2 * start
-        for gap in gaps:
-            profile_start = profile_index
-            profile_gap = (2 * gap) + added_point
-            for axis in scan_axes:
-                if value.combine_linear_points:
-                    liner_move_time = sum(chunk.midpoints["DURATION"][start:gap])
-                    if liner_move_time > MAX_MOVE_TIME:
-                        nsplit = int(liner_move_time / MAX_MOVE_TIME) + 1
-                    else:
-                        nsplit = 2
-                    linear_step = (
-                        chunk.upper[axis][gap - 1] - chunk.midpoints[axis][start]
-                    ) / nsplit
-                    if axis != "DURATION":
-                        for index in range(nsplit):
-                            positions[cs_axes[axis]][profile_start + index] = (
-                                chunk.midpoints[axis][start]
-                                + (linear_step * (index + 1))
-                            )
-                        velocities[cs_axes[axis]][
-                            profile_start : profile_start + nsplit
-                        ] = np.repeat(
-                            (chunk.upper[axis][start] - chunk.lower[axis][start])
-                            / chunk.midpoints["DURATION"][start],
-                            nsplit,
-                        )
-                    else:
-                        time_array[profile_start : profile_start + nsplit] = ceil(
-                            liner_move_time / ((nsplit) * TICK_S)
-                        )
-                        user_array[profile_start : profile_start + nsplit] = 1
-                    profile_index = profile_start + nsplit
-                else:
-                    if axis != "DURATION":
-                        # Interleave Midpoints and upper points into position array
-                        positions[cs_axes[axis]][profile_start:profile_gap:2] = (
-                            chunk.midpoints[axis][start:gap]
-                        )
-                        positions[cs_axes[axis]][
-                            profile_start + 1 : profile_gap : 2
-                        ] = chunk.upper[axis][start:gap]
-                        # Duplicate velocity values for interleaved positions
-                        velocities[cs_axes[axis]][profile_start:profile_gap] = (
-                            np.repeat(
-                                (
-                                    chunk.upper[axis][start:gap]
-                                    - chunk.lower[axis][start:gap]
-                                )
-                                / chunk.midpoints["DURATION"][start:gap],
-                                2,
-                                axis=0,
-                            )
-                        )
-                    else:
-                        # Half the time per point and duplicate the values
-                        # for interleaved positions
-                        time_array[profile_start:profile_gap] = np.repeat(
-                            chunk.midpoints["DURATION"][start:gap] / (2 * TICK_S), 2
-                        )
-                        user_array[profile_start:profile_gap] = 1
-                    profile_index = profile_gap
-            if gap < scan_size:
-                # Create Position, velocity and time arrays for the gap
-                pos_gap, vel_gap, time_gap = await get_gap_profile(chunk, gap)
-                len_gap = len(time_gap)
-                for axis in scan_axes:
-                    if axis != "DURATION":
-                        positions[cs_axes[axis]][
-                            profile_index : profile_index + len_gap
-                        ] = pos_gap[axis]
-                        velocities[cs_axes[axis]][
-                            profile_index : profile_index + len_gap
-                        ] = vel_gap[axis]
 
-                    else:
-                        time_array[profile_index : profile_index + len_gap] = time_gap
-                        user_array[profile_index : profile_index + len_gap - 1] = 2
-                        user_array[profile_index + len_gap - 1] = 1
+            # Half the time per point and duplicate the values
+            # for interleaved positions
+            time_array[profile_start:profile_gap] = np.repeat(
+                duration_axis[start:gap] / (2 * TICK_S), 2
+            )
+            user_array[profile_start:profile_gap] = 1
+
+            profile_index = profile_gap
+
+            # TODO: Can we not do this and handle the extra point in another way?
+            if gap < scan_size:  # If this isn't the extra gap for the last point
+                # Create Position, velocity and time arrays for the gap
+                pos_gap, vel_gap, time_gap = await get_gap_profile(scan_slice, gap)
+                len_gap = len(time_gap)
+                for axis in position_axes:
+                    positions[cs_axes[axis]][
+                        profile_index : profile_index + len_gap
+                    ] = pos_gap[axis]
+                    velocities[cs_axes[axis]][
+                        profile_index : profile_index + len_gap
+                    ] = vel_gap[axis]
+
+                time_array[profile_index : profile_index + len_gap] = time_gap
+                user_array[profile_index : profile_index + len_gap - 1] = 2
+                user_array[profile_index + len_gap - 1] = 1
 
                 added_point += len_gap
                 profile_index += len_gap
+
             start = gap
 
         # Calculate Starting and end Position to allow ramp up and trail off velocity
@@ -186,38 +161,35 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         run_up_time = 0
         final_time = 0
         profile_length = profile_index
-        for axis in scan_axes:
-            if axis != "DURATION":
-                run_up_disp, run_up_t = await ramp_up_velocity_pos(
+        for axis in position_axes:
+            run_up_disp, run_up_t = await ramp_up_velocity_pos(
+                axis,
+                0,
+                velocities[cs_axes[axis]][0],
+            )
+            self.initial_pos[cs_axes[axis]] = positions[cs_axes[axis]][0] - run_up_disp
+
+            # trail off position and tim
+            if (
+                velocities[cs_axes[axis]][0]
+                == velocities[cs_axes[axis]][profile_length - 1]
+            ):
+                final_pos = positions[cs_axes[axis]][profile_length - 1] + run_up_disp
+                final_time = run_up_t
+            else:
+                ramp_down_disp, ramp_down_time = await ramp_up_velocity_pos(
                     axis,
+                    velocities[cs_axes[axis]][profile_length - 1],
                     0,
-                    velocities[cs_axes[axis]][0],
                 )
-                self.initial_pos[cs_axes[axis]] = (
-                    positions[cs_axes[axis]][0] - run_up_disp
+                final_pos = (
+                    positions[cs_axes[axis]][profile_length - 1] + ramp_down_disp
                 )
-                # trail off position and tim
-                if (
-                    velocities[cs_axes[axis]][0]
-                    == velocities[cs_axes[axis]][profile_length - 1]
-                ):
-                    final_pos = (
-                        positions[cs_axes[axis]][profile_length - 1] + run_up_disp
-                    )
-                    final_time = run_up_t
-                else:
-                    ramp_down_disp, ramp_down_time = await ramp_up_velocity_pos(
-                        axis,
-                        velocities[cs_axes[axis]][profile_length - 1],
-                        0,
-                    )
-                    final_pos = (
-                        positions[cs_axes[axis]][profile_length - 1] + ramp_down_disp
-                    )
-                    final_time = max(ramp_down_time, final_time)
-                positions[cs_axes[axis]][profile_length] = final_pos
-                velocities[cs_axes[axis]][profile_length] = 0
-                run_up_time = max(run_up_time, run_up_t)
+                final_time = max(ramp_down_time, final_time)
+
+            positions[cs_axes[axis]][profile_length] = final_pos
+            velocities[cs_axes[axis]][profile_length] = 0
+            run_up_time = max(run_up_time, run_up_t)
 
         self.scantime += run_up_time + final_time
         time_array[0] = int(run_up_time / TICK_S)
@@ -225,25 +197,23 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         user_array[profile_length] = 8
         profile_length += 1
 
-        for axis in scan_axes:
-            if axis != "DURATION":
-                await self.pmac.profile_cs_name.set(cs_port)
-                await self.pmac.points_to_build.set(profile_length)
-                await self.pmac.use_axis[cs_axes[axis] + 1].set(True)
-                await self.pmac.positions[cs_axes[axis] + 1].set(
-                    positions[cs_axes[axis]][:profile_length],
-                )
-                await self.pmac.velocities[cs_axes[axis] + 1].set(
-                    velocities[cs_axes[axis]][:profile_length]
-                )
-            else:
-                await self.pmac.time_array.set(time_array[:profile_length])
-                await self.pmac.user_array.set(user_array[:profile_length])
+        for axis in position_axes:
+            await self.pmac.profile_cs_name.set(cs_port)
+            await self.pmac.points_to_build.set(profile_length)
+            await self.pmac.use_axis[cs_axes[axis] + 1].set(True)
+            await self.pmac.positions[cs_axes[axis] + 1].set(
+                positions[cs_axes[axis]][:profile_length],
+            )
+            await self.pmac.velocities[cs_axes[axis] + 1].set(
+                velocities[cs_axes[axis]][:profile_length]
+            )
+
+        await self.pmac.time_array.set(time_array[:profile_length])
+        await self.pmac.user_array.set(user_array[:profile_length])
 
         # MOVE TO START
-        for axis in scan_axes:
-            if axis != "DURATION":
-                await axis.set(self.initial_pos[cs_axes[axis]])
+        for axis in position_axes:
+            await axis.set(self.initial_pos[cs_axes[axis]])
 
         # Set PMAC to use Velocity Array
         await self.pmac.profile_calc_vel.set(False)
@@ -279,12 +249,21 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
 
         return cs_port, cs_index
 
-    def _calculate_gaps(self, chunk: Frames[PmacMotor]):
-        inds = np.argwhere(chunk.gap)
-        if len(inds) == 0:
-            return [len(chunk)]
-        else:
-            return inds
+    def _find_gap_indices(self, chunk: Frames[PmacMotor]):
+        """Find indices of scan points preceded by a gap."""
+        gap_indices = np.argwhere(chunk.gap)
+
+        # TODO: Why do we only add a gap to the end if there are no other gaps?
+        if len(gap_indices) == 0:
+            # Add gap to end
+            gap_indices = [len(chunk)]
+
+        # TODO: Why?
+        if gap_indices[0] == 0:
+            # Remove gam from start
+            gap_indices = np.delete(gap_indices, 0)
+
+        return gap_indices
 
 
 async def ramp_up_velocity_pos(
@@ -371,7 +350,7 @@ async def profile_between_points(
     min_time: float = 0.002,
     min_interval: float = 0.002,
 ):
-    """Make consistent time and velocity arrays for each axis
+    """Make consistent time and velocity arrays for each axis.
 
     Try to create velocity profiles for all axes that all arrive at
     'distance' in the same time period. The profiles will contain the
@@ -444,7 +423,7 @@ async def profile_between_points(
 async def point_velocities(
     chunk: Frames[Any], index: int, entry: bool = True
 ) -> dict[PmacMotor, float]:
-    """Find the velocities of each axis over the entry/exit of current point"""
+    """Find the velocities of each axis over the entry/exit of current point."""
     velocities = {}
     for axis in chunk.axes():
         if axis != "DURATION":
@@ -468,7 +447,7 @@ async def point_velocities(
             # where vlp = dlp / (t/2)
             velocity = 4 * d_half / chunk.midpoints["DURATION"][index] - vp
             max_velocity = await axis.max_velocity.get_value()
-            assert ((abs(velocity) - max_velocity) / max_velocity < 1e-6).all(), (
+            assert ((abs(velocity) - max_velocity) / max_velocity < 1e-6).all(), (  # noqa
                 f"Velocity {velocity} invalid for {axis.name} with "
                 f"max_velocity {max_velocity}"
             )

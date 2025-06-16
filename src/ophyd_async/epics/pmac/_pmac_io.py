@@ -6,7 +6,7 @@ from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
 
 class Pmac(StandardReadable):
-    """Device that moves a PMAC Motor record"""
+    """Device that moves a PMAC Motor record."""
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self.time_array = epics_signal_rw(
@@ -49,7 +49,7 @@ class Pmac(StandardReadable):
 
 
 class PmacMotor(motor.Motor):
-    """Device that moves a PMAC Motor record"""
+    """Device that moves a PMAC Motor record."""
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self.cs_axis = epics_signal_r(str, f"{prefix}:CsAxis_RBV")
