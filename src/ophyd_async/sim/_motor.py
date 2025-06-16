@@ -94,9 +94,6 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float
     def complete(self) -> WatchableAsyncStatus:
         """Mark as complete once motor reaches completed position."""
         self._fly_status = check_value(self._fly_status, "kickoff not called")
-        if not self._fly_status:
-            msg = "kickoff not called"
-            raise RuntimeError(msg)
         return self._fly_status
 
     async def _move(self, old_position: float, new_position: float, velocity: float):
