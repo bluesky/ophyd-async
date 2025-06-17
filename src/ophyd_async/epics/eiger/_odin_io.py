@@ -45,7 +45,11 @@ class OdinNode(Device):
 
 
 class Odin(Device):
-    def __init__(self, prefix: str, name: str = "") -> None:
+    def __init__(self, prefix: str, name: str = "", nodes: int = 4) -> None:
+        self.nodes = DeviceVector(
+            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(nodes)}
+        )
+
         self.capture = epics_signal_rw(Writing, f"{prefix}Capture")
         self.capture_rbv = epics_signal_r(str, prefix + "Capture_RBV")
         self.num_captured = epics_signal_r(int, f"{prefix}NumCaptured_RBV")
@@ -66,18 +70,11 @@ class Odin(Device):
         self.num_frames_chunks = epics_signal_rw(int, prefix + "NumFramesChunks")
         self.meta_active = epics_signal_r(str, prefix + "META:AcquisitionActive_RBV")
         self.meta_writing = epics_signal_r(str, prefix + "META:Writing_RBV")
-       
-        self.number_of_nodes = epics_signal_r(int, prefix + "FAN:Consumers_RBV")
-        self.nodes = DeviceVector(
-            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(self.get_number_of_nodes())}
-        )
-        
+
         self.data_type = epics_signal_rw_rbv(str, f"{prefix}DataType")
 
         super().__init__(name)
 
-   async def get_number_of_nodes(self):
-       return await self.number_of_nodes.get_value()
 
 class OdinWriter(DetectorWriter):
     def __init__(
