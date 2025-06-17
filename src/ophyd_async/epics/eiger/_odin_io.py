@@ -69,7 +69,7 @@ class Odin(Device):
        
         self.number_of_nodes = epics_signal_r(int, prefix + "FAN:Consumers_RBV")
         self.nodes = DeviceVector(
-            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(get_number_of_nodes())}
+            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(self.get_number_of_nodes())}
         )
         
         self.data_type = epics_signal_rw_rbv(str, f"{prefix}DataType")
