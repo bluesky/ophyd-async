@@ -28,10 +28,11 @@ class EigerDetector(StandardDetector):
         path_provider: PathProvider,
         drv_suffix="-EA-EIGER-01:",
         hdf_suffix="-EA-EIGER-01:OD:",
+        nodes: int = 4,
         name="",
     ):
         self.drv = EigerDriverIO(prefix + drv_suffix)
-        self.odin = Odin(prefix + hdf_suffix)
+        self.odin = Odin(prefix + hdf_suffix, nodes=nodes)
 
         super().__init__(
             EigerController(self.drv),
