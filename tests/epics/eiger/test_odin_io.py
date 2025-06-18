@@ -29,7 +29,7 @@ def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
     return driver, writer
 
 
-def set_mock_signals(driver):
+def initialise_signals_to_armed(driver):
     set_mock_value(driver.meta_active, "Active")
     set_mock_value(driver.capture_rbv, "Capturing")
     set_mock_value(driver.meta_writing, "Writing")
@@ -41,7 +41,7 @@ async def test_when_open_called_then_file_correctly_set(
     odin_driver_and_writer: OdinDriverAndWriter, tmp_path: Path
 ):
     driver, writer = odin_driver_and_writer
-    set_mock_signals(driver)
+    initialise_signals_to_armed(driver)
     path_info = writer._path_provider.return_value  # type: ignore
     path_info.directory_path = tmp_path
     expected_filename = "filename.h5"
@@ -56,7 +56,7 @@ async def test_when_open_called_then_all_expected_signals_set(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
     driver, writer = odin_driver_and_writer
-    set_mock_signals(driver)
+    initialise_signals_to_armed(driver)
 
     await writer.open(ODIN_DETECTOR_NAME)
 
@@ -70,7 +70,7 @@ async def test_bit_depth_is_passed_before_open_and_set_to_data_type_after_open(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
     driver, writer = odin_driver_and_writer
-    set_mock_signals(driver)
+    initialise_signals_to_armed(driver)
 
     assert await writer._eiger_bit_depth().get_value() == EIGER_BIT_DEPTH
     assert await driver.data_type.get_value() == ""
@@ -84,7 +84,7 @@ async def test_given_data_shape_set_when_open_called_then_describe_has_correct_s
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
     driver, writer = odin_driver_and_writer
-    set_mock_signals(driver)
+    initialise_signals_to_armed(driver)
 
     set_mock_value(driver.image_width, 1024)
     set_mock_value(driver.image_height, 768)
@@ -106,12 +106,14 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
 ):
     driver, writer = odin_driver_and_writer
 
-    do_read_set = Event()
-    callback_on_mock_put(driver.file_name, lambda *args, **kwargs: do_read_set.set())
-    callback_on_mock_put(driver.capture, lambda *args, **kwargs: do_read_set.set())
+    file_name_is_set = Event()
+    capture_is_set = Event()
+    callback_on_mock_put(
+        driver.file_name, lambda *args, **kwargs: file_name_is_set.set()
+    )
+    callback_on_mock_put(driver.capture, lambda *args, **kwargs: capture_is_set.set())
 
     async def set_waited_signals():
-        do_read_set.clear()
         set_mock_value(driver.meta_active, "Active")
         set_mock_value(driver.id, "filename.h5")
         set_mock_value(driver.meta_file_name, "filename.h5")
@@ -120,20 +122,18 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
         set_mock_value(driver.meta_writing, "Writing")
         set_mock_value(driver.capture_rbv, "Capturing")
 
-    set_signals = MagicMock(side_effect=[set_waited_signals(), set_ready_signals()])
-
     async def wait_and_set_signals():
         # Block until filename is set
-        await do_read_set.wait()
+        await file_name_is_set.wait()
         # Allow writer.open to proceed to wait_for_value.
         await asyncio.sleep(0.1)
         # writer.open now waits on signals; set these, and unset event
-        await set_signals()
+        await set_waited_signals()
         # Block until capture sets event
-        await do_read_set.wait()
+        await capture_is_set.wait()
         # Allow writer.open to proceed to wait_for_value.
         await asyncio.sleep(0.1)
         # writer.open now waits on signals; set these
-        await set_signals()
+        await set_ready_signals()
 
     await asyncio.gather(writer.open(ODIN_DETECTOR_NAME), wait_and_set_signals())

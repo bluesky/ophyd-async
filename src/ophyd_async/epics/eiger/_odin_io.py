@@ -157,8 +157,9 @@ class OdinWriter(DetectorWriter):
         raise NotImplementedError()
 
     async def close(self) -> None:
-        await self._drv.capture.set(Writing.DONE, wait=False)
-        await wait_for_value(self._drv.capture, Writing.DONE, DEFAULT_TIMEOUT)
+        await set_and_wait_for_value(
+            self._drv.capture, Writing.DONE, Writing.DONE, DEFAULT_TIMEOUT
+        )
         await self._drv.meta_stop.set(True, wait=True)
         if self._capture_status and not self._capture_status.done:
             await self._capture_status
