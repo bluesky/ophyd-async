@@ -21,15 +21,13 @@ def cont_acq_controller(RE):
 def generate_one_shot_trigger_info(trigger_mode=DetectorTrigger.INTERNAL, livetime=0.8):
     if trigger_mode != DetectorTrigger.INTERNAL:
         return TriggerInfo(
-            number_of_triggers=1,
+            number_of_events=1,
             trigger=trigger_mode,
             livetime=livetime,
             deadtime=0.001,
         )
     else:
-        return TriggerInfo(
-            number_of_triggers=1, trigger=trigger_mode, livetime=livetime
-        )
+        return TriggerInfo(number_of_events=1, trigger=trigger_mode, livetime=livetime)
 
 
 async def test_cont_acq_controller_invalid_trigger_mode(

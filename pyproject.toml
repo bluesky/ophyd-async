@@ -15,7 +15,7 @@ description = "Asynchronous Bluesky hardware abstraction code, compatible with c
 dependencies = [
     "numpy",
     "bluesky>=1.13.1rc2",
-    "event-model>=1.22.1",
+    "event-model>=1.23",
     "pyyaml",
     "colorlog",
     "pydantic>=2.0",
@@ -42,7 +42,8 @@ dev = [
     "import-linter",
     "myst-parser",
     "numpydoc",
-    "ophyd",
+    # Unpin once an ophyd release is made containing https://github.com/bluesky/ophyd/pull/1253
+    "ophyd @ git+https://github.com/tangkong/ophyd@10652e158b4f02172f4590f3f862ee815983c4db",
     "pickleshare",
     "pipdeptree",
     "pre-commit",
@@ -101,7 +102,7 @@ markers = [
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-
+timeout = 0.5
 [tool.coverage.run]
 data_file = "/tmp/ophyd_async.coverage"
 
@@ -134,7 +135,6 @@ commands =
 """
 
 [tool.ruff]
-src = ["src", "tests", "system_tests"]
 line-length = 88
 lint.select = [
     "B",       # flake8-bugbear - https://docs.astral.sh/ruff/rules/#flake8-bugbear-b

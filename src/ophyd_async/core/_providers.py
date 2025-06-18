@@ -228,5 +228,5 @@ class DatasetDescriber(Protocol):
         """Return the numpy datatype for this dataset."""
 
     @abstractmethod
-    async def shape(self) -> tuple[int, ...]:
+    async def shape(self) -> tuple[int | None, ...]:
         """Get the shape of the data collection."""

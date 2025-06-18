@@ -246,6 +246,7 @@ async def test_set_and_wait_for_value_different_set_and_read_times_out():
         await asyncio.gather(wait_and_set_read(), check_set_and_wait())
 
 
+@pytest.mark.timeout(3)
 async def test_status_of_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
@@ -284,6 +285,7 @@ async def test_status_of_set_and_wait_for_value():
         )
 
 
+@pytest.mark.timeout(3)
 async def test_callable_match_value_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
@@ -1013,3 +1015,9 @@ async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
 def test_signal_backend_throws_type_error() -> None:
     with pytest.raises(TypeError, match="Unsupported protocol: XYZ"):
         get_signal_backend_type("XYZ")  # type: ignore
+
+
+def test_remove_non_existing_listener():
+    signal_rw = soft_signal_rw(int, initial_value=4)
+    cbs = []
+    assert signal_rw.clear_sub(cbs.append) is None

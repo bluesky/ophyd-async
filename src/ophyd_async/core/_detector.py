@@ -23,13 +23,13 @@ from bluesky.protocols import (
     WritesStreamAssets,
 )
 from event_model import DataKey
-from pydantic import BaseModel, Field, NonNegativeInt, PositiveInt, computed_field
+from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
 
 from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, WatcherUpdate, merge_gathered_dicts
+from ._utils import DEFAULT_TIMEOUT, ConfinedModel, WatcherUpdate, merge_gathered_dicts
 
 
 class DetectorTrigger(Enum):
@@ -48,7 +48,7 @@ class DetectorTrigger(Enum):
     """Expect a series of variable width external gate signals"""
 
 
-class TriggerInfo(BaseModel):
+class TriggerInfo(ConfinedModel):
     """Minimal set of information required to setup triggering on a detector."""
 
     number_of_events: NonNegativeInt | list[NonNegativeInt] = Field(default=1)

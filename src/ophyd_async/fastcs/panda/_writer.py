@@ -33,12 +33,12 @@ class PandaHDFWriter(DetectorWriter):
 
     # Triggered on PCAP arm
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
+        self._composer = None
         """Retrieve and get descriptor of all PandA signals marked for capture."""
         self._exposures_per_event = exposures_per_event
         # Ensure flushes are immediate
         await self.panda_data_block.flush_period.set(0)
 
-        self._composer = None
         info = self._path_provider(device_name=name)
 
         # Set create dir depth first to guarantee that callback when setting
@@ -64,7 +64,15 @@ class PandaHDFWriter(DetectorWriter):
         # Wait for it to start, stashing the status that tells us when it finishes
         await self.panda_data_block.capture.set(True)
 
-        return await self._describe(name)
+        describe = await self._describe(name)
+
+        self._composer = HDFDocumentComposer(
+            Path(await self.panda_data_block.hdf_directory.get_value())
+            / Path(await self.panda_data_block.hdf_file_name.get_value()),
+            self._datasets,
+        )
+
+        return describe
 
     async def _describe(self, name: str) -> dict[str, DataKey]:
         """Return a describe based on the datasets PV."""
@@ -145,17 +153,11 @@ class PandaHDFWriter(DetectorWriter):
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # TODO: fail if we get dropped frames
-        if indices_written:
-            if not self._composer:
-                self._composer = HDFDocumentComposer(
-                    Path(await self.panda_data_block.hdf_directory.get_value())
-                    / Path(await self.panda_data_block.hdf_file_name.get_value()),
-                    self._datasets,
-                )
-                for doc in self._composer.stream_resources():
-                    yield "stream_resource", doc
-            for doc in self._composer.stream_data(indices_written):
-                yield "stream_datum", doc
+        if self._composer is None:
+            msg = f"open() not called on {self}"
+            raise RuntimeError(msg)
+        for doc in self._composer.make_stream_docs(indices_written):
+            yield doc
 
     # Could put this function as default for StandardDetector
     async def close(self):

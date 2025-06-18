@@ -89,6 +89,7 @@ def count_sim(
     yield from bps.unstage_all(*dets)
 
 
+@pytest.mark.timeout(3.5)
 async def test_detector_count_failure(
     test_adsimdetector: adsimdetector.SimDetector,
     RE: RunEngine,
@@ -110,6 +111,7 @@ async def test_detector_count_failure(
         RE(bps.unstage(test_adsimdetector, wait=True))
 
 
+@pytest.mark.timeout(7.5)
 @pytest.mark.parametrize("exposures_per_event", [1, 5])
 async def test_detector_count(
     test_adsimdetector: adsimdetector.SimDetector,
@@ -304,6 +306,7 @@ async def test_two_detectors_fly_different_rate(
     )
 
 
+@pytest.mark.timeout(3.5)
 async def test_two_detectors_step(
     two_test_adsimdetectors: list[adsimdetector.SimDetector],
     RE: RunEngine,
@@ -392,6 +395,7 @@ async def test_two_detectors_step(
     assert event["data"] == {}
 
 
+@pytest.mark.timeout(5.5)
 @pytest.mark.parametrize(
     "writer_cls", [adcore.ADHDFWriter, adcore.ADTIFFWriter, adcore.ADJPEGWriter]
 )

@@ -282,7 +282,7 @@ def derived_signal_rw(
     if raw_to_derived_datatype != set_derived_datatype:
         msg = (
             f"{raw_to_derived} has datatype {raw_to_derived_datatype} "
-            f"!= {set_derived_datatype} dataype {set_derived_datatype}"
+            f"!= {set_derived_datatype} datatype {set_derived_datatype}"
         )
         raise TypeError(msg)
 

@@ -14,7 +14,6 @@ from ophyd_async.core import (
     SignalR,
     StrictEnum,
     observe_value,
-    set_and_wait_for_other_value,
     set_and_wait_for_value,
     wait_for_value,
 )
@@ -53,7 +52,7 @@ class Odin(Device):
 
         self.capture = epics_signal_rw(Writing, f"{prefix}Capture")
         self.capture_rbv = epics_signal_r(str, prefix + "Capture_RBV")
-        self.num_captured = epics_signal_r(int, f"{prefix}NumCapture_RBV")
+        self.num_captured = epics_signal_r(int, f"{prefix}NumCaptured_RBV")
         self.num_to_capture = epics_signal_rw_rbv(int, f"{prefix}NumCapture")
 
         self.start_timeout = epics_signal_rw(str, f"{prefix}StartTimeout")
@@ -102,16 +101,14 @@ class OdinWriter(DetectorWriter):
 
         await wait_for_value(self._drv.meta_active, "Active", timeout=DEFAULT_TIMEOUT)
 
-        await set_and_wait_for_other_value(
-            self._drv.capture,
-            Writing.CAPTURE,
-            self._drv.capture_rbv,
-            "Capturing",
-            set_timeout=None,
-            wait_for_set_completion=False,
+        await self._drv.capture.set(
+            Writing.CAPTURE, wait=False
         )  # TODO: Investigate why we do not get a put callback when setting capture pv https://github.com/bluesky/ophyd-async/issues/866
 
-        await wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT)
+        await asyncio.gather(
+            wait_for_value(self._drv.capture_rbv, "Capturing", timeout=DEFAULT_TIMEOUT),
+            wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT),
+        )
 
         return await self._describe()
 
