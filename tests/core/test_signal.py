@@ -27,12 +27,14 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
     soft_signal_rw,
     wait_for_value,
+    walk_devices,
+    walk_signal_sources,
 )
-from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.core import (
+    StandardReadableFormat as Format,
+)
 from ophyd_async.core._signal import (
     _SignalCache,  # noqa: PLC2701
-    walk_devices,  # noqa: PLC2701
-    walk_signal_sources,  # noqa: PLC2701
 )
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
