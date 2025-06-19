@@ -6,7 +6,6 @@ from ophyd_async.core import Array1D, Device, DeviceVector, StandardReadable
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
 CS_LETTERS = "ABCUVWXYZ"
-COORD_AXIS_COUNT = 9
 
 
 class PmacTrajectoryIO(StandardReadable):
@@ -73,7 +72,7 @@ class PmacCoordIO(Device):
                 i + 1: epics_signal_rw(
                     Array1D[np.float64], f"{prefix}:M{i + 1}:DirectDemand"
                 )
-                for i in range(COORD_AXIS_COUNT)
+                for i in range(len(CS_LETTERS))
             }
         )
         super().__init__(name=name)
