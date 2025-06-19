@@ -114,18 +114,18 @@ async def test_given_energy_outside_tolerance_when_photon_energy_set_then_pv_cha
     assert (await driver.detector.photon_energy.get_value()) == new_energy
 
 
-async def test_when_prepare_called_parameters_set_and_stale_parameters_waited_on(
+async def test_when_prepare_called__correct_parameters_set(
     eiger_driver_and_controller: DriverAndController,
 ):
     driver, controller = eiger_driver_and_controller
-
-    async def set_stale_parameters_false(*args, **kwargs):
-        set_mock_value(driver.detector.stale_parameters, False)
-
-    callback_on_mock_put(driver.detector.frame_time, set_stale_parameters_false)
 
     await controller.prepare(TriggerInfo(livetime=1))
 
     detector_mock = get_mock(driver.detector)
     mock_calls = detector_mock.mock_calls
-    assert call.nimages.put(1, wait=True) in mock_calls
+    assert [
+        call.trigger_mode.put("ints", wait=True),
+        call.nimages.put(1, wait=True),
+        call.count_time.put(1.0, wait=True),
+        call.frame_time.put(1.0, wait=True),
+    ] in mock_calls
