@@ -32,7 +32,7 @@ class EigerDetector(StandardDetector):
         name="",
     ):
         self.drv = EigerDriverIO(prefix + drv_suffix)
-        self.odin = Odin(prefix + hdf_suffix, nodes=nodes)
+        self.odin = Odin(prefix + hdf_suffix, nodes=odin_nodes)
 
         super().__init__(
             EigerController(self.drv),
