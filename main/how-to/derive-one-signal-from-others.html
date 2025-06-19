@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to derive one signal from others &#8212; ophyd-async 0.10.2.dev6+gb28a3efc4 documentation</title>
+    <title>How to derive one signal from others &#8212; ophyd-async 0.10.2.dev7+gf35fb13d8 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=4cf0a29a"></script>
+    <script src="../_static/documentation_options.js?v=d350877e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev6+gb28a3efc4 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev6+gb28a3efc4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev7+gf35fb13d8 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev7+gf35fb13d8 documentation - Home"/>
   
   
 </a></div>
@@ -488,7 +488,7 @@
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.derived_signal_rw" title="ophyd_async.core.derived_signal_rw"><span class="xref myst py py-func"><code class="docutils literal notranslate"><span class="pre">derived_signal_rw</span></code></span></a></p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.derived_signal_w" title="ophyd_async.core.derived_signal_w"><span class="xref myst py py-func"><code class="docutils literal notranslate"><span class="pre">derived_signal_w</span></code></span></a></p></li>
 </ul>
-<p>If a signal is readable, then it requires a <code class="docutils literal notranslate"><span class="pre">raw_to_derived</span></code> function that maps the raw values of low level Signals into the datatype of the Derived Signal and the <code class="docutils literal notranslate"><span class="pre">raw_devices</span></code> that will be read/monitored to give those values.</p>
+<p>If a signal is readable, then it requires a <code class="docutils literal notranslate"><span class="pre">raw_to_derived</span></code> function that maps the raw values of low level Signals into the datatype of the Derived Signal and the <code class="docutils literal notranslate"><span class="pre">raw_devices_and_constants</span></code> that will be read/monitored to give those values.</p>
 <p>If a signal is writeable, then it requires a <code class="docutils literal notranslate"><span class="pre">set_derived</span></code> async function that sets the raw signals based on the derived value.</p>
 <p>In the below example we see all 3 of these helpers in action:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -590,7 +590,7 @@
 <section id="multi-derived-signal">
 <h2>Multi Derived Signal<a class="headerlink" href="#multi-derived-signal" title="Link to this heading">#</a></h2>
 <p>The more general API involves a two way mapping between many Derived Signals and many low level Signals. This is done by implementing a <code class="docutils literal notranslate"><span class="pre">Raw</span></code> <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="Python 3.13"><code class="iref myst docutils literal notranslate"><span class="pre">typing.TypedDict</span></code></a> subclass with the names and datatypes of the low level Signals, a <code class="docutils literal notranslate"><span class="pre">Derived</span></code> <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="Python 3.13"><code class="iref myst docutils literal notranslate"><span class="pre">typing.TypedDict</span></code></a> subclass with the names and datatypes of the derived Signals, and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Transform" title="ophyd_async.core.Transform"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Transform</span></code></a> class with <code class="docutils literal notranslate"><span class="pre">raw_to_derived</span></code> and <code class="docutils literal notranslate"><span class="pre">derived_to_raw</span></code> methods to convert between the two. Some transforms will also require parameters which get their values from other Signals for both methods. These should be put in as type hints on the <code class="docutils literal notranslate"><span class="pre">Transform</span></code> subclass.</p>
-<p>To create the derived signals, we make a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DerivedSignalFactory" title="ophyd_async.core.DerivedSignalFactory"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DerivedSignalFactory</span></code></a> instance that knows about the <code class="docutils literal notranslate"><span class="pre">Transform</span></code> class, the <code class="docutils literal notranslate"><span class="pre">raw_devices</span></code> that will be read/monitored to provide the raw values for the transform, and optionally the <code class="docutils literal notranslate"><span class="pre">set_derived</span></code> method to set them. The methods like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DerivedSignalFactory.derived_signal_rw" title="ophyd_async.core.DerivedSignalFactory.derived_signal_rw"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DerivedSignalFactory.derived_signal_rw</span></code></a> allow Derived signals to be created for each attribute in the <code class="docutils literal notranslate"><span class="pre">Derived</span></code> TypedDict subclass.</p>
+<p>To create the derived signals, we make a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DerivedSignalFactory" title="ophyd_async.core.DerivedSignalFactory"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DerivedSignalFactory</span></code></a> instance that knows about the <code class="docutils literal notranslate"><span class="pre">Transform</span></code> class, the <code class="docutils literal notranslate"><span class="pre">raw_devices_and_constants</span></code> that will be read/monitored to provide the raw values for the transform, and optionally the <code class="docutils literal notranslate"><span class="pre">set_derived</span></code> method to set them. The methods like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DerivedSignalFactory.derived_signal_rw" title="ophyd_async.core.DerivedSignalFactory.derived_signal_rw"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DerivedSignalFactory.derived_signal_rw</span></code></a> allow Derived signals to be created for each attribute in the <code class="docutils literal notranslate"><span class="pre">Derived</span></code> TypedDict subclass.</p>
 <p>In the below example we see this is action:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
@@ -645,6 +645,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">y1</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y2</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">()</span>
         <span class="c1"># Parameter</span>
+        <span class="c1"># This could also be set as &#39;1.0&#39;, if constant.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y1_y2_distance</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="c1"># Derived signals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">DerivedSignalFactory</span><span class="p">(</span>
@@ -675,7 +676,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Movable</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">DerivedSignalFactory</span><span class="p">,</span> <span class="n">Device</span><span class="p">,</span> <span class="n">soft_signal_rw</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">DerivedSignalFactory</span><span class="p">,</span> <span class="n">Device</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._mirror_vertical</span><span class="w"> </span><span class="kn">import</span> <span class="n">TwoJackDerived</span><span class="p">,</span> <span class="n">TwoJackTransform</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._motor</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimMotor</span>
@@ -692,7 +693,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">x1</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x2</span> <span class="o">=</span> <span class="n">SimMotor</span><span class="p">()</span>
         <span class="c1"># Parameter</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">x1_x2_distance</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># This could also be set as &#39;soft_signal_rw(float, initial_value=1)&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x1_x2_distance</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="c1"># Derived signals</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">DerivedSignalFactory</span><span class="p">(</span>
             <span class="n">TwoJackTransform</span><span class="p">,</span>

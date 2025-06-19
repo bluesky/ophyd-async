@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to choose the right base class when implementing a new Device &#8212; ophyd-async 0.10.2.dev6+gb28a3efc4 documentation</title>
+    <title>How to choose the right base class when implementing a new Device &#8212; ophyd-async 0.10.2.dev7+gf35fb13d8 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=4cf0a29a"></script>
+    <script src="../_static/documentation_options.js?v=d350877e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev6+gb28a3efc4 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev6+gb28a3efc4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev7+gf35fb13d8 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev7+gf35fb13d8 documentation - Home"/>
   
   
 </a></div>
@@ -495,10 +495,10 @@
 </section>
 <section id="adding-verbs-via-protocols">
 <h2>Adding verbs via protocols<a class="headerlink" href="#adding-verbs-via-protocols" title="Link to this heading">#</a></h2>
-<p>There are some <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html" title="bluesky 1.14.3.dev4+gd2e3cb7a">bluesky protocols</a> that show the verbs you can implement to add functionality in standard plans. For example:</p>
+<p>There are some <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html" title="bluesky 1.14.3.dev6+gfe6562c0">bluesky protocols</a> that show the verbs you can implement to add functionality in standard plans. For example:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.14.3.dev4+gd2e3cb7a"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a> to add behavior during <code class="docutils literal notranslate"><span class="pre">bps.mv</span></code> and <code class="docutils literal notranslate"><span class="pre">bps.abs_set</span></code></p></li>
-<li><p><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.14.3.dev4+gd2e3cb7a"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.Triggerable</span></code></a> to add behavior before <code class="docutils literal notranslate"><span class="pre">read()</span></code> in <code class="docutils literal notranslate"><span class="pre">bps.scan</span></code></p></li>
+<li><p><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.14.3.dev6+gfe6562c0"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a> to add behavior during <code class="docutils literal notranslate"><span class="pre">bps.mv</span></code> and <code class="docutils literal notranslate"><span class="pre">bps.abs_set</span></code></p></li>
+<li><p><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.14.3.dev6+gfe6562c0"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.Triggerable</span></code></a> to add behavior before <code class="docutils literal notranslate"><span class="pre">read()</span></code> in <code class="docutils literal notranslate"><span class="pre">bps.scan</span></code></p></li>
 </ul>
 <p>It is not strictly required to add the protocol class as a baseclass (the presence of a method with the right signature is all that is required) but generally this is done so that the IDE gives you help when filling in the method, and the type checker knows to check that you have filled it in correctly.</p>
 </section>

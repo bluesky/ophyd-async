@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.10.2.dev6+gb28a3efc4 documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.10.2.dev7+gf35fb13d8 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=4cf0a29a"></script>
+    <script src="../_static/documentation_options.js?v=d350877e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev6+gb28a3efc4 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev6+gb28a3efc4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev7+gf35fb13d8 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev7+gf35fb13d8 documentation - Home"/>
   
   
 </a></div>
@@ -477,7 +477,7 @@
                   
   <section id="writing-tests-for-devices">
 <h1>Writing Tests for Devices<a class="headerlink" href="#writing-tests-for-devices" title="Link to this heading">#</a></h1>
-<p>In this tutorial we will explore how to write tests for ophyd-async Devices that do not require the real hardware. This allows us to catch bugs in our logic by inspecting what it would send to the hardware, and once it is working gives us confidence that it will stay working. Python provides some standard tools like <a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#module-unittest.mock" title="Python 3.13"><span class="xref myst">mocking, patching</span></a> and <a class="reference external" href="https://docs.pytest.org/en/stable/reference/fixtures.html#fixtures" title="pytest 8.4.0">fixtures</a>, and ophyd-async provides some utility methods to help too.</p>
+<p>In this tutorial we will explore how to write tests for ophyd-async Devices that do not require the real hardware. This allows us to catch bugs in our logic by inspecting what it would send to the hardware, and once it is working gives us confidence that it will stay working. Python provides some standard tools like <a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#module-unittest.mock" title="Python 3.13"><span class="xref myst">mocking, patching</span></a> and <a class="reference external" href="https://docs.pytest.org/en/stable/reference/fixtures.html#fixtures" title="pytest 8.4.1">fixtures</a>, and ophyd-async provides some utility methods to help too.</p>
 <p>There are two categories of test that will typically be written for a Device:</p>
 <ul class="simple">
 <li><p>Tests that call the bluesky verbs (like <code class="docutils literal notranslate"><span class="pre">set()</span></code> or <code class="docutils literal notranslate"><span class="pre">read()</span></code>) directly</p></li>

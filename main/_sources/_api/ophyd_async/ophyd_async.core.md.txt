@@ -363,6 +363,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._utils.EnumTypes
     :summary:
     ```
+* - {py:obj}`Primitive <ophyd_async.core._signal_backend.Primitive>`
+  - ```{autodoc2-docstring} ophyd_async.core._signal_backend.Primitive
+    :summary:
+    ```
 * - {py:obj}`CALCULATE_TIMEOUT <ophyd_async.core._utils.CALCULATE_TIMEOUT>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.CALCULATE_TIMEOUT
     :summary:
@@ -1289,6 +1293,16 @@ Bases: {py:obj}`typing.TypedDict`
 ````
 
 `````
+
+````{py:data} Primitive
+:canonical: ophyd_async.core._signal_backend.Primitive
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.core._signal_backend.Primitive
+```
+
+````
 
 `````{py:class} SoftSignalBackend(datatype: type[~ophyd_async.core._signal_backend.SignalDatatypeT] | None, initial_value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None = None, units: str | None = None, precision: int | None = None)
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend
@@ -2780,14 +2794,14 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 
 ````
 
-````{py:function} derived_signal_r(raw_to_derived: ~collections.abc.Callable[..., ~ophyd_async.core._signal_backend.SignalDatatypeT], derived_units: str | None = None, derived_precision: int | None = None, **raw_devices: ~ophyd_async.core._device.Device) -> ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT]
+````{py:function} derived_signal_r(raw_to_derived: ~collections.abc.Callable[..., ~ophyd_async.core._signal_backend.SignalDatatypeT], derived_units: str | None = None, derived_precision: int | None = None, **raw_devices_and_constants: ~ophyd_async.core._device.Device | ~ophyd_async.core._signal_backend.Primitive) -> ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT]
 :canonical: ophyd_async.core._derived_signal.derived_signal_r
 
 ```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_r
 ```
 ````
 
-````{py:function} derived_signal_rw(raw_to_derived: ~collections.abc.Callable[..., ~ophyd_async.core._signal_backend.SignalDatatypeT], set_derived: ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], ~collections.abc.Awaitable[None]], derived_units: str | None = None, derived_precision: int | None = None, **raw_devices: ~ophyd_async.core._device.Device) -> ~ophyd_async.core._signal.SignalRW[~ophyd_async.core._signal_backend.SignalDatatypeT]
+````{py:function} derived_signal_rw(raw_to_derived: ~collections.abc.Callable[..., ~ophyd_async.core._signal_backend.SignalDatatypeT], set_derived: ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], ~collections.abc.Awaitable[None]], derived_units: str | None = None, derived_precision: int | None = None, **raw_devices_and_constants: ~ophyd_async.core._device.Device | ~ophyd_async.core._signal_backend.Primitive) -> ~ophyd_async.core._signal.SignalRW[~ophyd_async.core._signal_backend.SignalDatatypeT]
 :canonical: ophyd_async.core._derived_signal.derived_signal_rw
 
 ```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_rw
@@ -2811,7 +2825,7 @@ Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`, {py:obj}`typing.Generic`
 
 ````
 
-`````{py:class} DerivedSignalFactory(transform_cls: type[~ophyd_async.core._derived_signal_backend.TransformT], set_derived: ~collections.abc.Callable[..., ~collections.abc.Awaitable[None]] | None = None, **raw_and_transform_devices)
+`````{py:class} DerivedSignalFactory(transform_cls: type[~ophyd_async.core._derived_signal_backend.TransformT], set_derived: ~collections.abc.Callable[..., ~collections.abc.Awaitable[None]] | None = None, **raw_and_transform_devices_and_constants)
 :canonical: ophyd_async.core._derived_signal.DerivedSignalFactory
 
 Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._derived_signal_backend.TransformT`\]

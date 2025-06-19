@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._derived_signal &#8212; ophyd-async 0.10.2.dev6+gb28a3efc4 documentation</title>
+    <title>ophyd_async.core._derived_signal &#8212; ophyd-async 0.10.2.dev7+gf35fb13d8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=4cf0a29a"></script>
+    <script src="../../../_static/documentation_options.js?v=d350877e"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev6+gb28a3efc4 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev6+gb28a3efc4 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev7+gf35fb13d8 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev7+gf35fb13d8 documentation - Home"/>
   
   
 </a></div>
@@ -476,7 +476,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">SignalT</span><span class="p">,</span> <span class="n">SignalW</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalDatatypeT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">Primitive</span><span class="p">,</span> <span class="n">SignalDatatypeT</span>
 
 
 <div class="viewcode-block" id="DerivedSignalFactory">
@@ -490,18 +490,31 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    :param set_derived:</span>
 <span class="sd">        An optional async function that takes the output of</span>
 <span class="sd">        `transform_cls.raw_to_derived` and applies it to the raw devices.</span>
-<span class="sd">    :param raw_and_transform_devices:</span>
-<span class="sd">        Devices whose values will be passed as parameters to the `transform_cls`,</span>
-<span class="sd">        and as arguments to `transform_cls.raw_to_derived`.</span>
+<span class="sd">    :param raw_and_transform_devices_and_constants:</span>
+<span class="sd">        Devices and Constants whose values will be passed as parameters</span>
+<span class="sd">        to the `transform_cls`, and as arguments to `transform_cls.raw_to_derived`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">transform_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">TransformT</span><span class="p">],</span>
         <span class="n">set_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">raw_and_transform_devices</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">raw_and_transform_devices_and_constants</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived</span> <span class="o">=</span> <span class="n">set_derived</span>
+        <span class="n">_raw_and_transform_devices</span><span class="p">,</span> <span class="n">_raw_and_transform_constants</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">raw_and_transform_devices_and_constants</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Device</span><span class="p">)</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">raw_and_transform_devices_and_constants</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Primitive</span><span class="p">)</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
         <span class="c1"># Check the raw and transform devices match the input arguments of the Transform</span>
         <span class="k">if</span> <span class="n">transform_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Transform</span><span class="p">:</span>
             <span class="c1"># Populate expected parameters and types</span>
@@ -515,26 +528,42 @@ window.addEventListener("load", () => mermaid.run());
             <span class="p">}</span>
 
             <span class="c1"># Populate received parameters and types</span>
-            <span class="c1"># Use Signal datatype, or Locatable datatype, or set type as None</span>
+            <span class="c1"># Use Primitive&#39;s type, Signal&#39;s datatype,</span>
+            <span class="c1"># Locatable&#39;s datatype, or set type as None</span>
             <span class="n">received</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">datatype</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Signal</span><span class="p">)</span> <span class="k">else</span> <span class="n">get_locatable_type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">raw_and_transform_devices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="o">**</span><span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">datatype</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Signal</span><span class="p">)</span> <span class="k">else</span> <span class="n">get_locatable_type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_raw_and_transform_devices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">},</span>
+                <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">_raw_and_transform_constants</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
             <span class="p">}</span>
 
             <span class="k">if</span> <span class="n">expected</span> <span class="o">!=</span> <span class="n">received</span><span class="p">:</span>
                 <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Expected devices to be passed as keyword arguments &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Expected the following to be passed as keyword arguments &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">expected</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">received</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived_takes_dict</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">is_typeddict</span><span class="p">(</span><span class="n">_get_first_arg_datatype</span><span class="p">(</span><span class="n">set_derived</span><span class="p">))</span> <span class="k">if</span> <span class="n">set_derived</span> <span class="k">else</span> <span class="kc">False</span>
         <span class="p">)</span>
+
+        <span class="n">_raw_constants</span><span class="p">,</span> <span class="n">_transform_constants</span> <span class="o">=</span> <span class="n">_partition_by_keys</span><span class="p">(</span>
+            <span class="n">_raw_and_transform_constants</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">transform_cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">_raw_devices</span><span class="p">,</span> <span class="n">_transform_devices</span> <span class="o">=</span> <span class="n">_partition_by_keys</span><span class="p">(</span>
+            <span class="n">_raw_and_transform_devices</span><span class="p">,</span> <span class="nb">set</span><span class="p">(</span><span class="n">transform_cls</span><span class="o">.</span><span class="n">model_fields</span><span class="p">)</span>
+        <span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_transformer</span> <span class="o">=</span> <span class="n">SignalTransformer</span><span class="p">(</span>
             <span class="n">transform_cls</span><span class="p">,</span>
             <span class="n">set_derived</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived_takes_dict</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">raw_and_transform_devices</span><span class="p">,</span>
+            <span class="n">_raw_devices</span><span class="p">,</span>
+            <span class="n">_raw_constants</span><span class="p">,</span>
+            <span class="n">_transform_devices</span><span class="p">,</span>
+            <span class="n">_transform_constants</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_make_signal</span><span class="p">(</span>
@@ -657,7 +686,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">def</span><span class="w"> </span><span class="nf">_make_factory</span><span class="p">(</span>
     <span class="n">raw_to_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">set_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">raw_devices</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">raw_devices_and_constants</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span> <span class="o">|</span> <span class="n">Primitive</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DerivedSignalFactory</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">raw_to_derived</span><span class="p">:</span>
 
@@ -670,7 +699,9 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">DerivedTransform</span><span class="o">.</span><span class="n">raw_to_derived</span><span class="o">.</span><span class="vm">__annotations__</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">raw_to_derived</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">DerivedSignalFactory</span><span class="p">(</span>
-            <span class="n">DerivedTransform</span><span class="p">,</span> <span class="n">set_derived</span><span class="o">=</span><span class="n">set_derived</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">raw_devices</span> <span class="ow">or</span> <span class="p">{})</span>
+            <span class="n">DerivedTransform</span><span class="p">,</span>
+            <span class="n">set_derived</span><span class="o">=</span><span class="n">set_derived</span><span class="p">,</span>
+            <span class="o">**</span><span class="p">(</span><span class="n">raw_devices_and_constants</span> <span class="ow">or</span> <span class="p">{}),</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">DerivedSignalFactory</span><span class="p">(</span><span class="n">Transform</span><span class="p">,</span> <span class="n">set_derived</span><span class="o">=</span><span class="n">set_derived</span><span class="p">)</span>
@@ -682,7 +713,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">raw_to_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">derived_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">derived_precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">raw_devices</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">raw_devices_and_constants</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="n">Primitive</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a read only derived signal.</span>
 
@@ -691,11 +722,14 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        returns the derived value.</span>
 <span class="sd">    :param derived_units: Engineering units for the derived signal</span>
 <span class="sd">    :param derived_precision: Number of digits after the decimal place to display</span>
-<span class="sd">    :param raw_devices:</span>
-<span class="sd">        A dictionary of Devices to provide the values for raw_to_derived. The names</span>
-<span class="sd">        of these arguments must match the arguments of raw_to_derived.</span>
+<span class="sd">    :param raw_devices_and_constants:</span>
+<span class="sd">        A dictionary of Devices and Constants to provide the values for raw_to_derived.</span>
+<span class="sd">        The names of these arguments must match the arguments of raw_to_derived.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">factory</span> <span class="o">=</span> <span class="n">_make_factory</span><span class="p">(</span><span class="n">raw_to_derived</span><span class="o">=</span><span class="n">raw_to_derived</span><span class="p">,</span> <span class="n">raw_devices</span><span class="o">=</span><span class="n">raw_devices</span><span class="p">)</span>
+    <span class="n">factory</span> <span class="o">=</span> <span class="n">_make_factory</span><span class="p">(</span>
+        <span class="n">raw_to_derived</span><span class="o">=</span><span class="n">raw_to_derived</span><span class="p">,</span>
+        <span class="n">raw_devices_and_constants</span><span class="o">=</span><span class="n">raw_devices_and_constants</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">factory</span><span class="o">.</span><span class="n">derived_signal_r</span><span class="p">(</span>
         <span class="n">datatype</span><span class="o">=</span><span class="n">_get_return_datatype</span><span class="p">(</span><span class="n">raw_to_derived</span><span class="p">),</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">,</span>
@@ -712,7 +746,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">set_derived</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span>
     <span class="n">derived_units</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">derived_precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">raw_devices</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">raw_devices_and_constants</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="n">Primitive</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a read-write derived signal.</span>
 
@@ -724,9 +758,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        either be an async function, or return an [](#AsyncStatus)</span>
 <span class="sd">    :param derived_units: Engineering units for the derived signal</span>
 <span class="sd">    :param derived_precision: Number of digits after the decimal place to display</span>
-<span class="sd">    :param raw_devices:</span>
-<span class="sd">        A dictionary of Devices to provide the values for raw_to_derived. The names</span>
-<span class="sd">        of these arguments must match the arguments of raw_to_derived.</span>
+<span class="sd">    :param raw_devices_and_constants:</span>
+<span class="sd">        A dictionary of Devices and Constants to provide the values for raw_to_derived.</span>
+<span class="sd">        The names of these arguments must match the arguments of raw_to_derived.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">raw_to_derived_datatype</span> <span class="o">=</span> <span class="n">_get_return_datatype</span><span class="p">(</span><span class="n">raw_to_derived</span><span class="p">)</span>
     <span class="n">set_derived_datatype</span> <span class="o">=</span> <span class="n">_get_first_arg_datatype</span><span class="p">(</span><span class="n">set_derived</span><span class="p">)</span>
@@ -738,7 +772,9 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="n">factory</span> <span class="o">=</span> <span class="n">_make_factory</span><span class="p">(</span>
-        <span class="n">raw_to_derived</span><span class="o">=</span><span class="n">raw_to_derived</span><span class="p">,</span> <span class="n">set_derived</span><span class="o">=</span><span class="n">set_derived</span><span class="p">,</span> <span class="n">raw_devices</span><span class="o">=</span><span class="n">raw_devices</span>
+        <span class="n">raw_to_derived</span><span class="o">=</span><span class="n">raw_to_derived</span><span class="p">,</span>
+        <span class="n">set_derived</span><span class="o">=</span><span class="n">set_derived</span><span class="p">,</span>
+        <span class="n">raw_devices_and_constants</span><span class="o">=</span><span class="n">raw_devices_and_constants</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">factory</span><span class="o">.</span><span class="n">derived_signal_rw</span><span class="p">(</span>
         <span class="n">datatype</span><span class="o">=</span><span class="n">raw_to_derived_datatype</span><span class="p">,</span>
@@ -786,6 +822,16 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_partition_by_keys</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">keys</span><span class="p">:</span> <span class="nb">set</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+    <span class="n">group_excluded</span><span class="p">,</span> <span class="n">group_included</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">group_included</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">group_excluded</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="n">group_excluded</span><span class="p">,</span> <span class="n">group_included</span>
 </pre></div>
 
                 </article>
