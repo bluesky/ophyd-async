@@ -31,7 +31,7 @@
 
 ### API
 
-````{py:class} Odin(prefix: str, name: str = '')
+````{py:class} Odin(prefix: str, name: str = '', nodes: int = 4)
 :canonical: ophyd_async.epics.eiger._odin_io.Odin
 
 Bases: {py:obj}`ophyd_async.core.Device`
