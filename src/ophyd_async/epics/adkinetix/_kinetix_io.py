@@ -1,3 +1,4 @@
+from enum import IntEnum
 from typing import Annotated as A
 
 from ophyd_async.core import SignalRW, StrictEnum
@@ -13,7 +14,7 @@ class KinetixTriggerMode(StrictEnum):
     GATE = "Exp. Gate"
 
 
-class KinetixReadoutMode(StrictEnum):
+class KinetixReadoutMode(IntEnum):
     """Readout mode for ADKinetix detector."""
 
     SENSITIVITY = 1
