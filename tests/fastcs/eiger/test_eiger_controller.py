@@ -1,4 +1,4 @@
-from unittest.mock import ANY
+from unittest.mock import ANY, call
 
 from pytest import fixture
 
@@ -7,7 +7,12 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.fastcs.eiger import EigerController, EigerDriverIO
-from ophyd_async.testing import callback_on_mock_put, get_mock_put, set_mock_value
+from ophyd_async.testing import (
+    callback_on_mock_put,
+    get_mock,
+    get_mock_put,
+    set_mock_value,
+)
 
 DriverAndController = tuple[EigerDriverIO, EigerController]
 
@@ -107,3 +112,20 @@ async def test_given_energy_outside_tolerance_when_photon_energy_set_then_pv_cha
     await controller.set_energy(new_energy)
     get_mock_put(driver.detector.photon_energy).assert_called_once()
     assert (await driver.detector.photon_energy.get_value()) == new_energy
+
+
+async def test_when_prepare_called__correct_parameters_set(
+    eiger_driver_and_controller: DriverAndController,
+):
+    driver, controller = eiger_driver_and_controller
+
+    await controller.prepare(TriggerInfo(livetime=1))
+
+    detector_mock = get_mock(driver.detector)
+    mock_calls = detector_mock.mock_calls
+    assert [
+        call.trigger_mode.put("ints", wait=True),
+        call.nimages.put(1, wait=True),
+        call.count_time.put(1.0, wait=True),
+        call.frame_time.put(1.0, wait=True),
+    ] in mock_calls
