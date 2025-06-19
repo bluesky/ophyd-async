@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.signal &#8212; ophyd-async 0.10.2.dev9+g72f9dc8ef documentation</title>
+    <title>ophyd_async.epics.pmac &#8212; ophyd-async 0.10.2.dev9+g72f9dc8ef documentation</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_api/ophyd_async/ophyd_async.epics.signal';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_api/ophyd_async/ophyd_async.epics.pmac';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -59,8 +59,8 @@
     <link rel="icon" href="../../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="ophyd_async.epics.motor" href="ophyd_async.epics.motor.html" />
-    <link rel="prev" title="ophyd_async.epics.pmac" href="ophyd_async.epics.pmac.html" />
+    <link rel="next" title="ophyd_async.epics.signal" href="ophyd_async.epics.signal.html" />
+    <link rel="prev" title="ophyd_async.epics.adsimdetector" href="ophyd_async.epics.adsimdetector.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -431,8 +431,8 @@
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.advimba.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adkinetix.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adsimdetector.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pmac.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac</span></code></a></li>
-<li class="toctree-l4 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
 </ul>
 </details></li>
@@ -504,7 +504,7 @@
     
     <li class="breadcrumb-item"><a href="ophyd_async.epics.html" class="nav-link"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac</span></code></span></li>
   </ul>
 </nav>
 </div>
@@ -521,9 +521,63 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-ophyd_async.epics.signal">
-<span id="ophyd-async-epics-signal"></span><h1><a class="reference internal" href="#module-ophyd_async.epics.signal" title="ophyd_async.epics.signal"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a><a class="headerlink" href="#module-ophyd_async.epics.signal" title="Link to this heading">#</a></h1>
-<p>Back compat.</p>
+  <section id="module-ophyd_async.epics.pmac">
+<span id="ophyd-async-epics-pmac"></span><h1><a class="reference internal" href="#module-ophyd_async.epics.pmac" title="ophyd_async.epics.pmac"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac</span></code></a><a class="headerlink" href="#module-ophyd_async.epics.pmac" title="Link to this heading">#</a></h1>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.pmac.PmacAxisIO" title="ophyd_async.epics.pmac._pmac_io.PmacAxisIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PmacAxisIO</span></code></a></p></td>
+<td><p>A Device that (direct) moves a PMAC Coordinate System Motor.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.pmac.PmacCoordIO" title="ophyd_async.epics.pmac._pmac_io.PmacCoordIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PmacCoordIO</span></code></a></p></td>
+<td><p>A Device that represents a Pmac Coordinate System.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.pmac.PmacIO" title="ophyd_async.epics.pmac._pmac_io.PmacIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PmacIO</span></code></a></p></td>
+<td><p>Device that represents a pmac controller.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.pmac.PmacTrajectoryIO" title="ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PmacTrajectoryIO</span></code></a></p></td>
+<td><p>Device that moves a PMAC Motor record.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">#</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacAxisIO">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.pmac.</span></span><span class="sig-name descname"><span class="pre">PmacAxisIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_io.html#PmacAxisIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacAxisIO" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>A Device that (direct) moves a PMAC Coordinate System Motor.</p>
+<p>Note that this does not go through a motor record.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacCoordIO">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.pmac.</span></span><span class="sig-name descname"><span class="pre">PmacCoordIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_io.html#PmacCoordIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacCoordIO" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>A Device that represents a Pmac Coordinate System.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacIO">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.pmac.</span></span><span class="sig-name descname"><span class="pre">PmacIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_nums</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coord_nums</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_io.html#PmacIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacIO" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>Device that represents a pmac controller.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryIO">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.pmac.</span></span><span class="sig-name descname"><span class="pre">PmacTrajectoryIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_io.html#PmacTrajectoryIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryIO" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StandardReadable</span></code></a></p>
+<p>Device that moves a PMAC Motor record.</p>
+</dd></dl>
+
+</section>
+</section>
 </section>
 
 
@@ -537,20 +591,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.epics.pmac.html"
+       href="ophyd_async.epics.adsimdetector.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.epics.motor.html"
+       href="ophyd_async.epics.signal.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -566,10 +620,32 @@
 
 
   <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacAxisIO"><code class="docutils literal notranslate"><span class="pre">PmacAxisIO</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacCoordIO"><code class="docutils literal notranslate"><span class="pre">PmacCoordIO</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacIO"><code class="docutils literal notranslate"><span class="pre">PmacIO</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryIO"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryIO</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/_api/ophyd_async/ophyd_async.epics.signal.md">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/_api/ophyd_async/ophyd_async.epics.pmac.md">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -585,7 +661,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../../_sources/_api/ophyd_async/ophyd_async.epics.signal.md.txt"
+      <li><a href="../../_sources/_api/ophyd_async/ophyd_async.epics.pmac.md.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>

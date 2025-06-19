@@ -24,6 +24,7 @@ ophyd_async.epics.adandor
 ophyd_async.epics.advimba
 ophyd_async.epics.adkinetix
 ophyd_async.epics.adsimdetector
+ophyd_async.epics.pmac
 ```
 
 ## Submodules
