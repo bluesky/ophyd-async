@@ -45,9 +45,11 @@ class OdinNode(Device):
 
 
 class Odin(Device):
-    def __init__(self, prefix: str, name: str = "") -> None:
+    def __init__(self, prefix: str, name: str = "", nodes: int = 4) -> None:
+        # default nodes is set to 4, MX 16M Eiger detectors - nodes = 4.
+        # B21 4M Eiger detector - nodes = 1
         self.nodes = DeviceVector(
-            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(4)}
+            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(nodes)}
         )
 
         self.capture = epics_signal_rw(Writing, f"{prefix}Capture")
