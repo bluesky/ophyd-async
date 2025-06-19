@@ -33,8 +33,6 @@ jobs:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   import_with_no_extras:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_import_with_no_extras.yml
 
   docs:
@@ -52,8 +50,6 @@ jobs:
       id-token: write
 
   codeql:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_codeql.yml
 
   release:
