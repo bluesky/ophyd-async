@@ -27,10 +27,6 @@
   - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO
     :summary:
     ```
-* - {py:obj}`EigerTriggerInfo <ophyd_async.fastcs.eiger._eiger.EigerTriggerInfo>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger.EigerTriggerInfo
-    :summary:
-    ```
 * - {py:obj}`EigerDetectorIO <ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO>`
   - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO
     :summary:
@@ -55,7 +51,7 @@ Bases: {py:obj}`ophyd_async.core.StandardDetector`
 ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger.EigerDetector
 ```
 
-````{py:method} prepare(value: ~ophyd_async.fastcs.eiger._eiger.EigerTriggerInfo) -> None
+````{py:method} prepare(value: ~ophyd_async.core.TriggerInfo) -> None
 :canonical: ophyd_async.fastcs.eiger._eiger.EigerDetector.prepare
 :async:
 
@@ -177,27 +173,6 @@ Bases: {py:obj}`ophyd_async.core.Device`
    None
 
 ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO.detector
-```
-
-````
-
-`````
-
-`````{py:class} EigerTriggerInfo(/, **data: ~typing.Any)
-:canonical: ophyd_async.fastcs.eiger._eiger.EigerTriggerInfo
-
-Bases: {py:obj}`ophyd_async.core.TriggerInfo`
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger.EigerTriggerInfo
-```
-
-````{py:attribute} energy_ev
-:canonical: ophyd_async.fastcs.eiger._eiger.EigerTriggerInfo.energy_ev
-:type: float
-:value: >
-   'Field(...)'
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger.EigerTriggerInfo.energy_ev
 ```
 
 ````

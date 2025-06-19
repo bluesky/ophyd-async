@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.fastcs.eiger &#8212; ophyd-async 0.10.2.dev9+g72f9dc8ef documentation</title>
+    <title>ophyd_async.fastcs.eiger &#8212; ophyd-async 0.10.2.dev10+g6f47dd4bf documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=475055bc"></script>
+    <script src="../../_static/documentation_options.js?v=94ab8419"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev9+g72f9dc8ef documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev9+g72f9dc8ef documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev10+g6f47dd4bf documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev10+g6f47dd4bf documentation - Home"/>
   
   
 </a></div>
@@ -538,16 +538,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerDriverIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerDriverIO</span></code></a></p></td>
 <td><p>Contains signals for handling IO on the Eiger detector.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerTriggerInfo" title="ophyd_async.fastcs.eiger._eiger.EigerTriggerInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerTriggerInfo</span></code></a></p></td>
-<td><p>Minimal set of information required to setup triggering on a detector.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerDetectorIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerDetectorIO</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerDetectorIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerDetectorIO</span></code></a></p></td>
 <td><p>Common base class for all Ophyd Async Devices.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerMonitorIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerMonitorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerMonitorIO</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerMonitorIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerMonitorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerMonitorIO</span></code></a></p></td>
 <td><p>Common base class for all Ophyd Async Devices.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerStreamIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerStreamIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerStreamIO</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerStreamIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerStreamIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerStreamIO</span></code></a></p></td>
 <td><p>Common base class for all Ophyd Async Devices.</p></td>
 </tr>
 </tbody>
@@ -563,7 +560,7 @@
 <p>Ophyd-async implementation of an Eiger Detector.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.eiger.EigerDetector.prepare">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerTriggerInfo" title="ophyd_async.fastcs.eiger._eiger.EigerTriggerInfo"><span class="pre">EigerTriggerInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/eiger/_eiger.html#EigerDetector.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerDetector.prepare" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><span class="pre">TriggerInfo</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/eiger/_eiger.html#EigerDetector.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerDetector.prepare" title="Link to this definition">#</a></dt>
 <dd><p>Arm detector.</p>
 <p>Prepare the detector with trigger information. This is determined at and passed
 in from the plan level.</p>
@@ -651,19 +648,6 @@ in from the plan level.</p>
 <dt class="sig sig-object py" id="ophyd_async.fastcs.eiger.EigerDriverIO.detector">
 <span class="sig-name descname"><span class="pre">detector</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerDetectorIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO"><span class="pre">EigerDetectorIO</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerDriverIO.detector" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.eiger.EigerTriggerInfo">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.eiger.</span></span><span class="sig-name descname"><span class="pre">EigerTriggerInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/eiger/_eiger.html#EigerTriggerInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerTriggerInfo" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.TriggerInfo</span></code></a></p>
-<p>Minimal set of information required to setup triggering on a detector.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.eiger.EigerTriggerInfo.energy_ev">
-<span class="sig-name descname"><span class="pre">energy_ev</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerTriggerInfo.energy_ev" title="Link to this definition">#</a></dt>
-<dd><p>‘Field(…)’</p>
 </dd></dl>
 
 </dd></dl>
@@ -887,10 +871,6 @@ in from the plan level.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.eiger.EigerDriverIO.monitor"><code class="docutils literal notranslate"><span class="pre">EigerDriverIO.monitor</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.eiger.EigerDriverIO.stream"><code class="docutils literal notranslate"><span class="pre">EigerDriverIO.stream</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.eiger.EigerDriverIO.detector"><code class="docutils literal notranslate"><span class="pre">EigerDriverIO.detector</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.eiger.EigerTriggerInfo"><code class="docutils literal notranslate"><span class="pre">EigerTriggerInfo</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.eiger.EigerTriggerInfo.energy_ev"><code class="docutils literal notranslate"><span class="pre">EigerTriggerInfo.energy_ev</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.eiger.EigerDetectorIO"><code class="docutils literal notranslate"><span class="pre">EigerDetectorIO</span></code></a><ul class="nav section-nav flex-column">

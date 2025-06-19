@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.eiger._eiger &#8212; ophyd-async 0.10.2.dev9+g72f9dc8ef documentation</title>
+    <title>ophyd_async.fastcs.eiger._eiger &#8212; ophyd-async 0.10.2.dev10+g6f47dd4bf documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=475055bc"></script>
+    <script src="../../../../_static/documentation_options.js?v=94ab8419"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev9+g72f9dc8ef documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev9+g72f9dc8ef documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev10+g6f47dd4bf documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev10+g6f47dd4bf documentation - Home"/>
   
   
 </a></div>
@@ -463,9 +463,7 @@ window.addEventListener("load", () => mermaid.run());
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.fastcs.eiger._eiger</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">PathProvider</span><span class="p">,</span>
     <span class="n">StandardDetector</span><span class="p">,</span>
@@ -475,13 +473,6 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._eiger_controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">EigerController</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._eiger_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">EigerDriverIO</span>
-
-
-<div class="viewcode-block" id="EigerTriggerInfo">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.eiger.html#ophyd_async.fastcs.eiger.EigerTriggerInfo">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">EigerTriggerInfo</span><span class="p">(</span><span class="n">TriggerInfo</span><span class="p">):</span>
-    <span class="n">energy_ev</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
-
 
 
 <div class="viewcode-block" id="EigerDetector">
@@ -517,8 +508,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="EigerDetector.prepare">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.eiger.html#ophyd_async.fastcs.eiger.EigerDetector.prepare">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">EigerTriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">set_energy</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">energy_ev</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 </div>
 
