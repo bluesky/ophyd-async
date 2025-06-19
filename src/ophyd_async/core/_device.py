@@ -10,7 +10,13 @@ from typing import Any, TypeVar
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
-from ._utils import DEFAULT_TIMEOUT, LazyMock, NotConnected, wait_for_connection
+from ._utils import (
+    DEFAULT_TIMEOUT,
+    LazyMock,
+    NotConnected,
+    error_if_none,
+    wait_for_connection,
+)
 
 
 class DeviceConnector:
@@ -171,12 +177,11 @@ class Device(HasName):
         :param force_reconnect:
             If True, force a reconnect even if the last connect succeeded.
         """
-        if not hasattr(self, "_connector"):
-            msg = (
-                f"{self}: doesn't have attribute `_connector`,"
-                " did you call `super().__init__` in your `__init__` method?"
-            )
-            raise RuntimeError(msg)
+        connector = error_if_none(
+            getattr(self, "_connector", None),
+            f"{self}: doesn't have attribute `_connector`,"
+            f" did you call `super().__init__` in your `__init__` method?",
+        )
         if mock:
             # Always connect in mock mode serially
             if isinstance(mock, LazyMock):
@@ -185,7 +190,7 @@ class Device(HasName):
             elif not self._mock:
                 # Make one
                 self._mock = LazyMock()
-            await self._connector.connect_mock(self, self._mock)
+            await connector.connect_mock(self, self._mock)
         else:
             # Try to cache the connect in real mode
             can_use_previous_connect = (
@@ -195,13 +200,13 @@ class Device(HasName):
             )
             if force_reconnect or not can_use_previous_connect:
                 self._mock = None
-                coro = self._connector.connect_real(self, timeout, force_reconnect)
+                coro = connector.connect_real(self, timeout, force_reconnect)
                 self._connect_task = asyncio.create_task(coro)
-            if not self._connect_task:
-                msg = "Connect task not created, this shouldn't happen"
-                raise RuntimeError(msg)
+            connect_task = error_if_none(
+                self._connect_task, "Connect task not created, this shouldn't happen"
+            )
             # Wait for it to complete
-            await self._connect_task
+            await connect_task
 
 
 _not_device_attrs = {
@@ -289,9 +294,8 @@ class DeviceProcessor:
             raise ValueError
         except ValueError:
             _, _, tb = sys.exc_info()
-            if not tb:
-                msg = "Can't get traceback, this shouldn't happen"
-                raise RuntimeError(msg)  # noqa: B904
+            tb = error_if_none(tb, "Can't get traceback, this shouldn't happen")
+
             caller_frame = tb.tb_frame
             while caller_frame.f_locals.get("self", None) is self:
                 caller_frame = caller_frame.f_back

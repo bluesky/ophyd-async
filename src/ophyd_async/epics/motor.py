@@ -26,6 +26,7 @@ from ophyd_async.core import (
     StrictEnum,
     WatchableAsyncStatus,
     WatcherUpdate,
+    error_if_none,
     observe_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
@@ -152,22 +153,20 @@ class Motor(
     @AsyncStatus.wrap
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
-        if not self._fly_info:
-            msg = "Motor must be prepared before attempting to kickoff"
-            raise RuntimeError(msg)
+        fly_info = error_if_none(
+            self._fly_info, "Motor must be prepared before attempting to kickoff"
+        )
 
         acceleration_time = await self.acceleration_time.get_value()
         self._fly_status = self.set(
-            self._fly_info.ramp_down_end_pos(acceleration_time),
-            timeout=self._fly_info.timeout,
+            fly_info.ramp_down_end_pos(acceleration_time),
+            timeout=fly_info.timeout,
         )
 
     def complete(self) -> WatchableAsyncStatus:
         """Mark as complete once motor reaches completed position."""
-        if not self._fly_status:
-            msg = "kickoff not called"
-            raise RuntimeError(msg)
-        return self._fly_status
+        fly_status = error_if_none(self._fly_status, "kickoff not called")
+        return fly_status
 
     @WatchableAsyncStatus.wrap
     async def set(  # type: ignore

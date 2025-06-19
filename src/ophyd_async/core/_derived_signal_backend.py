@@ -10,7 +10,14 @@ from event_model import DataKey
 
 from ._protocol import AsyncLocatable, AsyncReadable
 from ._signal_backend import SignalBackend, SignalDatatypeT, make_datakey, make_metadata
-from ._utils import Callback, ConfinedModel, T, gather_dict, merge_gathered_dicts
+from ._utils import (
+    Callback,
+    ConfinedModel,
+    T,
+    error_if_none,
+    gather_dict,
+    merge_gathered_dicts,
+)
 
 RawT = TypeVar("RawT")
 DerivedT = TypeVar("DerivedT")
@@ -184,13 +191,15 @@ class SignalTransformer(Generic[TransformT]):
         return {k: v["value"] for k, v in derived_readings.items()}
 
     def _update_cached_reading(self, value: dict[str, Reading]):
-        if self._cached_readings is None:
-            msg = "Cannot update cached reading as it has not been initialised"
-            raise RuntimeError(msg)
-        self._cached_readings.update(value)
+        _cached_readings = error_if_none(
+            self._cached_readings,
+            "Cannot update cached reading as it has not been initialised",
+        )
+
+        _cached_readings.update(value)
         if self._complete_cached_reading():
             # We've got a complete set of values, callback on them
-            derived_readings = self._make_derived_readings(self._cached_readings)
+            derived_readings = self._make_derived_readings(_cached_readings)
             for name, callback in self._derived_callbacks.items():
                 callback(derived_readings[name])
 
@@ -237,18 +246,19 @@ class SignalTransformer(Generic[TransformT]):
         }
 
     async def set_derived(self, name: str, value: Any):
-        if self._set_derived is None:
-            msg = "Cannot put as no set_derived method given"
-            raise RuntimeError(msg)
+        _set_derived = error_if_none(
+            self._set_derived,
+            "Cannot put as no set_derived method given",
+        )
         if self._set_derived_takes_dict:
             # Need to get the other derived values and update the one that's changing
             derived = await self.get_locations()
             setpoints = {k: v["setpoint"] for k, v in derived.items()}
             setpoints[name] = value
-            await self._set_derived(setpoints)
+            await _set_derived(setpoints)
         else:
             # Only one derived signal, so pass it directly
-            await self._set_derived(value)
+            await _set_derived(value)
 
 
 class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
@@ -284,9 +294,12 @@ class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
         if wait is False:
             msg = "Cannot put with wait=False"
             raise RuntimeError(msg)
-        if value is None:
-            msg = "Must be given a value to put"
-            raise RuntimeError(msg)
+
+        value = error_if_none(
+            value,
+            "Must be given a value to put",
+        )
+
         await self.transformer.set_derived(self.name, value)
 
     async def get_datakey(self, source: str) -> DataKey:
