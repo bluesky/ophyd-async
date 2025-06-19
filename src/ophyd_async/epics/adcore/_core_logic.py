@@ -129,7 +129,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                 ):
                     if state in self.good_states:
                         return
-            except asyncio.TimeoutError as exc:
+            except TimeoutError as exc:
                 if state is not None:
                     raise ValueError(
                         f"Final detector state {state.value} not in valid end "
@@ -137,7 +137,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                     ) from exc
                 else:
                     # No updates from the detector, something else is wrong
-                    raise asyncio.TimeoutError(
+                    raise TimeoutError(
                         "Could not monitor detector state: "
                         + self.driver.detector_state.source
                     ) from exc

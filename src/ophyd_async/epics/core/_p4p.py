@@ -327,7 +327,7 @@ def context() -> Context:
 async def pvget_with_timeout(pv: str, timeout: float) -> Any:
     try:
         return await asyncio.wait_for(context().get(pv), timeout=timeout)
-    except asyncio.TimeoutError as exc:
+    except TimeoutError as exc:
         logger.debug(f"signal pva://{pv} timed out", exc_info=True)
         raise NotConnected(f"pva://{pv}") from exc
 

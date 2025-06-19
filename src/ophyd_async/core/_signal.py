@@ -38,8 +38,8 @@ from ._utils import (
 async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
     try:
         return await asyncio.wait_for(coro, timeout)
-    except asyncio.TimeoutError as e:
-        raise asyncio.TimeoutError(source) from e
+    except TimeoutError as e:
+        raise TimeoutError(source) from e
 
 
 def _add_timeout(func):
@@ -479,7 +479,7 @@ async def observe_signals_value(
         last_item = ()
         while True:
             if overall_deadline and time.monotonic() >= overall_deadline:
-                raise asyncio.TimeoutError(
+                raise TimeoutError(
                     f"observe_value was still observing signals "
                     f"{[signal.source for signal in signals]} after "
                     f"timeout {done_timeout}s"
@@ -487,8 +487,8 @@ async def observe_signals_value(
             iteration_timeout = _get_iteration_timeout(timeout, overall_deadline)
             try:
                 item = await asyncio.wait_for(q.get(), iteration_timeout)
-            except asyncio.TimeoutError as exc:
-                raise asyncio.TimeoutError(
+            except TimeoutError as exc:
+                raise TimeoutError(
                     f"Timeout Error while waiting {iteration_timeout}s to update "
                     f"{[signal.source for signal in signals]}. "
                     f"Last observed signal and value were {last_item}"
@@ -523,8 +523,8 @@ class _ValueChecker(Generic[SignalDatatypeT]):
     ):
         try:
             await asyncio.wait_for(self._wait_for_value(signal), timeout)
-        except asyncio.TimeoutError as e:
-            raise asyncio.TimeoutError(
+        except TimeoutError as e:
+            raise TimeoutError(
                 f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
                 f"last value {self._last_value!r}"
             ) from e
@@ -622,8 +622,8 @@ async def set_and_wait_for_other_value(
             await asyncio.wait_for(_wait_for_value(), timeout)
             if wait_for_set_completion:
                 await status
-        except asyncio.TimeoutError as e:
-            raise asyncio.TimeoutError(
+        except TimeoutError as e:
+            raise TimeoutError(
                 f"{match_signal.name} value didn't match value from"
                 f" {matcher.__name__}() in {timeout}s"
             ) from e
