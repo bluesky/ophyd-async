@@ -2,26 +2,24 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
+    tags:
+      - '*'
   pull_request:
 
 jobs:
-  check:
-    uses: ./.github/workflows/_check.yml
 
   lint:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_tox.yml
     with:
       tox: pre-commit,type-checking
 
   test:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     strategy:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
-        python-version: ["3.10","3.11","3.12"]
+        python-version: ["3.11", "3.12", "3.13"]
         include:
           # Include one that runs in the dev environment
           - runs-on: "ubuntu-latest"
@@ -40,18 +38,15 @@ jobs:
     uses: ./.github/workflows/_import_with_no_extras.yml
 
   docs:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_docs.yml
 
+
   dist:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_dist.yml
 
   pypi:
+    needs: [dist, test]
     if: github.ref_type == 'tag'
-    needs: dist
     uses: ./.github/workflows/_pypi.yml
     permissions:
       id-token: write
@@ -62,8 +57,8 @@ jobs:
     uses: ./.github/workflows/_codeql.yml
 
   release:
+    needs: [dist, test, docs]
     if: github.ref_type == 'tag'
-    needs: [dist, docs]
     uses: ./.github/workflows/_release.yml
     permissions:
       contents: write
