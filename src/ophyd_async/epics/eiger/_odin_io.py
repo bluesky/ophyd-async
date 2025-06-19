@@ -46,8 +46,8 @@ class OdinNode(Device):
 
 class Odin(Device):
     def __init__(self, prefix: str, name: str = "", nodes: int = 4) -> None:
-        # default nodes is set to 4, which is a 16M Eiger detector.
-        # 4M Eiger detector nodes = 1
+        # default nodes is set to 4, MX 16M Eiger detectors - nodes = 4.
+        # B21 4M Eiger detector - nodes = 1
         self.nodes = DeviceVector(
             {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(nodes)}
         )
