@@ -177,7 +177,7 @@ class Device(HasName):
         :param force_reconnect:
             If True, force a reconnect even if the last connect succeeded.
         """
-        _connector = error_if_none(
+        connector = error_if_none(
             getattr(self, "_connector", None),
             f"{self}: doesn't have attribute `_connector`,"
             f" did you call `super().__init__` in your `__init__` method?",
@@ -190,7 +190,7 @@ class Device(HasName):
             elif not self._mock:
                 # Make one
                 self._mock = LazyMock()
-            await _connector.connect_mock(self, self._mock)
+            await connector.connect_mock(self, self._mock)
         else:
             # Try to cache the connect in real mode
             can_use_previous_connect = (
@@ -200,13 +200,13 @@ class Device(HasName):
             )
             if force_reconnect or not can_use_previous_connect:
                 self._mock = None
-                coro = _connector.connect_real(self, timeout, force_reconnect)
+                coro = connector.connect_real(self, timeout, force_reconnect)
                 self._connect_task = asyncio.create_task(coro)
-            _connect_task = error_if_none(
+            connect_task = error_if_none(
                 self._connect_task, "Connect task not created, this shouldn't happen"
             )
             # Wait for it to complete
-            await _connect_task
+            await connect_task
 
 
 _not_device_attrs = {

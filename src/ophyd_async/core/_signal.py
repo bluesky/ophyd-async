@@ -126,8 +126,8 @@ class _SignalCache(Generic[SignalDatatypeT]):
         self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
 
     def _ensure_reading(self) -> Reading[SignalDatatypeT]:
-        _reading = error_if_none(self._reading, "Monitor not working")
-        return _reading
+        reading = error_if_none(self._reading, "Monitor not working")
+        return reading
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
         await self._valid.wait()
@@ -187,8 +187,8 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
         if cached is None:
             cached = self._cache is not None
         if cached:
-            _cache = error_if_none(self._cache, f"{self.source} not being monitored")
-            return _cache
+            cache = error_if_none(self._cache, f"{self.source} not being monitored")
+            return cache
         else:
             return self._connector.backend
 

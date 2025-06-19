@@ -389,6 +389,16 @@ class ConfinedModel(BaseModel):
 
 
 def error_if_none(value: T | None, msg: str) -> T:
+    """Check and return the value if not None.
+    
+    :param value: The value to check
+    :param msg: The `RuntimeError` message to raise if it is None
+    :raises RuntimeError: If the value is None
+    :returns: The value if not None
+
+    Used to implement a pattern where a variable is None at init, then
+    changed by a method, then used in a later method.
+    """
     if value is None:
         raise RuntimeError(msg)
     return value

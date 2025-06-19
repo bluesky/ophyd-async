@@ -26,10 +26,10 @@ from ophyd_async.core import (
     StrictEnum,
     WatchableAsyncStatus,
     WatcherUpdate,
+    error_if_none,
     observe_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.core._utils import error_if_none
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
 __all__ = ["MotorLimitsException", "Motor"]
@@ -153,20 +153,20 @@ class Motor(
     @AsyncStatus.wrap
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
-        _fly_info = error_if_none(
+        fly_info = error_if_none(
             self._fly_info, "Motor must be prepared before attempting to kickoff"
         )
 
         acceleration_time = await self.acceleration_time.get_value()
         self._fly_status = self.set(
-            _fly_info.ramp_down_end_pos(acceleration_time),
-            timeout=_fly_info.timeout,
+            fly_info.ramp_down_end_pos(acceleration_time),
+            timeout=fly_info.timeout,
         )
 
     def complete(self) -> WatchableAsyncStatus:
         """Mark as complete once motor reaches completed position."""
-        _fly_status = error_if_none(self._fly_status, "kickoff not called")
-        return _fly_status
+        fly_status = error_if_none(self._fly_status, "kickoff not called")
+        return fly_status
 
     @WatchableAsyncStatus.wrap
     async def set(  # type: ignore
