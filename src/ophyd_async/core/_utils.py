@@ -390,7 +390,7 @@ class ConfinedModel(BaseModel):
 
 def error_if_none(value: T | None, msg: str) -> T:
     """Check and return the value if not None.
-    
+
     :param value: The value to check
     :param msg: The `RuntimeError` message to raise if it is None
     :raises RuntimeError: If the value is None
