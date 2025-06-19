@@ -1,6 +1,6 @@
 # Changes here will be overwritten by Copier
 _commit: 2.6.0
-_src_path: gh:DiamondLightSource/python-copier-template
+_src_path: https://github.com/DiamondLightSource/python-copier-template
 author_email: tom.cobb@diamond.ac.uk
 author_name: Tom Cobb
 description: Asynchronous Bluesky hardware abstraction code, compatible with control
