@@ -295,6 +295,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._log.config_ophyd_async_logging
     :summary:
     ```
+* - {py:obj}`error_if_none <ophyd_async.core._utils.error_if_none>`
+  - ```{autodoc2-docstring} ophyd_async.core._utils.error_if_none
+    :summary:
+    ```
 * - {py:obj}`gather_dict <ophyd_async.core._utils.gather_dict>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.gather_dict
     :summary:
@@ -2733,6 +2737,13 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 ```{autodoc2-docstring} ophyd_async.core._utils.Reference
 ```
 
+````
+
+````{py:function} error_if_none(value: ~ophyd_async.core._utils.T | None, msg: str) -> ~ophyd_async.core._utils.T
+:canonical: ophyd_async.core._utils.error_if_none
+
+```{autodoc2-docstring} ophyd_async.core._utils.error_if_none
+```
 ````
 
 ````{py:function} gather_dict(coros: ~collections.abc.Mapping[~ophyd_async.core._utils.T, ~collections.abc.Awaitable[~ophyd_async.core._utils.V]]) -> dict[~ophyd_async.core._utils.T, ~ophyd_async.core._utils.V]

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._derived_signal_backend &#8212; ophyd-async 0.10.2.dev10+g6f47dd4bf documentation</title>
+    <title>ophyd_async.core._derived_signal_backend &#8212; ophyd-async 0.10.2.dev11+g9391530d5 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=94ab8419"></script>
+    <script src="../../../_static/documentation_options.js?v=0d3f42d9"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev10+g6f47dd4bf documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev10+g6f47dd4bf documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev11+g9391530d5 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev11+g9391530d5 documentation - Home"/>
   
   
 </a></div>
@@ -475,7 +475,14 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncLocatable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalBackend</span><span class="p">,</span> <span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">make_datakey</span><span class="p">,</span> <span class="n">make_metadata</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">ConfinedModel</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">gather_dict</span><span class="p">,</span> <span class="n">merge_gathered_dicts</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Callback</span><span class="p">,</span>
+    <span class="n">ConfinedModel</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">,</span>
+    <span class="n">error_if_none</span><span class="p">,</span>
+    <span class="n">gather_dict</span><span class="p">,</span>
+    <span class="n">merge_gathered_dicts</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="n">RawT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;RawT&quot;</span><span class="p">)</span>
 <span class="n">DerivedT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DerivedT&quot;</span><span class="p">)</span>
@@ -652,13 +659,15 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">derived_readings</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_update_cached_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot update cached reading as it has not been initialised&quot;</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">_cached_readings</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span><span class="p">,</span>
+            <span class="s2">&quot;Cannot update cached reading as it has not been initialised&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">_cached_readings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_cached_reading</span><span class="p">():</span>
             <span class="c1"># We&#39;ve got a complete set of values, callback on them</span>
-            <span class="n">derived_readings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_derived_readings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cached_readings</span><span class="p">)</span>
+            <span class="n">derived_readings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_derived_readings</span><span class="p">(</span><span class="n">_cached_readings</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">callback</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_derived_callbacks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">callback</span><span class="p">(</span><span class="n">derived_readings</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
 
@@ -705,18 +714,19 @@ window.addEventListener("load", () => mermaid.run());
         <span class="p">}</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set_derived</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot put as no set_derived method given&quot;</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">_set_derived</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived</span><span class="p">,</span>
+            <span class="s2">&quot;Cannot put as no set_derived method given&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived_takes_dict</span><span class="p">:</span>
             <span class="c1"># Need to get the other derived values and update the one that&#39;s changing</span>
             <span class="n">derived</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_locations</span><span class="p">()</span>
             <span class="n">setpoints</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;setpoint&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">derived</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
             <span class="n">setpoints</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived</span><span class="p">(</span><span class="n">setpoints</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">_set_derived</span><span class="p">(</span><span class="n">setpoints</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Only one derived signal, so pass it directly</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_derived</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">_set_derived</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">DerivedSignalBackend</span><span class="p">(</span><span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
@@ -752,9 +762,12 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">if</span> <span class="n">wait</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Cannot put with wait=False&quot;</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Must be given a value to put&quot;</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;Must be given a value to put&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">set_derived</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
