@@ -31,7 +31,7 @@ from ._utils import (
     Callback,
     LazyMock,
     T,
-    check_value,
+    error_if_none,
 )
 
 
@@ -126,8 +126,8 @@ class _SignalCache(Generic[SignalDatatypeT]):
         self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
 
     def _ensure_reading(self) -> Reading[SignalDatatypeT]:
-        self._reading = check_value(self._reading, "Monitor not working")
-        return self._reading
+        _reading = error_if_none(self._reading, "Monitor not working")
+        return _reading
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
         await self._valid.wait()
@@ -187,8 +187,8 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
         if cached is None:
             cached = self._cache is not None
         if cached:
-            self._cache = check_value(self._cache, f"{self.source} not being monitored")
-            return self._cache
+            _cache = error_if_none(self._cache, f"{self.source} not being monitored")
+            return _cache
         else:
             return self._connector.backend
 

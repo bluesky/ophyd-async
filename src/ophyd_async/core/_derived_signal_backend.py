@@ -14,7 +14,7 @@ from ._utils import (
     Callback,
     ConfinedModel,
     T,
-    check_value,
+    error_if_none,
     gather_dict,
     merge_gathered_dicts,
 )
@@ -181,15 +181,15 @@ class SignalTransformer(Generic[TransformT]):
         return {k: v["value"] for k, v in derived_readings.items()}
 
     def _update_cached_reading(self, value: dict[str, Reading]):
-        self._cached_readings = check_value(
+        _cached_readings = error_if_none(
             self._cached_readings,
             "Cannot update cached reading as it has not been initialised",
         )
 
-        self._cached_readings.update(value)
+        _cached_readings.update(value)
         if self._complete_cached_reading():
             # We've got a complete set of values, callback on them
-            derived_readings = self._make_derived_readings(self._cached_readings)
+            derived_readings = self._make_derived_readings(_cached_readings)
             for name, callback in self._derived_callbacks.items():
                 callback(derived_readings[name])
 
@@ -236,7 +236,7 @@ class SignalTransformer(Generic[TransformT]):
         }
 
     async def set_derived(self, name: str, value: Any):
-        self._set_derived = check_value(
+        _set_derived = error_if_none(
             self._set_derived,
             "Cannot put as no set_derived method given",
         )
@@ -245,10 +245,10 @@ class SignalTransformer(Generic[TransformT]):
             derived = await self.get_locations()
             setpoints = {k: v["setpoint"] for k, v in derived.items()}
             setpoints[name] = value
-            await self._set_derived(setpoints)
+            await _set_derived(setpoints)
         else:
             # Only one derived signal, so pass it directly
-            await self._set_derived(value)
+            await _set_derived(value)
 
 
 class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
@@ -281,12 +281,11 @@ class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
         raise RuntimeError(msg)
 
     async def put(self, value: SignalDatatypeT | None, wait: bool) -> None:
-        check_value(
-            wait,
-            "Cannot put with wait=False",
-            bad_value=False,
-        )
-        value = check_value(
+        if wait is False:
+            msg = "Cannot put with wait=False"
+            raise RuntimeError(msg)
+
+        value = error_if_none(
             value,
             "Must be given a value to put",
         )

@@ -17,7 +17,7 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.core._utils import check_value
+from ophyd_async.core._utils import error_if_none
 
 
 class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float]):
@@ -83,18 +83,18 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float
     @AsyncStatus.wrap
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
-        self._fly_info = check_value(
+        _fly_info = error_if_none(
             self._fly_info, "Motor must be prepared before attempting to kickoff"
         )
         acceleration_time = await self.acceleration_time.get_value()
-        self._fly_status = self.set(self._fly_info.ramp_down_end_pos(acceleration_time))
+        self._fly_status = self.set(_fly_info.ramp_down_end_pos(acceleration_time))
         # Wait for the acceleration time to ensure we are at velocity
         await asyncio.sleep(acceleration_time)
 
     def complete(self) -> WatchableAsyncStatus:
         """Mark as complete once motor reaches completed position."""
-        self._fly_status = check_value(self._fly_status, "kickoff not called")
-        return self._fly_status
+        _fly_status = error_if_none(self._fly_status, "kickoff not called")
+        return _fly_status
 
     async def _move(self, old_position: float, new_position: float, velocity: float):
         if old_position == new_position:
