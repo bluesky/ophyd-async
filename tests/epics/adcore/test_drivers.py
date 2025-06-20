@@ -124,7 +124,7 @@ async def test_start_acquiring_driver_and_ensure_status_timing(
 async def bad_observe_value(*args, **kwargs):
     "Stub to simulate a disconnected ``observe_value()``."
     if True:
-        raise asyncio.TimeoutError()
+        raise TimeoutError()
     yield None  # Make it a generator
 
 

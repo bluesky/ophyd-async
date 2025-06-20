@@ -147,7 +147,7 @@ async def test_backend_get_put_monitor_attr(
                 ),
                 timeout=10,  # Timeout in seconds
             )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         pytest.fail("Test timed out")
     except Exception as e:
         pytest.fail(f"Test failed with exception: {e}")
