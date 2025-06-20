@@ -42,8 +42,7 @@ dev = [
     "import-linter",
     "myst-parser",
     "numpydoc",
-    # Unpin once an ophyd release is made containing https://github.com/bluesky/ophyd/pull/1253
-    "ophyd @ git+https://github.com/tangkong/ophyd@10652e158b4f02172f4590f3f862ee815983c4db",
+    "ophyd>=1.10.7",
     "pickleshare",
     "pipdeptree",
     "pre-commit",
