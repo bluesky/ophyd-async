@@ -12,7 +12,7 @@ from ophyd_async.core import (
     FlyerController,
     wait_for_value,
 )
-from ophyd_async.epics.pmac import Pmac, PmacMotor
+from ophyd_async.epics.pmac import PmacAxisIO, PmacCoordIO, PmacIO
 
 TICK_S = 0.000001
 MAX_MOVE_TIME = 4.0
@@ -20,65 +20,74 @@ MAX_MOVE_TIME = 4.0
 
 @dataclass
 class Trajectory:
-    position_axes: list[PmacMotor]
+    position_axes: list[PmacAxisIO | PmacCoordIO]
     cs_port: str
     profile_length: int
-    cs_axes: dict[PmacMotor, int]
+    cs_axes: dict[PmacAxisIO | PmacCoordIO, int]
     positions: dict[int, npt.NDArray[np.float64]]
+    initial_pos: dict[int, npt.NDArray[np.float64]]
     velocities: dict[int, npt.NDArray[np.float64]]
     time_array: npt.NDArray[np.float64]
     user_array: npt.NDArray[np.int32]
 
 
 class PmacTrajInfo(BaseModel):
-    spec: Spec[PmacMotor | Literal["DURATION"]] = Field(default=None)
+    spec: Spec[PmacAxisIO | PmacCoordIO | Literal["DURATION"]] = Field(default=None)
     combine_linear_points: bool = Field(default=False)
 
 
 class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
     """Device that moves a PMAC Motor record."""
 
-    def __init__(self, pmac: Pmac) -> None:
+    def __init__(self, pmac: PmacIO) -> None:
         # Make a dict of which motors are for which cs axis
         self.pmac = pmac
 
     async def prepare(self, value: PmacTrajInfo):
         # initialise use_axis values to False
         for i in range(len("ABCUVWXYZ")):
-            await self.pmac.use_axis[i + 1].set(False)
+            await self.pmac.trajectory.use_axis[i + 1].set(False)
 
         trajectory = await self.prepare_trajectory(value.spec)
 
         for axis in trajectory.position_axes:
-            await self.pmac.profile_cs_name.set(trajectory.cs_port)
-            await self.pmac.points_to_build.set(trajectory.profile_length)
-            await self.pmac.use_axis[trajectory.cs_axes[axis] + 1].set(True)
+            await self.pmac.trajectory.profile_cs_name.set(trajectory.cs_port)
+            await self.pmac.trajectory.points_to_build.set(trajectory.profile_length)
+            await self.pmac.trajectory.use_axis[trajectory.cs_axes[axis] + 1].set(True)
             # TODO: Should this be truncated to profile_length before now?
-            await self.pmac.positions[trajectory.cs_axes[axis] + 1].set(
+            await self.pmac.trajectory.positions[trajectory.cs_axes[axis] + 1].set(
                 trajectory.positions[trajectory.cs_axes[axis]][
                     : trajectory.profile_length
                 ],
             )
-            await self.pmac.velocities[trajectory.cs_axes[axis] + 1].set(
+            await self.pmac.trajectory.velocities[trajectory.cs_axes[axis] + 1].set(
                 trajectory.velocities[trajectory.cs_axes[axis]][
                     : trajectory.profile_length
                 ]
             )
 
-        await self.pmac.time_array.set(
+        await self.pmac.trajectory.time_array.set(
             trajectory.time_array[: trajectory.profile_length]
         )
-        await self.pmac.user_array.set(
+        await self.pmac.trajectory.user_array.set(
             trajectory.user_array[: trajectory.profile_length]
         )
 
         # Move to start
+        cs_port_number = int(trajectory.cs_port[-1])
+        await self.pmac.coord[cs_port_number].defer_moves.set(True)
         for axis in trajectory.position_axes:
-            await axis.set(self.initial_pos[trajectory.cs_axes[axis]])
+            cs_axis = trajectory.cs_axes[axis]
+            await (
+                self.pmac.coord[cs_port_number]
+                .cs_axis_setpoint[cs_axis]
+                .set(trajectory.initial_pos[cs_axis])
+            )
+        await self.pmac.coord[cs_port_number].defer_moves.set(False)
 
         # Set PMAC to use Velocity Array
-        await self.pmac.profile_calc_vel.set(False)
-        await self.pmac.build_profile.set(True)
+        await self.pmac.trajectory.calculate_velocities.set(False)
+        await self.pmac.trajectory.build_profile.set(True)
         self._fly_start = time.monotonic()
 
     async def prepare_trajectory(self, scanspec: Spec) -> Trajectory:
@@ -87,7 +96,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         scan_size = len(scan_slice)
 
         gap_indices = self._find_gap_indices(scan_slice)
-        position_axes: list[PmacMotor] = [
+        position_axes: list[PmacAxisIO | PmacCoordIO] = [
             axis for axis in scan_slice.axes() if axis != "DURATION"
         ]
         duration_axis = scan_slice.midpoints["DURATION"]
@@ -96,7 +105,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         cs_ports = set()
         positions: dict[int, npt.NDArray[np.float64]] = {}
         velocities: dict[int, npt.NDArray[np.float64]] = {}
-        cs_axes: dict[PmacMotor, int] = {}
+        cs_axes: dict[PmacAxisIO | PmacCoordIO, int] = {}
         time_array: npt.NDArray[np.float64] = np.empty(
             2 * scan_size + ((len(gap_indices) + 1) * 5) + 1, dtype=np.float64
         )
@@ -125,7 +134,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         # - Move everything above here should move out and be passed in?
         #   - Initialise a Trajectory and pass in
         #   Move some preamble back to prepare
-        # - Might be cleaner if this method does not know about PmacMotor, only indices
+        # - Might be cleaner if this method does not know about PmacIO, only indices
         #   - Pass in a list of active CS indices
         #   - positions[cs_axes[axis]] -> positions[cs_idx]
         # - This method should be static if possible
@@ -260,41 +269,38 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
             profile_length,
             cs_axes,
             positions,
+            initial_pos,
             velocities,
             time_array,
             user_array,
         )
 
     async def kickoff(self):
-        self.status = await self.pmac.execute_profile.set(
+        self.status = await self.pmac.trajectory.execute_profile.set(
             True, timeout=self.scantime + 1
         )
 
     async def stop(self):
-        await self.pmac.profile_abort.set(True)
+        await self.pmac.trajectory.abort_profile.set(True)
 
     async def complete(self):
         await wait_for_value(
-            self.pmac.execute_profile, False, timeout=self.scantime + 11
+            self.pmac.trajectory.execute_profile, False, timeout=self.scantime + 11
         )
 
-    async def get_cs_info(self, motor: PmacMotor) -> tuple[str, int]:
-        output_link = await motor.output_link.get_value()
-        # Split "@asyn(PORT,num)" into ["PORT", "num"]
-        split = output_link.split("(")[1].rstrip(")").split(",")
-        cs_port = split[0].strip()
-        if "CS" in cs_port:
-            # Motor is compound
-            cs_index = int(split[1].strip()) - 1
-        else:
-            # Raw Motor
+    async def get_cs_info(self, motor: PmacAxisIO | PmacCoordIO) -> tuple[str, int]:
+        if isinstance(motor, PmacAxisIO):
             cs_port = await motor.cs_port.get_value()
-            cs_axis = await motor.cs_axis.get_value()
+            cs_axis = await motor.cs_axis_letter.get_value()
             cs_index = "ABCUVWXYZ".index(cs_axis)
-
+        else:
+            output_link = await motor.output_link.get_value()
+            split = output_link.split("(")[1].rstrip(")").split(",")
+            cs_port = split[0].strip()
+            cs_index = int(split[1].strip()) - 1
         return cs_port, cs_index
 
-    def _find_gap_indices(self, chunk: Frames[PmacMotor]):
+    def _find_gap_indices(self, chunk: Frames[PmacAxisIO | PmacCoordIO]):
         """Find indices of scan points preceded by a gap."""
         gap_indices = np.argwhere(chunk.gap)
 
@@ -312,7 +318,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
 
 
 async def ramp_up_velocity_pos(
-    motor: PmacMotor,
+    motor: PmacAxisIO | PmacCoordIO,
     start_velocity: float,
     end_velocity: float,
     ramp_time: float = 0,
@@ -333,7 +339,7 @@ async def ramp_up_velocity_pos(
 
 
 async def make_velocity_profile(
-    axis: PmacMotor,
+    axis: PmacAxisIO | PmacCoordIO,
     v1: float,
     v2: float,
     distance: float,
@@ -358,7 +364,7 @@ async def make_velocity_profile(
     return p
 
 
-async def get_gap_profile(chunk: Frames[PmacMotor], gap: int):
+async def get_gap_profile(chunk: Frames[PmacAxisIO | PmacCoordIO], gap: int):
     # Work out the velocity profiles of how to move to the start
     # Turnaround can't be less than 2 ms
     prev_point = gap - 1
@@ -390,7 +396,7 @@ async def get_gap_profile(chunk: Frames[PmacMotor], gap: int):
 
 
 async def profile_between_points(
-    chunk: Frames[PmacMotor],
+    chunk: Frames[PmacAxisIO | PmacCoordIO],
     gap: int,
     min_time: float = 0.002,
     min_interval: float = 0.002,
@@ -467,7 +473,7 @@ async def profile_between_points(
 
 async def point_velocities(
     chunk: Frames[Any], index: int, entry: bool = True
-) -> dict[PmacMotor, float]:
+) -> dict[PmacAxisIO | PmacCoordIO, float]:
     """Find the velocities of each axis over the entry/exit of current point."""
     velocities = {}
     for axis in chunk.axes():
@@ -501,13 +507,13 @@ async def point_velocities(
 
 
 async def calculate_profile_from_velocities(
-    chunk: Frames[PmacMotor],
-    time_arrays: dict[PmacMotor, npt.NDArray[np.float64]],
-    velocity_arrays: dict[PmacMotor, npt.NDArray[np.float64]],
-    current_positions: dict[PmacMotor, npt.NDArray[np.float64]],
+    chunk: Frames[PmacAxisIO | PmacCoordIO],
+    time_arrays: dict[PmacAxisIO | PmacCoordIO, npt.NDArray[np.float64]],
+    velocity_arrays: dict[PmacAxisIO | PmacCoordIO, npt.NDArray[np.float64]],
+    current_positions: dict[PmacAxisIO | PmacCoordIO, npt.NDArray[np.float64]],
 ) -> tuple[
-    dict[PmacMotor, npt.NDArray[np.float64]],
-    dict[PmacMotor, npt.NDArray[np.float64]],
+    dict[PmacAxisIO | PmacCoordIO, npt.NDArray[np.float64]],
+    dict[PmacAxisIO | PmacCoordIO, npt.NDArray[np.float64]],
     list[int],
 ]:
     # at this point we have time/velocity arrays with 2-4 values for each
@@ -534,8 +540,8 @@ async def calculate_profile_from_velocities(
         time_intervals.append(t - prev_time)
         prev_time = t
     # generate the profile positions in a temporary dict:
-    turnaround_profile: dict[PmacMotor, npt.NDArray[np.float64]] = {}
-    turnaround_velocity: dict[PmacMotor, npt.NDArray[np.float64]] = {}
+    turnaround_profile: dict[PmacAxisIO | PmacCoordIO, npt.NDArray[np.float64]] = {}
+    turnaround_velocity: dict[PmacAxisIO | PmacCoordIO, npt.NDArray[np.float64]] = {}
 
     # Do this for each axis' velocity and time arrays
     for axis in chunk.axes():
