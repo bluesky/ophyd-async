@@ -1,4 +1,3 @@
-from enum import IntEnum
 from typing import Annotated as A
 
 from ophyd_async.core import SignalRW, StrictEnum
@@ -14,13 +13,13 @@ class KinetixTriggerMode(StrictEnum):
     GATE = "Exp. Gate"
 
 
-class KinetixReadoutMode(IntEnum):
+class KinetixReadoutMode(StrictEnum):
     """Readout mode for ADKinetix detector."""
 
-    SENSITIVITY = 1
-    SPEED = 2
-    DYNAMIC_RANGE = 3
-    SUB_ELECTRON = 4
+    SENSITIVITY = "1"
+    SPEED = "2"
+    DYNAMIC_RANGE = "3"
+    SUB_ELECTRON = "4"
 
 
 class KinetixDriverIO(adcore.ADBaseIO):
