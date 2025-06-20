@@ -42,7 +42,7 @@ dev = [
     "import-linter",
     "myst-parser",
     "numpydoc",
-    "ophyd",
+    "ophyd>=1.10.7",
     "pickleshare",
     "pipdeptree",
     "pre-commit",
