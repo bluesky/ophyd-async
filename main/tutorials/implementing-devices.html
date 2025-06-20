@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.10.2.dev11+g9391530d5 documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.10.2.dev12+g2f148d8ec documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=0d3f42d9"></script>
+    <script src="../_static/documentation_options.js?v=4d6c1bdc"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -137,8 +137,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev11+g9391530d5 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev11+g9391530d5 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev12+g2f148d8ec documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev12+g2f148d8ec documentation - Home"/>
   
   
 </a></div>
@@ -760,6 +760,7 @@ EPICS</label><div class="sd-tab-content docutils">
 </pre></div>
 </div>
 <p>Although the Signals are declared via type hints, the DeviceVector requires explicit instantiation in an <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method. This is because it requires the <code class="docutils literal notranslate"><span class="pre">num_channels</span></code> to be passed in to the constructor to know how many channels require creation. This means that we also need to do the PV concatenation ourselves, so if the PV prefix for the device as <code class="docutils literal notranslate"><span class="pre">PREFIX:</span></code> then the first channel would have prefix <code class="docutils literal notranslate"><span class="pre">PREFIX:CHAN1:</span></code>. We also register them with <code class="docutils literal notranslate"><span class="pre">StandardReadable</span></code> in a different way, adding them within a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables" title="ophyd_async.core.StandardReadable.add_children_as_readables"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardReadable.add_children_as_readables</span></code></a> context manager which adds all the children created within its body.</p>
+<p>Whilst it is not required for the call to <code class="docutils literal notranslate"><span class="pre">super().__init__</span></code> to be after all signals have been created it is more efficient to do so. However, there may be some edge cases where signals need to be created after this e.g. for <a class="reference internal" href="../how-to/derive-one-signal-from-others.html"><span class="std std-doc">derived signals</span></a> that depend on their parent.</p>
 </div>
 <input id="sd-tab-item-13" name="sd-tab-set-4" type="radio">
 <label class="sd-tab-label" data-sync-group="cs" data-sync-id="tango" for="sd-tab-item-13">

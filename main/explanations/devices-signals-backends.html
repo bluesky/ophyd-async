@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.10.2.dev11+g9391530d5 documentation</title>
+    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.10.2.dev12+g2f148d8ec documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=0d3f42d9"></script>
+    <script src="../_static/documentation_options.js?v=4d6c1bdc"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -137,8 +137,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev11+g9391530d5 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev11+g9391530d5 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev12+g2f148d8ec documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev12+g2f148d8ec documentation - Home"/>
   
   
 </a></div>
@@ -523,7 +523,7 @@ DeviceConnector &lt;|-- TangoDeviceConnector
 <li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.parent" title="ophyd_async.core.Device.parent"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">Device.parent</span></code></a> read-write property to read it’s parent Device if it exists</p></li>
 <li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.children" title="ophyd_async.core.Device.children"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.children</span></code></a> to iterate through the Device attributes, yielding the <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">child)</span></code> child Devices</p></li>
 <li><p>a <code class="docutils literal notranslate"><span class="pre">setattr</span></code> override that detects whether the attribute is also a Device and sets its parent</p></li>
-<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.set_name" title="ophyd_async.core.Device.set_name"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.set_name</span></code></a> method to set its name and also set the names of its children using the parent name as a prefix</p></li>
+<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.set_name" title="ophyd_async.core.Device.set_name"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.set_name</span></code></a> method to set its name and also set the names of its children using the parent name as a prefix, called at init and also when a new child is attached to an already named Device</p></li>
 <li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> method that connects it and its children</p></li>
 </ul>
 <p>All the above methods are concrete, but <code class="docutils literal notranslate"><span class="pre">connect()</span></code> calls out to a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core.DeviceConnector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceConnector</span></code></a> to actually do the connection, only handling caching itself. This enables plug-in behavior on connect (like the introspection of child Attributes in Tango or PVI, or the special case for <code class="docutils literal notranslate"><span class="pre">Signal</span></code> we will see later).</p>
