@@ -17,6 +17,7 @@ from typing import (
 from unittest.mock import Mock
 
 import numpy as np
+from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
 V = TypeVar("V")
@@ -377,3 +378,27 @@ class LazyMock:
             if self.parent is not None:
                 self.parent().attach_mock(self._mock, self.name)
         return self._mock
+
+
+class ConfinedModel(BaseModel):
+    """A base class confined to explicitly defined fields in the model schema."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+
+
+def error_if_none(value: T | None, msg: str) -> T:
+    """Check and return the value if not None.
+
+    :param value: The value to check
+    :param msg: The `RuntimeError` message to raise if it is None
+    :raises RuntimeError: If the value is None
+    :returns: The value if not None
+
+    Used to implement a pattern where a variable is None at init, then
+    changed by a method, then used in a later method.
+    """
+    if value is None:
+        raise RuntimeError(msg)
+    return value

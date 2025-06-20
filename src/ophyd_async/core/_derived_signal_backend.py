@@ -7,17 +7,23 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from bluesky.protocols import Location, Reading, Subscribable
 from event_model import DataKey
-from pydantic import BaseModel
 
 from ._protocol import AsyncLocatable, AsyncReadable
 from ._signal_backend import SignalBackend, SignalDatatypeT, make_datakey, make_metadata
-from ._utils import Callback, T, gather_dict, merge_gathered_dicts
+from ._utils import (
+    Callback,
+    ConfinedModel,
+    T,
+    error_if_none,
+    gather_dict,
+    merge_gathered_dicts,
+)
 
 RawT = TypeVar("RawT")
 DerivedT = TypeVar("DerivedT")
 
 
-class Transform(BaseModel, Generic[RawT, DerivedT]):
+class Transform(ConfinedModel, Generic[RawT, DerivedT]):
     """Baseclass for bidirectional transforms for Derived Signals.
 
     Subclass and add:
@@ -61,7 +67,7 @@ class Transform(BaseModel, Generic[RawT, DerivedT]):
 TransformT = TypeVar("TransformT", bound=Transform)
 
 
-def filter_by_type(raw_devices: Mapping[str, Any], type_: type[T]) -> dict[str, T]:
+def validate_by_type(raw_devices: Mapping[str, Any], type_: type[T]) -> dict[str, T]:
     filtered_devices: dict[str, T] = {}
     for name, device in raw_devices.items():
         if not isinstance(device, type_):
@@ -77,35 +83,42 @@ class SignalTransformer(Generic[TransformT]):
         transform_cls: type[TransformT],
         set_derived: Callable[..., Awaitable[None]] | None,
         set_derived_takes_dict: bool,
-        **raw_and_transform_devices,
+        raw_devices,
+        raw_constants,
+        transform_devices,
+        transform_constants,
     ):
         self._transform_cls = transform_cls
         self._set_derived = set_derived
         self._set_derived_takes_dict = set_derived_takes_dict
-        self._transform_devices = {
-            k: raw_and_transform_devices.pop(k) for k in transform_cls.model_fields
-        }
-        self._raw_devices = raw_and_transform_devices
+
+        self._transform_devices = transform_devices
+        self._transform_constants = transform_constants
+        self._raw_devices = raw_devices
+        self._raw_constants = raw_constants
+
         self._derived_callbacks: dict[str, Callback[Reading]] = {}
         self._cached_readings: dict[str, Reading] | None = None
 
     @cached_property
     def raw_locatables(self) -> dict[str, AsyncLocatable]:
-        return filter_by_type(self._raw_devices, AsyncLocatable)
+        return validate_by_type(self._raw_devices, AsyncLocatable)
 
     @cached_property
     def transform_readables(self) -> dict[str, AsyncReadable]:
-        return filter_by_type(self._transform_devices, AsyncReadable)
+        return validate_by_type(self._transform_devices, AsyncReadable)
 
     @cached_property
     def raw_and_transform_readables(self) -> dict[str, AsyncReadable]:
-        return filter_by_type(
+        return validate_by_type(
             self._raw_devices | self._transform_devices, AsyncReadable
         )
 
     @cached_property
     def raw_and_transform_subscribables(self) -> dict[str, Subscribable]:
-        return filter_by_type(self._raw_devices | self._transform_devices, Subscribable)
+        return validate_by_type(
+            self._raw_devices | self._transform_devices, Subscribable
+        )
 
     def _complete_cached_reading(self) -> dict[str, Reading] | None:
         if self._cached_readings and len(self._cached_readings) == len(
@@ -122,7 +135,7 @@ class SignalTransformer(Generic[TransformT]):
             k: transform_readings[sig.name]["value"]
             for k, sig in self.transform_readables.items()
         }
-        return self._transform_cls(**transform_args)
+        return self._transform_cls(**(transform_args | self._transform_constants))
 
     def _make_derived_readings(
         self, raw_and_transform_readings: dict[str, Reading]
@@ -140,10 +153,15 @@ class SignalTransformer(Generic[TransformT]):
         transform = self._make_transform_from_readings(raw_and_transform_readings)
         # Create the raw values from the rest then calculate the derived readings
         # using the transform
+        # Extend dictionary with values of any Constants passed as arguments
         raw_values = {
-            k: raw_and_transform_readings[sig.name]["value"]
-            for k, sig in self._raw_devices.items()
+            **{
+                k: raw_and_transform_readings[sig.name]["value"]
+                for k, sig in self._raw_devices.items()
+            },
+            **self._raw_constants,
         }
+
         derived_readings = {
             name: Reading(
                 value=derived, timestamp=timestamp, alarm_severity=alarm_severity
@@ -173,13 +191,15 @@ class SignalTransformer(Generic[TransformT]):
         return {k: v["value"] for k, v in derived_readings.items()}
 
     def _update_cached_reading(self, value: dict[str, Reading]):
-        if self._cached_readings is None:
-            msg = "Cannot update cached reading as it has not been initialised"
-            raise RuntimeError(msg)
-        self._cached_readings.update(value)
+        _cached_readings = error_if_none(
+            self._cached_readings,
+            "Cannot update cached reading as it has not been initialised",
+        )
+
+        _cached_readings.update(value)
         if self._complete_cached_reading():
             # We've got a complete set of values, callback on them
-            derived_readings = self._make_derived_readings(self._cached_readings)
+            derived_readings = self._make_derived_readings(_cached_readings)
             for name, callback in self._derived_callbacks.items():
                 callback(derived_readings[name])
 
@@ -226,18 +246,19 @@ class SignalTransformer(Generic[TransformT]):
         }
 
     async def set_derived(self, name: str, value: Any):
-        if self._set_derived is None:
-            msg = "Cannot put as no set_derived method given"
-            raise RuntimeError(msg)
+        _set_derived = error_if_none(
+            self._set_derived,
+            "Cannot put as no set_derived method given",
+        )
         if self._set_derived_takes_dict:
             # Need to get the other derived values and update the one that's changing
             derived = await self.get_locations()
             setpoints = {k: v["setpoint"] for k, v in derived.items()}
             setpoints[name] = value
-            await self._set_derived(setpoints)
+            await _set_derived(setpoints)
         else:
             # Only one derived signal, so pass it directly
-            await self._set_derived(value)
+            await _set_derived(value)
 
 
 class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
@@ -273,9 +294,12 @@ class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
         if wait is False:
             msg = "Cannot put with wait=False"
             raise RuntimeError(msg)
-        if value is None:
-            msg = "Must be given a value to put"
-            raise RuntimeError(msg)
+
+        value = error_if_none(
+            value,
+            "Must be given a value to put",
+        )
+
         await self.transformer.set_derived(self.name, value)
 
     async def get_datakey(self, source: str) -> DataKey:

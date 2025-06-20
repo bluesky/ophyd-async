@@ -296,3 +296,19 @@ async def test_nd_attributes_plan_stub_gives_correct_error(RE, detectors):
             == f"Invalid type for ndattributes: {type(invalidObjects[0])}. "
             + "Expected NDAttributePv or NDAttributeParam."
         )
+
+
+async def test_hdf_writer_descriptor_shape_contains_none(
+    hdf_writer: adcore.ADHDFWriter,
+):
+    async def shape_containing_none():
+        return 10, None, 10
+
+    hdf_writer._dataset_describer.shape = shape_containing_none
+
+    with pytest.raises(
+        ValueError,
+        match=r"Datasets with partially unknown dimensionality "
+        r"are not currently supported by ADHDFWriter.",
+    ):
+        await hdf_writer.open(DETECTOR_NAME)

@@ -14,7 +14,7 @@ from ophyd_async.core import (
     StrictEnum,
     soft_signal_rw,
 )
-from ophyd_async.testing import MonitorQueue
+from ophyd_async.testing import ExampleEnum, ExampleTable, MonitorQueue
 
 T = TypeVar("T")
 
@@ -49,6 +49,10 @@ def enumwf_d(value):
     return {"dtype": "array", "shape": [len(value)], "choices": ["Aaa", "Bbb", "Ccc"]}
 
 
+def table_d(value):
+    return {"dtype": "array", "shape": [len(value)]}
+
+
 # Can be removed once numpy >=2 is pinned.
 scalar_int_dtype = (
     "<i4" if os.name == "nt" and np.version.version.startswith("1.") else "<i8"
@@ -76,6 +80,31 @@ scalar_int_dtype = (
         (Sequence[MyEnum], [], [MyEnum.A, MyEnum.B], enumwf_d, "|S40"),
         (typing.Sequence[str], [], ["nine", "ten"], waveform_d, "|S40"),
         (typing.Sequence[MyEnum], [], [MyEnum.A, MyEnum.B], enumwf_d, "|S40"),
+        (
+            ExampleTable,
+            ExampleTable(
+                a_bool=np.array([]),
+                a_int=np.array([]),
+                a_float=np.array([]),
+                a_str=[],
+                a_enum=[],
+            ),
+            ExampleTable(
+                a_bool=np.array([True]),
+                a_int=np.array([525]),
+                a_float=np.array([3.14]),
+                a_str=["pi"],
+                a_enum=[ExampleEnum.A],
+            ),
+            table_d,
+            [
+                ("a_bool", "|b1"),
+                ("a_int", "<i4"),
+                ("a_float", "<f8"),
+                ("a_str", "|S40"),
+                ("a_enum", "|S40"),
+            ],
+        ),
     ],
 )
 async def test_soft_signal_backend_get_put_monitor(

@@ -27,9 +27,15 @@ from ophyd_async.core import (
     soft_signal_r_and_setter,
     soft_signal_rw,
     wait_for_value,
+    walk_devices,
+    walk_signal_sources,
 )
-from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.core._signal import _SignalCache  # noqa: PLC2701
+from ophyd_async.core import (
+    StandardReadableFormat as Format,
+)
+from ophyd_async.core._signal import (
+    _SignalCache,  # noqa: PLC2701
+)
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
 from ophyd_async.testing import (
@@ -246,6 +252,7 @@ async def test_set_and_wait_for_value_different_set_and_read_times_out():
         await asyncio.gather(wait_and_set_read(), check_set_and_wait())
 
 
+@pytest.mark.timeout(3)
 async def test_status_of_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
@@ -284,6 +291,7 @@ async def test_status_of_set_and_wait_for_value():
         )
 
 
+@pytest.mark.timeout(3)
 async def test_callable_match_value_set_and_wait_for_value():
     set_signal = epics_signal_rw(int, "pva://signal")
     match_signal = epics_signal_rw(int, "pva://match_signal")
@@ -1013,3 +1021,50 @@ async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
 def test_signal_backend_throws_type_error() -> None:
     with pytest.raises(TypeError, match="Unsupported protocol: XYZ"):
         get_signal_backend_type("XYZ")  # type: ignore
+
+
+def test_remove_non_existing_listener():
+    signal_rw = soft_signal_rw(int, initial_value=4)
+    cbs = []
+    assert signal_rw.clear_sub(cbs.append) is None
+
+
+async def test_walk_devices_returns_all_devices(mock_readable: DummyReadableArray):
+    """
+    Test that walk_devices returns all child devices with correct dotted paths.
+    """
+
+    # Get all devices in the tree
+    devices = walk_devices(mock_readable)
+
+    assert devices == {
+        "int_value": mock_readable.int_value,
+        "int_array": mock_readable.int_array,
+        "float_array": mock_readable.float_array,
+        "str_value": mock_readable.str_value,
+        "strictEnum_value": mock_readable.strictEnum_value,
+    }
+
+    # All returned objects should be Device instances
+    for dev in devices.values():
+        assert isinstance(dev, Device)
+
+
+async def test_walk_signal_sources_returns_signal_sources(
+    mock_readable: DummyReadableArray,
+):
+    """
+    Test that walk_signal_sources returns correct mapping
+    of dotted paths to Signal sources.
+    """
+    sources = walk_signal_sources(mock_readable)
+
+    expected_sources = {
+        "int_value": mock_readable.int_value.source,
+        "int_array": mock_readable.int_array.source,
+        "float_array": mock_readable.float_array.source,
+        "str_value": mock_readable.str_value.source,
+        "strictEnum_value": mock_readable.strictEnum_value.source,
+    }
+
+    assert sources == expected_sources

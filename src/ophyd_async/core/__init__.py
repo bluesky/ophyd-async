@@ -16,7 +16,7 @@ from ._detector import (
 )
 from ._device import Device, DeviceConnector, DeviceVector, init_devices
 from ._device_filler import DeviceFiller
-from ._flyer import FlyerController, StandardFlyer
+from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
 from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
@@ -56,11 +56,14 @@ from ._signal import (
     soft_signal_rw,
     wait_for_value,
     walk_config_signals,
+    walk_devices,
     walk_rw_signals,
+    walk_signal_sources,
 )
 from ._signal_backend import (
     Array1D,
     DTypeScalar_co,
+    Primitive,
     SignalBackend,
     SignalDatatype,
     SignalDatatypeT,
@@ -75,6 +78,7 @@ from ._utils import (
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
     Callback,
+    ConfinedModel,
     EnumTypes,
     LazyMock,
     NotConnected,
@@ -83,6 +87,7 @@ from ._utils import (
     SubsetEnum,
     SupersetEnum,
     WatcherUpdate,
+    error_if_none,
     gather_dict,
     get_dtype,
     get_enum_cls,
@@ -128,6 +133,7 @@ __all__ = [
     "EnumTypes",
     "Table",
     "SignalMetadata",
+    "Primitive",
     # Soft signal
     "SoftSignalBackend",
     "soft_signal_r_and_setter",
@@ -143,6 +149,8 @@ __all__ = [
     "set_and_wait_for_other_value",
     "walk_rw_signals",
     "walk_config_signals",
+    "walk_devices",
+    "walk_signal_sources",
     # Readable
     "StandardReadable",
     "StandardReadableFormat",
@@ -168,6 +176,7 @@ __all__ = [
     "HDFDocumentComposer",
     # Flyer
     "StandardFlyer",
+    "FlyMotorInfo",
     "FlyerController",
     # Settings
     "Settings",
@@ -179,8 +188,10 @@ __all__ = [
     "CalculatableTimeout",
     "DEFAULT_TIMEOUT",
     "Callback",
+    "ConfinedModel",
     "NotConnected",
     "Reference",
+    "error_if_none",
     "gather_dict",
     "get_dtype",
     "get_enum_cls",
