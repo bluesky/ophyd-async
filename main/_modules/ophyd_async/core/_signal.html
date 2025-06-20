@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.10.2.dev13+gd38115e59 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.10.2.dev14+g9f724d25e documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=a4934b80"></script>
+    <script src="../../../_static/documentation_options.js?v=ce51fca5"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev13+gd38115e59 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev13+gd38115e59 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev14+g9f724d25e documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev14+g9f724d25e documentation - Home"/>
   
   
 </a></div>
@@ -1233,7 +1233,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="walk_rw_signals">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_rw_signals">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">walk_rw_signals</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve all SignalRWs from a device.</span>
 
 <span class="sd">    Stores retrieved signals with their dotted attribute paths in a dictionary. Used as</span>
@@ -1245,22 +1245,15 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        A dictionary matching the string attribute path of a SignalRW with the</span>
 <span class="sd">        signal itself.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">signals</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
-        <span class="n">dot_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_prefix</span><span class="si">}{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="ow">is</span> <span class="n">SignalRW</span><span class="p">:</span>
-            <span class="n">signals</span><span class="p">[</span><span class="n">dot_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
-        <span class="n">attr_signals</span> <span class="o">=</span> <span class="n">walk_rw_signals</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="n">dot_path</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
-        <span class="n">signals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">attr_signals</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">signals</span></div>
+    <span class="n">all_devices</span> <span class="o">=</span> <span class="n">walk_devices</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">path</span><span class="p">:</span> <span class="n">dev</span> <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dev</span> <span class="ow">in</span> <span class="n">all_devices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">dev</span><span class="p">)</span> <span class="ow">is</span> <span class="n">SignalRW</span><span class="p">}</span></div>
 
 
 
 <div class="viewcode-block" id="walk_config_signals">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_config_signals">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">walk_config_signals</span><span class="p">(</span>
-    <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve all configuration signals from a device.</span>
 
@@ -1268,25 +1261,23 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    part of saving and loading a device.</span>
 
 <span class="sd">    :param device: Device to retrieve configuration signals from.</span>
-<span class="sd">    :param path_prefix: For internal use, leave blank when calling the method.</span>
 <span class="sd">    :return:</span>
 <span class="sd">        A dictionary matching the string attribute path of a SignalRW with the</span>
 <span class="sd">        signal itself.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">signals</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">config_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">Configurable</span><span class="p">):</span>
         <span class="n">configuration</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">read_configuration</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isawaitable</span><span class="p">(</span><span class="n">configuration</span><span class="p">):</span>
             <span class="n">configuration</span> <span class="o">=</span> <span class="k">await</span> <span class="n">configuration</span>
         <span class="n">config_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">configuration</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-    <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
-        <span class="n">dot_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_prefix</span><span class="si">}{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">)</span> <span class="ow">and</span> <span class="n">attr</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">config_names</span><span class="p">:</span>
-            <span class="n">signals</span><span class="p">[</span><span class="n">dot_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
-        <span class="n">signals</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="k">await</span> <span class="n">walk_config_signals</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="n">dot_path</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">signals</span></div>
+    <span class="n">all_devices</span> <span class="o">=</span> <span class="n">walk_devices</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">dev</span>
+        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dev</span> <span class="ow">in</span> <span class="n">all_devices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dev</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">config_names</span>
+    <span class="p">}</span></div>
 
 
 
@@ -1296,6 +1287,40 @@ window.addEventListener("load", () => mermaid.run());
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Annotation to ignore a signal when connecting a device.&quot;&quot;&quot;</span>
 
     <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="walk_devices">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_devices">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">walk_devices</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">path_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursively retrieve all Devices from a device tree.</span>
+
+<span class="sd">    :param device: Root device to start from.</span>
+<span class="sd">    :param path_prefix: For internal use, leave blank when calling the method.</span>
+<span class="sd">    :return: A dictionary mapping dotted attribute paths to Device instances.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">devices</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Device</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">attr_name</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+        <span class="n">dot_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_prefix</span><span class="si">}{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">devices</span><span class="p">[</span><span class="n">dot_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">attr</span>
+        <span class="n">devices</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">walk_devices</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">path_prefix</span><span class="o">=</span><span class="n">dot_path</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">devices</span></div>
+
+
+
+<div class="viewcode-block" id="walk_signal_sources">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.walk_signal_sources">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">walk_signal_sources</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Recursively gather the `source` field from every Signal in a device tree.</span>
+
+<span class="sd">    :param device: Root device to start from.</span>
+<span class="sd">    :param path_prefix: For internal use, leave blank when calling the method.</span>
+<span class="sd">    :return: A dictionary mapping dotted attribute paths to Signal source strings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_devices</span> <span class="o">=</span> <span class="n">walk_devices</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">path</span><span class="p">:</span> <span class="n">dev</span><span class="o">.</span><span class="n">source</span> <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">dev</span> <span class="ow">in</span> <span class="n">all_devices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="n">Signal</span><span class="p">)</span>
+    <span class="p">}</span></div>
 
 </pre></div>
 
