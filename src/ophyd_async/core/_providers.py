@@ -31,17 +31,13 @@ class PathInfo:
                 (
                     "file",
                     "localhost",
-                    str(self.directory_path),
+                    f"{self.directory_path}/",
                     "",
                     "",
                     None,
                 )
             )
 
-    @property
-    def full_file_uri(self) -> str:
-        """Return the directory URI with the filename appended."""
-        return str(self.directory_uri) + "/" + f"{self.filename}"
 
 class FilenameProvider(Protocol):
     """Base class for callable classes providing filenames."""
