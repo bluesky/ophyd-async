@@ -52,6 +52,8 @@ async def assert_reading(
     :param readable: Device with an async ``read()`` method to get the reading from.
     :param expected_reading: The expected reading from the readable.
     :param full_match: if expected_reading keys set is same as actual keys set.
+        true: exact match
+        false: expected_reading keys is subset of actual reading keys
     """
     actual_reading = await readable.read()
     _assert_readings_approx_equal(expected_reading, actual_reading, full_match)
@@ -97,6 +99,8 @@ async def assert_configuration(
         configuration from.
     :param configuration: The expected configuration from the configurable.
     :param full_match: if expected_reading keys set is same as actual keys set.
+        true: exact match
+        false: expected_reading keys is subset of actual reading keys
     """
     actual_configuration = await configurable.read_configuration()
     _assert_readings_approx_equal(
