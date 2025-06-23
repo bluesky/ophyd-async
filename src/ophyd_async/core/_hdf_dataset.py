@@ -1,6 +1,4 @@
 from collections.abc import Iterator
-from pathlib import Path
-from urllib.parse import urlunparse
 
 from bluesky.protocols import StreamAsset
 from event_model import (  # type: ignore

@@ -1,8 +1,6 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
-from pathlib import Path
 from typing import Generic, TypeVar, get_args
-from urllib.parse import urlunparse
 
 from bluesky.protocols import Hints, StreamAsset
 from event_model import (  # type: ignore
@@ -13,7 +11,7 @@ from event_model import (  # type: ignore
 from pydantic import PositiveInt
 
 from ophyd_async.core._detector import DetectorWriter
-from ophyd_async.core._providers import DatasetDescriber, PathProvider, PathInfo
+from ophyd_async.core._providers import DatasetDescriber, PathInfo, PathProvider
 from ophyd_async.core._signal import (
     observe_value,
     set_and_wait_for_value,
@@ -84,7 +82,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         return writer
 
     async def begin_capture(self, name: str) -> None:
-
         await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
 
         # Set the directory creation depth first, since dir creation callback happens
@@ -106,7 +103,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         )
 
         if not await self.fileio.file_path_exists.get_value():
-            msg = f"File path {self._path_info.directory_path} for file plugin does not exist"
+            msg = (
+                f"Path {self._path_info.directory_path} doesn't exist or not writable!"
+            )
             raise FileNotFoundError(msg)
 
         # Overwrite num_capture to go forever
@@ -159,8 +158,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
         if indices_written:
             if not self._emitted_resource:
-
-                file_path = Path(await self.fileio.file_path.get_value())
                 file_name = await self.fileio.file_name.get_value()
                 file_template = file_name + "_{:06d}" + self._file_extension
 

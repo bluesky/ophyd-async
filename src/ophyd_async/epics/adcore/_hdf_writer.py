@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import AsyncIterator
-from pathlib import Path
 from typing import TypeGuard
 from xml.etree import ElementTree as ET
 

@@ -1,5 +1,4 @@
 from collections.abc import AsyncGenerator, AsyncIterator
-from pathlib import Path
 
 import numpy as np
 from bluesky.protocols import Hints, StreamAsset

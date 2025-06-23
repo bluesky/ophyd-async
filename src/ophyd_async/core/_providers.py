@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Protocol
 from urllib.parse import urlunparse
 
+
 @dataclass
 class PathInfo:
     """Information about where and how to write a file.
@@ -24,7 +25,6 @@ class PathInfo:
     directory_uri: str | None = None
 
     def __post_init__(self):
-
         # If directory uri is not set, set it using the directory path.
         if self.directory_uri is None:
             self.directory_uri = urlunparse(
