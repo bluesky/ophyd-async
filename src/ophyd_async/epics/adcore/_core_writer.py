@@ -160,17 +160,6 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
                 frame_shape = await self._dataset_describer.shape()
 
-                uri = urlunparse(
-                    (
-                        "file",
-                        "localhost",
-                        str(file_path.absolute()) + "/",
-                        "",
-                        "",
-                        None,
-                    )
-                )
-
                 bundler_composer = ComposeStreamResource()
 
                 self._emitted_resource = bundler_composer(

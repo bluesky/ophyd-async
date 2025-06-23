@@ -48,22 +48,13 @@ class HDFDocumentComposer:
 
     def __init__(
         self,
-        full_file_name: Path,
+        file_uri: str,
         datasets: list[HDFDatasetDescription],
         hostname: str = "localhost",
     ) -> None:
         self._last_emitted = 0
         self._hostname = hostname
-        uri = urlunparse(
-            (
-                "file",
-                self._hostname,
-                str(full_file_name.absolute()),
-                "",
-                "",
-                None,
-            )
-        )
+        uri = file_uri
         bundler_composer = ComposeStreamResource()
         self._bundles: list[ComposeStreamResourceBundle] = [
             bundler_composer(

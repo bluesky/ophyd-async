@@ -26,14 +26,14 @@ class BlobDetectorWriter(DetectorWriter):
     ) -> None:
         self.pattern_generator = pattern_generator
         self.path_provider = path_provider
-        self.path: Path | None = None
         self.composer: HDFDocumentComposer | None = None
         self.datasets: list[HDFDatasetDescription] = []
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         path_info = self.path_provider(name)
-        self.path = path_info.directory_path / f"{path_info.filename}.h5"
-        self.pattern_generator.open_file(self.path, WIDTH, HEIGHT)
+        write_path = path_info.directory_path / f"{path_info.filename}.h5"
+        read_path_uri = f"{path_info.full_file_uri}.h5"
+        self.pattern_generator.open_file(write_path, WIDTH, HEIGHT)
         self.exposures_per_event = exposures_per_event
         # We know it will write data and sum, so emit those
         self.datasets = [
@@ -52,7 +52,7 @@ class BlobDetectorWriter(DetectorWriter):
                 chunk_shape=(1024,),
             ),
         ]
-        self.composer = HDFDocumentComposer(self.path, self.datasets)
+        self.composer = HDFDocumentComposer(read_path_uri, self.datasets)
         describe = {
             ds.data_key: DataKey(
                 source="sim://pattern-generator-hdf-file",
