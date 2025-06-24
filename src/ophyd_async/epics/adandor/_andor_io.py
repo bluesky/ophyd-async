@@ -20,7 +20,7 @@ class Andor2DriverIO(adcore.ADBaseIO):
     """Driver for andor model:DU897_BV as deployed on p99.
 
     This mirrors the interface provided by AdAndor/db/andor.template.
-    https://github.com/areaDetector/ADAndor/blob/master/andorApp/Db/andorCCD.template
+    https://areadetector.github.io/areaDetector/ADAndor/andorDoc.html
     """
 
     trigger_mode: A[SignalRW[Andor2TriggerMode], PvSuffix.rbv("TriggerMode")]
