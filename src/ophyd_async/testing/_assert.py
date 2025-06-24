@@ -77,13 +77,13 @@ def _assert_readings_approx_equal(
     actual: Mapping[str, Reading],
     full_match: bool = True,
 ):
+    # expected keys are sub- or full set of actual keys
     if full_match:
         assert expected.keys() == actual.keys()
     else:
         assert expected.keys() <= actual.keys()
-    # expected keys are sub- or full set of actual keys
-    assert {k: actual[k] for k in expected.keys()} == {
-        k: _approx_reading(v, actual[k]) for k, v in expected.items()
+    assert actual == {
+        k: _approx_reading(expected.get(k, v), v) for k, v in actual.items()
     }
 
 
