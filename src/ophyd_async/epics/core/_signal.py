@@ -94,6 +94,7 @@ def epics_signal_rw(
     write_pv: str | None = None,
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
+    retries: int = 1,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs.
 
@@ -104,7 +105,7 @@ def epics_signal_rw(
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(datatype, read_pv, write_pv or read_pv)
-    return SignalRW(backend, name=name, timeout=timeout)
+    return SignalRW(backend, name=name, timeout=timeout, retries=retries)
 
 
 def epics_signal_rw_rbv(
@@ -113,6 +114,7 @@ def epics_signal_rw_rbv(
     read_suffix: str = "_RBV",
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
+    retries: int = 1,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv.
 
@@ -128,7 +130,9 @@ def epics_signal_rw_rbv(
     else:
         read_pv = f"{write_pv}{read_suffix}"
 
-    return epics_signal_rw(datatype, read_pv, write_pv, name, timeout=timeout)
+    return epics_signal_rw(
+        datatype, read_pv, write_pv, name, timeout=timeout, retries=retries
+    )
 
 
 def epics_signal_r(
@@ -153,6 +157,7 @@ def epics_signal_w(
     write_pv: str,
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
+    retries: int = 1,
 ) -> SignalW[SignalDatatypeT]:
     """Create a `SignalW` backed by 1 EPICS PVs.
 
@@ -162,7 +167,7 @@ def epics_signal_w(
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(datatype, write_pv, write_pv)
-    return SignalW(backend, name=name, timeout=timeout)
+    return SignalW(backend, name=name, timeout=timeout, retries=retries)
 
 
 def epics_signal_x(
