@@ -25,7 +25,7 @@ class Trajectory:
     profile_length: int
     cs_axes: dict[PmacAxisIO | PmacCoordIO, int]
     positions: dict[int, npt.NDArray[np.float64]]
-    initial_pos: dict[int, npt.NDArray[np.float64]]
+    initial_pos: dict[int, np.float64]
     velocities: dict[int, npt.NDArray[np.float64]]
     time_array: npt.NDArray[np.float64]
     user_array: npt.NDArray[np.int32]
@@ -74,7 +74,7 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTrajInfo]):
         )
 
         # Move to start
-        cs_port_number = int(trajectory.cs_port[-1])
+        cs_port_number = int(trajectory.cs_port.split("CS")[1])
         await self.pmac.coord[cs_port_number].defer_moves.set(True)
         for axis in trajectory.position_axes:
             cs_axis = trajectory.cs_axes[axis]

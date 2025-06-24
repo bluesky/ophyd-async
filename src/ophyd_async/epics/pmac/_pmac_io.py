@@ -70,9 +70,7 @@ class PmacCoordIO(motor.Motor):
         self.defer_moves = epics_signal_rw(bool, f"{prefix}:DeferMoves")
         self.cs_axis_setpoint = DeviceVector(
             {
-                i + 1: epics_signal_rw(
-                    Array1D[np.float64], f"{prefix}:M{i + 1}:DirectDemand"
-                )
+                i + 1: epics_signal_rw(np.float64, f"{prefix}:M{i + 1}:DirectDemand")
                 for i in range(len(CS_LETTERS))
             }
         )
