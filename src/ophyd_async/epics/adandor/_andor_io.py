@@ -1,6 +1,6 @@
 from typing import Annotated as A
 
-from ophyd_async.core import SignalR, SignalRW, StrictEnum, SubsetEnum
+from ophyd_async.core import SignalR, SignalRW, StrictEnum
 from ophyd_async.epics import adcore
 from ophyd_async.epics.core import (
     PvSuffix,
@@ -14,13 +14,6 @@ class Andor2TriggerMode(StrictEnum):
     EXT_EXPOSURE = "External Exposure"
     EXT_FVP = "External FVP"
     SOFTWARE = "Software"
-
-
-class Andor2DataType(SubsetEnum):
-    UINT16 = "UInt16"
-    UINT32 = "UInt32"
-    FLOAT32 = "Float32"
-    FLOAT64 = "Float64"
 
 
 class Andor2DriverIO(adcore.ADBaseIO):
