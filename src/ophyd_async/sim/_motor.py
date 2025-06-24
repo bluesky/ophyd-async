@@ -82,8 +82,11 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float
         )
         return Location(setpoint=setpoint, readback=readback)
 
-    def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
-        self.user_readback.subscribe(function)
+    def subscribe_reading(self, function: Callback[dict[str, Reading[float]]]) -> None:
+        self.user_readback.subscribe_reading(function)
+
+    def subscribe_value(self, function: Callback[float]) -> None:
+        self.user_readback.subscribe_value(function)
 
     def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
         self.user_readback.clear_sub(function)
