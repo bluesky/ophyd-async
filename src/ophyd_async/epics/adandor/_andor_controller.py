@@ -12,23 +12,19 @@ _MIN_DEAD_TIME = 0.1
 _MAX_NUM_IMAGE = 999_999
 
 
+# The deadtime of an Andor2 controller varies depending on the exact model of camera.
+# Ideally we would maximize performance by dynamically retrieving the deadtime at
+# runtime. See https://github.com/bluesky/ophyd-async/issues/308
 class Andor2Controller(adcore.ADBaseController[Andor2DriverIO]):
-    """For controlling the Andor 2 detector."""
-
-    def __init__(
-        self,
-        driver: Andor2DriverIO,
-        good_states: frozenset[adcore.ADState] = adcore.DEFAULT_GOOD_STATES,
-    ) -> None:
-        super().__init__(driver, good_states=good_states)
+    """DetectorCobntroller for Andor2DriverIO."""
 
     def get_deadtime(self, exposure: float | None) -> float:
         return _MIN_DEAD_TIME + (exposure or 0)
 
     async def prepare(self, trigger_info: TriggerInfo):
-        await self.set_exposure_time_and_acquire_period_if_supplied(
-            trigger_info.livetime
-        )
+        if (exposure := trigger_info.livetime) is not None:
+            await self.driver.acquire_time.set(exposure)
+
         await asyncio.gather(
             self.driver.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
             self.driver.num_images.set(

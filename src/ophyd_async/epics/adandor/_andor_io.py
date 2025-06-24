@@ -1,8 +1,9 @@
-from ophyd_async.core import StrictEnum, SubsetEnum
-from ophyd_async.epics.adcore import ADBaseIO
+from typing import Annotated as A
+
+from ophyd_async.core import SignalR, SignalRW, StrictEnum, SubsetEnum
+from ophyd_async.epics import adcore
 from ophyd_async.epics.core import (
-    epics_signal_r,
-    epics_signal_rw,
+    PvSuffix,
 )
 
 
@@ -22,13 +23,12 @@ class Andor2DataType(SubsetEnum):
     FLOAT64 = "Float64"
 
 
-class Andor2DriverIO(ADBaseIO):
-    """Epics pv for andor model:DU897_BV as deployed on p99."""
+class Andor2DriverIO(adcore.ADBaseIO):
+    """Driver for andor model:DU897_BV as deployed on p99.
 
-    def __init__(self, prefix: str, name: str = "") -> None:
-        super().__init__(prefix, name=name)
-        self.trigger_mode = epics_signal_rw(Andor2TriggerMode, prefix + "TriggerMode")
-        self.data_type = epics_signal_r(Andor2DataType, prefix + "DataType_RBV")  # type: ignore
-        self.andor_accumulate_period = epics_signal_r(
-            float, prefix + "AndorAccumulatePeriod_RBV"
-        )
+    This mirrors the interface provided by AdAndor/db/andor.template.
+    https://github.com/areaDetector/ADAndor/blob/master/andorApp/Db/andorCCD.template
+    """
+
+    trigger_mode: A[SignalRW[Andor2TriggerMode], PvSuffix.rbv("TriggerMode")]
+    andor_accumulate_period: A[SignalR[float], PvSuffix("AndorAccumulatePeriod_RBV")]
