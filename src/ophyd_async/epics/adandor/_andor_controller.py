@@ -22,8 +22,9 @@ class Andor2Controller(adcore.ADBaseController[Andor2DriverIO]):
         return _MIN_DEAD_TIME + (exposure or 0)
 
     async def prepare(self, trigger_info: TriggerInfo):
-        if (exposure := trigger_info.livetime) is not None:
-            await self.driver.acquire_time.set(exposure)
+        await self.set_exposure_time_and_acquire_period_if_supplied(
+            trigger_info.livetime
+        )
 
         await asyncio.gather(
             self.driver.trigger_mode.set(self._get_trigger_mode(trigger_info.trigger)),
