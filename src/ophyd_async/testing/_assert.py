@@ -195,7 +195,7 @@ class MonitorQueue(AbstractContextManager):
         _assert_readings_approx_equal(expected_reading, update)
 
     def __enter__(self):
-        self.signal.subscribe(self.updates.put_nowait)
+        self.signal.subscribe_reading(self.updates.put_nowait)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):

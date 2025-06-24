@@ -222,7 +222,7 @@ class SignalTransformer(Generic[TransformT]):
                 # callback
                 self._cached_readings = {}
                 for raw in self.raw_and_transform_subscribables.values():
-                    raw.subscribe(self._update_cached_reading)
+                    raw.subscribe_reading(self._update_cached_reading)
             elif self._complete_cached_reading():
                 # Callback on the last complete set of readings
                 derived_readings = self._make_derived_readings(self._cached_readings)

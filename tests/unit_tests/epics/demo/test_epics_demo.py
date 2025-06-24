@@ -185,7 +185,7 @@ async def test_read_motor(mock_motor: demo.DemoMotor):
 async def test_set_velocity(mock_motor: demo.DemoMotor) -> None:
     v = mock_motor.velocity
     q: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
-    v.subscribe(q.put_nowait)
+    v.subscribe_reading(q.put_nowait)
     assert (await q.get())["mock_motor-velocity"]["value"] == 1.0
     await v.set(2.0)
     assert (await q.get())["mock_motor-velocity"]["value"] == 2.0

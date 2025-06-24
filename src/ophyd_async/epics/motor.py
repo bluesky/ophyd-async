@@ -261,9 +261,13 @@ class Motor(
         )
         return Location(setpoint=setpoint, readback=readback)
 
-    def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
-        """Subscribe."""
-        self.user_readback.subscribe(function)
+    def subscribe_reading(self, function: Callback[dict[str, Reading[float]]]) -> None:
+        """Subscribe to reading."""
+        self.user_readback.subscribe_reading(function)
+
+    def subscribe_value(self, function: Callback[float]) -> None:
+        """Subscribe to value."""
+        self.user_readback.subscribe_value(function)
 
     def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Unsubscribe."""

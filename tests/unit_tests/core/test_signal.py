@@ -894,7 +894,7 @@ async def test_subscription_logs(caplog):
     mock_signal_rw = epics_signal_rw(int, "pva://mock_signal", name="mock_signal")
     await mock_signal_rw.connect(mock=True)
     cbs = []
-    mock_signal_rw.subscribe(cbs.append)
+    mock_signal_rw.subscribe_reading(cbs.append)
     assert "Making subscription" in caplog.text
     mock_signal_rw.clear_sub(cbs.append)
     assert "Closing subscription on source" in caplog.text
