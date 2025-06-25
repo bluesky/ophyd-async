@@ -21,6 +21,15 @@ from ophyd_async.core import (
 from ._utils import T
 
 
+def partial_reading(val: Any) -> dict[str, Any]:
+    """Helper function for building expected reading or configuration dicts.
+
+    :param val: Value to be wrapped in dict with "value" as the key.
+    :return: The dict that has wrapped the val with key "value".
+    """
+    return {"value": val}
+
+
 def approx_value(value: Any):
     """Allow any value to be compared to another in tests.
 
