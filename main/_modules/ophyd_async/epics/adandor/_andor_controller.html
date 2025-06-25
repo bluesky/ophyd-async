@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adandor._andor_controller &#8212; ophyd-async 0.10.2.dev14+g9f724d25e documentation</title>
+    <title>ophyd_async.epics.adandor._andor_controller &#8212; ophyd-async 0.10.2.dev15+g5b9e43bf0 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=ce51fca5"></script>
+    <script src="../../../../_static/documentation_options.js?v=8bd1450e"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev14+g9f724d25e documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev14+g9f724d25e documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev15+g5b9e43bf0 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev15+g5b9e43bf0 documentation - Home"/>
   
   
 </a></div>
@@ -477,17 +477,13 @@ window.addEventListener("load", () => mermaid.run());
 <span class="n">_MAX_NUM_IMAGE</span> <span class="o">=</span> <span class="mi">999_999</span>
 
 
+<span class="c1"># The deadtime of an Andor2 controller varies depending on the exact model of camera.</span>
+<span class="c1"># Ideally we would maximize performance by dynamically retrieving the deadtime at</span>
+<span class="c1"># runtime. See https://github.com/bluesky/ophyd-async/issues/308</span>
 <div class="viewcode-block" id="Andor2Controller">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2Controller">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Andor2Controller</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseController</span><span class="p">[</span><span class="n">Andor2DriverIO</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For controlling the Andor 2 detector.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">driver</span><span class="p">:</span> <span class="n">Andor2DriverIO</span><span class="p">,</span>
-        <span class="n">good_states</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADState</span><span class="p">]</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">DEFAULT_GOOD_STATES</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">good_states</span><span class="o">=</span><span class="n">good_states</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DetectorCobntroller for Andor2DriverIO.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Andor2Controller.get_deadtime">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2Controller.get_deadtime">[docs]</a>
@@ -501,6 +497,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_exposure_time_and_acquire_period_if_supplied</span><span class="p">(</span>
             <span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span>
         <span class="p">)</span>
+
         <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_trigger_mode</span><span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">)),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">num_images</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adandor &#8212; ophyd-async 0.10.2.dev14+g9f724d25e documentation</title>
+    <title>ophyd_async.epics.adandor &#8212; ophyd-async 0.10.2.dev15+g5b9e43bf0 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=ce51fca5"></script>
+    <script src="../../_static/documentation_options.js?v=8bd1450e"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev14+g9f724d25e documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev14+g9f724d25e documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev15+g5b9e43bf0 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev15+g5b9e43bf0 documentation - Home"/>
   
   
 </a></div>
@@ -523,6 +523,8 @@
                   
   <section id="module-ophyd_async.epics.adandor">
 <span id="ophyd-async-epics-adandor"></span><h1><a class="reference internal" href="#module-ophyd_async.epics.adandor" title="ophyd_async.epics.adandor"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a><a class="headerlink" href="#module-ophyd_async.epics.adandor" title="Link to this heading">#</a></h1>
+<p>Support for the ADAndor areaDetector driver.</p>
+<p>https://github.com/areaDetector/ADAndor.</p>
 <section id="package-contents">
 <h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
 <section id="classes">
@@ -533,10 +535,13 @@
 <td><p>Andor 2 area detector device (CCD detector 56fps with full chip readout).</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adandor.Andor2Controller" title="ophyd_async.epics.adandor._andor_controller.Andor2Controller"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Andor2Controller</span></code></a></p></td>
-<td><p>For controlling the Andor 2 detector.</p></td>
+<td><p>DetectorCobntroller for Andor2DriverIO.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adandor.Andor2DriverIO" title="ophyd_async.epics.adandor._andor_io.Andor2DriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Andor2DriverIO</span></code></a></p></td>
-<td><p>Epics pv for andor model:DU897_BV as deployed on p99.</p></td>
+<td><p>Driver for andor model:DU897_BV as deployed on p99.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adandor.Andor2TriggerMode" title="ophyd_async.epics.adandor._andor_io.Andor2TriggerMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Andor2TriggerMode</span></code></a></p></td>
+<td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
 </tbody>
 </table>
@@ -554,9 +559,9 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2Controller">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adandor.</span></span><span class="sig-name descname"><span class="pre">Andor2Controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adandor.Andor2DriverIO" title="ophyd_async.epics.adandor._andor_io.Andor2DriverIO"><span class="pre">Andor2DriverIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">good_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#frozenset" title="(in Python v3.13)"><span class="pre">frozenset</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState" title="ophyd_async.epics.adcore.ADState"><span class="pre">ADState</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">adcore.DEFAULT_GOOD_STATES</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adandor/_andor_controller.html#Andor2Controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2Controller" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adandor.</span></span><span class="sig-name descname"><span class="pre">Andor2Controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ADBaseIOT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">good_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#frozenset" title="(in Python v3.13)"><span class="pre">frozenset</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState" title="ophyd_async.epics.adcore._core_io.ADState"><span class="pre">ADState</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_GOOD_STATES</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adandor/_andor_controller.html#Andor2Controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2Controller" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseController" title="ophyd_async.epics.adcore.ADBaseController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore.ADBaseController</span></code></a>[<a class="reference internal" href="#ophyd_async.epics.adandor.Andor2DriverIO" title="ophyd_async.epics.adandor._andor_io.Andor2DriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor._andor_io.Andor2DriverIO</span></code></a>]</p>
-<p>For controlling the Andor 2 detector.</p>
+<p>DetectorCobntroller for Andor2DriverIO.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2Controller.get_deadtime">
 <span class="sig-name descname"><span class="pre">get_deadtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adandor/_andor_controller.html#Andor2Controller.get_deadtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2Controller.get_deadtime" title="Link to this definition">#</a></dt>
@@ -578,9 +583,66 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2DriverIO">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adandor.</span></span><span class="sig-name descname"><span class="pre">Andor2DriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adandor/_andor_io.html#Andor2DriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2DriverIO" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adandor.</span></span><span class="sig-name descname"><span class="pre">Andor2DriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adandor/_andor_io.html#Andor2DriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2DriverIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore.ADBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore.ADBaseIO</span></code></a></p>
-<p>Epics pv for andor model:DU897_BV as deployed on p99.</p>
+<p>Driver for andor model:DU897_BV as deployed on p99.</p>
+<p>This mirrors the interface provided by AdAndor/db/andor.template.
+https://areadetector.github.io/areaDetector/ADAndor/andorDoc.html</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2DriverIO.trigger_mode">
+<span class="sig-name descname"><span class="pre">trigger_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adandor.Andor2TriggerMode" title="ophyd_async.epics.adandor._andor_io.Andor2TriggerMode"><span class="pre">Andor2TriggerMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'TriggerMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2DriverIO.trigger_mode" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2DriverIO.andor_accumulate_period">
+<span class="sig-name descname"><span class="pre">andor_accumulate_period</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix" title="ophyd_async.epics.core.PvSuffix"><span class="pre">PvSuffix</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'AndorAccumulatePeriod_RBV'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2DriverIO.andor_accumulate_period" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2TriggerMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adandor.</span></span><span class="sig-name descname"><span class="pre">Andor2TriggerMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adandor/_andor_io.html#Andor2TriggerMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2TriggerMode" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>All members should exist in the Backend, and there will be no extras.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2TriggerMode.INTERNAL">
+<span class="sig-name descname"><span class="pre">INTERNAL</span></span><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2TriggerMode.INTERNAL" title="Link to this definition">#</a></dt>
+<dd><p>‘Internal’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2TriggerMode.EXT_TRIGGER">
+<span class="sig-name descname"><span class="pre">EXT_TRIGGER</span></span><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2TriggerMode.EXT_TRIGGER" title="Link to this definition">#</a></dt>
+<dd><p>‘External’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2TriggerMode.EXT_START">
+<span class="sig-name descname"><span class="pre">EXT_START</span></span><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2TriggerMode.EXT_START" title="Link to this definition">#</a></dt>
+<dd><p>‘External Start’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2TriggerMode.EXT_EXPOSURE">
+<span class="sig-name descname"><span class="pre">EXT_EXPOSURE</span></span><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2TriggerMode.EXT_EXPOSURE" title="Link to this definition">#</a></dt>
+<dd><p>‘External Exposure’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2TriggerMode.EXT_FVP">
+<span class="sig-name descname"><span class="pre">EXT_FVP</span></span><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2TriggerMode.EXT_FVP" title="Link to this definition">#</a></dt>
+<dd><p>‘External FVP’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adandor.Andor2TriggerMode.SOFTWARE">
+<span class="sig-name descname"><span class="pre">SOFTWARE</span></span><a class="headerlink" href="#ophyd_async.epics.adandor.Andor2TriggerMode.SOFTWARE" title="Link to this definition">#</a></dt>
+<dd><p>‘Software’</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -643,7 +705,20 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2Controller.prepare"><code class="docutils literal notranslate"><span class="pre">Andor2Controller.prepare()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2DriverIO"><code class="docutils literal notranslate"><span class="pre">Andor2DriverIO</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2DriverIO"><code class="docutils literal notranslate"><span class="pre">Andor2DriverIO</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2DriverIO.trigger_mode"><code class="docutils literal notranslate"><span class="pre">Andor2DriverIO.trigger_mode</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2DriverIO.andor_accumulate_period"><code class="docutils literal notranslate"><span class="pre">Andor2DriverIO.andor_accumulate_period</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2TriggerMode"><code class="docutils literal notranslate"><span class="pre">Andor2TriggerMode</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2TriggerMode.INTERNAL"><code class="docutils literal notranslate"><span class="pre">Andor2TriggerMode.INTERNAL</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2TriggerMode.EXT_TRIGGER"><code class="docutils literal notranslate"><span class="pre">Andor2TriggerMode.EXT_TRIGGER</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2TriggerMode.EXT_START"><code class="docutils literal notranslate"><span class="pre">Andor2TriggerMode.EXT_START</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2TriggerMode.EXT_EXPOSURE"><code class="docutils literal notranslate"><span class="pre">Andor2TriggerMode.EXT_EXPOSURE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2TriggerMode.EXT_FVP"><code class="docutils literal notranslate"><span class="pre">Andor2TriggerMode.EXT_FVP</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adandor.Andor2TriggerMode.SOFTWARE"><code class="docutils literal notranslate"><span class="pre">Andor2TriggerMode.SOFTWARE</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
