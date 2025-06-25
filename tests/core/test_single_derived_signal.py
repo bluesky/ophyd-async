@@ -25,6 +25,7 @@ from ophyd_async.testing import (
     assert_reading,
     assert_value,
     get_mock,
+    partial_reading,
 )
 
 
@@ -70,7 +71,7 @@ async def test_get_returns_right_position(
     await inst.x.set(x)
     await inst.y.set(y)
     await assert_value(inst.position, position)
-    await assert_reading(inst.position, {"inst-position": {"value": position}})
+    await assert_reading(inst.position, {"inst-position": partial_reading(position)})
     await assert_describe_signal(
         inst.position,
         choices=[
@@ -125,11 +126,11 @@ async def test_setting_position():
 async def test_setting_all():
     inst = Exploder(3, "exploder")
     await assert_reading(
-        inst, {f"exploder-signals-{i}": {"value": 0} for i in range(1, 4)}
+        inst, {f"exploder-signals-{i}": partial_reading(0) for i in range(1, 4)}
     )
     await inst.set_all.set(5)
     await assert_reading(
-        inst, {f"exploder-signals-{i}": {"value": 5} for i in range(1, 4)}
+        inst, {f"exploder-signals-{i}": partial_reading(5) for i in range(1, 4)}
     )
 
 
