@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Protocol
+from urllib.parse import urlunparse
 
 
 @dataclass
@@ -21,6 +22,21 @@ class PathInfo:
     directory_path: Path
     filename: str
     create_dir_depth: int = 0
+    directory_uri: str | None = None
+
+    def __post_init__(self):
+        # If directory uri is not set, set it using the directory path.
+        if self.directory_uri is None:
+            self.directory_uri = urlunparse(
+                (
+                    "file",
+                    "localhost",
+                    f"{self.directory_path}/",
+                    "",
+                    "",
+                    None,
+                )
+            )
 
 
 class FilenameProvider(Protocol):
@@ -113,10 +129,12 @@ class StaticPathProvider(PathProvider):
         self,
         filename_provider: FilenameProvider,
         directory_path: Path | str,
+        directory_uri: str | None = None,
         create_dir_depth: int = 0,
     ) -> None:
         self._filename_provider = filename_provider
         self._directory_path = Path(directory_path)
+        self._directory_uri = directory_uri
         self._create_dir_depth = create_dir_depth
 
     def __call__(self, device_name: str | None = None) -> PathInfo:
@@ -124,6 +142,7 @@ class StaticPathProvider(PathProvider):
 
         return PathInfo(
             directory_path=self._directory_path,
+            directory_uri=self._directory_uri,
             filename=filename,
             create_dir_depth=self._create_dir_depth,
         )
@@ -136,6 +155,7 @@ class AutoIncrementingPathProvider(PathProvider):
         self,
         filename_provider: FilenameProvider,
         base_directory_path: Path,
+        base_directory_uri: str | None = None,
         create_dir_depth: int = 0,
         max_digits: int = 5,
         starting_value: int = 0,
@@ -146,6 +166,7 @@ class AutoIncrementingPathProvider(PathProvider):
     ) -> None:
         self._filename_provider = filename_provider
         self._base_directory_path = base_directory_path
+        self._base_directory_uri = base_directory_uri
         self._create_dir_depth = create_dir_depth
         self._base_name = base_name
         self._starting_value = starting_value
@@ -174,8 +195,13 @@ class AutoIncrementingPathProvider(PathProvider):
             self._inc_counter = 0
             self._current_value += self._increment
 
+        directory_uri = None
+        if self._base_directory_uri is not None:
+            directory_uri = f"{self._base_directory_uri}/{auto_inc_dir_name}"
+
         return PathInfo(
             directory_path=self._base_directory_path / auto_inc_dir_name,
+            directory_uri=directory_uri,
             filename=filename,
             create_dir_depth=self._create_dir_depth,
         )
@@ -188,11 +214,13 @@ class YMDPathProvider(PathProvider):
         self,
         filename_provider: FilenameProvider,
         base_directory_path: Path,
+        base_directory_uri: str | None = None,
         create_dir_depth: int = -3,  # Default to -3 to create YMD dirs
         device_name_as_base_dir: bool = False,
     ) -> None:
         self._filename_provider = filename_provider
         self._base_directory_path = Path(base_directory_path)
+        self._base_directory_uri = base_directory_uri
         self._create_dir_depth = create_dir_depth
         self._device_name_as_base_dir = device_name_as_base_dir
 
@@ -213,8 +241,14 @@ class YMDPathProvider(PathProvider):
             )
 
         filename = self._filename_provider(device_name)
+
+        directory_uri = None
+        if self._base_directory_uri is not None:
+            directory_uri = f"{self._base_directory_uri}/{ymd_dir_path}"
+
         return PathInfo(
             directory_path=self._base_directory_path / ymd_dir_path,
+            directory_uri=directory_uri,
             filename=filename,
             create_dir_depth=self._create_dir_depth,
         )

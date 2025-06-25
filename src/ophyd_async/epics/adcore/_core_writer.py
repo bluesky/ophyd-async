@@ -1,8 +1,6 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
-from pathlib import Path
 from typing import Generic, TypeVar, get_args
-from urllib.parse import urlunparse
 
 from bluesky.protocols import Hints, StreamAsset
 from event_model import (  # type: ignore
@@ -13,7 +11,7 @@ from event_model import (  # type: ignore
 from pydantic import PositiveInt
 
 from ophyd_async.core._detector import DetectorWriter
-from ophyd_async.core._providers import DatasetDescriber, PathProvider
+from ophyd_async.core._providers import DatasetDescriber, PathInfo, PathProvider
 from ophyd_async.core._signal import (
     observe_value,
     set_and_wait_for_value,
@@ -52,7 +50,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     ) -> None:
         self._plugins = plugins or {}
         self.fileio = fileio
-        self._path_provider = path_provider
+        self._path_provider: PathProvider = path_provider
+        self._path_info: PathInfo | None = None
         self._dataset_describer = dataset_describer
         self._file_extension = file_extension
         self._mimetype = mimetype
@@ -83,18 +82,16 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         return writer
 
     async def begin_capture(self, name: str) -> None:
-        info = self._path_provider(device_name=name)
-
         await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
-        await self.fileio.create_directory.set(info.create_dir_depth)
+        await self.fileio.create_directory.set(self._path_info.create_dir_depth)
 
         await asyncio.gather(
             # See https://github.com/bluesky/ophyd-async/issues/122
-            self.fileio.file_path.set(str(info.directory_path)),
-            self.fileio.file_name.set(info.filename),
+            self.fileio.file_path.set(str(self._path_info.directory_path)),
+            self.fileio.file_name.set(self._path_info.filename),
             self.fileio.file_write_mode.set(ADFileWriteMode.STREAM),
             # For non-HDF file writers, use AD file templating mechanism
             # for generating multi-image datasets
@@ -106,7 +103,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         )
 
         if not await self.fileio.file_path_exists.get_value():
-            msg = f"File path {info.directory_path} for file plugin does not exist"
+            msg = (
+                f"Path {self._path_info.directory_path} doesn't exist or not writable!"
+            )
             raise FileNotFoundError(msg)
 
         # Overwrite num_capture to go forever
@@ -124,6 +123,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         self._exposures_per_event = exposures_per_event
         frame_shape = await self._dataset_describer.shape()
         dtype_numpy = await self._dataset_describer.np_datatype()
+
+        self._path_info = self._path_provider(device_name=name)
 
         await self.begin_capture(name)
 
@@ -152,30 +153,21 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     async def collect_stream_docs(
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
+        if self._path_info is None:
+            raise RuntimeError("Writer must be opened before collecting stream docs!")
+
         if indices_written:
             if not self._emitted_resource:
-                file_path = Path(await self.fileio.file_path.get_value())
                 file_name = await self.fileio.file_name.get_value()
                 file_template = file_name + "_{:06d}" + self._file_extension
 
                 frame_shape = await self._dataset_describer.shape()
 
-                uri = urlunparse(
-                    (
-                        "file",
-                        "localhost",
-                        str(file_path.absolute()) + "/",
-                        "",
-                        "",
-                        None,
-                    )
-                )
-
                 bundler_composer = ComposeStreamResource()
 
                 self._emitted_resource = bundler_composer(
                     mimetype=self._mimetype,
-                    uri=uri,
+                    uri=str(self._path_info.directory_uri),
                     # TODO no reference to detector's name
                     data_key=name,
                     parameters={
