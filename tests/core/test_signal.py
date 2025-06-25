@@ -46,6 +46,7 @@ from ophyd_async.testing import (
     assert_reading,
     assert_value,
     callback_on_mock_put,
+    partial_reading,
     set_mock_put_proceeds,
     set_mock_value,
 )
@@ -506,7 +507,7 @@ async def test_assert_reading_optional_fields(
 ):
     # alarm_severity of 0 and timestamp of ANY supplied if none given
     await assert_reading(
-        one_of_everything_device.a_int, {"everything-device-a_int": {"value": 1}}
+        one_of_everything_device.a_int, {"everything-device-a_int": partial_reading(1)}
     )
 
     with pytest.raises(AssertionError):
@@ -539,72 +540,36 @@ async def test_assert_configuration_everything(
     await assert_configuration(
         one_of_everything_device,
         {
-            "everything-device-a_int": {
-                "value": 1,
-            },
-            "everything-device-a_float": {
-                "value": 1.234,
-            },
-            "everything-device-a_str": {
-                "value": "test_string",
-            },
-            "everything-device-a_bool": {
-                "value": True,
-            },
-            "everything-device-a_enum": {
-                "value": "Bbb",
-            },
-            "everything-device-boola": {
-                "value": _array_vals["boola"],
-            },
-            "everything-device-int8a": {
-                "value": _array_vals["int8a"],
-            },
-            "everything-device-uint8a": {
-                "value": _array_vals["uint8a"],
-            },
-            "everything-device-int16a": {
-                "value": _array_vals["int16a"],
-            },
-            "everything-device-uint16a": {
-                "value": _array_vals["uint16a"],
-            },
-            "everything-device-int32a": {
-                "value": _array_vals["int32a"],
-            },
-            "everything-device-uint32a": {
-                "value": _array_vals["uint32a"],
-            },
-            "everything-device-int64a": {
-                "value": _array_vals["int64a"],
-            },
-            "everything-device-uint64a": {
-                "value": _array_vals["uint64a"],
-            },
-            "everything-device-float32a": {
-                "value": _array_vals["float32a"],
-            },
-            "everything-device-float64a": {
-                "value": _array_vals["float64a"],
-            },
-            "everything-device-stra": {
-                "value": ["one", "two", "three"],
-            },
-            "everything-device-enuma": {
-                "value": [ExampleEnum.A, ExampleEnum.C],
-            },
-            "everything-device-table": {
-                "value": ExampleTable(
+            "everything-device-a_int": partial_reading(1),
+            "everything-device-a_float": partial_reading(1.234),
+            "everything-device-a_str": partial_reading("test_string"),
+            "everything-device-a_bool": partial_reading(True),
+            "everything-device-a_enum": partial_reading("Bbb"),
+            "everything-device-boola": partial_reading(_array_vals["boola"]),
+            "everything-device-int8a": partial_reading(_array_vals["int8a"]),
+            "everything-device-uint8a": partial_reading(_array_vals["uint8a"]),
+            "everything-device-int16a": partial_reading(_array_vals["int16a"]),
+            "everything-device-uint16a": partial_reading(_array_vals["uint16a"]),
+            "everything-device-int32a": partial_reading(_array_vals["int32a"]),
+            "everything-device-uint32a": partial_reading(_array_vals["uint32a"]),
+            "everything-device-int64a": partial_reading(_array_vals["int64a"]),
+            "everything-device-uint64a": partial_reading(_array_vals["uint64a"]),
+            "everything-device-float32a": partial_reading(_array_vals["float32a"]),
+            "everything-device-float64a": partial_reading(_array_vals["float64a"]),
+            "everything-device-stra": partial_reading(["one", "two", "three"]),
+            "everything-device-enuma": partial_reading([ExampleEnum.A, ExampleEnum.C]),
+            "everything-device-table": partial_reading(
+                ExampleTable(
                     a_bool=np.array([False, False, True, True]),
                     a_int=np.array([1, 8, -9, 32], dtype=np.int32),
                     a_float=np.array([1.8, 8.2, -6.0, 32.9887]),
                     a_str=["Hello", "World", "Foo", "Bar"],
                     a_enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
                 ),
-            },
-            "everything-device-ndarray": {
-                "value": np.array([[1, 2, 3], [4, 5, 6]]),
-            },
+            ),
+            "everything-device-ndarray": partial_reading(
+                np.array([[1, 2, 3], [4, 5, 6]])
+            ),
         },
     )
 
@@ -615,168 +580,126 @@ async def test_assert_reading_everything(
     await assert_reading(one_of_everything_device, {})
     await assert_reading(
         one_of_everything_device.a_int,
-        {
-            "everything-device-a_int": {
-                "value": 1,
-            }
-        },
+        {"everything-device-a_int": partial_reading(1)},
     )
     await assert_reading(
         one_of_everything_device.a_float,
-        {
-            "everything-device-a_float": {
-                "value": 1.234,
-            }
-        },
+        {"everything-device-a_float": partial_reading(1.234)},
     )
     await assert_reading(
         one_of_everything_device.a_str,
         {
-            "everything-device-a_str": {
-                "value": "test_string",
-            }
+            "everything-device-a_str": partial_reading("test_string"),
         },
     )
     await assert_reading(
         one_of_everything_device.a_bool,
-        {
-            "everything-device-a_bool": {
-                "value": True,
-            }
-        },
+        {"everything-device-a_bool": partial_reading(True)},
     )
     await assert_reading(
         one_of_everything_device.boola,
         {
-            "everything-device-boola": {
-                "value": _array_vals["boola"],
-            }
+            "everything-device-boola": partial_reading(_array_vals["boola"]),
         },
     )
     await assert_reading(
         one_of_everything_device.a_enum,
         {
-            "everything-device-a_enum": {
-                "value": ExampleEnum.B,
-            }
+            "everything-device-a_enum": partial_reading(ExampleEnum.B),
         },
     )
     await assert_reading(
         one_of_everything_device.int8a,
         {
-            "everything-device-int8a": {
-                "value": _array_vals["int8a"],
-            }
+            "everything-device-int8a": partial_reading(_array_vals["int8a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.uint8a,
         {
-            "everything-device-uint8a": {
-                "value": _array_vals["uint8a"],
-            }
+            "everything-device-uint8a": partial_reading(_array_vals["uint8a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.int16a,
         {
-            "everything-device-int16a": {
-                "value": _array_vals["int16a"],
-            }
+            "everything-device-int16a": partial_reading(_array_vals["int16a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.uint16a,
         {
-            "everything-device-uint16a": {
-                "value": _array_vals["uint16a"],
-            }
+            "everything-device-uint16a": partial_reading(_array_vals["uint16a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.int32a,
         {
-            "everything-device-int32a": {
-                "value": _array_vals["int32a"],
-            }
+            "everything-device-int32a": partial_reading(_array_vals["int32a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.uint32a,
         {
-            "everything-device-uint32a": {
-                "value": _array_vals["uint32a"],
-            }
+            "everything-device-uint32a": partial_reading(_array_vals["uint32a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.int64a,
         {
-            "everything-device-int64a": {
-                "value": _array_vals["int64a"],
-            }
+            "everything-device-int64a": partial_reading(_array_vals["int64a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.uint64a,
         {
-            "everything-device-uint64a": {
-                "value": _array_vals["uint64a"],
-            }
+            "everything-device-uint64a": partial_reading(_array_vals["uint64a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.float32a,
         {
-            "everything-device-float32a": {
-                "value": _array_vals["float32a"],
-            }
+            "everything-device-float32a": partial_reading(_array_vals["float32a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.float64a,
         {
-            "everything-device-float64a": {
-                "value": _array_vals["float64a"],
-            }
+            "everything-device-float64a": partial_reading(_array_vals["float64a"]),
         },
     )
     await assert_reading(
         one_of_everything_device.stra,
         {
-            "everything-device-stra": {
-                "value": ["one", "two", "three"],
-            }
+            "everything-device-stra": partial_reading(["one", "two", "three"]),
         },
     )
     await assert_reading(
         one_of_everything_device.enuma,
         {
-            "everything-device-enuma": {
-                "value": [ExampleEnum.A, ExampleEnum.C],
-            }
+            "everything-device-enuma": partial_reading([ExampleEnum.A, ExampleEnum.C]),
         },
     )
     await assert_reading(
         one_of_everything_device.table,
         {
-            "everything-device-table": {
-                "value": ExampleTable(
+            "everything-device-table": partial_reading(
+                ExampleTable(
                     a_bool=np.array([False, False, True, True], np.bool_),
                     a_int=np.array([1, 8, -9, 32], np.int32),
                     a_float=np.array([1.8, 8.2, -6, 32.9887], np.float64),
                     a_str=["Hello", "World", "Foo", "Bar"],
                     a_enum=[ExampleEnum.A, ExampleEnum.B, ExampleEnum.A, ExampleEnum.C],
                 ),
-            }
+            )
         },
     )
     await assert_reading(
         one_of_everything_device.ndarray,
         {
-            "everything-device-ndarray": {
-                "value": np.array(([1, 2, 3], [4, 5, 6])),
-            }
+            "everything-device-ndarray": partial_reading(
+                np.array(([1, 2, 3], [4, 5, 6]))
+            ),
         },
     )
 
@@ -786,7 +709,7 @@ async def test_assert_reading_default_metadata(
 ):
     await assert_reading(
         one_of_everything_device.a_int,
-        {"everything-device-a_int": {"value": 1}},
+        {"everything-device-a_int": partial_reading(1)},
     )
     await assert_reading(
         one_of_everything_device.a_int,
@@ -819,7 +742,7 @@ async def test_assert_reading_default_metadata(
     with pytest.raises(AssertionError):
         await assert_reading(
             one_of_everything_device.a_int,
-            {"everything-device-a_int": {"value": 2}},
+            {"everything-device-a_int": partial_reading(2)},
         )
     with pytest.raises(AssertionError):
         await assert_reading(
@@ -870,7 +793,7 @@ async def test_assert_reading_without_severity():
         async def read(self) -> dict[str, Reading]:
             return {"foo": {"value": 42, "timestamp": 0.1}}
 
-    await assert_reading(Thing(), {"foo": {"value": 42}})
+    await assert_reading(Thing(), {"foo": partial_reading(42)})
 
 
 async def test_assert_configuration(mock_readable: DummyReadableArray):
@@ -1055,7 +978,7 @@ def test_notify_without_value(signal_cache):
     signal_cache._reading = {"value": 42}
     signal_cache._signal.name = "test_signal"
     signal_cache._notify(mock_function, want_value=False)
-    mock_function.assert_called_once_with({"test_signal": {"value": 42}})
+    mock_function.assert_called_once_with({"test_signal": partial_reading(42)})
 
 
 async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
