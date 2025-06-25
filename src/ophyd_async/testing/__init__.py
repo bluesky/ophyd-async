@@ -11,7 +11,6 @@ from ._assert import (
     assert_emitted,
     assert_reading,
     assert_value,
-    partial_reading,
 )
 from ._mock_signal_utils import (
     callback_on_mock_put,
@@ -48,7 +47,6 @@ __all__ = [
     "assert_configuration",
     "assert_describe_signal",
     "assert_emitted",
-    "partial_reading",
     # Mocking utilities
     "get_mock",
     "set_mock_value",
