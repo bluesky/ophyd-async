@@ -844,4 +844,4 @@ async def test_signal_retries_when_timeout(
         await sig_rw_times_out.set(1, wait=True)
     stop = time.time()
     # signal tries to set 3 times, so 3 * timeout
-    assert stop - start == pytest.approx(1.2, rel=0.1)
+    assert stop - start == pytest.approx(0.3, rel=0.1)
