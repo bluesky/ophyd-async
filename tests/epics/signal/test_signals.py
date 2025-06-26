@@ -840,7 +840,7 @@ async def test_signal_retries_when_timeout(
     await sig_rw_times_out.connect()
 
     start = time.time()
-    with pytest.raises(TimeoutError):
+    with pytest.raises((TimeoutError, asyncio.exceptions.TimeoutError)):
         await sig_rw_times_out.set(1, wait=True)
     stop = time.time()
     # signal tries to set 3 times, so 3 * timeout
