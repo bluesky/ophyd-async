@@ -1,0 +1,1717 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ophyd_async.fastcs.panda &#8212; ophyd-async 0.11 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=086c1757"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_api/ophyd_async/ophyd_async.fastcs.panda';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.11';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ophyd_async.fastcs.eiger" href="ophyd_async.fastcs.eiger.html" />
+    <link rel="prev" title="ophyd_async.fastcs.odin" href="ophyd_async.fastcs.odin.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.11" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.11 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.11 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="ophyd_async.fastcs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.odin.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.eiger.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.eiger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.testing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.eiger.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.eiger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adandor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.advimba.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adkinetix.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adsimdetector.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pmac.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.plan_stubs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.plan_stubs</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.testing</span></code></a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.tango.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.testing</span></code></a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="ophyd_async.sim.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../reference.html" class="nav-link">Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="ophyd_async.html" class="nav-link"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async</span></code></a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="ophyd_async.fastcs.html" class="nav-link"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-ophyd_async.fastcs.panda">
+<span id="ophyd-async-fastcs-panda"></span><h1><a class="reference internal" href="#module-ophyd_async.fastcs.panda" title="ophyd_async.fastcs.panda"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a><a class="headerlink" href="#module-ophyd_async.fastcs.panda" title="Link to this heading">#</a></h1>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">#</a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.CommonPandaBlocks" title="ophyd_async.fastcs.panda._block.CommonPandaBlocks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CommonPandaBlocks</span></code></a></p></td>
+<td><p>Pandablocks device with blocks which are common and required on introspection.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock" title="ophyd_async.fastcs.panda._block.DataBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataBlock</span></code></a></p></td>
+<td><p>Data block for the PandA. Used for writing data through the IOC.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaBitMux" title="ophyd_async.fastcs.panda._block.PandaBitMux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaBitMux</span></code></a></p></td>
+<td><p>Bit input with configurable delay in the PandA.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaCaptureMode" title="ophyd_async.fastcs.panda._block.PandaCaptureMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaCaptureMode</span></code></a></p></td>
+<td><p>Capture mode for the <code class="docutils literal notranslate"><span class="pre">DataBlock</span></code> on the PandA.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PcapBlock" title="ophyd_async.fastcs.panda._block.PcapBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PcapBlock</span></code></a></p></td>
+<td><p>Position capture block in the PandA.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PcompBlock" title="ophyd_async.fastcs.panda._block.PcompBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PcompBlock</span></code></a></p></td>
+<td><p>Position compare block in the PandA.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaPcompDirection" title="ophyd_async.fastcs.panda._block.PandaPcompDirection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaPcompDirection</span></code></a></p></td>
+<td><p>Direction options for position compare in the PandA.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PulseBlock" title="ophyd_async.fastcs.panda._block.PulseBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PulseBlock</span></code></a></p></td>
+<td><p>Used for configuring pulses in the PandA.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqBlock" title="ophyd_async.fastcs.panda._block.SeqBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SeqBlock</span></code></a></p></td>
+<td><p>Sequencer block in the PandA.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaTimeUnits" title="ophyd_async.fastcs.panda._block.PandaTimeUnits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaTimeUnits</span></code></a></p></td>
+<td><p>Options for units of time in the PandA.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.HDFPanda" title="ophyd_async.fastcs.panda._hdf_panda.HDFPanda"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HDFPanda</span></code></a></p></td>
+<td><p>PandA with common blocks for standard HDF writing.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaHDFWriter" title="ophyd_async.fastcs.panda._writer.PandaHDFWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaHDFWriter</span></code></a></p></td>
+<td><p>For writing for PandA data from the <code class="docutils literal notranslate"><span class="pre">DataBlock</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaPcapController" title="ophyd_async.fastcs.panda._control.PandaPcapController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaPcapController</span></code></a></p></td>
+<td><p>For controlling a PCAP capture on the PandA.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.DatasetTable" title="ophyd_async.fastcs.panda._table.DatasetTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatasetTable</span></code></a></p></td>
+<td><p>An abstraction of a Table where each field is a column.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaHdf5DatasetType" title="ophyd_async.fastcs.panda._table.PandaHdf5DatasetType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandaHdf5DatasetType</span></code></a></p></td>
+<td><p>Dataset options for HDF capture.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda._table.SeqTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SeqTable</span></code></a></p></td>
+<td><p>Data type for the panda seq table.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTrigger" title="ophyd_async.fastcs.panda._table.SeqTrigger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SeqTrigger</span></code></a></p></td>
+<td><p>Trigger options for the SeqTable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.PcompInfo" title="ophyd_async.fastcs.panda._trigger.PcompInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PcompInfo</span></code></a></p></td>
+<td><p>Info for the PandA <code class="docutils literal notranslate"><span class="pre">PcompBlock</span></code> for flyscanning.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTableInfo" title="ophyd_async.fastcs.panda._trigger.SeqTableInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SeqTableInfo</span></code></a></p></td>
+<td><p>Info for the PandA <code class="docutils literal notranslate"><span class="pre">SeqTable</span></code> for flyscanning.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic" title="ophyd_async.fastcs.panda._trigger.StaticPcompTriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StaticPcompTriggerLogic</span></code></a></p></td>
+<td><p>For controlling the PandA <code class="docutils literal notranslate"><span class="pre">PcompBlock</span></code> when flyscanning.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic" title="ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StaticSeqTableTriggerLogic</span></code></a></p></td>
+<td><p>For controlling the PandA <code class="docutils literal notranslate"><span class="pre">SeqTable</span></code> when flyscanning.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="api">
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">#</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.CommonPandaBlocks">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">CommonPandaBlocks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#CommonPandaBlocks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.CommonPandaBlocks" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>Pandablocks device with blocks which are common and required on introspection.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.CommonPandaBlocks.pulse">
+<span class="sig-name descname"><span class="pre">pulse</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><span class="pre">DeviceVector</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.PulseBlock" title="ophyd_async.fastcs.panda._block.PulseBlock"><span class="pre">PulseBlock</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.pulse" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.CommonPandaBlocks.seq">
+<span class="sig-name descname"><span class="pre">seq</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><span class="pre">DeviceVector</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqBlock" title="ophyd_async.fastcs.panda._block.SeqBlock"><span class="pre">SeqBlock</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.seq" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.CommonPandaBlocks.pcomp">
+<span class="sig-name descname"><span class="pre">pcomp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><span class="pre">DeviceVector</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.PcompBlock" title="ophyd_async.fastcs.panda._block.PcompBlock"><span class="pre">PcompBlock</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.pcomp" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.CommonPandaBlocks.pcap">
+<span class="sig-name descname"><span class="pre">pcap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.fastcs.panda.PcapBlock" title="ophyd_async.fastcs.panda._block.PcapBlock"><span class="pre">PcapBlock</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.pcap" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.CommonPandaBlocks.data">
+<span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock" title="ophyd_async.fastcs.panda._block.DataBlock"><span class="pre">DataBlock</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.data" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">DataBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#DataBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>Data block for the PandA. Used for writing data through the IOC.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.hdf_directory">
+<span class="sig-name descname"><span class="pre">hdf_directory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.hdf_directory" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.hdf_file_name">
+<span class="sig-name descname"><span class="pre">hdf_file_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.hdf_file_name" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.num_capture">
+<span class="sig-name descname"><span class="pre">num_capture</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.num_capture" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.num_captured">
+<span class="sig-name descname"><span class="pre">num_captured</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.num_captured" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.create_directory">
+<span class="sig-name descname"><span class="pre">create_directory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.create_directory" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.directory_exists">
+<span class="sig-name descname"><span class="pre">directory_exists</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.directory_exists" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.capture_mode">
+<span class="sig-name descname"><span class="pre">capture_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaCaptureMode" title="ophyd_async.fastcs.panda._block.PandaCaptureMode"><span class="pre">PandaCaptureMode</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.capture_mode" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.capture">
+<span class="sig-name descname"><span class="pre">capture</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.capture" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.flush_period">
+<span class="sig-name descname"><span class="pre">flush_period</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.flush_period" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DataBlock.datasets">
+<span class="sig-name descname"><span class="pre">datasets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.DatasetTable" title="ophyd_async.fastcs.panda._table.DatasetTable"><span class="pre">DatasetTable</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DataBlock.datasets" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaBitMux">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PandaBitMux</span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#PandaBitMux"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaBitMux" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SubsetEnum" title="ophyd_async.core.SubsetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.SubsetEnum</span></code></a></p>
+<p>Bit input with configurable delay in the PandA.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaBitMux.ZERO">
+<span class="sig-name descname"><span class="pre">ZERO</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaBitMux.ZERO" title="Link to this definition">#</a></dt>
+<dd><p>‘ZERO’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaBitMux.ONE">
+<span class="sig-name descname"><span class="pre">ONE</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaBitMux.ONE" title="Link to this definition">#</a></dt>
+<dd><p>‘ONE’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaCaptureMode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PandaCaptureMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#PandaCaptureMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaCaptureMode" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>Capture mode for the <code class="docutils literal notranslate"><span class="pre">DataBlock</span></code> on the PandA.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaCaptureMode.FIRST_N">
+<span class="sig-name descname"><span class="pre">FIRST_N</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaCaptureMode.FIRST_N" title="Link to this definition">#</a></dt>
+<dd><p>‘FIRST_N’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaCaptureMode.LAST_N">
+<span class="sig-name descname"><span class="pre">LAST_N</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaCaptureMode.LAST_N" title="Link to this definition">#</a></dt>
+<dd><p>‘LAST_N’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaCaptureMode.FOREVER">
+<span class="sig-name descname"><span class="pre">FOREVER</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaCaptureMode.FOREVER" title="Link to this definition">#</a></dt>
+<dd><p>‘FOREVER’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcapBlock">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PcapBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#PcapBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PcapBlock" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>Position capture block in the PandA.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcapBlock.active">
+<span class="sig-name descname"><span class="pre">active</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcapBlock.active" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcapBlock.arm">
+<span class="sig-name descname"><span class="pre">arm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcapBlock.arm" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompBlock">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PcompBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#PcompBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompBlock" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>Position compare block in the PandA.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompBlock.active">
+<span class="sig-name descname"><span class="pre">active</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompBlock.active" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompBlock.dir">
+<span class="sig-name descname"><span class="pre">dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaPcompDirection" title="ophyd_async.fastcs.panda._block.PandaPcompDirection"><span class="pre">PandaPcompDirection</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompBlock.dir" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompBlock.enable">
+<span class="sig-name descname"><span class="pre">enable</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaBitMux" title="ophyd_async.fastcs.panda._block.PandaBitMux"><span class="pre">PandaBitMux</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompBlock.enable" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompBlock.pulses">
+<span class="sig-name descname"><span class="pre">pulses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompBlock.pulses" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompBlock.start">
+<span class="sig-name descname"><span class="pre">start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompBlock.start" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompBlock.step">
+<span class="sig-name descname"><span class="pre">step</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompBlock.step" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompBlock.width">
+<span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompBlock.width" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcompDirection">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PandaPcompDirection</span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#PandaPcompDirection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcompDirection" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>Direction options for position compare in the PandA.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcompDirection.POSITIVE">
+<span class="sig-name descname"><span class="pre">POSITIVE</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcompDirection.POSITIVE" title="Link to this definition">#</a></dt>
+<dd><p>‘Positive’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcompDirection.NEGATIVE">
+<span class="sig-name descname"><span class="pre">NEGATIVE</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcompDirection.NEGATIVE" title="Link to this definition">#</a></dt>
+<dd><p>‘Negative’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcompDirection.EITHER">
+<span class="sig-name descname"><span class="pre">EITHER</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcompDirection.EITHER" title="Link to this definition">#</a></dt>
+<dd><p>‘Either’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PulseBlock">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PulseBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#PulseBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PulseBlock" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>Used for configuring pulses in the PandA.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PulseBlock.delay">
+<span class="sig-name descname"><span class="pre">delay</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PulseBlock.delay" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PulseBlock.pulses">
+<span class="sig-name descname"><span class="pre">pulses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PulseBlock.pulses" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PulseBlock.step">
+<span class="sig-name descname"><span class="pre">step</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PulseBlock.step" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PulseBlock.width">
+<span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PulseBlock.width" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqBlock">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">SeqBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#SeqBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqBlock" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
+<p>Sequencer block in the PandA.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqBlock.table">
+<span class="sig-name descname"><span class="pre">table</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda._table.SeqTable"><span class="pre">SeqTable</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqBlock.table" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqBlock.active">
+<span class="sig-name descname"><span class="pre">active</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqBlock.active" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqBlock.repeats">
+<span class="sig-name descname"><span class="pre">repeats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqBlock.repeats" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqBlock.prescale">
+<span class="sig-name descname"><span class="pre">prescale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqBlock.prescale" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqBlock.prescale_units">
+<span class="sig-name descname"><span class="pre">prescale_units</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaTimeUnits" title="ophyd_async.fastcs.panda._block.PandaTimeUnits"><span class="pre">PandaTimeUnits</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqBlock.prescale_units" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqBlock.enable">
+<span class="sig-name descname"><span class="pre">enable</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaBitMux" title="ophyd_async.fastcs.panda._block.PandaBitMux"><span class="pre">PandaBitMux</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqBlock.enable" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaTimeUnits">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PandaTimeUnits</span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_block.html#PandaTimeUnits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaTimeUnits" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>Options for units of time in the PandA.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaTimeUnits.MIN">
+<span class="sig-name descname"><span class="pre">MIN</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaTimeUnits.MIN" title="Link to this definition">#</a></dt>
+<dd><p>‘min’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaTimeUnits.S">
+<span class="sig-name descname"><span class="pre">S</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaTimeUnits.S" title="Link to this definition">#</a></dt>
+<dd><p>‘s’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaTimeUnits.MS">
+<span class="sig-name descname"><span class="pre">MS</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaTimeUnits.MS" title="Link to this definition">#</a></dt>
+<dd><p>‘ms’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaTimeUnits.US">
+<span class="sig-name descname"><span class="pre">US</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaTimeUnits.US" title="Link to this definition">#</a></dt>
+<dd><p>‘us’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.HDFPanda">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">HDFPanda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.PathProvider" title="ophyd_async.core.PathProvider"><span class="pre">PathProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_sigs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_hdf_panda.html#HDFPanda"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.HDFPanda" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.fastcs.panda.CommonPandaBlocks" title="ophyd_async.fastcs.panda._block.CommonPandaBlocks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda._block.CommonPandaBlocks</span></code></a>, <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StandardDetector</span></code></a>[<a class="reference internal" href="#ophyd_async.fastcs.panda.PandaPcapController" title="ophyd_async.fastcs.panda._control.PandaPcapController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda._control.PandaPcapController</span></code></a>, <a class="reference internal" href="#ophyd_async.fastcs.panda.PandaHDFWriter" title="ophyd_async.fastcs.panda._writer.PandaHDFWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda._writer.PandaHDFWriter</span></code></a>]</p>
+<p>PandA with common blocks for standard HDF writing.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PandaHDFWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.PathProvider" title="ophyd_async.core.PathProvider"><span class="pre">PathProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">panda_data_block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.DataBlock" title="ophyd_async.fastcs.panda._block.DataBlock"><span class="pre">DataBlock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.DetectorWriter</span></code></a></p>
+<p>For writing for PandA data from the <code class="docutils literal notranslate"><span class="pre">DataBlock</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.open">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposures_per_event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.DataKey" title="(in event-model vmain)"><span class="pre">DataKey</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.open" title="Link to this definition">#</a></dt>
+<dd><p>Open writer and wait for it to be ready for data.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exposures_per_event</strong> – Each StreamDatum index corresponds to this many written exposures</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output for <code class="docutils literal notranslate"><span class="pre">describe()</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.wait_for_index">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wait_for_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.wait_for_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.wait_for_index" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.get_indices_written">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_indices_written</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.get_indices_written"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.get_indices_written" title="Link to this definition">#</a></dt>
+<dd><p>Get the number of indices written.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.observe_indices_written">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">observe_indices_written</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator" title="(in Python v3.13)"><span class="pre">AsyncGenerator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.observe_indices_written"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.observe_indices_written" title="Link to this definition">#</a></dt>
+<dd><p>Wait until a specific index is ready to be collected.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.collect_stream_docs">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">collect_stream_docs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices_written</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncIterator" title="(in Python v3.13)"><span class="pre">AsyncIterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.StreamAsset" title="(in bluesky v1.14.3.dev12+gc2b578aa)"><span class="pre">StreamAsset</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.collect_stream_docs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.collect_stream_docs" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHDFWriter.close">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_writer.html#PandaHDFWriter.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHDFWriter.close" title="Link to this definition">#</a></dt>
+<dd><p>Close writer, blocks until I/O is complete.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PandaPcapController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pcap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.PcapBlock" title="ophyd_async.fastcs.panda._block.PcapBlock"><span class="pre">PcapBlock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core.DetectorController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.DetectorController</span></code></a></p>
+<p>For controlling a PCAP capture on the PandA.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.get_deadtime">
+<span class="sig-name descname"><span class="pre">get_deadtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exposure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.get_deadtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.get_deadtime" title="Link to this definition">#</a></dt>
+<dd><p>For a given exposure, how long should the time between exposures be.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.prepare">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trigger_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><span class="pre">TriggerInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.prepare" title="Link to this definition">#</a></dt>
+<dd><p>Do all necessary steps to prepare the detector for triggers.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trigger_info</strong> – The sort of triggers to expect.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.arm">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.arm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.arm" title="Link to this definition">#</a></dt>
+<dd><p>Arm the detector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.wait_for_idle">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wait_for_idle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.wait_for_idle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.wait_for_idle" title="Link to this definition">#</a></dt>
+<dd><p>Wait on the internal _arm_status and wait for it to get disarmed/idle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaPcapController.disarm">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disarm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_control.html#PandaPcapController.disarm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaPcapController.disarm" title="Link to this definition">#</a></dt>
+<dd><p>Disarm the detector, return detector to an idle state.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DatasetTable">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">DatasetTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_table.html#DatasetTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.DatasetTable" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Table" title="ophyd_async.core.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Table</span></code></a></p>
+<p>An abstraction of a Table where each field is a column.</p>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Array1D</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">MyTable</span><span class="p">(</span><span class="n">Table</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">a</span><span class="p">:</span> <span class="n">Array1D</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int8</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">b</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">MyTable</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">b</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>  <span class="c1"># the length is the number of rows</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span> <span class="o">=</span> <span class="n">t</span> <span class="o">+</span> <span class="n">t</span>  <span class="c1"># adding tables together concatenates them</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="o">.</span><span class="n">a</span>
+<span class="go">array([1, 2, 1, 2], dtype=int8)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="o">.</span><span class="n">b</span>
+<span class="go">[&#39;x&#39;, &#39;y&#39;, &#39;x&#39;, &#39;y&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># slice a row</span>
+<span class="go">array([(2, b&#39;y&#39;)], dtype=[(&#39;a&#39;, &#39;i1&#39;), (&#39;b&#39;, &#39;S40&#39;)])</span>
+
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DatasetTable.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DatasetTable.name" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.DatasetTable.dtype">
+<span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaHdf5DatasetType" title="ophyd_async.fastcs.panda._table.PandaHdf5DatasetType"><span class="pre">PandaHdf5DatasetType</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.DatasetTable.dtype" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHdf5DatasetType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PandaHdf5DatasetType</span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_table.html#PandaHdf5DatasetType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHdf5DatasetType" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>Dataset options for HDF capture.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHdf5DatasetType.FLOAT_64">
+<span class="sig-name descname"><span class="pre">FLOAT_64</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHdf5DatasetType.FLOAT_64" title="Link to this definition">#</a></dt>
+<dd><p>‘float64’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PandaHdf5DatasetType.UINT_32">
+<span class="sig-name descname"><span class="pre">UINT_32</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.PandaHdf5DatasetType.UINT_32" title="Link to this definition">#</a></dt>
+<dd><p>‘uint32’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">SeqTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_table.html#SeqTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Table" title="ophyd_async.core.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Table</span></code></a></p>
+<p>Data type for the panda seq table.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.repeats">
+<span class="sig-name descname"><span class="pre">repeats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.uint16" title="(in NumPy v2.4.dev0)"><span class="pre">uint16</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.repeats" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.trigger">
+<span class="sig-name descname"><span class="pre">trigger</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTrigger" title="ophyd_async.fastcs.panda._table.SeqTrigger"><span class="pre">SeqTrigger</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.trigger" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.position">
+<span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.int32" title="(in NumPy v2.4.dev0)"><span class="pre">int32</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.position" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.time1">
+<span class="sig-name descname"><span class="pre">time1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.uint32" title="(in NumPy v2.4.dev0)"><span class="pre">uint32</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.time1" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outa1">
+<span class="sig-name descname"><span class="pre">outa1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outa1" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outb1">
+<span class="sig-name descname"><span class="pre">outb1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outb1" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outc1">
+<span class="sig-name descname"><span class="pre">outc1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outc1" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outd1">
+<span class="sig-name descname"><span class="pre">outd1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outd1" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.oute1">
+<span class="sig-name descname"><span class="pre">oute1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.oute1" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outf1">
+<span class="sig-name descname"><span class="pre">outf1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outf1" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.time2">
+<span class="sig-name descname"><span class="pre">time2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.uint32" title="(in NumPy v2.4.dev0)"><span class="pre">uint32</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.time2" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outa2">
+<span class="sig-name descname"><span class="pre">outa2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outa2" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outb2">
+<span class="sig-name descname"><span class="pre">outb2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outb2" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outc2">
+<span class="sig-name descname"><span class="pre">outc2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outc2" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outd2">
+<span class="sig-name descname"><span class="pre">outd2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outd2" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.oute2">
+<span class="sig-name descname"><span class="pre">oute2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.oute2" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.outf2">
+<span class="sig-name descname"><span class="pre">outf2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><span class="pre">Array1D</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.bool_" title="(in NumPy v2.4.dev0)"><span class="pre">bool_</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.outf2" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTable.row">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">row</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trigger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">SeqTrigger.IMMEDIATE</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outa1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outb1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outc1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outd1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oute1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outf1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outa2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outb2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outc2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outd2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oute2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outf2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda._table.SeqTable"><span class="pre">SeqTable</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_table.html#SeqTable.row"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTable.row" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">SeqTrigger</span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_table.html#SeqTrigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
+<p>Trigger options for the SeqTable.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.IMMEDIATE">
+<span class="sig-name descname"><span class="pre">IMMEDIATE</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.IMMEDIATE" title="Link to this definition">#</a></dt>
+<dd><p>‘Immediate’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.BITA_0">
+<span class="sig-name descname"><span class="pre">BITA_0</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.BITA_0" title="Link to this definition">#</a></dt>
+<dd><p>‘BITA=0’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.BITA_1">
+<span class="sig-name descname"><span class="pre">BITA_1</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.BITA_1" title="Link to this definition">#</a></dt>
+<dd><p>‘BITA=1’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.BITB_0">
+<span class="sig-name descname"><span class="pre">BITB_0</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.BITB_0" title="Link to this definition">#</a></dt>
+<dd><p>‘BITB=0’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.BITB_1">
+<span class="sig-name descname"><span class="pre">BITB_1</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.BITB_1" title="Link to this definition">#</a></dt>
+<dd><p>‘BITB=1’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.BITC_0">
+<span class="sig-name descname"><span class="pre">BITC_0</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.BITC_0" title="Link to this definition">#</a></dt>
+<dd><p>‘BITC=0’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.BITC_1">
+<span class="sig-name descname"><span class="pre">BITC_1</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.BITC_1" title="Link to this definition">#</a></dt>
+<dd><p>‘BITC=1’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.POSA_GT">
+<span class="sig-name descname"><span class="pre">POSA_GT</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.POSA_GT" title="Link to this definition">#</a></dt>
+<dd><p>‘POSA&gt;=POSITION’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.POSA_LT">
+<span class="sig-name descname"><span class="pre">POSA_LT</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.POSA_LT" title="Link to this definition">#</a></dt>
+<dd><p>‘POSA&lt;=POSITION’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.POSB_GT">
+<span class="sig-name descname"><span class="pre">POSB_GT</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.POSB_GT" title="Link to this definition">#</a></dt>
+<dd><p>‘POSB&gt;=POSITION’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.POSB_LT">
+<span class="sig-name descname"><span class="pre">POSB_LT</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.POSB_LT" title="Link to this definition">#</a></dt>
+<dd><p>‘POSB&lt;=POSITION’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.POSC_GT">
+<span class="sig-name descname"><span class="pre">POSC_GT</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.POSC_GT" title="Link to this definition">#</a></dt>
+<dd><p>‘POSC&gt;=POSITION’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTrigger.POSC_LT">
+<span class="sig-name descname"><span class="pre">POSC_LT</span></span><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTrigger.POSC_LT" title="Link to this definition">#</a></dt>
+<dd><p>‘POSC&lt;=POSITION’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompInfo">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">PcompInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#PcompInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompInfo" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.ConfinedModel" title="ophyd_async.core.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.ConfinedModel</span></code></a></p>
+<p>Info for the PandA <code class="docutils literal notranslate"><span class="pre">PcompBlock</span></code> for flyscanning.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompInfo.start_postion">
+<span class="sig-name descname"><span class="pre">start_postion</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompInfo.start_postion" title="Link to this definition">#</a></dt>
+<dd><p>‘Field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompInfo.pulse_width">
+<span class="sig-name descname"><span class="pre">pulse_width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompInfo.pulse_width" title="Link to this definition">#</a></dt>
+<dd><p>‘Field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompInfo.rising_edge_step">
+<span class="sig-name descname"><span class="pre">rising_edge_step</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompInfo.rising_edge_step" title="Link to this definition">#</a></dt>
+<dd><p>‘Field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompInfo.number_of_pulses">
+<span class="sig-name descname"><span class="pre">number_of_pulses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompInfo.number_of_pulses" title="Link to this definition">#</a></dt>
+<dd><p>‘Field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.PcompInfo.direction">
+<span class="sig-name descname"><span class="pre">direction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.fastcs.panda.PandaPcompDirection" title="ophyd_async.fastcs.panda._block.PandaPcompDirection"><span class="pre">PandaPcompDirection</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.PcompInfo.direction" title="Link to this definition">#</a></dt>
+<dd><p>‘Field(…)’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTableInfo">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">SeqTableInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">~typing.Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#SeqTableInfo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTableInfo" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.ConfinedModel" title="ophyd_async.core.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.ConfinedModel</span></code></a></p>
+<p>Info for the PandA <code class="docutils literal notranslate"><span class="pre">SeqTable</span></code> for flyscanning.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTableInfo.sequence_table">
+<span class="sig-name descname"><span class="pre">sequence_table</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTable" title="ophyd_async.fastcs.panda._table.SeqTable"><span class="pre">SeqTable</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTableInfo.sequence_table" title="Link to this definition">#</a></dt>
+<dd><p>‘Field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTableInfo.repeats">
+<span class="sig-name descname"><span class="pre">repeats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTableInfo.repeats" title="Link to this definition">#</a></dt>
+<dd><p>‘Field(…)’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.SeqTableInfo.prescale_as_us">
+<span class="sig-name descname"><span class="pre">prescale_as_us</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#ophyd_async.fastcs.panda.SeqTableInfo.prescale_as_us" title="Link to this definition">#</a></dt>
+<dd><p>‘Field(…)’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">StaticPcompTriggerLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pcomp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.PcompBlock" title="ophyd_async.fastcs.panda._block.PcompBlock"><span class="pre">PcompBlock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.FlyerController" title="ophyd_async.core.FlyerController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.FlyerController</span></code></a>[<a class="reference internal" href="#ophyd_async.fastcs.panda.PcompInfo" title="ophyd_async.fastcs.panda._trigger.PcompInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda._trigger.PcompInfo</span></code></a>]</p>
+<p>For controlling the PandA <code class="docutils literal notranslate"><span class="pre">PcompBlock</span></code> when flyscanning.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.prepare">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.PcompInfo" title="ophyd_async.fastcs.panda._trigger.PcompInfo"><span class="pre">PcompInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.prepare" title="Link to this definition">#</a></dt>
+<dd><p>Move to the start of the flyscan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.kickoff">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kickoff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic.kickoff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.kickoff" title="Link to this definition">#</a></dt>
+<dd><p>Start the flyscan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.complete">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic.complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.complete" title="Link to this definition">#</a></dt>
+<dd><p>Block until the flyscan is done.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticPcompTriggerLogic.stop">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticPcompTriggerLogic.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.stop" title="Link to this definition">#</a></dt>
+<dd><p>Stop flying and wait everything to be stopped.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.panda.</span></span><span class="sig-name descname"><span class="pre">StaticSeqTableTriggerLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqBlock" title="ophyd_async.fastcs.panda._block.SeqBlock"><span class="pre">SeqBlock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.FlyerController" title="ophyd_async.core.FlyerController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.FlyerController</span></code></a>[<a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTableInfo" title="ophyd_async.fastcs.panda._trigger.SeqTableInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda._trigger.SeqTableInfo</span></code></a>]</p>
+<p>For controlling the PandA <code class="docutils literal notranslate"><span class="pre">SeqTable</span></code> when flyscanning.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.prepare">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.fastcs.panda.SeqTableInfo" title="ophyd_async.fastcs.panda._trigger.SeqTableInfo"><span class="pre">SeqTableInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.prepare" title="Link to this definition">#</a></dt>
+<dd><p>Move to the start of the flyscan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.kickoff">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kickoff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic.kickoff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.kickoff" title="Link to this definition">#</a></dt>
+<dd><p>Start the flyscan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.complete">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic.complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.complete" title="Link to this definition">#</a></dt>
+<dd><p>Block until the flyscan is done.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.stop">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/panda/_trigger.html#StaticSeqTableTriggerLogic.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.stop" title="Link to this definition">#</a></dt>
+<dd><p>Stop flying and wait everything to be stopped.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="ophyd_async.fastcs.odin.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="ophyd_async.fastcs.eiger.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.eiger</span></code></p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.CommonPandaBlocks"><code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.pulse"><code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks.pulse</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.seq"><code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks.seq</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.pcomp"><code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks.pcomp</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.pcap"><code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks.pcap</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.CommonPandaBlocks.data"><code class="docutils literal notranslate"><span class="pre">CommonPandaBlocks.data</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock"><code class="docutils literal notranslate"><span class="pre">DataBlock</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.hdf_directory"><code class="docutils literal notranslate"><span class="pre">DataBlock.hdf_directory</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.hdf_file_name"><code class="docutils literal notranslate"><span class="pre">DataBlock.hdf_file_name</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.num_capture"><code class="docutils literal notranslate"><span class="pre">DataBlock.num_capture</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.num_captured"><code class="docutils literal notranslate"><span class="pre">DataBlock.num_captured</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.create_directory"><code class="docutils literal notranslate"><span class="pre">DataBlock.create_directory</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.directory_exists"><code class="docutils literal notranslate"><span class="pre">DataBlock.directory_exists</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.capture_mode"><code class="docutils literal notranslate"><span class="pre">DataBlock.capture_mode</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.capture"><code class="docutils literal notranslate"><span class="pre">DataBlock.capture</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.flush_period"><code class="docutils literal notranslate"><span class="pre">DataBlock.flush_period</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DataBlock.datasets"><code class="docutils literal notranslate"><span class="pre">DataBlock.datasets</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaBitMux"><code class="docutils literal notranslate"><span class="pre">PandaBitMux</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaBitMux.ZERO"><code class="docutils literal notranslate"><span class="pre">PandaBitMux.ZERO</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaBitMux.ONE"><code class="docutils literal notranslate"><span class="pre">PandaBitMux.ONE</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaCaptureMode"><code class="docutils literal notranslate"><span class="pre">PandaCaptureMode</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaCaptureMode.FIRST_N"><code class="docutils literal notranslate"><span class="pre">PandaCaptureMode.FIRST_N</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaCaptureMode.LAST_N"><code class="docutils literal notranslate"><span class="pre">PandaCaptureMode.LAST_N</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaCaptureMode.FOREVER"><code class="docutils literal notranslate"><span class="pre">PandaCaptureMode.FOREVER</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcapBlock"><code class="docutils literal notranslate"><span class="pre">PcapBlock</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcapBlock.active"><code class="docutils literal notranslate"><span class="pre">PcapBlock.active</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcapBlock.arm"><code class="docutils literal notranslate"><span class="pre">PcapBlock.arm</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompBlock"><code class="docutils literal notranslate"><span class="pre">PcompBlock</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompBlock.active"><code class="docutils literal notranslate"><span class="pre">PcompBlock.active</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompBlock.dir"><code class="docutils literal notranslate"><span class="pre">PcompBlock.dir</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompBlock.enable"><code class="docutils literal notranslate"><span class="pre">PcompBlock.enable</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompBlock.pulses"><code class="docutils literal notranslate"><span class="pre">PcompBlock.pulses</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompBlock.start"><code class="docutils literal notranslate"><span class="pre">PcompBlock.start</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompBlock.step"><code class="docutils literal notranslate"><span class="pre">PcompBlock.step</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompBlock.width"><code class="docutils literal notranslate"><span class="pre">PcompBlock.width</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcompDirection"><code class="docutils literal notranslate"><span class="pre">PandaPcompDirection</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcompDirection.POSITIVE"><code class="docutils literal notranslate"><span class="pre">PandaPcompDirection.POSITIVE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcompDirection.NEGATIVE"><code class="docutils literal notranslate"><span class="pre">PandaPcompDirection.NEGATIVE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcompDirection.EITHER"><code class="docutils literal notranslate"><span class="pre">PandaPcompDirection.EITHER</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PulseBlock"><code class="docutils literal notranslate"><span class="pre">PulseBlock</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PulseBlock.delay"><code class="docutils literal notranslate"><span class="pre">PulseBlock.delay</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PulseBlock.pulses"><code class="docutils literal notranslate"><span class="pre">PulseBlock.pulses</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PulseBlock.step"><code class="docutils literal notranslate"><span class="pre">PulseBlock.step</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PulseBlock.width"><code class="docutils literal notranslate"><span class="pre">PulseBlock.width</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqBlock"><code class="docutils literal notranslate"><span class="pre">SeqBlock</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqBlock.table"><code class="docutils literal notranslate"><span class="pre">SeqBlock.table</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqBlock.active"><code class="docutils literal notranslate"><span class="pre">SeqBlock.active</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqBlock.repeats"><code class="docutils literal notranslate"><span class="pre">SeqBlock.repeats</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqBlock.prescale"><code class="docutils literal notranslate"><span class="pre">SeqBlock.prescale</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqBlock.prescale_units"><code class="docutils literal notranslate"><span class="pre">SeqBlock.prescale_units</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqBlock.enable"><code class="docutils literal notranslate"><span class="pre">SeqBlock.enable</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaTimeUnits"><code class="docutils literal notranslate"><span class="pre">PandaTimeUnits</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaTimeUnits.MIN"><code class="docutils literal notranslate"><span class="pre">PandaTimeUnits.MIN</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaTimeUnits.S"><code class="docutils literal notranslate"><span class="pre">PandaTimeUnits.S</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaTimeUnits.MS"><code class="docutils literal notranslate"><span class="pre">PandaTimeUnits.MS</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaTimeUnits.US"><code class="docutils literal notranslate"><span class="pre">PandaTimeUnits.US</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.HDFPanda"><code class="docutils literal notranslate"><span class="pre">HDFPanda</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHDFWriter"><code class="docutils literal notranslate"><span class="pre">PandaHDFWriter</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHDFWriter.open"><code class="docutils literal notranslate"><span class="pre">PandaHDFWriter.open()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHDFWriter.wait_for_index"><code class="docutils literal notranslate"><span class="pre">PandaHDFWriter.wait_for_index()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHDFWriter.get_indices_written"><code class="docutils literal notranslate"><span class="pre">PandaHDFWriter.get_indices_written()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHDFWriter.observe_indices_written"><code class="docutils literal notranslate"><span class="pre">PandaHDFWriter.observe_indices_written()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHDFWriter.collect_stream_docs"><code class="docutils literal notranslate"><span class="pre">PandaHDFWriter.collect_stream_docs()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHDFWriter.close"><code class="docutils literal notranslate"><span class="pre">PandaHDFWriter.close()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcapController"><code class="docutils literal notranslate"><span class="pre">PandaPcapController</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcapController.get_deadtime"><code class="docutils literal notranslate"><span class="pre">PandaPcapController.get_deadtime()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcapController.prepare"><code class="docutils literal notranslate"><span class="pre">PandaPcapController.prepare()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcapController.arm"><code class="docutils literal notranslate"><span class="pre">PandaPcapController.arm()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcapController.wait_for_idle"><code class="docutils literal notranslate"><span class="pre">PandaPcapController.wait_for_idle()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaPcapController.disarm"><code class="docutils literal notranslate"><span class="pre">PandaPcapController.disarm()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DatasetTable"><code class="docutils literal notranslate"><span class="pre">DatasetTable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DatasetTable.name"><code class="docutils literal notranslate"><span class="pre">DatasetTable.name</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.DatasetTable.dtype"><code class="docutils literal notranslate"><span class="pre">DatasetTable.dtype</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHdf5DatasetType"><code class="docutils literal notranslate"><span class="pre">PandaHdf5DatasetType</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHdf5DatasetType.FLOAT_64"><code class="docutils literal notranslate"><span class="pre">PandaHdf5DatasetType.FLOAT_64</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PandaHdf5DatasetType.UINT_32"><code class="docutils literal notranslate"><span class="pre">PandaHdf5DatasetType.UINT_32</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable"><code class="docutils literal notranslate"><span class="pre">SeqTable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.repeats"><code class="docutils literal notranslate"><span class="pre">SeqTable.repeats</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.trigger"><code class="docutils literal notranslate"><span class="pre">SeqTable.trigger</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.position"><code class="docutils literal notranslate"><span class="pre">SeqTable.position</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.time1"><code class="docutils literal notranslate"><span class="pre">SeqTable.time1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outa1"><code class="docutils literal notranslate"><span class="pre">SeqTable.outa1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outb1"><code class="docutils literal notranslate"><span class="pre">SeqTable.outb1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outc1"><code class="docutils literal notranslate"><span class="pre">SeqTable.outc1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outd1"><code class="docutils literal notranslate"><span class="pre">SeqTable.outd1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.oute1"><code class="docutils literal notranslate"><span class="pre">SeqTable.oute1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outf1"><code class="docutils literal notranslate"><span class="pre">SeqTable.outf1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.time2"><code class="docutils literal notranslate"><span class="pre">SeqTable.time2</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outa2"><code class="docutils literal notranslate"><span class="pre">SeqTable.outa2</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outb2"><code class="docutils literal notranslate"><span class="pre">SeqTable.outb2</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outc2"><code class="docutils literal notranslate"><span class="pre">SeqTable.outc2</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outd2"><code class="docutils literal notranslate"><span class="pre">SeqTable.outd2</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.oute2"><code class="docutils literal notranslate"><span class="pre">SeqTable.oute2</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.outf2"><code class="docutils literal notranslate"><span class="pre">SeqTable.outf2</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTable.row"><code class="docutils literal notranslate"><span class="pre">SeqTable.row()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger"><code class="docutils literal notranslate"><span class="pre">SeqTrigger</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.IMMEDIATE"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.IMMEDIATE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.BITA_0"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.BITA_0</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.BITA_1"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.BITA_1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.BITB_0"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.BITB_0</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.BITB_1"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.BITB_1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.BITC_0"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.BITC_0</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.BITC_1"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.BITC_1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.POSA_GT"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.POSA_GT</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.POSA_LT"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.POSA_LT</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.POSB_GT"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.POSB_GT</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.POSB_LT"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.POSB_LT</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.POSC_GT"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.POSC_GT</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTrigger.POSC_LT"><code class="docutils literal notranslate"><span class="pre">SeqTrigger.POSC_LT</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompInfo"><code class="docutils literal notranslate"><span class="pre">PcompInfo</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompInfo.start_postion"><code class="docutils literal notranslate"><span class="pre">PcompInfo.start_postion</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompInfo.pulse_width"><code class="docutils literal notranslate"><span class="pre">PcompInfo.pulse_width</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompInfo.rising_edge_step"><code class="docutils literal notranslate"><span class="pre">PcompInfo.rising_edge_step</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompInfo.number_of_pulses"><code class="docutils literal notranslate"><span class="pre">PcompInfo.number_of_pulses</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.PcompInfo.direction"><code class="docutils literal notranslate"><span class="pre">PcompInfo.direction</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTableInfo"><code class="docutils literal notranslate"><span class="pre">SeqTableInfo</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTableInfo.sequence_table"><code class="docutils literal notranslate"><span class="pre">SeqTableInfo.sequence_table</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTableInfo.repeats"><code class="docutils literal notranslate"><span class="pre">SeqTableInfo.repeats</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.SeqTableInfo.prescale_as_us"><code class="docutils literal notranslate"><span class="pre">SeqTableInfo.prescale_as_us</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic"><code class="docutils literal notranslate"><span class="pre">StaticPcompTriggerLogic</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.prepare"><code class="docutils literal notranslate"><span class="pre">StaticPcompTriggerLogic.prepare()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.kickoff"><code class="docutils literal notranslate"><span class="pre">StaticPcompTriggerLogic.kickoff()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.complete"><code class="docutils literal notranslate"><span class="pre">StaticPcompTriggerLogic.complete()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.stop"><code class="docutils literal notranslate"><span class="pre">StaticPcompTriggerLogic.stop()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic"><code class="docutils literal notranslate"><span class="pre">StaticSeqTableTriggerLogic</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.prepare"><code class="docutils literal notranslate"><span class="pre">StaticSeqTableTriggerLogic.prepare()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.kickoff"><code class="docutils literal notranslate"><span class="pre">StaticSeqTableTriggerLogic.kickoff()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.complete"><code class="docutils literal notranslate"><span class="pre">StaticSeqTableTriggerLogic.complete()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.stop"><code class="docutils literal notranslate"><span class="pre">StaticSeqTableTriggerLogic.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/0.11/docs/_api/ophyd_async/ophyd_async.fastcs.panda.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/_api/ophyd_async/ophyd_async.fastcs.panda.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
