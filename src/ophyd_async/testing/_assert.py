@@ -77,14 +77,16 @@ def _assert_readings_approx_equal(
     actual: Mapping[str, Reading],
     full_match: bool = True,
 ):
-    # expected keys are sub- or full set of actual keys
-    if full_match:
-        assert expected.keys() == actual.keys()
-    else:
-        assert expected.keys() <= actual.keys()
-    assert actual == {
-        k: _approx_reading(expected.get(k, v), v) for k, v in actual.items()
+    # expand the expected keys to include actual if we allow partial matches
+    if not full_match:
+        expected = dict(actual, **expected)
+    # now make them approximate if they are in actual so we get a nicer diff
+    approx_expected = {
+        k: _approx_reading(v, actual[k]) if k in actual else v
+        for k, v in expected.items()
     }
+    # now we can compare them
+    assert actual == approx_expected
 
 
 async def assert_configuration(
