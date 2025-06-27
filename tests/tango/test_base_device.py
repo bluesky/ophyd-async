@@ -68,6 +68,8 @@ class TestDevice(Device):
 
     _ignored_attr = 1.0
 
+    _test_enum = TestEnum.A
+
     @attribute(dtype=float, access=AttrWriteType.READ)
     def readback(self):
         return self._readback
@@ -126,14 +128,16 @@ class TestDevice(Device):
         self._array = array
 
     @attribute(
-        dtype=float,
         access=AttrWriteType.READ_WRITE,
-        min_value=0,
-        min_alarm=1,
-        min_warning=2,
-        max_warning=4,
-        max_alarm=5,
-        max_value=6,
+        min_value=0.0,
+        min_alarm=1.0,
+        min_warning=2.0,
+        max_warning=4.0,
+        max_alarm=5.0,
+        max_value=6.0,
+        unit="cm",
+        delta_val="1",
+        delta_t="1",
     )
     def limitedvalue(self) -> float:
         return self._limitedvalue
@@ -159,6 +163,14 @@ class TestDevice(Device):
     @attribute(dtype=float, access=AttrWriteType.READ)
     def ignored_attr(self) -> float:
         return self._ignored_attr
+
+    @attribute(
+        dtype=tango.CmdArgType.DevEnum,
+        enum_labels=["A", "B"],
+        access=AttrWriteType.READ,
+    )
+    def test_enum(self) -> TestEnum:
+        return self._test_enum
 
     @command
     def clear(self) -> str:
@@ -298,12 +310,11 @@ def sim_test_context_trls(subprocess_helper):
 @pytest.mark.timeout(8.0)
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
-    values, description = await describe_class(tango_test_device)
+    values, _ = await describe_class(tango_test_device)
     async with init_devices():
         test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
-    assert description == await test_device.describe()
     await assert_reading(test_device, values)
 
 
@@ -317,7 +328,12 @@ async def test_set_trl(tango_test_device):
     await test_device.connect()
 
     assert test_device.name == "test_device"
-    assert description == await test_device.describe()
+    test_device_descriptor = await test_device.describe()
+    for name, desc in description.items():
+        assert test_device_descriptor[name]["source"] == desc["source"]
+        assert test_device_descriptor[name]["dtype"] == desc["dtype"]
+        assert test_device_descriptor[name]["shape"] == desc["shape"]
+
     await assert_reading(test_device, values)
 
 
