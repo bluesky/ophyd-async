@@ -91,6 +91,10 @@
   - ```{autodoc2-docstring} ophyd_async.testing._assert.assert_emitted
     :summary:
     ```
+* - {py:obj}`partial_reading <ophyd_async.testing._assert.partial_reading>`
+  - ```{autodoc2-docstring} ophyd_async.testing._assert.partial_reading
+    :summary:
+    ```
 * - {py:obj}`get_mock <ophyd_async.testing._mock_signal_utils.get_mock>`
   - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock
     :summary:
@@ -178,6 +182,13 @@
 :canonical: ophyd_async.testing._assert.assert_emitted
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.assert_emitted
+```
+````
+
+````{py:function} partial_reading(val: ~typing.Any) -> dict[str, ~typing.Any]
+:canonical: ophyd_async.testing._assert.partial_reading
+
+```{autodoc2-docstring} ophyd_async.testing._assert.partial_reading
 ```
 ````
 
