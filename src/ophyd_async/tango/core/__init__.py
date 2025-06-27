@@ -16,8 +16,8 @@ from ._tango_transport import (
     ensure_proper_executor,
     get_dtype_extended,
     get_python_type,
-    get_tango_trl,
     get_source_metadata,
+    get_tango_trl,
 )
 from ._utils import (
     DevStateEnum,

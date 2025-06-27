@@ -168,6 +168,7 @@ def test_try_to_cast_as_float():
 def test_get_dtype_extended(datatype, expected):
     assert get_dtype_extended(datatype) == expected
 
+
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -654,12 +655,13 @@ async def test_tango_transport_put(echo_device):
     val = await transport.proxies[source].get_w_value()
     assert val == 2.0
 
+
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_tango_transport_get_datakey(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     trl = get_full_attr_trl(tango_test_device, "limitedvalue")
-    
+
     transport = TangoSignalBackend(float, trl, trl, device_proxy)
     await transport.connect(1)
     datakey = await transport.get_datakey(trl)
@@ -678,10 +680,12 @@ async def test_tango_transport_get_datakey(tango_test_device):
 
 # --------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_tango_transport_get_datakey_enum(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     trl = get_full_attr_trl(tango_test_device, "test_enum")
+
     class TestEnumType(StrictEnum):
         A = 0
         B = 1

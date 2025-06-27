@@ -67,7 +67,7 @@ class TestDevice(Device):
     _limitedvalue = 3
 
     _ignored_attr = 1.0
-    
+
     _test_enum = TestEnum.A
 
     @attribute(dtype=float, access=AttrWriteType.READ)
@@ -163,8 +163,9 @@ class TestDevice(Device):
     @attribute(dtype=float, access=AttrWriteType.READ)
     def ignored_attr(self) -> float:
         return self._ignored_attr
-    
-    @attribute(dtype=tango.CmdArgType.DevEnum, enum_labels=["A", "B"], access=AttrWriteType.READ)
+
+    @attribute(dtype=tango.CmdArgType.DevEnum, enum_labels=["A", "B"],
+               access=AttrWriteType.READ)
     def test_enum(self) -> TestEnum:
         return self._test_enum
 

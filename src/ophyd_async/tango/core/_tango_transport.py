@@ -5,26 +5,12 @@ import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
-from typing import Any, ParamSpec, TypeVar, cast, Dict
+from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
 from bluesky.protocols import Reading
 from event_model import DataKey, Limits, LimitsRange
 from event_model.documents.event_descriptor import RdsRange
-
-from ophyd_async.core import (
-    AsyncStatus,
-    Callback,
-    NotConnected,
-    SignalBackend,
-    SignalDatatypeT,
-    StrictEnum,
-    get_dtype,
-    get_unique,
-    wait_for_connection,
-    make_datakey,
-    SignalMetadata
-)
 from tango import (
     AttrDataFormat,
     AttributeInfoEx,
@@ -42,6 +28,19 @@ from tango.asyncio_executor import (
     set_global_executor,
 )
 from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
+
+from ophyd_async.core import (
+    AsyncStatus,
+    Callback,
+    NotConnected,
+    SignalBackend,
+    SignalDatatypeT,
+    SignalMetadata,
+    StrictEnum,
+    get_dtype,
+    make_datakey,
+    wait_for_connection,
+)
 
 from ._converters import (
     TangoConverter,
@@ -521,90 +520,6 @@ def get_dtype_extended(datatype) -> object | None:
     return dtype
 
 
-# def get_simple_datakey(
-#     datatype: type | None,
-#     tango_resource: str,
-#     tr_configs: dict[str, AttributeInfoEx | CommandInfo],
-# ) -> DataKey:
-#     """Create a descriptor from a tango resource locator."""
-#     tr_dtype = {}
-#     for tr_name, config in tr_configs.items():
-#         if isinstance(config, AttributeInfoEx):
-#             _, dtype, descr = get_python_type(config.data_type)
-#             tr_dtype[tr_name] = config.data_format, dtype, descr
-#         elif isinstance(config, CommandInfo):
-#             if (
-#                 config.in_type != CmdArgType.DevVoid
-#                 and config.out_type != CmdArgType.DevVoid
-#                 and config.in_type != config.out_type
-#             ):
-#                 raise RuntimeError(
-#                     "Commands with different in and out dtypes are not supported"
-#                 )
-#             array, dtype, descr = get_python_type(
-#                 config.in_type
-#                 if config.in_type != CmdArgType.DevVoid
-#                 else config.out_type
-#             )
-#             tr_dtype[tr_name] = (
-#                 AttrDataFormat.SPECTRUM if array else AttrDataFormat.SCALAR,
-#                 dtype,
-#                 descr,
-#             )
-#         else:
-#             raise RuntimeError(f"Unknown config type: {type(config)}")
-#     tr_format, tr_dtype, tr_dtype_desc = get_unique(tr_dtype, "typeids")
-
-#     # tango commands are limited in functionality:
-#     # they do not have info about shape and Enum labels
-#     trl_config = list(tr_configs.values())[0]
-#     max_x: int = (
-#         trl_config.max_dim_x
-#         if hasattr(trl_config, "max_dim_x")
-#         else np.iinfo(np.int32).max
-#     )
-#     max_y: int = (
-#         trl_config.max_dim_y
-#         if hasattr(trl_config, "max_dim_y")
-#         else np.iinfo(np.int32).max
-#     )
-
-#     if tr_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
-#         # This is an array
-#         if datatype:
-#             # Check we wanted an array of this type
-#             dtype = get_dtype_extended(datatype)
-#             if not dtype:
-#                 raise TypeError(
-#                     f"{tango_resource} has type [{tr_dtype}] not {datatype.__name__}"
-#                 )
-#             if dtype != tr_dtype:
-#                 raise TypeError(f"{tango_resource} has type [{tr_dtype}] not [{dtype}]")
-
-#         if tr_format == AttrDataFormat.SPECTRUM:
-#             return DataKey(source=tango_resource, dtype="array", shape=[max_x])
-#         elif tr_format == AttrDataFormat.IMAGE:
-#             return DataKey(source=tango_resource, dtype="array", shape=[max_y, max_x])
-
-#     else:
-#         if tr_dtype in (Enum, CmdArgType.DevState):
-#             if datatype:
-#                 if not issubclass(datatype, Enum | DevState):
-#                     raise TypeError(
-#                         f"{tango_resource} has type Enum not {datatype.__name__}"
-#                     )
-#             return DataKey(source=tango_resource, dtype="string", shape=[])
-#         else:
-#             if datatype and not issubclass(tr_dtype, datatype):
-#                 raise TypeError(
-#                     f"{tango_resource} has type {tr_dtype.__name__} "
-#                     f"not {datatype.__name__}"
-#                 )
-#             return DataKey(source=tango_resource, dtype=tr_dtype_desc, shape=[])
-
-#     raise RuntimeError(f"Error getting descriptor for {tango_resource}")
-
-
 def get_source_metadata(
     tango_resource: str,
     tr_configs: dict[str, AttributeInfoEx],
@@ -837,12 +752,11 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         except AttributeError as ae:
             raise NotConnected(f"Not connected to {source}") from ae
         md = get_source_metadata(source, self.trl_configs)
-        assert self.datatype is not None, "get_datakey should not be called by signals carrying None datatype"
         return make_datakey(
-            self.datatype,
+            self.datatype,  # type: ignore
             self.converter.value(value),
             source,
-            metadata = md,
+            metadata=md,
         )
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
