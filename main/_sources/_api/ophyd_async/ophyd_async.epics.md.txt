@@ -13,18 +13,18 @@
 :titlesonly:
 :maxdepth: 3
 
-ophyd_async.epics.adcore
-ophyd_async.epics.adpilatus
-ophyd_async.epics.demo
-ophyd_async.epics.core
-ophyd_async.epics.testing
 ophyd_async.epics.adaravis
-ophyd_async.epics.eiger
-ophyd_async.epics.adandor
-ophyd_async.epics.advimba
-ophyd_async.epics.adkinetix
+ophyd_async.epics.core
 ophyd_async.epics.adsimdetector
 ophyd_async.epics.pmac
+ophyd_async.epics.testing
+ophyd_async.epics.adandor
+ophyd_async.epics.advimba
+ophyd_async.epics.eiger
+ophyd_async.epics.demo
+ophyd_async.epics.adcore
+ophyd_async.epics.adkinetix
+ophyd_async.epics.adpilatus
 ```
 
 ## Submodules

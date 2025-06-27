@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.testing._assert &#8212; ophyd-async 0.10.2.dev15+g5b9e43bf0 documentation</title>
+    <title>ophyd_async.testing._assert &#8212; ophyd-async 0.12.dev1+g2ecdffb2f documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=8bd1450e"></script>
+    <script src="../../../_static/documentation_options.js?v=6b71755e"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.10.2.dev15+g5b9e43bf0 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.10.2.dev15+g5b9e43bf0 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev1+g2ecdffb2f documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev1+g2ecdffb2f documentation - Home"/>
   
   
 </a></div>
@@ -518,14 +518,18 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">assert_reading</span><span class="p">(</span>
     <span class="n">readable</span><span class="p">:</span> <span class="n">AsyncReadable</span><span class="p">,</span>
     <span class="n">expected_reading</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+    <span class="n">full_match</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Assert that a readable Device has the given reading.</span>
 
 <span class="sd">    :param readable: Device with an async ``read()`` method to get the reading from.</span>
 <span class="sd">    :param expected_reading: The expected reading from the readable.</span>
+<span class="sd">    :param full_match: if expected_reading keys set is same as actual keys set.</span>
+<span class="sd">        true: exact match</span>
+<span class="sd">        false: expected_reading keys is subset of actual reading keys</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">actual_reading</span> <span class="o">=</span> <span class="k">await</span> <span class="n">readable</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-    <span class="n">_assert_readings_approx_equal</span><span class="p">(</span><span class="n">expected_reading</span><span class="p">,</span> <span class="n">actual_reading</span><span class="p">)</span></div>
+    <span class="n">_assert_readings_approx_equal</span><span class="p">(</span><span class="n">expected_reading</span><span class="p">,</span> <span class="n">actual_reading</span><span class="p">,</span> <span class="n">full_match</span><span class="p">)</span></div>
 
 
 
@@ -543,18 +547,28 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_assert_readings_approx_equal</span><span class="p">(</span>
-    <span class="n">expected</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">actual</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]</span>
+    <span class="n">expected</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+    <span class="n">actual</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">],</span>
+    <span class="n">full_match</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="k">assert</span> <span class="n">actual</span> <span class="o">==</span> <span class="p">{</span>
-        <span class="n">k</span><span class="p">:</span> <span class="n">_approx_reading</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">actual</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">actual</span>
+    <span class="c1"># expand the expected keys to include actual if we allow partial matches</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">full_match</span><span class="p">:</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="o">**</span><span class="n">expected</span><span class="p">)</span>
+    <span class="c1"># now make them approximate if they are in actual so we get a nicer diff</span>
+    <span class="n">approx_expected</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">k</span><span class="p">:</span> <span class="n">_approx_reading</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">actual</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">actual</span> <span class="k">else</span> <span class="n">v</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
     <span class="p">}</span>
+    <span class="c1"># now we can compare them</span>
+    <span class="k">assert</span> <span class="n">actual</span> <span class="o">==</span> <span class="n">approx_expected</span>
 
 
 <div class="viewcode-block" id="assert_configuration">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.assert_configuration">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">assert_configuration</span><span class="p">(</span>
     <span class="n">configurable</span><span class="p">:</span> <span class="n">AsyncConfigurable</span><span class="p">,</span>
-    <span class="n">configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+    <span class="n">expected_configuration</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+    <span class="n">full_match</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Assert that a configurable Device has the given configuration.</span>
 
@@ -562,9 +576,14 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        Device with an async ``read_configuration()`` method to get the</span>
 <span class="sd">        configuration from.</span>
 <span class="sd">    :param configuration: The expected configuration from the configurable.</span>
+<span class="sd">    :param full_match: if expected_reading keys set is same as actual keys set.</span>
+<span class="sd">        true: exact match</span>
+<span class="sd">        false: expected_reading keys is subset of actual reading keys</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">actual_configuration</span> <span class="o">=</span> <span class="k">await</span> <span class="n">configurable</span><span class="o">.</span><span class="n">read_configuration</span><span class="p">()</span>
-    <span class="n">_assert_readings_approx_equal</span><span class="p">(</span><span class="n">configuration</span><span class="p">,</span> <span class="n">actual_configuration</span><span class="p">)</span></div>
+    <span class="n">_assert_readings_approx_equal</span><span class="p">(</span>
+        <span class="n">expected_configuration</span><span class="p">,</span> <span class="n">actual_configuration</span><span class="p">,</span> <span class="n">full_match</span>
+    <span class="p">)</span></div>
 
 
 
