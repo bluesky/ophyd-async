@@ -31,6 +31,11 @@ def partial_reading(val: Any) -> dict[str, Any]:
 
 
 def default_reading(val: Any) -> dict[str, Any]:
+    """Helper function for building expected reading or configuration dicts.
+
+    :param val: Value to be wrapped in dict with "value" as the key.
+    :return: The dict {"alarm_severity": 0, "timestamp": ANY, "value": val}.
+    """
     return {"alarm_severity": 0, "timestamp": ANY, "value": val}
 
 
