@@ -46,6 +46,7 @@ from ophyd_async.testing import (
     assert_reading,
     assert_value,
     callback_on_mock_put,
+    default_reading,
     partial_reading,
     set_mock_put_proceeds,
     set_mock_value,
@@ -435,19 +436,9 @@ async def test_assert_reading(mock_readable: DummyReadableArray):
     set_mock_value(mock_readable.float_array, np.array([1.1231, -2.3, 451.15, 6.6233]))
 
     dummy_reading = {
-        "mock_readable-int_value": Reading(
-            {"alarm_severity": 0, "timestamp": ANY, "value": 188}
-        ),
-        "mock_readable-int_array": Reading(
-            {"alarm_severity": 0, "timestamp": ANY, "value": [1, 2, 4, 7]}
-        ),
-        "mock_readable-float_array": Reading(
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": [1.1231, -2.3, 451.15, 6.6233],
-            }
-        ),
+        "mock_readable-int_value": default_reading(188),
+        "mock_readable-int_array": default_reading([1, 2, 4, 7]),
+        "mock_readable-float_array": default_reading([1.1231, -2.3, 451.15, 6.6233]),
     }
     await assert_reading(mock_readable, dummy_reading)
     await assert_reading(mock_readable, dummy_reading, full_match=False)
@@ -459,9 +450,9 @@ async def test_assert_extra_expected_reading(mock_readable: DummyReadableArray):
     set_mock_value(mock_readable.float_array, np.array([1.1231, -2.3, 451.15, 6.6233]))
 
     dummy_reading = {
-        "mock_readable-int_value": {"value": 188},
-        "mock_readable-int_array": {"value": [1, 2, 4, 7]},
-        "mock_readable-float_array": {"value": [1.1231, -2.3, 451.15, 6.6233]},
+        "mock_readable-int_value": default_reading(188),
+        "mock_readable-int_array": default_reading([1, 2, 4, 7]),
+        "mock_readable-float_array": default_reading([1.1231, -2.3, 451.15, 6.6233]),
         "bazinga": {"value": 0},
     }
     with pytest.raises(AssertionError, match=r"Right contains 1 more item:\n.*bazinga"):
@@ -477,8 +468,8 @@ async def test_assert_partial_reading(mock_readable: DummyReadableArray):
     set_mock_value(mock_readable.float_array, np.array([1.1231, -2.3, 451.15, 6.6233]))
 
     dummy_reading = {
-        "mock_readable-int_value": {"value": 188},
-        "mock_readable-int_array": {"value": [1, 2, 4, 7]},
+        "mock_readable-int_value": default_reading(188),
+        "mock_readable-int_array": default_reading([1, 2, 4, 7]),
     }
     await assert_reading(mock_readable, dummy_reading, full_match=False)
     with pytest.raises(
@@ -509,13 +500,7 @@ async def test_assert_reading_optional_fields(
 
     await assert_reading(
         one_of_everything_device.a_int,
-        {
-            "everything-device-a_int": {
-                "value": 1,
-                "alarm_severity": 0,
-                "timestamp": time.monotonic(),
-            }
-        },
+        {"everything-device-a_int": default_reading(1)},
     )
 
 
@@ -752,19 +737,9 @@ async def test_failed_assert_reading(
     set_mock_value(mock_readable.float_array, np.array([1.1231, -2.3, 451.15, 6.6233]))
 
     dummy_reading = {
-        "mock_readable-int_value": Reading(
-            {"alarm_severity": 0, "timestamp": ANY, "value": int_value}
-        ),
-        "mock_readable-int_array": Reading(
-            {"alarm_severity": 0, "timestamp": ANY, "value": int_array}
-        ),
-        "mock_readable-float_array": Reading(
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": float_array,
-            }
-        ),
+        "mock_readable-int_value": default_reading(int_value),
+        "mock_readable-int_array": default_reading(int_array),
+        "mock_readable-float_array": default_reading(float_array),
     }
     with pytest.raises(AssertionError):
         await assert_reading(mock_readable, dummy_reading)
@@ -785,20 +760,8 @@ async def test_assert_configuration(mock_readable: DummyReadableArray):
     set_mock_value(mock_readable.str_value, "haha")
     set_mock_value(mock_readable.strictEnum_value, MockEnum.GOOD)
     dummy_reading = {
-        "mock_readable-str_value": Reading(
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": "haha",
-            }
-        ),
-        "mock_readable-strictEnum_value": Reading(
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": MockEnum.GOOD,
-            }
-        ),
+        "mock_readable-str_value": default_reading("haha"),
+        "mock_readable-strictEnum_value": default_reading(MockEnum.GOOD),
     }
     await assert_configuration(mock_readable, dummy_reading)
 
@@ -856,20 +819,8 @@ async def test_assert_configuraion_fail(
     set_mock_value(mock_readable.str_value, "haha")
     set_mock_value(mock_readable.strictEnum_value, MockEnum.GOOD)
     dummy_reading = {
-        "mock_readable-mode": Reading(
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": str_value,
-            }
-        ),
-        "mock_readable-mode2": Reading(
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": enum_value,
-            }
-        ),
+        "mock_readable-mode": default_reading(str_value),
+        "mock_readable-mode2": default_reading(enum_value),
     }
     with pytest.raises(AssertionError):
         await assert_configuration(mock_readable, dummy_reading)

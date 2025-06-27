@@ -1,7 +1,7 @@
 import asyncio
 import math
 import re
-from unittest.mock import ANY, call
+from unittest.mock import call
 
 import pytest
 from bluesky.protocols import Reading
@@ -24,6 +24,7 @@ from ophyd_async.testing import (
     assert_describe_signal,
     assert_reading,
     assert_value,
+    default_reading,
     get_mock,
     set_mock_value,
 )
@@ -56,9 +57,7 @@ async def assert_mirror_readings(
 ):
     for name, value in [("mirror-x", x), ("mirror-roll", roll)]:
         reading = await results.get()
-        assert reading == {
-            name: {"value": value, "timestamp": ANY, "alarm_severity": 0}
-        }
+        assert reading == {name: default_reading(value)}
     assert results.empty()
 
 
