@@ -453,37 +453,21 @@ async def test_assert_reading(mock_readable: DummyReadableArray):
     await assert_reading(mock_readable, dummy_reading, full_match=False)
 
 
-async def test_assert_reading_fails(mock_readable: DummyReadableArray):
+async def test_assert_extra_expected_reading(mock_readable: DummyReadableArray):
     set_mock_value(mock_readable.int_value, 188)
     set_mock_value(mock_readable.int_array, np.array([1, 2, 4, 7]))
     set_mock_value(mock_readable.float_array, np.array([1.1231, -2.3, 451.15, 6.6233]))
 
     dummy_reading = {
-        "mock_readable-int_value": Reading(
-            {"alarm_severity": 0, "timestamp": ANY, "value": 188}
-        ),
-        "mock_readable-int_array": Reading(
-            {"alarm_severity": 0, "timestamp": ANY, "value": [1, 2, 4, 7]}
-        ),
-        "mock_readable-float_array": Reading(
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": [1.1231, -2.3, 451.15, 6.6233],
-            }
-        ),
-        "bazinga": Reading(
-            {
-                "alarm_severity": 0,
-                "timestamp": ANY,
-                "value": 0,
-            }
-        ),
+        "mock_readable-int_value": {"value": 188},
+        "mock_readable-int_array": {"value": [1, 2, 4, 7]},
+        "mock_readable-float_array": {"value": [1.1231, -2.3, 451.15, 6.6233]},
+        "bazinga": {"value": 0},
     }
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match=r"Right contains 1 more item:\n.*bazinga"):
         await assert_reading(mock_readable, dummy_reading)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match=r"Right contains 1 more item:\n.*bazinga"):
         await assert_reading(mock_readable, dummy_reading, full_match=False)
 
 
@@ -493,12 +477,13 @@ async def test_assert_partial_reading(mock_readable: DummyReadableArray):
     set_mock_value(mock_readable.float_array, np.array([1.1231, -2.3, 451.15, 6.6233]))
 
     dummy_reading = {
-        "mock_readable-int_value": Reading(
-            {"alarm_severity": 0, "timestamp": ANY, "value": 188}
-        ),
+        "mock_readable-int_value": {"value": 188},
+        "mock_readable-int_array": {"value": [1, 2, 4, 7]},
     }
     await assert_reading(mock_readable, dummy_reading, full_match=False)
-    with pytest.raises(AssertionError):
+    with pytest.raises(
+        AssertionError, match=r"Left contains 1 more item:\n.*mock_readable-float_array"
+    ):
         await assert_reading(mock_readable, dummy_reading)
 
 
