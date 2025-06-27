@@ -45,14 +45,18 @@ async def assert_value(signal: SignalR[SignalDatatypeT], value: Any) -> None:
 async def assert_reading(
     readable: AsyncReadable,
     expected_reading: Mapping[str, Mapping[str, Any]],
+    full_match: bool = True,
 ) -> None:
     """Assert that a readable Device has the given reading.
 
     :param readable: Device with an async ``read()`` method to get the reading from.
     :param expected_reading: The expected reading from the readable.
+    :param full_match: if expected_reading keys set is same as actual keys set.
+        true: exact match
+        false: expected_reading keys is subset of actual reading keys
     """
     actual_reading = await readable.read()
-    _assert_readings_approx_equal(expected_reading, actual_reading)
+    _assert_readings_approx_equal(expected_reading, actual_reading, full_match)
 
 
 def _approx_reading(expected: Mapping[str, Any], actual: Reading) -> Reading:
@@ -69,16 +73,26 @@ def _approx_reading(expected: Mapping[str, Any], actual: Reading) -> Reading:
 
 
 def _assert_readings_approx_equal(
-    expected: Mapping[str, Mapping[str, Any]], actual: Mapping[str, Reading]
+    expected: Mapping[str, Mapping[str, Any]],
+    actual: Mapping[str, Reading],
+    full_match: bool = True,
 ):
-    assert actual == {
-        k: _approx_reading(v, actual[k]) for k, v in expected.items() if k in actual
+    # expand the expected keys to include actual if we allow partial matches
+    if not full_match:
+        expected = dict(actual, **expected)
+    # now make them approximate if they are in actual so we get a nicer diff
+    approx_expected = {
+        k: _approx_reading(v, actual[k]) if k in actual else v
+        for k, v in expected.items()
     }
+    # now we can compare them
+    assert actual == approx_expected
 
 
 async def assert_configuration(
     configurable: AsyncConfigurable,
-    configuration: dict[str, dict[str, Any]],
+    expected_configuration: dict[str, dict[str, Any]],
+    full_match: bool = True,
 ) -> None:
     """Assert that a configurable Device has the given configuration.
 
@@ -86,9 +100,14 @@ async def assert_configuration(
         Device with an async ``read_configuration()`` method to get the
         configuration from.
     :param configuration: The expected configuration from the configurable.
+    :param full_match: if expected_reading keys set is same as actual keys set.
+        true: exact match
+        false: expected_reading keys is subset of actual reading keys
     """
     actual_configuration = await configurable.read_configuration()
-    _assert_readings_approx_equal(configuration, actual_configuration)
+    _assert_readings_approx_equal(
+        expected_configuration, actual_configuration, full_match
+    )
 
 
 async def assert_describe_signal(signal: SignalR, /, **metadata):
