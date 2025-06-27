@@ -578,9 +578,11 @@ def get_source_metadata(
                         config.format,
                         e,
                     )
-            no_limits = Limits(control=LimitsRange(high=None, low=None),
-                               warning=LimitsRange(high=None, low=None),
-                               alarm=LimitsRange(high=None, low=None))
+            no_limits = Limits(
+                control=LimitsRange(high=None, low=None),
+                warning=LimitsRange(high=None, low=None),
+                alarm=LimitsRange(high=None, low=None),
+            )
             if _limits:
                 if _limits != no_limits:
                     metadata["limits"] = _limits

@@ -670,13 +670,14 @@ async def test_tango_transport_get_datakey(tango_test_device):
     assert datakey["source"] == trl
     assert datakey["dtype"] == "number"
     assert datakey["shape"] == []
-    for key in ['alarm', 'control', 'rds', 'warning']:
-        assert key in datakey['limits']
+    for key in ["alarm", "control", "rds", "warning"]:
+        assert key in datakey["limits"]
     limits = datakey["limits"]
-    assert limits["alarm"] == {'high': 5.0, 'low': 1.0}
-    assert limits["control"] == {'high': 6.0, 'low': 0.0}
-    assert limits["rds"] == {'time_difference': 1.0, "value_difference": 1.0}
-    assert limits["warning"] == {'high': 4.0, 'low': 2.0}
+    assert limits["alarm"] == {"high": 5.0, "low": 1.0}
+    assert limits["control"] == {"high": 6.0, "low": 0.0}
+    assert limits["rds"] == {"time_difference": 1.0, "value_difference": 1.0}
+    assert limits["warning"] == {"high": 4.0, "low": 2.0}
+
 
 # --------------------------------------------------------------------
 
@@ -689,9 +690,8 @@ async def test_tango_transport_get_datakey_enum(tango_test_device):
     class TestEnumType(StrictEnum):
         A = 0
         B = 1
-    transport = TangoSignalBackend(
-        TestEnumType, trl, trl, device_proxy
-    )
+
+    transport = TangoSignalBackend(TestEnumType, trl, trl, device_proxy)
     await transport.connect(1)
     datakey = await transport.get_datakey(trl)
     assert "choices" in datakey

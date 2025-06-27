@@ -164,8 +164,11 @@ class TestDevice(Device):
     def ignored_attr(self) -> float:
         return self._ignored_attr
 
-    @attribute(dtype=tango.CmdArgType.DevEnum, enum_labels=["A", "B"],
-               access=AttrWriteType.READ)
+    @attribute(
+        dtype=tango.CmdArgType.DevEnum,
+        enum_labels=["A", "B"],
+        access=AttrWriteType.READ,
+    )
     def test_enum(self) -> TestEnum:
         return self._test_enum
 
