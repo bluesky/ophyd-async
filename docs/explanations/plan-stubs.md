@@ -1,9 +1,9 @@
 # What plan stubs will do to Devices
 
-Plan authors will typically compose [plan stubs](inv:bluesky#stub_plans) together to define the behaviour they expect from their Device. When the plan is executed by the RunEngine it will `yield from` each plan stub, producing [`Msg` objects](inv:bluesky#msg) giving instructions to the RunEngine, many of which call methods on the Device. This document lists some commonly used plan stubs, what Devices will do when they are called, and what order they should be called inside the plan.
+Plan authors will typically compose [plan stubs](inv:bluesky#stub_plans) together to define the behaviour they expect from their Device. When the plan is executed by the RunEngine it will `yield from` each plan stub, producing [`Msg` objects](inv:bluesky:std:doc#msg) giving instructions to the RunEngine, many of which call methods on the Device. This document lists some commonly used plan stubs, what Devices will do when they are called, and what order they should be called inside the plan.
 
 ```{seealso}
-[](./flyscanning.md) for more information on the differences between software driven scans and hardware driven flyscans
+[](./flyscanning.md) for more information on the difference between step scans (typically software driven) and flyscans (typically hardware driven)
 ```
 
 ## Plan stubs
@@ -40,8 +40,6 @@ Prepares the device for a `trigger` or `kickoff`, after `stage` and `open_run`:
 Set the device to a target setpoint:
 - For motors this will move the motor to the desired position, returning when it is complete and erroring if it fails to move. 
 
-
-
 ### [`bps.trigger`](#bluesky.plan_stubs.trigger)
 
 Ask the detector to take a single exposure. 
@@ -72,9 +70,9 @@ Typically called via [`bps.collect_while_completing`](#bluesky.plan_stubs.collec
 
 ## Ordering
 
-Some scans only have a software driven component, some only have hardware driven components, and some mix both together. This section lists the ordering of these scans.
+Plan stubs can be mixed together to form arbitrary plans, but there are certain patterns that are common in specific categories of plan. This section lists the ordering of these stubs for step scans (typically software driven), fly scans (typically hardware driven), and scans that nest a fly scan within a step scan.
 
-### Purely software driven scan
+### Pure step scan
 
 After `stage` and `open_run`, `prepare` can be called to set up detectors for a given exposure time if this has been specified in the plan. The inner loop `set`s motors, then `trigger`s and `read`s detectors for each point. Finally `close_run` and `unstage` do the cleanup.
 
@@ -92,8 +90,8 @@ flowchart TD
     close_run --> unstage["unstage dets, motors"]
 
 ```
-
-### Purely hardware driven scan
+(pure-fly-scan)=
+### Pure fly scan
 
 After `stage` and `open_run`, `prepare` sets up detectors for hardware triggering and motors for a trajectory and `kickoff` starts the prepared motion. Then `complete` is called on motors and detectors. While this is in progress the detectors will be `collect`ed repeatedly. Finally `close_run` and `unstage` do the cleanup.
 
@@ -111,9 +109,9 @@ flowchart TD
     close_run --> unstage["unstage dets, motors"]
 ```
 
-### Mixed software and hardware driven scan
+### Fly scan nested within a step scan
 
-After `stage` and `open_run` the detectors are `prepare`d for the entire scan. The inner loop `set`s the slow (software) motors to each point, followed by the hardware driven section of the scan. Just like the [](#purely-hardware-driven-scan), this consists of `prepare`, then `kickoff`, then `complete` of the fast (hardware) motors, `collect`ing from the detectors repeatedly until they are finished. Finally `close_run` and `unstage` do the cleanup.
+After `stage` and `open_run` the detectors are `prepare`d for the entire scan. The inner loop `set`s the slow (software) motors to each point, followed by the hardware driven section of the scan. Just like the [](#pure-fly-scan), this consists of `prepare`, then `kickoff`, then `complete` of the fast (hardware) motors, `collect`ing from the detectors repeatedly until they are finished. Finally `close_run` and `unstage` do the cleanup.
 
 ```{mermaid}
 :config: { "theme": "neutral" }
@@ -130,4 +128,62 @@ flowchart TD
     collect --> set
     collect ----> close_run
     close_run --> unstage["unstage dets, motors"]
+```
+
+## Conclusion
+
+The following table summarized what each plan stub does to each class of device:
+
+
+```{list-table}
+:header-rows: 1
+
+* - Verb
+  - Behavior if Motor
+  - Behavior if Detector
+  - Step / Fly
+* - `stage`
+  - Starts monitoring Signals
+  - Ensures idle; flags next frame should go in a new resource
+  - Both
+* - `unstage`
+  - Stops monitoring signals
+  - Closes resources
+  - Both
+* - `open_run`
+  - No effect
+  - May compute new resource ID for writing
+  - Both
+* - `close_run`
+  - No effect
+  - Signals the end of data capture
+  - Both
+* - `prepare`
+  - Moves to run-up position; sets velocity/trajectory
+  - Sets acquisition parameters; arms hardware-triggered detectors
+  - Both
+* - `abs_set` / `mv`
+  - Moves motor to a target position
+  - N/A
+  - Step
+* - `trigger`
+  - N/A
+  - Captures a single exposure
+  - Step
+* - `read`
+  - Reads current position
+  - Reads triggered data
+  - Step
+* - `kickoff`
+  - Starts motion and returns once stable velocity is reached
+  - Starts acquisition (software-triggered); hardware-triggered detectors already armed in `prepare`
+  - Fly
+* - `complete`
+  - Waits for motion (including ramp down) to finish
+  - Waits for acquisition to finish (e.g. number of frames)
+  - Fly
+* - `collect`
+  - N/A
+  - Retrieves data already acquired during the scan
+  - Fly
 ```
