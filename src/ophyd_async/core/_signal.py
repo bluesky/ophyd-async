@@ -90,11 +90,11 @@ class Signal(Device, Generic[SignalDatatypeT]):
         backend: SignalBackend[SignalDatatypeT],
         timeout: float | None = DEFAULT_TIMEOUT,
         name: str = "",
-        retries: int = 1,
+        attempts: int = 1,
     ) -> None:
         super().__init__(name=name, connector=SignalConnector(backend))
         self._timeout = timeout
-        self._retries = retries
+        self._attempts = attempts
 
     @property
     def source(self) -> str:
@@ -292,7 +292,7 @@ class SignalW(Signal[SignalDatatypeT], Movable):
         self.log.debug(f"Putting value {value} to backend at source {source}")
         async for attempt in retry_context(
             on=(TimeoutError, asyncio.exceptions.TimeoutError),
-            attempts=self._retries,
+            attempts=self._attempts,
             wait_initial=0,
             wait_jitter=0,
         ):

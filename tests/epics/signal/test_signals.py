@@ -835,7 +835,7 @@ async def test_signal_retries_when_timeout(
 ):
     # put callback on slowseq in 0.5s, so if waited, this will fail to set
     sig_rw_times_out = epics_signal_rw(
-        int, ioc_devices.get_pv("pva", "slowseq"), retries=3, timeout=0.1
+        int, ioc_devices.get_pv("pva", "slowseq"), attempts=3, timeout=0.1
     )
     await sig_rw_times_out.connect()
 
