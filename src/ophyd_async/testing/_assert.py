@@ -2,7 +2,7 @@ import asyncio
 from collections.abc import Mapping
 from contextlib import AbstractContextManager
 from typing import Any, cast
-from unittest.mock import Mock, call
+from unittest.mock import ANY, Mock, call
 
 import pytest
 from bluesky.protocols import Reading
@@ -28,6 +28,10 @@ def partial_reading(val: Any) -> dict[str, Any]:
     :return: The dict that has wrapped the val with key "value".
     """
     return {"value": val}
+
+
+def default_reading(val: Any) -> dict[str, Any]:
+    return {"alarm_severity": 0, "timestamp": ANY, "value": val}
 
 
 def approx_value(value: Any):

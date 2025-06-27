@@ -11,6 +11,7 @@ from ._assert import (
     assert_emitted,
     assert_reading,
     assert_value,
+    default_reading,
     partial_reading,
 )
 from ._mock_signal_utils import (
@@ -42,13 +43,14 @@ from ._wait_for_pending import wait_for_pending_wakeups
 # so does not match the alphabetical order of the imports
 __all__ = [
     "approx_value",
+    "default_reading",
+    "partial_reading",
     # Assert functions
     "assert_value",
     "assert_reading",
     "assert_configuration",
     "assert_describe_signal",
     "assert_emitted",
-    "partial_reading",
     # Mocking utilities
     "get_mock",
     "set_mock_value",

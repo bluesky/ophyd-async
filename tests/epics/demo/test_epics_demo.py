@@ -21,6 +21,7 @@ from ophyd_async.testing import (
     assert_emitted,
     assert_reading,
     assert_value,
+    default_reading,
     get_mock,
     get_mock_put,
     set_mock_value,
@@ -149,21 +150,13 @@ async def test_read_motor(mock_motor: demo.DemoMotor):
     await mock_motor.stage()
     await assert_reading(
         mock_motor,
-        {"mock_motor": {"value": 0.0, "timestamp": ANY, "alarm_severity": 0}},
+        {"mock_motor": default_reading(0.0)},
     )
     await assert_configuration(
         mock_motor,
         {
-            "mock_motor-units": {
-                "value": "mm",
-                "timestamp": ANY,
-                "alarm_severity": 0,
-            },
-            "mock_motor-velocity": {
-                "value": 1.0,
-                "timestamp": ANY,
-                "alarm_severity": 0,
-            },
+            "mock_motor-units": default_reading("mm"),
+            "mock_motor-velocity": default_reading(1.0),
         },
     )
     # Check that changing the readback value changes the reading
@@ -171,14 +164,14 @@ async def test_read_motor(mock_motor: demo.DemoMotor):
     await assert_value(mock_motor.readback, 0.5)
     await assert_reading(
         mock_motor,
-        {"mock_motor": {"value": 0.5, "timestamp": ANY, "alarm_severity": 0}},
+        {"mock_motor": default_reading(0.5)},
     )
     # Check we can still read when not staged
     await mock_motor.unstage()
     set_mock_value(mock_motor.readback, 0.1)
     await assert_reading(
         mock_motor,
-        {"mock_motor": {"value": 0.1, "timestamp": ANY, "alarm_severity": 0}},
+        {"mock_motor": default_reading(0.1)},
     )
 
 
@@ -299,21 +292,9 @@ async def test_point_detector_read_and_describe(
     await assert_reading(
         mock_point_detector,
         {
-            "mock_point_detector-channel-1-value": {
-                "value": 1,
-                "timestamp": ANY,
-                "alarm_severity": 0,
-            },
-            "mock_point_detector-channel-2-value": {
-                "value": 5,
-                "timestamp": ANY,
-                "alarm_severity": 0,
-            },
-            "mock_point_detector-channel-3-value": {
-                "value": 10,
-                "timestamp": ANY,
-                "alarm_severity": 0,
-            },
+            "mock_point_detector-channel-1-value": default_reading(1),
+            "mock_point_detector-channel-2-value": default_reading(5),
+            "mock_point_detector-channel-3-value": default_reading(10),
         },
     )
     assert description == {
