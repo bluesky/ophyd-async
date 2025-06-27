@@ -31,6 +31,7 @@ from ._utils import (
     Callback,
     LazyMock,
     T,
+    error_if_none,
 )
 
 
@@ -125,10 +126,8 @@ class _SignalCache(Generic[SignalDatatypeT]):
         self._signal.log.debug(f"Closing subscription on source {self._signal.source}")
 
     def _ensure_reading(self) -> Reading[SignalDatatypeT]:
-        if not self._reading:
-            msg = "Monitor not working"
-            raise RuntimeError(msg)
-        return self._reading
+        reading = error_if_none(self._reading, "Monitor not working")
+        return reading
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
         await self._valid.wait()
@@ -163,7 +162,12 @@ class _SignalCache(Generic[SignalDatatypeT]):
             self._notify(function, want_value)
 
     def unsubscribe(self, function: Callback) -> bool:
-        self._listeners.pop(function)
+        _listener = self._listeners.pop(function, None)
+        if not _listener:
+            self._signal.log.warning(
+                f"Unsubscribe failed: subscriber {function} was not found "
+                f" in listeners list: {list(self._listeners)}"
+            )
         return self._staged or bool(self._listeners)
 
     def set_staged(self, staged: bool) -> bool:
@@ -183,11 +187,8 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
         if cached is None:
             cached = self._cache is not None
         if cached:
-            if not self._cache:
-                msg = f"{self.source} not being monitored"
-                raise RuntimeError(msg)
-            # assert self._cache, f"{self.source} not being monitored"
-            return self._cache
+            cache = error_if_none(self._cache, f"{self.source} not being monitored")
+            return cache
         else:
             return self._connector.backend
 
@@ -687,7 +688,7 @@ async def set_and_wait_for_value(
     )
 
 
-def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW[Any]]:
+def walk_rw_signals(device: Device) -> dict[str, SignalRW[Any]]:
     """Retrieve all SignalRWs from a device.
 
     Stores retrieved signals with their dotted attribute paths in a dictionary. Used as
@@ -699,19 +700,12 @@ def walk_rw_signals(device: Device, path_prefix: str = "") -> dict[str, SignalRW
         A dictionary matching the string attribute path of a SignalRW with the
         signal itself.
     """
-    signals: dict[str, SignalRW[Any]] = {}
-
-    for attr_name, attr in device.children():
-        dot_path = f"{path_prefix}{attr_name}"
-        if type(attr) is SignalRW:
-            signals[dot_path] = attr
-        attr_signals = walk_rw_signals(attr, path_prefix=dot_path + ".")
-        signals.update(attr_signals)
-    return signals
+    all_devices = walk_devices(device)
+    return {path: dev for path, dev in all_devices.items() if type(dev) is SignalRW}
 
 
 async def walk_config_signals(
-    device: Device, path_prefix: str = ""
+    device: Device,
 ) -> dict[str, SignalRW[Any]]:
     """Retrieve all configuration signals from a device.
 
@@ -719,28 +713,54 @@ async def walk_config_signals(
     part of saving and loading a device.
 
     :param device: Device to retrieve configuration signals from.
-    :param path_prefix: For internal use, leave blank when calling the method.
     :return:
         A dictionary matching the string attribute path of a SignalRW with the
         signal itself.
     """
-    signals: dict[str, SignalRW[Any]] = {}
     config_names: list[str] = []
     if isinstance(device, Configurable):
         configuration = device.read_configuration()
         if inspect.isawaitable(configuration):
             configuration = await configuration
         config_names = list(configuration.keys())
-    for attr_name, attr in device.children():
-        dot_path = f"{path_prefix}{attr_name}"
-        if isinstance(attr, SignalRW) and attr.name in config_names:
-            signals[dot_path] = attr
-        signals.update(await walk_config_signals(attr, path_prefix=dot_path + "."))
 
-    return signals
+    all_devices = walk_devices(device)
+    return {
+        path: dev
+        for path, dev in all_devices.items()
+        if isinstance(dev, SignalRW) and dev.name in config_names
+    }
 
 
 class Ignore:
     """Annotation to ignore a signal when connecting a device."""
 
     pass
+
+
+def walk_devices(device: Device, path_prefix: str = "") -> dict[str, Device]:
+    """Recursively retrieve all Devices from a device tree.
+
+    :param device: Root device to start from.
+    :param path_prefix: For internal use, leave blank when calling the method.
+    :return: A dictionary mapping dotted attribute paths to Device instances.
+    """
+    devices: dict[str, Device] = {}
+    for attr_name, attr in device.children():
+        dot_path = f"{path_prefix}{attr_name}"
+        devices[dot_path] = attr
+        devices.update(walk_devices(attr, path_prefix=dot_path + "."))
+    return devices
+
+
+def walk_signal_sources(device: Device) -> dict[str, str]:
+    """Recursively gather the `source` field from every Signal in a device tree.
+
+    :param device: Root device to start from.
+    :param path_prefix: For internal use, leave blank when calling the method.
+    :return: A dictionary mapping dotted attribute paths to Signal source strings.
+    """
+    all_devices = walk_devices(device)
+    return {
+        path: dev.source for path, dev in all_devices.items() if isinstance(dev, Signal)
+    }

@@ -135,6 +135,7 @@ async def assert_monitor_then_put(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.timeout(18.8)
 async def test_backend_get_put_monitor_attr(
     everything_device: TangoDevice, everything_signal_info
 ):
@@ -376,6 +377,7 @@ async def test_set_with_converter(everything_device_trl):
     )
 
 
+@pytest.mark.timeout(18.8)
 async def test_assert_val_reading_everything_tango(
     everything_device_trl, everything_signal_info
 ):

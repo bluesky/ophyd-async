@@ -15,7 +15,7 @@ description = "Asynchronous Bluesky hardware abstraction code, compatible with c
 dependencies = [
     "numpy",
     "bluesky>=1.13.1rc2",
-    "event-model>=1.22.3",
+    "event-model>=1.23",
     "pyyaml",
     "colorlog",
     "pydantic>=2.0",
@@ -42,7 +42,7 @@ dev = [
     "import-linter",
     "myst-parser",
     "numpydoc",
-    "ophyd",
+    "ophyd>=1.10.7",
     "pickleshare",
     "pipdeptree",
     "pre-commit",
@@ -101,7 +101,7 @@ markers = [
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-
+timeout = 0.5
 [tool.coverage.run]
 data_file = "/tmp/ophyd_async.coverage"
 

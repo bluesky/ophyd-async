@@ -59,6 +59,7 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_uses_deadtime(
     assert expected_acquire_period == actual_acquire_period
 
 
+@pytest.mark.timeout(18.0)
 async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
     controller: adsimdetector.SimController,
 ):

@@ -52,7 +52,7 @@ class BlobDetectorWriter(DetectorWriter):
                 chunk_shape=(1024,),
             ),
         ]
-        self.composer = None
+        self.composer = HDFDocumentComposer(self.path, self.datasets)
         describe = {
             ds.data_key: DataKey(
                 source="sim://pattern-generator-hdf-file",
@@ -85,17 +85,11 @@ class BlobDetectorWriter(DetectorWriter):
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
         # When we have written something to the file
-        if indices_written:
-            # Only emit stream resource the first time we see frames in
-            # the file
-            if not self.composer:
-                if not self.path:
-                    raise RuntimeError(f"open() not called on {self}")
-                self.composer = HDFDocumentComposer(self.path, self.datasets)
-                for doc in self.composer.stream_resources():
-                    yield "stream_resource", doc
-            for doc in self.composer.stream_data(indices_written):
-                yield "stream_datum", doc
+        if self.composer is None:
+            msg = f"open() not called on {self}"
+            raise RuntimeError(msg)
+        for doc in self.composer.make_stream_docs(indices_written):
+            yield doc
 
     async def close(self) -> None:
         self.pattern_generator.close_file()

@@ -8,6 +8,9 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
+    SignalRW,
+    Table,
+    derived_signal_rw,
     soft_signal_rw,
 )
 from ophyd_async.sim import (
@@ -22,6 +25,7 @@ from ophyd_async.testing import (
     assert_reading,
     assert_value,
     get_mock,
+    set_mock_value,
 )
 
 
@@ -118,7 +122,7 @@ def test_mismatching_args():
     with pytest.raises(
         TypeError,
         match=re.escape(
-            "Expected devices to be passed as keyword arguments"
+            "Expected the following to be passed as keyword arguments"
             " {'distance': <class 'float'>, 'jack1': <class 'float'>, "
             "'jack2': <class 'float'>}, "
             "got {'jack1': <class 'float'>, 'jack22': <class 'float'>, "
@@ -131,3 +135,55 @@ def test_mismatching_args():
             jack22=soft_signal_rw(float),
             distance=soft_signal_rw(float),
         )
+
+
+@pytest.fixture
+def derived_signal() -> SignalRW[float]:
+    signal_r = soft_signal_rw(int, initial_value=4)
+
+    def _get(ts: int) -> float:
+        return ts
+
+    async def _put(value: float) -> None:
+        pass
+
+    return derived_signal_rw(_get, _put, ts=signal_r)
+
+
+async def test_derived_signal_backend_connect_pass(
+    derived_signal: SignalRW,
+):
+    result = await derived_signal.connect()
+    assert result is None
+
+
+async def test_derived_signal_backend_set_value(
+    derived_signal: SignalRW,
+) -> None:
+    await derived_signal.connect(mock=True)
+    with pytest.raises(RuntimeError):
+        set_mock_value(derived_signal, 1.0)
+
+
+async def test_derived_signal_backend_put_wait_fails(
+    derived_signal: SignalRW,
+) -> None:
+    with pytest.raises(RuntimeError):
+        await derived_signal.set(value=None, wait=False)
+    with pytest.raises(RuntimeError):
+        await derived_signal.set(value=None, wait=True)
+
+
+def test_make_rw_signal_type_mismatch():
+    factory = DerivedSignalFactory(
+        TwoJackTransform,
+        set_derived=None,
+        distance=soft_signal_rw(float),
+        jack1=soft_signal_rw(float),
+        jack2=soft_signal_rw(float),
+    )
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Must define a set_derived method to support derived"),
+    ):
+        factory.derived_signal_rw(datatype=Table, name="")
