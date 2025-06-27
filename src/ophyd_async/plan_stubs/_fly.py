@@ -178,7 +178,7 @@ def time_resolved_fly_and_collect_with_static_seq_table(
 ):
     """Run a scan wth a flyer and multiple detectors.
 
-    The stub demonstrates the standard basic flow for a flyscan:
+    The stub demonstrates the standard basic flow for a fly scan:
 
     - Prepare the flyer and detectors with a trigger
     - Fly and collect:
