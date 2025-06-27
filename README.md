@@ -23,7 +23,7 @@ The main differences from ophyd sync are:
 - Support for [EPICS][] PVA and [Tango][] as well as the traditional EPICS CA
 - Better library support for splitting the logic from the hardware interface to avoid complex class heirarchies
 
-It was written with the aim of implementing flyscanning in a generic and extensible way with highly customizable devices like PandABox and the Delta Tau PMAC products. Using async code makes it possible to do the "put 3 PVs in parallel, then get from another PV" logic that is common in flyscanning without the performance and complexity overhead of multiple threads.
+It was written with the aim of implementing fly scanning in a generic and extensible way with highly customizable devices like PandABox and the Delta Tau PMAC products. Using async code makes it possible to do the "put 3 PVs in parallel, then get from another PV" logic that is common in fly scanning without the performance and complexity overhead of multiple threads.
 
 Devices from both ophyd sync and ophyd-async can be used in the same RunEngine and even in the same scan. This allows a per-device migration where devices are reimplemented in ophyd-async one by one.
 
