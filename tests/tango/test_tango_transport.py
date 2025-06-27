@@ -31,7 +31,6 @@ from ophyd_async.tango.core import (
     get_full_attr_trl,
     get_python_type,
     get_tango_trl,
-    get_trl_descriptor,
     try_to_cast_as_float,
 )
 from ophyd_async.tango.testing import OneOfEverythingTangoDevice
@@ -168,49 +167,6 @@ def test_try_to_cast_as_float():
 )
 def test_get_dtype_extended(datatype, expected):
     assert get_dtype_extended(datatype) == expected
-
-
-# --------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "datatype, tango_resource, expected_descriptor",
-    [
-        (
-            int,
-            "test/device/1/justvalue",
-            {"source": "test/device/1/justvalue", "dtype": "integer", "shape": []},
-        ),
-        (
-            float,
-            "test/device/1/limitedvalue",
-            {"source": "test/device/1/limitedvalue", "dtype": "number", "shape": []},
-        ),
-        (
-            npt.NDArray[float],
-            "test/device/1/array",
-            {"source": "test/device/1/array", "dtype": "array", "shape": [2, 3]},
-        ),
-        # Add more test cases as needed
-    ],
-)
-async def test_get_trl_descriptor(
-    tango_test_device, datatype, tango_resource, expected_descriptor
-):
-    proxy = await DeviceProxy(tango_test_device)
-    tr_configs = {
-        tango_resource.split("/")[-1]: await proxy.get_attribute_config(
-            tango_resource.split("/")[-1]
-        )
-    }
-    descriptor = get_trl_descriptor(datatype, tango_resource, tr_configs)
-    # assert descriptor == expected_descriptor
-    print("descriptor", descriptor)
-    print("expected_descriptor", expected_descriptor)
-    for key, value in expected_descriptor.items():
-        assert descriptor[key] == value
-
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
@@ -693,34 +649,44 @@ async def test_tango_transport_put(echo_device):
     val = await transport.proxies[source].get_w_value()
     assert val == 2.0
 
-
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_transport_get_datakey(echo_device):
-    await prepare_device(echo_device, "float32", 1.0)
-    source = get_full_attr_trl(echo_device, "float32")
-    transport = await make_backend(float, source, connect=False)
+async def test_tango_transport_get_datakey(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    trl = get_full_attr_trl(tango_test_device, "limitedvalue")
+    
+    transport = TangoSignalBackend(float, trl, trl, device_proxy)
     await transport.connect(1)
-    datakey = await transport.get_datakey(source)
-    assert datakey["source"] == source
+    datakey = await transport.get_datakey(trl)
+    for key in ["source", "dtype", "shape", "limits", "precision", "units"]:
+        assert key in datakey
+    assert datakey["source"] == trl
     assert datakey["dtype"] == "number"
     assert datakey["shape"] == []
-
+    for key in ['alarm', 'control', 'rds', 'warning']:
+        assert key in datakey['limits']
+    limits = datakey["limits"]
+    assert limits["alarm"] == {'high': 5.0, 'low': 1.0}
+    assert limits["control"] == {'high': 6.0, 'low': 0.0}
+    assert limits["rds"] == {'time_difference': 1.0, "value_difference": 1.0}
+    assert limits["warning"] == {'high': 4.0, 'low': 2.0}
 
 # --------------------------------------------------------------------
+
 @pytest.mark.asyncio
-async def test_tango_transport_get_reading(echo_device):
-    await prepare_device(echo_device, "float32", 1.0)
-    source = get_full_attr_trl(echo_device, "float32")
-    transport = await make_backend(float, source, connect=False)
-
-    with pytest.raises(NotConnected) as exc_info:
-        await transport.put(1.0)
-    assert "Not connected" in str(exc_info.value)
-
+async def test_tango_transport_get_datakey_enum(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    trl = get_full_attr_trl(tango_test_device, "test_enum")
+    class TestEnumType(StrictEnum):
+        A = 0
+        B = 1
+    transport = TangoSignalBackend(
+        TestEnumType, trl, trl, device_proxy
+    )
     await transport.connect(1)
-    reading = await transport.get_reading()
-    assert reading["value"] == 1.0
+    datakey = await transport.get_datakey(trl)
+    assert "choices" in datakey
+    assert datakey["choices"] == ["A", "B"]
 
 
 # --------------------------------------------------------------------

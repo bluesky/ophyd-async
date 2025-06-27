@@ -17,7 +17,7 @@ from ._tango_transport import (
     get_dtype_extended,
     get_python_type,
     get_tango_trl,
-    get_trl_descriptor,
+    get_source_metadata,
 )
 from ._utils import (
     DevStateEnum,
@@ -34,7 +34,7 @@ __all__ = [
     "TangoSignalBackend",
     "get_python_type",
     "get_dtype_extended",
-    "get_trl_descriptor",
+    "get_source_metadata",
     "get_tango_trl",
     "infer_python_type",
     "infer_signal_type",

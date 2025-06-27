@@ -121,7 +121,7 @@ async def assert_monitor_then_put(
     # Make a monitor queue that will monitor for updates
     with MonitorQueue(signal) as q:
         test_descriptor = dict(source=source, **descriptor)
-        backend_datakey = await backend.get_datakey("")
+        backend_datakey = await backend.get_datakey(source)
         for key, value in test_descriptor.items():
             assert backend_datakey[key] == value, (
                 f"Key {key} mismatch: {value} != {backend_datakey[key]}"
@@ -164,17 +164,9 @@ async def assert_put_read(
     signal: SignalRW,
     source: str,
     put_value: T,
-    descriptor: dict,
     datatype: type[T] | None = None,  # TODO reimplement this
 ):
     backend = signal._connector.backend
-    test_descriptor = dict(source=source, **descriptor)
-    backend_descriptor = await backend.get_datakey("")
-    for key, value in test_descriptor.items():
-        assert backend_descriptor[key] == value, (
-            f"Key {key} mismatch: {value} != {backend_descriptor[key]}"
-        )
-    # Put to new value and check that
     await backend.put(put_value, wait=True)
 
     expected_reading = {
@@ -199,12 +191,11 @@ async def test_backend_get_put_monitor_cmd(
         put_value = cmd_data.random_value()
         # With the given datatype, check we have the correct initial value
         # and putting works
-        descriptor = get_test_descriptor(cmd_data.py_type, cmd_data.initial, True)
         signal = getattr(everything_device, cmd_data.cmd_name)
         source = get_full_attr_trl(everything_device._connector.trl, cmd_data.cmd_name)
-        await assert_put_read(signal, source, put_value, descriptor, cmd_data.py_type)
+        await assert_put_read(signal, source, put_value, cmd_data.py_type)
         # # With guessed datatype, check we can set it back to the initial value
-        await assert_put_read(signal, source, put_value, descriptor)
+        await assert_put_read(signal, source, put_value)
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
         await asyncio.gather(*tasks)
 
