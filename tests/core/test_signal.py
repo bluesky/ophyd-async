@@ -4,7 +4,7 @@ import re
 import time
 from asyncio import Event
 from typing import Any
-from unittest.mock import ANY, AsyncMock, MagicMock, Mock
+from unittest.mock import ANY, AsyncMock, MagicMock, Mock, call
 
 import numpy as np
 import numpy.typing as npt
@@ -1026,3 +1026,19 @@ async def test_walk_signal_sources_returns_signal_sources(
     }
 
     assert sources == expected_sources
+
+
+async def test_can_unsubscribe_from_subscribe_callback():
+    signal = soft_signal_rw(float)
+    callback = Mock()
+
+    def unsubscribe_if_one(value):
+        if value == 1.0:
+            signal.clear_sub(callback)
+
+    callback.side_effect = unsubscribe_if_one
+    signal.subscribe_value(callback)
+    signal.subscribe_value(print)
+    await signal.set(1.0)
+    await signal.set(2.0)
+    assert callback.mock_calls == [call(0.0), call(1.0)]
