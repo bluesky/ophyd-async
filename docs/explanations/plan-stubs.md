@@ -38,7 +38,7 @@ Prepares the device for a `trigger` or `kickoff`, after `stage` and `open_run`:
 ### [`bps.abs_set`](#bluesky.plan_stubs.abs_set) or [`bps.mv`](#bluesky.plan_stubs.mv)
 
 Set the device to a target setpoint:
-- For motors this will move the motor to the desired position, returning when it is complete and erroring if it fails to move. 
+- For motors, `bps.mv` will move the motor to the desired position, returning when it is complete and erroring if it fails to move. **`bps.abs_set`, however, does not wait for completion by default unless the `wait` option is explicitly set to `True`.**
 
 ### [`bps.trigger`](#bluesky.plan_stubs.trigger)
 
