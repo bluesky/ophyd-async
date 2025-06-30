@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from enum import Enum, IntEnum
+from typing import Sequence
 
 import numpy.typing as npt
 from tango import (
@@ -157,6 +158,9 @@ async def infer_python_type(
             py_type = IntEnum("TangoEnum", enum_dict)
         if config.data_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
             isarray = True
+        if config.data_format is AttrDataFormat.SPECTRUM and py_type is str:
+            return Sequence[str]
+
     else:
         raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
 

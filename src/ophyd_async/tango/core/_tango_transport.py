@@ -748,7 +748,6 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         self.status = put_status
 
     async def get_datakey(self, source: str) -> DataKey:
-        print(f"get_datakey for {source}")
         try:
             value = await self.proxies[source].get()  # type: ignore
         except AttributeError as ae:
@@ -756,7 +755,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         md = get_source_metadata(source, self.trl_configs)
         return make_datakey(
             self.datatype,  # type: ignore
-            self.converter.value(value),
+            value,
             source,
             metadata=md,
         )

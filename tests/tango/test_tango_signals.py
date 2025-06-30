@@ -2,7 +2,7 @@ import asyncio
 import time
 from enum import Enum
 from typing import Annotated as A
-from typing import TypeVar
+from typing import TypeVar, Sequence
 
 import numpy as np
 import pytest
@@ -85,6 +85,8 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
         return {"dtype": "number", "shape": []}
     if python_type in [str]:
         return {"dtype": "string", "shape": []}
+    if python_type in [Sequence[str]]:
+        return {"dtype": "array", "shape": [len(value)]}
     if issubclass(python_type, Enum):
         return {"dtype": "string", "shape": []}
     return {
@@ -121,10 +123,13 @@ async def assert_monitor_then_put(
     # Make a monitor queue that will monitor for updates
     with MonitorQueue(signal) as q:
         test_descriptor = dict(source=source, **descriptor)
-        backend_datakey = await backend.get_datakey(source)
+        try:
+            backend_datakey = await backend.get_datakey(source)
+        except Exception as e:
+            pytest.fail(f"Failed to get datakey for {source}: {e}")
         for key, value in test_descriptor.items():
             assert backend_datakey[key] == value, (
-                f"Key {key} mismatch: {value} != {backend_datakey[key]}"
+                f"Key {key} mismatch: {value} != {backend_datakey[key]}. Source: {source}"
             )
         # Check initial value
         await q.assert_updates(initial_value)
