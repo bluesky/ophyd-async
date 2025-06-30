@@ -827,3 +827,21 @@ async def test_setting_with_none_uses_initial_value_of_pv(
         initial_value == current_data[""]["value"]
         and initial_timestamp != current_data[""]["timestamp"]
     )
+
+
+@pytest.mark.timeout(3.5)
+async def test_signal_retries_when_timeout(
+    ioc_devices: EpicsTestIocAndDevices,
+):
+    # put callback on slowseq in 0.5s, so if waited, this will fail to set
+    sig_rw_times_out = epics_signal_rw(
+        int, ioc_devices.get_pv("pva", "slowseq"), attempts=3, timeout=0.1
+    )
+    await sig_rw_times_out.connect()
+
+    start = time.time()
+    with pytest.raises(asyncio.TimeoutError):
+        await sig_rw_times_out.set(1, wait=True)
+    stop = time.time()
+    # signal tries to set 3 times, so 3 * timeout
+    assert stop - start >= 0.3
