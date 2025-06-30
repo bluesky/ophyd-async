@@ -291,7 +291,7 @@ class SignalW(Signal[SignalDatatypeT], Movable):
         source = self._connector.backend.source(self.name, read=False)
         self.log.debug(f"Putting value {value} to backend at source {source}")
         async for attempt in retry_context(
-            on=(TimeoutError, asyncio.exceptions.TimeoutError),
+            on=asyncio.TimeoutError,
             attempts=self._attempts,
             wait_initial=0,
             wait_jitter=0,
