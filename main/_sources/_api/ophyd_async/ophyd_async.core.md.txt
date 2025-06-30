@@ -856,7 +856,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 ```
 ````
 
-`````{py:class} Signal(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '')
+`````{py:class} Signal(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '', attempts: int = 1)
 :canonical: ophyd_async.core._signal.Signal
 
 Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\]
@@ -884,7 +884,7 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`typing.Generic`\[{py:
 
 `````
 
-`````{py:class} SignalR(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '')
+`````{py:class} SignalR(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '', attempts: int = 1)
 :canonical: ophyd_async.core._signal.SignalR
 
 Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`ophyd_async.core._protocol.AsyncReadable`, {py:obj}`ophyd_async.core._protocol.AsyncStageable`, {py:obj}`bluesky.protocols.Subscribable`
@@ -963,7 +963,7 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 
 `````
 
-`````{py:class} SignalW(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '')
+`````{py:class} SignalW(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '', attempts: int = 1)
 :canonical: ophyd_async.core._signal.SignalW
 
 Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`bluesky.protocols.Movable`
@@ -982,7 +982,7 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 
 `````
 
-`````{py:class} SignalRW(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '')
+`````{py:class} SignalRW(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '', attempts: int = 1)
 :canonical: ophyd_async.core._signal.SignalRW
 
 Bases: {py:obj}`ophyd_async.core._signal.SignalR`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`ophyd_async.core._signal.SignalW`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`bluesky.protocols.Locatable`
@@ -1001,7 +1001,7 @@ Bases: {py:obj}`ophyd_async.core._signal.SignalR`\[{py:obj}`ophyd_async.core._si
 
 `````
 
-`````{py:class} SignalX(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '')
+`````{py:class} SignalX(backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = DEFAULT_TIMEOUT, name: str = '', attempts: int = 1)
 :canonical: ophyd_async.core._signal.SignalX
 
 Bases: {py:obj}`ophyd_async.core._signal.Signal`

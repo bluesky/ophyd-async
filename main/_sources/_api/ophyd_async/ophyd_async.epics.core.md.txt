@@ -184,21 +184,21 @@ Bases: {py:obj}`ophyd_async.core.Device`
 ```
 ````
 
-````{py:function} epics_signal_rw(datatype: type[~ophyd_async.core.SignalDatatypeT], read_pv: str, write_pv: str | None = None, name: str = '', timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT]
+````{py:function} epics_signal_rw(datatype: type[~ophyd_async.core.SignalDatatypeT], read_pv: str, write_pv: str | None = None, name: str = '', timeout: float = DEFAULT_TIMEOUT, attempts: int = 1) -> ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT]
 :canonical: ophyd_async.epics.core._signal.epics_signal_rw
 
 ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw
 ```
 ````
 
-````{py:function} epics_signal_rw_rbv(datatype: type[~ophyd_async.core.SignalDatatypeT], write_pv: str, read_suffix: str = '_RBV', name: str = '', timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT]
+````{py:function} epics_signal_rw_rbv(datatype: type[~ophyd_async.core.SignalDatatypeT], write_pv: str, read_suffix: str = '_RBV', name: str = '', timeout: float = DEFAULT_TIMEOUT, attempts: int = 1) -> ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT]
 :canonical: ophyd_async.epics.core._signal.epics_signal_rw_rbv
 
 ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_rw_rbv
 ```
 ````
 
-````{py:function} epics_signal_w(datatype: type[~ophyd_async.core.SignalDatatypeT], write_pv: str, name: str = '', timeout: float = DEFAULT_TIMEOUT) -> ~ophyd_async.core.SignalW[~ophyd_async.core.SignalDatatypeT]
+````{py:function} epics_signal_w(datatype: type[~ophyd_async.core.SignalDatatypeT], write_pv: str, name: str = '', timeout: float = DEFAULT_TIMEOUT, attempts: int = 1) -> ~ophyd_async.core.SignalW[~ophyd_async.core.SignalDatatypeT]
 :canonical: ophyd_async.epics.core._signal.epics_signal_w
 
 ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_w

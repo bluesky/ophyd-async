@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.12.dev2+ga2074b222 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.12.dev3+g44332f6cb documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=58c54ea5"></script>
+    <script src="../../../_static/documentation_options.js?v=efa5b4ca"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev2+ga2074b222 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev2+ga2074b222 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev3+g44332f6cb documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev3+g44332f6cb documentation - Home"/>
   
   
 </a></div>
@@ -482,6 +482,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">Subscribable</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataKey</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">stamina</span><span class="w"> </span><span class="kn">import</span> <span class="n">retry_context</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._mock_signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">MockSignalBackend</span>
@@ -565,9 +566,11 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">SignalConnector</span><span class="p">(</span><span class="n">backend</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attempts</span> <span class="o">=</span> <span class="n">attempts</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -795,7 +798,16 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span>
         <span class="n">source</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Putting value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">_wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">),</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">source</span><span class="p">)</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="n">retry_context</span><span class="p">(</span>
+            <span class="n">on</span><span class="o">=</span><span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">,</span>
+            <span class="n">attempts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_attempts</span><span class="p">,</span>
+            <span class="n">wait_initial</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">wait_jitter</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">with</span> <span class="n">attempt</span><span class="p">:</span>
+                <span class="k">await</span> <span class="n">_wait_for</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_connector</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">),</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">source</span>
+                <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully put value </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> to backend at source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 </div>
 
