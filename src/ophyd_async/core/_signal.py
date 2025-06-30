@@ -144,7 +144,8 @@ class _SignalCache(Generic[SignalDatatypeT]):
         )
         self._reading = reading
         self._valid.set()
-        for function, want_value in self._listeners.items():
+        items = self._listeners.copy().items()
+        for function, want_value in items:
             self._notify(function, want_value)
 
     def _notify(
