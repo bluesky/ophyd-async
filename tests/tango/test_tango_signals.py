@@ -1,8 +1,9 @@
 import asyncio
 import time
+from collections.abc import Sequence
 from enum import Enum
 from typing import Annotated as A
-from typing import TypeVar, Sequence
+from typing import TypeVar
 
 import numpy as np
 import pytest
@@ -129,7 +130,8 @@ async def assert_monitor_then_put(
             pytest.fail(f"Failed to get datakey for {source}: {e}")
         for key, value in test_descriptor.items():
             assert backend_datakey[key] == value, (
-                f"Key {key} mismatch: {value} != {backend_datakey[key]}. Source: {source}"
+                f"Key {key} mismatch: {value} != {backend_datakey[key]}."
+                f" Source: {source}"
             )
         # Check initial value
         await q.assert_updates(initial_value)

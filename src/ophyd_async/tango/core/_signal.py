@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from enum import Enum, IntEnum
-from typing import Sequence
 
 import numpy.typing as npt
 from tango import (

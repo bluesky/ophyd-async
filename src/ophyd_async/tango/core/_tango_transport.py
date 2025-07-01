@@ -749,7 +749,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
 
     async def get_datakey(self, source: str) -> DataKey:
         try:
-            value = await self.proxies[source].get()  # type: ignore
+            value: Any = await self.proxies[source].get()  # type: ignore
         except AttributeError as ae:
             raise NotConnected(f"Not connected to {source}") from ae
         md = get_source_metadata(source, self.trl_configs)
