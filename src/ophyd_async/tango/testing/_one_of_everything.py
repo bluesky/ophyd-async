@@ -1,6 +1,6 @@
 import textwrap
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, Sequence
 
 import numpy as np
 from tango import AttrDataFormat, AttrWriteType, DevState
@@ -51,7 +51,7 @@ class AttributeData(Generic[T]):
     name: str
     tango_type: str
     initial_scalar: T
-    initial_spectrum: Array1D
+    initial_spectrum: Array1D | Sequence[T]
 
 
 _all_attribute_definitions = [
@@ -59,7 +59,7 @@ _all_attribute_definitions = [
         "str",
         "DevString",
         "test_string",
-        np.array(["one", "two", "three"], dtype=str),
+        ["one", "two", "three"],
     ),
     AttributeData(
         "bool",
@@ -111,6 +111,10 @@ class OneOfEverythingTangoDevice(Device):
 
     def add_array_attrs(self, name: str, dtype: str, initial_value: np.ndarray):
         spectrum_name = f"{name}_spectrum"
+        if hasattr(initial_value, "shape"):
+            max_dim_x = initial_value.shape[-1]
+        else:
+            max_dim_x = len(initial_value)
         spectrum_attr = attribute(
             name=spectrum_name,
             dtype=dtype,
@@ -118,7 +122,7 @@ class OneOfEverythingTangoDevice(Device):
             access=AttrWriteType.READ_WRITE,
             fget=self.read,
             fset=self.write,
-            max_dim_x=initial_value.shape[-1],
+            max_dim_x=max_dim_x,
             enum_labels=[e.value for e in ExampleStrEnum],
         )
         image_name = f"{name}_image"
@@ -129,7 +133,7 @@ class OneOfEverythingTangoDevice(Device):
             access=AttrWriteType.READ_WRITE,
             fget=self.read,
             fset=self.write,
-            max_dim_x=initial_value.shape[-1],
+            max_dim_x=max_dim_x,
             max_dim_y=2,
             enum_labels=[e.value for e in ExampleStrEnum],
         )

@@ -6,14 +6,14 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 from random import choice
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, Sequence
 
 import numpy as np
 import pytest
 from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
-from ophyd_async.tango.core import DevStateEnum
+from ophyd_async.tango.core import DevStateEnum, TangoLongStringTable
 from ophyd_async.tango.testing import ExampleStrEnum
 from ophyd_async.testing import (
     float_array_value,
@@ -86,6 +86,9 @@ class ArrayData(AttributeData):
             array[idx] = choice(self.random_put_values)
         return array
 
+class SequenceData(AttributeData):
+    def random_value(self):
+        return [choice(self.random_put_values) for _ in range(len(self.initial))]
 
 @pytest.fixture(scope="module")
 def everything_signal_info():
@@ -123,14 +126,28 @@ def everything_signal_info():
             None,
         )
 
-    add_ads(
+    signal_info["str"] = AttributeData(
         "str",
-        "DevString",
         str,
         "test_string",
-        np.array(["one", "two", "three"], dtype=str),
         ("four", "five", "six"),
+        None
     )
+    signal_info["str_spectrum"] = SequenceData(
+        "str_spectrum",
+        Sequence[str],
+        ("one", "two", "three"),
+        ("four", "five", "six"),
+        None
+    )
+    signal_info["str_image"] = SequenceData(
+        "str_image",
+        Sequence[Sequence[str]],
+        (('one', 'two', 'three'), ('one', 'two', 'three')),
+        (('four', 'five', 'six'), ('seven', 'eight', 'nine')),
+        None
+    )
+
     add_ads(
         "bool",
         "DevBoolean",

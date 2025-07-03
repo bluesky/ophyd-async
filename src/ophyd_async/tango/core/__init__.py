@@ -18,6 +18,7 @@ from ._tango_transport import (
     get_python_type,
     get_source_metadata,
     get_tango_trl,
+    TangoLongStringTable
 )
 from ._utils import (
     DevStateEnum,
@@ -47,6 +48,7 @@ __all__ = [
     "TangoReadable",
     "TangoPolling",
     "TangoDeviceConnector",
+    "TangoLongStringTable",
     "try_to_cast_as_float",
     "get_device_trl_and_attr",
     "get_full_attr_trl",

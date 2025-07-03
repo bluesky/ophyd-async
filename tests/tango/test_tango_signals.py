@@ -3,7 +3,7 @@ import time
 from collections.abc import Sequence
 from enum import Enum
 from typing import Annotated as A
-from typing import TypeVar
+from typing import TypeVar, get_origin
 
 import numpy as np
 import pytest
@@ -86,7 +86,7 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
         return {"dtype": "number", "shape": []}
     if python_type in [str]:
         return {"dtype": "string", "shape": []}
-    if python_type in [Sequence[str]]:
+    if get_origin(python_type) is Sequence:
         return {"dtype": "array", "shape": [len(value)]}
     if issubclass(python_type, Enum):
         return {"dtype": "string", "shape": []}

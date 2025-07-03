@@ -5,9 +5,10 @@ import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine
 from enum import Enum
-from typing import Any, ParamSpec, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar, cast, Sequence
 
 import numpy as np
+import numpy.typing as npt
 from bluesky.protocols import Reading
 from event_model import DataKey, Limits, LimitsRange
 from event_model.documents.event_descriptor import RdsRange
@@ -40,6 +41,8 @@ from ophyd_async.core import (
     get_dtype,
     make_datakey,
     wait_for_connection,
+    Table,
+    Array1D,
 )
 
 from ._converters import (
@@ -74,29 +77,49 @@ def ensure_proper_executor(
 
     return wrapper
 
+class TangoLongStringTable(Table):
+    long: Array1D[np.int32]
+    string: Sequence[str]
 
-def get_python_type(tango_type: CmdArgType) -> tuple[bool, object, str]:
+def get_python_type(tango_type: CmdArgType,
+                    tango_format: AttrDataFormat | None = None) -> object:
     """For converting between recieved tango types and python primatives."""
-    array = is_array(tango_type)
+    if tango_format not in [AttrDataFormat.SCALAR, AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE, None]:
+        raise TypeError("Unknown TangoFormat")
+
+    if tango_type in [CmdArgType.DevVarLongStringArray, CmdArgType.DevVarDoubleStringArray]:
+        return TangoLongStringTable
+
+    def _get_type(cls: type) -> object:
+        if tango_format == AttrDataFormat.SCALAR:
+            return cls
+        elif tango_format == AttrDataFormat.SPECTRUM:
+            return Sequence[cls]
+        elif tango_format == AttrDataFormat.IMAGE:
+            if cls == str:
+                return Sequence[Sequence[str]]
+            return npt.NDArray[cls]
+
     if is_int(tango_type, True):
-        return array, int, "integer"
-    if is_float(tango_type, True):
-        return array, float, "number"
-    if is_bool(tango_type, True):
-        return array, bool, "boolean"
-    if is_str(tango_type, True):
-        return array, str, "string"
-    if is_binary(tango_type, True):
-        return array, list[str], "string"
-    if tango_type == CmdArgType.DevEnum:
-        return array, Enum, "string"
-    if tango_type == CmdArgType.DevState:
-        return array, CmdArgType.DevState, "string"
-    if tango_type == CmdArgType.DevUChar:
-        return array, int, "integer"
-    if tango_type == CmdArgType.DevVoid:
-        return array, None, "string"
-    raise TypeError("Unknown TangoType")
+        return _get_type(int)
+    elif is_float(tango_type, True):
+        return _get_type(float)
+    elif is_bool(tango_type, True):
+        return _get_type(bool)
+    elif is_str(tango_type, True):
+        return _get_type(str)
+    elif is_binary(tango_type, True):
+        return _get_type(str)
+    elif tango_type == CmdArgType.DevEnum:
+        return Enum
+    elif tango_type == CmdArgType.DevState:
+        return CmdArgType.DevState
+    elif tango_type == CmdArgType.DevUChar:
+        return _get_type(int)
+    elif tango_type == CmdArgType.DevVoid:
+        return None
+    else:
+        raise TypeError("Unknown TangoType")
 
 
 class TangoProxy:
@@ -562,7 +585,7 @@ def get_source_metadata(
 
             _choices = list(config.enum_labels) if config.enum_labels else []
 
-            _, tr_dtype, _ = get_python_type(config.data_type)
+            tr_dtype = get_python_type(config.data_type, config.data_format)
 
             if tr_dtype == CmdArgType.DevState:
                 _choices = list(DevState.names.keys())
@@ -605,7 +628,6 @@ async def get_tango_trl(
     trl_name = trl_name.lower()
     if device_proxy is None:
         device_proxy = await AsyncDeviceProxy(device_trl, timeout=timeout)
-
     # all attributes can be always accessible with low register
     if isinstance(device_proxy, DeviceProxy):
         all_attrs = [

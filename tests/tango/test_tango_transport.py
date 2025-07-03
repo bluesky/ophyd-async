@@ -1,7 +1,7 @@
 import asyncio
 import re
 from enum import Enum
-from typing import Any
+from typing import Any, Sequence
 
 import numpy as np
 import numpy.typing as npt
@@ -9,6 +9,7 @@ import pytest
 from tango import (
     CmdArgType,
     DevState,
+    AttrDataFormat
 )
 from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import (
@@ -32,6 +33,7 @@ from ophyd_async.tango.core import (
     get_python_type,
     get_tango_trl,
     try_to_cast_as_float,
+    TangoLongStringTable,
 )
 from ophyd_async.tango.testing import OneOfEverythingTangoDevice
 
@@ -81,48 +83,63 @@ async def test_ensure_proper_executor():
 
 # --------------------------------------------------------------------
 @pytest.mark.parametrize(
-    "tango_type, expected",
+    "tango_type, tango_format, expected",
     [
-        (CmdArgType.DevVoid, (False, None, "string")),
-        (CmdArgType.DevBoolean, (False, bool, "boolean")),
-        (CmdArgType.DevShort, (False, int, "integer")),
-        (CmdArgType.DevLong, (False, int, "integer")),
-        (CmdArgType.DevFloat, (False, float, "number")),
-        (CmdArgType.DevDouble, (False, float, "number")),
-        (CmdArgType.DevUShort, (False, int, "integer")),
-        (CmdArgType.DevULong, (False, int, "integer")),
-        (CmdArgType.DevString, (False, str, "string")),
-        (CmdArgType.DevVarCharArray, (True, list[str], "string")),
-        (CmdArgType.DevVarShortArray, (True, int, "integer")),
-        (CmdArgType.DevVarLongArray, (True, int, "integer")),
-        (CmdArgType.DevVarFloatArray, (True, float, "number")),
-        (CmdArgType.DevVarDoubleArray, (True, float, "number")),
-        (CmdArgType.DevVarUShortArray, (True, int, "integer")),
-        (CmdArgType.DevVarULongArray, (True, int, "integer")),
-        (CmdArgType.DevVarStringArray, (True, str, "string")),
-        # (CmdArgType.DevVarLongStringArray, (True, str, "string")),
-        # (CmdArgType.DevVarDoubleStringArray, (True, str, "string")),
-        (CmdArgType.DevState, (False, CmdArgType.DevState, "string")),
-        (CmdArgType.ConstDevString, (False, str, "string")),
-        (CmdArgType.DevVarBooleanArray, (True, bool, "boolean")),
-        (CmdArgType.DevUChar, (False, int, "integer")),
-        (CmdArgType.DevLong64, (False, int, "integer")),
-        (CmdArgType.DevULong64, (False, int, "integer")),
-        (CmdArgType.DevVarLong64Array, (True, int, "integer")),
-        (CmdArgType.DevVarULong64Array, (True, int, "integer")),
-        (CmdArgType.DevEncoded, (False, list[str], "string")),
-        (CmdArgType.DevEnum, (False, Enum, "string")),
-        # (CmdArgType.DevPipeBlob, (False, list[str], "string")),
-        (float, (False, float, "number")),
-    ],
+        # Scalar types
+        (CmdArgType.DevVoid, AttrDataFormat.SCALAR, None),
+        (CmdArgType.DevBoolean, AttrDataFormat.SCALAR, bool),
+        (CmdArgType.DevShort, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevLong, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevLong64, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevFloat, AttrDataFormat.SCALAR, float),
+        (CmdArgType.DevDouble, AttrDataFormat.SCALAR, float),
+        (CmdArgType.DevUShort, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevULong, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevULong64, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevString, AttrDataFormat.SCALAR, str),
+        (CmdArgType.DevEncoded, AttrDataFormat.SCALAR, str),
+        (CmdArgType.DevEnum, AttrDataFormat.SCALAR, Enum),
+        (CmdArgType.DevState, AttrDataFormat.SCALAR, CmdArgType.DevState),
+        (CmdArgType.ConstDevString, AttrDataFormat.SCALAR, str),
+        (CmdArgType.DevVarBooleanArray, AttrDataFormat.SCALAR, bool),
+        (CmdArgType.DevUChar, AttrDataFormat.SCALAR, int),
+
+        # Array types
+        (CmdArgType.DevVarCharArray, AttrDataFormat.SPECTRUM, Sequence[str]),
+        (CmdArgType.DevVarShortArray, AttrDataFormat.SPECTRUM, Sequence[int]),
+        (CmdArgType.DevVarShortArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarLongArray, AttrDataFormat.SPECTRUM, Sequence[int]),
+        (CmdArgType.DevVarLongArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarFloatArray, AttrDataFormat.SPECTRUM, Sequence[float]),
+        (CmdArgType.DevVarFloatArray, AttrDataFormat.IMAGE, npt.NDArray[float]),
+        (CmdArgType.DevVarDoubleArray, AttrDataFormat.SPECTRUM, Sequence[float]),
+        (CmdArgType.DevVarDoubleArray, AttrDataFormat.IMAGE, npt.NDArray[float]),
+        (CmdArgType.DevVarUShortArray, AttrDataFormat.SPECTRUM, Sequence[int]),
+        (CmdArgType.DevVarUShortArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarULongArray, AttrDataFormat.SPECTRUM, Sequence[int]),
+        (CmdArgType.DevVarULongArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarLong64Array, AttrDataFormat.SPECTRUM, Sequence[int]),
+        (CmdArgType.DevVarLong64Array, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarULong64Array, AttrDataFormat.SPECTRUM, Sequence[int]),
+        (CmdArgType.DevVarULong64Array, AttrDataFormat.IMAGE, npt.NDArray[int]),
+
+        # String array types
+        (CmdArgType.DevVarStringArray, AttrDataFormat.SPECTRUM, Sequence[str]),
+        (CmdArgType.DevVarStringArray, AttrDataFormat.IMAGE, Sequence[Sequence[str]]),
+        (CmdArgType.DevVarLongStringArray, AttrDataFormat.SPECTRUM, TangoLongStringTable),
+        (CmdArgType.DevVarDoubleStringArray, AttrDataFormat.SPECTRUM, TangoLongStringTable),
+
+        # Bad type
+        (float, AttrDataFormat.SCALAR, (False, float, "number")),
+    ]
 )
-def test_get_python_type(tango_type, expected):
+def test_get_python_type(tango_type, tango_format, expected):
     if tango_type is not float:
-        assert get_python_type(tango_type) == expected
+        assert get_python_type(tango_type, tango_format) == expected
     else:
         # get_python_type should raise a TypeError
         with pytest.raises(TypeError) as exc_info:
-            get_python_type(tango_type)
+            get_python_type(tango_type, tango_format)
         assert str(exc_info.value) == "Unknown TangoType"
 
 

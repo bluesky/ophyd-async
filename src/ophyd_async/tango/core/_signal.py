@@ -149,25 +149,17 @@ async def infer_python_type(
 
     if tr_name in dev_proxy.get_command_list():
         config = await dev_proxy.get_command_config(tr_name)
-        isarray, py_type, _ = get_python_type(config.in_type)
+        py_type = get_python_type(config.in_type)
     elif tr_name in dev_proxy.get_attribute_list():
         config = await dev_proxy.get_attribute_config(tr_name)
-        isarray, py_type, _ = get_python_type(config.data_type)
+        py_type = get_python_type(config.data_type, config.data_format)
         if py_type is Enum:
             enum_dict = {label: i for i, label in enumerate(config.enum_labels)}
             py_type = IntEnum("TangoEnum", enum_dict)
-        if config.data_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
-            isarray = True
-        if config.data_format is AttrDataFormat.SPECTRUM and py_type is str:
-            return Sequence[str]
-
     else:
         raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
 
-    if py_type is CmdArgType.DevState:
-        py_type = DevState
-
-    return npt.NDArray[py_type] if isarray else py_type
+    return py_type
 
 
 async def infer_signal_type(

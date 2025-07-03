@@ -2,7 +2,7 @@ import asyncio
 import time
 from enum import Enum, IntEnum
 from typing import Annotated as A
-from typing import TypeVar
+from typing import TypeVar, Sequence, get_origin
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -21,7 +21,7 @@ from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.server import Device, attribute, command
 
 from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
-from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.core import StandardReadableFormat as Format, Table
 from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
@@ -207,21 +207,32 @@ async def describe_class(fqtrl):
     dev = await AsyncDeviceProxy(fqtrl)
 
     for name in TESTED_FEATURES:
+        dtype = "none"
         if name in dev.get_attribute_list():
             attr_conf = await dev.get_attribute_config(name)
             attr_value = await dev.read_attribute(name)
             value = attr_value.value
-            _, _, descr = get_python_type(attr_conf.data_type)
+            py_type = get_python_type(attr_conf.data_type, attr_conf.data_format)
+
+            if py_type is int:
+                dtype = "integer"
+            if py_type is float:
+                dtype = "number"
+            if py_type is str:
+                dtype = "string"
+            if py_type is bool:
+                dtype = "boolean"
+
             max_x = attr_conf.max_dim_x
             max_y = attr_conf.max_dim_y
             if attr_conf.data_format == AttrDataFormat.SCALAR:
                 is_array = False
                 shape = []
             elif attr_conf.data_format == AttrDataFormat.SPECTRUM:
-                is_array = True
+                dtype = "array"
                 shape = [max_x]
             else:
-                is_array = True
+                dtype = "array"
                 shape = [max_y, max_x]
 
         elif name in dev.get_command_list():
@@ -242,7 +253,7 @@ async def describe_class(fqtrl):
 
         description[f"test_device-{name}"] = {
             "source": get_full_attr_trl(fqtrl, name),
-            "dtype": "array" if is_array else descr,
+            "dtype": dtype,
             "shape": shape,
         }
 
