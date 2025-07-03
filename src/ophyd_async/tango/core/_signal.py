@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
 from enum import Enum, IntEnum
 
 import numpy.typing as npt
 from tango import (
-    AttrDataFormat,
     AttrWriteType,
     CmdArgType,
     DeviceProxy,

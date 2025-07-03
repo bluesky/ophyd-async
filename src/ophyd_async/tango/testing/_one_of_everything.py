@@ -1,6 +1,7 @@
 import textwrap
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Generic, TypeVar, Sequence
+from typing import Any, Generic, TypeVar
 
 import numpy as np
 from tango import AttrDataFormat, AttrWriteType, DevState

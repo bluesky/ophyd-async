@@ -3,17 +3,18 @@ import pickle
 import socket
 import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from random import choice
-from typing import Any, Generic, TypeVar, Sequence
+from typing import Any, Generic, TypeVar
 
 import numpy as np
 import pytest
 from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
-from ophyd_async.tango.core import DevStateEnum, TangoLongStringTable
+from ophyd_async.tango.core import DevStateEnum
 from ophyd_async.tango.testing import ExampleStrEnum
 from ophyd_async.testing import (
     float_array_value,
@@ -86,9 +87,11 @@ class ArrayData(AttributeData):
             array[idx] = choice(self.random_put_values)
         return array
 
+
 class SequenceData(AttributeData):
     def random_value(self):
         return [choice(self.random_put_values) for _ in range(len(self.initial))]
+
 
 @pytest.fixture(scope="module")
 def everything_signal_info():

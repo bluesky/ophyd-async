@@ -12,13 +12,13 @@ from ._tango_readable import TangoReadable
 from ._tango_transport import (
     AttributeProxy,
     CommandProxy,
+    TangoLongStringTable,
     TangoSignalBackend,
     ensure_proper_executor,
     get_dtype_extended,
     get_python_type,
     get_source_metadata,
     get_tango_trl,
-    TangoLongStringTable
 )
 from ._utils import (
     DevStateEnum,

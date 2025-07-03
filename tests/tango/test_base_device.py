@@ -2,7 +2,7 @@ import asyncio
 import time
 from enum import Enum, IntEnum
 from typing import Annotated as A
-from typing import TypeVar, Sequence, get_origin
+from typing import TypeVar
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -21,7 +21,7 @@ from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.server import Device, attribute, command
 
 from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
-from ophyd_async.core import StandardReadableFormat as Format, Table
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
@@ -226,7 +226,6 @@ async def describe_class(fqtrl):
             max_x = attr_conf.max_dim_x
             max_y = attr_conf.max_dim_y
             if attr_conf.data_format == AttrDataFormat.SCALAR:
-                is_array = False
                 shape = []
             elif attr_conf.data_format == AttrDataFormat.SPECTRUM:
                 dtype = "array"
@@ -242,7 +241,6 @@ async def describe_class(fqtrl):
                 if cmd_conf.in_type != CmdArgType.DevVoid
                 else cmd_conf.out_type
             )
-            is_array = False
             shape = []
             value = getattr(dev, name)()
 

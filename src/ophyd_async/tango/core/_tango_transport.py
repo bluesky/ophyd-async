@@ -3,9 +3,9 @@ import functools
 import logging
 import time
 from abc import abstractmethod
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable, Coroutine, Sequence
 from enum import Enum
-from typing import Any, ParamSpec, TypeVar, cast, Sequence
+from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
 import numpy.typing as npt
@@ -28,9 +28,10 @@ from tango.asyncio_executor import (
     get_global_executor,
     set_global_executor,
 )
-from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
+from tango.utils import is_binary, is_bool, is_float, is_int, is_str
 
 from ophyd_async.core import (
+    Array1D,
     AsyncStatus,
     Callback,
     NotConnected,
@@ -38,11 +39,10 @@ from ophyd_async.core import (
     SignalDatatypeT,
     SignalMetadata,
     StrictEnum,
+    Table,
     get_dtype,
     make_datakey,
     wait_for_connection,
-    Table,
-    Array1D,
 )
 
 from ._converters import (
@@ -77,17 +77,21 @@ def ensure_proper_executor(
 
     return wrapper
 
+
 class TangoLongStringTable(Table):
     long: Array1D[np.int32]
     string: Sequence[str]
 
+
 def get_python_type(tango_type: CmdArgType,
                     tango_format: AttrDataFormat | None = None) -> object:
     """For converting between recieved tango types and python primatives."""
-    if tango_format not in [AttrDataFormat.SCALAR, AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE, None]:
+    if tango_format not in [AttrDataFormat.SCALAR,
+                            AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE, None]:
         raise TypeError("Unknown TangoFormat")
 
-    if tango_type in [CmdArgType.DevVarLongStringArray, CmdArgType.DevVarDoubleStringArray]:
+    if tango_type in [CmdArgType.DevVarLongStringArray,
+                      CmdArgType.DevVarDoubleStringArray]:
         return TangoLongStringTable
 
     def _get_type(cls: type) -> object:
@@ -96,7 +100,7 @@ def get_python_type(tango_type: CmdArgType,
         elif tango_format == AttrDataFormat.SPECTRUM:
             return Sequence[cls]
         elif tango_format == AttrDataFormat.IMAGE:
-            if cls == str:
+            if cls is str:
                 return Sequence[Sequence[str]]
             return npt.NDArray[cls]
 

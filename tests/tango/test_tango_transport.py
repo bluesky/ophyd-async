@@ -1,16 +1,13 @@
 import asyncio
 import re
+from collections.abc import Sequence
 from enum import Enum
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 import pytest
-from tango import (
-    CmdArgType,
-    DevState,
-    AttrDataFormat
-)
+from tango import AttrDataFormat, CmdArgType, DevState
 from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import (
     AsyncioExecutor,
@@ -26,6 +23,7 @@ from ophyd_async.core import (
 from ophyd_async.tango.core import (
     AttributeProxy,
     CommandProxy,
+    TangoLongStringTable,
     TangoSignalBackend,
     ensure_proper_executor,
     get_dtype_extended,
@@ -33,7 +31,6 @@ from ophyd_async.tango.core import (
     get_python_type,
     get_tango_trl,
     try_to_cast_as_float,
-    TangoLongStringTable,
 )
 from ophyd_async.tango.testing import OneOfEverythingTangoDevice
 
@@ -126,8 +123,10 @@ async def test_ensure_proper_executor():
         # String array types
         (CmdArgType.DevVarStringArray, AttrDataFormat.SPECTRUM, Sequence[str]),
         (CmdArgType.DevVarStringArray, AttrDataFormat.IMAGE, Sequence[Sequence[str]]),
-        (CmdArgType.DevVarLongStringArray, AttrDataFormat.SPECTRUM, TangoLongStringTable),
-        (CmdArgType.DevVarDoubleStringArray, AttrDataFormat.SPECTRUM, TangoLongStringTable),
+        (CmdArgType.DevVarLongStringArray, AttrDataFormat.SPECTRUM,
+         TangoLongStringTable),
+        (CmdArgType.DevVarDoubleStringArray, AttrDataFormat.SPECTRUM,
+         TangoLongStringTable),
 
         # Bad type
         (float, AttrDataFormat.SCALAR, (False, float, "number")),
