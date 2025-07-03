@@ -110,6 +110,8 @@ def get_python_type(
             if cls is str:
                 return Sequence[Sequence[str]]
             return npt.NDArray[cls]
+        else:
+            return cls
 
     if is_int(tango_type, True):
         return _get_type(int)
