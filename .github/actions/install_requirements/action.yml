@@ -4,31 +4,26 @@ inputs:
   python-version:
     description: Python version to install, default is from Dockerfile
     default: "dev"
-  pip-install:
-    description: Parameters to pass to pip install
-    default: "$([ -f dev-requirements.txt ] && echo '-c dev-requirements.txt') -e .[dev]"
 
 runs:
   using: composite
   steps:
     - name: Get version of python
       run: |
-        PYTHON_VERSION="${{ inputs.python-version }}"
-        if [ $PYTHON_VERSION == "dev" ]; then
-          PYTHON_VERSION=$(sed -n "s/ARG PYTHON_VERSION=//p" Dockerfile)
+        UV_PYTHON="${{ inputs.python-version }}"
+        if [ $UV_PYTHON == "dev" ]; then
+          UV_PYTHON=$(sed -n "s/ARG UV_PYTHON=//p" Dockerfile)
         fi
-        echo "PYTHON_VERSION=$PYTHON_VERSION" >> "$GITHUB_ENV"
+        echo "UV_PYTHON=$UV_PYTHON" >> "$GITHUB_ENV"
       shell: bash
 
-    - name: Setup python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
 
     - name: Install packages
-      run: pip install ${{ inputs.pip-install }}
+      run: uv sync
       shell: bash
 
     - name: Report what was installed
-      run: pip freeze
+      run: uv tree
       shell: bash

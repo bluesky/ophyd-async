@@ -27,9 +27,7 @@ jobs:
         run: pipx run twine check --strict dist/*
 
       - name: Install produced wheel
-        uses: ./.github/actions/install_requirements
-        with:
-          pip-install: dist/*.whl
+        run: python -m pip install dist/*.whl
 
       - name: Test module --version works using the installed wheel
         # If more than one module in src/ replace with module name to test
