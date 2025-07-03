@@ -19,4 +19,4 @@ jobs:
         uses: ./.github/actions/install_requirements
 
       - name: Run tox
-        run: tox -e ${{ inputs.tox }}
+        run: uv run tox -e ${{ inputs.tox }}
