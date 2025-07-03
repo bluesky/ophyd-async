@@ -83,15 +83,22 @@ class TangoLongStringTable(Table):
     string: Sequence[str]
 
 
-def get_python_type(tango_type: CmdArgType,
-                    tango_format: AttrDataFormat | None = None) -> object:
+def get_python_type(
+    tango_type: CmdArgType, tango_format: AttrDataFormat | None = None
+) -> object:
     """For converting between recieved tango types and python primatives."""
-    if tango_format not in [AttrDataFormat.SCALAR,
-                            AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE, None]:
+    if tango_format not in [
+        AttrDataFormat.SCALAR,
+        AttrDataFormat.SPECTRUM,
+        AttrDataFormat.IMAGE,
+        None,
+    ]:
         raise TypeError("Unknown TangoFormat")
 
-    if tango_type in [CmdArgType.DevVarLongStringArray,
-                      CmdArgType.DevVarDoubleStringArray]:
+    if tango_type in [
+        CmdArgType.DevVarLongStringArray,
+        CmdArgType.DevVarDoubleStringArray,
+    ]:
         return TangoLongStringTable
 
     def _get_type(cls: type) -> object:

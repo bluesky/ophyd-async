@@ -130,25 +130,21 @@ def everything_signal_info():
         )
 
     signal_info["str"] = AttributeData(
-        "str",
-        str,
-        "test_string",
-        ("four", "five", "six"),
-        None
+        "str", str, "test_string", ("four", "five", "six"), None
     )
     signal_info["str_spectrum"] = SequenceData(
         "str_spectrum",
         Sequence[str],
         ("one", "two", "three"),
         ("four", "five", "six"),
-        None
+        None,
     )
     signal_info["str_image"] = SequenceData(
         "str_image",
         Sequence[Sequence[str]],
-        (('one', 'two', 'three'), ('one', 'two', 'three')),
-        (('four', 'five', 'six'), ('seven', 'eight', 'nine')),
-        None
+        (("one", "two", "three"), ("one", "two", "three")),
+        (("four", "five", "six"), ("seven", "eight", "nine")),
+        None,
     )
 
     add_ads(

@@ -100,7 +100,6 @@ async def test_ensure_proper_executor():
         (CmdArgType.ConstDevString, AttrDataFormat.SCALAR, str),
         (CmdArgType.DevVarBooleanArray, AttrDataFormat.SCALAR, bool),
         (CmdArgType.DevUChar, AttrDataFormat.SCALAR, int),
-
         # Array types
         (CmdArgType.DevVarCharArray, AttrDataFormat.SPECTRUM, Sequence[str]),
         (CmdArgType.DevVarShortArray, AttrDataFormat.SPECTRUM, Sequence[int]),
@@ -119,18 +118,22 @@ async def test_ensure_proper_executor():
         (CmdArgType.DevVarLong64Array, AttrDataFormat.IMAGE, npt.NDArray[int]),
         (CmdArgType.DevVarULong64Array, AttrDataFormat.SPECTRUM, Sequence[int]),
         (CmdArgType.DevVarULong64Array, AttrDataFormat.IMAGE, npt.NDArray[int]),
-
         # String array types
         (CmdArgType.DevVarStringArray, AttrDataFormat.SPECTRUM, Sequence[str]),
         (CmdArgType.DevVarStringArray, AttrDataFormat.IMAGE, Sequence[Sequence[str]]),
-        (CmdArgType.DevVarLongStringArray, AttrDataFormat.SPECTRUM,
-         TangoLongStringTable),
-        (CmdArgType.DevVarDoubleStringArray, AttrDataFormat.SPECTRUM,
-         TangoLongStringTable),
-
+        (
+            CmdArgType.DevVarLongStringArray,
+            AttrDataFormat.SPECTRUM,
+            TangoLongStringTable,
+        ),
+        (
+            CmdArgType.DevVarDoubleStringArray,
+            AttrDataFormat.SPECTRUM,
+            TangoLongStringTable,
+        ),
         # Bad type
         (float, AttrDataFormat.SCALAR, (False, float, "number")),
-    ]
+    ],
 )
 def test_get_python_type(tango_type, tango_format, expected):
     if tango_type is not float:
