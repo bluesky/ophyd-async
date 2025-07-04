@@ -42,11 +42,16 @@ Set the device to a target setpoint:
 
 ### [`bps.trigger`](#bluesky.plan_stubs.trigger)
 
-Ask the detector to take a single exposure. 
+Ask the device to trigger a data collection:
+- For detectors this will take a single exposure. 
+- For motors this will do nothing as the readback position is always valid.
 
 ### [`bps.read`](#bluesky.plan_stubs.read)
 
-Collect the data from a detector after `trigger`. 
+Collect the data from a device after `trigger`:
+- For detectors that write to a resource this will be a reference to the data written, for other detectors this will be the actual data
+- For motors this is the readback value
+
 
 ### [`bps.kickoff`](#bluesky.plan_stubs.kickoff)
 
@@ -76,6 +81,12 @@ Plan stubs can be mixed together to form arbitrary plans, but there are certain 
 
 After `stage` and `open_run`, `prepare` can be called to set up detectors for a given exposure time if this has been specified in the plan. The inner loop `set`s motors, then `trigger`s and `read`s detectors for each point. Finally `close_run` and `unstage` do the cleanup.
 
+::::{tab-set}
+:sync-group: diagram-code
+
+:::{tab-item} Diagram
+:sync: diagram
+
 ```{mermaid}
 :config: { "theme": "neutral" }
 :align: center
@@ -84,16 +95,46 @@ flowchart TD
     open_run --> prepare["(opt) prepare dets"]
     prepare --> set["set motors"]
     set --> trigger["trigger dets"]
-    trigger --> read["read dets"]
+    trigger --> read["read dets, motors"]
     read --> set
     read --> close_run
     close_run --> unstage["unstage dets, motors"]
 
 ```
+:::
+
+:::{tab-item} Code
+:sync: code
+
+```python
+@stage_decorator([detector, motor])
+@run_decorator()
+def pure_step(positions: Sequence[float], exposure_time: float | None) -> MsgGenerator:
+    if exposure_time is not None:
+        yield from bps.prepare(detector, TriggerInfo(livetime=exposure_time), wait=True)
+    for position in positions:
+        yield from bps.abs_set(motor, position, wait=True)
+        yield from bps.trigger_and_read(detector, motor)
+```
+
+```{seealso}
+This code is just to aid understanding, normally you would call [](#bluesky.plans.scan) in production
+```
+:::
+
+::::
+
+
 (pure-fly-scan)=
 ### Pure fly scan
 
 After `stage` and `open_run`, `prepare` sets up detectors for hardware triggering and motors for a trajectory and `kickoff` starts the prepared motion. Then `complete` is called on motors and detectors. While this is in progress the detectors will be `collect`ed repeatedly. Finally `close_run` and `unstage` do the cleanup.
+
+::::{tab-set}
+:sync-group: diagram-code
+
+:::{tab-item} Diagram
+:sync: diagram
 
 ```{mermaid}
 :config: { "theme": "neutral" }
@@ -108,10 +149,64 @@ flowchart TD
     collect ----> close_run
     close_run --> unstage["unstage dets, motors"]
 ```
+:::
+
+:::{tab-item} Code
+:sync: code
+
+```python
+@stage_decorator([detector, motor])
+@run_decorator()
+def pure_fly(
+    start_position: float,
+    end_position: float,
+    num_exposures: float,
+    exposure_time: float,
+    readout_time: float,
+) -> MsgGenerator:
+    yield from bps.prepare(
+        detector,
+        TriggerInfo(
+            livetime=exposure_time,
+            deadtime=readout_time,
+            number_of_events=num_exposures,
+        ),
+    )
+    yield from bps.prepare(
+        motor,
+        FlyMotorInfo(
+            start_position=start_position,
+            end_position=end_position,
+            time_for_move=(exposure_time + readout_time) * num_exposures,
+        ),
+    )
+    yield from bps.wait()
+    yield from bps.kickoff_all(motor)
+    yield from bps.kickoff_all(detector)
+    yield from bps.collect_while_completing(
+        flyers=[motor],
+        detectors=[detector],
+        flush_period=0.5,
+    )
+```
+
+```{seealso}
+This code is to aid understanding rather than for copying. This will be documented further in <https://github.com/bluesky/ophyd-async/issues/939>
+```
+:::
+
+::::
+
 
 ### Fly scan nested within a step scan
 
 After `stage` and `open_run` the detectors are `prepare`d for the entire scan. The inner loop `set`s the slow (software) motors to each point, followed by the hardware driven section of the scan. Just like the [](#pure-fly-scan), this consists of `prepare`, then `kickoff`, then `complete` of the fast (hardware) motors, `collect`ing from the detectors repeatedly until they are finished. Finally `close_run` and `unstage` do the cleanup.
+
+::::{tab-set}
+:sync-group: diagram-code
+
+:::{tab-item} Diagram
+:sync: diagram
 
 ```{mermaid}
 :config: { "theme": "neutral" }
@@ -129,6 +224,58 @@ flowchart TD
     collect ----> close_run
     close_run --> unstage["unstage dets, motors"]
 ```
+:::
+
+:::{tab-item} Code
+:sync: code
+
+```python
+@stage_decorator([detector, column_motor, row_motor])
+@run_decorator()
+def fly_inside_step(
+    columns: Sequence[float],
+    row_start: float,
+    row_end: float,
+    exposures_per_row: int,
+    exposure_time: float,
+    readout_time: float,
+) -> MsgGenerator:
+    yield from bps.prepare(
+        detector,
+        TriggerInfo(
+            livetime=exposure_time,
+            deadtime=readout_time,
+            number_of_events=exposures_per_row * len(columns),
+        ),
+    )
+    for column in columns:    
+        yield from bps.abs_set(column_motor, column)
+        yield from bps.prepare(
+            row_motor,
+            FlyMotorInfo(
+                start_position=row_start,
+                end_position=row_end,
+                time_for_move=(exposure_time + readout_time) * exposures_per_row,
+            ),
+        )
+        yield from bps.wait()
+        yield from bps.kickoff_all(row_motor)
+        yield from bps.kickoff_all(detector)
+        yield from bps.collect_while_completing(
+            flyers=[row_motor],
+            detectors=[detector],
+            flush_period=0.5,
+        )
+```
+
+```{seealso}
+This code is to aid understanding rather than for copying. This will be documented further in <https://github.com/bluesky/ophyd-async/issues/939>
+```
+:::
+
+::::
+
+
 
 ## Conclusion
 
