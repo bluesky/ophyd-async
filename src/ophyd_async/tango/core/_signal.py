@@ -22,6 +22,7 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SignalX,
+    StrictEnum,
 )
 
 from ._tango_transport import TangoSignalBackend, get_python_type
@@ -153,7 +154,7 @@ async def infer_python_type(
         py_type = get_python_type(config.data_type, config.data_format)
         if py_type is Enum:
             enum_dict = {label: i for i, label in enumerate(config.enum_labels)}
-            py_type = IntEnum("TangoEnum", enum_dict)
+            py_type = StrictEnum("TangoEnum", enum_dict)
     else:
         raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
 

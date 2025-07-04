@@ -759,6 +759,14 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             # the check above
             await self.proxies[trl].connect()  # type: ignore
             self.trl_configs[trl] = await self.proxies[trl].get_config()  # type: ignore
+            if isinstance(self.trl_configs[trl], AttributeInfoEx):
+                if (
+                    self.trl_configs[trl].data_type == CmdArgType.DevString
+                    and self.trl_configs[trl].data_format == AttrDataFormat.IMAGE
+                ):
+                    raise TypeError(
+                        "DevString IMAGE attributes are not supported by ophyd-async."
+                    )
             self.proxies[trl].support_events = self.support_events  # type: ignore
         except TimeoutError as ce:
             raise NotConnected(f"tango://{trl}") from ce
