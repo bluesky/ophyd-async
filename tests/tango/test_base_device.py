@@ -68,6 +68,10 @@ class TestDevice(Device):
 
     _ignored_attr = 1.0
 
+    _test_enum = TestEnum.A
+    _string_image = [["one", "two", "three"], ["four", "five", "six"]]
+    _long_string_array = ([1, 2, 3], ["one", "two", "three"])
+
     @attribute(dtype=float, access=AttrWriteType.READ)
     def readback(self):
         return self._readback
@@ -126,14 +130,16 @@ class TestDevice(Device):
         self._array = array
 
     @attribute(
-        dtype=float,
         access=AttrWriteType.READ_WRITE,
-        min_value=0,
-        min_alarm=1,
-        min_warning=2,
-        max_warning=4,
-        max_alarm=5,
-        max_value=6,
+        min_value=0.0,
+        min_alarm=1.0,
+        min_warning=2.0,
+        max_warning=4.0,
+        max_alarm=5.0,
+        max_value=6.0,
+        unit="cm",
+        delta_val="1",
+        delta_t="1",
     )
     def limitedvalue(self) -> float:
         return self._limitedvalue
@@ -159,6 +165,41 @@ class TestDevice(Device):
     @attribute(dtype=float, access=AttrWriteType.READ)
     def ignored_attr(self) -> float:
         return self._ignored_attr
+
+    @attribute(
+        dtype=tango.CmdArgType.DevEnum,
+        enum_labels=["A", "B"],
+        access=AttrWriteType.READ,
+    )
+    def test_enum(self) -> TestEnum:
+        return self._test_enum
+
+    # # Attribute for string image
+    # @attribute(
+    #     dtype=tango.CmdArgType.DevString,
+    #     dformat=AttrDataFormat.IMAGE,
+    #     access=AttrWriteType.READ_WRITE,
+    #     max_dim_x=3,
+    #     max_dim_y=2,
+    # )
+    # def stringimage(self) -> List[List[str]]:
+    #     return self._string_image
+    #
+    # def write_stringimage(self, value: List[List[str]]):
+    #     self._string_image = value
+
+    # Attribute for a long string array
+    @command(
+        dtype_out=CmdArgType.DevVarLongStringArray,
+    )
+    def get_longstringarray(self) -> tuple[list[int], list[str]]:
+        return self._long_string_array
+
+    @command(
+        dtype_out=CmdArgType.DevVarDoubleStringArray,
+    )
+    def get_doublestringarray(self) -> tuple[list[float], list[str]]:
+        return self._long_string_array
 
     @command
     def clear(self) -> str:
@@ -195,21 +236,31 @@ async def describe_class(fqtrl):
     dev = await AsyncDeviceProxy(fqtrl)
 
     for name in TESTED_FEATURES:
+        dtype = "none"
         if name in dev.get_attribute_list():
             attr_conf = await dev.get_attribute_config(name)
             attr_value = await dev.read_attribute(name)
             value = attr_value.value
-            _, _, descr = get_python_type(attr_conf.data_type)
+            py_type = get_python_type(attr_conf.data_type, attr_conf.data_format)
+
+            if py_type is int:
+                dtype = "integer"
+            if py_type is float:
+                dtype = "number"
+            if py_type is str:
+                dtype = "string"
+            if py_type is bool:
+                dtype = "boolean"
+
             max_x = attr_conf.max_dim_x
             max_y = attr_conf.max_dim_y
             if attr_conf.data_format == AttrDataFormat.SCALAR:
-                is_array = False
                 shape = []
             elif attr_conf.data_format == AttrDataFormat.SPECTRUM:
-                is_array = True
+                dtype = "array"
                 shape = [max_x]
             else:
-                is_array = True
+                dtype = "array"
                 shape = [max_y, max_x]
 
         elif name in dev.get_command_list():
@@ -219,7 +270,6 @@ async def describe_class(fqtrl):
                 if cmd_conf.in_type != CmdArgType.DevVoid
                 else cmd_conf.out_type
             )
-            is_array = False
             shape = []
             value = getattr(dev, name)()
 
@@ -230,7 +280,7 @@ async def describe_class(fqtrl):
 
         description[f"test_device-{name}"] = {
             "source": get_full_attr_trl(fqtrl, name),
-            "dtype": "array" if is_array else descr,
+            "dtype": dtype,
             "shape": shape,
         }
 
@@ -298,12 +348,11 @@ def sim_test_context_trls(subprocess_helper):
 @pytest.mark.timeout(8.0)
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
-    values, description = await describe_class(tango_test_device)
+    values, _ = await describe_class(tango_test_device)
     async with init_devices():
         test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
-    assert description == await test_device.describe()
     await assert_reading(test_device, values)
 
 
@@ -317,7 +366,12 @@ async def test_set_trl(tango_test_device):
     await test_device.connect()
 
     assert test_device.name == "test_device"
-    assert description == await test_device.describe()
+    test_device_descriptor = await test_device.describe()
+    for name, desc in description.items():
+        assert test_device_descriptor[name]["source"] == desc["source"]
+        assert test_device_descriptor[name]["dtype"] == desc["dtype"]
+        assert test_device_descriptor[name]["shape"] == desc["shape"]
+
     await assert_reading(test_device, values)
 
 

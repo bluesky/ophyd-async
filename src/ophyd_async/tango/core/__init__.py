@@ -12,14 +12,21 @@ from ._tango_readable import TangoReadable
 from ._tango_transport import (
     AttributeProxy,
     CommandProxy,
+    TangoDoubleStringTable,
+    TangoLongStringTable,
     TangoSignalBackend,
     ensure_proper_executor,
     get_dtype_extended,
     get_python_type,
+    get_source_metadata,
     get_tango_trl,
-    get_trl_descriptor,
 )
-from ._utils import DevStateEnum, get_device_trl_and_attr, get_full_attr_trl
+from ._utils import (
+    DevStateEnum,
+    get_device_trl_and_attr,
+    get_full_attr_trl,
+    try_to_cast_as_float,
+)
 
 __all__ = [
     "AttributeProxy",
@@ -29,7 +36,7 @@ __all__ = [
     "TangoSignalBackend",
     "get_python_type",
     "get_dtype_extended",
-    "get_trl_descriptor",
+    "get_source_metadata",
     "get_tango_trl",
     "infer_python_type",
     "infer_signal_type",
@@ -42,6 +49,9 @@ __all__ = [
     "TangoReadable",
     "TangoPolling",
     "TangoDeviceConnector",
+    "TangoLongStringTable",
+    "TangoDoubleStringTable",
+    "try_to_cast_as_float",
     "get_device_trl_and_attr",
     "get_full_attr_trl",
 ]

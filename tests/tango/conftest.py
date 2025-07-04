@@ -3,6 +3,7 @@ import pickle
 import socket
 import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from random import choice
@@ -87,6 +88,11 @@ class ArrayData(AttributeData):
         return array
 
 
+class SequenceData(AttributeData):
+    def random_value(self):
+        return [choice(self.random_put_values) for _ in range(len(self.initial))]
+
+
 @pytest.fixture(scope="module")
 def everything_signal_info():
     signal_info = {}
@@ -123,14 +129,24 @@ def everything_signal_info():
             None,
         )
 
-    add_ads(
-        "str",
-        "DevString",
-        str,
-        "test_string",
-        np.array(["one", "two", "three"], dtype=str),
-        ("four", "five", "six"),
+    signal_info["str"] = AttributeData(
+        "str", str, "test_string", ("four", "five", "six"), None
     )
+    signal_info["str_spectrum"] = SequenceData(
+        "str_spectrum",
+        Sequence[str],
+        ("one", "two", "three"),
+        ("four", "five", "six"),
+        None,
+    )
+    # signal_info["str_image"] = SequenceData(
+    #     "str_image",
+    #     Sequence[Sequence[str]],
+    #     (("one", "two", "three"), ("one", "two", "three")),
+    #     (("four", "five", "six"), ("seven", "eight", "nine")),
+    #     None,
+    # )
+
     add_ads(
         "bool",
         "DevBoolean",
