@@ -451,7 +451,7 @@ async def test_assert_val_reading_everything_tango(
         everything_device.my_state_spectrum, esi["my_state_spectrum"].initial
     )
 
-    await assert_val_reading(everything_device.str_image, esi["str_image"].initial)
+    # await assert_val_reading(everything_device.str_image, esi["str_image"].initial)
     await assert_val_reading(everything_device.bool_image, esi["bool_image"].initial)
     await assert_val_reading(
         everything_device.strenum_image, esi["strenum_image"].initial

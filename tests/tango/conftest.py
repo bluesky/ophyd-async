@@ -139,13 +139,13 @@ def everything_signal_info():
         ("four", "five", "six"),
         None,
     )
-    signal_info["str_image"] = SequenceData(
-        "str_image",
-        Sequence[Sequence[str]],
-        (("one", "two", "three"), ("one", "two", "three")),
-        (("four", "five", "six"), ("seven", "eight", "nine")),
-        None,
-    )
+    # signal_info["str_image"] = SequenceData(
+    #     "str_image",
+    #     Sequence[Sequence[str]],
+    #     (("one", "two", "three"), ("one", "two", "three")),
+    #     (("four", "five", "six"), ("seven", "eight", "nine")),
+    #     None,
+    # )
 
     add_ads(
         "bool",

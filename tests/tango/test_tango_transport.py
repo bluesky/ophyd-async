@@ -23,6 +23,7 @@ from ophyd_async.core import (
 from ophyd_async.tango.core import (
     AttributeProxy,
     CommandProxy,
+    TangoDoubleStringTable,
     TangoLongStringTable,
     TangoSignalBackend,
     ensure_proper_executor,
@@ -129,16 +130,23 @@ async def test_ensure_proper_executor():
         (
             CmdArgType.DevVarDoubleStringArray,
             AttrDataFormat.SPECTRUM,
-            TangoLongStringTable,
+            TangoDoubleStringTable,
         ),
         # Bad type
         (float, AttrDataFormat.SCALAR, (False, float, "number")),
+        # Bad format
+        (float, "bad_format", (False, float, "format")),
     ],
 )
 def test_get_python_type(tango_type, tango_format, expected):
     if tango_type is not float:
         assert get_python_type(tango_type, tango_format) == expected
     else:
+        if tango_format == "bad_format":
+            with pytest.raises(TypeError) as exc_info:
+                get_python_type(tango_type, tango_format)
+            assert str(exc_info.value) == "Unknown TangoFormat"
+            return
         # get_python_type should raise a TypeError
         with pytest.raises(TypeError) as exc_info:
             get_python_type(tango_type, tango_format)

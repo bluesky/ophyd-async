@@ -83,6 +83,11 @@ class TangoLongStringTable(Table):
     string: Sequence[str]
 
 
+class TangoDoubleStringTable(Table):
+    double: Array1D[np.float64]
+    string: Sequence[str]
+
+
 def get_python_type(
     tango_type: CmdArgType, tango_format: AttrDataFormat | None = None
 ) -> object:
@@ -95,11 +100,10 @@ def get_python_type(
     ]:
         raise TypeError("Unknown TangoFormat")
 
-    if tango_type in [
-        CmdArgType.DevVarLongStringArray,
-        CmdArgType.DevVarDoubleStringArray,
-    ]:
+    if tango_type is CmdArgType.DevVarLongStringArray:
         return TangoLongStringTable
+    if tango_type is CmdArgType.DevVarDoubleStringArray:
+        return TangoDoubleStringTable
 
     def _get_type(cls: type) -> object:
         if tango_format == AttrDataFormat.SCALAR:

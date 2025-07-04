@@ -12,6 +12,7 @@ from ._tango_readable import TangoReadable
 from ._tango_transport import (
     AttributeProxy,
     CommandProxy,
+    TangoDoubleStringTable,
     TangoLongStringTable,
     TangoSignalBackend,
     ensure_proper_executor,
@@ -49,6 +50,7 @@ __all__ = [
     "TangoPolling",
     "TangoDeviceConnector",
     "TangoLongStringTable",
+    "TangoDoubleStringTable",
     "try_to_cast_as_float",
     "get_device_trl_and_attr",
     "get_full_attr_trl",

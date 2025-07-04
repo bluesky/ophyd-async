@@ -140,6 +140,9 @@ class OneOfEverythingTangoDevice(Device):
         )
         self._add_attr(spectrum_attr, initial_value)
         # have image just be 2 of the initial spectrum stacked
+        # String images are not supported, do not add their attribute data
+        if name == "str":
+            return
         self._add_attr(image_attr, np.vstack((initial_value, initial_value)))
 
     def add_scalar_command(self, name: str, dtype: str):

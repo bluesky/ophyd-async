@@ -69,6 +69,8 @@ class TestDevice(Device):
     _ignored_attr = 1.0
 
     _test_enum = TestEnum.A
+    _string_image = [["one", "two", "three"], ["four", "five", "six"]]
+    _long_string_array = ([1, 2, 3], ["one", "two", "three"])
 
     @attribute(dtype=float, access=AttrWriteType.READ)
     def readback(self):
@@ -171,6 +173,33 @@ class TestDevice(Device):
     )
     def test_enum(self) -> TestEnum:
         return self._test_enum
+
+    # # Attribute for string image
+    # @attribute(
+    #     dtype=tango.CmdArgType.DevString,
+    #     dformat=AttrDataFormat.IMAGE,
+    #     access=AttrWriteType.READ_WRITE,
+    #     max_dim_x=3,
+    #     max_dim_y=2,
+    # )
+    # def stringimage(self) -> List[List[str]]:
+    #     return self._string_image
+    #
+    # def write_stringimage(self, value: List[List[str]]):
+    #     self._string_image = value
+
+    # Attribute for a long string array
+    @command(
+        dtype_out=CmdArgType.DevVarLongStringArray,
+    )
+    def get_longstringarray(self) -> tuple[list[int], list[str]]:
+        return self._long_string_array
+
+    @command(
+        dtype_out=CmdArgType.DevVarDoubleStringArray,
+    )
+    def get_doublestringarray(self) -> tuple[list[float], list[str]]:
+        return self._long_string_array
 
     @command
     def clear(self) -> str:
