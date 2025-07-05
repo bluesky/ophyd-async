@@ -93,7 +93,7 @@ class ASTestDeviceTimeoutSet(ASTestDevice):
     async def set(self, val, timeout=0.01):
         await asyncio.sleep(timeout)
         yield WatcherUpdate(1, 1, 1)
-        raise asyncio.TimeoutError()
+        raise TimeoutError()
 
 
 class ASTestDeviceIteratorSet(ASTestDevice):
