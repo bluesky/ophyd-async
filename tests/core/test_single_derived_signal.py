@@ -219,7 +219,10 @@ async def test_derived_update_cached_reading_not_initialized(
     derived_signal_backend: SignalBackend,
 ):
     class test_cls(Subscribable):
-        def subscribe(self, function: Callback) -> None:
+        def subscribe_reading(self, function: Callback) -> None:
+            pass
+
+        def subscribe_value(self, function: Callback) -> None:
             pass
 
         def clear_sub(self, function: Callback) -> None:
