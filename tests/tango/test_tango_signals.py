@@ -25,7 +25,12 @@ from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
 )
-from ophyd_async.testing import MonitorQueue, assert_reading, assert_value
+from ophyd_async.testing import (
+    MonitorQueue,
+    assert_reading,
+    assert_value,
+    partial_reading,
+)
 
 T = TypeVar("T")
 
@@ -226,7 +231,7 @@ async def test_tango_signal_r(everything_device_trl: str, everything_signal_info
         # assert_* functions
         value = np.array(await signal.get_value())
         await assert_value(signal, value)
-        await assert_reading(signal, {"test_signal": {"value": value}})
+        await assert_reading(signal, {"test_signal": partial_reading(value)})
 
 
 # --------------------------------------------------------------------
@@ -297,7 +302,7 @@ async def test_tango_signal_x(tango_test_device: str):
 
 async def assert_val_reading(signal, value, name=""):
     await assert_value(signal, value)
-    await assert_reading(signal, {name: {"value": value}})
+    await assert_reading(signal, {name: partial_reading(value)})
 
 
 async def test_set_with_converter(everything_device_trl):
