@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 import numpy.typing as npt
 from tango import (
@@ -22,7 +22,6 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SignalX,
-    StrictEnum,
 )
 
 from ._tango_transport import TangoSignalBackend, get_python_type
@@ -148,13 +147,10 @@ async def infer_python_type(
 
     if tr_name in dev_proxy.get_command_list():
         config = await dev_proxy.get_command_config(tr_name)
-        py_type = get_python_type(config.in_type)
+        py_type = get_python_type(config)
     elif tr_name in dev_proxy.get_attribute_list():
         config = await dev_proxy.get_attribute_config(tr_name)
-        py_type = get_python_type(config.data_type, config.data_format)
-        if py_type is Enum:
-            enum_dict = {label: i for i, label in enumerate(config.enum_labels)}
-            py_type = StrictEnum("TangoEnum", enum_dict)
+        py_type = get_python_type(config)
     else:
         raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
 

@@ -219,6 +219,13 @@ class TestDevice(Device):
     def raise_exception_cmd(self):
         raise
 
+    @command(
+        dtype_in=CmdArgType.DevEnum,
+        dtype_out=CmdArgType.DevEnum,
+    )
+    def enum_cmd(self, value: TestEnum) -> TestEnum:
+        return value
+
 
 # --------------------------------------------------------------------
 class TestTangoReadable(TangoReadable):
@@ -241,7 +248,7 @@ async def describe_class(fqtrl):
             attr_conf = await dev.get_attribute_config(name)
             attr_value = await dev.read_attribute(name)
             value = attr_value.value
-            py_type = get_python_type(attr_conf.data_type, attr_conf.data_format)
+            py_type = get_python_type(attr_conf)
 
             if py_type is int:
                 dtype = "integer"
@@ -265,11 +272,7 @@ async def describe_class(fqtrl):
 
         elif name in dev.get_command_list():
             cmd_conf = await dev.get_command_config(name)
-            _, _, descr = get_python_type(
-                cmd_conf.in_type
-                if cmd_conf.in_type != CmdArgType.DevVoid
-                else cmd_conf.out_type
-            )
+            _, _, descr = get_python_type(cmd_conf)
             shape = []
             value = getattr(dev, name)()
 

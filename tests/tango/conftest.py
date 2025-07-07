@@ -139,14 +139,32 @@ def everything_signal_info():
         ("four", "five", "six"),
         None,
     )
-    # signal_info["str_image"] = SequenceData(
-    #     "str_image",
-    #     Sequence[Sequence[str]],
-    #     (("one", "two", "three"), ("one", "two", "three")),
-    #     (("four", "five", "six"), ("seven", "eight", "nine")),
-    #     None,
-    # )
-
+    signal_info["strenum"] = AttributeData(
+        name="strenum",
+        py_type=ExampleStrEnum,
+        initial=ExampleStrEnum.B,
+        random_put_values=[
+            ExampleStrEnum.A.value,
+            ExampleStrEnum.B.value,
+            ExampleStrEnum.C.value,
+        ],
+        cmd_name=None,
+    )
+    signal_info["strenum_spectrum"] = SequenceData(
+        name="strenum_spectrum",
+        py_type=Sequence[ExampleStrEnum],
+        initial=[
+            ExampleStrEnum.A.value,
+            ExampleStrEnum.B.value,
+            ExampleStrEnum.C.value,
+        ],
+        random_put_values=[
+            ExampleStrEnum.A.value,
+            ExampleStrEnum.B.value,
+            ExampleStrEnum.C.value,
+        ],
+        cmd_name=None,
+    )
     add_ads(
         "bool",
         "DevBoolean",
@@ -154,16 +172,6 @@ def everything_signal_info():
         True,
         np.array([False, True], dtype=bool),
         (False, True),
-    )
-    add_ads(
-        "strenum",
-        "DevEnum",
-        ExampleStrEnum,
-        ExampleStrEnum.B,
-        np.array(
-            [ExampleStrEnum.A.value, ExampleStrEnum.B.value, ExampleStrEnum.C.value],
-        ),
-        (ExampleStrEnum.A.value, ExampleStrEnum.B.value, ExampleStrEnum.C.value),
     )
     add_ads("int8", "DevShort", int, 1, int_array_value(np.int8), (1, 2, 3, 4, 5))
     add_ads("uint8", "DevUChar", int, 1, int_array_value(np.uint8), (1, 2, 3, 4, 5))

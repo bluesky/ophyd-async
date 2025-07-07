@@ -1,7 +1,6 @@
 import asyncio
 import re
 from collections.abc import Sequence
-from enum import Enum
 from typing import Any
 
 import numpy as np
@@ -96,8 +95,8 @@ async def test_ensure_proper_executor():
         (CmdArgType.DevULong64, AttrDataFormat.SCALAR, int),
         (CmdArgType.DevString, AttrDataFormat.SCALAR, str),
         (CmdArgType.DevEncoded, AttrDataFormat.SCALAR, str),
-        (CmdArgType.DevEnum, AttrDataFormat.SCALAR, Enum),
-        (CmdArgType.DevState, AttrDataFormat.SCALAR, CmdArgType.DevState),
+        (CmdArgType.DevEnum, AttrDataFormat.SCALAR, StrictEnum),
+        (CmdArgType.DevState, AttrDataFormat.SCALAR, StrictEnum),
         (CmdArgType.ConstDevString, AttrDataFormat.SCALAR, str),
         (CmdArgType.DevVarBooleanArray, AttrDataFormat.SCALAR, bool),
         (CmdArgType.DevUChar, AttrDataFormat.SCALAR, int),
@@ -139,17 +138,32 @@ async def test_ensure_proper_executor():
     ],
 )
 def test_get_python_type(tango_type, tango_format, expected):
-    if tango_type is not float:
-        assert get_python_type(tango_type, tango_format) == expected
+    class TestConfig:
+        pass
+
+    config = TestConfig()
+    config.data_format = tango_format
+    config.data_type = tango_type
+    if tango_type is CmdArgType.DevEnum:
+        config.enum_labels = ["A", "B", "C"]
+        py_type = get_python_type(config)
+        assert issubclass(py_type, StrictEnum)
+        assert [e.name for e in py_type] == ["A", "B", "C"]
+    elif tango_type is CmdArgType.DevState:
+        py_type = get_python_type(config)
+        assert issubclass(py_type, StrictEnum)
+        assert [e.name for e in py_type] == list(DevState.names.keys())
+    elif tango_type is not float:
+        assert get_python_type(config) == expected
     else:
         if tango_format == "bad_format":
             with pytest.raises(TypeError) as exc_info:
-                get_python_type(tango_type, tango_format)
+                get_python_type(config)
             assert str(exc_info.value) == "Unknown TangoFormat"
             return
         # get_python_type should raise a TypeError
         with pytest.raises(TypeError) as exc_info:
-            get_python_type(tango_type, tango_format)
+            get_python_type(config)
         assert str(exc_info.value) == "Unknown TangoType"
 
 
@@ -208,6 +222,7 @@ def test_get_dtype_extended(datatype, expected):
         ("nonexistent", True, None, True),
     ],
 )
+@pytest.mark.timeout(1.0)
 async def test_get_tango_trl(
     tango_test_device, attr_name, proxy_needed, expected_type, should_raise
 ):

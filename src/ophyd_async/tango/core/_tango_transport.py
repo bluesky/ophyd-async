@@ -4,7 +4,6 @@ import logging
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine, Sequence
-from enum import Enum
 from typing import Any, ParamSpec, TypeVar, cast
 
 import numpy as np
@@ -88,9 +87,18 @@ class TangoDoubleStringTable(Table):
     string: Sequence[str]
 
 
-def get_python_type(
-    tango_type: CmdArgType, tango_format: AttrDataFormat | None = None
-) -> object:
+def get_python_type(config: AttributeInfoEx | CommandInfo) -> object:
+    tango_type = None
+    tango_format = None
+    if hasattr(config, "data_type"):
+        tango_type = config.data_type
+    elif hasattr(config, "in_type"):
+        tango_type = config.in_type
+
+    if hasattr(config, "data_format"):
+        tango_format = config.data_format
+    else:
+        tango_format = None
     """For converting between recieved tango types and python primatives."""
     if tango_format not in [
         AttrDataFormat.SCALAR,
@@ -128,9 +136,15 @@ def get_python_type(
     elif is_binary(tango_type, True):
         return _get_type(str)
     elif tango_type == CmdArgType.DevEnum:
-        return Enum
+        if hasattr(config, "enum_labels"):
+            enum_dict = {label: str(label) for label in config.enum_labels}
+            return _get_type(StrictEnum("TangoEnum", enum_dict))
+        else:
+            return _get_type(int)
     elif tango_type == CmdArgType.DevState:
-        return CmdArgType.DevState
+        enum_labels = list(DevState.names.keys())
+        enum_dict = {label: str(label) for label in enum_labels}
+        return _get_type(StrictEnum("TangoState", enum_dict))
     elif tango_type == CmdArgType.DevUChar:
         return _get_type(int)
     elif tango_type == CmdArgType.DevVoid:
@@ -602,7 +616,7 @@ def get_source_metadata(
 
             _choices = list(config.enum_labels) if config.enum_labels else []
 
-            tr_dtype = get_python_type(config.data_type, config.data_format)
+            tr_dtype = get_python_type(config)
 
             if tr_dtype == CmdArgType.DevState:
                 _choices = list(DevState.names.keys())

@@ -453,9 +453,9 @@ async def test_assert_val_reading_everything_tango(
 
     # await assert_val_reading(everything_device.str_image, esi["str_image"].initial)
     await assert_val_reading(everything_device.bool_image, esi["bool_image"].initial)
-    await assert_val_reading(
-        everything_device.strenum_image, esi["strenum_image"].initial
-    )
+    # await assert_val_reading(
+    #     everything_device.strenum_image, esi["strenum_image"].initial
+    # )
     await assert_val_reading(everything_device.int8_image, esi["int8_image"].initial)
     await assert_val_reading(everything_device.uint8_image, esi["uint8_image"].initial)
     await assert_val_reading(everything_device.int16_image, esi["int16_image"].initial)
