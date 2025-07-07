@@ -1,0 +1,990 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>What plan stubs will do to Devices &#8212; ophyd-async 0.12.dev5+g222e0f524 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=1bad3898"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'explanations/plan-stubs';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Where should Device logic live?" href="where-device-logic.html" />
+    <link rel="prev" title="Flyscanning" href="flyscanning.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="main" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev5+g222e0f524 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev5+g222e0f524 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="decisions.html">Architectural Decision Records</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0001-record-architecture-decisions.html">1. Record architecture decisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0002-switched-to-python-copier-template.html">2. Adopt python-copier-template for project structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0003-ophyd-async-migration.html">3. Ophyd Async migration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0004-repository-structure.html">4. Repository Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0005-respect-black-line-length.html">5. Respect black line length</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0006-procedural-device-definitions.html">6. Procedural Device Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0007-subpackage-structure.html">7. Sub-package Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0008-signal-types.html">8. Settle on Signal Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0009-procedural-vs-declarative-devices.html">9. Procedural vs Declarative Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0010-docstring-format.html">10. Decide on docstring format</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="declarative-vs-procedural.html">Declarative vs Procedural Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design-goals.html">Design goals and differences with ophyd sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device-connection-strategies.html">Device connection strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devices-signals-backends.html">Devices, Signals and their Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flyscanning.html">Flyscanning</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">What plan stubs will do to Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="where-device-logic.html">Where should Device logic live?</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../explanations.html" class="nav-link">Explanations</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">What plan stubs will do to Devices</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="what-plan-stubs-will-do-to-devices">
+<h1>What plan stubs will do to Devices<a class="headerlink" href="#what-plan-stubs-will-do-to-devices" title="Link to this heading">#</a></h1>
+<p>Plan authors will typically compose <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html#stub-plans" title="bluesky 1.14.3.dev12+gc2b578aa">plan stubs</a> together to define the behaviour they expect from their Devices. When the plan is executed, the RunEngine will consume the <a class="reference external" href="https://blueskyproject.io/bluesky/main/msg.html" title="bluesky 1.14.3.dev12+gc2b578aa"><code class="docutils literal notranslate"><span class="pre">Msg</span></code> objects</a> <code class="docutils literal notranslate"><span class="pre">yield</span> <span class="pre">from</span></code> each plan stub as a series of instructions, many of which call methods on the Device. This document lists some commonly used plan stubs, what Devices will do when they are called, and what order they should be called inside the plan.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="flyscanning.html"><span class="std std-doc">Flyscanning</span></a> for more information on the difference between step scans (typically software driven) and flyscans (typically hardware driven)</p>
+</div>
+<section id="plan-stubs">
+<h2>Plan stubs<a class="headerlink" href="#plan-stubs" title="Link to this heading">#</a></h2>
+<section id="bps-stage-and-bps-unstage">
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.stage.html#bluesky.plan_stubs.stage" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.stage</span></code></span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.unstage.html#bluesky.plan_stubs.unstage" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.unstage</span></code></span></a><a class="headerlink" href="#bps-stage-and-bps-unstage" title="Link to this heading">#</a></h3>
+<p>These are typically the first and last Messages in the plan:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">stage</span></code> gets the Device into an idle state then makes it ready for data collection:</p>
+<ul>
+<li><p>For Devices that read from Signals this will start monitoring those Signals</p></li>
+<li><p>For detectors that write to a resource (e.g. an HDF file) this will indicate that any captured data (e.g. a detector frame) should be stored in a fresh resource</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">unstage</span></code> returns the Device to an idle state:</p>
+<ul>
+<li><p>For Devices that read from Signals this will stop monitoring those Signals</p></li>
+<li><p>For detectors that write to a resource this will close that resource</p></li>
+</ul>
+</li>
+</ul>
+<p>It is recommended that the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.preprocessors.stage_decorator.html#bluesky.preprocessors.stage_decorator" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bpp.stage_decorator</span></code></span></a> is applied to the plan to yield these Messages as they do the appropriate error handling.</p>
+</section>
+<section id="bps-open-run-and-bps-close-run">
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.open_run.html#bluesky.plan_stubs.open_run" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.open_run</span></code></span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.close_run.html#bluesky.plan_stubs.close_run" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.close_run</span></code></span></a><a class="headerlink" href="#bps-open-run-and-bps-close-run" title="Link to this heading">#</a></h3>
+<p>These are typically the second and second last Messages in the plan:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">open_run</span></code> indicates to downstream consumers the start of a data collection</p>
+<ul>
+<li><p>For detectors this may be used by specific implentations of <code class="docutils literal notranslate"><span class="pre">PathProvider</span></code> to calculate a new filename to write into</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">close_run</span></code> indicates the end of a data collection</p></li>
+</ul>
+<p>It is recommended that the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.preprocessors.run_decorator.html#bluesky.preprocessors.run_decorator" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bpp.run_decorator</span></code></span></a> is applied to the plan to yield these Messages as they do the appropriate error handling. It should be placed after the <code class="docutils literal notranslate"><span class="pre">stage_decorator</span></code>.</p>
+</section>
+<section id="bps-prepare">
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.prepare.html#bluesky.plan_stubs.prepare" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.prepare</span></code></span></a><a class="headerlink" href="#bps-prepare" title="Link to this heading">#</a></h3>
+<p>Prepares the device for a <code class="docutils literal notranslate"><span class="pre">trigger</span></code> or <code class="docutils literal notranslate"><span class="pre">kickoff</span></code>, after <code class="docutils literal notranslate"><span class="pre">stage</span></code> and <code class="docutils literal notranslate"><span class="pre">open_run</span></code>:</p>
+<ul class="simple">
+<li><p>For detectors this will set parameters on the hardware such as exposure time and number of frames. If hardware triggering is requested it will also arm the detector so it is ready to receive those triggers.</p></li>
+<li><p>For motors this will move to the run up position and setup the requested motion velocity or trajectory.</p></li>
+</ul>
+</section>
+<section id="bps-abs-set-or-bps-mv">
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.abs_set.html#bluesky.plan_stubs.abs_set" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.abs_set</span></code></span></a> or <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mv.html#bluesky.plan_stubs.mv" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.mv</span></code></span></a><a class="headerlink" href="#bps-abs-set-or-bps-mv" title="Link to this heading">#</a></h3>
+<p>Set the device to a target setpoint:</p>
+<ul class="simple">
+<li><p>For motors, <code class="docutils literal notranslate"><span class="pre">bps.mv</span></code> will move the motor to the desired position, returning when it is complete and erroring if it fails to move. <strong><code class="docutils literal notranslate"><span class="pre">bps.abs_set</span></code>, however, does not wait for completion by default unless the <code class="docutils literal notranslate"><span class="pre">wait</span></code> option is explicitly set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</strong></p></li>
+</ul>
+</section>
+<section id="bps-trigger">
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.trigger.html#bluesky.plan_stubs.trigger" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.trigger</span></code></span></a><a class="headerlink" href="#bps-trigger" title="Link to this heading">#</a></h3>
+<p>Ask the device to trigger a data collection:</p>
+<ul class="simple">
+<li><p>For detectors this will take a single exposure.</p></li>
+<li><p>For motors this will do nothing as the readback position is always valid.</p></li>
+</ul>
+</section>
+<section id="bps-read">
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.read.html#bluesky.plan_stubs.read" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.read</span></code></span></a><a class="headerlink" href="#bps-read" title="Link to this heading">#</a></h3>
+<p>Collect the data from a device after <code class="docutils literal notranslate"><span class="pre">trigger</span></code>:</p>
+<ul class="simple">
+<li><p>For detectors that write to a resource this will be a reference to the data written, for other detectors this will be the actual data</p></li>
+<li><p>For motors this is the readback value</p></li>
+</ul>
+</section>
+<section id="bps-kickoff">
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.kickoff.html#bluesky.plan_stubs.kickoff" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.kickoff</span></code></span></a><a class="headerlink" href="#bps-kickoff" title="Link to this heading">#</a></h3>
+<p>Begin a flyscan:</p>
+<ul class="simple">
+<li><p>For motors this will start motion and return once the motor has completed its run up and is moving at the desired velocity</p></li>
+<li><p>For detectors prepared for software triggering this will start the acquisition</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The plan should ensure that <code class="docutils literal notranslate"><span class="pre">kickoff</span></code> on the motors has finished before <code class="docutils literal notranslate"><span class="pre">kickoff</span></code> on the detectors in started so that software triggered detectors don’t start too early. Hardware triggered detectors will already be armed from <code class="docutils literal notranslate"><span class="pre">prepare</span></code>.</p>
+</div>
+</section>
+<section id="bps-complete-and-bps-collect">
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.collect.html#bluesky.plan_stubs.collect" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.complete</span></code></span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.collect.html#bluesky.plan_stubs.collect" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.collect</span></code></span></a><a class="headerlink" href="#bps-complete-and-bps-collect" title="Link to this heading">#</a></h3>
+<p>Wait for flyscanning to be done, collecting data from detectors periodically while that happens:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">complete</span></code> waits for a flyscan to be done:</p>
+<ul>
+<li><p>For motors this will wait until motion including ramp down is complete</p></li>
+<li><p>For detectors this will wait until the requested number of frames has been written</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">collect</span></code> collects the data that has been written so far by a detector during a flyscan.</p></li>
+</ul>
+<p>Typically called via <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.collect_while_completing.html#bluesky.plan_stubs.collect_while_completing" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.collect_while_completing</span></code></span></a>, after <code class="docutils literal notranslate"><span class="pre">kickoff</span></code>.</p>
+</section>
+</section>
+<section id="ordering">
+<h2>Ordering<a class="headerlink" href="#ordering" title="Link to this heading">#</a></h2>
+<p>Plan stubs can be mixed together to form arbitrary plans, but there are certain patterns that are common in specific categories of plan. This section lists the ordering of these stubs for step scans (typically software driven), fly scans (typically hardware driven), and scans that nest a fly scan within a step scan.</p>
+<section id="pure-step-scan">
+<h3>Pure step scan<a class="headerlink" href="#pure-step-scan" title="Link to this heading">#</a></h3>
+<p>After <code class="docutils literal notranslate"><span class="pre">stage</span></code> and <code class="docutils literal notranslate"><span class="pre">open_run</span></code>, <code class="docutils literal notranslate"><span class="pre">prepare</span></code> can be called to set up detectors for a given exposure time if this has been specified in the plan. The inner loop <code class="docutils literal notranslate"><span class="pre">set</span></code>s motors, then <code class="docutils literal notranslate"><span class="pre">trigger</span></code>s and <code class="docutils literal notranslate"><span class="pre">read</span></code>s detectors for each point. Finally <code class="docutils literal notranslate"><span class="pre">close_run</span></code> and <code class="docutils literal notranslate"><span class="pre">unstage</span></code> do the cleanup.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="diagram-code" data-sync-id="diagram" for="sd-tab-item-0">
+Diagram</label><div class="sd-tab-content docutils">
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+flowchart TD
+    stage[&quot;stage dets, motors&quot;] --&gt; open_run
+    open_run --&gt; prepare[&quot;(opt) prepare dets&quot;]
+    prepare --&gt; set[&quot;set motors&quot;]
+    set --&gt; trigger[&quot;trigger dets&quot;]
+    trigger --&gt; read[&quot;read dets, motors&quot;]
+    read --&gt; set
+    read --&gt; close_run
+    close_run --&gt; unstage[&quot;unstage dets, motors&quot;]
+    </pre></div>
+<input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
+<label class="sd-tab-label" data-sync-group="diagram-code" data-sync-id="code" for="sd-tab-item-1">
+Code</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage_decorator</span><span class="p">([</span><span class="n">detector</span><span class="p">,</span> <span class="n">motor</span><span class="p">])</span>
+<span class="nd">@run_decorator</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pure_step</span><span class="p">(</span><span class="n">positions</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">exposure_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MsgGenerator</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">exposure_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">TriggerInfo</span><span class="p">(</span><span class="n">livetime</span><span class="o">=</span><span class="n">exposure_time</span><span class="p">),</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">positions</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">abs_set</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">trigger_and_read</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>This code is just to aid understanding, normally you would call <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plans.scan.html#bluesky.plans.scan" title="bluesky 1.14.3.dev12+gc2b578aa"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.plans.scan</span></code></a> in production</p>
+</div>
+</div>
+</div>
+</section>
+<section id="pure-fly-scan">
+<span id="id1"></span><h3>Pure fly scan<a class="headerlink" href="#pure-fly-scan" title="Link to this heading">#</a></h3>
+<p>After <code class="docutils literal notranslate"><span class="pre">stage</span></code> and <code class="docutils literal notranslate"><span class="pre">open_run</span></code>, <code class="docutils literal notranslate"><span class="pre">prepare</span></code> sets up detectors for hardware triggering and motors for a trajectory and <code class="docutils literal notranslate"><span class="pre">kickoff</span></code> starts the prepared motion. Then <code class="docutils literal notranslate"><span class="pre">complete</span></code> is called on motors and detectors. While this is in progress the detectors will be <code class="docutils literal notranslate"><span class="pre">collect</span></code>ed repeatedly. Finally <code class="docutils literal notranslate"><span class="pre">close_run</span></code> and <code class="docutils literal notranslate"><span class="pre">unstage</span></code> do the cleanup.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-2" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="diagram-code" data-sync-id="diagram" for="sd-tab-item-2">
+Diagram</label><div class="sd-tab-content docutils">
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+flowchart TD
+    stage[&quot;stage dets, motors&quot;] --&gt; open_run
+    open_run --&gt; prepare[&quot;prepare dets, motors&quot;]
+    prepare --&gt; kickoff[&quot;kickoff dets, motors&quot;]
+    kickoff --&gt; complete[&quot;complete dets, motors&quot;]
+    complete --&gt; collect[&quot;collect dets&quot;]
+    collect --&gt; collect
+    collect ----&gt; close_run
+    close_run --&gt; unstage[&quot;unstage dets, motors&quot;]
+    </pre></div>
+<input id="sd-tab-item-3" name="sd-tab-set-1" type="radio">
+<label class="sd-tab-label" data-sync-group="diagram-code" data-sync-id="code" for="sd-tab-item-3">
+Code</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage_decorator</span><span class="p">([</span><span class="n">detector</span><span class="p">,</span> <span class="n">motor</span><span class="p">])</span>
+<span class="nd">@run_decorator</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pure_fly</span><span class="p">(</span>
+    <span class="n">start_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">end_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">num_exposures</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">exposure_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">readout_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MsgGenerator</span><span class="p">:</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
+        <span class="n">detector</span><span class="p">,</span>
+        <span class="n">TriggerInfo</span><span class="p">(</span>
+            <span class="n">livetime</span><span class="o">=</span><span class="n">exposure_time</span><span class="p">,</span>
+            <span class="n">deadtime</span><span class="o">=</span><span class="n">readout_time</span><span class="p">,</span>
+            <span class="n">number_of_events</span><span class="o">=</span><span class="n">num_exposures</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
+        <span class="n">motor</span><span class="p">,</span>
+        <span class="n">FlyMotorInfo</span><span class="p">(</span>
+            <span class="n">start_position</span><span class="o">=</span><span class="n">start_position</span><span class="p">,</span>
+            <span class="n">end_position</span><span class="o">=</span><span class="n">end_position</span><span class="p">,</span>
+            <span class="n">time_for_move</span><span class="o">=</span><span class="p">(</span><span class="n">exposure_time</span> <span class="o">+</span> <span class="n">readout_time</span><span class="p">)</span> <span class="o">*</span> <span class="n">num_exposures</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">kickoff_all</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">kickoff_all</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">collect_while_completing</span><span class="p">(</span>
+        <span class="n">flyers</span><span class="o">=</span><span class="p">[</span><span class="n">motor</span><span class="p">],</span>
+        <span class="n">detectors</span><span class="o">=</span><span class="p">[</span><span class="n">detector</span><span class="p">],</span>
+        <span class="n">flush_period</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>This code is to aid understanding rather than for copying. This will be documented further in <a class="github reference external" href="https://github.com/bluesky/ophyd-async/issues/939">bluesky/ophyd-async#939</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="fly-scan-nested-within-a-step-scan">
+<h3>Fly scan nested within a step scan<a class="headerlink" href="#fly-scan-nested-within-a-step-scan" title="Link to this heading">#</a></h3>
+<p>After <code class="docutils literal notranslate"><span class="pre">stage</span></code> and <code class="docutils literal notranslate"><span class="pre">open_run</span></code> the detectors are <code class="docutils literal notranslate"><span class="pre">prepare</span></code>d for the entire scan. The inner loop <code class="docutils literal notranslate"><span class="pre">set</span></code>s the slow (software) motors to each point, followed by the hardware driven section of the scan. Just like the <a class="reference internal" href="#pure-fly-scan"><span class="std std-ref">Pure fly scan</span></a>, this consists of <code class="docutils literal notranslate"><span class="pre">prepare</span></code>, then <code class="docutils literal notranslate"><span class="pre">kickoff</span></code>, then <code class="docutils literal notranslate"><span class="pre">complete</span></code> of the fast (hardware) motors, <code class="docutils literal notranslate"><span class="pre">collect</span></code>ing from the detectors repeatedly until they are finished. Finally <code class="docutils literal notranslate"><span class="pre">close_run</span></code> and <code class="docutils literal notranslate"><span class="pre">unstage</span></code> do the cleanup.</p>
+<div class="sd-tab-set docutils">
+<input checked="checked" id="sd-tab-item-4" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="diagram-code" data-sync-id="diagram" for="sd-tab-item-4">
+Diagram</label><div class="sd-tab-content docutils">
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+flowchart TD
+    stage[&quot;stage dets, motors&quot;] --&gt; open_run
+    open_run --&gt; prepare_d[&quot;prepare dets&quot;]
+    prepare_d --&gt; set[&quot;set slow motors&quot;]
+    set --&gt; prepare_m[&quot;prepare fast motors&quot;]
+    prepare_m --&gt; kickoff[&quot;kickoff dets, fast motors&quot;]
+    kickoff --&gt; complete[&quot;complete dets, fast motors&quot;]
+    complete --&gt; collect[&quot;collect dets&quot;]
+    collect --&gt; collect
+    collect --&gt; set
+    collect ----&gt; close_run
+    close_run --&gt; unstage[&quot;unstage dets, motors&quot;]
+    </pre></div>
+<input id="sd-tab-item-5" name="sd-tab-set-2" type="radio">
+<label class="sd-tab-label" data-sync-group="diagram-code" data-sync-id="code" for="sd-tab-item-5">
+Code</label><div class="sd-tab-content docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage_decorator</span><span class="p">([</span><span class="n">detector</span><span class="p">,</span> <span class="n">column_motor</span><span class="p">,</span> <span class="n">row_motor</span><span class="p">])</span>
+<span class="nd">@run_decorator</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fly_inside_step</span><span class="p">(</span>
+    <span class="n">columns</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">row_start</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">row_end</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">exposures_per_row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">exposure_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">readout_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MsgGenerator</span><span class="p">:</span>
+    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
+        <span class="n">detector</span><span class="p">,</span>
+        <span class="n">TriggerInfo</span><span class="p">(</span>
+            <span class="n">livetime</span><span class="o">=</span><span class="n">exposure_time</span><span class="p">,</span>
+            <span class="n">deadtime</span><span class="o">=</span><span class="n">readout_time</span><span class="p">,</span>
+            <span class="n">number_of_events</span><span class="o">=</span><span class="n">exposures_per_row</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">),</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>    
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">abs_set</span><span class="p">(</span><span class="n">column_motor</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
+            <span class="n">row_motor</span><span class="p">,</span>
+            <span class="n">FlyMotorInfo</span><span class="p">(</span>
+                <span class="n">start_position</span><span class="o">=</span><span class="n">row_start</span><span class="p">,</span>
+                <span class="n">end_position</span><span class="o">=</span><span class="n">row_end</span><span class="p">,</span>
+                <span class="n">time_for_move</span><span class="o">=</span><span class="p">(</span><span class="n">exposure_time</span> <span class="o">+</span> <span class="n">readout_time</span><span class="p">)</span> <span class="o">*</span> <span class="n">exposures_per_row</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">kickoff_all</span><span class="p">(</span><span class="n">row_motor</span><span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">kickoff_all</span><span class="p">(</span><span class="n">detector</span><span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">collect_while_completing</span><span class="p">(</span>
+            <span class="n">flyers</span><span class="o">=</span><span class="p">[</span><span class="n">row_motor</span><span class="p">],</span>
+            <span class="n">detectors</span><span class="o">=</span><span class="p">[</span><span class="n">detector</span><span class="p">],</span>
+            <span class="n">flush_period</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>This code is to aid understanding rather than for copying. This will be documented further in <a class="github reference external" href="https://github.com/bluesky/ophyd-async/issues/939">bluesky/ophyd-async#939</a></p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>The following table summarized what each plan stub does to each class of device:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Verb</p></th>
+<th class="head"><p>Behavior if Motor</p></th>
+<th class="head"><p>Behavior if Detector</p></th>
+<th class="head"><p>Step / Fly</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stage</span></code></p></td>
+<td><p>Starts monitoring Signals</p></td>
+<td><p>Ensures idle; flags next frame should go in a new resource</p></td>
+<td><p>Both</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">unstage</span></code></p></td>
+<td><p>Stops monitoring signals</p></td>
+<td><p>Closes resources</p></td>
+<td><p>Both</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">open_run</span></code></p></td>
+<td><p>No effect</p></td>
+<td><p>May compute new resource ID for writing</p></td>
+<td><p>Both</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">close_run</span></code></p></td>
+<td><p>No effect</p></td>
+<td><p>Signals the end of data capture</p></td>
+<td><p>Both</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">prepare</span></code></p></td>
+<td><p>Moves to run-up position; sets velocity/trajectory</p></td>
+<td><p>Sets acquisition parameters; arms hardware-triggered detectors</p></td>
+<td><p>Both</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">abs_set</span></code> / <code class="docutils literal notranslate"><span class="pre">mv</span></code></p></td>
+<td><p>Moves motor to a target position</p></td>
+<td><p>N/A</p></td>
+<td><p>Step</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trigger</span></code></p></td>
+<td><p>N/A</p></td>
+<td><p>Captures a single exposure</p></td>
+<td><p>Step</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">read</span></code></p></td>
+<td><p>Reads current position</p></td>
+<td><p>Reads triggered data</p></td>
+<td><p>Step</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">kickoff</span></code></p></td>
+<td><p>Starts motion and returns once stable velocity is reached</p></td>
+<td><p>Starts acquisition (software-triggered); hardware-triggered detectors already armed in <code class="docutils literal notranslate"><span class="pre">prepare</span></code></p></td>
+<td><p>Fly</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">complete</span></code></p></td>
+<td><p>Waits for motion (including ramp down) to finish</p></td>
+<td><p>Waits for acquisition to finish (e.g. number of frames)</p></td>
+<td><p>Fly</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">collect</span></code></p></td>
+<td><p>N/A</p></td>
+<td><p>Retrieves data already acquired during the scan</p></td>
+<td><p>Fly</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="flyscanning.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Flyscanning</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="where-device-logic.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Where should Device logic live?</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plan-stubs">Plan stubs</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bps-stage-and-bps-unstage"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.stage</span></code></span> and <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.unstage</span></code></span></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bps-open-run-and-bps-close-run"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.open_run</span></code></span> and <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.close_run</span></code></span></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bps-prepare"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.prepare</span></code></span></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bps-abs-set-or-bps-mv"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.abs_set</span></code></span> or <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.mv</span></code></span></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bps-trigger"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.trigger</span></code></span></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bps-read"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.read</span></code></span></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bps-kickoff"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.kickoff</span></code></span></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#bps-complete-and-bps-collect"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.complete</span></code></span> and <span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.collect</span></code></span></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ordering">Ordering</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pure-step-scan">Pure step scan</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pure-fly-scan">Pure fly scan</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fly-scan-nested-within-a-step-scan">Fly scan nested within a step scan</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/explanations/plan-stubs.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/explanations/plan-stubs.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
