@@ -5,11 +5,13 @@ A scan is defined as actuating some change in zero or more Devices, then collect
 - taking a series of time resolved detector frames to observe the degredation of a sample
 - changing the temperature of the sample and observing it with a detector
 
-We can classify these data collectionsinto two broad categories: step scanning, and fly scanning.
+The actuators and detectors in a scan are typically different devices, although many actuators allow the current readback position to be read, so will also be used as a source of data during a scan.
+
+We can classify these data collections into two broad categories: step scanning, and fly scanning.
 
 * Step scanning: The system performs a sequence of discrete operations: actuate a change, settle, acquire data, repeat. This ensures well-defined data points but may result in longer total acquisition times. Bluesky plans specify this type of measurement through devices' [Movable](#bluesky.protocols.Movable), [Triggerable](#bluesky.protocols.Triggerable) and [Readable](#bluesky.protocols.Readable) protocols.
 
-* Fly scanning: Short for "on-the-fly scanning," this method involves kicking off the actuation and detection processes simultaneously, with some form of synchronization that allows the data to be correlated after the scan. The benefits are faster scans and smoother coverage of the scanned domain, but it adds complexity in the supervision and synchronization of concurrent processes. Devices capable of this mode implement the [Flyable](#bluesky.protocols.Flyable) and [Collectable](#bluesky.protocols.Collectable) protocols.
+* Fly scanning: Short for "on-the-fly scanning," this method involves kicking off the actuation and detection processes simultaneously, with some form of synchronization that allows the data to be correlated after the scan. This effectively hands over some degree of control to the hardware, with bluesky supervising the progress it is making without being in the loop. The benefits are typically faster scans and smoother coverage of the scanned domain, but it adds complexity in the supervision and synchronization of concurrent processes. Devices capable of this mode implement the [Preparable](#bluesky.protocols.Preparable), [Flyable](#bluesky.protocols.Flyable) and [Collectable](#bluesky.protocols.Collectable) protocols.
 
 Filewriting detectors additionally implement [WritesStreamAssets](#bluesky.protocols.WritesStreamAssets) to report the data written to disk during the scan, either at each data point in a step scan, or periodically during a fly scan.
 
@@ -79,15 +81,15 @@ The data streams produced are a "monitor" stream of timestamped motor readback p
 and a "primary" stream of PandA captured timestamps and detector frames. If the motor happens to be plugged into the PandA
 then we can dispense with the monitor stream as the motor positions can be captured and produced by the PandA.
 
-### Readback collection window readback triggers
+### Readback collection window with readback triggers
 
 If the motor positions are tracked in the PandA we can use a PCOMP block to trigger both collection windows and frames within.
 This gives the advantage that our detector will trigger at the precise motor positions we expect, but the detector must be able to support level triggering so that it doesn't miss frames if the motor travels faster than expected in a particular frame.
 The strategy and data streams are as in the previous example.
 
-### Readback collection window time triggers
+### Readback collection window with time triggers
 
-Similar to above, but if the detector is only capable of edge triggering then we need to give it a constant time period so it doesn't miss frames. We do this by sending regularly spaced triggers from a PandA and capturing the positions that the motors where at.
+Similar to above, but if the detector is only capable of edge triggering then we need to give it a constant time period so it doesn't miss frames. We do this by sending regularly spaced triggers from a PandA and capturing the positions that the motors were at.
 
 ### Setpoint collection window setpoint triggers
 
