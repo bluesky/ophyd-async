@@ -176,7 +176,8 @@ class _SignalCache(Generic[SignalDatatypeT]):
         _listener = self._listeners.pop(function, None)
         if not _listener:
             self._signal.log.warning(
-                f"Unsubscribe failed: subscriber {function} was not found"
+                f"Unsubscribe failed for signal {self._signal.name}:"
+                f" subscriber {function} was not found"
                 f" in listeners list: {list(self._listeners)}"
             )
         return self._staged or bool(self._listeners)
