@@ -88,18 +88,28 @@ async def test_get_returns_right_position(
 async def test_monitoring_position(cls: type[ReadOnlyBeamstop | MovableBeamstop]):
     results = asyncio.Queue[BeamstopPosition]()
     inst = cls("inst")
-    inst.position.subscribe_value(results.put_nowait)
-    assert await results.get() == BeamstopPosition.IN_POSITION
+    inst.position.subscribe_reading(results.put_nowait)
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.IN_POSITION
     assert results.empty()
     await inst.x.set(3)
-    assert await results.get() == BeamstopPosition.OUT_OF_POSITION
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.OUT_OF_POSITION
     assert results.empty()
     await inst.y.set(5)
-    assert await results.get() == BeamstopPosition.OUT_OF_POSITION
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.OUT_OF_POSITION
     assert results.empty()
     await asyncio.gather(inst.x.set(0), inst.y.set(0))
-    assert await results.get() == BeamstopPosition.OUT_OF_POSITION
-    assert await results.get() == BeamstopPosition.IN_POSITION
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.OUT_OF_POSITION
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.IN_POSITION
     assert results.empty()
 
 
@@ -220,9 +230,6 @@ async def test_derived_update_cached_reading_not_initialized(
 ):
     class test_cls(Subscribable):
         def subscribe_reading(self, function: Callback) -> None:
-            pass
-
-        def subscribe_value(self, function: Callback) -> None:
             pass
 
         def clear_sub(self, function: Callback) -> None:
