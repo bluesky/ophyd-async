@@ -479,7 +479,7 @@ async def observe_signals_value(
     # subscribe signal to update queue and fill cbs dict
     for signal in signals:
 
-        def queue_value(reading: Reading[SignalDatatypeT], signal=signal):
+        def queue_value(reading: dict[str, Reading[SignalDatatypeT]], signal=signal):
             value = reading[signal.name]["value"]
             q.put_nowait((signal, value))
 
