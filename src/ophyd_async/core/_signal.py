@@ -261,7 +261,7 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
         self._get_cache().subscribe(function, want_value=False)
 
     def clear_sub(self, function: Callback) -> None:
-        """Remove a subscription passed to `subscribe` or `subscribe_value`.
+        """Remove a subscription passed to `subscribe_reading` or `subscribe_value`.
 
         :param function: The callback function to remove.
         """
