@@ -1040,8 +1040,12 @@ async def test_can_unsubscribe_from_subscribe_callback():
             signal.clear_sub(callback)
 
     callback.side_effect = unsubscribe_if_one
-    signal.subscribe_value(callback)
-    signal.subscribe_value(print)
+    signal.subscribe_reading(callback)
+    signal.subscribe_reading(print)
     await signal.set(1.0)
     await signal.set(2.0)
-    assert callback.mock_calls == [call(0.0), call(1.0)]
+    assert callback.mock_calls == [
+        call({"": {"value": 0.0, "timestamp": ANY, "alarm_severity": 0}}),
+        call({"": {"value": 1.0, "timestamp": ANY, "alarm_severity": 0}}),
+        call({"": {"value": 2.0, "timestamp": ANY, "alarm_severity": 0}}),
+    ]

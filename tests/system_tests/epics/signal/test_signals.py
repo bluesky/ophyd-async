@@ -792,7 +792,7 @@ async def default_all_updates(pv: str) -> bool:
     backend = sig._connector.backend
 
     try:
-        sig.subscribe_value(lambda v: ...)
+        sig.subscribe_reading(lambda v: ...)
         assert isinstance(backend.subscription, Subscription)
         assert isinstance(backend.subscription.all_updates, bool)
         return backend.subscription.all_updates
