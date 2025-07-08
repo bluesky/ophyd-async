@@ -15,18 +15,6 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`fly_and_collect <ophyd_async.plan_stubs._fly.fly_and_collect>`
-  - ```{autodoc2-docstring} ophyd_async.plan_stubs._fly.fly_and_collect
-    :summary:
-    ```
-* - {py:obj}`prepare_static_seq_table_flyer_and_detectors_with_same_trigger <ophyd_async.plan_stubs._fly.prepare_static_seq_table_flyer_and_detectors_with_same_trigger>`
-  - ```{autodoc2-docstring} ophyd_async.plan_stubs._fly.prepare_static_seq_table_flyer_and_detectors_with_same_trigger
-    :summary:
-    ```
-* - {py:obj}`time_resolved_fly_and_collect_with_static_seq_table <ophyd_async.plan_stubs._fly.time_resolved_fly_and_collect_with_static_seq_table>`
-  - ```{autodoc2-docstring} ophyd_async.plan_stubs._fly.time_resolved_fly_and_collect_with_static_seq_table
-    :summary:
-    ```
 * - {py:obj}`ensure_connected <ophyd_async.plan_stubs._ensure_connected.ensure_connected>`
   - ```{autodoc2-docstring} ophyd_async.plan_stubs._ensure_connected.ensure_connected
     :summary:
@@ -66,27 +54,6 @@
 ````
 
 ### API
-
-````{py:function} fly_and_collect(stream_name: str, flyer: ~ophyd_async.core.StandardFlyer[~ophyd_async.fastcs.panda.SeqTableInfo] | ~ophyd_async.core.StandardFlyer[~ophyd_async.fastcs.panda.PcompInfo], detectors: list[~ophyd_async.core.StandardDetector])
-:canonical: ophyd_async.plan_stubs._fly.fly_and_collect
-
-```{autodoc2-docstring} ophyd_async.plan_stubs._fly.fly_and_collect
-```
-````
-
-````{py:function} prepare_static_seq_table_flyer_and_detectors_with_same_trigger(flyer: ~ophyd_async.core.StandardFlyer[~ophyd_async.fastcs.panda.SeqTableInfo], detectors: list[~ophyd_async.core.StandardDetector], number_of_frames: int, exposure: float, shutter_time: float, repeats: int = 1, period: float = 0.0, frame_timeout: float | None = None)
-:canonical: ophyd_async.plan_stubs._fly.prepare_static_seq_table_flyer_and_detectors_with_same_trigger
-
-```{autodoc2-docstring} ophyd_async.plan_stubs._fly.prepare_static_seq_table_flyer_and_detectors_with_same_trigger
-```
-````
-
-````{py:function} time_resolved_fly_and_collect_with_static_seq_table(stream_name: str, flyer: ~ophyd_async.core.StandardFlyer[~ophyd_async.fastcs.panda.SeqTableInfo], detectors: list[~ophyd_async.core.StandardDetector], number_of_frames: int, exposure: float, shutter_time: float, repeats: int = 1, period: float = 0.0, frame_timeout: float | None = None)
-:canonical: ophyd_async.plan_stubs._fly.time_resolved_fly_and_collect_with_static_seq_table
-
-```{autodoc2-docstring} ophyd_async.plan_stubs._fly.time_resolved_fly_and_collect_with_static_seq_table
-```
-````
 
 ````{py:function} ensure_connected(*devices: ~ophyd_async.core.Device, mock: bool | ~ophyd_async.core.LazyMock = False, timeout: float = DEFAULT_TIMEOUT, force_reconnect=False)
 :canonical: ophyd_async.plan_stubs._ensure_connected.ensure_connected

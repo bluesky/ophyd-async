@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Using Devices &#8212; ophyd-async 0.12.dev5+g222e0f524 documentation</title>
+    <title>Using Devices &#8212; ophyd-async 0.12.dev6+g61186ffd4 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=1bad3898"></script>
+    <script src="../_static/documentation_options.js?v=e28dbcad"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev5+g222e0f524 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev5+g222e0f524 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
   
   
 </a></div>
@@ -477,7 +477,7 @@
                   
   <section id="using-devices">
 <h1>Using Devices<a class="headerlink" href="#using-devices" title="Link to this heading">#</a></h1>
-<p>In this tutorial we will create a bluesky RunEngine, instantiate some existing ophyd-async Devices, and use them in some bluesky plans. It assumes you have already run through the Bluesky tutorial on <a class="reference external" href="https://blueskyproject.io/bluesky/main/tutorial.html#tutorial-run-engine-setup" title="bluesky 1.14.3.dev12+gc2b578aa">The RunEngine</a>.</p>
+<p>In this tutorial we will create a bluesky RunEngine, instantiate some existing ophyd-async Devices, and use them in some bluesky plans. It assumes you have already run through the Bluesky tutorial on <a class="reference external" href="https://blueskyproject.io/bluesky/main/tutorial.html#tutorial-run-engine-setup" title="bluesky 1.14.3.dev13+g103accac">The RunEngine</a>.</p>
 <section id="run-the-demo">
 <h2>Run the demo<a class="headerlink" href="#run-the-demo" title="Link to this heading">#</a></h2>
 <p>Ophyd-async ships with some simulated devices and a demo script that will create them along with a RunEngine. Let’s take a look at it now:</p>
@@ -549,7 +549,7 @@ In [1]:
 <span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">coroutine</span> <span class="nb">object</span> <span class="n">StandardReadable</span><span class="o">.</span><span class="n">read</span> <span class="n">at</span> <span class="mh">0x7f9c5c105220</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>This is because ophyd-async devices implement async versions of the bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html" title="bluesky 1.14.3.dev12+gc2b578aa">verbs</a>. To get the value we can <code class="docutils literal notranslate"><span class="pre">await</span></code> it:</p>
+<p>This is because ophyd-async devices implement async versions of the bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html" title="bluesky 1.14.3.dev13+g103accac">verbs</a>. To get the value we can <code class="docutils literal notranslate"><span class="pre">await</span></code> it:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="k">await</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> 
 <span class="p">{</span><span class="s1">&#39;x-user_readback&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
@@ -560,12 +560,12 @@ In [1]:
 </section>
 <section id="run-some-plans">
 <h2>Run some plans<a class="headerlink" href="#run-some-plans" title="Link to this heading">#</a></h2>
-<p>Although it is useful to run the verbs using the <code class="docutils literal notranslate"><span class="pre">await</span></code> syntax for debugging, most of the time we will run them via plans executed by the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.run_engine.RunEngine.html#bluesky.run_engine.RunEngine" title="bluesky 1.14.3.dev12+gc2b578aa"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.run_engine.RunEngine</span></code></a>. For instance we can read it using the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.rd.html#bluesky.plan_stubs.rd" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.rd</span></code></span></a> plan stub:</p>
+<p>Although it is useful to run the verbs using the <code class="docutils literal notranslate"><span class="pre">await</span></code> syntax for debugging, most of the time we will run them via plans executed by the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.run_engine.RunEngine.html#bluesky.run_engine.RunEngine" title="bluesky 1.14.3.dev13+g103accac"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.run_engine.RunEngine</span></code></a>. For instance we can read it using the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.rd.html#bluesky.plan_stubs.rd" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.rd</span></code></span></a> plan stub:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">RE</span><span class="p">(</span><span class="n">bps</span><span class="o">.</span><span class="n">rd</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">RunEngineResult</span><span class="p">(</span><span class="n">run_start_uids</span><span class="o">=</span><span class="p">(),</span> <span class="n">plan_result</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">exit_status</span><span class="o">=</span><span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="n">interrupted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>and move it using the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mv.html#bluesky.plan_stubs.mv" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.mv</span></code></span></a> plan sub:</p>
+<p>and move it using the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mv.html#bluesky.plan_stubs.mv" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.mv</span></code></span></a> plan sub:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">RE</span><span class="p">(</span><span class="n">bps</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">RunEngineResult</span><span class="p">(</span><span class="n">run_start_uids</span><span class="o">=</span><span class="p">(),</span> <span class="n">plan_result</span><span class="o">=</span><span class="p">(</span><span class="o">&lt;</span><span class="n">WatchableAsyncStatus</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">coroutine</span> <span class="nb">object</span> <span class="n">WatchableAsyncStatus</span><span class="o">.</span><span class="n">_notify_watchers_from</span> <span class="n">at</span> <span class="mh">0x7f9c71791940</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">done</span><span class="o">&gt;</span><span class="p">,),</span> <span class="n">exit_status</span><span class="o">=</span><span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="n">interrupted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
@@ -576,61 +576,61 @@ In [1]:
 </section>
 <section id="run-a-grid-scan">
 <span id="demo-grid-scan"></span><h2>Run a grid scan<a class="headerlink" href="#run-a-grid-scan" title="Link to this heading">#</a></h2>
-<p>There is also a point detector that changes its 3 channels of output based on the positions of the <code class="docutils literal notranslate"><span class="pre">stage.x</span></code> and <code class="docutils literal notranslate"><span class="pre">stage.y</span></code> motors, so we can use it in a <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plans.grid_scan.html#bluesky.plans.grid_scan" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bp.grid_scan</span></code></span></a>:</p>
+<p>There is also a point detector that changes its 3 channels of output based on the positions of the <code class="docutils literal notranslate"><span class="pre">stage.x</span></code> and <code class="docutils literal notranslate"><span class="pre">stage.y</span></code> motors, so we can use it in a <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plans.grid_scan.html#bluesky.plans.grid_scan" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bp.grid_scan</span></code></span></a>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 8     Time: 2025-07-07 09:44:14</span>
-<span class="go">Persistent Unique Scan ID: &#39;0c3a21b8-9add-44a1-a6d8-ec28d8db60f8&#39;</span>
+<span class="go">Transient Scan ID: 8     Time: 2025-07-08 11:30:47</span>
+<span class="go">Persistent Unique Scan ID: &#39;c36a0f18-d2d8-4818-8858-9beb90036bc5&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y | pdet-channel-1-value | pdet-channel-2-value | pdet-channel-3-value |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">|         1 | 09:44:14.8 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
-<span class="go">|         2 | 09:44:15.8 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
-<span class="go">|         3 | 09:44:16.8 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
-<span class="go">|         4 | 09:44:17.7 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
-<span class="go">|         5 | 09:44:18.6 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
-<span class="go">|         6 | 09:44:19.6 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
-<span class="go">|         7 | 09:44:20.5 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
-<span class="go">|         8 | 09:44:21.4 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
-<span class="go">|         9 | 09:44:22.3 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
+<span class="go">|         1 | 11:30:47.8 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
+<span class="go">|         2 | 11:30:48.9 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
+<span class="go">|         3 | 11:30:49.9 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
+<span class="go">|         4 | 11:30:50.8 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
+<span class="go">|         5 | 11:30:51.8 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
+<span class="go">|         6 | 11:30:52.7 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
+<span class="go">|         7 | 11:30:53.6 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
+<span class="go">|         8 | 11:30:54.6 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
+<span class="go">|         9 | 11:30:55.5 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">generator grid_scan [&#39;0c3a21b8&#39;] (scan num: 8)</span>
+<span class="go">generator grid_scan [&#39;c36a0f18&#39;] (scan num: 8)</span>
 
 
 
-<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;0c3a21b8-9add-44a1-a6d8-ec28d8db60f8&#39;,), plan_result=&#39;0c3a21b8-9add-44a1-a6d8-ec28d8db60f8&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;c36a0f18-d2d8-4818-8858-9beb90036bc5&#39;,), plan_result=&#39;c36a0f18-d2d8-4818-8858-9beb90036bc5&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/sim_grid_scan.png"><img alt="../_images/sim_grid_scan.png" src="../_images/sim_grid_scan.png" style="width: 4in;" />
 </a>
-<p>This detector produces a single point of information for each channel at each motor value. This means that the <a class="reference external" href="https://blueskyproject.io/bluesky/main/callbacks.html#best-effort-callback" title="bluesky 1.14.3.dev12+gc2b578aa">Best-Effort Callback</a> is able to print a tabular form of the scan.</p>
+<p>This detector produces a single point of information for each channel at each motor value. This means that the <a class="reference external" href="https://blueskyproject.io/bluesky/main/callbacks.html#best-effort-callback" title="bluesky 1.14.3.dev13+g103accac">Best-Effort Callback</a> is able to print a tabular form of the scan.</p>
 <p>There is also a blob detector that produces a gaussian blob with intensity based on the positions of the <code class="docutils literal notranslate"><span class="pre">stage.x</span></code> and <code class="docutils literal notranslate"><span class="pre">stage.y</span></code> motors, writing the data to an HDF file. You can also use this in a grid scan, but there will be no data displayed as the <code class="docutils literal notranslate"><span class="pre">BestEffortCallback</span></code> doesn’t know how to read data from file:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">bdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 9     Time: 2025-07-07 09:44:23</span>
-<span class="go">Persistent Unique Scan ID: &#39;b653c313-9159-4c85-84a0-c05d276dd995&#39;</span>
+<span class="go">Transient Scan ID: 9     Time: 2025-07-08 11:30:56</span>
+<span class="go">Persistent Unique Scan ID: &#39;81df4d77-073b-442a-831f-9549d1840625&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">|         1 | 09:44:23.8 |      1.000 |      2.000 |</span>
-<span class="go">|         2 | 09:44:23.9 |      1.000 |      2.500 |</span>
-<span class="go">|         3 | 09:44:24.1 |      1.000 |      3.000 |</span>
-<span class="go">|         4 | 09:44:24.2 |      1.500 |      2.000 |</span>
-<span class="go">|         5 | 09:44:24.4 |      1.500 |      2.500 |</span>
-<span class="go">|         6 | 09:44:24.5 |      1.500 |      3.000 |</span>
-<span class="go">|         7 | 09:44:24.7 |      2.000 |      2.000 |</span>
-<span class="go">|         8 | 09:44:24.8 |      2.000 |      2.500 |</span>
-<span class="go">|         9 | 09:44:24.9 |      2.000 |      3.000 |</span>
+<span class="go">|         1 | 11:30:57.0 |      1.000 |      2.000 |</span>
+<span class="go">|         2 | 11:30:57.1 |      1.000 |      2.500 |</span>
+<span class="go">|         3 | 11:30:57.3 |      1.000 |      3.000 |</span>
+<span class="go">|         4 | 11:30:57.4 |      1.500 |      2.000 |</span>
+<span class="go">|         5 | 11:30:57.6 |      1.500 |      2.500 |</span>
+<span class="go">|         6 | 11:30:57.7 |      1.500 |      3.000 |</span>
+<span class="go">|         7 | 11:30:57.8 |      2.000 |      2.000 |</span>
+<span class="go">|         8 | 11:30:58.0 |      2.000 |      2.500 |</span>
+<span class="go">|         9 | 11:30:58.1 |      2.000 |      3.000 |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">generator grid_scan [&#39;b653c313&#39;] (scan num: 9)</span>
+<span class="go">generator grid_scan [&#39;81df4d77&#39;] (scan num: 9)</span>
 
 
 
-<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;b653c313-9159-4c85-84a0-c05d276dd995&#39;,), plan_result=&#39;b653c313-9159-4c85-84a0-c05d276dd995&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;81df4d77-073b-442a-831f-9549d1840625&#39;,), plan_result=&#39;81df4d77-073b-442a-831f-9549d1840625&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -667,7 +667,7 @@ In [1]:
 
 </pre></div>
 </div>
-<p>This subscribes to the emitted bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/documents.html" title="bluesky 1.14.3.dev12+gc2b578aa">Documents</a>, and interprets them for plotting. In this case it made a table of points for the motors and each channel of the point detector, and plots of the point detector channels in a gridded pattern.</p>
+<p>This subscribes to the emitted bluesky <a class="reference external" href="https://blueskyproject.io/bluesky/main/documents.html" title="bluesky 1.14.3.dev13+g103accac">Documents</a>, and interprets them for plotting. In this case it made a table of points for the motors and each channel of the point detector, and plots of the point detector channels in a gridded pattern.</p>
 <p>Just for the simulation we need something to produce the test data:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pattern_generator</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">PatternGenerator</span><span class="p">()</span>
 

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>What plan stubs will do to Devices &#8212; ophyd-async 0.12.dev5+g222e0f524 documentation</title>
+    <title>What plan stubs will do to Devices &#8212; ophyd-async 0.12.dev6+g61186ffd4 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=1bad3898"></script>
+    <script src="../_static/documentation_options.js?v=e28dbcad"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -137,8 +137,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev5+g222e0f524 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev5+g222e0f524 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
   
   
 </a></div>
@@ -500,7 +500,7 @@ window.addEventListener("load", () => mermaid.run());
                   
   <section id="what-plan-stubs-will-do-to-devices">
 <h1>What plan stubs will do to Devices<a class="headerlink" href="#what-plan-stubs-will-do-to-devices" title="Link to this heading">#</a></h1>
-<p>Plan authors will typically compose <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html#stub-plans" title="bluesky 1.14.3.dev12+gc2b578aa">plan stubs</a> together to define the behaviour they expect from their Devices. When the plan is executed, the RunEngine will consume the <a class="reference external" href="https://blueskyproject.io/bluesky/main/msg.html" title="bluesky 1.14.3.dev12+gc2b578aa"><code class="docutils literal notranslate"><span class="pre">Msg</span></code> objects</a> <code class="docutils literal notranslate"><span class="pre">yield</span> <span class="pre">from</span></code> each plan stub as a series of instructions, many of which call methods on the Device. This document lists some commonly used plan stubs, what Devices will do when they are called, and what order they should be called inside the plan.</p>
+<p>Plan authors will typically compose <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html#stub-plans" title="bluesky 1.14.3.dev13+g103accac">plan stubs</a> together to define the behaviour they expect from their Devices. When the plan is executed, the RunEngine will consume the <a class="reference external" href="https://blueskyproject.io/bluesky/main/msg.html" title="bluesky 1.14.3.dev13+g103accac"><code class="docutils literal notranslate"><span class="pre">Msg</span></code> objects</a> <code class="docutils literal notranslate"><span class="pre">yield</span> <span class="pre">from</span></code> each plan stub as a series of instructions, many of which call methods on the Device. This document lists some commonly used plan stubs, what Devices will do when they are called, and what order they should be called inside the plan.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="flyscanning.html"><span class="std std-doc">Flyscanning</span></a> for more information on the difference between step scans (typically software driven) and flyscans (typically hardware driven)</p>
@@ -508,7 +508,7 @@ window.addEventListener("load", () => mermaid.run());
 <section id="plan-stubs">
 <h2>Plan stubs<a class="headerlink" href="#plan-stubs" title="Link to this heading">#</a></h2>
 <section id="bps-stage-and-bps-unstage">
-<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.stage.html#bluesky.plan_stubs.stage" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.stage</span></code></span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.unstage.html#bluesky.plan_stubs.unstage" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.unstage</span></code></span></a><a class="headerlink" href="#bps-stage-and-bps-unstage" title="Link to this heading">#</a></h3>
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.stage.html#bluesky.plan_stubs.stage" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.stage</span></code></span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.unstage.html#bluesky.plan_stubs.unstage" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.unstage</span></code></span></a><a class="headerlink" href="#bps-stage-and-bps-unstage" title="Link to this heading">#</a></h3>
 <p>These are typically the first and last Messages in the plan:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">stage</span></code> gets the Device into an idle state then makes it ready for data collection:</p>
@@ -524,10 +524,10 @@ window.addEventListener("load", () => mermaid.run());
 </ul>
 </li>
 </ul>
-<p>It is recommended that the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.preprocessors.stage_decorator.html#bluesky.preprocessors.stage_decorator" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bpp.stage_decorator</span></code></span></a> is applied to the plan to yield these Messages as they do the appropriate error handling.</p>
+<p>It is recommended that the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.preprocessors.stage_decorator.html#bluesky.preprocessors.stage_decorator" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bpp.stage_decorator</span></code></span></a> is applied to the plan to yield these Messages as they do the appropriate error handling.</p>
 </section>
 <section id="bps-open-run-and-bps-close-run">
-<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.open_run.html#bluesky.plan_stubs.open_run" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.open_run</span></code></span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.close_run.html#bluesky.plan_stubs.close_run" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.close_run</span></code></span></a><a class="headerlink" href="#bps-open-run-and-bps-close-run" title="Link to this heading">#</a></h3>
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.open_run.html#bluesky.plan_stubs.open_run" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.open_run</span></code></span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.close_run.html#bluesky.plan_stubs.close_run" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.close_run</span></code></span></a><a class="headerlink" href="#bps-open-run-and-bps-close-run" title="Link to this heading">#</a></h3>
 <p>These are typically the second and second last Messages in the plan:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">open_run</span></code> indicates to downstream consumers the start of a data collection</p>
@@ -537,10 +537,10 @@ window.addEventListener("load", () => mermaid.run());
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">close_run</span></code> indicates the end of a data collection</p></li>
 </ul>
-<p>It is recommended that the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.preprocessors.run_decorator.html#bluesky.preprocessors.run_decorator" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bpp.run_decorator</span></code></span></a> is applied to the plan to yield these Messages as they do the appropriate error handling. It should be placed after the <code class="docutils literal notranslate"><span class="pre">stage_decorator</span></code>.</p>
+<p>It is recommended that the <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.preprocessors.run_decorator.html#bluesky.preprocessors.run_decorator" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bpp.run_decorator</span></code></span></a> is applied to the plan to yield these Messages as they do the appropriate error handling. It should be placed after the <code class="docutils literal notranslate"><span class="pre">stage_decorator</span></code>.</p>
 </section>
 <section id="bps-prepare">
-<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.prepare.html#bluesky.plan_stubs.prepare" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.prepare</span></code></span></a><a class="headerlink" href="#bps-prepare" title="Link to this heading">#</a></h3>
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.prepare.html#bluesky.plan_stubs.prepare" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.prepare</span></code></span></a><a class="headerlink" href="#bps-prepare" title="Link to this heading">#</a></h3>
 <p>Prepares the device for a <code class="docutils literal notranslate"><span class="pre">trigger</span></code> or <code class="docutils literal notranslate"><span class="pre">kickoff</span></code>, after <code class="docutils literal notranslate"><span class="pre">stage</span></code> and <code class="docutils literal notranslate"><span class="pre">open_run</span></code>:</p>
 <ul class="simple">
 <li><p>For detectors this will set parameters on the hardware such as exposure time and number of frames. If hardware triggering is requested it will also arm the detector so it is ready to receive those triggers.</p></li>
@@ -548,14 +548,14 @@ window.addEventListener("load", () => mermaid.run());
 </ul>
 </section>
 <section id="bps-abs-set-or-bps-mv">
-<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.abs_set.html#bluesky.plan_stubs.abs_set" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.abs_set</span></code></span></a> or <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mv.html#bluesky.plan_stubs.mv" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.mv</span></code></span></a><a class="headerlink" href="#bps-abs-set-or-bps-mv" title="Link to this heading">#</a></h3>
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.abs_set.html#bluesky.plan_stubs.abs_set" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.abs_set</span></code></span></a> or <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.mv.html#bluesky.plan_stubs.mv" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.mv</span></code></span></a><a class="headerlink" href="#bps-abs-set-or-bps-mv" title="Link to this heading">#</a></h3>
 <p>Set the device to a target setpoint:</p>
 <ul class="simple">
 <li><p>For motors, <code class="docutils literal notranslate"><span class="pre">bps.mv</span></code> will move the motor to the desired position, returning when it is complete and erroring if it fails to move. <strong><code class="docutils literal notranslate"><span class="pre">bps.abs_set</span></code>, however, does not wait for completion by default unless the <code class="docutils literal notranslate"><span class="pre">wait</span></code> option is explicitly set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</strong></p></li>
 </ul>
 </section>
 <section id="bps-trigger">
-<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.trigger.html#bluesky.plan_stubs.trigger" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.trigger</span></code></span></a><a class="headerlink" href="#bps-trigger" title="Link to this heading">#</a></h3>
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.trigger.html#bluesky.plan_stubs.trigger" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.trigger</span></code></span></a><a class="headerlink" href="#bps-trigger" title="Link to this heading">#</a></h3>
 <p>Ask the device to trigger a data collection:</p>
 <ul class="simple">
 <li><p>For detectors this will take a single exposure.</p></li>
@@ -563,7 +563,7 @@ window.addEventListener("load", () => mermaid.run());
 </ul>
 </section>
 <section id="bps-read">
-<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.read.html#bluesky.plan_stubs.read" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.read</span></code></span></a><a class="headerlink" href="#bps-read" title="Link to this heading">#</a></h3>
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.read.html#bluesky.plan_stubs.read" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.read</span></code></span></a><a class="headerlink" href="#bps-read" title="Link to this heading">#</a></h3>
 <p>Collect the data from a device after <code class="docutils literal notranslate"><span class="pre">trigger</span></code>:</p>
 <ul class="simple">
 <li><p>For detectors that write to a resource this will be a reference to the data written, for other detectors this will be the actual data</p></li>
@@ -571,7 +571,7 @@ window.addEventListener("load", () => mermaid.run());
 </ul>
 </section>
 <section id="bps-kickoff">
-<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.kickoff.html#bluesky.plan_stubs.kickoff" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.kickoff</span></code></span></a><a class="headerlink" href="#bps-kickoff" title="Link to this heading">#</a></h3>
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.kickoff.html#bluesky.plan_stubs.kickoff" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.kickoff</span></code></span></a><a class="headerlink" href="#bps-kickoff" title="Link to this heading">#</a></h3>
 <p>Begin a flyscan:</p>
 <ul class="simple">
 <li><p>For motors this will start motion and return once the motor has completed its run up and is moving at the desired velocity</p></li>
@@ -583,7 +583,7 @@ window.addEventListener("load", () => mermaid.run());
 </div>
 </section>
 <section id="bps-complete-and-bps-collect">
-<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.collect.html#bluesky.plan_stubs.collect" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.complete</span></code></span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.collect.html#bluesky.plan_stubs.collect" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.collect</span></code></span></a><a class="headerlink" href="#bps-complete-and-bps-collect" title="Link to this heading">#</a></h3>
+<h3><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.collect.html#bluesky.plan_stubs.collect" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.complete</span></code></span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.collect.html#bluesky.plan_stubs.collect" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.collect</span></code></span></a><a class="headerlink" href="#bps-complete-and-bps-collect" title="Link to this heading">#</a></h3>
 <p>Wait for flyscanning to be done, collecting data from detectors periodically while that happens:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">complete</span></code> waits for a flyscan to be done:</p>
@@ -594,7 +594,7 @@ window.addEventListener("load", () => mermaid.run());
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">collect</span></code> collects the data that has been written so far by a detector during a flyscan.</p></li>
 </ul>
-<p>Typically called via <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.collect_while_completing.html#bluesky.plan_stubs.collect_while_completing" title="bluesky 1.14.3.dev12+gc2b578aa"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.collect_while_completing</span></code></span></a>, after <code class="docutils literal notranslate"><span class="pre">kickoff</span></code>.</p>
+<p>Typically called via <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.collect_while_completing.html#bluesky.plan_stubs.collect_while_completing" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.collect_while_completing</span></code></span></a>, after <code class="docutils literal notranslate"><span class="pre">kickoff</span></code>.</p>
 </section>
 </section>
 <section id="ordering">
@@ -638,7 +638,7 @@ Code</label><div class="sd-tab-content docutils">
 </div>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p>This code is just to aid understanding, normally you would call <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plans.scan.html#bluesky.plans.scan" title="bluesky 1.14.3.dev12+gc2b578aa"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.plans.scan</span></code></a> in production</p>
+<p>This code is just to aid understanding, normally you would call <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plans.scan.html#bluesky.plans.scan" title="bluesky 1.14.3.dev13+g103accac"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.plans.scan</span></code></a> in production</p>
 </div>
 </div>
 </div>
