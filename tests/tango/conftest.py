@@ -197,15 +197,30 @@ def everything_signal_info():
         float_array_value(np.float64),
         (1.234, 2.345, 3.456),
     )
-    add_ads(
+    # add_ads(
+    #     "my_state",
+    #     "DevState",
+    #     DevStateEnum,
+    #     DevStateEnum.INIT,
+    #     np.array(  # TODO: make this work without the .values
+    #         [DevStateEnum.INIT.value, DevStateEnum.ON.value, DevStateEnum.MOVING.value]
+    #     ),
+    #     (DevStateEnum.INIT.value, DevStateEnum.ON.value, DevStateEnum.MOVING.value),
+    # )
+    signal_info["my_state"] = AttributeData(
         "my_state",
-        "DevState",
         DevStateEnum,
         DevStateEnum.INIT,
-        np.array(  # TODO: make this work without the .values
-            [DevStateEnum.INIT.value, DevStateEnum.ON.value, DevStateEnum.MOVING.value]
-        ),
-        (DevStateEnum.INIT.value, DevStateEnum.ON.value, DevStateEnum.MOVING.value),
+        random_put_values=[e.name for e in DevStateEnum],
+        cmd_name=None,
+    )
+
+    signal_info["my_state_spectrum"] = SequenceData(
+        "my_state_spectrum",
+        Sequence[DevStateEnum],
+        initial=[e.name for e in DevStateEnum],
+        random_put_values=[e.name for e in DevStateEnum],
+        cmd_name=None,
     )
 
     return signal_info

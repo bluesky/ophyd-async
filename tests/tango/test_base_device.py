@@ -71,6 +71,7 @@ class TestDevice(Device):
     _test_enum = TestEnum.A
     _string_image = [["one", "two", "three"], ["four", "five", "six"]]
     _long_string_array = ([1, 2, 3], ["one", "two", "three"])
+    _sequence = ["one", "two", "three"]
 
     @attribute(dtype=float, access=AttrWriteType.READ)
     def readback(self):
@@ -128,6 +129,18 @@ class TestDevice(Device):
 
     def write_array(self, array: list[list[float]]):
         self._array = array
+
+    @attribute(
+        dtype=CmdArgType.DevString,
+        access=AttrWriteType.READ_WRITE,
+        dformat=AttrDataFormat.SPECTRUM,
+        max_dim_x=3,
+    )
+    def sequence(self):
+        return self._sequence
+
+    def write_sequence(self, sequence: list[str]):
+        self._sequence = sequence
 
     @attribute(
         access=AttrWriteType.READ_WRITE,
@@ -202,9 +215,8 @@ class TestDevice(Device):
         return self._long_string_array
 
     @command
-    def clear(self) -> str:
-        # self.info_stream("Received clear command")
-        return "Received clear command"
+    def clear(self):
+        pass
 
     @command
     def slow_command(self) -> str:

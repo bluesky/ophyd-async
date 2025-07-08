@@ -4,7 +4,7 @@ import logging
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine, Sequence
-from typing import Any, ParamSpec, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar, cast, get_args, get_origin
 
 import numpy as np
 import numpy.typing as npt
@@ -13,6 +13,7 @@ from event_model import DataKey, Limits, LimitsRange
 from event_model.documents.event_descriptor import RdsRange
 from tango import (
     AttrDataFormat,
+    AttributeInfo,
     AttributeInfoEx,
     CmdArgType,
     CommandInfo,
@@ -87,19 +88,29 @@ class TangoDoubleStringTable(Table):
     string: Sequence[str]
 
 
-def get_python_type(config: AttributeInfoEx | CommandInfo) -> object:
+class TestConfig:
+    data_type: CmdArgType
+    data_format: AttrDataFormat
+
+
+def get_python_type(config: AttributeInfoEx | CommandInfo | TestConfig) -> object:
+    """For converting between recieved tango types and python primatives."""
     tango_type = None
     tango_format = None
-    if hasattr(config, "data_type"):
+    if isinstance(config, AttributeInfoEx | AttributeInfo):
         tango_type = config.data_type
-    elif hasattr(config, "in_type"):
-        tango_type = config.in_type
-
-    if hasattr(config, "data_format"):
+        tango_format = config.data_format
+    elif isinstance(config, CommandInfo):
+        read_character = get_command_character(config)
+        if read_character == CommandProxyReadCharacter.READ:
+            tango_type = config.out_type
+        else:
+            tango_type = config.in_type
+    elif isinstance(config, TestConfig):
+        tango_type = config.data_type
         tango_format = config.data_format
     else:
-        tango_format = None
-    """For converting between recieved tango types and python primatives."""
+        raise TypeError("Unrecognized Tango resource configuration")
     if tango_format not in [
         AttrDataFormat.SCALAR,
         AttrDataFormat.SPECTRUM,
@@ -117,9 +128,11 @@ def get_python_type(config: AttributeInfoEx | CommandInfo) -> object:
         if tango_format == AttrDataFormat.SCALAR:
             return cls
         elif tango_format == AttrDataFormat.SPECTRUM:
-            return Sequence[cls]
+            if cls is str or issubclass(cls, StrictEnum):
+                return Sequence[cls]
+            return Array1D[cls]
         elif tango_format == AttrDataFormat.IMAGE:
-            if cls is str:
+            if cls is str or issubclass(cls, StrictEnum):
                 return Sequence[Sequence[str]]
             return npt.NDArray[cls]
         else:
@@ -142,15 +155,13 @@ def get_python_type(config: AttributeInfoEx | CommandInfo) -> object:
         else:
             return _get_type(int)
     elif tango_type == CmdArgType.DevState:
-        enum_labels = list(DevState.names.keys())
-        enum_dict = {label: str(label) for label in enum_labels}
-        return _get_type(StrictEnum("TangoState", enum_dict))
+        return _get_type(DevStateEnum)
     elif tango_type == CmdArgType.DevUChar:
         return _get_type(int)
     elif tango_type == CmdArgType.DevVoid:
-        return None
+        return _get_type(None)
     else:
-        raise TypeError("Unknown TangoType")
+        raise TypeError(f"Unknown TangoType: {tango_type}")
 
 
 class TangoProxy:
@@ -469,10 +480,43 @@ class AttributeProxy(TangoProxy):
         self._rel_change = rel_change
 
 
+class CommandProxyReadCharacter(StrictEnum):
+    READ = "READ"
+    WRITE = "WRITE"
+    READ_WRITE = "READ_WRITE"
+    EXECUTE = "EXECUTE"
+
+
+def get_command_character(config: CommandInfo) -> CommandProxyReadCharacter:
+    """Return the command character for the given command config."""
+    in_type = config.in_type
+    out_type = config.out_type
+    if in_type == CmdArgType.DevVoid and out_type != CmdArgType.DevVoid:
+        read_character = CommandProxyReadCharacter.READ
+    elif in_type != CmdArgType.DevVoid and out_type == CmdArgType.DevVoid:
+        read_character = CommandProxyReadCharacter.WRITE
+    elif in_type == CmdArgType.DevVoid and out_type == CmdArgType.DevVoid:
+        read_character = CommandProxyReadCharacter.EXECUTE
+    else:
+        read_character = CommandProxyReadCharacter.READ_WRITE
+    return read_character
+
+
 class CommandProxy(TangoProxy):
     """Tango proxy for commands."""
 
-    _last_reading: Reading = Reading(value=None, timestamp=0, alarm_severity=0)
+    _last_reading: Reading
+    _last_w_value: Any
+    _config: CommandInfo
+    _read_character: CommandProxyReadCharacter
+    device_proxy: DeviceProxy
+    name: str
+
+    def __init__(self, device_proxy: DeviceProxy, name: str):
+        super().__init__(device_proxy, name)
+        self._last_reading = Reading(value=None, timestamp=0, alarm_severity=0)
+        self.device_proxy = device_proxy
+        self.name = name
 
     def subscribe_callback(self, callback: Callback | None) -> None:
         raise NotImplementedError("Cannot subscribe to commands")
@@ -481,13 +525,18 @@ class CommandProxy(TangoProxy):
         raise NotImplementedError("Cannot unsubscribe from commands")
 
     async def get(self) -> object:
-        return self._last_reading["value"]
+        if self._read_character == CommandProxyReadCharacter.READ_WRITE:
+            return self._last_reading["value"]
+        elif self._read_character == CommandProxyReadCharacter.READ:
+            await self.put(value=None, wait=True, timeout=None)
+            return self._last_reading["value"]
 
     async def get_w_value(self) -> object:
-        return self._last_reading["value"]
+        return self._last_w_value
 
     async def connect(self) -> None:
-        pass
+        self._config = await self.device_proxy.get_command_config(self.name)
+        self._read_character = get_command_character(self._config)
 
     @ensure_proper_executor
     async def put(  # type: ignore
@@ -539,7 +588,7 @@ class CommandProxy(TangoProxy):
                             raise RuntimeError(
                                 f"{self._name} device failure: {de_exc.args[0].desc}"
                             ) from de_exc
-
+            self._last_w_value = value
             return AsyncStatus(wait_for_reply(rid, timeout))
 
     @ensure_proper_executor
@@ -547,12 +596,11 @@ class CommandProxy(TangoProxy):
         return await self._proxy.get_command_config(self._name)
 
     async def get_reading(self) -> Reading:
-        reading = Reading(
-            value=self._last_reading["value"],
-            timestamp=self._last_reading["timestamp"],
-            alarm_severity=self._last_reading.get("alarm_severity", 0),
-        )
-        return reading
+        if self._read_character == CommandProxyReadCharacter.READ:
+            await self.put(value=None, wait=True, timeout=None)
+            return self._last_reading
+        else:
+            return self._last_reading
 
     def set_polling(
         self,
@@ -762,6 +810,103 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
     def source(self, name: str, read: bool) -> str:
         return self.read_trl if read else self.write_trl
 
+    def _type_match_ndarray(self, signal_type: type[SignalDatatypeT], tr_dtype: object):
+        tango_resource = self.source(name='', read=True)
+
+        def extract_dtype_param(dtype_arg):
+            if hasattr(dtype_arg, '__origin__') and dtype_arg.__origin__ is np.dtype:
+                inner = get_args(dtype_arg)
+                return inner[0] if inner else object
+            return dtype_arg
+
+        signal_dtype = extract_dtype_param(get_args(signal_type)[-1])
+        tr_dtype_arg = extract_dtype_param(get_args(tr_dtype)[-1])
+
+        try:
+            sdt = np.dtype(signal_dtype)
+            tdt = np.dtype(tr_dtype_arg)
+        except Exception as e:
+            raise TypeError(
+                f"Could not interpret array dtypes: {signal_dtype!r}, {tr_dtype_arg!r} ({e})"
+            )
+
+        if sdt != tdt:
+            raise TypeError(
+                f"{tango_resource} has type {tr_dtype!r}, expected {self.datatype!r}"
+            )
+
+    def _type_match_array(
+            self, signal_type: type[SignalDatatypeT], tr_dtype: object, tango_resource: str
+    ):
+        # Always get a fresh resource string for the error context
+        tango_resource = self.source(name="", read=True)
+        if get_origin(signal_type) is Sequence and get_origin(tr_dtype) is Sequence:
+            sig_elem_type = get_args(signal_type)[0]
+            tr_elem_type = get_args(tr_dtype)[0]
+            self._type_match_scalar(sig_elem_type, tr_elem_type, tango_resource)
+            return
+        elif get_origin(signal_type) is np.ndarray and get_origin(tr_dtype) is np.ndarray:
+            self._type_match_ndarray(signal_type, tr_dtype)
+            return
+        elif (
+                isinstance(signal_type, type)
+                and isinstance(tr_dtype, type)
+                and issubclass(signal_type, Table)
+                and issubclass(tr_dtype, Table)
+        ):
+            for field, tr_field_info in tr_dtype.model_fields.items():
+                if field not in signal_type.model_fields:
+                    raise TypeError(
+                        f"{tango_resource} missing expected field {field!r} in {self.datatype!r}"
+                    )
+                sig_field_info = signal_type.model_fields[field]
+                if tr_field_info.annotation != sig_field_info.annotation:
+                    raise TypeError(
+                        f"{tango_resource} field '{field}' type {tr_field_info.annotation!r} != expected {sig_field_info.annotation!r}"
+                    )
+            return
+        raise TypeError(
+            f"{tango_resource} has type {tr_dtype!r}, expected {self.datatype!r}"
+        )
+
+    def _type_match_scalar(
+            self, signal_type: type[SignalDatatypeT], tr_dtype: object, tango_resource: str
+    ):
+        if signal_type is tr_dtype:
+            return
+        if isinstance(signal_type, type) and issubclass(signal_type, StrictEnum):
+            return
+        raise TypeError(
+            f"{tango_resource} has type {tr_dtype!r}, expected {self.datatype!r}"
+        )
+
+    def _verify_datatype_matches(self, config: AttributeInfoEx | CommandInfo):
+        """Verify that the datatype of the config matches the datatype of the signal."""
+        tr_dtype = get_python_type(config)
+        tango_resource = self.source(name="", read=True)
+        signal_type = self.datatype
+        if isinstance(config, AttributeInfoEx | AttributeInfo):
+            tr_format = config.data_format
+            if tr_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
+                self._type_match_array(signal_type, tr_dtype, tango_resource)
+            elif tr_format is AttrDataFormat.SCALAR:
+                self._type_match_scalar(signal_type, tr_dtype, tango_resource)
+        elif isinstance(config, CommandInfo):
+            if (
+                    config.in_type != CmdArgType.DevVoid
+                    and config.out_type != CmdArgType.DevVoid
+                    and config.in_type != config.out_type
+            ):
+                raise RuntimeError(
+                    "Commands with different in and out dtypes are not supported"
+                )
+            if get_origin(tr_dtype) in [Sequence, np.ndarray]:
+                self._type_match_array(signal_type, tr_dtype, tango_resource)
+            else:
+                self._type_match_scalar(signal_type, tr_dtype, tango_resource)
+        else:
+            raise TypeError(f"Unrecognized resource configuration: {config} for source {tango_resource}")
+
     async def _connect_and_store_config(self, trl: str, timeout: float) -> None:
         if not trl:
             raise RuntimeError(f"trl not set for {self}")
@@ -772,11 +917,16 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             # Pyright does not believe that self.proxies[trl] is not None despite
             # the check above
             await self.proxies[trl].connect()  # type: ignore
-            self.trl_configs[trl] = await self.proxies[trl].get_config()  # type: ignore
-            if isinstance(self.trl_configs[trl], AttributeInfoEx):
+            config = await self.proxies[trl].get_config()  # type: ignore
+            self.trl_configs[trl] = config
+
+            # Perform signal verification
+            self._verify_datatype_matches(config)
+
+            if isinstance(config, AttributeInfoEx):
                 if (
-                    self.trl_configs[trl].data_type == CmdArgType.DevString
-                    and self.trl_configs[trl].data_format == AttrDataFormat.IMAGE
+                    config.data_type == CmdArgType.DevString
+                    and config.data_format == AttrDataFormat.IMAGE
                 ):
                     raise TypeError(
                         "DevString IMAGE attributes are not supported by ophyd-async."
