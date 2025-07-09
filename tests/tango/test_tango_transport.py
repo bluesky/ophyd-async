@@ -912,22 +912,34 @@ async def test_type_mismatch(tango_test_device):
     transport = TangoSignalBackend(float, trl, trl, device_proxy)
     with pytest.raises(TypeError) as exc_info:
         await transport.connect(1)
-    assert "has type <class 'int'>, expected <class 'float'>" in str(exc_info.value)
+    assert ("has type <class 'int'>, expected <class 'float'>") in str(exc_info.value)
 
     trl = get_full_attr_trl(tango_test_device, "array")
     transport = TangoSignalBackend(npt.NDArray[int], trl, trl, device_proxy)
     with pytest.raises(TypeError) as exc_info:
         await transport.connect(1)
-    assert "has type numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[float]], expected numpy.ndarray[tuple[typing.Any, ...], numpy.dtype[int]]" in str(exc_info.value)
+    assert (
+        "has type numpy.ndarray[tuple[typing.Any, ...], "
+        "numpy.dtype[float]], "
+        "expected numpy.ndarray[tuple[typing.Any, ...], "
+        "numpy.dtype[int]]"
+    ) in str(exc_info.value)
 
     trl = get_full_attr_trl(tango_test_device, "sequence")
     transport = TangoSignalBackend(Sequence[int], trl, trl, device_proxy)
     with pytest.raises(TypeError) as exc_info:
         await transport.connect(1)
-    assert "has type <class 'str'>, expected collections.abc.Sequence[int]" in str(exc_info.value)
+    assert ("has type <class 'str'>, expected collections.abc.Sequence[int]") in str(
+        exc_info.value
+    )
 
     trl = get_full_attr_trl(tango_test_device, "get_longstringarray")
     transport = TangoSignalBackend(TangoDoubleStringTable, trl, trl, device_proxy)
     with pytest.raises(TypeError) as exc_info:
         await transport.connect(1)
-    assert "has type <class 'ophyd_async.tango.core._tango_transport.TangoLongStringTable'>, expected <class 'ophyd_async.tango.core._tango_transport.TangoDoubleStringTable'>" in str(exc_info.value)
+    assert (
+        "has type <class "
+        "'ophyd_async.tango.core._tango_transport.TangoLongStringTable'>,"
+        " expected <class 'ophyd_async.tango.core._tango_transport."
+        "TangoDoubleStringTable'>"
+    ) in str(exc_info.value)

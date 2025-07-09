@@ -4,7 +4,14 @@ import logging
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine, Sequence
-from typing import Any, ParamSpec, TypeVar, cast, get_args, get_origin
+from typing import (
+    Any,
+    ParamSpec,
+    TypeVar,
+    cast,
+    get_args,
+    get_origin,
+)
 
 import numpy as np
 import numpy.typing as npt
@@ -91,6 +98,7 @@ class TangoDoubleStringTable(Table):
 class TestConfig:
     data_type: CmdArgType
     data_format: AttrDataFormat
+    enum_labels: list[str]
 
 
 def get_python_type(config: AttributeInfoEx | CommandInfo | TestConfig) -> object:
@@ -159,7 +167,7 @@ def get_python_type(config: AttributeInfoEx | CommandInfo | TestConfig) -> objec
     elif tango_type == CmdArgType.DevUChar:
         return _get_type(int)
     elif tango_type == CmdArgType.DevVoid:
-        return _get_type(None)
+        return None
     else:
         raise TypeError(f"Unknown TangoType: {tango_type}")
 
@@ -588,6 +596,7 @@ class CommandProxy(TangoProxy):
                             raise RuntimeError(
                                 f"{self._name} device failure: {de_exc.args[0].desc}"
                             ) from de_exc
+
             self._last_w_value = value
             return AsyncStatus(wait_for_reply(rid, timeout))
 
@@ -811,10 +820,10 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         return self.read_trl if read else self.write_trl
 
     def _type_match_ndarray(self, signal_type: type[SignalDatatypeT], tr_dtype: object):
-        tango_resource = self.source(name='', read=True)
+        tango_resource = self.source(name="", read=True)
 
         def extract_dtype_param(dtype_arg):
-            if hasattr(dtype_arg, '__origin__') and dtype_arg.__origin__ is np.dtype:
+            if hasattr(dtype_arg, "__origin__") and dtype_arg.__origin__ is np.dtype:
                 inner = get_args(dtype_arg)
                 return inner[0] if inner else object
             return dtype_arg
@@ -825,10 +834,11 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         try:
             sdt = np.dtype(signal_dtype)
             tdt = np.dtype(tr_dtype_arg)
-        except Exception as e:
+        except TypeError as e:
             raise TypeError(
-                f"Could not interpret array dtypes: {signal_dtype!r}, {tr_dtype_arg!r} ({e})"
-            )
+                f"Could not interpret array dtypes: {signal_dtype!r},"
+                f" {tr_dtype_arg!r} ({e})"
+            ) from e
 
         if sdt != tdt:
             raise TypeError(
@@ -836,7 +846,10 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             )
 
     def _type_match_array(
-            self, signal_type: type[SignalDatatypeT], tr_dtype: object, tango_resource: str
+        self,
+        signal_type: type[SignalDatatypeT] | None,
+        tr_dtype: object,
+        tango_resource: str,
     ):
         # Always get a fresh resource string for the error context
         tango_resource = self.source(name="", read=True)
@@ -845,24 +858,34 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             tr_elem_type = get_args(tr_dtype)[0]
             self._type_match_scalar(sig_elem_type, tr_elem_type, tango_resource)
             return
-        elif get_origin(signal_type) is np.ndarray and get_origin(tr_dtype) is np.ndarray:
+        elif (
+            get_origin(signal_type) is np.ndarray and get_origin(tr_dtype) is np.ndarray
+        ):
+            if signal_type is None:
+                raise TypeError(
+                    f"{tango_resource} has type {tr_dtype!r}, expected a non-None"
+                    f" signal_type"
+                )
             self._type_match_ndarray(signal_type, tr_dtype)
             return
         elif (
-                isinstance(signal_type, type)
-                and isinstance(tr_dtype, type)
-                and issubclass(signal_type, Table)
-                and issubclass(tr_dtype, Table)
+            isinstance(signal_type, type)
+            and isinstance(tr_dtype, type)
+            and issubclass(signal_type, Table)
+            and issubclass(tr_dtype, Table)
         ):
             for field, tr_field_info in tr_dtype.model_fields.items():
                 if field not in signal_type.model_fields:
                     raise TypeError(
-                        f"{tango_resource} missing expected field {field!r} in {self.datatype!r}"
+                        f"{tango_resource} missing expected "
+                        f"field {field!r} in {self.datatype!r}"
                     )
                 sig_field_info = signal_type.model_fields[field]
                 if tr_field_info.annotation != sig_field_info.annotation:
                     raise TypeError(
-                        f"{tango_resource} field '{field}' type {tr_field_info.annotation!r} != expected {sig_field_info.annotation!r}"
+                        f"{tango_resource} field '{field}' "
+                        f"type {tr_field_info.annotation!r} != "
+                        f"expected {sig_field_info.annotation!r}"
                     )
             return
         raise TypeError(
@@ -870,7 +893,10 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         )
 
     def _type_match_scalar(
-            self, signal_type: type[SignalDatatypeT], tr_dtype: object, tango_resource: str
+        self,
+        signal_type: type[SignalDatatypeT] | None,
+        tr_dtype: object,
+        tango_resource: str,
     ):
         if signal_type is tr_dtype:
             return
@@ -893,9 +919,9 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
                 self._type_match_scalar(signal_type, tr_dtype, tango_resource)
         elif isinstance(config, CommandInfo):
             if (
-                    config.in_type != CmdArgType.DevVoid
-                    and config.out_type != CmdArgType.DevVoid
-                    and config.in_type != config.out_type
+                config.in_type != CmdArgType.DevVoid
+                and config.out_type != CmdArgType.DevVoid
+                and config.in_type != config.out_type
             ):
                 raise RuntimeError(
                     "Commands with different in and out dtypes are not supported"
@@ -905,7 +931,10 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             else:
                 self._type_match_scalar(signal_type, tr_dtype, tango_resource)
         else:
-            raise TypeError(f"Unrecognized resource configuration: {config} for source {tango_resource}")
+            raise TypeError(
+                f"Unrecognized resource configuration: {config} "
+                f"for source {tango_resource}"
+            )
 
     async def _connect_and_store_config(self, trl: str, timeout: float) -> None:
         if not trl:
