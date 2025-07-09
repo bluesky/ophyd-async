@@ -18,7 +18,7 @@ from ophyd_async.core._signal import (
     wait_for_value,
 )
 from ophyd_async.core._status import AsyncStatus
-from ophyd_async.core._utils import DEFAULT_TIMEOUT
+from ophyd_async.core._utils import DEFAULT_TIMEOUT, error_if_none
 
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
 from ._core_io import (
@@ -153,8 +153,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     async def collect_stream_docs(
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
-        if self._path_info is None:
-            raise RuntimeError("Writer must be opened before collecting stream docs!")
+        error_if_none(
+            self._path_info, "Writer must be opened before collecting stream docs!"
+        )
 
         if indices_written:
             if not self._emitted_resource:

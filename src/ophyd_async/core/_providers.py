@@ -31,7 +31,7 @@ class PathInfo:
                 (
                     "file",
                     "localhost",
-                    f"{self.directory_path}/",
+                    f"{self.directory_path.absolute()}" + os.sep,
                     "",
                     "",
                     None,
