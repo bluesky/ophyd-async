@@ -54,7 +54,7 @@ When a hardware trigger is sent to a detector, it can either be edge triggered (
 
 With all this in mind, let us consider typical fly scanning setups given a motor and a detector.
 
-### Software collection window internal triggers
+### Software collection window with internal triggers
 
 The simplest form of fly scanning uses software synchronisation for opening a collection window, and letting a detector trigger itself internally.
 We effectively tell the devices to "go" at the same time, relying on timestamps to match up the data. The strategy may involve
@@ -67,7 +67,7 @@ We effectively tell the devices to "go" at the same time, relying on timestamps 
 This process would produce two data stream: a "monitor" stream of timestamped motor readback positions at the control system update rate;
 and a "primary" stream of detector frames with embedded timestamps when they were received by the control point.
 
-### Software collection window time triggers
+### Software collection window with time triggers
 
 If we introduce a PandA box into the system we can trigger the collection window as above, but let the PandA produce time triggers for the detector.
 The strategy is similar:
@@ -91,7 +91,7 @@ The strategy and data streams are as in the previous example.
 
 Similar to above, but if the detector is only capable of edge triggering then we need to give it a constant time period so it doesn't miss frames. We do this by sending regularly spaced triggers from a PandA and capturing the positions that the motors were at.
 
-### Setpoint collection window setpoint triggers
+### Setpoint collection window with setpoint triggers
 
 It is worth mentioning that the Flyer protocol is also used in hardware-triggered step scanning. Though the collection occurs while the scanned axis is stationary,
 the devices are prepared, kicked off, and completed in a similar way to fly scans.
