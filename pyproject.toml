@@ -29,9 +29,11 @@ requires-python = ">=3.10"
 [project.optional-dependencies]
 sim = ["h5py"]
 ca = ["aioca>=1.6"]
-pva = ["p4p>=4.2.0"]
+pva = ["p4p>=4.2.1a1", "epicscorelibs>=7.0.7.99.1.2a2", "pvxslibs>=1.4.0a2"]
 tango = ["pytango==10.0.0"]
 demo = ["ipython", "matplotlib", "pyqt6"]
+
+[dependency-groups]
 dev = [
     "ophyd_async[sim]",
     "ophyd_async[ca]",
