@@ -13,7 +13,8 @@ from ophyd_async.testing import callback_on_mock_put, set_mock_value
 @pytest.fixture
 def ad_standard_det_factory(
     RE: RunEngine,
-    static_path_provider,
+    static_path_provider_factory,
+    static_filename_provider,
 ) -> Callable[
     [type[adcore.AreaDetector], type[adcore.ADWriter], int], adcore.AreaDetector
 ]:
@@ -22,6 +23,7 @@ def ad_standard_det_factory(
         writer_cls: type[adcore.ADWriter] = adcore.ADHDFWriter,
         number=1,
         data_type=adcore.ADBaseDataType.UINT16,
+        directory_uri: str | None = None,
         **kwargs,
     ) -> adcore.AreaDetector:
         # Dynamically generate a name based on the class of controller
@@ -29,13 +31,18 @@ def ad_standard_det_factory(
         if detector_name.endswith("Detector"):
             detector_name = detector_name[: -len("Detector")]
 
+        # Create the static path provider here to allow for overriding the directory URI
+        path_provider = static_path_provider_factory(
+            static_filename_provider, directory_uri=directory_uri
+        )
+
         with init_devices(mock=True):
             prefix = f"{detector_name.upper()}{number}:"
             name = f"test_ad{detector_name.lower()}{number}"
 
             test_adstandard_det = detector_cls(
                 prefix,
-                static_path_provider,
+                path_provider,
                 # The inner areaDetector class wants the instantaiated object,
                 # but the outward facing classes want a writer class type
                 writer_cls=writer_cls,  # type: ignore
@@ -48,7 +55,7 @@ def ad_standard_det_factory(
                 set_mock_value(test_adstandard_det.fileio.file_path_exists, True)
                 set_mock_value(
                     test_adstandard_det.fileio.full_file_name,
-                    f"{value}/{static_path_provider._filename_provider(device_name=test_adstandard_det.name)}{test_adstandard_det._writer._file_extension}",
+                    f"{value}/{static_filename_provider(device_name=test_adstandard_det.name)}{test_adstandard_det._writer._file_extension}",
                 )
 
         callback_on_mock_put(

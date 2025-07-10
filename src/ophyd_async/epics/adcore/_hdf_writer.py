@@ -67,7 +67,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         self._path_info = self._path_provider(device_name=name)
 
         # Set common AD file plugin params, begin capturing
-        await self.begin_capture(name)
+        await self._begin_capture(name)
 
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()

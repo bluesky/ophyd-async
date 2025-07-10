@@ -1,5 +1,7 @@
 import itertools
 import os
+from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -88,10 +90,6 @@ async def test_can_collect(
 ):
     path_info = static_path_provider()
 
-    # If we are using the HDF writer, the uri will reference
-    uri = str(path_info.directory_path) + "/"
-    if writer_cls == adcore.ADHDFWriter:
-        uri = uri.rstrip("/") + os.sep + f"{path_info.filename}.h5"
     test_det = ad_standard_det_factory(detector_cls, writer_cls=writer_cls)
 
     await test_det.stage()
@@ -102,12 +100,21 @@ async def test_can_collect(
     stream_resource = docs[0][1]
     sr_uid = stream_resource["uid"]
     assert stream_resource["data_key"] == test_det.name
-    assert stream_resource["uri"] == "/".join(
-        ["file://localhost", str(uri).lstrip("/")]
+
+    # With HDF writer, the URI points directly to the file. For other writers, since a
+    # dataset is many files, point to the directory instead.
+    expected_uri = (
+        "file://localhost/"
+        + str(path_info.directory_path.absolute().as_posix()).lstrip("/")
+        + "/"
     )
+    if writer_cls == adcore.ADHDFWriter:
+        expected_uri += path_info.filename + ".h5"
+
+    assert stream_resource["uri"] == expected_uri
 
     # Construct expected stream resource parameters based on writer
-    expected_sres_params = {
+    expected_sres_params: dict[str, Any] = {
         "chunk_shape": (1, 10, 10),
     }
     if writer_cls == adcore.ADHDFWriter:
@@ -123,6 +130,43 @@ async def test_can_collect(
     assert stream_datum["stream_resource"] == sr_uid
     assert stream_datum["seq_nums"] == {"start": 0, "stop": 0}
     assert stream_datum["indices"] == {"start": 0, "stop": 1}
+
+
+async def test_can_specify_different_uri_and_path(
+    ad_standard_det_factory,
+    tmp_path: Path,
+    detector_cls: type[adcore.AreaDetector],
+    writer_cls: type[adcore.ADWriter],
+    one_shot_trigger_info: TriggerInfo,
+):
+    # Create a static path provider that will return a specific directory
+    uri_override = f"file://localhost/{tmp_path.absolute().as_posix()}/different/"
+
+    test_det = ad_standard_det_factory(
+        detector_cls, writer_cls=writer_cls, directory_uri=uri_override
+    )
+
+    path_info = test_det._writer._path_provider(device_name=test_det.name)
+
+    await test_det.stage()
+    await test_det.prepare(one_shot_trigger_info)
+    docs = [(name, doc) async for name, doc in test_det.collect_asset_docs(1)]
+
+    # Make sure we set the write path to the directory_path attr from our path info
+    assert await test_det.fileio.file_path.get_value() == str(tmp_path) + os.sep
+
+    # Then, check to make sure our resource doc uses the overridden URI
+    assert len(docs) == 2
+    assert docs[0][0] == "stream_resource"
+    stream_resource = docs[0][1]
+
+    # With HDF writer, the URI points directly to the file. For other writers, since a
+    # dataset is many files, point to the directory instead.
+    expected_uri = uri_override
+    if writer_cls == adcore.ADHDFWriter:
+        expected_uri += path_info.filename + ".h5"
+
+    assert stream_resource["uri"] == expected_uri
 
 
 async def test_can_decribe_collect(

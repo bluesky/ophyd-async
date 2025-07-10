@@ -1,4 +1,5 @@
 import asyncio
+import os
 from collections.abc import AsyncGenerator, AsyncIterator
 from typing import Generic, TypeVar, get_args
 
@@ -81,17 +82,21 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         writer = cls(fileio, path_provider, dataset_describer, plugins=plugins)
         return writer
 
-    async def begin_capture(self, name: str) -> None:
+    async def _begin_capture(self, name: str) -> None:
+        path_info = error_if_none(
+            self._path_info, "Writer must be opened before beginning capture!"
+        )
+
         await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
-        await self.fileio.create_directory.set(self._path_info.create_dir_depth)
+        await self.fileio.create_directory.set(path_info.create_dir_depth)
 
         await asyncio.gather(
             # See https://github.com/bluesky/ophyd-async/issues/122
-            self.fileio.file_path.set(str(self._path_info.directory_path)),
-            self.fileio.file_name.set(self._path_info.filename),
+            self.fileio.file_path.set(str(path_info.directory_path) + os.sep),
+            self.fileio.file_name.set(path_info.filename),
             self.fileio.file_write_mode.set(ADFileWriteMode.STREAM),
             # For non-HDF file writers, use AD file templating mechanism
             # for generating multi-image datasets
@@ -103,9 +108,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         )
 
         if not await self.fileio.file_path_exists.get_value():
-            msg = (
-                f"Path {self._path_info.directory_path} doesn't exist or not writable!"
-            )
+            msg = f"Path {path_info.directory_path} doesn't exist or not writable!"
             raise FileNotFoundError(msg)
 
         # Overwrite num_capture to go forever
@@ -126,7 +129,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
         self._path_info = self._path_provider(device_name=name)
 
-        await self.begin_capture(name)
+        await self._begin_capture(name)
 
         describe = {
             name: DataKey(
@@ -153,7 +156,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     async def collect_stream_docs(
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
-        error_if_none(
+        path_info = error_if_none(
             self._path_info, "Writer must be opened before collecting stream docs!"
         )
 
@@ -168,7 +171,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
                 self._emitted_resource = bundler_composer(
                     mimetype=self._mimetype,
-                    uri=str(self._path_info.directory_uri),
+                    uri=str(path_info.directory_uri),
                     # TODO no reference to detector's name
                     data_key=name,
                     parameters={

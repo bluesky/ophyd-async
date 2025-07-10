@@ -1,5 +1,6 @@
 """Integration tests for a StandardDetector using a ADHDFWriter and SimController."""
 
+import os
 import time
 from collections import defaultdict
 from collections.abc import Callable, Sequence
@@ -346,13 +347,13 @@ async def test_two_detectors_step(
 
         assert (yield from bps.rd(writer_a.fileio.file_path)) == str(
             info_a.directory_path
-        )
+        ) + os.sep
         file_name_a = yield from bps.rd(writer_a.fileio.file_name)
         assert file_name_a == info_a.filename
 
         assert (yield from bps.rd(writer_b.fileio.file_path)) == str(
             info_b.directory_path
-        )
+        ) + os.sep
         file_name_b = yield from bps.rd(writer_b.fileio.file_name)
         assert file_name_b == info_b.filename
 
@@ -420,7 +421,9 @@ async def test_detector_writes_to_file(
 
     RE(count_sim([test_adsimdetector], times=3))
 
-    assert await test_adsimdetector.fileio.file_path.get_value() == str(tmp_path)
+    assert (
+        await test_adsimdetector.fileio.file_path.get_value() == str(tmp_path) + os.sep
+    )
 
     descriptor_index = names.index("descriptor")
 

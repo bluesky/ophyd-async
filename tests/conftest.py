@@ -225,8 +225,10 @@ def static_filename_provider():
 
 @pytest.fixture
 def static_path_provider_factory(tmp_path: Path):
-    def create_static_dir_provider_given_fp(fp: FilenameProvider):
-        return StaticPathProvider(fp, tmp_path)
+    def create_static_dir_provider_given_fp(
+        fp: FilenameProvider, directory_uri: str | None = None
+    ):
+        return StaticPathProvider(fp, tmp_path, directory_uri=directory_uri)
 
     return create_static_dir_provider_given_fp
 
