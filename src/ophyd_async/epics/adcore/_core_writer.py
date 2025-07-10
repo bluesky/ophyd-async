@@ -119,7 +119,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         )
 
         if not await self.fileio.file_path_exists.get_value():
-            msg = f"Path {path_info.directory_path} doesn't exist or not writable!"
+            msg = f"Path {dir_path_as_str} doesn't exist or not writable!"
             raise FileNotFoundError(msg)
 
         # Overwrite num_capture to go forever
