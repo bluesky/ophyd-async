@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# default opinioned bash configuration
+# DO NOT MODIFY if installed in /bash-config
+# this file will be overwritten on each container launch
+
+# enable enternal shared history
+export HISTCONTROL=ignoreboth:erasedups
+export HISTSIZE=-1
+export HISTFILESIZE=-1
+export SAVEHIST=-1
+export HISTFILE=$USER_TERMINAL_CONFIG/.bash_eternal_history
+export PROMPT_COMMAND="history -a; $PROMPT_COMMAND"
+
+# bash theme - partly inspired by https://github.com/ohmyzsh/ohmyzsh/blob/master/themes/dst.zsh-theme
+# from https://github.com/devcontainers/features/blob/main/src/common-utils/scripts/bash_theme_snippet.sh
+__bash_prompt() {
+    local userpart='`export XIT=$? \
+        && echo -n "\u " \
+        && [ "$XIT" -ne "0" ] && echo -n "\[\033[1;31m\]➜" || echo -n "\[\033[0m\]➜"`'
+    local gitbranch='`\
+            export BRANCH="$(git --no-optional-locks symbolic-ref --short HEAD 2>/dev/null || git --no-optional-locks rev-parse --short HEAD 2>/dev/null)"; \
+            if [ "${BRANCH:-}" != "" ]; then \
+                echo -n "\[\033[0;36m\](\[\033[1;32m\]${BRANCH:-}" \
+                && if git --no-optional-locks ls-files --error-unmatch -m --directory --no-empty-directory -o --exclude-standard ":/*" > /dev/null 2>&1; then \
+                        echo -n " \[\033[1;33m\]✗"; \
+                fi \
+                && echo -n "\[\033[0;36m\]) "; \
+            fi`'
+    local removecolor='\[\033[0m\]'
+    local lightblue='\[\033[1;34m\]'
+    local cyan='\[\033[0;36m\]'
+    PS1="${lightblue}${userpart} ${cyan}\w ${gitbranch}${removecolor}\n\$ "
+    unset -f __bash_prompt
+}
+__bash_prompt
+export PROMPT_DIRTRIM=4
+
+# Set the default git editor if not already set
+# from https://github.com/devcontainers/features/blob/f8e7e275b7ba2808e14a035afd753b83be68e2d9/src/common-utils/scripts/rc_snippet.sh
+if [ -z "$(git config --get core.editor)" ] && [ -z "${GIT_EDITOR}" ]; then
+    if  [ "${TERM_PROGRAM}" = "vscode" ]; then
+        if [[ -n $(command -v code-insiders) &&  -z $(command -v code) ]]; then
+            export GIT_EDITOR="code-insiders --wait"
+        else
+            export GIT_EDITOR="code --wait"
+        fi
+    fi
+fi
+
+# colorize ls output
+export LS_OPTIONS='--color=auto'
+eval "$(dircolors)"
+alias ls='ls $LS_OPTIONS'
+alias ll='ls $LS_OPTIONS -l'
+
+# enable bash completion for git
+if [[ -f /usr/share/bash-completion/completions/git ]]; then
+  source /usr/share/bash-completion/completions/git
+elif [[ -f /etc/bash_completion.d/git ]]; then
+  source /etc/bash_completion.d/git
+fi
