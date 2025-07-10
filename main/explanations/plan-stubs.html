@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>What plan stubs will do to Devices &#8212; ophyd-async 0.12.dev6+g61186ffd4 documentation</title>
+    <title>What plan stubs will do to Devices &#8212; ophyd-async 0.12.dev7+g4e6f4bac2 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=e28dbcad"></script>
+    <script src="../_static/documentation_options.js?v=7c8ecb12"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -68,7 +68,7 @@ window.addEventListener("load", () => mermaid.run());
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Where should Device logic live?" href="where-device-logic.html" />
-    <link rel="prev" title="Flyscanning" href="flyscanning.html" />
+    <link rel="prev" title="What is the difference between step and fly scanning" href="fly-scanning.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -137,8 +137,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev7+g4e6f4bac2 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev7+g4e6f4bac2 documentation - Home"/>
   
   
 </a></div>
@@ -435,7 +435,7 @@ window.addEventListener("load", () => mermaid.run());
 <li class="toctree-l1"><a class="reference internal" href="design-goals.html">Design goals and differences with ophyd sync</a></li>
 <li class="toctree-l1"><a class="reference internal" href="device-connection-strategies.html">Device connection strategies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="devices-signals-backends.html">Devices, Signals and their Backends</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flyscanning.html">Flyscanning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fly-scanning.html">What is the difference between step and fly scanning</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">What plan stubs will do to Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="where-device-logic.html">Where should Device logic live?</a></li>
 </ul>
@@ -503,7 +503,7 @@ window.addEventListener("load", () => mermaid.run());
 <p>Plan authors will typically compose <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html#stub-plans" title="bluesky 1.14.3.dev13+g103accac">plan stubs</a> together to define the behaviour they expect from their Devices. When the plan is executed, the RunEngine will consume the <a class="reference external" href="https://blueskyproject.io/bluesky/main/msg.html" title="bluesky 1.14.3.dev13+g103accac"><code class="docutils literal notranslate"><span class="pre">Msg</span></code> objects</a> <code class="docutils literal notranslate"><span class="pre">yield</span> <span class="pre">from</span></code> each plan stub as a series of instructions, many of which call methods on the Device. This document lists some commonly used plan stubs, what Devices will do when they are called, and what order they should be called inside the plan.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><a class="reference internal" href="flyscanning.html"><span class="std std-doc">Flyscanning</span></a> for more information on the difference between step scans (typically software driven) and flyscans (typically hardware driven)</p>
+<p><a class="reference internal" href="fly-scanning.html"><span class="std std-doc">What is the difference between step and fly scanning</span></a> for more information on the difference between step scans (typically software driven) and flyscans (typically hardware driven)</p>
 </div>
 <section id="plan-stubs">
 <h2>Plan stubs<a class="headerlink" href="#plan-stubs" title="Link to this heading">#</a></h2>
@@ -870,12 +870,12 @@ Code</label><div class="sd-tab-content docutils">
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="flyscanning.html"
+       href="fly-scanning.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Flyscanning</p>
+        <p class="prev-next-title">What is the difference between step and fly scanning</p>
       </div>
     </a>
     <a class="right-next"

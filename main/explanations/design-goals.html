@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Design goals and differences with ophyd sync &#8212; ophyd-async 0.12.dev6+g61186ffd4 documentation</title>
+    <title>Design goals and differences with ophyd sync &#8212; ophyd-async 0.12.dev7+g4e6f4bac2 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=e28dbcad"></script>
+    <script src="../_static/documentation_options.js?v=7c8ecb12"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev7+g4e6f4bac2 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev7+g4e6f4bac2 documentation - Home"/>
   
   
 </a></div>
@@ -427,7 +427,7 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Design goals and differences with ophyd sync</a></li>
 <li class="toctree-l1"><a class="reference internal" href="device-connection-strategies.html">Device connection strategies</a></li>
 <li class="toctree-l1"><a class="reference internal" href="devices-signals-backends.html">Devices, Signals and their Backends</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flyscanning.html">Flyscanning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fly-scanning.html">What is the difference between step and fly scanning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plan-stubs.html">What plan stubs will do to Devices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="where-device-logic.html">Where should Device logic live?</a></li>
 </ul>
@@ -495,7 +495,7 @@
 <p>Ophyd-async was designed to be a library for asynchronously interfacing with hardware. As such it fulfils the same role in the bluesky ecosystem as <a class="reference external" href="https://github.com/bluesky/ophyd">ophyd sync</a>: an abstraction layer that enables experiment orchestration and data acquisition code to operate above the specifics of particular devices and control systems. This document details the design goals and the differences with ophyd sync.</p>
 <section id="asynchronous-signal-access">
 <h2>Asynchronous Signal access<a class="headerlink" href="#asynchronous-signal-access" title="Link to this heading">#</a></h2>
-<p>A fundamental part of ophyd-async is <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="Python 3.13"><code class="iref myst docutils literal notranslate"><span class="pre">asyncio</span></code></a>. This allows lightweight and deterministic control of multiple signals, making it possible to do the “put 2 PVs in parallel, then get from another PV” logic that is common in flyscanning without the performance and complexity overhead of multiple threads.</p>
+<p>A fundamental part of ophyd-async is <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="Python 3.13"><code class="iref myst docutils literal notranslate"><span class="pre">asyncio</span></code></a>. This allows lightweight and deterministic control of multiple signals, making it possible to do the “put 2 PVs in parallel, then get from another PV” logic that is common in fly scanning without the performance and complexity overhead of multiple threads.</p>
 <p>For instance, the threaded version of the above looks something like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">set_signal_thread</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
@@ -538,18 +538,18 @@
 <h2>Clean Device Definition<a class="headerlink" href="#clean-device-definition" title="Link to this heading">#</a></h2>
 <p>For highly customizable devices like <a class="reference external" href="https://quantumdetectors.com/products/pandabox">PandABox</a> there are often different pieces of logic that can talk to the same underlying hardware interface. The Devices in ophyd-async are structured so that the logic and interface can be split, and thus can be cleanly organized via composition rather than inheritance.</p>
 </section>
-<section id="ease-the-implementation-of-flyscanning">
-<h2>Ease the implementation of flyscanning<a class="headerlink" href="#ease-the-implementation-of-flyscanning" title="Link to this heading">#</a></h2>
-<p>One of the major drivers for ophyd-async was to ease the implementation of flyscanning. A library of flyscanning helpers is being developed to aid such strategies as:</p>
+<section id="ease-the-implementation-of-fly-scanning">
+<h2>Ease the implementation of fly scanning<a class="headerlink" href="#ease-the-implementation-of-fly-scanning" title="Link to this heading">#</a></h2>
+<p>One of the major drivers for ophyd-async was to ease the implementation of fly scanning. A library of fly scanning helpers is being developed to aid such strategies as:</p>
 <ul class="simple">
 <li><p>Definition of scan paths via <a class="reference external" href="https://github.com/dls-controls/scanspec">ScanSpec</a></p></li>
 <li><p>PVT Trajectory scanning in <a class="reference external" href="https://github.com/dls-controls/pmac">Delta Tau motion controllers</a></p></li>
 <li><p>Position compare and capture using a <a class="reference external" href="https://quantumdetectors.com/products/pandabox">PandABox</a></p></li>
 </ul>
-<p>These strategies will be ported from DLS’s previous flyscanning software <a class="reference external" href="https://github.com/dls-controls/pymalcolm">Malcolm</a> and improved to take advantage of the flexibility of bluesky’s plan definitions.</p>
+<p>These strategies will be ported from DLS’s previous fly scanning software <a class="reference external" href="https://github.com/dls-controls/pymalcolm">Malcolm</a> and improved to take advantage of the flexibility of bluesky’s plan definitions.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p>The documents on flyscanning in the <a class="reference external" href="http://blueskyproject.io/bluesky-cookbook/glossary/flyscanning.html">bluesky cookbook</a></p>
+<p><a class="reference internal" href="fly-scanning.html"><span class="std std-doc">What is the difference between step and fly scanning</span></a></p>
 </div>
 </section>
 <section id="parity-and-interoperativity-with-ophyd-sync">
@@ -608,7 +608,7 @@
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#asynchronous-signal-access">Asynchronous Signal access</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#support-for-ca-pva-tango">Support for CA, PVA, Tango</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clean-device-definition">Clean Device Definition</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ease-the-implementation-of-flyscanning">Ease the implementation of flyscanning</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ease-the-implementation-of-fly-scanning">Ease the implementation of fly scanning</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parity-and-interoperativity-with-ophyd-sync">Parity and interoperativity with ophyd sync</a></li>
 </ul>
   </nav></div>

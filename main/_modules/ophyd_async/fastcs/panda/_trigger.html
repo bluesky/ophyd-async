@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.panda._trigger &#8212; ophyd-async 0.12.dev6+g61186ffd4 documentation</title>
+    <title>ophyd_async.fastcs.panda._trigger &#8212; ophyd-async 0.12.dev7+g4e6f4bac2 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=e28dbcad"></script>
+    <script src="../../../../_static/documentation_options.js?v=7c8ecb12"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev7+g4e6f4bac2 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev7+g4e6f4bac2 documentation - Home"/>
   
   
 </a></div>
@@ -482,7 +482,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="SeqTableInfo">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.SeqTableInfo">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SeqTableInfo</span><span class="p">(</span><span class="n">ConfinedModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Info for the PandA `SeqTable` for flyscanning.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Info for the PandA `SeqTable` for fly scanning.&quot;&quot;&quot;</span>
 
     <span class="n">sequence_table</span><span class="p">:</span> <span class="n">SeqTable</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">repeats</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -493,7 +493,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="StaticSeqTableTriggerLogic">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StaticSeqTableTriggerLogic</span><span class="p">(</span><span class="n">FlyerController</span><span class="p">[</span><span class="n">SeqTableInfo</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For controlling the PandA `SeqTable` when flyscanning.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For controlling the PandA `SeqTable` when fly scanning.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq</span><span class="p">:</span> <span class="n">SeqBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span>
@@ -537,7 +537,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="PcompInfo">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PcompInfo">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PcompInfo</span><span class="p">(</span><span class="n">ConfinedModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Info for the PandA `PcompBlock` for flyscanning.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Info for the PandA `PcompBlock` for fly scanning.&quot;&quot;&quot;</span>
 
     <span class="n">start_postion</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;start position in counts&quot;</span><span class="p">)</span>
     <span class="n">pulse_width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;width of a single pulse in counts&quot;</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -564,7 +564,7 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="StaticPcompTriggerLogic">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompTriggerLogic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">StaticPcompTriggerLogic</span><span class="p">(</span><span class="n">FlyerController</span><span class="p">[</span><span class="n">PcompInfo</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;For controlling the PandA `PcompBlock` when flyscanning.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For controlling the PandA `PcompBlock` when fly scanning.&quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcomp</span><span class="p">:</span> <span class="n">PcompBlock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pcomp</span> <span class="o">=</span> <span class="n">pcomp</span>

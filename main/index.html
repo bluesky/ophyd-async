@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title> &#8212; ophyd-async 0.12.dev6+g61186ffd4 documentation</title>
+    <title> &#8212; ophyd-async 0.12.dev7+g4e6f4bac2 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=e28dbcad"></script>
+    <script src="_static/documentation_options.js?v=7c8ecb12"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -128,8 +128,8 @@
       
     
     
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev6+g61186ffd4 documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev7+g4e6f4bac2 documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev7+g4e6f4bac2 documentation - Home"/>
   
   
 </a></div>
@@ -463,7 +463,7 @@
 <li><p>Support for <a class="reference external" href="http://www.aps.anl.gov/epics/">EPICS</a> PVA and <a class="reference external" href="https://www.tango-controls.org/">Tango</a> as well as the traditional EPICS CA</p></li>
 <li><p>Better library support for splitting the logic from the hardware interface to avoid complex class heirarchies</p></li>
 </ul>
-<p>It was written with the aim of implementing flyscanning in a generic and extensible way with highly customizable devices like PandABox and the Delta Tau PMAC products. Using async code makes it possible to do the “put 3 PVs in parallel, then get from another PV” logic that is common in flyscanning without the performance and complexity overhead of multiple threads.</p>
+<p>It was written with the aim of implementing fly scanning in a generic and extensible way with highly customizable devices like PandABox and the Delta Tau PMAC products. Using async code makes it possible to do the “put 3 PVs in parallel, then get from another PV” logic that is common in fly scanning without the performance and complexity overhead of multiple threads.</p>
 <p>Devices from both ophyd sync and ophyd-async can be used in the same RunEngine and even in the same scan. This allows a per-device migration where devices are reimplemented in ophyd-async one by one.</p>
 <section id="how-the-documentation-is-structured">
 <h2>How the documentation is structured<a class="headerlink" href="#how-the-documentation-is-structured" title="Link to this heading">#</a></h2>
@@ -532,7 +532,7 @@
 <li class="toctree-l2"><a class="reference internal" href="explanations/design-goals.html">Design goals and differences with ophyd sync</a></li>
 <li class="toctree-l2"><a class="reference internal" href="explanations/device-connection-strategies.html">Device connection strategies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="explanations/devices-signals-backends.html">Devices, Signals and their Backends</a></li>
-<li class="toctree-l2"><a class="reference internal" href="explanations/flyscanning.html">Flyscanning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explanations/fly-scanning.html">What is the difference between step and fly scanning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="explanations/plan-stubs.html">What plan stubs will do to Devices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="explanations/where-device-logic.html">Where should Device logic live?</a></li>
 </ul>

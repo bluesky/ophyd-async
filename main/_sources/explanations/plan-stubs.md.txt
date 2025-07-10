@@ -3,7 +3,7 @@
 Plan authors will typically compose [plan stubs](inv:bluesky#stub_plans) together to define the behaviour they expect from their Devices. When the plan is executed, the RunEngine will consume the [`Msg` objects](inv:bluesky:std:doc#msg) `yield from` each plan stub as a series of instructions, many of which call methods on the Device. This document lists some commonly used plan stubs, what Devices will do when they are called, and what order they should be called inside the plan.
 
 ```{seealso}
-[](./flyscanning.md) for more information on the difference between step scans (typically software driven) and flyscans (typically hardware driven)
+[](./fly-scanning.md) for more information on the difference between step scans (typically software driven) and flyscans (typically hardware driven)
 ```
 
 ## Plan stubs
