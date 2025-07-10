@@ -15,7 +15,7 @@ from ._table import SeqTable
 
 
 class SeqTableInfo(ConfinedModel):
-    """Info for the PandA `SeqTable` for flyscanning."""
+    """Info for the PandA `SeqTable` for fly scanning."""
 
     sequence_table: SeqTable = Field(strict=True)
     repeats: int = Field(ge=0)
@@ -23,7 +23,7 @@ class SeqTableInfo(ConfinedModel):
 
 
 class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
-    """For controlling the PandA `SeqTable` when flyscanning."""
+    """For controlling the PandA `SeqTable` when fly scanning."""
 
     def __init__(self, seq: SeqBlock) -> None:
         self.seq = seq
@@ -52,7 +52,7 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
 
 
 class PcompInfo(ConfinedModel):
-    """Info for the PandA `PcompBlock` for flyscanning."""
+    """Info for the PandA `PcompBlock` for fly scanning."""
 
     start_postion: int = Field(description="start position in counts")
     pulse_width: int = Field(description="width of a single pulse in counts", gt=0)
@@ -76,7 +76,7 @@ class PcompInfo(ConfinedModel):
 
 
 class StaticPcompTriggerLogic(FlyerController[PcompInfo]):
-    """For controlling the PandA `PcompBlock` when flyscanning."""
+    """For controlling the PandA `PcompBlock` when fly scanning."""
 
     def __init__(self, pcomp: PcompBlock) -> None:
         self.pcomp = pcomp

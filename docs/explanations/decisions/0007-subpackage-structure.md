@@ -14,7 +14,7 @@ Accepted
 - `ophyd_async.epics`: Epics specific signals and devices
 - `ophyd_async.tango`: Tango specific signals and devices
 - `ophyd_async.fastcs`: FastCS (EPICS or Tango) devices like PandA
-- `ophyd_async.planstubs`: Plan stubs for various flyscan functionality
+- `ophyd_async.planstubs`: Plan stubs for various fly scan functionality
 - `ophyd_async.sim`: Simulated devices for demos and tests
 
 This ADR proposes a public sub-package structure. The internal private structure should be flat, but can change according to the number of classes in a public package.

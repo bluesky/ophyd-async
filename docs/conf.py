@@ -204,6 +204,7 @@ pygments_style = "sphinx"
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "bluesky": ("https://blueskyproject.io/bluesky/main", None),
+    "scanspec": ("https://blueskyproject.io/scanspec/main", None),
     "numpy": ("https://numpy.org/devdocs/", None),
     "databroker": ("https://blueskyproject.io/databroker/", None),
     "event-model": ("https://blueskyproject.io/event-model/main", None),

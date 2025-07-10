@@ -4,7 +4,7 @@ Ophyd-async was designed to be a library for asynchronously interfacing with har
 
 ## Asynchronous Signal access
 
-A fundamental part of ophyd-async is [](#asyncio). This allows lightweight and deterministic control of multiple signals, making it possible to do the "put 2 PVs in parallel, then get from another PV" logic that is common in flyscanning without the performance and complexity overhead of multiple threads.
+A fundamental part of ophyd-async is [](#asyncio). This allows lightweight and deterministic control of multiple signals, making it possible to do the "put 2 PVs in parallel, then get from another PV" logic that is common in fly scanning without the performance and complexity overhead of multiple threads.
 
 For instance, the threaded version of the above looks something like this:
 ```python
@@ -49,17 +49,17 @@ As well as the tradition EPICS Channel Access, ophyd-async was written to allow 
 
 For highly customizable devices like [PandABox](https://quantumdetectors.com/products/pandabox) there are often different pieces of logic that can talk to the same underlying hardware interface. The Devices in ophyd-async are structured so that the logic and interface can be split, and thus can be cleanly organized via composition rather than inheritance. 
 
-## Ease the implementation of flyscanning
+## Ease the implementation of fly scanning
 
-One of the major drivers for ophyd-async was to ease the implementation of flyscanning. A library of flyscanning helpers is being developed to aid such strategies as:
+One of the major drivers for ophyd-async was to ease the implementation of fly scanning. A library of fly scanning helpers is being developed to aid such strategies as:
 - Definition of scan paths via [ScanSpec](https://github.com/dls-controls/scanspec)
 - PVT Trajectory scanning in [Delta Tau motion controllers](https://github.com/dls-controls/pmac)
 - Position compare and capture using a [PandABox](https://quantumdetectors.com/products/pandabox)
 
-These strategies will be ported from DLS's previous flyscanning software [Malcolm](https://github.com/dls-controls/pymalcolm) and improved to take advantage of the flexibility of bluesky's plan definitions.
+These strategies will be ported from DLS's previous fly scanning software [Malcolm](https://github.com/dls-controls/pymalcolm) and improved to take advantage of the flexibility of bluesky's plan definitions.
 
 ```{seealso}
-The documents on flyscanning in the [bluesky cookbook](http://blueskyproject.io/bluesky-cookbook/glossary/flyscanning.html)
+[](../explanations/fly-scanning.md)
 ```
 
 ## Parity and interoperativity with ophyd sync
