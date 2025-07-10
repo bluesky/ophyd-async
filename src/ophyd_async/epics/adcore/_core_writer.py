@@ -100,9 +100,13 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         if "\\" in dir_path_as_str:
             separator = "\\"
 
+        # Ensure the directory path ends with an OS appropriate separator.
+        if not dir_path_as_str.endswith(separator):
+            dir_path_as_str += separator
+
         await asyncio.gather(
             # See https://github.com/bluesky/ophyd-async/issues/122
-            self.fileio.file_path.set(dir_path_as_str + separator),
+            self.fileio.file_path.set(dir_path_as_str),
             self.fileio.file_name.set(path_info.filename),
             self.fileio.file_write_mode.set(ADFileWriteMode.STREAM),
             # For non-HDF file writers, use AD file templating mechanism
