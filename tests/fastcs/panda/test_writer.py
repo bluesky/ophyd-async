@@ -190,7 +190,9 @@ async def test_collect_stream_docs(
                 "chunk_shape": (1024,),
             },
         }
-        assert os.path.join("mock_panda", "data.h5") in resource_doc["uri"]
+
+        # URI will always use '/'
+        assert "mock_panda/data.h5" in resource_doc["uri"]
 
     [item async for item in mock_writer.collect_stream_docs(PANDA_DETECTOR_NAME, 1)]
     assert type(mock_writer._composer) is HDFDocumentComposer
