@@ -14,7 +14,7 @@ classifiers = [
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
     "numpy",
-    "bluesky>=1.13.1rc2",
+    "bluesky @ git+https://github.com/bluesky/bluesky@subscribable-protocol",
     "event-model>=1.23",
     "pyyaml",
     "colorlog",
