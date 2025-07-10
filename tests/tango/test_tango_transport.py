@@ -1,15 +1,12 @@
 import asyncio
 import re
-from enum import Enum
+from collections.abc import Sequence
 from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 import pytest
-from tango import (
-    CmdArgType,
-    DevState,
-)
+from tango import AttrDataFormat, CmdArgType, DevState
 from tango.asyncio import DeviceProxy
 from tango.asyncio_executor import (
     AsyncioExecutor,
@@ -18,20 +15,20 @@ from tango.asyncio_executor import (
 from test_base_device import TestDevice
 from test_tango_signals import make_backend
 
-from ophyd_async.core import (
-    NotConnected,
-    StrictEnum,
-)
+from ophyd_async.core import Array1D, NotConnected, StrictEnum
 from ophyd_async.tango.core import (
     AttributeProxy,
     CommandProxy,
+    TangoDoubleStringTable,
+    TangoLongStringTable,
     TangoSignalBackend,
+    TestConfig,
     ensure_proper_executor,
     get_dtype_extended,
     get_full_attr_trl,
     get_python_type,
     get_tango_trl,
-    get_trl_descriptor,
+    try_to_cast_as_float,
 )
 from ophyd_async.tango.testing import OneOfEverythingTangoDevice
 
@@ -81,49 +78,107 @@ async def test_ensure_proper_executor():
 
 # --------------------------------------------------------------------
 @pytest.mark.parametrize(
-    "tango_type, expected",
+    "tango_type, tango_format, expected",
     [
-        (CmdArgType.DevVoid, (False, None, "string")),
-        (CmdArgType.DevBoolean, (False, bool, "integer")),
-        (CmdArgType.DevShort, (False, int, "integer")),
-        (CmdArgType.DevLong, (False, int, "integer")),
-        (CmdArgType.DevFloat, (False, float, "number")),
-        (CmdArgType.DevDouble, (False, float, "number")),
-        (CmdArgType.DevUShort, (False, int, "integer")),
-        (CmdArgType.DevULong, (False, int, "integer")),
-        (CmdArgType.DevString, (False, str, "string")),
-        (CmdArgType.DevVarCharArray, (True, list[str], "string")),
-        (CmdArgType.DevVarShortArray, (True, int, "integer")),
-        (CmdArgType.DevVarLongArray, (True, int, "integer")),
-        (CmdArgType.DevVarFloatArray, (True, float, "number")),
-        (CmdArgType.DevVarDoubleArray, (True, float, "number")),
-        (CmdArgType.DevVarUShortArray, (True, int, "integer")),
-        (CmdArgType.DevVarULongArray, (True, int, "integer")),
-        (CmdArgType.DevVarStringArray, (True, str, "string")),
-        # (CmdArgType.DevVarLongStringArray, (True, str, "string")),
-        # (CmdArgType.DevVarDoubleStringArray, (True, str, "string")),
-        (CmdArgType.DevState, (False, CmdArgType.DevState, "string")),
-        (CmdArgType.ConstDevString, (False, str, "string")),
-        (CmdArgType.DevVarBooleanArray, (True, bool, "integer")),
-        (CmdArgType.DevUChar, (False, int, "integer")),
-        (CmdArgType.DevLong64, (False, int, "integer")),
-        (CmdArgType.DevULong64, (False, int, "integer")),
-        (CmdArgType.DevVarLong64Array, (True, int, "integer")),
-        (CmdArgType.DevVarULong64Array, (True, int, "integer")),
-        (CmdArgType.DevEncoded, (False, list[str], "string")),
-        (CmdArgType.DevEnum, (False, Enum, "string")),
-        # (CmdArgType.DevPipeBlob, (False, list[str], "string")),
-        (float, (False, float, "number")),
+        # Scalar types
+        (CmdArgType.DevVoid, AttrDataFormat.SCALAR, None),
+        (CmdArgType.DevBoolean, AttrDataFormat.SCALAR, bool),
+        (CmdArgType.DevShort, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevLong, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevLong64, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevFloat, AttrDataFormat.SCALAR, float),
+        (CmdArgType.DevDouble, AttrDataFormat.SCALAR, float),
+        (CmdArgType.DevUShort, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevULong, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevULong64, AttrDataFormat.SCALAR, int),
+        (CmdArgType.DevString, AttrDataFormat.SCALAR, str),
+        (CmdArgType.DevEncoded, AttrDataFormat.SCALAR, str),
+        (CmdArgType.DevEnum, AttrDataFormat.SCALAR, StrictEnum),
+        (CmdArgType.DevState, AttrDataFormat.SCALAR, StrictEnum),
+        (CmdArgType.ConstDevString, AttrDataFormat.SCALAR, str),
+        (CmdArgType.DevVarBooleanArray, AttrDataFormat.SCALAR, bool),
+        (CmdArgType.DevUChar, AttrDataFormat.SCALAR, int),
+        # Array types
+        (CmdArgType.DevVarCharArray, AttrDataFormat.SPECTRUM, Sequence[str]),
+        (CmdArgType.DevVarShortArray, AttrDataFormat.SPECTRUM, Array1D[int]),
+        (CmdArgType.DevVarShortArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarLongArray, AttrDataFormat.SPECTRUM, Array1D[int]),
+        (CmdArgType.DevVarLongArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarFloatArray, AttrDataFormat.SPECTRUM, Array1D[float]),
+        (CmdArgType.DevVarFloatArray, AttrDataFormat.IMAGE, npt.NDArray[float]),
+        (CmdArgType.DevVarDoubleArray, AttrDataFormat.SPECTRUM, Array1D[float]),
+        (CmdArgType.DevVarDoubleArray, AttrDataFormat.IMAGE, npt.NDArray[float]),
+        (CmdArgType.DevVarUShortArray, AttrDataFormat.SPECTRUM, Array1D[int]),
+        (CmdArgType.DevVarUShortArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarULongArray, AttrDataFormat.SPECTRUM, Array1D[int]),
+        (CmdArgType.DevVarULongArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarLong64Array, AttrDataFormat.SPECTRUM, Array1D[int]),
+        (CmdArgType.DevVarLong64Array, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarULong64Array, AttrDataFormat.SPECTRUM, Array1D[int]),
+        (CmdArgType.DevVarULong64Array, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        # String array types
+        (CmdArgType.DevVarStringArray, AttrDataFormat.SPECTRUM, Sequence[str]),
+        (CmdArgType.DevVarStringArray, AttrDataFormat.IMAGE, Sequence[Sequence[str]]),
+        (
+            CmdArgType.DevVarLongStringArray,
+            AttrDataFormat.SPECTRUM,
+            TangoLongStringTable,
+        ),
+        (
+            CmdArgType.DevVarDoubleStringArray,
+            AttrDataFormat.SPECTRUM,
+            TangoDoubleStringTable,
+        ),
+        # Bad type
+        (float, AttrDataFormat.SCALAR, (False, float, "number")),
+        # Bad format
+        (float, "bad_format", (False, float, "format")),
     ],
 )
-def test_get_python_type(tango_type, expected):
-    if tango_type is not float:
-        assert get_python_type(tango_type) == expected
+def test_get_python_type(tango_type, tango_format, expected):
+    config = TestConfig()
+    config.data_format = tango_format
+    config.data_type = tango_type
+    if tango_type is CmdArgType.DevEnum:
+        config.enum_labels = ["A", "B", "C"]
+        py_type = get_python_type(config)
+        assert issubclass(py_type, StrictEnum)
+        assert [e.name for e in py_type] == ["A", "B", "C"]
+    elif tango_type is CmdArgType.DevState:
+        py_type = get_python_type(config)
+        assert issubclass(py_type, StrictEnum)
+        assert [e.name for e in py_type] == list(DevState.names.keys())
+    elif tango_type is not float:
+        assert get_python_type(config) == expected
     else:
+        if tango_format == "bad_format":
+            with pytest.raises(TypeError) as exc_info:
+                get_python_type(config)
+            assert str(exc_info.value) == "Unknown TangoFormat"
+            return
         # get_python_type should raise a TypeError
         with pytest.raises(TypeError) as exc_info:
-            get_python_type(tango_type)
-        assert str(exc_info.value) == "Unknown TangoType"
+            get_python_type(config)
+        assert str(exc_info.value) == "Unknown TangoType: <class 'float'>"
+
+
+# --------------------------------------------------------------------
+def test_try_to_cast_as_float():
+    # Test with a valid float value
+    result = try_to_cast_as_float(3.14)
+    assert result == 3.14
+
+    # Test with a valid integer value
+    result = try_to_cast_as_float(42)
+    assert result == 42.0
+
+    # Test with a string that can be converted to float
+    result = try_to_cast_as_float("2.718")
+    assert result == 2.718
+
+    # Test with a string that cannot be converted to float
+    result = try_to_cast_as_float("not_a_number")
+    assert result is None
 
 
 # --------------------------------------------------------------------
@@ -151,44 +206,6 @@ def test_get_dtype_extended(datatype, expected):
 
 
 # --------------------------------------------------------------------
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "datatype, tango_resource, expected_descriptor",
-    [
-        (
-            int,
-            "test/device/1/justvalue",
-            {"source": "test/device/1/justvalue", "dtype": "integer", "shape": []},
-        ),
-        (
-            float,
-            "test/device/1/limitedvalue",
-            {"source": "test/device/1/limitedvalue", "dtype": "number", "shape": []},
-        ),
-        (
-            npt.NDArray[float],
-            "test/device/1/array",
-            {"source": "test/device/1/array", "dtype": "array", "shape": [2, 3]},
-        ),
-        # Add more test cases as needed
-    ],
-)
-async def test_get_trl_descriptor(
-    tango_test_device, datatype, tango_resource, expected_descriptor
-):
-    proxy = await DeviceProxy(tango_test_device)
-    tr_configs = {
-        tango_resource.split("/")[-1]: await proxy.get_attribute_config(
-            tango_resource.split("/")[-1]
-        )
-    }
-    descriptor = get_trl_descriptor(datatype, tango_resource, tr_configs)
-    assert descriptor == expected_descriptor
-
-
-# --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "attr_name, proxy_needed, expected_type, should_raise",
@@ -200,6 +217,7 @@ async def test_get_trl_descriptor(
         ("nonexistent", True, None, True),
     ],
 )
+@pytest.mark.timeout(1.0)
 async def test_get_tango_trl(
     tango_test_device, attr_name, proxy_needed, expected_type, should_raise
 ):
@@ -501,11 +519,11 @@ async def test_attribute_poll_exceptions(tango_test_device):
 @pytest.mark.asyncio
 async def test_command_proxy_put_wait(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
-    cmd_proxy = CommandProxy(device_proxy, "clear")
+    cmd_proxy = CommandProxy(device_proxy, "echo")
 
     cmd_proxy._last_reading = None
-    await cmd_proxy.put(None, wait=True)
-    assert cmd_proxy._last_reading["value"] == "Received clear command"
+    await cmd_proxy.put("test_message", wait=True)
+    assert cmd_proxy._last_reading["value"] == "test_message"
 
     # Force timeout
     cmd_proxy = CommandProxy(device_proxy, "slow_command")
@@ -550,6 +568,7 @@ async def test_command_proxy_put_nowait(tango_test_device):
 async def test_command_proxy_put_exceptions(tango_test_device, wait):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "raise_exception_cmd")
+    await cmd_proxy.connect()
     with pytest.raises(RuntimeError) as exc_info:
         await cmd_proxy.put(None, wait=True)
     assert "device failure" in str(exc_info.value)
@@ -559,10 +578,11 @@ async def test_command_proxy_put_exceptions(tango_test_device, wait):
 @pytest.mark.asyncio
 async def test_command_get(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
-    cmd_proxy = CommandProxy(device_proxy, "clear")
-    await cmd_proxy.put(None, wait=True, timeout=1.0)
-    reading = cmd_proxy._last_reading
-    assert reading["value"] is not None
+    cmd_proxy = CommandProxy(device_proxy, "echo")
+    await cmd_proxy.connect()
+    await cmd_proxy.put("test_message", wait=True, timeout=1.0)
+    value = await cmd_proxy.get()
+    assert value == "test_message"
 
 
 # --------------------------------------------------------------------
@@ -578,10 +598,11 @@ async def test_command_get_config(tango_test_device):
 @pytest.mark.asyncio
 async def test_command_get_reading(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
-    cmd_proxy = CommandProxy(device_proxy, "clear")
-    await cmd_proxy.put(None, wait=True, timeout=1.0)
+    cmd_proxy = CommandProxy(device_proxy, "echo")
+    await cmd_proxy.connect()
+    await cmd_proxy.put("test_message", wait=True, timeout=1.0)
     reading = await cmd_proxy.get_reading()
-    assert reading["value"] is not None
+    assert reading["value"] == "test_message"
 
 
 # --------------------------------------------------------------------
@@ -677,31 +698,44 @@ async def test_tango_transport_put(echo_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_tango_transport_get_datakey(echo_device):
-    await prepare_device(echo_device, "float32", 1.0)
-    source = get_full_attr_trl(echo_device, "float32")
-    transport = await make_backend(float, source, connect=False)
+async def test_tango_transport_get_datakey(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    trl = get_full_attr_trl(tango_test_device, "limitedvalue")
+
+    transport = TangoSignalBackend(float, trl, trl, device_proxy)
     await transport.connect(1)
-    datakey = await transport.get_datakey(source)
-    assert datakey["source"] == source
+    datakey = await transport.get_datakey(trl)
+    for key in ["source", "dtype", "shape", "limits", "precision", "units"]:
+        assert key in datakey
+    assert datakey["source"] == trl
     assert datakey["dtype"] == "number"
     assert datakey["shape"] == []
+    for key in ["alarm", "control", "rds", "warning"]:
+        assert key in datakey["limits"]
+    limits = datakey["limits"]
+    assert limits["alarm"] == {"high": 5.0, "low": 1.0}
+    assert limits["control"] == {"high": 6.0, "low": 0.0}
+    assert limits["rds"] == {"time_difference": 1.0, "value_difference": 1.0}
+    assert limits["warning"] == {"high": 4.0, "low": 2.0}
 
 
 # --------------------------------------------------------------------
+
+
 @pytest.mark.asyncio
-async def test_tango_transport_get_reading(echo_device):
-    await prepare_device(echo_device, "float32", 1.0)
-    source = get_full_attr_trl(echo_device, "float32")
-    transport = await make_backend(float, source, connect=False)
+async def test_tango_transport_get_datakey_enum(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    trl = get_full_attr_trl(tango_test_device, "test_enum")
 
-    with pytest.raises(NotConnected) as exc_info:
-        await transport.put(1.0)
-    assert "Not connected" in str(exc_info.value)
+    class TestEnumType(StrictEnum):
+        A = 0
+        B = 1
 
+    transport = TangoSignalBackend(TestEnumType, trl, trl, device_proxy)
     await transport.connect(1)
-    reading = await transport.get_reading()
-    assert reading["value"] == 1.0
+    datakey = await transport.get_datakey(trl)
+    assert "choices" in datakey
+    assert datakey["choices"] == ["A", "B"]
 
 
 # --------------------------------------------------------------------
@@ -867,3 +901,45 @@ async def test_tango_transport_nonexistent_trl(tango_test_device):
     with pytest.raises(RuntimeError) as exc_info:
         await transport.connect(1)
     assert "cannot be found" in str(exc_info.value)
+
+
+# ----------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_type_mismatch(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    trl = get_full_attr_trl(tango_test_device, "justvalue")
+
+    transport = TangoSignalBackend(float, trl, trl, device_proxy)
+    with pytest.raises(TypeError) as exc_info:
+        await transport.connect(1)
+    assert ("has type <class 'int'>, expected <class 'float'>") in str(exc_info.value)
+
+    trl = get_full_attr_trl(tango_test_device, "array")
+    transport = TangoSignalBackend(npt.NDArray[int], trl, trl, device_proxy)
+    with pytest.raises(TypeError) as exc_info:
+        await transport.connect(1)
+    assert (
+        "has type numpy.ndarray[tuple[typing.Any, ...], "
+        "numpy.dtype[float]], "
+        "expected numpy.ndarray[tuple[typing.Any, ...], "
+        "numpy.dtype[int]]"
+    ) in str(exc_info.value)
+
+    trl = get_full_attr_trl(tango_test_device, "sequence")
+    transport = TangoSignalBackend(Sequence[int], trl, trl, device_proxy)
+    with pytest.raises(TypeError) as exc_info:
+        await transport.connect(1)
+    assert ("has type <class 'str'>, expected collections.abc.Sequence[int]") in str(
+        exc_info.value
+    )
+
+    trl = get_full_attr_trl(tango_test_device, "get_longstringarray")
+    transport = TangoSignalBackend(TangoDoubleStringTable, trl, trl, device_proxy)
+    with pytest.raises(TypeError) as exc_info:
+        await transport.connect(1)
+    assert (
+        "has type <class "
+        "'ophyd_async.tango.core._tango_transport.TangoLongStringTable'>,"
+        " expected <class 'ophyd_async.tango.core._tango_transport."
+        "TangoDoubleStringTable'>"
+    ) in str(exc_info.value)
