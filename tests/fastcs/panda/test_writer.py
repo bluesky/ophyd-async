@@ -184,7 +184,7 @@ async def test_collect_stream_docs(
             "data_key": name,
             "mimetype": "application/x-hdf5",
             "uri": "file://localhost/"
-            + str(tmp_path / "mock_panda" / "data.h5").lstrip("/"),
+            + (tmp_path / "mock_panda" / "data.h5").as_posix().lstrip("/"),
             "parameters": {
                 "dataset": f"/{name}",
                 "chunk_shape": (1024,),

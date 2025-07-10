@@ -105,7 +105,7 @@ async def test_can_collect(
     # dataset is many files, point to the directory instead.
     expected_uri = (
         "file://localhost/"
-        + str(path_info.directory_path.absolute().as_posix()).lstrip("/")
+        + path_info.directory_path.absolute().as_posix().lstrip("/")
         + "/"
     )
     if writer_cls == adcore.ADHDFWriter:

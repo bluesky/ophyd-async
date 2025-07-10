@@ -383,13 +383,13 @@ async def test_two_detectors_step(
     assert (
         srb["uri"]
         == "file://localhost/"
-        + str(info_b.directory_path / info_b.filename).lstrip("/")
+        + (info_b.directory_path / info_b.filename).as_posix().lstrip("/")
         + ".h5"
     )
     assert (
         sra["uri"]
         == "file://localhost/"
-        + str(info_a.directory_path / info_a.filename).lstrip("/")
+        + (info_a.directory_path / info_a.filename).as_posix().lstrip("/")
         + ".h5"
     )
 
