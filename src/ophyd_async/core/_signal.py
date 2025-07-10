@@ -117,7 +117,7 @@ class _SignalCache(Generic[SignalDatatypeT]):
     def __init__(self, backend: SignalBackend[SignalDatatypeT], signal: Signal) -> None:
         self._signal: Signal[Any] = signal
         self._staged = False
-        self._listeners: dict[Callback, bool] = {}
+        self._listeners: set[Callback] = set()
         self._valid = asyncio.Event()
         self._reading: Reading[SignalDatatypeT] | None = None
         self.backend: SignalBackend[SignalDatatypeT] = backend
@@ -154,27 +154,25 @@ class _SignalCache(Generic[SignalDatatypeT]):
         )
         self._reading = reading
         self._valid.set()
-        items = self._listeners.copy().items()
-        for function, want_value in items:
-            self._notify(function, want_value)
+        callbacks = self._listeners.copy()
+        for callback in callbacks:
+            self._notify(callback)
 
     def _notify(
         self,
         function: Callback[dict[str, Reading[SignalDatatypeT]] | SignalDatatypeT],
-        want_value: bool,
     ) -> None:
-        function(self._ensure_reading()["value"]) if want_value else function(
-            {self._signal.name: self._ensure_reading()}
-        )
+        function({self._signal.name: self._ensure_reading()})
 
-    def subscribe(self, function: Callback, want_value: bool) -> None:
-        self._listeners[function] = want_value
+    def subscribe(self, function: Callback) -> None:
+        self._listeners.add(function)
         if self._valid.is_set():
-            self._notify(function, want_value)
+            self._notify(function)
 
     def unsubscribe(self, function: Callback) -> bool:
-        _listener = self._listeners.pop(function, None)
-        if not _listener:
+        if function in self._listeners:
+            self._listeners.remove(function)
+        else:
             self._signal.log.warning(
                 f"Unsubscribe failed for signal {self._signal.name}:"
                 f" subscriber {function} was not found"
@@ -252,7 +250,7 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
 
         :param function: The callback function to call when the reading changes.
         """
-        self._get_cache().subscribe(function, want_value=False)
+        self._get_cache().subscribe(function)
 
     def clear_sub(self, function: Callback) -> None:
         """Remove a subscription passed to `subscribe_reading`.
