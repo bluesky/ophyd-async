@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from aioca import purge_channel_caches
 from bluesky.run_engine import RunEngine
 
 # https://regex101.com/r/KvLj7t/1
@@ -46,3 +47,9 @@ def test_implementing_devices(module, capsys, expected_scan_output):
         captured = capsys.readouterr()
         assert captured.err == ""
         assert SCAN_LINE.findall(captured.out) == expected_scan_output
+
+        # If we are testing the EPICS demo, we need to stop the IOC and purge caches
+        # to avoid CA virtual circuit disconnect errors.
+        if module == "ophyd_async.epics.demo":
+            purge_channel_caches()
+            main.ioc.stop()
