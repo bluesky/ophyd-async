@@ -131,11 +131,11 @@ class ADCompression(StrictEnum):
     JPEG = "JPEG"
 
 
-class NDFileIO(NDPluginBaseIO):
-    """Base class from which file plugins are derived.
+class NDFileIO(NDArrayBaseIO):
+    """Base class from which file writing drivers are derived.
 
-    This mirrors the interface provided by ADCore/db/NDFile.template.
-    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginFile.html
+    This mirrors the interface provided by ADCore/ADApp/db/NDFile.template.
+    It does not include any plugin-related fields, for that see NDFilePluginIO.
     """
 
     file_path: A[SignalRW[str], PvSuffix.rbv("FilePath")]
@@ -154,7 +154,17 @@ class NDFileIO(NDPluginBaseIO):
     create_directory: A[SignalRW[int], PvSuffix("CreateDirectory")]
 
 
-class NDFileHDFIO(NDFileIO):
+class NDFilePluginIO(NDPluginBaseIO, NDFileIO):
+    """Base class from which file plugins are derived.
+
+    This mirrors the interface provided by ADCore/db/NDFilePlugin.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginFile.html
+    """
+
+    ...
+
+
+class NDFileHDFIO(NDFilePluginIO):
     """Plugin for storing data in HDF5 file format.
 
     This mirrors the interface provided by ADCore/db/NDFileHDF5.template.
