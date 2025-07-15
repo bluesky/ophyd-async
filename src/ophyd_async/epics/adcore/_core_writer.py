@@ -28,6 +28,7 @@ from ._core_io import (
     ADCallbacks,
     NDArrayBaseIO,
     NDFileIO,
+    NDFilePluginIO,
     NDPluginBaseIO,
 )
 from ._utils import ADFileWriteMode
@@ -85,7 +86,8 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
     async def begin_capture(self, name: str) -> None:
         info = self._path_provider(device_name=name)
 
-        await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
+        if isinstance(self.fileio, NDFilePluginIO):
+            await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.
