@@ -134,7 +134,7 @@ class ADCompression(StrictEnum):
 class NDFileIO(NDArrayBaseIO):
     """Base class from which file writing drivers are derived.
 
-    This mirrors the interface provided by ADCore/ADApp/db/NDFile.template.
+    This mirrors the interface provided by ADCore/ADApp/Db/NDFile.template.
     It does not include any plugin-related fields, for that see NDFilePluginIO.
     """
 
