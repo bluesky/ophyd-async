@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.12.dev8+g864c2c257 documentation</title>
+    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.13.dev1+gbf03b2093 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=4803d431"></script>
+    <script src="../../../../_static/documentation_options.js?v=00962fce"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.dev8+g864c2c257 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.dev8+g864c2c257 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.dev1+gbf03b2093 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.dev1+gbf03b2093 documentation - Home"/>
   
   
 </a></div>
@@ -628,11 +628,11 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="NDFileIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">NDFileIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class from which file plugins are derived.</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDFileIO</span><span class="p">(</span><span class="n">NDArrayBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class from which file writing drivers are derived.</span>
 
-<span class="sd">    This mirrors the interface provided by ADCore/db/NDFile.template.</span>
-<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginFile.html</span>
+<span class="sd">    This mirrors the interface provided by ADCore/ADApp/Db/NDFile.template.</span>
+<span class="sd">    It does not include any plugin-related fields, for that see NDFilePluginIO.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">file_path</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;FilePath&quot;</span><span class="p">)]</span>
@@ -652,9 +652,22 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
+<div class="viewcode-block" id="NDFilePluginIO">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFilePluginIO">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDFilePluginIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">,</span> <span class="n">NDFileIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class from which file plugins are derived.</span>
+
+<span class="sd">    This mirrors the interface provided by ADCore/db/NDFilePlugin.template.</span>
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginFile.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="o">...</span></div>
+
+
+
 <div class="viewcode-block" id="NDFileHDFIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDFileHDFIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">NDFileHDFIO</span><span class="p">(</span><span class="n">NDFileIO</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDFileHDFIO</span><span class="p">(</span><span class="n">NDFilePluginIO</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for storing data in HDF5 file format.</span>
 
 <span class="sd">    This mirrors the interface provided by ADCore/db/NDFileHDF5.template.</span>

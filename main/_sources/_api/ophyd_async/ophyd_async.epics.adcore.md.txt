@@ -51,6 +51,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO
     :summary:
     ```
+* - {py:obj}`NDFilePluginIO <ophyd_async.epics.adcore._core_io.NDFilePluginIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFilePluginIO
+    :summary:
+    ```
 * - {py:obj}`NDFileHDFIO <ophyd_async.epics.adcore._core_io.NDFileHDFIO>`
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO
     :summary:
@@ -652,7 +656,7 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 `````{py:class} NDFileIO(prefix: str, with_pvi: bool = False, name: str = '')
 :canonical: ophyd_async.epics.adcore._core_io.NDFileIO
 
-Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDArrayBaseIO`
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileIO
 ```
@@ -813,10 +817,20 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
 
 `````
 
+````{py:class} NDFilePluginIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adcore._core_io.NDFilePluginIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`, {py:obj}`ophyd_async.epics.adcore._core_io.NDFileIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFilePluginIO
+```
+
+````
+
 `````{py:class} NDFileHDFIO(prefix: str, with_pvi: bool = False, name: str = '')
 :canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO
 
-Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDFileIO`
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDFilePluginIO`
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDFileHDFIO
 ```
@@ -1396,10 +1410,10 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_
 
 `````
 
-`````{py:class} ADTIFFWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+`````{py:class} ADTIFFWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFilePluginIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
 :canonical: ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter
 
-Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFileIO`\]
+Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFilePluginIO`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter
 ```
@@ -1417,10 +1431,10 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_
 
 `````
 
-`````{py:class} ADJPEGWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFileIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+`````{py:class} ADJPEGWriter(fileio: ~ophyd_async.epics.adcore._core_io.NDFilePluginIO, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
 :canonical: ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter
 
-Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFileIO`\]
+Bases: {py:obj}`ophyd_async.epics.adcore._core_writer.ADWriter`\[{py:obj}`ophyd_async.epics.adcore._core_io.NDFilePluginIO`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter
 ```
