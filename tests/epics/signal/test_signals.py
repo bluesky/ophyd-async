@@ -29,6 +29,7 @@ from ophyd_async.core import (
     Table,
     YamlSettingsProvider,
     observe_value,
+    soft_signal_r_and_setter,
 )
 from ophyd_async.epics.core import (
     CaSignalBackend,
@@ -845,3 +846,19 @@ async def test_signal_retries_when_timeout(
     stop = time.time()
     # signal tries to set 3 times, so 3 * timeout
     assert stop - start >= 0.3
+
+
+async def test_signal_timestamp_is_same_format_as_soft_signal_timestamp(
+    RE, ioc_devices: EpicsTestIocAndDevices
+):
+    sim_sig, sim_sig_setter = soft_signal_r_and_setter(float)
+    real_sig = epics_signal_rw(float, ioc_devices.get_pv("ca", "float_prec_1"))
+    await real_sig.connect()
+
+    await real_sig.set(10)
+    sim_sig_setter(20)
+
+    real_data = await real_sig.read()
+    sim_data = await sim_sig.read()
+
+    assert abs(real_data[""]["timestamp"] - sim_data[""]["timestamp"]) < 0.01
