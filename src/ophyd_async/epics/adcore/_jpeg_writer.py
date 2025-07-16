@@ -1,15 +1,15 @@
 from ophyd_async.core import DatasetDescriber, PathProvider
 
-from ._core_io import NDFileIO, NDPluginBaseIO
+from ._core_io import NDFilePluginIO, NDPluginBaseIO
 from ._core_writer import ADWriter
 
 
-class ADJPEGWriter(ADWriter[NDFileIO]):
+class ADJPEGWriter(ADWriter[NDFilePluginIO]):
     default_suffix: str = "JPEG1:"
 
     def __init__(
         self,
-        fileio: NDFileIO,
+        fileio: NDFilePluginIO,
         path_provider: PathProvider,
         dataset_describer: DatasetDescriber,
         plugins: dict[str, NDPluginBaseIO] | None = None,

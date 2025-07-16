@@ -59,7 +59,7 @@ async def tiff_writer(
     RE, static_path_provider: StaticPathProvider
 ) -> adcore.ADTIFFWriter:
     async with init_devices(mock=True):
-        tiff = adcore.NDFileIO("TIFF:")
+        tiff = adcore.NDFilePluginIO("TIFF:")
 
     writer = adcore.ADTIFFWriter(
         tiff, static_path_provider, DummyDatasetDescriber(), {}
