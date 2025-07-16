@@ -101,7 +101,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
 
         self._composer = HDFDocumentComposer(
             # See https://github.com/bluesky/ophyd-async/issues/122
-            f"{self._path_info.directory_uri}{self._path_info.filename}.h5",
+            f"{self._path_info.directory_uri}{self._path_info.filename}{self._file_extension}",
             self._datasets,
         )
 

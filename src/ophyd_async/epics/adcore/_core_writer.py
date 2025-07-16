@@ -97,14 +97,12 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         # Need to ensure that trailing separator is added to the directory path.
         # When setting the path for windows based AD IOCs, a '/' is added rather than
         # a '\\', which will cause the readback to never register the same value.
-        dir_path_as_str = str(path_info.directory_path.absolute())
+        dir_path_as_str = str(path_info.directory_path)
         separator = "/"
         if "\\" in dir_path_as_str:
             separator = "\\"
 
-        # Ensure the directory path ends with an OS appropriate separator.
-        if not dir_path_as_str.endswith(separator):
-            dir_path_as_str += separator
+        dir_path_as_str += separator
 
         await asyncio.gather(
             # See https://github.com/bluesky/ophyd-async/issues/122
