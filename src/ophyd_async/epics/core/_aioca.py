@@ -250,10 +250,12 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
+        all_updates: bool = True,
     ):
         self.converter: CaConverter = DisconnectedCaConverter(float, dbr.DBR_DOUBLE)
         self.initial_values: dict[str, AugmentedValue] = {}
         self.subscription: Subscription | None = None
+        self._all_updates = all_updates
         super().__init__(datatype, read_pv, write_pv)
 
     def source(self, name: str, read: bool):
@@ -356,4 +358,5 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
                 lambda v: callback(self._make_reading(v)),
                 datatype=self.converter.read_dbr,
                 format=FORMAT_TIME,
+                all_updates=self._all_updates,
             )
