@@ -4,7 +4,7 @@ from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
-from pathlib import Path
+from pathlib import PurePath
 from typing import Protocol
 from urllib.parse import urlunparse
 
@@ -21,19 +21,26 @@ class PathInfo:
                           it will be generated from the directory path.
     """
 
-    directory_path: Path
+    directory_path: PurePath
     filename: str
     create_dir_depth: int = 0
     directory_uri: str | None = None
 
     def __post_init__(self):
+
+        if not self.directory_path.is_absolute():
+            raise ValueError(
+                "directory_path must be an absolute path, "
+                f"got {self.directory_path}"
+            )
+
         # If directory uri is not set, set it using the directory path.
         if self.directory_uri is None:
             self.directory_uri = urlunparse(
                 (
                     "file",
                     "localhost",
-                    f"{self.directory_path.absolute().as_posix()}/",
+                    f"{self.directory_path.as_posix()}/",
                     "",
                     "",
                     None,
@@ -130,12 +137,12 @@ class StaticPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        directory_path: Path | str,
+        directory_path: PurePath,
         directory_uri: str | None = None,
         create_dir_depth: int = 0,
     ) -> None:
         self._filename_provider = filename_provider
-        self._directory_path = Path(directory_path)
+        self._directory_path = directory_path
         self._directory_uri = directory_uri
         self._create_dir_depth = create_dir_depth
 
@@ -156,7 +163,7 @@ class AutoIncrementingPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        base_directory_path: Path,
+        base_directory_path: PurePath,
         base_directory_uri: str | None = None,
         create_dir_depth: int = 0,
         max_digits: int = 5,
@@ -215,13 +222,13 @@ class YMDPathProvider(PathProvider):
     def __init__(
         self,
         filename_provider: FilenameProvider,
-        base_directory_path: Path,
+        base_directory_path: PurePath,
         base_directory_uri: str | None = None,
         create_dir_depth: int = -3,  # Default to -3 to create YMD dirs
         device_name_as_base_dir: bool = False,
     ) -> None:
         self._filename_provider = filename_provider
-        self._base_directory_path = Path(base_directory_path)
+        self._base_directory_path = base_directory_path
         self._base_directory_uri = base_directory_uri
         self._create_dir_depth = create_dir_depth
         self._device_name_as_base_dir = device_name_as_base_dir
