@@ -1,0 +1,28 @@
+# {py:mod}`ophyd_async.fastcs`
+
+```{py:module} ophyd_async.fastcs
+```
+
+```{autodoc2-docstring} ophyd_async.fastcs
+:allowtitles:
+```
+
+## Subpackages
+
+```{toctree}
+:titlesonly:
+:maxdepth: 3
+
+ophyd_async.fastcs.eiger
+ophyd_async.fastcs.panda
+ophyd_async.fastcs.odin
+```
+
+## Submodules
+
+```{toctree}
+:titlesonly:
+:maxdepth: 1
+
+ophyd_async.fastcs.core
+```

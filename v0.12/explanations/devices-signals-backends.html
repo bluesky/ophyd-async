@@ -1,0 +1,770 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.12 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=3f949d3d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.4/dist/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module">
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
+window.addEventListener("load", () => mermaid.run());
+</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'explanations/devices-signals-backends';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.12';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="What is the difference between step and fly scanning" href="fly-scanning.html" />
+    <link rel="prev" title="Device connection strategies" href="device-connection-strategies.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.12" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="decisions.html">Architectural Decision Records</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0001-record-architecture-decisions.html">1. Record architecture decisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0002-switched-to-python-copier-template.html">2. Adopt python-copier-template for project structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0003-ophyd-async-migration.html">3. Ophyd Async migration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0004-repository-structure.html">4. Repository Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0005-respect-black-line-length.html">5. Respect black line length</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0006-procedural-device-definitions.html">6. Procedural Device Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0007-subpackage-structure.html">7. Sub-package Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0008-signal-types.html">8. Settle on Signal Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0009-procedural-vs-declarative-devices.html">9. Procedural vs Declarative Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0010-docstring-format.html">10. Decide on docstring format</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="declarative-vs-procedural.html">Declarative vs Procedural Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design-goals.html">Design goals and differences with ophyd sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="device-connection-strategies.html">Device connection strategies</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Devices, Signals and their Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fly-scanning.html">What is the difference between step and fly scanning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plan-stubs.html">What plan stubs will do to Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="where-device-logic.html">Where should Device logic live?</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../explanations.html" class="nav-link">Explanations</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Devices, Signals and their Backends</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="devices-signals-and-their-backends">
+<h1>Devices, Signals and their Backends<a class="headerlink" href="#devices-signals-and-their-backends" title="Link to this heading">#</a></h1>
+<p>The <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.run_engine.RunEngine.html#bluesky.run_engine.RunEngine" title="bluesky 1.14.3.dev13+g103accac"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.run_engine.RunEngine</span></code></a> facing interface is defined by the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html" title="bluesky 1.14.3.dev13+g103accac">bluesky protocols</a> that a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> implements, but to implement that interface ophyd-async uses some helper classes. This document details how those helper classes fit together to provide particular <code class="docutils literal notranslate"><span class="pre">Device</span></code> behavior.</p>
+<section id="device-and-deviceconnector">
+<h2>Device and DeviceConnector<a class="headerlink" href="#device-and-deviceconnector" title="Link to this heading">#</a></h2>
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+classDiagram
+Device *-- DeviceConnector
+Device : connect(mock)
+Device &lt;|-- EpicsDevice
+Device &lt;|-- TangoDevice
+EpicsDevice *-- EpicsDeviceConnector
+TangoDevice *-- TangoDeviceConnector
+DeviceConnector &lt;|-- EpicsDeviceConnector
+DeviceConnector &lt;|-- TangoDeviceConnector
+    </pre><p>The <code class="docutils literal notranslate"><span class="pre">Device</span></code> class is the base of all ophyd-async objects that are published to bluesky. It provides:</p>
+<ul class="simple">
+<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.name" title="ophyd_async.core.Device.name"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">Device.name</span></code></a> read-only property to read it’s name</p></li>
+<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.parent" title="ophyd_async.core.Device.parent"><code class="xref myst py py-attr docutils literal notranslate"><span class="pre">Device.parent</span></code></a> read-write property to read it’s parent Device if it exists</p></li>
+<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.children" title="ophyd_async.core.Device.children"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.children</span></code></a> to iterate through the Device attributes, yielding the <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">child)</span></code> child Devices</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">setattr</span></code> override that detects whether the attribute is also a Device and sets its parent</p></li>
+<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.set_name" title="ophyd_async.core.Device.set_name"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.set_name</span></code></a> method to set its name and also set the names of its children using the parent name as a prefix, called at init and also when a new child is attached to an already named Device</p></li>
+<li><p>a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> method that connects it and its children</p></li>
+</ul>
+<p>All the above methods are concrete, but <code class="docutils literal notranslate"><span class="pre">connect()</span></code> calls out to a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core.DeviceConnector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceConnector</span></code></a> to actually do the connection, only handling caching itself. This enables plug-in behavior on connect (like the introspection of child Attributes in Tango or PVI, or the special case for <code class="docutils literal notranslate"><span class="pre">Signal</span></code> we will see later).</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">DeviceConnector</span></code> provides the ability to:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector.create_children_from_annotations" title="ophyd_async.core.DeviceConnector.create_children_from_annotations"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DeviceConnector.create_children_from_annotations</span></code></a> that is called during <code class="docutils literal notranslate"><span class="pre">__init__</span></code> to turn annotations into concrete child Devices</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector.connect_mock" title="ophyd_async.core.DeviceConnector.connect_mock"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DeviceConnector.connect_mock</span></code></a> that is called if <code class="docutils literal notranslate"><span class="pre">connect(mock=True)</span></code> is called, and should connect the child Devices in mock mode for testing without a control system</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceConnector.connect_real" title="ophyd_async.core.DeviceConnector.connect_real"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DeviceConnector.connect_real</span></code></a> that is called if <code class="docutils literal notranslate"><span class="pre">connect(mock=False)</span></code> is called, and should connect the child Devices to the control system in parallel</p></li>
+</ul>
+<p>The base <code class="docutils literal notranslate"><span class="pre">DeviceConnector</span></code> provides suitable methods for use with non-introspected Devices, but there are various control system specific connectors that handle filling annotations in <a class="reference internal" href="declarative-vs-procedural.html"><span class="std std-doc">declarative Devices</span></a>.</p>
+</section>
+<section id="signal-and-signalbackend">
+<h2>Signal and SignalBackend<a class="headerlink" href="#signal-and-signalbackend" title="Link to this heading">#</a></h2>
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+classDiagram
+Device &lt;|-- Signal
+Signal : source
+Signal &lt;|-- SignalR
+SignalR : read()
+SignalR : subscribe()
+SignalR : get_value()
+Signal &lt;|-- SignalW
+SignalW : set()
+SignalR &lt;|-- SignalRW
+SignalW &lt;|-- SignalRW
+SignalRW : locate()
+Signal &lt;|-- SignalX
+SignalX : trigger()
+Signal *-- SignalConnector
+SignalConnector *-- SignalBackend
+SignalBackend &lt;|-- CaSignalConnector
+SignalBackend &lt;|-- PvaSignalConnector
+SignalBackend &lt;|-- TangoSignalConnector
+    </pre><p>If a <code class="docutils literal notranslate"><span class="pre">Device</span></code> with children is like a branch in a tree, a <code class="docutils literal notranslate"><span class="pre">Signal</span></code> is like a leaf. It has no children, but represents a single value or action in the control system. There are 4 types of signal:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalR</span></code></a> is a signal with a read-only value that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst">Readable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Subscribable" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst">Subscribable</span></a> protocols. It also adds the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.get_value" title="ophyd_async.core.SignalR.get_value"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalR.get_value</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_value" title="ophyd_async.core.SignalR.subscribe_value"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">SignalR.subscribe_value</span></code></a> methods that are used to interact with the Signal in the parent Device.</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW" title="ophyd_async.core.SignalW"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalW</span></code></a> is a signal with a write-only value that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst">Movable</span></a> protocol.</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalRW</span></code></a> is a signal with a read-write value that inherits from SignalR and SignalW and adds the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Locatable" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst">Locatable</span></a> protocol</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalX</span></code></a> is a signal that performs an action, and supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst">Triggerable</span></a> protocol</p></li>
+</ul>
+<p>These are all concrete classes, but delegate their actions to a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalBackend" title="ophyd_async.core.SignalBackend"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalBackend</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">SignalBackend</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A read/write/monitor backend for a Signals.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datatype</span> <span class="o">=</span> <span class="n">datatype</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">read</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return source of signal.</span>
+
+<span class="sd">        :param name: The name of the signal, which can be used or discarded.</span>
+<span class="sd">        :param read: True if we want the source for reading, False if writing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Connect to underlying hardware.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Put a value to the PV, if wait then wait for completion.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_datakey</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataKey</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Metadata like source, dtype, shape, precision, units.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the current value, timestamp and severity.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the current value.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the point that a signal was requested to move to.&quot;&quot;&quot;</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Observe changes to the current value, timestamp and severity.&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>Each control system implements its own concrete <code class="docutils literal notranslate"><span class="pre">SignalBackend</span></code> subclass with those methods filled in. It is these subclasses that take control system specific parameters like EPICS PV or Tango TRL. The instance is passed to <code class="docutils literal notranslate"><span class="pre">Signal.__init__</span></code>, which passes it to a generic <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalConnector" title="ophyd_async.core.SignalConnector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SignalConnector</span></code></a>.</p>
+<p>At <code class="docutils literal notranslate"><span class="pre">connect()</span></code> time this <code class="docutils literal notranslate"><span class="pre">SignalConnector</span></code> does one of two things:</p>
+<ul class="simple">
+<li><p>if <code class="docutils literal notranslate"><span class="pre">mock==False</span></code> then it calls <code class="docutils literal notranslate"><span class="pre">SignalBackend.connect</span></code> to connect it to the control system, and wires all the <code class="docutils literal notranslate"><span class="pre">Signal</span></code> methods to use it</p></li>
+<li><p>if <code class="docutils literal notranslate"><span class="pre">mock==True</span></code> then it creates a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend" title="ophyd_async.core.MockSignalBackend"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">MockSignalBackend</span></code></a> for test purposes and wires all the <code class="docutils literal notranslate"><span class="pre">Signal</span></code> methods to use it</p></li>
+</ul>
+<p>This means that to construct a <code class="docutils literal notranslate"><span class="pre">Signal</span></code> you need to do something like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_signal</span> <span class="o">=</span> <span class="n">SignalR</span><span class="p">(</span><span class="n">MyControlSystemBackend</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">cs_param</span><span class="o">=</span><span class="s2">&quot;something&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This is a little verbose, so instead we provide helpers like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.soft_signal_rw" title="ophyd_async.core.soft_signal_rw"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">soft_signal_rw</span></code></a> to make it a little shorter. The above might look like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_signal</span> <span class="o">=</span> <span class="n">my_cs_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="s2">&quot;something&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="standard-device-subclasses">
+<h2>“Standard” Device subclasses<a class="headerlink" href="#standard-device-subclasses" title="Link to this heading">#</a></h2>
+<pre align="center" class="mermaid align-center">
+        ---
+config:
+  theme: neutral
+
+---
+classDiagram
+Device &lt;|-- StandardReadable
+Device &lt;|-- StandardDetector
+Device &lt;|-- StandardFlyer
+    </pre><p>There are also some <code class="docutils literal notranslate"><span class="pre">Device</span></code> subclasses that provide helpers for implementing particular protocols, namely:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst">Readable</span></a> protocol using the values of its children</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.WritesStreamAssets" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst">WritesStreamAssets</span></a> protocol using logic classes for the detector driver and writer</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardFlyer" title="ophyd_async.core.StandardFlyer"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardFlyer</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.14.3.dev13+g103accac"><span class="xref myst">Flyable</span></a> protocol for motion and trigger systems</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../how-to/choose-right-baseclass.html"><span class="std std-doc">How to choose the right base class when implementing a new Device</span></a></p>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="device-connection-strategies.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Device connection strategies</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="fly-scanning.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">What is the difference between step and fly scanning</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#device-and-deviceconnector">Device and DeviceConnector</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#signal-and-signalbackend">Signal and SignalBackend</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standard-device-subclasses">“Standard” Device subclasses</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/0.12/docs/explanations/devices-signals-backends.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/explanations/devices-signals-backends.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

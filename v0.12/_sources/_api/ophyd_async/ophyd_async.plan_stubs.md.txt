@@ -1,0 +1,119 @@
+# {py:mod}`ophyd_async.plan_stubs`
+
+```{py:module} ophyd_async.plan_stubs
+```
+
+```{autodoc2-docstring} ophyd_async.plan_stubs
+:allowtitles:
+```
+
+## Package Contents
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`ensure_connected <ophyd_async.plan_stubs._ensure_connected.ensure_connected>`
+  - ```{autodoc2-docstring} ophyd_async.plan_stubs._ensure_connected.ensure_connected
+    :summary:
+    ```
+* - {py:obj}`setup_ndattributes <ophyd_async.plan_stubs._nd_attributes.setup_ndattributes>`
+  - ```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndattributes
+    :summary:
+    ```
+* - {py:obj}`setup_ndstats_sum <ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum>`
+  - ```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum
+    :summary:
+    ```
+* - {py:obj}`apply_panda_settings <ophyd_async.plan_stubs._panda.apply_panda_settings>`
+  - ```{autodoc2-docstring} ophyd_async.plan_stubs._panda.apply_panda_settings
+    :summary:
+    ```
+* - {py:obj}`apply_settings <ophyd_async.plan_stubs._settings.apply_settings>`
+  - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.apply_settings
+    :summary:
+    ```
+* - {py:obj}`apply_settings_if_different <ophyd_async.plan_stubs._settings.apply_settings_if_different>`
+  - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.apply_settings_if_different
+    :summary:
+    ```
+* - {py:obj}`get_current_settings <ophyd_async.plan_stubs._settings.get_current_settings>`
+  - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.get_current_settings
+    :summary:
+    ```
+* - {py:obj}`retrieve_settings <ophyd_async.plan_stubs._settings.retrieve_settings>`
+  - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.retrieve_settings
+    :summary:
+    ```
+* - {py:obj}`store_settings <ophyd_async.plan_stubs._settings.store_settings>`
+  - ```{autodoc2-docstring} ophyd_async.plan_stubs._settings.store_settings
+    :summary:
+    ```
+````
+
+### API
+
+````{py:function} ensure_connected(*devices: ~ophyd_async.core.Device, mock: bool | ~ophyd_async.core.LazyMock = False, timeout: float = DEFAULT_TIMEOUT, force_reconnect=False)
+:canonical: ophyd_async.plan_stubs._ensure_connected.ensure_connected
+
+```{autodoc2-docstring} ophyd_async.plan_stubs._ensure_connected.ensure_connected
+```
+````
+
+````{py:function} setup_ndattributes(device: ~ophyd_async.epics.adcore.NDArrayBaseIO, ndattributes: ~collections.abc.Sequence[~ophyd_async.epics.adcore.NDAttributePv | ~ophyd_async.epics.adcore.NDAttributeParam])
+:canonical: ophyd_async.plan_stubs._nd_attributes.setup_ndattributes
+
+```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndattributes
+```
+````
+
+````{py:function} setup_ndstats_sum(detector: ~ophyd_async.core.Device)
+:canonical: ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum
+
+```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum
+```
+````
+
+````{py:function} apply_panda_settings(settings: ~ophyd_async.core.Settings[~ophyd_async.fastcs.panda.HDFPanda]) -> ~bluesky.utils.MsgGenerator[None]
+:canonical: ophyd_async.plan_stubs._panda.apply_panda_settings
+
+```{autodoc2-docstring} ophyd_async.plan_stubs._panda.apply_panda_settings
+```
+````
+
+````{py:function} apply_settings(settings: ~ophyd_async.core.Settings) -> ~bluesky.utils.MsgGenerator[None]
+:canonical: ophyd_async.plan_stubs._settings.apply_settings
+
+```{autodoc2-docstring} ophyd_async.plan_stubs._settings.apply_settings
+```
+````
+
+````{py:function} apply_settings_if_different(settings: ~ophyd_async.core.Settings, apply_plan: ~collections.abc.Callable[[~ophyd_async.core.Settings], ~bluesky.utils.MsgGenerator[None]], current_settings: ~ophyd_async.core.Settings | None = None) -> ~bluesky.utils.MsgGenerator[None]
+:canonical: ophyd_async.plan_stubs._settings.apply_settings_if_different
+
+```{autodoc2-docstring} ophyd_async.plan_stubs._settings.apply_settings_if_different
+```
+````
+
+````{py:function} get_current_settings(device: ~ophyd_async.core.Device, only_config: bool = False) -> ~bluesky.utils.MsgGenerator[~ophyd_async.core.Settings]
+:canonical: ophyd_async.plan_stubs._settings.get_current_settings
+
+```{autodoc2-docstring} ophyd_async.plan_stubs._settings.get_current_settings
+```
+````
+
+````{py:function} retrieve_settings(provider: ~ophyd_async.core.SettingsProvider, name: str, device: ~ophyd_async.core.Device, only_config: bool = False) -> ~bluesky.utils.MsgGenerator[~ophyd_async.core.Settings]
+:canonical: ophyd_async.plan_stubs._settings.retrieve_settings
+
+```{autodoc2-docstring} ophyd_async.plan_stubs._settings.retrieve_settings
+```
+````
+
+````{py:function} store_settings(provider: ~ophyd_async.core.SettingsProvider, name: str, device: ~ophyd_async.core.Device, only_config: bool = False) -> ~bluesky.utils.MsgGenerator[None]
+:canonical: ophyd_async.plan_stubs._settings.store_settings
+
+```{autodoc2-docstring} ophyd_async.plan_stubs._settings.store_settings
+```
+````

@@ -1,0 +1,1152 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Implementing File Writing Detectors &#8212; ophyd-async 0.12 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=3f949d3d"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=30646c52"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tutorials/implementing-detectors';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.12';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="How-to Guides" href="../how-to.html" />
+    <link rel="prev" title="Writing Tests for Devices" href="writing-tests-for-devices.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.12" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-devices.html">Using Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="implementing-devices.html">Implementing Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing-tests-for-devices.html">Writing Tests for Devices</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Implementing File Writing Detectors</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../tutorials.html" class="nav-link">Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Implementing File Writing Detectors</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="implementing-file-writing-detectors">
+<h1>Implementing File Writing Detectors<a class="headerlink" href="#implementing-file-writing-detectors" title="Link to this heading">#</a></h1>
+<p>In <a class="reference internal" href="implementing-devices.html"><span class="std std-doc">Implementing Devices</span></a> we learned how to create Devices that talk to a control system to implement a particular behavior in bluesky plans. This behavior was based around the verbs from the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.14.3.dev13+g103accac"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.Movable</span></code></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="bluesky 1.14.3.dev13+g103accac"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.Readable</span></code></a> protocols, allowing us to use these Devices in a typical scan: moving them to a position, then acquiring data via the control system. We will now explore the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.WritesExternalAssets" title="bluesky 1.14.3.dev13+g103accac"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.WritesExternalAssets</span></code></a> protocol, and how it would be implemented for a File Writing Detector.</p>
+<section id="run-the-demo">
+<h2>Run the demo<a class="headerlink" href="#run-the-demo" title="Link to this heading">#</a></h2>
+<p>We will return to our <a class="reference internal" href="../_api/ophyd_async/ophyd_async.sim.html#module-ophyd_async.sim" title="ophyd_async.sim"><code class="xref myst py py-mod docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a> devices we saw in <a class="reference internal" href="using-devices.html"><span class="std std-doc">Using Devices</span></a> for this tutorial, and dig a little deeper into what <a class="reference external" href="https://blueskyproject.io/event-model/main/explanations/data-model.html#data-model" title="event-model main">Event Model Documents</a> they produce. Let’s run up our ipython shell again:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ipython --matplotlib=qt6 -i -m ophyd_async.sim
+Python 3.11.11 (main, Dec  4 2024, 20:38:25) [GCC 12.2.0]
+Type &#39;copyright&#39;, &#39;credits&#39; or &#39;license&#39; for more information
+IPython 8.30.0 -- An enhanced Interactive Python. Type &#39;?&#39; for help.
+
+In [1]: 
+</pre></div>
+</div>
+</section>
+<section id="run-a-grid-scan-and-investigate-the-documents">
+<h2>Run a grid scan and investigate the documents<a class="headerlink" href="#run-a-grid-scan-and-investigate-the-documents" title="Link to this heading">#</a></h2>
+<p>Now let’s run a grid scan on the point detector, and pass a callback to the RunEngine so it prints the documents that are emitted:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">print</span><span class="p">)</span>
+
+
+<span class="go">Transient Scan ID: 1     Time: 2025-07-16 11:47:43</span>
+<span class="go">Persistent Unique Scan ID: &#39;cbc975de-621c-44fb-950b-cd3bbcf5492f&#39;</span>
+<span class="go">start {&#39;uid&#39;: &#39;cbc975de-621c-44fb-950b-cd3bbcf5492f&#39;, &#39;time&#39;: 1752666463.72641, &#39;versions&#39;: {&#39;ophyd&#39;: &#39;1.10.7&#39;, &#39;ophyd_async&#39;: &#39;0.12&#39;, &#39;bluesky&#39;: &#39;1.14.2&#39;}, &#39;scan_id&#39;: 1, &#39;plan_type&#39;: &#39;generator&#39;, &#39;plan_name&#39;: &#39;grid_scan&#39;, &#39;detectors&#39;: [&#39;pdet&#39;], &#39;motors&#39;: (&#39;stage-x&#39;, &#39;stage-y&#39;), &#39;num_points&#39;: 4, &#39;num_intervals&#39;: 3, &#39;plan_args&#39;: {&#39;detectors&#39;: [&#39;&lt;ophyd_async.sim._point_detector.SimPointDetector object at 0x7f969cebdb90&gt;&#39;], &#39;args&#39;: [&#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce94a90&gt;&#39;, 1, 2, 2, &#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce95910&gt;&#39;, 2, 3, 2, False], &#39;per_step&#39;: &#39;None&#39;}, &#39;hints&#39;: {&#39;gridding&#39;: &#39;rectilinear&#39;, &#39;dimensions&#39;: [([&#39;stage-x&#39;], &#39;primary&#39;), ([&#39;stage-y&#39;], &#39;primary&#39;)]}, &#39;shape&#39;: (2, 2), &#39;extents&#39;: ([1, 2], [2, 3]), &#39;snaking&#39;: (False, False), &#39;plan_pattern&#39;: &#39;outer_product&#39;, &#39;plan_pattern_args&#39;: {&#39;args&#39;: [&#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce94a90&gt;&#39;, 1, 2, 2, &#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce95910&gt;&#39;, 2, 3, 2, False]}, &#39;plan_pattern_module&#39;: &#39;bluesky.plan_patterns&#39;}</span>
+<span class="go">New stream: &#39;primary&#39;</span>
+<span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
+<span class="go">|   seq_num |       time |    stage-x |    stage-y | pdet-channel-1-value | pdet-channel-2-value | pdet-channel-3-value |</span>
+<span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
+<span class="go">descriptor {&#39;configuration&#39;: {&#39;pdet&#39;: {&#39;data&#39;: {&#39;pdet-channel-1-mode&#39;: &lt;EnergyMode.LOW: &#39;Low Energy&#39;&gt;, &#39;pdet-channel-2-mode&#39;: &lt;EnergyMode.LOW: &#39;Low Energy&#39;&gt;, &#39;pdet-channel-3-mode&#39;: &lt;EnergyMode.LOW: &#39;Low Energy&#39;&gt;}, &#39;timestamps&#39;: {&#39;pdet-channel-1-mode&#39;: 155.842456243, &#39;pdet-channel-2-mode&#39;: 155.842511026, &#39;pdet-channel-3-mode&#39;: 155.842558163}, &#39;data_keys&#39;: {&#39;pdet-channel-1-mode&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://pdet-channel-1-mode&#39;, &#39;choices&#39;: [&#39;Low Energy&#39;, &#39;High Energy&#39;]}, &#39;pdet-channel-2-mode&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://pdet-channel-2-mode&#39;, &#39;choices&#39;: [&#39;Low Energy&#39;, &#39;High Energy&#39;]}, &#39;pdet-channel-3-mode&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://pdet-channel-3-mode&#39;, &#39;choices&#39;: [&#39;Low Energy&#39;, &#39;High Energy&#39;]}}}, &#39;stage-y&#39;: {&#39;data&#39;: {&#39;stage-y-velocity&#39;: 1000.0, &#39;stage-y-units&#39;: &#39;mm&#39;, &#39;stage-y-acceleration_time&#39;: 0.5}, &#39;timestamps&#39;: {&#39;stage-y-velocity&#39;: 155.847514617, &#39;stage-y-units&#39;: 155.841714687, &#39;stage-y-acceleration_time&#39;: 155.841701823}, &#39;data_keys&#39;: {&#39;stage-y-velocity&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-y-velocity&#39;}, &#39;stage-y-units&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://stage-y-units&#39;}, &#39;stage-y-acceleration_time&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-y-acceleration_time&#39;}}}, &#39;stage-x&#39;: {&#39;data&#39;: {&#39;stage-x-velocity&#39;: 1000.0, &#39;stage-x-units&#39;: &#39;mm&#39;, &#39;stage-x-acceleration_time&#39;: 0.5}, &#39;timestamps&#39;: {&#39;stage-x-velocity&#39;: 155.847354588, &#39;stage-x-units&#39;: 155.841386013, &#39;stage-x-acceleration_time&#39;: 155.841355206}, &#39;data_keys&#39;: {&#39;stage-x-velocity&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-x-velocity&#39;}, &#39;stage-x-units&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://stage-x-units&#39;}, &#39;stage-x-acceleration_time&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-x-acceleration_time&#39;}}}}, &#39;data_keys&#39;: {&#39;pdet-channel-1-value&#39;: {&#39;dtype&#39;: &#39;integer&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;source&#39;: &#39;soft://pdet-channel-1-value&#39;, &#39;object_name&#39;: &#39;pdet&#39;}, &#39;pdet-channel-2-value&#39;: {&#39;dtype&#39;: &#39;integer&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;source&#39;: &#39;soft://pdet-channel-2-value&#39;, &#39;object_name&#39;: &#39;pdet&#39;}, &#39;pdet-channel-3-value&#39;: {&#39;dtype&#39;: &#39;integer&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;source&#39;: &#39;soft://pdet-channel-3-value&#39;, &#39;object_name&#39;: &#39;pdet&#39;}, &#39;stage-y&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-y&#39;, &#39;object_name&#39;: &#39;stage-y&#39;}, &#39;stage-x&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-x&#39;, &#39;object_name&#39;: &#39;stage-x&#39;}}, &#39;name&#39;: &#39;primary&#39;, &#39;object_keys&#39;: {&#39;pdet&#39;: [&#39;pdet-channel-1-value&#39;, &#39;pdet-channel-2-value&#39;, &#39;pdet-channel-3-value&#39;], &#39;stage-y&#39;: [&#39;stage-y&#39;], &#39;stage-x&#39;: [&#39;stage-x&#39;]}, &#39;run_start&#39;: &#39;cbc975de-621c-44fb-950b-cd3bbcf5492f&#39;, &#39;time&#39;: 1752666463.8994143, &#39;uid&#39;: &#39;8bed94f8-188d-476e-9116-008ea0e508ae&#39;, &#39;hints&#39;: {&#39;pdet&#39;: {&#39;fields&#39;: [&#39;pdet-channel-1-value&#39;, &#39;pdet-channel-2-value&#39;, &#39;pdet-channel-3-value&#39;]}, &#39;stage-y&#39;: {&#39;fields&#39;: [&#39;stage-y&#39;]}, &#39;stage-x&#39;: {&#39;fields&#39;: [&#39;stage-x&#39;]}}}</span>
+<span class="go">|         1 | 11:47:43.9 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;d6e88759-cc6f-403b-b464-1feec9997806&#39;, &#39;time&#39;: 1752666463.9772797, &#39;data&#39;: {&#39;pdet-channel-1-value&#39;: 921, &#39;pdet-channel-2-value&#39;: 887, &#39;pdet-channel-3-value&#39;: 859, &#39;stage-x&#39;: 1.0, &#39;stage-y&#39;: 2.0}, &#39;timestamps&#39;: {&#39;pdet-channel-1-value&#39;: 156.045474521, &#39;pdet-channel-2-value&#39;: 156.045505038, &#39;pdet-channel-3-value&#39;: 156.045521068, &#39;stage-x&#39;: 155.924623274, &#39;stage-y&#39;: 155.943903002}, &#39;seq_num&#39;: 1, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;8bed94f8-188d-476e-9116-008ea0e508ae&#39;}</span>
+<span class="go">|         2 | 11:47:45.0 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;fbe66234-198e-400d-8348-9fabcde95d49&#39;, &#39;time&#39;: 1752666465.0238054, &#39;data&#39;: {&#39;pdet-channel-1-value&#39;: 937, &#39;pdet-channel-2-value&#39;: 903, &#39;pdet-channel-3-value&#39;: 875, &#39;stage-x&#39;: 1.0, &#39;stage-y&#39;: 3.0}, &#39;timestamps&#39;: {&#39;pdet-channel-1-value&#39;: 157.171259392, &#39;pdet-channel-2-value&#39;: 157.171285972, &#39;pdet-channel-3-value&#39;: 157.171301971, &#39;stage-x&#39;: 155.924623274, &#39;stage-y&#39;: 157.069782399}, &#39;seq_num&#39;: 2, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;8bed94f8-188d-476e-9116-008ea0e508ae&#39;}</span>
+<span class="go">|         3 | 11:47:45.9 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;8cad3cd1-54c6-4d28-859a-8ae6f92175a7&#39;, &#39;time&#39;: 1752666465.983605, &#39;data&#39;: {&#39;pdet-channel-1-value&#39;: 761, &#39;pdet-channel-2-value&#39;: 740, &#39;pdet-channel-3-value&#39;: 722, &#39;stage-x&#39;: 2.0, &#39;stage-y&#39;: 2.0}, &#39;timestamps&#39;: {&#39;pdet-channel-1-value&#39;: 158.13109091, &#39;pdet-channel-2-value&#39;: 158.131121097, &#39;pdet-channel-3-value&#39;: 158.131136436, &#39;stage-x&#39;: 158.029446576, &#39;stage-y&#39;: 158.02948129}, &#39;seq_num&#39;: 3, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;8bed94f8-188d-476e-9116-008ea0e508ae&#39;}</span>
+<span class="go">|         4 | 11:47:46.9 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;e81ce9ae-4022-4ae2-9ce0-8e8effc2ded1&#39;, &#39;time&#39;: 1752666466.935103, &#39;data&#39;: {&#39;pdet-channel-1-value&#39;: 487, &#39;pdet-channel-2-value&#39;: 467, &#39;pdet-channel-3-value&#39;: 448, &#39;stage-x&#39;: 2.0, &#39;stage-y&#39;: 3.0}, &#39;timestamps&#39;: {&#39;pdet-channel-1-value&#39;: 159.082478265, &#39;pdet-channel-2-value&#39;: 159.082508732, &#39;pdet-channel-3-value&#39;: 159.082524191, &#39;stage-x&#39;: 158.029446576, &#39;stage-y&#39;: 158.980994237}, &#39;seq_num&#39;: 4, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;8bed94f8-188d-476e-9116-008ea0e508ae&#39;}</span>
+<span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
+<span class="go">generator grid_scan [&#39;cbc975de&#39;] (scan num: 1)</span>
+
+
+
+<span class="go">stop {&#39;uid&#39;: &#39;be4ff66c-e8d9-4e56-91e2-9412504a13a3&#39;, &#39;time&#39;: 1752666467.7286725, &#39;run_start&#39;: &#39;cbc975de-621c-44fb-950b-cd3bbcf5492f&#39;, &#39;exit_status&#39;: &#39;success&#39;, &#39;reason&#39;: &#39;&#39;, &#39;num_events&#39;: {&#39;primary&#39;: 4}}</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;cbc975de-621c-44fb-950b-cd3bbcf5492f&#39;,), plan_result=&#39;cbc975de-621c-44fb-950b-cd3bbcf5492f&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+</pre></div>
+</div>
+<p>We see a series of documents being emitted:</p>
+<ul class="simple">
+<li><p>A <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.RunStart" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.RunStart</span></code></a> document that tells us a scan is starting and what sort of scan it is, along with the names of the motors that will be moved.</p></li>
+<li><p>An <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.EventDescriptor" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.EventDescriptor</span></code></a> document that tells us that the motor readbacks and detector channels will be all be read together in a single stream. It is used to make the column headings, but it contains more metadata about the Devices too, like their configuration.</p></li>
+<li><p>For each point in the scan:</p>
+<ul>
+<li><p>An <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.Event" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.Event</span></code></a> document, containing the motor readbacks and detector channels with their timestamps. It is used to make each row of the table.</p></li>
+</ul>
+</li>
+<li><p>A <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.RunStop" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.RunStop</span></code></a> document that tells us the scan has stopped, and gives us its status.</p></li>
+</ul>
+<p>Now let’s try the same thing, but this time with the blob detector:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">bdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">print</span><span class="p">)</span>
+
+
+<span class="go">Transient Scan ID: 2     Time: 2025-07-16 11:47:47</span>
+<span class="go">Persistent Unique Scan ID: &#39;64eb76e6-fc5a-46c9-87a0-0c08c6794cf4&#39;</span>
+<span class="go">start {&#39;uid&#39;: &#39;64eb76e6-fc5a-46c9-87a0-0c08c6794cf4&#39;, &#39;time&#39;: 1752666467.8398888, &#39;versions&#39;: {&#39;ophyd&#39;: &#39;1.10.7&#39;, &#39;ophyd_async&#39;: &#39;0.12&#39;, &#39;bluesky&#39;: &#39;1.14.2&#39;}, &#39;scan_id&#39;: 2, &#39;plan_type&#39;: &#39;generator&#39;, &#39;plan_name&#39;: &#39;grid_scan&#39;, &#39;detectors&#39;: [&#39;bdet&#39;], &#39;motors&#39;: (&#39;stage-x&#39;, &#39;stage-y&#39;), &#39;num_points&#39;: 4, &#39;num_intervals&#39;: 3, &#39;plan_args&#39;: {&#39;detectors&#39;: [&#39;&lt;ophyd_async.sim._blob_detector.SimBlobDetector object at 0x7f969cebff50&gt;&#39;], &#39;args&#39;: [&#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce94a90&gt;&#39;, 1, 2, 2, &#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce95910&gt;&#39;, 2, 3, 2, False], &#39;per_step&#39;: &#39;None&#39;}, &#39;hints&#39;: {&#39;gridding&#39;: &#39;rectilinear&#39;, &#39;dimensions&#39;: [([&#39;stage-x&#39;], &#39;primary&#39;), ([&#39;stage-y&#39;], &#39;primary&#39;)]}, &#39;shape&#39;: (2, 2), &#39;extents&#39;: ([1, 2], [2, 3]), &#39;snaking&#39;: (False, False), &#39;plan_pattern&#39;: &#39;outer_product&#39;, &#39;plan_pattern_args&#39;: {&#39;args&#39;: [&#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce94a90&gt;&#39;, 1, 2, 2, &#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce95910&gt;&#39;, 2, 3, 2, False]}, &#39;plan_pattern_module&#39;: &#39;bluesky.plan_patterns&#39;}</span>
+<span class="go">New stream: &#39;primary&#39;</span>
+<span class="go">+-----------+------------+------------+------------+</span>
+<span class="go">|   seq_num |       time |    stage-x |    stage-y |</span>
+<span class="go">+-----------+------------+------------+------------+</span>
+<span class="go">descriptor {&#39;configuration&#39;: {&#39;stage-x&#39;: {&#39;data&#39;: {&#39;stage-x-velocity&#39;: 1000.0, &#39;stage-x-units&#39;: &#39;mm&#39;, &#39;stage-x-acceleration_time&#39;: 0.5}, &#39;timestamps&#39;: {&#39;stage-x-velocity&#39;: 155.847354588, &#39;stage-x-units&#39;: 155.841386013, &#39;stage-x-acceleration_time&#39;: 155.841355206}, &#39;data_keys&#39;: {&#39;stage-x-velocity&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-x-velocity&#39;}, &#39;stage-x-units&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://stage-x-units&#39;}, &#39;stage-x-acceleration_time&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-x-acceleration_time&#39;}}}, &#39;stage-y&#39;: {&#39;data&#39;: {&#39;stage-y-velocity&#39;: 1000.0, &#39;stage-y-units&#39;: &#39;mm&#39;, &#39;stage-y-acceleration_time&#39;: 0.5}, &#39;timestamps&#39;: {&#39;stage-y-velocity&#39;: 155.847514617, &#39;stage-y-units&#39;: 155.841714687, &#39;stage-y-acceleration_time&#39;: 155.841701823}, &#39;data_keys&#39;: {&#39;stage-y-velocity&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-y-velocity&#39;}, &#39;stage-y-units&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://stage-y-units&#39;}, &#39;stage-y-acceleration_time&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-y-acceleration_time&#39;}}}, &#39;bdet&#39;: {&#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;data_keys&#39;: {}}}, &#39;data_keys&#39;: {&#39;stage-x&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-x&#39;, &#39;object_name&#39;: &#39;stage-x&#39;}, &#39;stage-y&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-y&#39;, &#39;object_name&#39;: &#39;stage-y&#39;}, &#39;bdet&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [1, 240, 320], &#39;dtype&#39;: &#39;array&#39;, &#39;dtype_numpy&#39;: &#39;|u1&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}, &#39;bdet-sum&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [], &#39;dtype&#39;: &#39;number&#39;, &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}}, &#39;name&#39;: &#39;primary&#39;, &#39;object_keys&#39;: {&#39;stage-x&#39;: [&#39;stage-x&#39;], &#39;stage-y&#39;: [&#39;stage-y&#39;], &#39;bdet&#39;: [&#39;bdet&#39;, &#39;bdet-sum&#39;]}, &#39;run_start&#39;: &#39;64eb76e6-fc5a-46c9-87a0-0c08c6794cf4&#39;, &#39;time&#39;: 1752666468.0562367, &#39;uid&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;, &#39;hints&#39;: {&#39;stage-x&#39;: {&#39;fields&#39;: [&#39;stage-x&#39;]}, &#39;stage-y&#39;: {&#39;fields&#39;: [&#39;stage-y&#39;]}, &#39;bdet&#39;: {&#39;fields&#39;: [&#39;bdet&#39;]}}}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;7e1ed682-c914-499d-a876-b0f7a2cee51c&#39;, &#39;data_key&#39;: &#39;bdet&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/e06cf8f5-2066-44ec-b173-19052e90b33a.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/data/data&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;64eb76e6-fc5a-46c9-87a0-0c08c6794cf4&#39;}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;fc3528f7-aefb-41f5-81d0-aed38f345f3b&#39;, &#39;data_key&#39;: &#39;bdet-sum&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/e06cf8f5-2066-44ec-b173-19052e90b33a.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/sum&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;64eb76e6-fc5a-46c9-87a0-0c08c6794cf4&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;7e1ed682-c914-499d-a876-b0f7a2cee51c&#39;, &#39;uid&#39;: &#39;7e1ed682-c914-499d-a876-b0f7a2cee51c/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;fc3528f7-aefb-41f5-81d0-aed38f345f3b&#39;, &#39;uid&#39;: &#39;fc3528f7-aefb-41f5-81d0-aed38f345f3b/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">|         1 | 11:47:48.0 |      1.000 |      2.000 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;7ee213c4-6830-48ac-8737-c81b6fe0cc24&#39;, &#39;time&#39;: 1752666468.0847979, &#39;data&#39;: {&#39;stage-x&#39;: 1.0, &#39;stage-y&#39;: 2.0}, &#39;timestamps&#39;: {&#39;stage-x&#39;: 160.036912503, &#39;stage-y&#39;: 160.036944663}, &#39;seq_num&#39;: 1, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;7e1ed682-c914-499d-a876-b0f7a2cee51c&#39;, &#39;uid&#39;: &#39;7e1ed682-c914-499d-a876-b0f7a2cee51c/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;fc3528f7-aefb-41f5-81d0-aed38f345f3b&#39;, &#39;uid&#39;: &#39;fc3528f7-aefb-41f5-81d0-aed38f345f3b/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">|         2 | 11:47:48.2 |      1.000 |      3.000 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;6708ffae-9f2a-4afa-8760-646c11f07676&#39;, &#39;time&#39;: 1752666468.2361217, &#39;data&#39;: {&#39;stage-x&#39;: 1.0, &#39;stage-y&#39;: 3.0}, &#39;timestamps&#39;: {&#39;stage-x&#39;: 160.036912503, &#39;stage-y&#39;: 160.280415134}, &#39;seq_num&#39;: 2, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;7e1ed682-c914-499d-a876-b0f7a2cee51c&#39;, &#39;uid&#39;: &#39;7e1ed682-c914-499d-a876-b0f7a2cee51c/2&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 3, &#39;stop&#39;: 4}, &#39;indices&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;fc3528f7-aefb-41f5-81d0-aed38f345f3b&#39;, &#39;uid&#39;: &#39;fc3528f7-aefb-41f5-81d0-aed38f345f3b/2&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 3, &#39;stop&#39;: 4}, &#39;indices&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">|         3 | 11:47:48.3 |      2.000 |      2.000 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;695044dd-663d-4389-aef3-99a6c2b98226&#39;, &#39;time&#39;: 1752666468.387838, &#39;data&#39;: {&#39;stage-x&#39;: 2.0, &#39;stage-y&#39;: 2.0}, &#39;timestamps&#39;: {&#39;stage-x&#39;: 160.431996841, &#39;stage-y&#39;: 160.432052886}, &#39;seq_num&#39;: 3, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;7e1ed682-c914-499d-a876-b0f7a2cee51c&#39;, &#39;uid&#39;: &#39;7e1ed682-c914-499d-a876-b0f7a2cee51c/3&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 4, &#39;stop&#39;: 5}, &#39;indices&#39;: {&#39;start&#39;: 3, &#39;stop&#39;: 4}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;fc3528f7-aefb-41f5-81d0-aed38f345f3b&#39;, &#39;uid&#39;: &#39;fc3528f7-aefb-41f5-81d0-aed38f345f3b/3&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 4, &#39;stop&#39;: 5}, &#39;indices&#39;: {&#39;start&#39;: 3, &#39;stop&#39;: 4}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">|         4 | 11:47:48.5 |      2.000 |      3.000 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;17493e61-531d-48d8-8d1e-d88f8dac363c&#39;, &#39;time&#39;: 1752666468.5389543, &#39;data&#39;: {&#39;stage-x&#39;: 2.0, &#39;stage-y&#39;: 3.0}, &#39;timestamps&#39;: {&#39;stage-x&#39;: 160.431996841, &#39;stage-y&#39;: 160.583322459}, &#39;seq_num&#39;: 4, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;9e1203c6-19af-4548-aba1-b4884c1ed5af&#39;}</span>
+<span class="go">+-----------+------------+------------+------------+</span>
+<span class="go">generator grid_scan [&#39;64eb76e6&#39;] (scan num: 2)</span>
+
+
+
+<span class="go">stop {&#39;uid&#39;: &#39;5e2a5411-c249-4380-b0eb-7474cf1e7297&#39;, &#39;time&#39;: 1752666468.539441, &#39;run_start&#39;: &#39;64eb76e6-fc5a-46c9-87a0-0c08c6794cf4&#39;, &#39;exit_status&#39;: &#39;success&#39;, &#39;reason&#39;: &#39;&#39;, &#39;num_events&#39;: {&#39;primary&#39;: 4}}</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;64eb76e6-fc5a-46c9-87a0-0c08c6794cf4&#39;,), plan_result=&#39;64eb76e6-fc5a-46c9-87a0-0c08c6794cf4&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+</pre></div>
+</div>
+<p>This time we see some different documents:</p>
+<ul class="simple">
+<li><p>The same <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.RunStart" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.RunStart</span></code></a> document</p></li>
+<li><p>A similar <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.EventDescriptor" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.EventDescriptor</span></code></a> document, but with <code class="docutils literal notranslate"><span class="pre">'external':</span> <span class="pre">'STREAM:'</span></code> on the detector column headings.</p></li>
+<li><p>A couple of <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.StreamResource" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.StreamResource</span></code></a> documents for each of those detector column headings giving an HDF file name and dataset within it where data will be written.</p></li>
+<li><p>For each point in the scan:</p>
+<ul>
+<li><p>A couple of <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.StreamDatum" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.StreamDatum</span></code></a> documents with a range of indices that have been written to an HDF dataset referenced in the StreamResource document.</p></li>
+<li><p>An <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.Event" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.Event</span></code></a> document, containing the motor readbacks and timestamps. It is used to make each row of the table.</p></li>
+</ul>
+</li>
+<li><p>The same <a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.RunStop" title="event-model main"><code class="iref myst docutils literal notranslate"><span class="pre">event_model.RunStop</span></code></a> document</p></li>
+</ul>
+<p>And we can run the plan with both detectors to see a document stream that combines both the previous example:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [3]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">bdet</span><span class="p">,</span> <span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">print</span><span class="p">)</span>
+
+
+<span class="go">Transient Scan ID: 3     Time: 2025-07-16 11:47:48</span>
+<span class="go">Persistent Unique Scan ID: &#39;544704a3-87dc-4555-8a01-99150358beb7&#39;</span>
+<span class="go">start {&#39;uid&#39;: &#39;544704a3-87dc-4555-8a01-99150358beb7&#39;, &#39;time&#39;: 1752666468.6509736, &#39;versions&#39;: {&#39;ophyd&#39;: &#39;1.10.7&#39;, &#39;ophyd_async&#39;: &#39;0.12&#39;, &#39;bluesky&#39;: &#39;1.14.2&#39;}, &#39;scan_id&#39;: 3, &#39;plan_type&#39;: &#39;generator&#39;, &#39;plan_name&#39;: &#39;grid_scan&#39;, &#39;detectors&#39;: [&#39;bdet&#39;, &#39;pdet&#39;], &#39;motors&#39;: (&#39;stage-x&#39;, &#39;stage-y&#39;), &#39;num_points&#39;: 4, &#39;num_intervals&#39;: 3, &#39;plan_args&#39;: {&#39;detectors&#39;: [&#39;&lt;ophyd_async.sim._blob_detector.SimBlobDetector object at 0x7f969cebff50&gt;&#39;, &#39;&lt;ophyd_async.sim._point_detector.SimPointDetector object at 0x7f969cebdb90&gt;&#39;], &#39;args&#39;: [&#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce94a90&gt;&#39;, 1, 2, 2, &#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce95910&gt;&#39;, 2, 3, 2, False], &#39;per_step&#39;: &#39;None&#39;}, &#39;hints&#39;: {&#39;gridding&#39;: &#39;rectilinear&#39;, &#39;dimensions&#39;: [([&#39;stage-x&#39;], &#39;primary&#39;), ([&#39;stage-y&#39;], &#39;primary&#39;)]}, &#39;shape&#39;: (2, 2), &#39;extents&#39;: ([1, 2], [2, 3]), &#39;snaking&#39;: (False, False), &#39;plan_pattern&#39;: &#39;outer_product&#39;, &#39;plan_pattern_args&#39;: {&#39;args&#39;: [&#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce94a90&gt;&#39;, 1, 2, 2, &#39;&lt;ophyd_async.sim._motor.SimMotor object at 0x7f969ce95910&gt;&#39;, 2, 3, 2, False]}, &#39;plan_pattern_module&#39;: &#39;bluesky.plan_patterns&#39;}</span>
+<span class="go">New stream: &#39;primary&#39;</span>
+<span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
+<span class="go">|   seq_num |       time |    stage-x |    stage-y | pdet-channel-1-value | pdet-channel-2-value | pdet-channel-3-value |</span>
+<span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
+<span class="go">descriptor {&#39;configuration&#39;: {&#39;pdet&#39;: {&#39;data&#39;: {&#39;pdet-channel-1-mode&#39;: &lt;EnergyMode.LOW: &#39;Low Energy&#39;&gt;, &#39;pdet-channel-2-mode&#39;: &lt;EnergyMode.LOW: &#39;Low Energy&#39;&gt;, &#39;pdet-channel-3-mode&#39;: &lt;EnergyMode.LOW: &#39;Low Energy&#39;&gt;}, &#39;timestamps&#39;: {&#39;pdet-channel-1-mode&#39;: 155.842456243, &#39;pdet-channel-2-mode&#39;: 155.842511026, &#39;pdet-channel-3-mode&#39;: 155.842558163}, &#39;data_keys&#39;: {&#39;pdet-channel-1-mode&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://pdet-channel-1-mode&#39;, &#39;choices&#39;: [&#39;Low Energy&#39;, &#39;High Energy&#39;]}, &#39;pdet-channel-2-mode&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://pdet-channel-2-mode&#39;, &#39;choices&#39;: [&#39;Low Energy&#39;, &#39;High Energy&#39;]}, &#39;pdet-channel-3-mode&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://pdet-channel-3-mode&#39;, &#39;choices&#39;: [&#39;Low Energy&#39;, &#39;High Energy&#39;]}}}, &#39;stage-y&#39;: {&#39;data&#39;: {&#39;stage-y-velocity&#39;: 1000.0, &#39;stage-y-units&#39;: &#39;mm&#39;, &#39;stage-y-acceleration_time&#39;: 0.5}, &#39;timestamps&#39;: {&#39;stage-y-velocity&#39;: 155.847514617, &#39;stage-y-units&#39;: 155.841714687, &#39;stage-y-acceleration_time&#39;: 155.841701823}, &#39;data_keys&#39;: {&#39;stage-y-velocity&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-y-velocity&#39;}, &#39;stage-y-units&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://stage-y-units&#39;}, &#39;stage-y-acceleration_time&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-y-acceleration_time&#39;}}}, &#39;stage-x&#39;: {&#39;data&#39;: {&#39;stage-x-velocity&#39;: 1000.0, &#39;stage-x-units&#39;: &#39;mm&#39;, &#39;stage-x-acceleration_time&#39;: 0.5}, &#39;timestamps&#39;: {&#39;stage-x-velocity&#39;: 155.847354588, &#39;stage-x-units&#39;: 155.841386013, &#39;stage-x-acceleration_time&#39;: 155.841355206}, &#39;data_keys&#39;: {&#39;stage-x-velocity&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-x-velocity&#39;}, &#39;stage-x-units&#39;: {&#39;dtype&#39;: &#39;string&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;|S40&#39;, &#39;source&#39;: &#39;soft://stage-x-units&#39;}, &#39;stage-x-acceleration_time&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-x-acceleration_time&#39;}}}, &#39;bdet&#39;: {&#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;data_keys&#39;: {}}}, &#39;data_keys&#39;: {&#39;pdet-channel-1-value&#39;: {&#39;dtype&#39;: &#39;integer&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;source&#39;: &#39;soft://pdet-channel-1-value&#39;, &#39;object_name&#39;: &#39;pdet&#39;}, &#39;pdet-channel-2-value&#39;: {&#39;dtype&#39;: &#39;integer&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;source&#39;: &#39;soft://pdet-channel-2-value&#39;, &#39;object_name&#39;: &#39;pdet&#39;}, &#39;pdet-channel-3-value&#39;: {&#39;dtype&#39;: &#39;integer&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;source&#39;: &#39;soft://pdet-channel-3-value&#39;, &#39;object_name&#39;: &#39;pdet&#39;}, &#39;stage-y&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-y&#39;, &#39;object_name&#39;: &#39;stage-y&#39;}, &#39;stage-x&#39;: {&#39;dtype&#39;: &#39;number&#39;, &#39;shape&#39;: [], &#39;dtype_numpy&#39;: &#39;&lt;f8&#39;, &#39;source&#39;: &#39;soft://stage-x&#39;, &#39;object_name&#39;: &#39;stage-x&#39;}, &#39;bdet&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [1, 240, 320], &#39;dtype&#39;: &#39;array&#39;, &#39;dtype_numpy&#39;: &#39;|u1&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}, &#39;bdet-sum&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [], &#39;dtype&#39;: &#39;number&#39;, &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}}, &#39;name&#39;: &#39;primary&#39;, &#39;object_keys&#39;: {&#39;pdet&#39;: [&#39;pdet-channel-1-value&#39;, &#39;pdet-channel-2-value&#39;, &#39;pdet-channel-3-value&#39;], &#39;stage-y&#39;: [&#39;stage-y&#39;], &#39;stage-x&#39;: [&#39;stage-x&#39;], &#39;bdet&#39;: [&#39;bdet&#39;, &#39;bdet-sum&#39;]}, &#39;run_start&#39;: &#39;544704a3-87dc-4555-8a01-99150358beb7&#39;, &#39;time&#39;: 1752666468.866014, &#39;uid&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;, &#39;hints&#39;: {&#39;pdet&#39;: {&#39;fields&#39;: [&#39;pdet-channel-1-value&#39;, &#39;pdet-channel-2-value&#39;, &#39;pdet-channel-3-value&#39;]}, &#39;stage-y&#39;: {&#39;fields&#39;: [&#39;stage-y&#39;]}, &#39;stage-x&#39;: {&#39;fields&#39;: [&#39;stage-x&#39;]}, &#39;bdet&#39;: {&#39;fields&#39;: [&#39;bdet&#39;]}}}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;2dc807eb-2aea-4f2e-8439-bb05f9793c77&#39;, &#39;data_key&#39;: &#39;bdet&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/998a3d4e-d4e9-4178-a36e-dddee30f9d86.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/data/data&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;544704a3-87dc-4555-8a01-99150358beb7&#39;}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;c0eddfac-4c91-484a-9849-f8858c62fe87&#39;, &#39;data_key&#39;: &#39;bdet-sum&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/998a3d4e-d4e9-4178-a36e-dddee30f9d86.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/sum&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;544704a3-87dc-4555-8a01-99150358beb7&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;2dc807eb-2aea-4f2e-8439-bb05f9793c77&#39;, &#39;uid&#39;: &#39;2dc807eb-2aea-4f2e-8439-bb05f9793c77/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;c0eddfac-4c91-484a-9849-f8858c62fe87&#39;, &#39;uid&#39;: &#39;c0eddfac-4c91-484a-9849-f8858c62fe87/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">|         1 | 11:47:48.9 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;aea4e7e4-a61f-410b-8ce5-c0b8a90a8511&#39;, &#39;time&#39;: 1752666468.964533, &#39;data&#39;: {&#39;pdet-channel-1-value&#39;: 921, &#39;pdet-channel-2-value&#39;: 887, &#39;pdet-channel-3-value&#39;: 859, &#39;stage-x&#39;: 1.0, &#39;stage-y&#39;: 2.0}, &#39;timestamps&#39;: {&#39;pdet-channel-1-value&#39;: 160.951838349, &#39;pdet-channel-2-value&#39;: 160.951868986, &#39;pdet-channel-3-value&#39;: 160.951885707, &#39;stage-x&#39;: 160.847566301, &#39;stage-y&#39;: 160.847604102}, &#39;seq_num&#39;: 1, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;2dc807eb-2aea-4f2e-8439-bb05f9793c77&#39;, &#39;uid&#39;: &#39;2dc807eb-2aea-4f2e-8439-bb05f9793c77/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;c0eddfac-4c91-484a-9849-f8858c62fe87&#39;, &#39;uid&#39;: &#39;c0eddfac-4c91-484a-9849-f8858c62fe87/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">|         2 | 11:47:50.2 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;4e46f63b-ed47-4d34-9fc0-69c0daa79e50&#39;, &#39;time&#39;: 1752666470.2709143, &#39;data&#39;: {&#39;pdet-channel-1-value&#39;: 937, &#39;pdet-channel-2-value&#39;: 903, &#39;pdet-channel-3-value&#39;: 875, &#39;stage-x&#39;: 1.0, &#39;stage-y&#39;: 3.0}, &#39;timestamps&#39;: {&#39;pdet-channel-1-value&#39;: 162.415759164, &#39;pdet-channel-2-value&#39;: 162.415791895, &#39;pdet-channel-3-value&#39;: 162.415805731, &#39;stage-x&#39;: 160.847566301, &#39;stage-y&#39;: 162.314153596}, &#39;seq_num&#39;: 2, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;2dc807eb-2aea-4f2e-8439-bb05f9793c77&#39;, &#39;uid&#39;: &#39;2dc807eb-2aea-4f2e-8439-bb05f9793c77/2&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 3, &#39;stop&#39;: 4}, &#39;indices&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;c0eddfac-4c91-484a-9849-f8858c62fe87&#39;, &#39;uid&#39;: &#39;c0eddfac-4c91-484a-9849-f8858c62fe87/2&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 3, &#39;stop&#39;: 4}, &#39;indices&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">|         3 | 11:47:51.4 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;af2b83b8-90fd-4f40-a49a-d2f8c8bbf7eb&#39;, &#39;time&#39;: 1752666471.4994097, &#39;data&#39;: {&#39;pdet-channel-1-value&#39;: 761, &#39;pdet-channel-2-value&#39;: 740, &#39;pdet-channel-3-value&#39;: 722, &#39;stage-x&#39;: 2.0, &#39;stage-y&#39;: 2.0}, &#39;timestamps&#39;: {&#39;pdet-channel-1-value&#39;: 163.644158647, &#39;pdet-channel-2-value&#39;: 163.644195045, &#39;pdet-channel-3-value&#39;: 163.644210684, &#39;stage-x&#39;: 163.542309692, &#39;stage-y&#39;: 163.542355738}, &#39;seq_num&#39;: 3, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;2dc807eb-2aea-4f2e-8439-bb05f9793c77&#39;, &#39;uid&#39;: &#39;2dc807eb-2aea-4f2e-8439-bb05f9793c77/3&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 4, &#39;stop&#39;: 5}, &#39;indices&#39;: {&#39;start&#39;: 3, &#39;stop&#39;: 4}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;c0eddfac-4c91-484a-9849-f8858c62fe87&#39;, &#39;uid&#39;: &#39;c0eddfac-4c91-484a-9849-f8858c62fe87/3&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 4, &#39;stop&#39;: 5}, &#39;indices&#39;: {&#39;start&#39;: 3, &#39;stop&#39;: 4}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">|         4 | 11:47:52.7 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;da8bc6ed-39a6-44b5-a341-a00ead8200d4&#39;, &#39;time&#39;: 1752666472.7173946, &#39;data&#39;: {&#39;pdet-channel-1-value&#39;: 487, &#39;pdet-channel-2-value&#39;: 467, &#39;pdet-channel-3-value&#39;: 448, &#39;stage-x&#39;: 2.0, &#39;stage-y&#39;: 3.0}, &#39;timestamps&#39;: {&#39;pdet-channel-1-value&#39;: 164.862356793, &#39;pdet-channel-2-value&#39;: 164.862378513, &#39;pdet-channel-3-value&#39;: 164.862390386, &#39;stage-x&#39;: 163.542309692, &#39;stage-y&#39;: 164.760640036}, &#39;seq_num&#39;: 4, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;b2695bf6-bbe3-4b91-af50-6170aa6360d5&#39;}</span>
+<span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
+<span class="go">generator grid_scan [&#39;544704a3&#39;] (scan num: 3)</span>
+
+
+
+<span class="go">stop {&#39;uid&#39;: &#39;10299c65-ecde-4bcb-b16c-16a5ada569f9&#39;, &#39;time&#39;: 1752666473.8217037, &#39;run_start&#39;: &#39;544704a3-87dc-4555-8a01-99150358beb7&#39;, &#39;exit_status&#39;: &#39;success&#39;, &#39;reason&#39;: &#39;&#39;, &#39;num_events&#39;: {&#39;primary&#39;: 4}}</span>
+<span class="gh">Out[3]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;544704a3-87dc-4555-8a01-99150358beb7&#39;,), plan_result=&#39;544704a3-87dc-4555-8a01-99150358beb7&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+</pre></div>
+</div>
+</section>
+<section id="simplify-the-plan-to-just-use-the-detector">
+<h2>Simplify the plan to just use the detector<a class="headerlink" href="#simplify-the-plan-to-just-use-the-detector" title="Link to this heading">#</a></h2>
+<p>The above examples show what happens if you <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> a detector at each point of a scan, in this case taking a single frame each time. Let’s write our own simple plan that only triggers and reads from the detector, using the utility <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html#stub-plans" title="bluesky 1.14.3.dev13+g103accac"><code class="docutils literal notranslate"><span class="pre">bps</span></code> (<code class="docutils literal notranslate"><span class="pre">bluesky.plan_stubs</span></code>)</a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/plans.html#preprocessors" title="bluesky 1.14.3.dev13+g103accac"><code class="docutils literal notranslate"><span class="pre">bpp</span></code> (<code class="docutils literal notranslate"><span class="pre">bluesky.preprocessors</span></code>)</a>:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [4]: </span><span class="nd">@bpp</span><span class="o">.</span><span class="n">stage_decorator</span><span class="p">([</span><span class="n">bdet</span><span class="p">])</span>
+<span class="gp">   ...: </span><span class="nd">@bpp</span><span class="o">.</span><span class="n">run_decorator</span><span class="p">()</span>
+<span class="gp">   ...: </span><span class="k">def</span><span class="w"> </span><span class="nf">my_count_plan</span><span class="p">():</span>
+<span class="gp">   ...: </span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+<span class="gp">   ...: </span>        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">trigger_and_read</span><span class="p">([</span><span class="n">bdet</span><span class="p">])</span>
+<span class="gp">   ...: </span>
+</pre></div>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [5]: </span><span class="n">RE</span><span class="p">(</span><span class="n">my_count_plan</span><span class="p">(),</span> <span class="nb">print</span><span class="p">)</span>
+
+
+<span class="go">Transient Scan ID: 4     Time: 2025-07-16 11:47:53</span>
+<span class="go">Persistent Unique Scan ID: &#39;1628f2d4-29cf-4823-aa00-c8b90fabedcf&#39;</span>
+<span class="go">start {&#39;uid&#39;: &#39;1628f2d4-29cf-4823-aa00-c8b90fabedcf&#39;, &#39;time&#39;: 1752666473.9360795, &#39;versions&#39;: {&#39;ophyd&#39;: &#39;1.10.7&#39;, &#39;ophyd_async&#39;: &#39;0.12&#39;, &#39;bluesky&#39;: &#39;1.14.2&#39;}, &#39;scan_id&#39;: 4, &#39;plan_type&#39;: &#39;generator&#39;, &#39;plan_name&#39;: &#39;my_count_plan&#39;}</span>
+<span class="go">New stream: &#39;primary&#39;</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">|   seq_num |       time |</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">descriptor {&#39;configuration&#39;: {&#39;bdet&#39;: {&#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;data_keys&#39;: {}}}, &#39;data_keys&#39;: {&#39;bdet&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [1, 240, 320], &#39;dtype&#39;: &#39;array&#39;, &#39;dtype_numpy&#39;: &#39;|u1&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}, &#39;bdet-sum&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [], &#39;dtype&#39;: &#39;number&#39;, &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}}, &#39;name&#39;: &#39;primary&#39;, &#39;object_keys&#39;: {&#39;bdet&#39;: [&#39;bdet&#39;, &#39;bdet-sum&#39;]}, &#39;run_start&#39;: &#39;1628f2d4-29cf-4823-aa00-c8b90fabedcf&#39;, &#39;time&#39;: 1752666474.1003418, &#39;uid&#39;: &#39;70fa39e8-ab41-45e3-bfea-f1d0d6ecd4ea&#39;, &#39;hints&#39;: {&#39;bdet&#39;: {&#39;fields&#39;: [&#39;bdet&#39;]}}}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;ac234d23-bffe-4831-a9c0-c95169426e9b&#39;, &#39;data_key&#39;: &#39;bdet&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/5183fb1b-02ac-4688-8836-a130783916be.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/data/data&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;1628f2d4-29cf-4823-aa00-c8b90fabedcf&#39;}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;81453a09-7a38-4022-9cb4-9bc259f8d61e&#39;, &#39;data_key&#39;: &#39;bdet-sum&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/5183fb1b-02ac-4688-8836-a130783916be.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/sum&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;1628f2d4-29cf-4823-aa00-c8b90fabedcf&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;ac234d23-bffe-4831-a9c0-c95169426e9b&#39;, &#39;uid&#39;: &#39;ac234d23-bffe-4831-a9c0-c95169426e9b/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;70fa39e8-ab41-45e3-bfea-f1d0d6ecd4ea&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;81453a09-7a38-4022-9cb4-9bc259f8d61e&#39;, &#39;uid&#39;: &#39;81453a09-7a38-4022-9cb4-9bc259f8d61e/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;70fa39e8-ab41-45e3-bfea-f1d0d6ecd4ea&#39;}</span>
+<span class="go">|         1 | 11:47:54.1 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;ed104aa7-89c2-410c-9089-7b7fac92b64c&#39;, &#39;time&#39;: 1752666474.1083393, &#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;seq_num&#39;: 1, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;70fa39e8-ab41-45e3-bfea-f1d0d6ecd4ea&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;ac234d23-bffe-4831-a9c0-c95169426e9b&#39;, &#39;uid&#39;: &#39;ac234d23-bffe-4831-a9c0-c95169426e9b/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;70fa39e8-ab41-45e3-bfea-f1d0d6ecd4ea&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;81453a09-7a38-4022-9cb4-9bc259f8d61e&#39;, &#39;uid&#39;: &#39;81453a09-7a38-4022-9cb4-9bc259f8d61e/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;70fa39e8-ab41-45e3-bfea-f1d0d6ecd4ea&#39;}</span>
+<span class="go">|         2 | 11:47:54.2 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;113ecb0c-71d4-43a8-8652-85390413b23a&#39;, &#39;time&#39;: 1752666474.2127435, &#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;seq_num&#39;: 2, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;70fa39e8-ab41-45e3-bfea-f1d0d6ecd4ea&#39;}</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">generator my_count_plan [&#39;1628f2d4&#39;] (scan num: 4)</span>
+
+
+
+<span class="go">stop {&#39;uid&#39;: &#39;b90b04c9-383e-4de2-b0ed-5ac6f7b2b324&#39;, &#39;time&#39;: 1752666474.2132378, &#39;run_start&#39;: &#39;1628f2d4-29cf-4823-aa00-c8b90fabedcf&#39;, &#39;exit_status&#39;: &#39;success&#39;, &#39;reason&#39;: &#39;&#39;, &#39;num_events&#39;: {&#39;primary&#39;: 2}}</span>
+<span class="gh">Out[5]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;1628f2d4-29cf-4823-aa00-c8b90fabedcf&#39;,), plan_result=&#39;1628f2d4-29cf-4823-aa00-c8b90fabedcf&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+</pre></div>
+</div>
+<p>Here we see the same sort of documents as above, but with only detector information in it.</p>
+<p>Note that on each trigger, only a single image is taken, at the default exposure of <code class="docutils literal notranslate"><span class="pre">0.1s</span></code>. If we would like a different exposure time, we can specify with a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerInfo</span></code></a>:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [6]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">TriggerInfo</span>
+
+<span class="gp">In [7]: </span><span class="nd">@bpp</span><span class="o">.</span><span class="n">stage_decorator</span><span class="p">([</span><span class="n">bdet</span><span class="p">])</span>
+<span class="gp">   ...: </span><span class="nd">@bpp</span><span class="o">.</span><span class="n">run_decorator</span><span class="p">()</span>
+<span class="gp">   ...: </span><span class="k">def</span><span class="w"> </span><span class="nf">my_count_plan_with_prepare</span><span class="p">():</span>
+<span class="gp">   ...: </span>    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">bdet</span><span class="p">,</span> <span class="n">TriggerInfo</span><span class="p">(</span><span class="n">livetime</span><span class="o">=</span><span class="mf">0.001</span><span class="p">),</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">   ...: </span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+<span class="gp">   ...: </span>        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">trigger_and_read</span><span class="p">([</span><span class="n">bdet</span><span class="p">])</span>
+<span class="gp">   ...: </span>
+</pre></div>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [8]: </span><span class="n">RE</span><span class="p">(</span><span class="n">my_count_plan_with_prepare</span><span class="p">(),</span> <span class="nb">print</span><span class="p">)</span>
+
+
+<span class="go">Transient Scan ID: 5     Time: 2025-07-16 11:47:54</span>
+<span class="go">Persistent Unique Scan ID: &#39;84ced5c9-7674-46f9-b2e5-3d23ff7b4938&#39;</span>
+<span class="go">start {&#39;uid&#39;: &#39;84ced5c9-7674-46f9-b2e5-3d23ff7b4938&#39;, &#39;time&#39;: 1752666474.325809, &#39;versions&#39;: {&#39;ophyd&#39;: &#39;1.10.7&#39;, &#39;ophyd_async&#39;: &#39;0.12&#39;, &#39;bluesky&#39;: &#39;1.14.2&#39;}, &#39;scan_id&#39;: 5, &#39;plan_type&#39;: &#39;generator&#39;, &#39;plan_name&#39;: &#39;my_count_plan_with_prepare&#39;}</span>
+<span class="go">New stream: &#39;primary&#39;</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">|   seq_num |       time |</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">descriptor {&#39;configuration&#39;: {&#39;bdet&#39;: {&#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;data_keys&#39;: {}}}, &#39;data_keys&#39;: {&#39;bdet&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [1, 240, 320], &#39;dtype&#39;: &#39;array&#39;, &#39;dtype_numpy&#39;: &#39;|u1&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}, &#39;bdet-sum&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [], &#39;dtype&#39;: &#39;number&#39;, &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}}, &#39;name&#39;: &#39;primary&#39;, &#39;object_keys&#39;: {&#39;bdet&#39;: [&#39;bdet&#39;, &#39;bdet-sum&#39;]}, &#39;run_start&#39;: &#39;84ced5c9-7674-46f9-b2e5-3d23ff7b4938&#39;, &#39;time&#39;: 1752666474.3909066, &#39;uid&#39;: &#39;956ba744-7f3d-487b-8af9-8e165ab4d979&#39;, &#39;hints&#39;: {&#39;bdet&#39;: {&#39;fields&#39;: [&#39;bdet&#39;]}}}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;38b2f53a-0522-447a-84e2-584db2f96d64&#39;, &#39;data_key&#39;: &#39;bdet&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/4b8a023f-331c-4e53-8a90-fdd29e2f0726.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/data/data&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;84ced5c9-7674-46f9-b2e5-3d23ff7b4938&#39;}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;353815e6-98d6-4457-82db-42ab4fc73bfb&#39;, &#39;data_key&#39;: &#39;bdet-sum&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/4b8a023f-331c-4e53-8a90-fdd29e2f0726.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/sum&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;84ced5c9-7674-46f9-b2e5-3d23ff7b4938&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;38b2f53a-0522-447a-84e2-584db2f96d64&#39;, &#39;uid&#39;: &#39;38b2f53a-0522-447a-84e2-584db2f96d64/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;956ba744-7f3d-487b-8af9-8e165ab4d979&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;353815e6-98d6-4457-82db-42ab4fc73bfb&#39;, &#39;uid&#39;: &#39;353815e6-98d6-4457-82db-42ab4fc73bfb/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;956ba744-7f3d-487b-8af9-8e165ab4d979&#39;}</span>
+<span class="go">|         1 | 11:47:54.3 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;93970e2f-1b2d-45eb-bcc7-1840817c2d85&#39;, &#39;time&#39;: 1752666474.392354, &#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;seq_num&#39;: 1, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;956ba744-7f3d-487b-8af9-8e165ab4d979&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;38b2f53a-0522-447a-84e2-584db2f96d64&#39;, &#39;uid&#39;: &#39;38b2f53a-0522-447a-84e2-584db2f96d64/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;956ba744-7f3d-487b-8af9-8e165ab4d979&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;353815e6-98d6-4457-82db-42ab4fc73bfb&#39;, &#39;uid&#39;: &#39;353815e6-98d6-4457-82db-42ab4fc73bfb/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;956ba744-7f3d-487b-8af9-8e165ab4d979&#39;}</span>
+<span class="go">|         2 | 11:47:54.3 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;fcee6009-2618-45a8-b781-0df0d6a18816&#39;, &#39;time&#39;: 1752666474.3970978, &#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;seq_num&#39;: 2, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;956ba744-7f3d-487b-8af9-8e165ab4d979&#39;}</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">generator my_count_plan_with_prepare [&#39;84ced5c9&#39;] (scan num: 5)</span>
+
+
+
+<span class="go">stop {&#39;uid&#39;: &#39;cd274964-9a95-4301-86e6-193a9fa08764&#39;, &#39;time&#39;: 1752666474.3975368, &#39;run_start&#39;: &#39;84ced5c9-7674-46f9-b2e5-3d23ff7b4938&#39;, &#39;exit_status&#39;: &#39;success&#39;, &#39;reason&#39;: &#39;&#39;, &#39;num_events&#39;: {&#39;primary&#39;: 2}}</span>
+<span class="gh">Out[8]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;84ced5c9-7674-46f9-b2e5-3d23ff7b4938&#39;,), plan_result=&#39;84ced5c9-7674-46f9-b2e5-3d23ff7b4938&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+</pre></div>
+</div>
+<p>This also moves the work of setting up the detector from the first call of <code class="docutils literal notranslate"><span class="pre">trigger()</span></code> to the <code class="docutils literal notranslate"><span class="pre">prepare()</span></code> call. We can also move the creation of the descriptor earlier, so there is no extra work to do on the first call to <code class="docutils literal notranslate"><span class="pre">trigger()</span></code>:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [9]: </span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">TriggerInfo</span>
+
+<span class="gp">In [10]: </span><span class="nd">@bpp</span><span class="o">.</span><span class="n">stage_decorator</span><span class="p">([</span><span class="n">bdet</span><span class="p">])</span>
+<span class="gp">   ....: </span><span class="nd">@bpp</span><span class="o">.</span><span class="n">run_decorator</span><span class="p">()</span>
+<span class="gp">   ....: </span><span class="k">def</span><span class="w"> </span><span class="nf">my_count_plan_with_prepare</span><span class="p">():</span>
+<span class="gp">   ....: </span>    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">bdet</span><span class="p">,</span> <span class="n">TriggerInfo</span><span class="p">(),</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">declare_stream</span><span class="p">(</span><span class="n">bdet</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+<span class="gp">   ....: </span>        <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">trigger_and_read</span><span class="p">([</span><span class="n">bdet</span><span class="p">])</span>
+<span class="gp">   ....: </span>
+</pre></div>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [11]: </span><span class="n">RE</span><span class="p">(</span><span class="n">my_count_plan_with_prepare</span><span class="p">(),</span> <span class="nb">print</span><span class="p">)</span>
+
+
+<span class="go">Transient Scan ID: 6     Time: 2025-07-16 11:47:54</span>
+<span class="go">Persistent Unique Scan ID: &#39;aa116209-9dce-4e50-a847-46c7851196fb&#39;</span>
+<span class="go">start {&#39;uid&#39;: &#39;aa116209-9dce-4e50-a847-46c7851196fb&#39;, &#39;time&#39;: 1752666474.5109525, &#39;versions&#39;: {&#39;ophyd&#39;: &#39;1.10.7&#39;, &#39;ophyd_async&#39;: &#39;0.12&#39;, &#39;bluesky&#39;: &#39;1.14.2&#39;}, &#39;scan_id&#39;: 6, &#39;plan_type&#39;: &#39;generator&#39;, &#39;plan_name&#39;: &#39;my_count_plan_with_prepare&#39;}</span>
+<span class="go">New stream: &#39;primary&#39;</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">|   seq_num |       time |</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">descriptor {&#39;configuration&#39;: {&#39;bdet&#39;: {&#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;data_keys&#39;: {}}}, &#39;data_keys&#39;: {&#39;bdet&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [1, 240, 320], &#39;dtype&#39;: &#39;array&#39;, &#39;dtype_numpy&#39;: &#39;|u1&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}, &#39;bdet-sum&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [], &#39;dtype&#39;: &#39;number&#39;, &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}}, &#39;name&#39;: &#39;primary&#39;, &#39;object_keys&#39;: {&#39;bdet&#39;: [&#39;bdet&#39;, &#39;bdet-sum&#39;]}, &#39;run_start&#39;: &#39;aa116209-9dce-4e50-a847-46c7851196fb&#39;, &#39;time&#39;: 1752666474.5141213, &#39;uid&#39;: &#39;45a2841d-2277-47fe-b2b5-19d9eb194fa0&#39;, &#39;hints&#39;: {&#39;bdet&#39;: {&#39;fields&#39;: [&#39;bdet&#39;]}}}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;e442c9e1-6764-4231-8881-905ee0112ef3&#39;, &#39;data_key&#39;: &#39;bdet&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/3ac15fc2-598a-4bb3-b088-b0be1f5b564d.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/data/data&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;aa116209-9dce-4e50-a847-46c7851196fb&#39;}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;b1391ae3-ff68-48e9-accd-c23500c23841&#39;, &#39;data_key&#39;: &#39;bdet-sum&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/3ac15fc2-598a-4bb3-b088-b0be1f5b564d.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/sum&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;aa116209-9dce-4e50-a847-46c7851196fb&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;e442c9e1-6764-4231-8881-905ee0112ef3&#39;, &#39;uid&#39;: &#39;e442c9e1-6764-4231-8881-905ee0112ef3/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;45a2841d-2277-47fe-b2b5-19d9eb194fa0&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;b1391ae3-ff68-48e9-accd-c23500c23841&#39;, &#39;uid&#39;: &#39;b1391ae3-ff68-48e9-accd-c23500c23841/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 1}, &#39;descriptor&#39;: &#39;45a2841d-2277-47fe-b2b5-19d9eb194fa0&#39;}</span>
+<span class="go">|         1 | 11:47:54.6 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;5343ed9c-eda3-4d4e-b96b-863e21eb53ed&#39;, &#39;time&#39;: 1752666474.6766868, &#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;seq_num&#39;: 1, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;45a2841d-2277-47fe-b2b5-19d9eb194fa0&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;e442c9e1-6764-4231-8881-905ee0112ef3&#39;, &#39;uid&#39;: &#39;e442c9e1-6764-4231-8881-905ee0112ef3/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;45a2841d-2277-47fe-b2b5-19d9eb194fa0&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;b1391ae3-ff68-48e9-accd-c23500c23841&#39;, &#39;uid&#39;: &#39;b1391ae3-ff68-48e9-accd-c23500c23841/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 2, &#39;stop&#39;: 3}, &#39;indices&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 2}, &#39;descriptor&#39;: &#39;45a2841d-2277-47fe-b2b5-19d9eb194fa0&#39;}</span>
+<span class="go">|         2 | 11:47:54.7 |</span>
+<span class="go">event {&#39;uid&#39;: &#39;092fb806-a9c7-4d1f-b144-baa893d39927&#39;, &#39;time&#39;: 1752666474.7806091, &#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;seq_num&#39;: 2, &#39;filled&#39;: {}, &#39;descriptor&#39;: &#39;45a2841d-2277-47fe-b2b5-19d9eb194fa0&#39;}</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">generator my_count_plan_with_prepare [&#39;aa116209&#39;] (scan num: 6)</span>
+
+
+
+<span class="go">stop {&#39;uid&#39;: &#39;a431607a-ee89-4a8c-9ff0-cd893e4445f1&#39;, &#39;time&#39;: 1752666474.7810836, &#39;run_start&#39;: &#39;aa116209-9dce-4e50-a847-46c7851196fb&#39;, &#39;exit_status&#39;: &#39;success&#39;, &#39;reason&#39;: &#39;&#39;, &#39;num_events&#39;: {&#39;primary&#39;: 2}}</span>
+<span class="gh">Out[11]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;aa116209-9dce-4e50-a847-46c7851196fb&#39;,), plan_result=&#39;aa116209-9dce-4e50-a847-46c7851196fb&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+</pre></div>
+</div>
+</section>
+<section id="run-a-fly-scan-and-investigate-the-documents">
+<h2>Run a fly scan and investigate the documents<a class="headerlink" href="#run-a-fly-scan-and-investigate-the-documents" title="Link to this heading">#</a></h2>
+<p>The above demonstrates the detector portion of a step scan, letting the things you want to scan settle before taking data from the detector, and doing this at every point of the scan. Our filewriting detector also supports the ability to fly scan it, taking data while you are scanning other things. To do this, it implements the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.14.3.dev13+g103accac"><code class="iref myst docutils literal notranslate"><span class="pre">bluesky.protocols.Flyable</span></code></a> protocol, which allows us to <code class="docutils literal notranslate"><span class="pre">kickoff()</span></code> a series of images, then wait until it is <code class="docutils literal notranslate"><span class="pre">complete()</span></code>:</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [12]: </span><span class="nd">@bpp</span><span class="o">.</span><span class="n">stage_decorator</span><span class="p">([</span><span class="n">bdet</span><span class="p">])</span>
+<span class="gp">   ....: </span><span class="nd">@bpp</span><span class="o">.</span><span class="n">run_decorator</span><span class="p">()</span>
+<span class="gp">   ....: </span><span class="k">def</span><span class="w"> </span><span class="nf">fly_plan</span><span class="p">():</span>
+<span class="gp">   ....: </span>    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">bdet</span><span class="p">,</span> <span class="n">TriggerInfo</span><span class="p">(</span><span class="n">number_of_events</span><span class="o">=</span><span class="mi">7</span><span class="p">),</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">declare_stream</span><span class="p">(</span><span class="n">bdet</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;primary&quot;</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">kickoff</span><span class="p">(</span><span class="n">bdet</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">   ....: </span>    <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">collect_while_completing</span><span class="p">(</span><span class="n">flyers</span><span class="o">=</span><span class="p">[</span><span class="n">bdet</span><span class="p">],</span> <span class="n">dets</span><span class="o">=</span><span class="p">[</span><span class="n">bdet</span><span class="p">],</span> <span class="n">flush_period</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">   ....: </span>
+</pre></div>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [13]: </span><span class="n">RE</span><span class="p">(</span><span class="n">fly_plan</span><span class="p">(),</span> <span class="nb">print</span><span class="p">)</span>
+
+
+<span class="go">Transient Scan ID: 7     Time: 2025-07-16 11:47:54</span>
+<span class="go">Persistent Unique Scan ID: &#39;fc919546-502f-461d-b578-f5e710156afb&#39;</span>
+<span class="go">start {&#39;uid&#39;: &#39;fc919546-502f-461d-b578-f5e710156afb&#39;, &#39;time&#39;: 1752666474.8933258, &#39;versions&#39;: {&#39;ophyd&#39;: &#39;1.10.7&#39;, &#39;ophyd_async&#39;: &#39;0.12&#39;, &#39;bluesky&#39;: &#39;1.14.2&#39;}, &#39;scan_id&#39;: 7, &#39;plan_type&#39;: &#39;generator&#39;, &#39;plan_name&#39;: &#39;fly_plan&#39;}</span>
+<span class="go">New stream: &#39;primary&#39;</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">|   seq_num |       time |</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">descriptor {&#39;configuration&#39;: {&#39;bdet&#39;: {&#39;data&#39;: {}, &#39;timestamps&#39;: {}, &#39;data_keys&#39;: {}}}, &#39;data_keys&#39;: {&#39;bdet&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [1, 240, 320], &#39;dtype&#39;: &#39;array&#39;, &#39;dtype_numpy&#39;: &#39;|u1&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}, &#39;bdet-sum&#39;: {&#39;source&#39;: &#39;sim://pattern-generator-hdf-file&#39;, &#39;shape&#39;: [], &#39;dtype&#39;: &#39;number&#39;, &#39;dtype_numpy&#39;: &#39;&lt;i8&#39;, &#39;external&#39;: &#39;STREAM:&#39;, &#39;object_name&#39;: &#39;bdet&#39;}}, &#39;name&#39;: &#39;primary&#39;, &#39;object_keys&#39;: {&#39;bdet&#39;: [&#39;bdet&#39;, &#39;bdet-sum&#39;]}, &#39;run_start&#39;: &#39;fc919546-502f-461d-b578-f5e710156afb&#39;, &#39;time&#39;: 1752666474.8964744, &#39;uid&#39;: &#39;56bd9a2e-5724-412f-8e1f-c47caa41264c&#39;, &#39;hints&#39;: {&#39;bdet&#39;: {&#39;fields&#39;: [&#39;bdet&#39;]}}}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;b0ea2cd4-a835-48f3-9de3-e2f944841a4e&#39;, &#39;data_key&#39;: &#39;bdet&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/ab072053-505a-410f-8808-08e1825f65e1.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/data/data&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;fc919546-502f-461d-b578-f5e710156afb&#39;}</span>
+<span class="go">stream_resource {&#39;uid&#39;: &#39;77aae98b-6124-4f35-a318-ac899e797967&#39;, &#39;data_key&#39;: &#39;bdet-sum&#39;, &#39;mimetype&#39;: &#39;application/x-hdf5&#39;, &#39;uri&#39;: &#39;file://localhost/tmp/tmp41_60_fc/ab072053-505a-410f-8808-08e1825f65e1.h5&#39;, &#39;parameters&#39;: {&#39;dataset&#39;: &#39;/entry/sum&#39;, &#39;chunk_shape&#39;: (1024,)}, &#39;run_start&#39;: &#39;fc919546-502f-461d-b578-f5e710156afb&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;b0ea2cd4-a835-48f3-9de3-e2f944841a4e&#39;, &#39;uid&#39;: &#39;b0ea2cd4-a835-48f3-9de3-e2f944841a4e/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 5}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 4}, &#39;descriptor&#39;: &#39;56bd9a2e-5724-412f-8e1f-c47caa41264c&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;77aae98b-6124-4f35-a318-ac899e797967&#39;, &#39;uid&#39;: &#39;77aae98b-6124-4f35-a318-ac899e797967/0&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 1, &#39;stop&#39;: 5}, &#39;indices&#39;: {&#39;start&#39;: 0, &#39;stop&#39;: 4}, &#39;descriptor&#39;: &#39;56bd9a2e-5724-412f-8e1f-c47caa41264c&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;b0ea2cd4-a835-48f3-9de3-e2f944841a4e&#39;, &#39;uid&#39;: &#39;b0ea2cd4-a835-48f3-9de3-e2f944841a4e/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 5, &#39;stop&#39;: 8}, &#39;indices&#39;: {&#39;start&#39;: 4, &#39;stop&#39;: 7}, &#39;descriptor&#39;: &#39;56bd9a2e-5724-412f-8e1f-c47caa41264c&#39;}</span>
+<span class="go">stream_datum {&#39;stream_resource&#39;: &#39;77aae98b-6124-4f35-a318-ac899e797967&#39;, &#39;uid&#39;: &#39;77aae98b-6124-4f35-a318-ac899e797967/1&#39;, &#39;seq_nums&#39;: {&#39;start&#39;: 5, &#39;stop&#39;: 8}, &#39;indices&#39;: {&#39;start&#39;: 4, &#39;stop&#39;: 7}, &#39;descriptor&#39;: &#39;56bd9a2e-5724-412f-8e1f-c47caa41264c&#39;}</span>
+<span class="go">+-----------+------------+</span>
+<span class="go">generator fly_plan [&#39;fc919546&#39;] (scan num: 7)</span>
+
+
+
+<span class="go">stop {&#39;uid&#39;: &#39;1dfc02b8-8e0a-473f-ad61-8dabdfef3e64&#39;, &#39;time&#39;: 1752666475.608184, &#39;run_start&#39;: &#39;fc919546-502f-461d-b578-f5e710156afb&#39;, &#39;exit_status&#39;: &#39;success&#39;, &#39;reason&#39;: &#39;&#39;, &#39;num_events&#39;: {&#39;primary&#39;: 7}}</span>
+<span class="gh">Out[13]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;fc919546-502f-461d-b578-f5e710156afb&#39;,), plan_result=&#39;fc919546-502f-461d-b578-f5e710156afb&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+</pre></div>
+</div>
+<p>As before, we see the start, descriptor, and pair of stream resources, but this time we don’t see any event documents. Also, even though we asked for 7 frames from each of the 2 streams, we only got 2 stream datums for each stream.</p>
+<p>What is happening is that instead of triggering, waiting, and publishing a single frame, we are setting up the detector to take 7 frames without stopping, then at the <code class="docutils literal notranslate"><span class="pre">flush_period</span></code> of 0.5s emitting a stream datum with the frames that have been captured. If we inspect the stream datum documents for each stream we see that:</p>
+<ul class="simple">
+<li><p>The first has <code class="docutils literal notranslate"><span class="pre">'indices':</span> <span class="pre">{'start':</span> <span class="pre">0,</span> <span class="pre">'stop':</span> <span class="pre">4}</span></code></p></li>
+<li><p>The second has <code class="docutils literal notranslate"><span class="pre">'indices':</span> <span class="pre">{'start':</span> <span class="pre">4,</span> <span class="pre">'stop':</span> <span class="pre">7}</span></code></p></li>
+</ul>
+<p>This behavior allows us to scale up the framerate of the detector without scaling up the number of documents emitted: whether the detector goes at 10Hz or 10MHz it still only emits one stream datum per stream per flush period, just with different numbers in the <code class="docutils literal notranslate"><span class="pre">indices</span></code> field.</p>
+</section>
+<section id="look-at-the-device-implementations">
+<h2>Look at the Device implementations<a class="headerlink" href="#look-at-the-device-implementations" title="Link to this heading">#</a></h2>
+<p>Now we’ll have a look at the code to see how we implement one of these detectors:</p>
+<section id="simblobdetector">
+<h3><code class="docutils literal notranslate"><span class="pre">SimBlobDetector</span></code><a class="headerlink" href="#simblobdetector" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">PathProvider</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">StandardDetector</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._blob_detector_controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobDetectorController</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._blob_detector_writer</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobDetectorWriter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._pattern_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">PatternGenerator</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SimBlobDetector</span><span class="p">(</span><span class="n">StandardDetector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simulates a detector and writes Blobs to file.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
+        <span class="n">pattern_generator</span><span class="p">:</span> <span class="n">PatternGenerator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span> <span class="o">=</span> <span class="n">pattern_generator</span> <span class="ow">or</span> <span class="n">PatternGenerator</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">controller</span><span class="o">=</span><span class="n">BlobDetectorController</span><span class="p">(</span>
+                <span class="n">pattern_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">writer</span><span class="o">=</span><span class="n">BlobDetectorWriter</span><span class="p">(</span>
+                <span class="n">pattern_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="p">,</span>
+                <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+<p>It derives from <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> which is a utility baseclass that implements the protocols we have mentioned so far in this tutorial. It uses a pair of logic classes to provide behavior for each protocol verb:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core.DetectorController"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorController</span></code></a> to setup the exposure and trigger mode of the detector, arm it, and wait for it to complete</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a> to tell the detector to open a file, describe the datasets it will write, and wait for it to have written a given number of frames</p></li>
+</ul>
+<p>In this case, we have a Controller and Writer class written just for this simulation, both taking a reference to the pattern generator that provides methods for both detector control and file writing. In other cases the detector control and filewriting may be handled by different sub-devices that talk to different parts of the control system. The job of the top level detector class is to take the arguments that the controller and writer need and distribute them, passing the instances to the superclass init.</p>
+<p>Now let’s look at the underlying classes that define the detector behavior:</p>
+</section>
+<section id="blobdetectorcontrol">
+<h3><code class="docutils literal notranslate"><span class="pre">BlobDetectorControl</span></code><a class="headerlink" href="#blobdetectorcontrol" title="Link to this heading">#</a></h3>
+<p>First we have <code class="docutils literal notranslate"><span class="pre">BlobDetectorController</span></code>, a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core.DetectorController"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorController</span></code></a> subclass:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">suppress</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorController</span><span class="p">,</span> <span class="n">DetectorTrigger</span><span class="p">,</span> <span class="n">TriggerInfo</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._pattern_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">PatternGenerator</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BlobDetectorController</span><span class="p">(</span><span class="n">DetectorController</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pattern_generator</span><span class="p">:</span> <span class="n">PatternGenerator</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span> <span class="o">=</span> <span class="n">pattern_generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">0.001</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
+        <span class="c1"># This is a simulation, so only support intenal triggering</span>
+        <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="si">}</span><span class="s2"> not supported by </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Just hold onto the trigger info until we need it</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trigger_info</span> <span class="o">=</span> <span class="n">trigger_info</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigger_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;prepare() not called on </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">livetime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="ow">or</span> <span class="mf">0.1</span>
+        <span class="c1"># Start a background process off writing the images to file</span>
+        <span class="n">coro</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="o">.</span><span class="n">write_images_to_file</span><span class="p">(</span>
+            <span class="n">exposure</span><span class="o">=</span><span class="n">livetime</span><span class="p">,</span>
+            <span class="n">period</span><span class="o">=</span><span class="n">livetime</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">deadtime</span><span class="p">,</span>
+            <span class="n">number_of_frames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">total_number_of_exposures</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">coro</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Wait for the background task to complete</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Stop the background task and wait for it to finish</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">):</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+</div>
+<p>It’s job is to control the acquisition process on the detector, starting and stopping the collection of data:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare()</span></code> takes a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerInfo</span></code></a> which details everything the detector needs to know about the upcoming acquisition. In this case we just store it for later use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">arm()</span></code> starts the acquisition process that has been prepared. In this case we create a background task that will write our simulation images to file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_for_idle()</span></code> waits for that acquisition process to be complete.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">disarm()</span></code> interrupts the acquisition process, and then waits for it to complete.</p></li>
+</ul>
+</section>
+<section id="blobdetectorwriter">
+<h3><code class="docutils literal notranslate"><span class="pre">BlobDetectorWriter</span></code><a class="headerlink" href="#blobdetectorwriter" title="Link to this heading">#</a></h3>
+<p>Then we have <code class="docutils literal notranslate"><span class="pre">BlobDetectorWriter</span></code>, a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a> subclass:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">AsyncIterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Hints</span><span class="p">,</span> <span class="n">StreamAsset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataKey</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DetectorWriter</span><span class="p">,</span>
+    <span class="n">HDFDatasetDescription</span><span class="p">,</span>
+    <span class="n">HDFDocumentComposer</span><span class="p">,</span>
+    <span class="n">PathProvider</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._pattern_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">DATA_PATH</span><span class="p">,</span> <span class="n">SUM_PATH</span><span class="p">,</span> <span class="n">PatternGenerator</span>
+
+<span class="n">WIDTH</span> <span class="o">=</span> <span class="mi">320</span>
+<span class="n">HEIGHT</span> <span class="o">=</span> <span class="mi">240</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BlobDetectorWriter</span><span class="p">(</span><span class="n">DetectorWriter</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pattern_generator</span><span class="p">:</span> <span class="n">PatternGenerator</span><span class="p">,</span>
+        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span> <span class="o">=</span> <span class="n">pattern_generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span> <span class="o">=</span> <span class="n">path_provider</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="p">:</span> <span class="n">HDFDocumentComposer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">HDFDatasetDescription</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exposures_per_event</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path_info</span><span class="o">.</span><span class="n">directory_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_info</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">.h5&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">WIDTH</span><span class="p">,</span> <span class="n">HEIGHT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exposures_per_event</span> <span class="o">=</span> <span class="n">exposures_per_event</span>
+        <span class="c1"># We know it will write data and sum, so emit those</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">HDFDatasetDescription</span><span class="p">(</span>
+                <span class="n">data_key</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">DATA_PATH</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">exposures_per_event</span><span class="p">,</span> <span class="n">HEIGHT</span><span class="p">,</span> <span class="n">WIDTH</span><span class="p">),</span>
+                <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                <span class="n">chunk_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,),</span>
+            <span class="p">),</span>
+            <span class="n">HDFDatasetDescription</span><span class="p">(</span>
+                <span class="n">data_key</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-sum&quot;</span><span class="p">,</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">SUM_PATH</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">exposures_per_event</span><span class="p">,)</span> <span class="k">if</span> <span class="n">exposures_per_event</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">(),</span>
+                <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
+                <span class="n">chunk_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,),</span>
+            <span class="p">),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">composer</span> <span class="o">=</span> <span class="n">HDFDocumentComposer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">)</span>
+        <span class="n">describe</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">ds</span><span class="o">.</span><span class="n">data_key</span><span class="p">:</span> <span class="n">DataKey</span><span class="p">(</span>
+                <span class="n">source</span><span class="o">=</span><span class="s2">&quot;sim://pattern-generator-hdf-file&quot;</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;array&quot;</span>
+                <span class="k">if</span> <span class="n">exposures_per_event</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                <span class="k">else</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
+                <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">ds</span><span class="o">.</span><span class="n">dtype_numpy</span><span class="p">,</span>
+                <span class="n">external</span><span class="o">=</span><span class="s2">&quot;STREAM:&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">describe</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The hints to be used for the detector.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">name</span><span class="p">]}</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="o">.</span><span class="n">get_last_index</span><span class="p">()</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposures_per_event</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">observe_indices_written</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="o">.</span><span class="n">get_last_index</span><span class="p">()</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposures_per_event</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="o">.</span><span class="n">wait_for_next_index</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">collect_stream_docs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
+        <span class="c1"># When we have written something to the file</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">composer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;open() not called on </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">composer</span><span class="o">.</span><span class="n">make_stream_docs</span><span class="p">(</span><span class="n">indices_written</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">doc</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="o">.</span><span class="n">close_file</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Its job is to control the file writing process on the detector, which may or may not be coupled to the acquisition process:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">open()</span></code> tells the detector to open a file, and returns information about the datasets that it will write</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hints</span></code> gives a list of the datasets that are interesting to plot</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_indices_written()</span></code> returns the last index written</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">observe_indices_written()</span></code> repeatedly yields the last index written then waits for the next one to be written</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">collect_stream_docs()</span></code> uses the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.HDFDocumentComposer" title="ophyd_async.core.HDFDocumentComposer"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">HDFDocumentComposer</span></code></a> to publish a document per dataset that says which frames have been written since the last call</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">close()</span></code> tells the detector to close the file</p></li>
+</ul>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Link to this heading">#</a></h2>
+<p>We have seen how to make a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> and how the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core.DetectorController"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorController</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a> allow us to customise its behavior.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../how-to/implement-ad-detector.html"><span class="std std-doc">How to implement a Device for an EPICS areaDetector</span></a> for writing an implementation of <code class="docutils literal notranslate"><span class="pre">StandardDetector</span></code> for an EPICS areaDetector</p>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="writing-tests-for-devices.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Writing Tests for Devices</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../how-to.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">How-to Guides</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-the-demo">Run the demo</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-a-grid-scan-and-investigate-the-documents">Run a grid scan and investigate the documents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#simplify-the-plan-to-just-use-the-detector">Simplify the plan to just use the detector</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-a-fly-scan-and-investigate-the-documents">Run a fly scan and investigate the documents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#look-at-the-device-implementations">Look at the Device implementations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#simblobdetector"><code class="docutils literal notranslate"><span class="pre">SimBlobDetector</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#blobdetectorcontrol"><code class="docutils literal notranslate"><span class="pre">BlobDetectorControl</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#blobdetectorwriter"><code class="docutils literal notranslate"><span class="pre">BlobDetectorWriter</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conclusion">Conclusion</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/0.12/docs/tutorials/implementing-detectors.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorials/implementing-detectors.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
