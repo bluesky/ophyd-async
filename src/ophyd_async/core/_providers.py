@@ -27,11 +27,9 @@ class PathInfo:
     directory_uri: str | None = None
 
     def __post_init__(self):
-
         if not self.directory_path.is_absolute():
             raise ValueError(
-                "directory_path must be an absolute path, "
-                f"got {self.directory_path}"
+                f"directory_path must be an absolute path, got {self.directory_path}"
             )
 
         # If directory uri is not set, set it using the directory path.
