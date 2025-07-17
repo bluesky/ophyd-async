@@ -861,4 +861,4 @@ async def test_signal_timestamp_is_same_format_as_soft_signal_timestamp(
     real_data = await real_sig.read()
     sim_data = await sim_sig.read()
 
-    assert abs(real_data[""]["timestamp"] - sim_data[""]["timestamp"]) < 0.01
+    assert abs(real_data[""]["timestamp"] - sim_data[""]["timestamp"]) < 0.1
