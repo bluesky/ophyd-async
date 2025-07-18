@@ -513,7 +513,7 @@ async def test_assert_reading_optional_fields(
             "everything-device-a_int": {
                 "value": 1,
                 "alarm_severity": 0,
-                "timestamp": time.monotonic(),
+                "timestamp": pytest.approx(time.time(), rel=1e-2),
             }
         },
     )
@@ -702,14 +702,19 @@ async def test_assert_reading_default_metadata(
     )
     await assert_reading(
         one_of_everything_device.a_int,
-        {"everything-device-a_int": {"value": 1, "timestamp": time.monotonic()}},
+        {
+            "everything-device-a_int": {
+                "value": 1,
+                "timestamp": pytest.approx(time.time(), rel=1e-2),
+            }
+        },
     )
     await assert_reading(
         one_of_everything_device.a_int,
         {
             "everything-device-a_int": {
                 "value": 1,
-                "timestamp": time.monotonic(),
+                "timestamp": pytest.approx(time.time(), rel=1e-2),
                 "alarm_severity": 0,
             }
         },
@@ -720,7 +725,7 @@ async def test_assert_reading_default_metadata(
             {
                 "everything-device-a_int": {
                     "value": 1,
-                    "timestamp": 2 * time.monotonic(),
+                    "timestamp": 2 * time.time(),
                 }
             },
         )
