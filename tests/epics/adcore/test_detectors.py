@@ -1,6 +1,6 @@
 import itertools
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 import pytest
@@ -134,16 +134,20 @@ async def test_can_collect(
 
 async def test_can_specify_different_uri_and_path(
     ad_standard_det_factory,
-    tmp_path: Path,
     detector_cls: type[adcore.AreaDetector],
     writer_cls: type[adcore.ADWriter],
     one_shot_trigger_info: TriggerInfo,
+    tmp_path: Path,
+    static_path_provider_factory,
+    static_filename_provider
 ):
     # Create a static path provider that will return a specific directory
-    uri_override = f"file://localhost/{tmp_path.absolute().as_posix()}/different/"
-
+    expected_uri = f"file://localhost/{tmp_path.absolute().as_posix()}/different/"
+    path_provider = static_path_provider_factory(
+        static_filename_provider, directory_uri=expected_uri
+    )
     test_det = ad_standard_det_factory(
-        detector_cls, writer_cls=writer_cls, directory_uri=uri_override
+        detector_cls, writer_cls=writer_cls, path_provider=path_provider
     )
 
     path_info = test_det._writer._path_provider(device_name=test_det.name)
@@ -162,7 +166,52 @@ async def test_can_specify_different_uri_and_path(
 
     # With HDF writer, the URI points directly to the file. For other writers, since a
     # dataset is many files, point to the directory instead.
-    expected_uri = uri_override
+    if writer_cls == adcore.ADHDFWriter:
+        expected_uri += path_info.filename + ".h5"
+
+    assert stream_resource["uri"] == expected_uri
+
+
+@pytest.mark.parametrize("write_path_format", [PurePosixPath, PureWindowsPath])
+async def test_can_override_uri_with_different_path_semantics(
+    write_path_format,
+    ad_standard_det_factory,
+    detector_cls: type[adcore.AreaDetector],
+    writer_cls: type[adcore.ADWriter],
+    one_shot_trigger_info: TriggerInfo,
+    static_filename_provider
+):
+    windows_path = PureWindowsPath("C:\\Users\\test\\AppData\\Local\\Temp\\ophyd_async_tests")
+    posix_path = PurePosixPath("/tmp/ophyd_async_tests")
+
+    if write_path_format is PureWindowsPath:
+        write_path = windows_path
+        expected_uri = f"file://localhost/{posix_path.as_posix().lstrip('/')}/"
+    else:
+        write_path = posix_path
+        expected_uri = f"file://localhost/{windows_path.as_posix().lstrip('/')}/"
+
+    path_provider = StaticPathProvider(static_filename_provider, write_path,
+                                       directory_uri=expected_uri)
+
+    test_det = ad_standard_det_factory(
+        detector_cls, writer_cls=writer_cls, path_provider=path_provider, assume_file_path_exists=True
+    )
+
+    path_info = test_det._writer._path_provider(device_name=test_det.name)
+    await test_det.stage()
+    await test_det.prepare(one_shot_trigger_info)
+    docs = [(name, doc) async for name, doc in test_det.collect_asset_docs(1)]
+    if write_path_format is PureWindowsPath:
+        assert await test_det.fileio.file_path.get_value() == f"{windows_path}\\"
+    else:
+        assert await test_det.fileio.file_path.get_value() == f"{posix_path}/"
+    assert len(docs) == 2
+    assert docs[0][0] == "stream_resource"
+    stream_resource = docs[0][1]
+
+    # With HDF writer, the URI points directly to the file. For other writers, since a
+    # dataset is many files, point to the directory instead.
     if writer_cls == adcore.ADHDFWriter:
         expected_uri += path_info.filename + ".h5"
 
