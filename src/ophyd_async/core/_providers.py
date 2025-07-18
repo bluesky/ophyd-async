@@ -44,6 +44,9 @@ class PathInfo:
                     None,
                 )
             )
+        elif not self.directory_uri.endswith("/"):
+            # Ensure the directory URI ends with a slash.
+            self.directory_uri += "/"
 
 
 class FilenameProvider(Protocol):
@@ -174,6 +177,11 @@ class AutoIncrementingPathProvider(PathProvider):
         self._filename_provider = filename_provider
         self._base_directory_path = base_directory_path
         self._base_directory_uri = base_directory_uri
+        if (
+            self._base_directory_uri is not None
+            and not self._base_directory_uri.endswith("/")
+        ):
+            self._base_directory_uri += "/"
         self._create_dir_depth = create_dir_depth
         self._base_name = base_name
         self._starting_value = starting_value
@@ -204,7 +212,7 @@ class AutoIncrementingPathProvider(PathProvider):
 
         directory_uri = None
         if self._base_directory_uri is not None:
-            directory_uri = f"{self._base_directory_uri}/{auto_inc_dir_name}"
+            directory_uri = f"{self._base_directory_uri}{auto_inc_dir_name}"
 
         return PathInfo(
             directory_path=self._base_directory_path / auto_inc_dir_name,
@@ -228,6 +236,11 @@ class YMDPathProvider(PathProvider):
         self._filename_provider = filename_provider
         self._base_directory_path = base_directory_path
         self._base_directory_uri = base_directory_uri
+        if (
+            self._base_directory_uri is not None
+            and not self._base_directory_uri.endswith("/")
+        ):
+            self._base_directory_uri += "/"
         self._create_dir_depth = create_dir_depth
         self._device_name_as_base_dir = device_name_as_base_dir
 
@@ -251,7 +264,7 @@ class YMDPathProvider(PathProvider):
 
         directory_uri = None
         if self._base_directory_uri is not None:
-            directory_uri = f"{self._base_directory_uri}/{ymd_dir_path}"
+            directory_uri = f"{self._base_directory_uri}{ymd_dir_path}"
 
         return PathInfo(
             directory_path=self._base_directory_path / ymd_dir_path,
