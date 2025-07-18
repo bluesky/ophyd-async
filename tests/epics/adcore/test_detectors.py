@@ -139,7 +139,7 @@ async def test_can_specify_different_uri_and_path(
     one_shot_trigger_info: TriggerInfo,
     tmp_path: Path,
     static_path_provider_factory,
-    static_filename_provider
+    static_filename_provider,
 ):
     # Create a static path provider that will return a specific directory
     expected_uri = f"file://localhost/{tmp_path.absolute().as_posix()}/different/"
@@ -179,9 +179,11 @@ async def test_can_override_uri_with_different_path_semantics(
     detector_cls: type[adcore.AreaDetector],
     writer_cls: type[adcore.ADWriter],
     one_shot_trigger_info: TriggerInfo,
-    static_filename_provider
+    static_filename_provider,
 ):
-    windows_path = PureWindowsPath("C:\\Users\\test\\AppData\\Local\\Temp\\ophyd_async_tests")
+    windows_path = PureWindowsPath(
+        "C:\\Users\\test\\AppData\\Local\\Temp\\ophyd_async_tests"
+    )
     posix_path = PurePosixPath("/tmp/ophyd_async_tests")
 
     if write_path_format is PureWindowsPath:
@@ -191,11 +193,15 @@ async def test_can_override_uri_with_different_path_semantics(
         write_path = posix_path
         expected_uri = f"file://localhost/{windows_path.as_posix().lstrip('/')}/"
 
-    path_provider = StaticPathProvider(static_filename_provider, write_path,
-                                       directory_uri=expected_uri)
+    path_provider = StaticPathProvider(
+        static_filename_provider, write_path, directory_uri=expected_uri
+    )
 
     test_det = ad_standard_det_factory(
-        detector_cls, writer_cls=writer_cls, path_provider=path_provider, assume_file_path_exists=True
+        detector_cls,
+        writer_cls=writer_cls,
+        path_provider=path_provider,
+        assume_file_path_exists=True,
     )
 
     path_info = test_det._writer._path_provider(device_name=test_det.name)

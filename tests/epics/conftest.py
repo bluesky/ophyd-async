@@ -35,9 +35,7 @@ def ad_standard_det_factory(
 
         # Create the static path provider here to allow for overriding the directory URI
         if path_provider is None:
-            path_provider = static_path_provider_factory(
-                static_filename_provider
-            )
+            path_provider = static_path_provider_factory(static_filename_provider)
 
         with init_devices(mock=True):
             prefix = f"{detector_name.upper()}{number}:"
