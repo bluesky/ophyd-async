@@ -121,6 +121,13 @@ class _SignalCache(Generic[SignalDatatypeT]):
         self._valid = asyncio.Event()
         self._reading: Reading[SignalDatatypeT] | None = None
         self.backend: SignalBackend[SignalDatatypeT] = backend
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError as e:
+            raise RuntimeError(
+                "Need a running event loop to subscribe to a signal, "
+                "are you trying to run subscribe outside a plan?"
+            ) from e
         signal.log.debug(f"Making subscription on source {signal.source}")
         backend.set_callback(self._callback)
 

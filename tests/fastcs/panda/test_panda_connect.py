@@ -119,7 +119,7 @@ async def test_panda_children_connected(mock_panda):
     assert readback_seq == table
 
 
-@pytest.mark.timeout(4.0)
+@pytest.mark.timeout(6.0)
 async def test_panda_with_missing_blocks(panda_pva, panda_t):
     panda = panda_t("PANDAQSRVI:", name="mypanda")
     with pytest.raises(

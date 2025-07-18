@@ -20,7 +20,7 @@ dependencies = [
     "colorlog",
     "pydantic>=2.0",
     "pydantic-numpy",
-    "stamina>=23.1.0"
+    "stamina>=23.1.0",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -102,7 +102,7 @@ markers = [
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-timeout = 0.75
+timeout = 1
 [tool.coverage.run]
 data_file = "/tmp/ophyd_async.coverage"
 

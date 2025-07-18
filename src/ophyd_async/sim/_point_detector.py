@@ -41,9 +41,12 @@ class SimPointDetector(StandardReadable):
     """Simalutes a point detector with multiple channels."""
 
     def __init__(
-        self, generator: PatternGenerator, num_channels: int = 3, name: str = ""
+        self,
+        pattern_generator: PatternGenerator | None,
+        num_channels: int = 3,
+        name: str = "",
     ) -> None:
-        self._generator = generator
+        self.pattern_generator = pattern_generator or PatternGenerator()
         self.acquire_time = soft_signal_rw(float, 0.1)
         self.acquiring, self._set_acquiring = soft_signal_r_and_setter(bool)
         self._value_signals = dict(
@@ -75,7 +78,7 @@ class SimPointDetector(StandardReadable):
             # Update the channel value
             for i, channel in self.channel.items():
                 high_energy = modes[channel] == EnergyMode.HIGH
-                point = self._generator.generate_point(i, high_energy)
+                point = self.pattern_generator.generate_point(i, high_energy)
                 setter = self._value_signals[channel.value]
                 setter(int(point * 10000 * update_time))
 

@@ -53,7 +53,7 @@ from ophyd_async.plan_stubs import (
     retrieve_settings,
     store_settings,
 )
-from ophyd_async.testing import MonitorQueue, assert_describe_signal
+from ophyd_async.testing import MonitorQueue, assert_describe_signal, set_mock_value
 
 T = TypeVar("T")
 Protocol = Literal["ca", "pva"]
@@ -862,3 +862,35 @@ async def test_signal_timestamp_is_same_format_as_soft_signal_timestamp(
     sim_data = await sim_sig.read()
 
     assert abs(real_data[""]["timestamp"] - sim_data[""]["timestamp"]) < 0.1
+
+
+@pytest.mark.parametrize("protocol", get_args(Protocol))
+@pytest.mark.parametrize("mock", [True, False])
+def test_subscribe_works_under_re_and_fails_outside(
+    RE, ioc_devices: EpicsTestIocAndDevices, protocol: Protocol, mock: bool
+):
+    s1 = epics_signal_r(float, ioc_devices.get_pv(protocol, "float"), "s1")
+    s2 = epics_signal_r(float, ioc_devices.get_pv(protocol, "float"), "s2")
+
+    # Run in the RE event loop
+    def plan():
+        yield from ensure_connected(s1, s2, mock=mock)
+        if mock:
+            set_mock_value(s1, 3.141)
+        q = asyncio.Queue()
+        s1.subscribe_value(q.put_nowait)
+        try:
+            (fut,) = yield from bps.wait_for([q.get])
+            assert fut.result() == 3.141
+        finally:
+            s1.clear_sub(q.put_nowait)
+
+    RE(plan())
+
+    # Run plan outside RE and outside event loop
+    with pytest.raises(
+        RuntimeError,
+        match="Need a running event loop to subscribe to a signal, "
+        "are you trying to run subscribe outside a plan?",
+    ):
+        s2.subscribe_value(print)
