@@ -66,12 +66,12 @@ async def test_observe_value_times_out():
             recv.append(val)
 
     t = asyncio.create_task(tick())
-    start = time.time()
+    start = time.monotonic()
     try:
         with pytest.raises(asyncio.TimeoutError):
             await watch()
         assert recv == [0, 1]
-        assert time.time() - start == pytest.approx(0.2, abs=0.05)
+        assert time.monotonic() - start == pytest.approx(0.2, abs=0.05)
     finally:
         t.cancel()
 
@@ -98,12 +98,12 @@ async def test_observe_value_times_out_with_busy_sleep():
     # This is needed to fix for python 3.12, otherwise the task
     # gets starved by the busy sleep
     await asyncio.sleep(0.05)
-    start = time.time()
+    start = time.monotonic()
     try:
         with pytest.raises(asyncio.TimeoutError):
             await watch()
         assert recv == [0, 1]
-        assert time.time() - start == pytest.approx(0.3, abs=0.05)
+        assert time.monotonic() - start == pytest.approx(0.3, abs=0.05)
     finally:
         t.cancel()
 
@@ -118,11 +118,11 @@ async def test_observe_value_times_out_with_no_external_task():
             recv.append(val)
             setter(val + 1)
 
-    start = time.time()
+    start = time.monotonic()
     with pytest.raises(asyncio.TimeoutError):
         await watch(done_timeout=0.1)
     assert recv
-    assert time.time() - start == pytest.approx(0.1, abs=0.05)
+    assert time.monotonic() - start == pytest.approx(0.1, abs=0.05)
 
 
 async def test_observe_value_uses_correct_timeout():
@@ -132,10 +132,10 @@ async def test_observe_value_uses_correct_timeout():
         async for _ in observe_value(sig, timeout, done_timeout=done_timeout):
             ...
 
-    start = time.time()
+    start = time.monotonic()
     with pytest.raises(asyncio.TimeoutError):
         await watch(timeout=0.3, done_timeout=0.15)
-    assert time.time() - start == pytest.approx(0.15, abs=0.05)
+    assert time.monotonic() - start == pytest.approx(0.15, abs=0.05)
 
 
 @pytest.mark.timeout(3)

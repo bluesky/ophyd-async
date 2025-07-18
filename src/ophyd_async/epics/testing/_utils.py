@@ -40,7 +40,7 @@ class TestingIOC:
         assert self._process.stdout  # noqa: S101 # this is to make Pylance happy
         start_time = time.monotonic()
         while "iocRun: All initialization complete" not in self.output:
-            if time.monotonic() - start_time > 10:
+            if time.monotonic() - start_time > 15:
                 self.stop()
                 raise TimeoutError(f"IOC did not start in time:\n{self.output}")
             self.output += self._process.stdout.readline()
