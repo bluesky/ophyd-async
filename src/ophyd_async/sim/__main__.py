@@ -1,6 +1,7 @@
 """Used for tutorial `Using Devices`."""
 
 # Import bluesky and ophyd
+from pathlib import PurePath
 from tempfile import mkdtemp
 
 import bluesky.plan_stubs as bps  # noqa: F401
@@ -27,7 +28,7 @@ pattern_generator = sim.PatternGenerator()
 
 # Make a path provider that makes UUID filenames within a static
 # temporary directory
-path_provider = StaticPathProvider(UUIDFilenameProvider(), mkdtemp())
+path_provider = StaticPathProvider(UUIDFilenameProvider(), PurePath(mkdtemp()))
 
 # All Devices created within this block will be
 # connected and named at the end of the with block

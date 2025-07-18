@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import time
-from pathlib import Path
+from pathlib import PurePath
 
 import h5py
 import numpy as np
@@ -35,7 +35,7 @@ def generate_interesting_pattern(
 class PatternFile:
     def __init__(
         self,
-        path: Path,
+        path: PurePath,
         width: int = 320,
         height: int = 240,
     ):
@@ -94,7 +94,7 @@ class PatternGenerator:
         offset = 100 if high_energy else 10
         return generate_interesting_pattern(self._x, self._y, channel, offset)
 
-    def open_file(self, path: Path, width: int, height: int):
+    def open_file(self, path: PurePath, width: int, height: int):
         self._file = PatternFile(path, width, height)
 
     def _get_file(self) -> PatternFile:
