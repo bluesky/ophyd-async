@@ -1,0 +1,17 @@
+#!/bin/zsh
+
+# This zshrc will be source from /root/.zshrc upon launch of every terminal
+# in a devcontainer that uses the bash-config feature from
+# https://github.com/DiamondLightSource/devcontainer-features
+
+# This file is initialized by bash-config, but you are then free to edit it
+
+# execute default, opinionated settings - delete this line to remove defaults
+source ~/terminal-config/zshrc-default
+
+if [ ! -f ~/one-time ]; then
+    # add your personal one time only (container creation) commands here
+    touch ~/one-time
+fi
+
+# add your personal settings for every shell below
