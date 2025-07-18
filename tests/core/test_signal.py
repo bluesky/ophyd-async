@@ -937,7 +937,7 @@ async def test_soft_signal_ndarray_can_change_dtype():
 
 
 @pytest.fixture
-def signal_cache() -> _SignalCache[Any]:
+async def signal_cache() -> _SignalCache[Any]:
     backend = MagicMock()
     signal = MagicMock()
     signal.source = "test_source"
@@ -986,7 +986,7 @@ def test_signal_backend_throws_type_error() -> None:
         get_signal_backend_type("XYZ")  # type: ignore
 
 
-def test_remove_non_existing_listener():
+async def test_remove_non_existing_listener():
     signal_rw = soft_signal_rw(int, initial_value=4)
     cbs = []
     assert signal_rw.clear_sub(cbs.append) is None
