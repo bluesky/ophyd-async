@@ -485,6 +485,7 @@ class AttributeProxy(TangoProxy):
 
 class CommandProxyReadCharacter(StrictEnum):
     """Enum to carry the read/write character of the CommandProxy."""
+
     READ = "READ"
     WRITE = "WRITE"
     READ_WRITE = "READ_WRITE"
