@@ -22,7 +22,6 @@ from ophyd_async.tango.core import (
     TangoDoubleStringTable,
     TangoLongStringTable,
     TangoSignalBackend,
-    TestConfig,
     ensure_proper_executor,
     get_dtype_extended,
     get_full_attr_trl,
@@ -30,7 +29,7 @@ from ophyd_async.tango.core import (
     get_tango_trl,
     try_to_cast_as_float,
 )
-from ophyd_async.tango.testing import OneOfEverythingTangoDevice
+from ophyd_async.tango.testing import OneOfEverythingTangoDevice, TestConfig
 
 
 # --------------------------------------------------------------------
@@ -728,8 +727,8 @@ async def test_tango_transport_get_datakey_enum(tango_test_device):
     trl = get_full_attr_trl(tango_test_device, "test_enum")
 
     class TestEnumType(StrictEnum):
-        A = 0
-        B = 1
+        A = "A"
+        B = "B"
 
     transport = TangoSignalBackend(TestEnumType, trl, trl, device_proxy)
     await transport.connect(1)

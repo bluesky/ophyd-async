@@ -51,6 +51,7 @@ from ophyd_async.core import (
     make_datakey,
     wait_for_connection,
 )
+from ophyd_async.tango.testing._test_config import TestConfig
 
 from ._converters import (
     TangoConverter,
@@ -93,12 +94,6 @@ class TangoLongStringTable(Table):
 class TangoDoubleStringTable(Table):
     double: Array1D[np.float64]
     string: Sequence[str]
-
-
-class TestConfig:
-    data_type: CmdArgType
-    data_format: AttrDataFormat
-    enum_labels: list[str]
 
 
 def get_python_type(config: AttributeInfoEx | CommandInfo | TestConfig) -> object:

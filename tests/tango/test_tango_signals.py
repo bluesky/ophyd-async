@@ -335,37 +335,6 @@ async def test_set_with_converter(everything_device_trl):
         )
     )
 
-    # await everything_device.strenum_image.set([["AAA", "BBB"], ["AAA", "BBB"]])
-    # await everything_device.strenum_image.set(
-    #     np.array([["AAA", "BBB"], ["AAA", "BBB"]])
-    # )
-    # await everything_device.strenum_image.set(
-    #     [
-    #         [
-    #             ExampleStrEnum.B.value,
-    #             ExampleStrEnum.C.value,
-    #         ],
-    #         [
-    #             ExampleStrEnum.B.value,
-    #             ExampleStrEnum.C.value,
-    #         ],
-    #     ]
-    # )
-    # await everything_device.strenum_image.set(
-    #     np.array(
-    #         [
-    #             [
-    #                 ExampleStrEnum.B,
-    #                 ExampleStrEnum.C,
-    #             ],
-    #             [
-    #                 ExampleStrEnum.B,
-    #                 ExampleStrEnum.C,
-    #             ],
-    #         ],
-    #         dtype=ExampleStrEnum,
-    #     )
-    # )
     await everything_device.my_state.set(DevStateEnum.EXTRACT)
     await everything_device.my_state_spectrum.set(
         np.array(
@@ -377,15 +346,6 @@ async def test_set_with_converter(everything_device_trl):
             dtype=DevStateEnum,
         )
     )
-    # await everything_device.my_state_image.set(
-    #     np.array(
-    #         [
-    #             [DevStateEnum.OPEN, DevStateEnum.CLOSE, DevStateEnum.MOVING],
-    #             [DevStateEnum.OPEN, DevStateEnum.CLOSE, DevStateEnum.MOVING],
-    #         ],
-    #         dtype=DevStateEnum,
-    #     )
-    # )
 
 
 @pytest.mark.timeout(18.8)
