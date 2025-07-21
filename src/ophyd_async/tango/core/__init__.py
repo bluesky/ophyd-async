@@ -12,6 +12,7 @@ from ._tango_readable import TangoReadable
 from ._tango_transport import (
     AttributeProxy,
     CommandProxy,
+    CommandProxyReadCharacter,
     TangoDoubleStringTable,
     TangoLongStringTable,
     TangoSignalBackend,
@@ -32,6 +33,7 @@ from ._utils import (
 __all__ = [
     "AttributeProxy",
     "CommandProxy",
+    "CommandProxyReadCharacter",
     "DevStateEnum",
     "ensure_proper_executor",
     "TangoSignalBackend",
