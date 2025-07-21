@@ -65,8 +65,8 @@ async def assert_mirror_readings(
 async def test_monitoring_position():
     results = asyncio.Queue[dict[str, Reading[float]]]()
     inst = HorizontalMirror("mirror")
-    inst.x.subscribe(results.put_nowait)
-    inst.roll.subscribe(results.put_nowait)
+    inst.x.subscribe_reading(results.put_nowait)
+    inst.roll.subscribe_reading(results.put_nowait)
     await assert_mirror_readings(results, 0, 0)
     await inst.x2.set(1)
     await assert_mirror_readings(results, 0.5, math.pi / 4)
