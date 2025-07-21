@@ -520,6 +520,7 @@ class CommandProxy(TangoProxy):
         self._last_reading = Reading(value=None, timestamp=0, alarm_severity=0)
         self.device_proxy = device_proxy
         self.name = name
+        self._last_w_value = None
 
     def subscribe_callback(self, callback: Callback | None) -> None:
         raise NotImplementedError("Cannot subscribe to commands")
@@ -554,6 +555,7 @@ class CommandProxy(TangoProxy):
 
                 task = asyncio.create_task(_put())
                 val = await asyncio.wait_for(task, timeout)
+                self._last_w_value = value
                 self._last_reading = Reading(
                     value=self._converter.value(val),
                     timestamp=time.time(),

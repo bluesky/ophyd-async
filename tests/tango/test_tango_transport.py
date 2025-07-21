@@ -702,6 +702,11 @@ async def test_tango_transport_get_datakey(tango_test_device):
     trl = get_full_attr_trl(tango_test_device, "limitedvalue")
 
     transport = TangoSignalBackend(float, trl, trl, device_proxy)
+
+    with pytest.raises(NotConnected) as exc_info:
+        await transport.get_datakey(transport.read_trl)
+    assert "Not connected" in str(exc_info.value)
+
     await transport.connect(1)
     datakey = await transport.get_datakey(trl)
     for key in ["source", "dtype", "shape", "limits", "precision", "units"]:

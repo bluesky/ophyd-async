@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 import tango
 from bluesky import RunEngine
+from bluesky.protocols import Location
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -20,7 +21,15 @@ from tango import (
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.server import Device, attribute, command
 
-from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
+from ophyd_async.core import (
+    Array1D,
+    Ignore,
+    SignalR,
+    SignalRW,
+    SignalW,
+    SignalX,
+    init_devices,
+)
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
@@ -67,6 +76,8 @@ class TestDevice(Device):
     _limitedvalue = 3
 
     _ignored_attr = 1.0
+
+    _msg = "Hello"
 
     _test_enum = TestEnum.A
     _string_image = [["one", "two", "three"], ["four", "five", "six"]]
@@ -226,6 +237,14 @@ class TestDevice(Device):
     @command
     def echo(self, value: str) -> str:
         return value
+
+    @command
+    def get_msg(self) -> str:
+        return self._msg
+
+    @command
+    def set_msg(self, value: str):
+        self._msg = value
 
     @command
     def raise_exception_cmd(self):
@@ -459,3 +478,41 @@ async def test_signal_autofill(tango_test_device, auto_fill_signals):
     else:
         assert not hasattr(test_device, "ignored_attr")
         assert not hasattr(test_device, "readback")
+
+
+@pytest.mark.asyncio
+async def test_command_autofill(tango_test_device):
+    test_device = TestTangoReadable(trl=tango_test_device)
+    await test_device.connect()
+
+    assert hasattr(test_device, "echo")
+    echo = test_device.echo
+    assert hasattr(test_device, "set_msg")
+    set_msg = test_device.set_msg
+    assert hasattr(test_device, "get_msg")
+    get_msg = test_device.get_msg
+    assert hasattr(test_device, "clear")
+    clear = test_device.clear
+
+    assert isinstance(echo, SignalRW)
+    assert isinstance(set_msg, SignalW)
+    assert isinstance(get_msg, SignalR)
+    assert isinstance(clear, SignalX)
+
+    await echo.set("hello_world")
+    assert await echo.locate() == Location(
+        setpoint="hello_world", readback="hello_world"
+    )
+    assert await echo.get_value() == "hello_world"
+
+    assert await get_msg.get_value() == "Hello"
+    await set_msg.set("new message")
+    assert await get_msg.get_value() == "new message"
+
+    with pytest.raises(AttributeError) as exc:
+        await get_msg.set("new message")
+    assert "object has no attribute 'set'" in str(exc.value)
+
+    with pytest.raises(AttributeError) as exc:
+        await set_msg.get_value()
+    assert "object has no attribute 'get_value" in str(exc.value)
