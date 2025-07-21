@@ -1,10 +1,9 @@
-import os
 import uuid
 from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
-from pathlib import PurePath
+from pathlib import PurePath, PureWindowsPath
 from typing import Protocol
 from urllib.parse import urlunparse
 
@@ -245,17 +244,22 @@ class YMDPathProvider(PathProvider):
         self._device_name_as_base_dir = device_name_as_base_dir
 
     def __call__(self, device_name: str | None = None) -> PathInfo:
-        sep = os.path.sep
+        path_type = type(self._base_directory_path)
+        if path_type == PureWindowsPath:
+            sep = "\\"
+        else:
+            sep = "/"
+
         current_date = date.today().strftime(f"%Y{sep}%m{sep}%d")
         if device_name is None:
             ymd_dir_path = current_date
         elif self._device_name_as_base_dir:
-            ymd_dir_path = os.path.join(
+            ymd_dir_path = path_type(
                 current_date,
                 device_name,
             )
         else:
-            ymd_dir_path = os.path.join(
+            ymd_dir_path = path_type(
                 device_name,
                 current_date,
             )

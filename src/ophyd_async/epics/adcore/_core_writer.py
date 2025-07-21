@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
+from pathlib import PureWindowsPath
 from typing import Generic, TypeVar, get_args
 
 from bluesky.protocols import Hints, StreamAsset
@@ -99,7 +100,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         # a '\\', which will cause the readback to never register the same value.
         dir_path_as_str = str(path_info.directory_path)
         separator = "/"
-        if "\\" in dir_path_as_str:
+        if isinstance(path_info.directory_path, PureWindowsPath):
             separator = "\\"
 
         dir_path_as_str += separator
