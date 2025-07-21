@@ -108,7 +108,7 @@ class Motor(
 
     @AsyncStatus.wrap
     async def prepare(self, value: FlyMotorInfo):
-        """Move to the beginning of a suitable run-up distance ready for a flyscan."""
+        """Move to the beginning of a suitable run-up distance ready for a fly scan."""
         self._fly_info = value
 
         # Velocity, at which motor travels from start_position to end_position, in motor
@@ -147,7 +147,7 @@ class Motor(
         await self.velocity.set(abs(max_speed))
         await self.set(ramp_up_start_pos)
 
-        # Set velocity we will be using for the flyscan
+        # Set velocity we will be using for the fly scan
         await self.velocity.set(abs(value.velocity))
 
     @AsyncStatus.wrap

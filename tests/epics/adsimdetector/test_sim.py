@@ -467,12 +467,12 @@ async def test_read_and_describe_detector(
     assert read == {
         "test_adsim1-driver-acquire_time": {
             "value": 0.8,
-            "timestamp": pytest.approx(time.monotonic(), rel=1e-2),
+            "timestamp": pytest.approx(time.time(), rel=1e-2),
             "alarm_severity": 0,
         },
         "test_adsim1-driver-acquire_period": {
             "value": 1.0,
-            "timestamp": pytest.approx(time.monotonic(), rel=1e-2),
+            "timestamp": pytest.approx(time.time(), rel=1e-2),
             "alarm_severity": 0,
         },
     }
