@@ -1,5 +1,6 @@
+from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import (
-    PmacAxisIO,
+    PmacAxisAssignmentIO,
     PmacCoordIO,
     PmacIO,
     PmacTrajectoryIO,  # type: ignore
@@ -8,15 +9,28 @@ from ophyd_async.epics.pmac import (
 
 def test_pmac_io():
     """Instantiate a PmacIO object that looks like the P47 training beamline"""
+    raw_motors = [
+        Motor("BL47P-MO-MAP-01:STAGE:X"),
+        Motor("BL47P-MO-MAP-01:STAGE:A"),
+    ]
 
     pmac = PmacIO(
-        axis_nums=[1, 2],
-        coord_nums=[1, 9],
         prefix="BL47P-MO-BRICK-01",
+        raw_motors=raw_motors,
+        coord_nums=[1, 9],
         name="p47-brick-01",
     )
 
     assert pmac.name == "p47-brick-01"
+
+    # check assignments
+    assert len(pmac.assignment) == 2
+    assert isinstance(pmac.assignment[0], PmacAxisAssignmentIO)
+    assert isinstance(pmac.assignment[1], PmacAxisAssignmentIO)
+
+    # check_look_up
+    assert pmac.motor_cs_index[raw_motors[0]] == 0
+    assert pmac.motor_cs_index[raw_motors[1]] == 1
 
     # check coords PVs
     assert pmac.coord[1].defer_moves.source == "ca://BL47P-MO-BRICK-01:CS1:DeferMoves"
@@ -33,9 +47,9 @@ def test_pmac_io():
         == "ca://BL47P-MO-BRICK-01:CS9:M2:DirectDemand"
     )
 
-    # check axes PVs
-    assert pmac.axis[1].cs_axis_letter.source == "ca://BL47P-MO-BRICK-01:M1:CsAxis_RBV"
-    assert pmac.axis[1].cs_port.source == "ca://BL47P-MO-BRICK-01:M1:CsPort_RBV"
+    # # check axes PVs
+    # assert pmac.axis[1].cs_axis_letter.source == "ca://BL47P-MO-BRICK-01:M1:CsAxis_RBV"
+    # assert pmac.axis[1].cs_port.source == "ca://BL47P-MO-BRICK-01:M1:CsPort_RBV"
 
     # check trajectory scan PVs
     assert (
@@ -69,9 +83,11 @@ def test_pmac_trajectory_io():
 
 
 def test_pmac_axis_io():
-    """Instantiate a PmacAxisIO object with a specific prefix."""
+    """Instantiate a PmacAxisAssignmentIO object with a specific prefix."""
 
-    pmac_axis = PmacAxisIO(prefix="BL47P-MO-BRICK-01:M1", name="p47-brick-01-axis")
+    pmac_axis = PmacAxisAssignmentIO(
+        prefix="BL47P-MO-BRICK-01:M1", name="p47-brick-01-axis"
+    )
 
     assert pmac_axis.name == "p47-brick-01-axis"
     assert pmac_axis.cs_axis_letter.source == "ca://BL47P-MO-BRICK-01:M1:CsAxis_RBV"

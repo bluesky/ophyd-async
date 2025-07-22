@@ -3,6 +3,7 @@ from collections.abc import Sequence
 import numpy as np
 
 from ophyd_async.core import Array1D, Device, DeviceVector, StandardReadable
+from ophyd_async.epics import motor
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
 CS_LETTERS = "ABCUVWXYZ"
@@ -50,7 +51,7 @@ class PmacTrajectoryIO(StandardReadable):
         super().__init__(name=name)
 
 
-class PmacAxisIO(Device):
+class PmacAxisAssignmentIO(Device):
     """A Device that (direct) moves a PMAC Coordinate System Motor.
 
     Note that this does not go through a motor record.
@@ -59,6 +60,7 @@ class PmacAxisIO(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
         self.cs_axis_letter = epics_signal_r(str, f"{prefix}:CsAxis_RBV")
         self.cs_port = epics_signal_r(str, f"{prefix}:CsPort_RBV")
+        self.cs_number = epics_signal_r(int, f"{prefix}:CsRaw_RBV")
         super().__init__(name=name)
 
 
@@ -66,12 +68,10 @@ class PmacCoordIO(Device):
     """A Device that represents a Pmac Coordinate System."""
 
     def __init__(self, prefix: str, name: str = "") -> None:
-        self.defer_moves = epics_signal_r(bool, f"{prefix}:DeferMoves")
+        self.defer_moves = epics_signal_rw(bool, f"{prefix}:DeferMoves")
         self.cs_axis_setpoint = DeviceVector(
             {
-                i + 1: epics_signal_rw(
-                    Array1D[np.float64], f"{prefix}:M{i + 1}:DirectDemand"
-                )
+                i + 1: epics_signal_rw(np.float64, f"{prefix}:M{i + 1}:DirectDemand")
                 for i in range(len(CS_LETTERS))
             }
         )
@@ -84,13 +84,24 @@ class PmacIO(Device):
     def __init__(
         self,
         prefix: str,
-        axis_nums: Sequence[int],
+        raw_motors: Sequence[motor.Motor],
         coord_nums: Sequence[int],
         name: str = "",
     ) -> None:
-        self.axis = DeviceVector(
-            {axis: PmacAxisIO(f"{prefix}:M{axis}") for axis in axis_nums}
+        motor_prefixes = [motor.motor_egu.source.split(".")[0] for motor in raw_motors]
+
+        self.assignment = DeviceVector(
+            {
+                i: PmacAxisAssignmentIO(motor_prefix)
+                for i, motor_prefix in enumerate(motor_prefixes)
+            }
         )
+
+        # Public Look up for motor to axis assignment device vector index
+        self.motor_cs_index = {}
+        for i in range(len(self.assignment)):
+            self.motor_cs_index[raw_motors[i]] = i
+
         self.coord = DeviceVector(
             {coord: PmacCoordIO(f"{prefix}:CS{coord}") for coord in coord_nums}
         )
