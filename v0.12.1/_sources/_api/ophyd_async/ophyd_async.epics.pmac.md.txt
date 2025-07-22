@@ -1,0 +1,76 @@
+# {py:mod}`ophyd_async.epics.pmac`
+
+```{py:module} ophyd_async.epics.pmac
+```
+
+```{autodoc2-docstring} ophyd_async.epics.pmac
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`PmacAxisIO <ophyd_async.epics.pmac._pmac_io.PmacAxisIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacAxisIO
+    :summary:
+    ```
+* - {py:obj}`PmacCoordIO <ophyd_async.epics.pmac._pmac_io.PmacCoordIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacCoordIO
+    :summary:
+    ```
+* - {py:obj}`PmacIO <ophyd_async.epics.pmac._pmac_io.PmacIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacIO
+    :summary:
+    ```
+* - {py:obj}`PmacTrajectoryIO <ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} PmacAxisIO(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.pmac._pmac_io.PmacAxisIO
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacAxisIO
+```
+
+````
+
+````{py:class} PmacCoordIO(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.pmac._pmac_io.PmacCoordIO
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacCoordIO
+```
+
+````
+
+````{py:class} PmacIO(prefix: str, axis_nums: ~collections.abc.Sequence[int], coord_nums: ~collections.abc.Sequence[int], name: str = '')
+:canonical: ophyd_async.epics.pmac._pmac_io.PmacIO
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacIO
+```
+
+````
+
+````{py:class} PmacTrajectoryIO(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO
+```
+
+````
