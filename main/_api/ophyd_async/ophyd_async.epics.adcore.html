@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.13.dev6+gd24430f98 documentation</title>
+    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.13.dev7+gec5cfa557 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=bdc6d0d2"></script>
+    <script src="../../_static/documentation_options.js?v=85dcac89"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.dev6+gd24430f98 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.dev6+gd24430f98 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.dev7+gec5cfa557 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.dev7+gec5cfa557 documentation - Home"/>
   
   
 </a></div>
@@ -1388,11 +1388,6 @@ subsequent raising (if applicable) due to detector state.</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADWriter.begin_capture">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">begin_capture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_writer.html#ADWriter.begin_capture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADWriter.begin_capture" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADWriter.open">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exposures_per_event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PositiveInt</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/event-model/main/_api/event_model.html#event_model.DataKey" title="(in event-model vmain)"><span class="pre">DataKey</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_writer.html#ADWriter.open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADWriter.open" title="Link to this definition">#</a></dt>
 <dd><p>Open writer and wait for it to be ready for data.</p>
@@ -2046,7 +2041,6 @@ See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginDriv
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADWriter"><code class="docutils literal notranslate"><span class="pre">ADWriter</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADWriter.default_suffix"><code class="docutils literal notranslate"><span class="pre">ADWriter.default_suffix</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADWriter.with_io"><code class="docutils literal notranslate"><span class="pre">ADWriter.with_io()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADWriter.begin_capture"><code class="docutils literal notranslate"><span class="pre">ADWriter.begin_capture()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADWriter.open"><code class="docutils literal notranslate"><span class="pre">ADWriter.open()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADWriter.observe_indices_written"><code class="docutils literal notranslate"><span class="pre">ADWriter.observe_indices_written()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADWriter.get_indices_written"><code class="docutils literal notranslate"><span class="pre">ADWriter.get_indices_written()</span></code></a></li>

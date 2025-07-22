@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Using Devices &#8212; ophyd-async 0.13.dev6+gd24430f98 documentation</title>
+    <title>Using Devices &#8212; ophyd-async 0.13.dev7+gec5cfa557 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=bdc6d0d2"></script>
+    <script src="../_static/documentation_options.js?v=85dcac89"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.dev6+gd24430f98 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.dev6+gd24430f98 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.dev7+gec5cfa557 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.dev7+gec5cfa557 documentation - Home"/>
   
   
 </a></div>
@@ -484,6 +484,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Used for tutorial `Using Devices`.&quot;&quot;&quot;</span>
 
 <span class="c1"># Import bluesky and ophyd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">PurePath</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">mkdtemp</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plan_stubs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bps</span>  <span class="c1"># noqa: F401</span>
@@ -510,7 +511,7 @@
 
 <span class="c1"># Make a path provider that makes UUID filenames within a static</span>
 <span class="c1"># temporary directory</span>
-<span class="n">path_provider</span> <span class="o">=</span> <span class="n">StaticPathProvider</span><span class="p">(</span><span class="n">UUIDFilenameProvider</span><span class="p">(),</span> <span class="n">mkdtemp</span><span class="p">())</span>
+<span class="n">path_provider</span> <span class="o">=</span> <span class="n">StaticPathProvider</span><span class="p">(</span><span class="n">UUIDFilenameProvider</span><span class="p">(),</span> <span class="n">PurePath</span><span class="p">(</span><span class="n">mkdtemp</span><span class="p">()))</span>
 
 <span class="c1"># All Devices created within this block will be</span>
 <span class="c1"># connected and named at the end of the with block</span>
@@ -580,27 +581,27 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 8     Time: 2025-07-21 15:40:46</span>
-<span class="go">Persistent Unique Scan ID: &#39;c88f96b4-fed2-414b-bfc2-d073ebc821a1&#39;</span>
+<span class="go">Transient Scan ID: 8     Time: 2025-07-22 10:26:05</span>
+<span class="go">Persistent Unique Scan ID: &#39;9f6daaab-aaa8-4dd5-b5ef-e0d7cccb2d18&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y | pdet-channel-1-value | pdet-channel-2-value | pdet-channel-3-value |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">|         1 | 15:40:46.8 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
-<span class="go">|         2 | 15:40:47.8 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
-<span class="go">|         3 | 15:40:48.8 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
-<span class="go">|         4 | 15:40:49.7 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
-<span class="go">|         5 | 15:40:50.6 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
-<span class="go">|         6 | 15:40:51.5 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
-<span class="go">|         7 | 15:40:52.5 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
-<span class="go">|         8 | 15:40:53.4 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
-<span class="go">|         9 | 15:40:54.3 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
+<span class="go">|         1 | 10:26:05.5 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
+<span class="go">|         2 | 10:26:06.5 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
+<span class="go">|         3 | 10:26:07.5 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
+<span class="go">|         4 | 10:26:08.4 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
+<span class="go">|         5 | 10:26:09.3 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
+<span class="go">|         6 | 10:26:10.2 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
+<span class="go">|         7 | 10:26:11.2 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
+<span class="go">|         8 | 10:26:12.1 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
+<span class="go">|         9 | 10:26:13.0 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">generator grid_scan [&#39;c88f96b4&#39;] (scan num: 8)</span>
+<span class="go">generator grid_scan [&#39;9f6daaab&#39;] (scan num: 8)</span>
 
 
 
-<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;c88f96b4-fed2-414b-bfc2-d073ebc821a1&#39;,), plan_result=&#39;c88f96b4-fed2-414b-bfc2-d073ebc821a1&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;9f6daaab-aaa8-4dd5-b5ef-e0d7cccb2d18&#39;,), plan_result=&#39;9f6daaab-aaa8-4dd5-b5ef-e0d7cccb2d18&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/sim_grid_scan.png"><img alt="../_images/sim_grid_scan.png" src="../_images/sim_grid_scan.png" style="width: 4in;" />
@@ -610,27 +611,27 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">bdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 9     Time: 2025-07-21 15:40:55</span>
-<span class="go">Persistent Unique Scan ID: &#39;95575f03-999b-4da2-8fe5-c1df8d8065f8&#39;</span>
+<span class="go">Transient Scan ID: 9     Time: 2025-07-22 10:26:14</span>
+<span class="go">Persistent Unique Scan ID: &#39;28584644-d58c-4b8c-a8de-06e829b2306b&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">|         1 | 15:40:55.8 |      1.000 |      2.000 |</span>
-<span class="go">|         2 | 15:40:55.9 |      1.000 |      2.500 |</span>
-<span class="go">|         3 | 15:40:56.0 |      1.000 |      3.000 |</span>
-<span class="go">|         4 | 15:40:56.2 |      1.500 |      2.000 |</span>
-<span class="go">|         5 | 15:40:56.3 |      1.500 |      2.500 |</span>
-<span class="go">|         6 | 15:40:56.5 |      1.500 |      3.000 |</span>
-<span class="go">|         7 | 15:40:56.6 |      2.000 |      2.000 |</span>
-<span class="go">|         8 | 15:40:56.8 |      2.000 |      2.500 |</span>
-<span class="go">|         9 | 15:40:56.9 |      2.000 |      3.000 |</span>
+<span class="go">|         1 | 10:26:14.5 |      1.000 |      2.000 |</span>
+<span class="go">|         2 | 10:26:14.7 |      1.000 |      2.500 |</span>
+<span class="go">|         3 | 10:26:14.8 |      1.000 |      3.000 |</span>
+<span class="go">|         4 | 10:26:15.0 |      1.500 |      2.000 |</span>
+<span class="go">|         5 | 10:26:15.1 |      1.500 |      2.500 |</span>
+<span class="go">|         6 | 10:26:15.2 |      1.500 |      3.000 |</span>
+<span class="go">|         7 | 10:26:15.4 |      2.000 |      2.000 |</span>
+<span class="go">|         8 | 10:26:15.5 |      2.000 |      2.500 |</span>
+<span class="go">|         9 | 10:26:15.7 |      2.000 |      3.000 |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">generator grid_scan [&#39;95575f03&#39;] (scan num: 9)</span>
+<span class="go">generator grid_scan [&#39;28584644&#39;] (scan num: 9)</span>
 
 
 
-<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;95575f03-999b-4da2-8fe5-c1df8d8065f8&#39;,), plan_result=&#39;95575f03-999b-4da2-8fe5-c1df8d8065f8&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;28584644-d58c-4b8c-a8de-06e829b2306b&#39;,), plan_result=&#39;28584644-d58c-4b8c-a8de-06e829b2306b&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
@@ -641,7 +642,8 @@ In [1]:
 <section id="examine-the-script">
 <h2>Examine the script<a class="headerlink" href="#examine-the-script" title="Link to this heading">#</a></h2>
 <p>We will now walk through the script section by section and examine what each part does. First of all we import the bluesky and ophyd libraries:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">mkdtemp</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">PurePath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tempfile</span><span class="w"> </span><span class="kn">import</span> <span class="n">mkdtemp</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plan_stubs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bps</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plans</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bp</span>  <span class="c1"># noqa: F401</span>
@@ -675,7 +677,7 @@ In [1]:
 </div>
 <p>This is passed to all the Devices so they can tell it the X and Y positions of the motors and get simulated point and gaussian blob data from it. In production you would pass around references to the control system (EPICS PV prefixes or Tango Resource Locations) instead of creating an object here. This is explored in more detail in <a class="reference internal" href="implementing-devices.html"><span class="std std-doc">Implementing Devices</span></a>.</p>
 <p>Next up is the path provider:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">path_provider</span> <span class="o">=</span> <span class="n">StaticPathProvider</span><span class="p">(</span><span class="n">UUIDFilenameProvider</span><span class="p">(),</span> <span class="n">mkdtemp</span><span class="p">())</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">path_provider</span> <span class="o">=</span> <span class="n">StaticPathProvider</span><span class="p">(</span><span class="n">UUIDFilenameProvider</span><span class="p">(),</span> <span class="n">PurePath</span><span class="p">(</span><span class="n">mkdtemp</span><span class="p">()))</span>
 
 </pre></div>
 </div>

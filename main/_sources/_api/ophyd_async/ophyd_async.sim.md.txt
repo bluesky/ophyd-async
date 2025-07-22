@@ -190,7 +190,7 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ````
 
-````{py:method} open_file(path: ~pathlib.Path, width: int, height: int)
+````{py:method} open_file(path: ~pathlib.PurePath, width: int, height: int)
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator.open_file
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.open_file

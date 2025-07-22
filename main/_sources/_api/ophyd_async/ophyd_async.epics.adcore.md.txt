@@ -1307,15 +1307,6 @@ Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Gene
 
 ````
 
-````{py:method} begin_capture(name: str) -> None
-:canonical: ophyd_async.epics.adcore._core_writer.ADWriter.begin_capture
-:async:
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter.begin_capture
-```
-
-````
-
 ````{py:method} open(name: str, exposures_per_event: ~pydantic.PositiveInt = 1) -> dict[str, ~event_model.DataKey]
 :canonical: ophyd_async.epics.adcore._core_writer.ADWriter.open
 :async:

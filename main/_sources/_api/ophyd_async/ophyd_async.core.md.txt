@@ -2159,7 +2159,7 @@ Bases: {py:obj}`abc.ABC`
 
 ````{py:attribute} directory_path
 :canonical: ophyd_async.core._providers.PathInfo.directory_path
-:type: ~pathlib.Path
+:type: ~pathlib.PurePath
 :value: >
    None
 
@@ -2190,6 +2190,17 @@ Bases: {py:obj}`abc.ABC`
 
 ````
 
+````{py:attribute} directory_uri
+:canonical: ophyd_async.core._providers.PathInfo.directory_uri
+:type: str | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.core._providers.PathInfo.directory_uri
+```
+
+````
+
 `````
 
 ````{py:class} PathProvider
@@ -2202,7 +2213,7 @@ Bases: {py:obj}`typing.Protocol`
 
 ````
 
-````{py:class} StaticPathProvider(filename_provider: ~ophyd_async.core._providers.FilenameProvider, directory_path: ~pathlib.Path | str, create_dir_depth: int = 0)
+````{py:class} StaticPathProvider(filename_provider: ~ophyd_async.core._providers.FilenameProvider, directory_path: ~pathlib.PurePath, directory_uri: str | None = None, create_dir_depth: int = 0)
 :canonical: ophyd_async.core._providers.StaticPathProvider
 
 Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
@@ -2212,7 +2223,7 @@ Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
 
 ````
 
-````{py:class} AutoIncrementingPathProvider(filename_provider: ~ophyd_async.core._providers.FilenameProvider, base_directory_path: ~pathlib.Path, create_dir_depth: int = 0, max_digits: int = 5, starting_value: int = 0, num_calls_per_inc: int = 1, increment: int = 1, inc_delimeter: str = '_', base_name: str | None = None)
+````{py:class} AutoIncrementingPathProvider(filename_provider: ~ophyd_async.core._providers.FilenameProvider, base_directory_path: ~pathlib.PurePath, base_directory_uri: str | None = None, create_dir_depth: int = 0, max_digits: int = 5, starting_value: int = 0, num_calls_per_inc: int = 1, increment: int = 1, inc_delimeter: str = '_', base_name: str | None = None)
 :canonical: ophyd_async.core._providers.AutoIncrementingPathProvider
 
 Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
@@ -2222,7 +2233,7 @@ Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
 
 ````
 
-````{py:class} YMDPathProvider(filename_provider: ~ophyd_async.core._providers.FilenameProvider, base_directory_path: ~pathlib.Path, create_dir_depth: int = -3, device_name_as_base_dir: bool = False)
+````{py:class} YMDPathProvider(filename_provider: ~ophyd_async.core._providers.FilenameProvider, base_directory_path: ~pathlib.PurePath, base_directory_uri: str | None = None, create_dir_depth: int = -3, device_name_as_base_dir: bool = False)
 :canonical: ophyd_async.core._providers.YMDPathProvider
 
 Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
@@ -2366,7 +2377,7 @@ Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
 `````
 
-`````{py:class} HDFDocumentComposer(full_file_name: ~pathlib.Path, datasets: list[~ophyd_async.core._hdf_dataset.HDFDatasetDescription], hostname: str = 'localhost')
+`````{py:class} HDFDocumentComposer(file_uri: str, datasets: list[~ophyd_async.core._hdf_dataset.HDFDatasetDescription])
 :canonical: ophyd_async.core._hdf_dataset.HDFDocumentComposer
 
 ```{autodoc2-docstring} ophyd_async.core._hdf_dataset.HDFDocumentComposer
