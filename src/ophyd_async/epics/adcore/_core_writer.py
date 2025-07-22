@@ -17,10 +17,8 @@ from ophyd_async.core._providers import DatasetDescriber, PathProvider
 from ophyd_async.core._signal import (
     observe_value,
     set_and_wait_for_value,
-    wait_for_value,
 )
 from ophyd_async.core._status import AsyncStatus
-from ophyd_async.core._utils import DEFAULT_TIMEOUT
 
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
 from ._core_io import (
@@ -207,8 +205,9 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
 
     async def close(self):
         # Already done a caput callback in _capture_status, so can't do one here
-        await self.fileio.capture.set(False, wait=False)
-        await wait_for_value(self.fileio.capture, False, DEFAULT_TIMEOUT)
+        await set_and_wait_for_value(
+            self.fileio.capture, False, False, wait_for_set_completion=False
+        )
         if self._capture_status and not self._capture_status.done:
             # We kicked off an open, so wait for it to return
             await self._capture_status
