@@ -47,9 +47,14 @@ def test_pmac_io():
         == "ca://BL47P-MO-BRICK-01:CS9:M2:DirectDemand"
     )
 
-    # # check axes PVs
-    # assert pmac.axis[1].cs_axis_letter.source == "ca://BL47P-MO-BRICK-01:M1:CsAxis_RBV"
-    # assert pmac.axis[1].cs_port.source == "ca://BL47P-MO-BRICK-01:M1:CsPort_RBV"
+    # check axes PVs
+    assert (
+        pmac.assignment[1].cs_axis_letter.source
+        == "ca://BL47P-MO-MAP-01:STAGE:A:CsAxis_RBV"
+    )
+    assert (
+        pmac.assignment[1].cs_port.source == "ca://BL47P-MO-MAP-01:STAGE:A:CsPort_RBV"
+    )
 
     # check trajectory scan PVs
     assert (
