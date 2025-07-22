@@ -29,6 +29,7 @@ from ophyd_async.core import (
     Table,
     YamlSettingsProvider,
     observe_value,
+    soft_signal_r_and_setter,
 )
 from ophyd_async.epics.core import (
     CaSignalBackend,
@@ -56,6 +57,9 @@ from ophyd_async.testing import MonitorQueue, assert_describe_signal
 
 T = TypeVar("T")
 Protocol = Literal["ca", "pva"]
+
+
+TIMEOUT = 30.0 if os.name == "nt" else 3.0
 
 
 @pytest.fixture(scope="module")
@@ -233,7 +237,7 @@ PVA_INFERRED = {
 }
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize(
     "protocol,name,data",
     [("ca", k, v) for k, v in CA_PVA_INFERRED.items()]  # ca/pva shared for ca
@@ -289,7 +293,7 @@ CA_PVA_OVERRIDE = {
 PVA_OVERRIDE = {}
 
 
-@pytest.mark.timeout(3.6)
+@pytest.mark.timeout(TIMEOUT + 0.6)
 @pytest.mark.parametrize(
     "protocol,name,data",
     [("ca", k, v) for k, v in CA_PVA_OVERRIDE.items()]  # ca/pva shared for ca
@@ -322,7 +326,7 @@ def _example_table_dtype_numpy(guess: bool) -> list:
     ]
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 async def test_pva_table(ioc_devices: EpicsTestIocAndDevices):
     initial = EpicsTestTable(
         a_bool=np.array([False, False, True, True], np.bool_),
@@ -383,7 +387,7 @@ async def test_pva_table(ioc_devices: EpicsTestIocAndDevices):
     )
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 async def test_pva_ntndarray(ioc_devices: EpicsTestIocAndDevices):
     data = ExpectedData(np.zeros((2, 3)), np.arange(6).reshape((2, 3)), "array", "<i8")
     signal = ioc_devices.pva_device.ntndarray
@@ -404,7 +408,7 @@ async def test_pva_ntndarray(ioc_devices: EpicsTestIocAndDevices):
     )
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 async def test_writing_to_ndarray_raises_typeerror(ioc_devices: EpicsTestIocAndDevices):
     signal = epics_signal_rw(np.ndarray, ioc_devices.pva_device.ntndarray.source)
     await signal.connect()
@@ -412,7 +416,7 @@ async def test_writing_to_ndarray_raises_typeerror(ioc_devices: EpicsTestIocAndD
         await signal.set(np.zeros((6,), dtype=np.int64))
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 async def test_invalid_enum_choice_raises_valueerror(
     ioc_devices: EpicsTestIocAndDevices,
 ):
@@ -426,7 +430,7 @@ async def test_invalid_enum_choice_raises_valueerror(
     )
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_typing_sequence_str_signal_connects(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
@@ -437,7 +441,7 @@ async def test_typing_sequence_str_signal_connects(
     await signal.connect()
 
 
-@pytest.mark.timeout(3)
+@pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_error_raised_on_disconnected_PV(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
@@ -500,7 +504,7 @@ def test_enum_equality():
         BadEnum(ExtendedGeneratedChoices.D)
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 @pytest.mark.parametrize(
     "typ, suff, errors",
@@ -576,7 +580,7 @@ async def test_backend_wrong_type_errors(
         assert error in str(cm.value)
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_backend_put_enum_string(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
@@ -594,7 +598,7 @@ async def test_backend_put_enum_string(
     assert repr(val) == "<EpicsTestEnum.C: 'Ccc'>"
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_non_existent_errors(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
@@ -685,7 +689,7 @@ def test_signal_helpers_explicit_read_timeout():
     assert execute._timeout == 654
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_signals_created_for_not_prec_0_float_cannot_use_int(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
@@ -698,7 +702,7 @@ async def test_signals_created_for_not_prec_0_float_cannot_use_int(
         await sig.connect()
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_bool_works_for_mismatching_enums(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
@@ -708,7 +712,7 @@ async def test_bool_works_for_mismatching_enums(
     await sig.connect()
 
 
-@pytest.mark.timeout(3.0)
+@pytest.mark.timeout(TIMEOUT)
 async def test_can_read_using_ophyd_async_then_ophyd(
     RE, ioc_devices: EpicsTestIocAndDevices
 ):
@@ -729,7 +733,7 @@ def test_signal_module_emits_deprecation_warning():
         import ophyd_async.epics.signal  # noqa: F401
 
 
-@pytest.mark.timeout(3.6)
+@pytest.mark.timeout(TIMEOUT + 0.6)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_observe_ticking_signal_with_busy_loop(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
@@ -744,11 +748,11 @@ async def test_observe_ticking_signal_with_busy_loop(
             time.sleep(0.3)
             recv.append(val)
 
-    start = time.time()
+    start = time.monotonic()
 
     with pytest.raises(asyncio.TimeoutError):
         await watch()
-    assert time.time() - start == pytest.approx(0.6, abs=0.1)
+    assert time.monotonic() - start == pytest.approx(0.6, abs=0.1)
     assert len(recv) == 2
     # Don't check values as CA and PVA have different algorithms for
     # dropping updates for slow callbacks
@@ -757,7 +761,7 @@ async def test_observe_ticking_signal_with_busy_loop(
 HERE = Path(__file__).absolute().parent
 
 
-@pytest.mark.timeout(3.5)
+@pytest.mark.timeout(TIMEOUT + 0.5)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_retrieve_apply_store_settings(
     RE, ioc_devices: EpicsTestIocAndDevices, protocol: Protocol, tmp_path
@@ -784,7 +788,7 @@ async def test_retrieve_apply_store_settings(
     RE(a_plan())
 
 
-@pytest.mark.timeout(3.5)
+@pytest.mark.timeout(TIMEOUT + 0.5)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
 async def test_put_completion(
     RE, ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
@@ -795,19 +799,24 @@ async def test_put_completion(
     await slow_seq.connect()
 
     # First, do a set with blocking and make sure it takes a while
-    start = time.time()
+    start = time.monotonic()
     await slow_seq.set(1, wait=True)
-    stop = time.time()
+    stop = time.monotonic()
     assert stop - start == pytest.approx(0.5, rel=0.1)
 
     # Then, make sure if we don't wait it returns ~instantly
-    start = time.time()
+    start = time.monotonic()
     await slow_seq.set(2, wait=False)
-    stop = time.time()
+    stop = time.monotonic()
     assert stop - start < 0.1
 
+    # Time for completion callback to have finished before moving to
+    # next test / iteration - without this, running this test multiple
+    # times in a row will fail even-numbered runs.
+    await asyncio.sleep(0.5)
 
-@pytest.mark.timeout(3.5)
+
+@pytest.mark.timeout(TIMEOUT + 0.5)
 async def test_setting_with_none_uses_initial_value_of_pv(
     ioc_devices: EpicsTestIocAndDevices,
 ):
@@ -829,7 +838,7 @@ async def test_setting_with_none_uses_initial_value_of_pv(
     )
 
 
-@pytest.mark.timeout(3.5)
+@pytest.mark.timeout(TIMEOUT + 0.5)
 async def test_signal_retries_when_timeout(
     ioc_devices: EpicsTestIocAndDevices,
 ):
@@ -839,9 +848,25 @@ async def test_signal_retries_when_timeout(
     )
     await sig_rw_times_out.connect()
 
-    start = time.time()
+    start = time.monotonic()
     with pytest.raises(asyncio.TimeoutError):
         await sig_rw_times_out.set(1, wait=True)
-    stop = time.time()
+    stop = time.monotonic()
     # signal tries to set 3 times, so 3 * timeout
-    assert stop - start >= 0.3
+    assert stop - start == pytest.approx(0.3, abs=0.1)
+
+
+async def test_signal_timestamp_is_same_format_as_soft_signal_timestamp(
+    RE, ioc_devices: EpicsTestIocAndDevices
+):
+    sim_sig, sim_sig_setter = soft_signal_r_and_setter(float)
+    real_sig = epics_signal_rw(float, ioc_devices.get_pv("ca", "float_prec_1"))
+    await real_sig.connect(timeout=30)
+
+    await real_sig.set(10)
+    sim_sig_setter(20)
+
+    real_data = await real_sig.read()
+    sim_data = await sim_sig.read()
+
+    assert abs(real_data[""]["timestamp"] - sim_data[""]["timestamp"]) < 0.1
