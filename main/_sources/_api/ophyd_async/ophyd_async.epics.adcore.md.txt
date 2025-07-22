@@ -1823,7 +1823,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
-````{py:function} stop_busy_record(signal: ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT], value: ~ophyd_async.core.SignalDatatypeT, timeout: float = DEFAULT_TIMEOUT, status_timeout: float | None = None) -> None
+````{py:function} stop_busy_record(signal: ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT], value: ~ophyd_async.core.SignalDatatypeT, timeout: float = DEFAULT_TIMEOUT) -> None
 :canonical: ophyd_async.epics.adcore._utils.stop_busy_record
 :async:
 
