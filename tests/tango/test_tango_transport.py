@@ -909,6 +909,7 @@ async def test_tango_transport_nonexistent_trl(tango_test_device):
 
 # ----------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.timeout(10)
 async def test_type_mismatch(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     trl = get_full_attr_trl(tango_test_device, "justvalue")
