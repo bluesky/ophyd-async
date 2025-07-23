@@ -41,7 +41,7 @@ async def test_sim_blob_detector_count(
     if os.name == "nt":
         path = path.lstrip("/")
     # Check data looks right
-    assert path == str(tmp_path / "file.h5")
+    assert path == (tmp_path / "file.h5").as_posix()
     h5file = h5py.File(path)
     assert list(h5file["/entry"]) == ["data", "sum"]
     assert list(h5file["/entry/sum"]) == [det_sum, det_sum]

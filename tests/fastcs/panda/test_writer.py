@@ -184,13 +184,15 @@ async def test_collect_stream_docs(
             "data_key": name,
             "mimetype": "application/x-hdf5",
             "uri": "file://localhost/"
-            + str(tmp_path / "mock_panda" / "data.h5").lstrip("/"),
+            + (tmp_path / "mock_panda" / "data.h5").as_posix().lstrip("/"),
             "parameters": {
                 "dataset": f"/{name}",
                 "chunk_shape": (1024,),
             },
         }
-        assert os.path.join("mock_panda", "data.h5") in resource_doc["uri"]
+
+        # URI will always use '/'
+        assert "mock_panda/data.h5" in resource_doc["uri"]
 
     [item async for item in mock_writer.collect_stream_docs(PANDA_DETECTOR_NAME, 1)]
     assert type(mock_writer._composer) is HDFDocumentComposer
