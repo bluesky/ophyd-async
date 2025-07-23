@@ -140,7 +140,6 @@ async def stop_busy_record(
     signal: SignalRW[SignalDatatypeT],
     value: SignalDatatypeT,
     timeout: float = DEFAULT_TIMEOUT,
-    status_timeout: float | None = None,
 ) -> None:
-    await signal.set(value, wait=False, timeout=status_timeout)
+    await signal.set(value, wait=False)
     await wait_for_value(signal, value, timeout=timeout)

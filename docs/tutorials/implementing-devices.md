@@ -231,6 +231,7 @@ Finally, we need to communicate to bluesky that it has to `trigger()` and acquis
 
 Although the Signals are declared via type hints, the DeviceVector requires explicit instantiation in an `__init__` method. This is because it requires the `num_channels` to be passed in to the constructor to know how many channels require creation. This means that we also need to do the PV concatenation ourselves, so if the PV prefix for the device as `PREFIX:` then the first channel would have prefix `PREFIX:CHAN1:`. We also register them with `StandardReadable` in a different way, adding them within a [](#StandardReadable.add_children_as_readables) context manager which adds all the children created within its body.
 
+Whilst it is not required for the call to `super().__init__` to be after all signals have been created it is more efficient to do so. However, there may be some edge cases where signals need to be created after this e.g. for [derived signals](../how-to/derive-one-signal-from-others.md) that depend on their parent.
 :::
 
 :::{tab-item} Tango

@@ -154,6 +154,10 @@ class Device(HasName):
         elif name not in _not_device_attrs and isinstance(value, Device):
             value.parent = self
             self._child_devices[name] = value
+            # And if the name is set, then set the name of all children,
+            # including the child
+            if self._name:
+                self.set_name(self._name)
         # ...and avoiding the super call as we know it resolves to `object`
         return object.__setattr__(self, name, value)
 

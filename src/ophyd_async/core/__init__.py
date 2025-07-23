@@ -56,7 +56,9 @@ from ._signal import (
     soft_signal_rw,
     wait_for_value,
     walk_config_signals,
+    walk_devices,
     walk_rw_signals,
+    walk_signal_sources,
 )
 from ._signal_backend import (
     Array1D,
@@ -147,6 +149,8 @@ __all__ = [
     "set_and_wait_for_other_value",
     "walk_rw_signals",
     "walk_config_signals",
+    "walk_devices",
+    "walk_signal_sources",
     # Readable
     "StandardReadable",
     "StandardReadableFormat",

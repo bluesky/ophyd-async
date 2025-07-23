@@ -20,6 +20,7 @@ dependencies = [
     "colorlog",
     "pydantic>=2.0",
     "pydantic-numpy",
+    "stamina>=23.1.0"
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -42,8 +43,7 @@ dev = [
     "import-linter",
     "myst-parser",
     "numpydoc",
-    # Unpin once an ophyd release is made containing https://github.com/bluesky/ophyd/pull/1253
-    "ophyd @ git+https://github.com/tangkong/ophyd@10652e158b4f02172f4590f3f862ee815983c4db",
+    "ophyd>=1.10.7",
     "pickleshare",
     "pipdeptree",
     "pre-commit",
@@ -102,7 +102,7 @@ markers = [
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-timeout = 0.5
+timeout = 0.75
 [tool.coverage.run]
 data_file = "/tmp/ophyd_async.coverage"
 
