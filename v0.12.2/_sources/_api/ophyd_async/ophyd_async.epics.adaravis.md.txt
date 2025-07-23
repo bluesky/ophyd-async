@@ -1,0 +1,159 @@
+# {py:mod}`ophyd_async.epics.adaravis`
+
+```{py:module} ophyd_async.epics.adaravis
+```
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`AravisDetector <ophyd_async.epics.adaravis._aravis.AravisDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis.AravisDetector
+    :summary:
+    ```
+* - {py:obj}`AravisController <ophyd_async.epics.adaravis._aravis_controller.AravisController>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_controller.AravisController
+    :summary:
+    ```
+* - {py:obj}`AravisDriverIO <ophyd_async.epics.adaravis._aravis_io.AravisDriverIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO
+    :summary:
+    ```
+* - {py:obj}`AravisTriggerMode <ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode
+    :summary:
+    ```
+* - {py:obj}`AravisTriggerSource <ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} AravisDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix='cam1:', writer_cls: type[~ophyd_async.epics.adcore.ADWriter] = adcore.ADHDFWriter, fileio_suffix: str | None = None, name: str = '', config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None)
+:canonical: ophyd_async.epics.adaravis._aravis.AravisDetector
+
+Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adaravis._aravis_controller.AravisController`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis.AravisDetector
+```
+
+````
+
+`````{py:class} AravisController(driver: ~ophyd_async.epics.adcore._core_logic.ADBaseIOT, good_states: frozenset[~ophyd_async.epics.adcore._core_io.ADState] = DEFAULT_GOOD_STATES)
+:canonical: ophyd_async.epics.adaravis._aravis_controller.AravisController
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async.epics.adaravis._aravis_io.AravisDriverIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_controller.AravisController
+```
+
+````{py:method} get_deadtime(exposure: float | None) -> float
+:canonical: ophyd_async.epics.adaravis._aravis_controller.AravisController.get_deadtime
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_controller.AravisController.get_deadtime
+```
+
+````
+
+````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo) -> None
+:canonical: ophyd_async.epics.adaravis._aravis_controller.AravisController.prepare
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_controller.AravisController.prepare
+```
+
+````
+
+`````
+
+`````{py:class} AravisDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adaravis._aravis_io.AravisDriverIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO
+```
+
+````{py:attribute} trigger_mode
+:canonical: ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_mode
+```
+
+````
+
+````{py:attribute} trigger_source
+:canonical: ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_source
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource], ophyd_async.epics.core.PvSuffix.rbv('TriggerSource')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_source
+```
+
+````
+
+`````
+
+`````{py:class} AravisTriggerMode()
+:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode
+```
+
+````{py:attribute} ON
+:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode.ON
+:value: >
+   'On'
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode.ON
+```
+
+````
+
+````{py:attribute} OFF
+:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode.OFF
+:value: >
+   'Off'
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode.OFF
+```
+
+````
+
+`````
+
+`````{py:class} AravisTriggerSource()
+:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource
+
+Bases: {py:obj}`ophyd_async.core.SubsetEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource
+```
+
+````{py:attribute} LINE1
+:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource.LINE1
+:value: >
+   'Line1'
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource.LINE1
+```
+
+````
+
+`````
