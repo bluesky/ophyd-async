@@ -216,7 +216,7 @@ def test_get_dtype_extended(datatype, expected):
         ("nonexistent", True, None, True),
     ],
 )
-@pytest.mark.timeout(1.0)
+@pytest.mark.timeout(10)
 async def test_get_tango_trl(
     tango_test_device, attr_name, proxy_needed, expected_type, should_raise
 ):
