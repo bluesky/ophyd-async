@@ -481,6 +481,7 @@ async def test_signal_autofill(tango_test_device, auto_fill_signals):
 
 
 @pytest.mark.asyncio
+@pytest.mark.timeout(10.0)
 async def test_command_autofill(tango_test_device):
     test_device = TestTangoReadable(trl=tango_test_device)
     await test_device.connect()
