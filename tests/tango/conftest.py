@@ -60,11 +60,7 @@ class TangoSubprocessHelper:
     def __exit__(self, A, B, C):
         self.conn.close()
         self.sock.close()
-        try:
-            self.process.communicate(timeout=10)
-        except subprocess.TimeoutExpired:
-            self.process.kill()
-            self.process.communicate()
+        self.process.communicate()
 
 
 @pytest.fixture(scope="module")
