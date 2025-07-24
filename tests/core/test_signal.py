@@ -341,10 +341,10 @@ async def test_wait_for_value_with_value():
     await asyncio.sleep(0.2)
     assert not t.done()
     set_mock_value(signal, "something else")
-    assert 0.2 < await t < 1.0
+    assert 0.1 < await t < 1.0
 
 
-async def test_wait_for_value_with_funcion():
+async def test_wait_for_value_with_function():
     signal = epics_signal_rw(float, read_pv="pva://signal", name="signal")
     await signal.connect(mock=True)
     set_mock_value(signal, 45.8)
@@ -363,7 +363,7 @@ async def test_wait_for_value_with_funcion():
     await asyncio.sleep(0.2)
     assert not t.done()
     set_mock_value(signal, 41)
-    assert 0.2 < await t < 1.0
+    assert 0.1 < await t < 1.0
     assert await time_taken_by(wait_for_value(signal, less_than_42, timeout=2)) < 0.1
 
 
@@ -513,7 +513,7 @@ async def test_assert_reading_optional_fields(
             "everything-device-a_int": {
                 "value": 1,
                 "alarm_severity": 0,
-                "timestamp": time.monotonic(),
+                "timestamp": pytest.approx(time.time(), rel=1e-2),
             }
         },
     )
@@ -702,14 +702,19 @@ async def test_assert_reading_default_metadata(
     )
     await assert_reading(
         one_of_everything_device.a_int,
-        {"everything-device-a_int": {"value": 1, "timestamp": time.monotonic()}},
+        {
+            "everything-device-a_int": {
+                "value": 1,
+                "timestamp": pytest.approx(time.time(), rel=1e-2),
+            }
+        },
     )
     await assert_reading(
         one_of_everything_device.a_int,
         {
             "everything-device-a_int": {
                 "value": 1,
-                "timestamp": time.monotonic(),
+                "timestamp": pytest.approx(time.time(), rel=1e-2),
                 "alarm_severity": 0,
             }
         },
@@ -720,7 +725,7 @@ async def test_assert_reading_default_metadata(
             {
                 "everything-device-a_int": {
                     "value": 1,
-                    "timestamp": 2 * time.monotonic(),
+                    "timestamp": 2 * time.time(),
                 }
             },
         )

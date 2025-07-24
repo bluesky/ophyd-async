@@ -148,7 +148,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         """Set the current value, alarm and timestamp."""
         self.reading = Reading(
             value=self.converter.write_value(value),
-            timestamp=time.monotonic(),
+            timestamp=time.time(),
             alarm_severity=0,
         )
         if self.callback:
