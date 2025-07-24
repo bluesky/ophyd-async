@@ -10,6 +10,15 @@ import numpy as np
 import pytest
 import tango
 from bluesky import RunEngine
+from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
+from ophyd_async.core import StandardReadableFormat as Format
+from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
+from ophyd_async.tango.demo import (
+    DemoCounterServer,
+    DemoMotorServer,
+    TangoDetector,
+)
+from ophyd_async.testing import assert_reading
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -23,11 +32,6 @@ from tango.server import Device, attribute, command
 from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
-from ophyd_async.tango.demo import (
-    DemoCounter,
-    DemoMover,
-    TangoDetector,
-)
 from ophyd_async.testing import assert_reading
 
 T = TypeVar("T")
@@ -47,7 +51,7 @@ TESTED_FEATURES = ["array", "limitedvalue", "justvalue"]
 
 
 # --------------------------------------------------------------------
-class TestDevice(Device):
+class TestDeviceServer(Device):
     __test__ = False
 
     _array = [[1, 2, 3], [4, 5, 6]]
@@ -270,7 +274,7 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
 @pytest.fixture(scope="module")
 def tango_test_device(subprocess_helper):
     with subprocess_helper(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
+        [{"class": TestDeviceServer, "devices": [{"name": "test/device/1"}]}]
     ) as context:
         yield context.trls["test/device/1"]
 
@@ -280,11 +284,11 @@ def tango_test_device(subprocess_helper):
 def sim_test_context_trls(subprocess_helper):
     args = (
         {
-            "class": DemoMover,
+            "class": DemoMotorServer,
             "devices": [{"name": "sim/motor/1"}],
         },
         {
-            "class": DemoCounter,
+            "class": DemoCounterServer,
             "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
         },
     )
