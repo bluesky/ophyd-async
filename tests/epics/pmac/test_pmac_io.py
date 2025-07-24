@@ -29,8 +29,8 @@ def test_pmac_io():
     assert isinstance(pmac.assignment[1], PmacAxisAssignmentIO)
 
     # check_look_up
-    assert pmac.motor_cs_index[raw_motors[0]] == 0
-    assert pmac.motor_cs_index[raw_motors[1]] == 1
+    assert pmac.motor_assignment_index[raw_motors[0]] == 0
+    assert pmac.motor_assignment_index[raw_motors[1]] == 1
 
     # check coords PVs
     assert pmac.coord[1].defer_moves.source == "ca://BL47P-MO-BRICK-01:CS1:DeferMoves"

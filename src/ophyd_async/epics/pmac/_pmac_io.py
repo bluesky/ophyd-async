@@ -97,10 +97,9 @@ class PmacIO(Device):
             }
         )
 
-        # Public Look up for motor to axis assignment device vector index
-        self.motor_cs_index = {}
-        for i in range(len(self.assignment)):
-            self.motor_cs_index[raw_motors[i]] = i
+        # Public Look up for motor to axis assignment DeviceVector index
+
+        self.motor_assignment_index = {motor: i for i, motor in enumerate(raw_motors)}
 
         self.coord = DeviceVector(
             {coord: PmacCoordIO(f"{prefix}:CS{coord}") for coord in coord_nums}
