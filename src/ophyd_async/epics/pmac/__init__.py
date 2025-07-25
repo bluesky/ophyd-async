@@ -1,5 +1,5 @@
 from ._pmac_io import PmacAxisIO, PmacCoordIO, PmacIO, PmacTrajectoryIO
-from ._utils import PmacMotorInfo, calculate_ramp_position_and_duration
+from ._utils import PmacMotorInfo
 
 __all__ = [
     "PmacAxisIO",
@@ -7,5 +7,4 @@ __all__ = [
     "PmacIO",
     "PmacTrajectoryIO",
     "PmacMotorInfo",
-    "calculate_ramp_position_and_duration",
 ]

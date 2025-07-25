@@ -6,7 +6,9 @@ from ophyd_async.core import init_devices
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import (
     PmacMotorInfo,
-    calculate_ramp_position_and_duration,
+)
+from ophyd_async.epics.pmac._utils import (
+    calculate_ramp_position_and_duration,  # noqa: PLC2701
 )
 
 
