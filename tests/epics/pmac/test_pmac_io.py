@@ -10,12 +10,12 @@ from ophyd_async.epics.pmac import (
 def test_pmac_io():
     """Instantiate a PmacIO object that looks like the P47 training beamline"""
     raw_motors = [
-        Motor("BL47P-MO-MAP-01:STAGE:X"),
-        Motor("BL47P-MO-MAP-01:STAGE:A"),
+        Motor("BL47P-MO-MAP-01:STAGE:X:"),
+        Motor("BL47P-MO-MAP-01:STAGE:A:"),
     ]
 
     pmac = PmacIO(
-        prefix="BL47P-MO-BRICK-01",
+        prefix="BL47P-MO-BRICK-01:",
         raw_motors=raw_motors,
         coord_nums=[1, 9],
         name="p47-brick-01",
@@ -72,7 +72,7 @@ def test_pmac_trajectory_io():
     """Instantiate a PmacTrajectoryIO object with a specific prefix."""
 
     pmac_trajectory = PmacTrajectoryIO(
-        prefix="BL47P-MO-BRICK-01", name="p47-brick-01-trajectory"
+        prefix="BL47P-MO-BRICK-01:", name="p47-brick-01-trajectory"
     )
 
     assert pmac_trajectory.name == "p47-brick-01-trajectory"
@@ -91,7 +91,7 @@ def test_pmac_axis_io():
     """Instantiate a PmacAxisAssignmentIO object with a specific prefix."""
 
     pmac_axis = PmacAxisAssignmentIO(
-        prefix="BL47P-MO-BRICK-01:M1", name="p47-brick-01-axis"
+        prefix="BL47P-MO-BRICK-01:M1:", name="p47-brick-01-axis"
     )
 
     assert pmac_axis.name == "p47-brick-01-axis"
@@ -102,7 +102,7 @@ def test_pmac_axis_io():
 def test_pmac_coord_io():
     """Instantiate a PmacCoordIO object with a specific prefix."""
 
-    pmac_coord = PmacCoordIO(prefix="BL47P-MO-BRICK-01:CS1", name="p47-brick-01-coord")
+    pmac_coord = PmacCoordIO(prefix="BL47P-MO-BRICK-01:CS1:", name="p47-brick-01-coord")
 
     assert pmac_coord.name == "p47-brick-01-coord"
     assert pmac_coord.defer_moves.source == "ca://BL47P-MO-BRICK-01:CS1:DeferMoves"
