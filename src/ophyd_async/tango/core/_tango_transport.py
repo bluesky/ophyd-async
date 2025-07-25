@@ -867,29 +867,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
                 )
             self._type_match_ndarray(signal_type, tr_dtype)
             return
-        elif (
-            isinstance(signal_type, type)
-            and isinstance(tr_dtype, type)
-            and issubclass(signal_type, Table)
-            and issubclass(tr_dtype, Table)
-        ):
-            for field, tr_field_info in tr_dtype.model_fields.items():
-                if field not in signal_type.model_fields:
-                    raise TypeError(
-                        f"{tango_resource} missing expected "
-                        f"field {field!r} in {self.datatype!r}"
-                    )
-                sig_field_info = signal_type.model_fields[field]
-                if tr_field_info.annotation != sig_field_info.annotation:
-                    raise TypeError(
-                        f"{tango_resource} field '{field}' "
-                        f"type {tr_field_info.annotation!r} != "
-                        f"expected {sig_field_info.annotation!r}"
-                    )
-            return
-        raise TypeError(
-            f"{tango_resource} has type {tr_dtype!r}, expected {self.datatype!r}"
-        )
+        else:
+            raise TypeError(tango_resource, "has type", str(signal_type), "which is not recognized")
 
     def _type_match_scalar(
         self,
