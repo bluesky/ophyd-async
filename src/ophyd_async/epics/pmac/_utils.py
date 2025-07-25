@@ -1,56 +1,44 @@
-import numpy as np
-import numpy.typing as npt
+from dataclasses import dataclass
+
 from scanspec.core import Slice
 
 from ophyd_async.epics.motor import Motor
 
 
+# TODO: Use implementation from issue https://github.com/bluesky/ophyd-async/issues/954
+@dataclass
 class PmacMotorInfo:
-    def __init__(self, cs_port, cs_number, motor_cs_index, motor_acceleration_rate):
-        self.cs_port: str = cs_port
-        self.cs_number: int = cs_number
-        self.motor_cs_index: dict[Motor, int] = motor_cs_index
-        self.motor_acceleration_rate: dict[Motor, float] = motor_acceleration_rate
+    cs_port: str
+    cs_number: int
+    motor_cs_index: dict[Motor, int]
+    motor_acceleration_rate: dict[Motor, float]
 
 
 def calculate_ramp_position_and_duration(
     slice: Slice, motor_info: PmacMotorInfo, is_up: bool
 ) -> tuple[dict[Motor, float], float]:
+    if slice.duration is None:
+        raise ValueError("Slice must have a duration")
+
     scan_axes = slice.axes()
-    scan_size = len(slice)
-    assert slice.duration is not None  # noqa: S101
-    gaps = _calculate_gaps(slice)
-    if not gaps[0]:
-        gaps = np.delete(gaps, 0)
+    idx = 0 if is_up else -1
 
-    positions: dict[int, npt.NDArray[np.float64]] = {}
-    velocities: dict[int, npt.NDArray[np.float64]] = {}
-
-    # Initialise positions and velocities arrays
+    velocities: dict[Motor, float] = {}
+    ramp_times: list[float] = []
     for axis in scan_axes:
-        cs_index = motor_info.motor_cs_index[axis]
-        positions[cs_index] = np.empty(
-            2 * scan_size + ((len(gaps) + 1) * 5) + 1, dtype=np.float64
-        )
-        velocities[cs_index] = np.empty(
-            2 * scan_size + ((len(gaps) + 1) * 5) + 1, dtype=np.float64
-        )
+        velocity = (slice.upper[axis][idx] - slice.lower[axis][idx]) / slice.duration[
+            idx
+        ]
+        velocities[axis] = velocity
+        ramp_times.append(abs(velocity) / motor_info.motor_acceleration_rate[axis])
 
-    # Get starting points
-    for axis in scan_axes:
-        cs_index = motor_info.motor_cs_index[axis]
-        positions[cs_index][0] = slice.lower[axis][0]
-        positions[cs_index][1] = slice.upper[axis][0]
-        velocities[cs_index][0:2] = np.repeat(
-            (slice.upper[axis][0] - slice.lower[axis][0] / slice.duration[0]), 2, axis=0
-        )
+    max_ramp_time = max(ramp_times)
 
-    pass
+    motor_to_ramp_position = {}
+    sign = -1 if is_up else 1
+    for axis, v in velocities.items():
+        ref_pos = slice.lower[axis][0] if is_up else slice.upper[axis][-1]
+        displacement = 0.5 * v * max_ramp_time
+        motor_to_ramp_position[axis] = ref_pos + sign * displacement
 
-
-def _calculate_gaps(slice: Slice):
-    inds = np.argwhere(slice.gap)
-    if len(inds) == 0:
-        return [len(slice)]
-    else:
-        return inds
+    return (motor_to_ramp_position, max_ramp_time)
