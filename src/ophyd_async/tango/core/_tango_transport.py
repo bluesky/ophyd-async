@@ -868,7 +868,9 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             self._type_match_ndarray(signal_type, tr_dtype)
             return
         else:
-            raise TypeError(tango_resource, "has type", str(signal_type), "which is not recognized")
+            raise TypeError(
+                tango_resource, "has type", str(signal_type), "which is not recognized"
+            )
 
     def _type_match_scalar(
         self,

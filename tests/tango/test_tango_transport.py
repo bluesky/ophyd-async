@@ -954,6 +954,7 @@ async def test_type_mismatch_sequence(tango_test_device):
     assert "Sequence" in val
     assert "int" in val
 
+
 @pytest.mark.asyncio
 @pytest.mark.timeout(10)
 async def test_type_mismatch_longstringarray(tango_test_device):
