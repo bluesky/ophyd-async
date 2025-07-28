@@ -908,63 +908,63 @@ async def test_tango_transport_nonexistent_trl(tango_test_device):
 
 
 # ----------------------------------------------------------------------
-# @pytest.mark.asyncio
-# @pytest.mark.timeout(10)
-# async def test_type_mismatch_justvalue(tango_test_device):
-#     device_proxy = await DeviceProxy(tango_test_device)
-#     trl = get_full_attr_trl(tango_test_device, "justvalue")
-#
-#     transport = TangoSignalBackend(float, trl, trl, device_proxy)
-#     with pytest.raises(TypeError) as exc_info:
-#         await transport.connect(1)
-#     val = str(exc_info.value)
-#     assert "has type" in val
-#     assert "int" in val
-#     assert "float" in val
-#
+@pytest.mark.asyncio
+@pytest.mark.timeout(10)
+async def test_type_mismatch_justvalue(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    trl = get_full_attr_trl(tango_test_device, "justvalue")
 
-# @pytest.mark.asyncio
-# @pytest.mark.timeout(10)
-# async def test_type_mismatch_array(tango_test_device):
-#     device_proxy = await DeviceProxy(tango_test_device)
-#     trl = get_full_attr_trl(tango_test_device, "array")
-#
-#     transport = TangoSignalBackend(npt.NDArray[int], trl, trl, device_proxy)
-#     with pytest.raises(TypeError) as exc_info:
-#         await transport.connect(1)
-#     val = str(exc_info.value)
-#     assert "has type numpy.ndarray" in val
-#     assert "numpy.dtype" in val
-#     assert "float" in val
-#     assert "int" in val
-#
-#
-# @pytest.mark.asyncio
-# @pytest.mark.timeout(10)
-# async def test_type_mismatch_sequence(tango_test_device):
-#     device_proxy = await DeviceProxy(tango_test_device)
-#     trl = get_full_attr_trl(tango_test_device, "sequence")
-#
-#     transport = TangoSignalBackend(Sequence[int], trl, trl, device_proxy)
-#     with pytest.raises(TypeError) as exc_info:
-#         await transport.connect(1)
-#     val = str(exc_info.value)
-#     assert "has type" in val
-#     assert "str" in val
-#     assert "Sequence" in val
-#     assert "int" in val
-#
-#
-# @pytest.mark.asyncio
-# @pytest.mark.timeout(10)
-# async def test_type_mismatch_longstringarray(tango_test_device):
-#     device_proxy = await DeviceProxy(tango_test_device)
-#     trl = get_full_attr_trl(tango_test_device, "get_longstringarray")
-#
-#     transport = TangoSignalBackend(TangoDoubleStringTable, trl, trl, device_proxy)
-#     with pytest.raises(TypeError) as exc_info:
-#         await transport.connect(1)
-#     val = str(exc_info.value)
-#     assert "has type" in val
-#     assert "TangoLongStringTable" in val
-#     assert "TangoDoubleStringTable" in val
+    transport = TangoSignalBackend(float, trl, trl, device_proxy)
+    with pytest.raises(TypeError) as exc_info:
+        await transport.connect(1)
+    val = str(exc_info.value)
+    assert "has type" in val
+    assert "int" in val
+    assert "float" in val
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(10)
+async def test_type_mismatch_array(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    trl = get_full_attr_trl(tango_test_device, "array")
+
+    transport = TangoSignalBackend(npt.NDArray[int], trl, trl, device_proxy)
+    with pytest.raises(TypeError) as exc_info:
+        await transport.connect(1)
+    val = str(exc_info.value)
+    assert "has type numpy.ndarray" in val
+    assert "numpy.dtype" in val
+    assert "float" in val
+    assert "int" in val
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(10)
+async def test_type_mismatch_sequence(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    trl = get_full_attr_trl(tango_test_device, "sequence")
+
+    transport = TangoSignalBackend(Sequence[int], trl, trl, device_proxy)
+    with pytest.raises(TypeError) as exc_info:
+        await transport.connect(1)
+    val = str(exc_info.value)
+    assert "has type" in val
+    assert "str" in val
+    assert "Sequence" in val
+    assert "int" in val
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(10)
+async def test_type_mismatch_longstringarray(tango_test_device):
+    device_proxy = await DeviceProxy(tango_test_device)
+    trl = get_full_attr_trl(tango_test_device, "get_longstringarray")
+
+    transport = TangoSignalBackend(TangoDoubleStringTable, trl, trl, device_proxy)
+    with pytest.raises(TypeError) as exc_info:
+        await transport.connect(1)
+    val = str(exc_info.value)
+    assert "has type" in val
+    assert "TangoLongStringTable" in val
+    assert "TangoDoubleStringTable" in val
