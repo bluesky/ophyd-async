@@ -10,15 +10,6 @@ import numpy as np
 import pytest
 import tango
 from bluesky import RunEngine
-from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
-from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
-from ophyd_async.tango.demo import (
-    DemoCounterServer,
-    DemoMotorServer,
-    TangoDetector,
-)
-from ophyd_async.testing import assert_reading
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -32,6 +23,11 @@ from tango.server import Device, attribute, command
 from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
+from ophyd_async.tango.demo import (
+    DemoCounterServer,
+    DemoMotorServer,
+    TangoDetector,
+)
 from ophyd_async.testing import assert_reading
 
 T = TypeVar("T")

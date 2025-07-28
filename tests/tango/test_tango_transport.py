@@ -34,15 +34,6 @@ from ophyd_async.tango.core import (
     get_trl_descriptor,
 )
 from ophyd_async.tango.testing import OneOfEverythingTangoServer
-from tango import (
-    CmdArgType,
-    DevState,
-)
-from tango.asyncio import DeviceProxy
-from tango.asyncio_executor import (
-    AsyncioExecutor,
-    get_global_executor,
-)
 
 
 # --------------------------------------------------------------------
