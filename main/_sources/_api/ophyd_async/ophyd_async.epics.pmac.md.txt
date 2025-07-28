@@ -15,8 +15,8 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`PmacAxisIO <ophyd_async.epics.pmac._pmac_io.PmacAxisIO>`
-  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacAxisIO
+* - {py:obj}`PmacAxisAssignmentIO <ophyd_async.epics.pmac._pmac_io.PmacAxisAssignmentIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacAxisAssignmentIO
     :summary:
     ```
 * - {py:obj}`PmacCoordIO <ophyd_async.epics.pmac._pmac_io.PmacCoordIO>`
@@ -35,12 +35,12 @@
 
 ### API
 
-````{py:class} PmacAxisIO(prefix: str, name: str = '')
-:canonical: ophyd_async.epics.pmac._pmac_io.PmacAxisIO
+````{py:class} PmacAxisAssignmentIO(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.pmac._pmac_io.PmacAxisAssignmentIO
 
 Bases: {py:obj}`ophyd_async.core.Device`
 
-```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacAxisIO
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacAxisAssignmentIO
 ```
 
 ````
@@ -55,7 +55,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ````
 
-````{py:class} PmacIO(prefix: str, axis_nums: ~collections.abc.Sequence[int], coord_nums: ~collections.abc.Sequence[int], name: str = '')
+````{py:class} PmacIO(prefix: str, raw_motors: ~collections.abc.Sequence[~ophyd_async.epics.motor.Motor], coord_nums: ~collections.abc.Sequence[int], name: str = '')
 :canonical: ophyd_async.epics.pmac._pmac_io.PmacIO
 
 Bases: {py:obj}`ophyd_async.core.Device`
