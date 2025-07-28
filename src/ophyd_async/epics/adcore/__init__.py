@@ -33,6 +33,7 @@ from ._utils import (
     NDAttributeParam,
     NDAttributePv,
     NDAttributePvDbrType,
+    ndattributes_to_xml,
     stop_busy_record,
 )
 
@@ -68,4 +69,5 @@ __all__ = [
     "NDAttributePvDbrType",
     "NDCBFlushOnSoftTrgMode",
     "NDPluginCBIO",
+    "ndattributes_to_xml",
 ]
