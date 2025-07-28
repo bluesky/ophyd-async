@@ -19,7 +19,7 @@ class SimDetector(adcore.AreaDetector[SimController]):
         fileio_suffix: str | None = None,
         name="",
         config_sigs: Sequence[SignalR] = (),
-        plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
+        plugins: dict[str, adcore.NDArrayBaseIO] | None = None,
     ):
         driver = SimDriverIO(prefix + drv_suffix)
         controller = SimController(driver)

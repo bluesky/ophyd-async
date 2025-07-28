@@ -14,7 +14,7 @@ from ophyd_async.core import (
     PathProvider,
 )
 
-from ._core_io import NDFileHDFIO, NDPluginBaseIO
+from ._core_io import NDArrayBaseIO, NDFileHDFIO
 from ._core_writer import ADWriter
 from ._utils import (
     convert_param_dtype_to_np,
@@ -36,7 +36,7 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         fileio: NDFileHDFIO,
         path_provider: PathProvider,
         dataset_describer: DatasetDescriber,
-        plugins: dict[str, NDPluginBaseIO] | None = None,
+        plugins: dict[str, NDArrayBaseIO] | None = None,
     ) -> None:
         super().__init__(
             fileio,

@@ -23,7 +23,7 @@ class AravisDetector(adcore.AreaDetector[AravisController]):
         fileio_suffix: str | None = None,
         name: str = "",
         config_sigs: Sequence[SignalR] = (),
-        plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
+        plugins: dict[str, adcore.NDArrayBaseIO] | None = None,
     ):
         driver = AravisDriverIO(prefix + drv_suffix)
         controller = AravisController(driver)

@@ -5,7 +5,7 @@ from ophyd_async.epics.adcore import (
     ADHDFWriter,
     ADWriter,
     AreaDetector,
-    NDPluginBaseIO,
+    NDArrayBaseIO,
 )
 
 from ._kinetix_controller import KinetixController
@@ -26,7 +26,7 @@ class KinetixDetector(AreaDetector[KinetixController]):
         writer_cls: type[ADWriter] = ADHDFWriter,
         fileio_suffix: str | None = None,
         name: str = "",
-        plugins: dict[str, NDPluginBaseIO] | None = None,
+        plugins: dict[str, NDArrayBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
     ):
         driver = KinetixDriverIO(prefix + drv_suffix)

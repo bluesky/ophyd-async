@@ -23,7 +23,7 @@ class Andor2Detector(adcore.AreaDetector[Andor2Controller]):
         fileio_suffix: str | None = None,
         name: str = "",
         config_sigs: Sequence[SignalR] = (),
-        plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
+        plugins: dict[str, adcore.NDArrayBaseIO] | None = None,
     ):
         driver = Andor2DriverIO(prefix + drv_suffix)
         controller = Andor2Controller(driver)

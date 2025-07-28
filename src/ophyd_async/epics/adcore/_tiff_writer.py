@@ -1,6 +1,6 @@
 from ophyd_async.core import DatasetDescriber, PathProvider
 
-from ._core_io import NDFilePluginIO, NDPluginBaseIO
+from ._core_io import NDArrayBaseIO, NDFilePluginIO
 from ._core_writer import ADWriter
 
 
@@ -12,7 +12,7 @@ class ADTIFFWriter(ADWriter[NDFilePluginIO]):
         fileio: NDFilePluginIO,
         path_provider: PathProvider,
         dataset_describer: DatasetDescriber,
-        plugins: dict[str, NDPluginBaseIO] | None = None,
+        plugins: dict[str, NDArrayBaseIO] | None = None,
     ) -> None:
         super().__init__(
             fileio,

@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from ophyd_async.core import SignalR, StandardDetector
 from ophyd_async.core._providers import PathProvider
 
-from ._core_io import ADBaseIO, NDPluginBaseIO, NDPluginCBIO
+from ._core_io import ADBaseIO, NDArrayBaseIO, NDPluginCBIO
 from ._core_logic import ADBaseContAcqController, ADBaseControllerT
 from ._core_writer import ADWriter
 from ._hdf_writer import ADHDFWriter
@@ -14,7 +14,7 @@ class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
         self,
         controller: ADBaseControllerT,
         writer: ADWriter,
-        plugins: dict[str, NDPluginBaseIO] | None = None,
+        plugins: dict[str, NDArrayBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ):
@@ -25,6 +25,10 @@ class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
             for plugin_name, plugin in plugins.items():
                 setattr(self, plugin_name, plugin)
 
+        # Add the driver to the plugins dict so that NDAttributes applied
+        # to the driver are saved in resulting files.
+        writer._plugins[name] = self.driver  # noqa: SLF001
+
         super().__init__(
             controller,
             writer,
@@ -33,8 +37,8 @@ class AreaDetector(StandardDetector[ADBaseControllerT, ADWriter]):
         )
 
     def get_plugin(
-        self, name: str, plugin_type: type[NDPluginBaseIO] = NDPluginBaseIO
-    ) -> NDPluginBaseIO:
+        self, name: str, plugin_type: type[NDArrayBaseIO] = NDArrayBaseIO
+    ) -> NDArrayBaseIO:
         plugin = getattr(self, name, None)
         if not isinstance(plugin, plugin_type):
             raise TypeError(
@@ -56,7 +60,7 @@ class ContAcqAreaDetector(AreaDetector[ADBaseContAcqController]):
         writer_cls: type[ADWriter] = ADHDFWriter,
         fileio_suffix: str | None = None,
         name: str = "",
-        plugins: dict[str, NDPluginBaseIO] | None = None,
+        plugins: dict[str, NDArrayBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
     ):
         self.cb_plugin = NDPluginCBIO(prefix + cb_suffix)
