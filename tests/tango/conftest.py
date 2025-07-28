@@ -39,7 +39,6 @@ def pytest_collection_modifyitems(config, items):
                         reason="Tango is currently not supported on Python 3.12: https://github.com/bluesky/ophyd-async/issues/681"
                     )
                 )
-            item.add_marker(pytest.mark.forked)
             item.add_marker(pytest.mark.timeout(5))
 
 
