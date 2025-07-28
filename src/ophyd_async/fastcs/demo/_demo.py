@@ -8,34 +8,25 @@ from fastcs.attributes import (
     AttrHandlerR,
     AttrR,
     AttrRW,
-    SimpleAttrHandler,
 )
 from fastcs.controller import Controller, SubController
 from fastcs.datatypes import Bool, Enum, Float, Int
-from fastcs.wrappers import command
-
-from ophyd_async.epics.demo import EnergyMode
+from fastcs.wrappers import command, scan
 
 # FastCS uses enum labels as the string value, value being an arbitrary index
-_EnergyMode = enum.Enum(
-    "_EnergyMode", {e.value: idx for idx, e in enumerate(EnergyMode)}
-)
+EnergyMode = enum.Enum("EnergyMode", {"Low Energy": 0, "High Energy": 1})
+
+update_period: float = 0.1
 
 
-@dataclass
-class ReadbackUpdater(AttrHandlerR):
-    # implementing logic from src/ophyd_async/epics/demo/motor.db
-    update_period: float | None = 0.1
-
-    async def initialise(self, controller: "DemoMotorController"):
-        self._setpoint = controller.setpoint
-        self._velocity = controller.velocity
-
-    async def update(self, attr: AttrR) -> None:
-        readback = attr.get()  # A
-        setpoint = self._setpoint.get()  # B
-        velocity = self._velocity.get()
-        velocity_div = velocity * self.update_period  # C
+class DemoMotorController(SubController):
+    @scan(update_period)
+    async def update_readback(self) -> None:
+        # implementing logic from src/ophyd_async/epics/demo/motor.db
+        readback = self.readback.get()  # A
+        setpoint = self.setpoint.get()  # B
+        velocity = self.velocity.get()
+        velocity_div = velocity * update_period  # C
         if abs(setpoint - readback) < velocity_div:
             new_readback = setpoint
         elif setpoint > readback:
@@ -43,18 +34,13 @@ class ReadbackUpdater(AttrHandlerR):
         else:  # setpoint <= readback
             new_readback = readback - velocity_div
         new_readback = max(0.0, new_readback)  # recreates DRVL logic
-        await attr.set(new_readback)
+        await self.readback.set(new_readback)
 
-
-class DemoMotorController(SubController):
-    readback = AttrR(Float(units="mm", prec=3), handler=ReadbackUpdater())
-    # SimpleHander provides a trivial put method
-    setpoint = AttrRW(
-        Float(units="mm", prec=3), handler=SimpleAttrHandler(), initial_value=0.0
-    )
+    readback = AttrR(Float(units="mm", prec=3))
+    setpoint = AttrRW(Float(units="mm", prec=3), initial_value=0.0)
     velocity = (
         AttrRW(  # maybe this should be an AttrR since we don't want to have an _RBV?
-            Float(units="mm/s", prec=3), handler=SimpleAttrHandler(), initial_value=1.0
+            Float(units="mm/s", prec=3), initial_value=1.0
         )
     )
 
@@ -95,7 +81,7 @@ class ValueHandler(AttrHandlerR):
         y_readback = self._y_readback.get()  # B
         channel = self._channel  # C
         mode = self._mode.get()  # D
-        if mode == _EnergyMode["Low Energy"]:
+        if mode == EnergyMode["Low Energy"]:
             mode_rval = 10
         else:  # HIGH
             mode_rval = 100
@@ -112,7 +98,7 @@ class DemoPointDetectorChannelController(SubController):
     """A channel for `DemoPointDetector` with int value based on X and Y Motors."""
 
     value = AttrR(Int(units="cts"), handler=ValueHandler())
-    mode = AttrRW(Enum(_EnergyMode))
+    mode = AttrRW(Enum(EnergyMode))
 
     def __init__(self, channel, parent):
         self.channel = channel
