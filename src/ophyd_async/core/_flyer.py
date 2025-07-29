@@ -17,15 +17,15 @@ class FlyerController(ABC, Generic[T]):
 
     @abstractmethod
     async def prepare(self, value: T) -> Any:
-        """Move to the start of the flyscan."""
+        """Move to the start of the fly scan."""
 
     @abstractmethod
     async def kickoff(self):
-        """Start the flyscan."""
+        """Start the fly scan."""
 
     @abstractmethod
     async def complete(self):
-        """Block until the flyscan is done."""
+        """Block until the fly scan is done."""
 
     @abstractmethod
     async def stop(self):
@@ -101,7 +101,7 @@ class StandardFlyer(
         return AsyncStatus(self._prepare(value))
 
     async def _prepare(self, value: T) -> None:
-        # Move to start and setup the flyscan
+        # Move to start and setup the fly scan
         await self._trigger_logic.prepare(value)
 
     @AsyncStatus.wrap

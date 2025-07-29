@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
-from pathlib import Path
 
 from bluesky.protocols import StreamAsset
 from event_model import DataKey
@@ -67,8 +66,7 @@ class PandaHDFWriter(DetectorWriter):
         describe = await self._describe(name)
 
         self._composer = HDFDocumentComposer(
-            Path(await self.panda_data_block.hdf_directory.get_value())
-            / Path(await self.panda_data_block.hdf_file_name.get_value()),
+            f"{info.directory_uri}{info.filename}.h5",
             self._datasets,
         )
 

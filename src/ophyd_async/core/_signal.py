@@ -17,6 +17,7 @@ from bluesky.protocols import (
     Subscribable,
 )
 from event_model import DataKey
+from stamina import retry_context
 
 from ._device import Device, DeviceConnector
 from ._mock_signal_backend import MockSignalBackend
@@ -89,9 +90,11 @@ class Signal(Device, Generic[SignalDatatypeT]):
         backend: SignalBackend[SignalDatatypeT],
         timeout: float | None = DEFAULT_TIMEOUT,
         name: str = "",
+        attempts: int = 1,
     ) -> None:
         super().__init__(name=name, connector=SignalConnector(backend))
         self._timeout = timeout
+        self._attempts = attempts
 
     @property
     def source(self) -> str:
@@ -144,7 +147,8 @@ class _SignalCache(Generic[SignalDatatypeT]):
         )
         self._reading = reading
         self._valid.set()
-        for function, want_value in self._listeners.items():
+        items = self._listeners.copy().items()
+        for function, want_value in items:
             self._notify(function, want_value)
 
     def _notify(
@@ -287,7 +291,16 @@ class SignalW(Signal[SignalDatatypeT], Movable):
             timeout = self._timeout
         source = self._connector.backend.source(self.name, read=False)
         self.log.debug(f"Putting value {value} to backend at source {source}")
-        await _wait_for(self._connector.backend.put(value, wait=wait), timeout, source)
+        async for attempt in retry_context(
+            on=asyncio.TimeoutError,
+            attempts=self._attempts,
+            wait_initial=0,
+            wait_jitter=0,
+        ):
+            with attempt:
+                await _wait_for(
+                    self._connector.backend.put(value, wait=wait), timeout, source
+                )
         self.log.debug(f"Successfully put value {value} to backend at source {source}")
 
 

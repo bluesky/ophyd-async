@@ -65,7 +65,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have
         # 2 or they will deadlock
-        await stop_busy_record(self.driver.acquire, False, timeout=1)
+        await stop_busy_record(self.driver.acquire, False)
 
     async def set_exposure_time_and_acquire_period_if_supplied(
         self,
@@ -218,7 +218,7 @@ class ADBaseContAcqController(ADBaseController[ADBaseIO]):
         await self.cb_plugin.trigger.set(True, wait=False)
 
     async def disarm(self) -> None:
-        await stop_busy_record(self.cb_plugin.capture, False, timeout=1)
+        await stop_busy_record(self.cb_plugin.capture, False)
         if self._arm_status and not self._arm_status.done:
             await self._arm_status
         self._arm_status = None
