@@ -67,6 +67,11 @@ class _PmacMotorInfo:
         motor_cs_index = {}
         for motor in cs_axes:
             motor_cs_index[motor] = "ABCUVWXYZ".index(cs_axes[motor])
+            if len(set(motor_cs_index.values())) != len(motor_cs_index.items()):
+                raise RuntimeError(
+                    "Failed to fetch distinct CS Axes."
+                    "Motors passed are assigned to the same CS Axis"
+                )
 
         motor_acceleration_rate = {
             motor: float(velocities[motor]) / float(accls[motor])

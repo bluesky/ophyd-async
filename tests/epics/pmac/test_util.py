@@ -67,3 +67,18 @@ async def test_multiple_cs_number_raises_runtime_error(
 
     with pytest.raises(RuntimeError, match="multiple CS numbers"):
         await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
+
+
+async def test_duplicate_cs_axis_letter_raises_runtime_error(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    sim_pmac, sim_x_motor, sim_y_motor = sim_motors
+    set_mock_value(
+        sim_pmac.assignment[
+            sim_pmac.motor_assignment_index[sim_x_motor]
+        ].cs_axis_letter,
+        "Y",
+    )
+
+    with pytest.raises(RuntimeError, match="same CS Axis"):
+        await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
