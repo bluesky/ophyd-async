@@ -18,6 +18,7 @@ from ophyd_async.core import (
     set_and_wait_for_value,
     wait_for_value,
 )
+from ophyd_async.epics.adcore import stop_busy_record
 from ophyd_async.epics.core import (
     epics_signal_r,
     epics_signal_rw,
@@ -159,9 +160,7 @@ class OdinWriter(DetectorWriter):
         raise NotImplementedError()
 
     async def close(self) -> None:
-        await set_and_wait_for_value(
-            self._drv.capture, Writing.DONE, Writing.DONE, wait_for_set_completion=False
-        )
+        await stop_busy_record(self._drv.capture, Writing.DONE, timeout=DEFAULT_TIMEOUT)
         await self._drv.meta_stop.set(True, wait=True)
         if self._capture_status and not self._capture_status.done:
             await self._capture_status
