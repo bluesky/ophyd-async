@@ -99,10 +99,10 @@ class NDROIStatIO(NDPluginBaseIO):
     """
 
     def __init__(self, prefix, num_channels=8, with_pvi=False, name=""):
-        super().__init__(prefix, with_pvi, name)
         self.channels = DeviceVector(
-            {i: NDROIStatNIO(f"{prefix}:{i}") for i in range(1, num_channels + 1)}
+            {i: NDROIStatNIO(f"{prefix}{i}:") for i in range(1, num_channels + 1)}
         )
+        super().__init__(prefix, with_pvi, name)
 
 
 class NDROIStatNIO(EpicsDevice):
@@ -114,7 +114,7 @@ class NDROIStatNIO(EpicsDevice):
     See definition in ADApp/pluginSrc/NDPluginROIStat.h in https://github.com/areaDetector/ADCore.
 
     Attributes:
-        roi_name: The name of the ROI.
+        name: The name of the ROI.
         use: Flag indicating whether the ROI is used.
         min_x: The start X-coordinate of the ROI.
         min_y: The start Y-coordinate of the ROI.
@@ -126,17 +126,17 @@ class NDROIStatNIO(EpicsDevice):
         total: Total counts in the ROI.
     """
 
-    roi_name: A[SignalRW[str], PvSuffix.rbv("Name", "")]
+    name_: A[SignalRW[str], PvSuffix("Name")]
     use: A[SignalRW[bool], PvSuffix.rbv("Use")]
     min_x: A[SignalRW[int], PvSuffix.rbv("MinX")]
     min_y: A[SignalRW[int], PvSuffix.rbv("MinY")]
     size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
     size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
     # stats
-    min_value: A[SignalR[float], PvSuffix.rbv("MinValue")]
-    max_value: A[SignalR[float], PvSuffix.rbv("MaxValue")]
-    mean_value: A[SignalR[float], PvSuffix.rbv("MeanValue")]
-    total: A[SignalR[float], PvSuffix.rbv("Total")]
+    min_value: A[SignalR[float], PvSuffix("MinValue_RBV")]
+    max_value: A[SignalR[float], PvSuffix("MaxValue_RBV")]
+    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
+    total: A[SignalR[float], PvSuffix("Total_RBV")]
 
 
 class ADState(StrictEnum):
