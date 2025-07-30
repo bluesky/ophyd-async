@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import asyncio
 from collections.abc import Sequence
 from dataclasses import dataclass
 
 from ophyd_async.core._utils import gather_dict
 from ophyd_async.epics.motor import Motor
-from ophyd_async.epics.pmac._pmac_io import PmacIO
+from ophyd_async.epics.pmac._pmac_io import CS_LETTERS, PmacIO
 
 
 @dataclass
@@ -15,9 +17,19 @@ class _PmacMotorInfo:
     motor_acceleration_rate: dict[Motor, float]
 
     @classmethod
-    async def from_motors(
-        cls, pmac: PmacIO, motors: Sequence[Motor]
-    ) -> "_PmacMotorInfo":
+    async def from_motors(cls, pmac: PmacIO, motors: Sequence[Motor]) -> _PmacMotorInfo:
+        """Creates a _PmacMotorInfo instance based on a  controller and list of motors.
+
+        :param pmac: The PMAC device
+        :param motors: Sequence of motors involved in trajectory
+        :raises RuntimeError:
+            if motors do not share common CS port or CS number, or if
+            motors do not have unique CS index assignments
+        :returns:
+            _PmacMotorInfo instance with motor's common CS port and CS number, and
+            dictionaries of motor's to their unique CS index and accelerate rate
+
+        """
         assignments = {
             motor: pmac.assignment[pmac.motor_assignment_index[motor]]
             for motor in motors
@@ -66,11 +78,21 @@ class _PmacMotorInfo:
 
         motor_cs_index = {}
         for motor in cs_axes:
-            motor_cs_index[motor] = "ABCUVWXYZ".index(cs_axes[motor])
+            try:
+                if not cs_axes[motor]:
+                    raise ValueError
+                motor_cs_index[motor] = CS_LETTERS.index(cs_axes[motor])
+            except ValueError as err:
+                raise ValueError(
+                    "Failed to get motor CS index. "
+                    f"Motor {motor.name} assigned to '{cs_axes[motor]}' "
+                    f"but must be assignmed to '{CS_LETTERS}"
+                ) from err
             if len(set(motor_cs_index.values())) != len(motor_cs_index.items()):
                 raise RuntimeError(
                     "Failed to fetch distinct CS Axes."
                     "Motors passed are assigned to the same CS Axis"
+                    f"{list(motor_cs_index)}"
                 )
 
         motor_acceleration_rate = {

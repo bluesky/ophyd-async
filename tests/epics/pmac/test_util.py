@@ -9,17 +9,15 @@ from ophyd_async.testing import set_mock_value
 
 @pytest.fixture
 async def sim_motors():
-    sim_x_motor = Motor("BLxxI-MO-STAGE-01:X", name="sim_x_motor")
-    sim_y_motor = Motor("BLxxI-MO-STAGE-01:Y", name="sim_y_motor")
     async with init_devices(mock=True):
+        sim_x_motor = Motor("BLxxI-MO-STAGE-01:X")
+        sim_y_motor = Motor("BLxxI-MO-STAGE-01:Y")
         sim_pmac = PmacIO(
             prefix="Test_PMAC",
-            name="sim_pmac",
             raw_motors=[sim_x_motor, sim_y_motor],
             coord_nums=[],
         )
-    await sim_x_motor.connect(mock=True)
-    await sim_y_motor.connect(mock=True)
+
     pmac_x = sim_pmac.assignment[sim_pmac.motor_assignment_index[sim_x_motor]]
     pmac_y = sim_pmac.assignment[sim_pmac.motor_assignment_index[sim_y_motor]]
     set_mock_value(pmac_x.cs_port, "CS1")
@@ -81,4 +79,19 @@ async def test_duplicate_cs_axis_letter_raises_runtime_error(
     )
 
     with pytest.raises(RuntimeError, match="same CS Axis"):
+        await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
+
+
+async def test_unexpected_cs_axis_letter_raises_value_error(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    sim_pmac, sim_x_motor, sim_y_motor = sim_motors
+    set_mock_value(
+        sim_pmac.assignment[
+            sim_pmac.motor_assignment_index[sim_x_motor]
+        ].cs_axis_letter,
+        "I",
+    )
+
+    with pytest.raises(ValueError, match="Failed to get motor CS index"):
         await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
