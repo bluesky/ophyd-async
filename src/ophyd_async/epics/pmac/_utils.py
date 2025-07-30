@@ -6,6 +6,11 @@ from scanspec.core import Slice
 
 from ophyd_async.epics.motor import Motor
 
+# PMAC durations are in milliseconds
+# We must convert from scanspec durations (seconds) to milliseconds
+# PMAC motion program multiples durations by 0.001
+# (see https://github.com/DiamondLightSource/pmac/blob/afe81f8bb9179c3a20eff351f30bc6cfd1539ad9/pmacApp/pmc/trajectory_scan_code_ppmac.pmc#L241)
+# Therefore, we must divide scanspec durations by 10e-6
 TICK_S = 0.000001
 
 
