@@ -1,4 +1,5 @@
 import pytest
+from numpy import ones
 from scanspec.core import Path
 from scanspec.specs import Line, fly
 
@@ -24,10 +25,10 @@ async def sim_y_motor():
 
 
 async def test_trajectory_from_slice(sim_x_motor):
-    spec = fly(Line(sim_x_motor, 1, 5, 9), 1)
+    spec = fly(Line(sim_x_motor, 1, 5, 9), 2)
     slice = Path(spec.calculate()).consume()
 
-    trajectory = Trajectory.from_slice(slice, 0.05, True)
+    trajectory = Trajectory.from_slice(slice)
 
     assert trajectory.positions[sim_x_motor] == pytest.approx(
         [
@@ -54,97 +55,50 @@ async def test_trajectory_from_slice(sim_x_motor):
 
     assert trajectory.velocities[sim_x_motor] == pytest.approx(
         [
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
+            0.25,
         ]
     )
 
-    assert trajectory.velocities[sim_x_motor] == pytest.approx(
-        [
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-        ]
-    )
-
-    assert (
-        trajectory.user_programs
-        == [
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            8,
-        ]
-    ).all()
+    assert trajectory.user_programs.all() == ones(18, float).all()
 
     assert (
         trajectory.durations
         == [
-            50000.0,
+            2000000.0,
             1000000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            500000.0,
-            50000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
+            1000000.0,
         ]
     ).all()
 
@@ -156,4 +110,4 @@ async def test_trajectory_from_slice_raises_runtime_error_if_gap(
     slice = Path(spec.calculate()).consume()
 
     with pytest.raises(RuntimeError, match="Slice has gaps"):
-        Trajectory.from_slice(slice, 0.05, True)
+        Trajectory.from_slice(slice)
