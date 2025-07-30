@@ -20,8 +20,6 @@ class Trajectory:
     def from_slice(
         cls,
         slice: Slice,
-        ramp_up_duration: float,
-        ramp_down=False,
     ) -> "Trajectory":
         """Parse a trajectory with no gaps from a slice.
 
@@ -50,9 +48,8 @@ class Trajectory:
         for axis in scan_axes:
             positions[axis] = np.empty(2 * scan_size, float)
             velocities[axis] = np.empty(2 * scan_size, float)
-        durations: npt.NDArray[np.float64] = np.empty(2 * scan_size + 1, float)
-        user_programs: npt.NDArray[np.int32] = np.ones(2 * scan_size + 1, float)
-        user_programs[-1] = 8
+        durations: npt.NDArray[np.float64] = np.empty(2 * scan_size, float)
+        user_programs: npt.NDArray[np.int32] = np.ones(2 * scan_size, float)
 
         # Set starting points
         start = 0
@@ -75,23 +72,16 @@ class Trajectory:
                 positions[axis][idx + 1] = slice.upper[axis][point]
                 velocities[axis][idx] = (
                     slice.upper[axis][point] - slice.lower[axis][point]
-                )
+                ) / slice.duration[point]
                 velocities[axis][idx + 1] = (
                     slice.upper[axis][point] - slice.lower[axis][point]
-                )
+                ) / slice.duration[point]
                 idx += 2
 
-        # Use ramp up duration for initial point duration
-        durations[start] = int(ramp_up_duration / TICK_S)
-        # Full time for initial gap
-        durations[start + 1] = int(slice.duration[start] / TICK_S)
         # Half the time per point
-        durations[start + 2 : -1] = np.repeat(
-            slice.duration[start:-1] / (2 * TICK_S), 2
-        )
-        if ramp_down:
-            # Use ramp up duration as ramp down duration
-            durations[-1] = int(ramp_up_duration / TICK_S)
+        durations = np.repeat(slice.duration / (2 * TICK_S), 2)
+        # Full time for initial gap
+        durations[start] = int(slice.duration[start] / TICK_S)
 
         # Returned positions and velocities exclude ramp down state.
         # Returned user programs and durations include ramp down state.
