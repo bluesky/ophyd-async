@@ -1,8 +1,8 @@
 from typing import Annotated as A
 
-from ophyd_async.core import SignalRW, StrictEnum
+from ophyd_async.core import OnState, SignalRW, StrictEnum
 from ophyd_async.epics import adcore
-from ophyd_async.epics.core import OnState, PvSuffix
+from ophyd_async.epics.core import PvSuffix
 
 
 class VimbaConvertFormat(StrictEnum):

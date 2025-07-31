@@ -2,16 +2,12 @@ from typing import cast
 
 import pytest
 
-from ophyd_async.core import (
-    DetectorTrigger,
-    TriggerInfo,
-)
+from ophyd_async.core import DetectorTrigger, OnState, TriggerInfo
 from ophyd_async.epics import adcore, advimba
 from ophyd_async.epics.advimba import (
     VimbaExposeOutMode,
     VimbaTriggerSource,
 )
-from ophyd_async.epics.core import OnState
 from ophyd_async.testing import set_mock_value
 
 

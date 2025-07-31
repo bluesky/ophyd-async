@@ -1,4 +1,4 @@
-from ophyd_async.core import StrictEnum
+from ophyd_async.core._utils import StrictEnum
 
 
 class OnState(StrictEnum):

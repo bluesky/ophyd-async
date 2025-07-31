@@ -1,11 +1,7 @@
 import asyncio
 
-from ophyd_async.core import (
-    DetectorTrigger,
-    TriggerInfo,
-)
+from ophyd_async.core import DetectorTrigger, OnState, TriggerInfo
 from ophyd_async.epics import adcore
-from ophyd_async.epics.core._enums import OnState
 
 from ._vimba_io import VimbaDriverIO, VimbaExposeOutMode, VimbaTriggerSource
 

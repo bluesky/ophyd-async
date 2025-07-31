@@ -1,9 +1,14 @@
 import asyncio
 from typing import Annotated as A
 
-from ophyd_async.core import DatasetDescriber, SignalR, SignalRW, StrictEnum
+from ophyd_async.core import (
+    DatasetDescriber,
+    EnableState,
+    SignalR,
+    SignalRW,
+    StrictEnum,
+)
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
-from ophyd_async.epics.core._enums import EnableState
 
 from ._utils import ADBaseDataType, ADFileWriteMode, ADImageMode, convert_ad_dtype_to_np
 
