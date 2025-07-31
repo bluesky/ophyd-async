@@ -22,8 +22,6 @@ from ophyd_async.epics.core import (
     epics_signal_r,
     epics_signal_rw,
     epics_signal_rw_rbv,
-)
-from ophyd_async.epics.core._util import (
     stop_busy_record,
 )
 

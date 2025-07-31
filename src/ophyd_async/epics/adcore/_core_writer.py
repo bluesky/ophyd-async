@@ -19,7 +19,7 @@ from ophyd_async.core._signal import (
 )
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.core._utils import DEFAULT_TIMEOUT, error_if_none
-from ophyd_async.epics.core._util import stop_busy_record
+from ophyd_async.epics.core import stop_busy_record
 
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
 from ._core_io import (
