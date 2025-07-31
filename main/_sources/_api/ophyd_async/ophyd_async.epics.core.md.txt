@@ -59,6 +59,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_x
     :summary:
     ```
+* - {py:obj}`stop_busy_record <ophyd_async.epics.core._util.stop_busy_record>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._util.stop_busy_record
+    :summary:
+    ```
 ````
 
 ### API
@@ -209,5 +213,13 @@ Bases: {py:obj}`ophyd_async.core.Device`
 :canonical: ophyd_async.epics.core._signal.epics_signal_x
 
 ```{autodoc2-docstring} ophyd_async.epics.core._signal.epics_signal_x
+```
+````
+
+````{py:function} stop_busy_record(signal: ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT], value: ~ophyd_async.core.SignalDatatypeT, timeout: float = DEFAULT_TIMEOUT) -> None
+:canonical: ophyd_async.epics.core._util.stop_busy_record
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.core._util.stop_busy_record
 ```
 ````

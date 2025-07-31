@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.advimba._vimba_controller &#8212; ophyd-async 0.12.3.dev2+g8c3960883 documentation</title>
+    <title>ophyd_async.epics.core._util &#8212; ophyd-async 0.12.3.dev2+g8c3960883 documentation</title>
   
   
   
@@ -55,7 +55,7 @@
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
 window.addEventListener("load", () => mermaid.run());
 </script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/advimba/_vimba_controller';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/core/_util';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -445,7 +445,7 @@ window.addEventListener("load", () => mermaid.run());
     
     <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.advimba._vimba_controller</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.core._util</span></li>
   </ul>
 </nav>
 </div>
@@ -462,69 +462,99 @@ window.addEventListener("load", () => mermaid.run());
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.epics.advimba._vimba_controller</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+  <h1>Source code for ophyd_async.epics.core._util</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">get_args</span><span class="p">,</span> <span class="n">get_origin</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">DetectorTrigger</span><span class="p">,</span>
-    <span class="n">TriggerInfo</span><span class="p">,</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">SignalBackend</span><span class="p">,</span>
+    <span class="n">SignalDatatypeT</span><span class="p">,</span>
+    <span class="n">SignalRW</span><span class="p">,</span>
+    <span class="n">StrictEnum</span><span class="p">,</span>
+    <span class="n">SubsetEnum</span><span class="p">,</span>
+    <span class="n">SupersetEnum</span><span class="p">,</span>
+    <span class="n">get_dtype</span><span class="p">,</span>
+    <span class="n">get_enum_cls</span><span class="p">,</span>
+    <span class="n">wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adcore</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._vimba_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">VimbaDriverIO</span><span class="p">,</span> <span class="n">VimbaExposeOutMode</span><span class="p">,</span> <span class="n">VimbaOnOff</span><span class="p">,</span> <span class="n">VimbaTriggerSource</span>
-
-<span class="n">TRIGGER_MODE</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span> <span class="n">VimbaOnOff</span><span class="o">.</span><span class="n">OFF</span><span class="p">,</span>
-    <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">CONSTANT_GATE</span><span class="p">:</span> <span class="n">VimbaOnOff</span><span class="o">.</span><span class="n">ON</span><span class="p">,</span>
-    <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">VARIABLE_GATE</span><span class="p">:</span> <span class="n">VimbaOnOff</span><span class="o">.</span><span class="n">ON</span><span class="p">,</span>
-    <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EDGE_TRIGGER</span><span class="p">:</span> <span class="n">VimbaOnOff</span><span class="o">.</span><span class="n">ON</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="n">EXPOSE_OUT_MODE</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span> <span class="n">VimbaExposeOutMode</span><span class="o">.</span><span class="n">TIMED</span><span class="p">,</span>
-    <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">CONSTANT_GATE</span><span class="p">:</span> <span class="n">VimbaExposeOutMode</span><span class="o">.</span><span class="n">TRIGGER_WIDTH</span><span class="p">,</span>
-    <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">VARIABLE_GATE</span><span class="p">:</span> <span class="n">VimbaExposeOutMode</span><span class="o">.</span><span class="n">TRIGGER_WIDTH</span><span class="p">,</span>
-    <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EDGE_TRIGGER</span><span class="p">:</span> <span class="n">VimbaExposeOutMode</span><span class="o">.</span><span class="n">TIMED</span><span class="p">,</span>
-<span class="p">}</span>
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="VimbaController">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaController">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">VimbaController</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseController</span><span class="p">[</span><span class="n">VimbaDriverIO</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Controller for the Vimba detector.&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_pv_basename_and_field</span><span class="p">(</span><span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Split PV into record name and field.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;.&quot;</span> <span class="ow">in</span> <span class="n">pv</span><span class="p">:</span>
+        <span class="n">record</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="n">pv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">record</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="n">pv</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span>
 
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_supported_values</span><span class="p">(</span>
+    <span class="n">pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
+    <span class="n">pv_choices</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">T</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">enum_cls</span> <span class="o">=</span> <span class="n">get_enum_cls</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">enum_cls</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> is not an Enum&quot;</span><span class="p">)</span>
+    <span class="n">choices</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">enum_cls</span><span class="p">]</span>
+    <span class="n">error_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pv</span><span class="si">}</span><span class="s2"> has choices </span><span class="si">{</span><span class="n">pv_choices</span><span class="si">}</span><span class="s2">, but </span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> requested </span><span class="si">{</span><span class="n">choices</span><span class="si">}</span><span class="s2"> &quot;</span>
+    <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">enum_cls</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">pv_choices</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">error_msg</span> <span class="o">+</span> <span class="s2">&quot;to be strictly equal to them.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">enum_cls</span><span class="p">,</span> <span class="n">SubsetEnum</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">choices</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">pv_choices</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">error_msg</span> <span class="o">+</span> <span class="s2">&quot;to be a subset of them.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">enum_cls</span><span class="p">,</span> <span class="n">SupersetEnum</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">pv_choices</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">choices</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">error_msg</span> <span class="o">+</span> <span class="s2">&quot;to be a superset of them.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">datatype</span><span class="si">}</span><span class="s2"> is not a StrictEnum, SubsetEnum, or SupersetEnum&quot;</span><span class="p">)</span>
+    <span class="c1"># Create a map from the string value to the enum instance</span>
+    <span class="c1"># For StrictEnum and SupersetEnum, all values here will be enum values</span>
+    <span class="c1"># For SubsetEnum, only the values in choices will be enum values, the rest will be</span>
+    <span class="c1"># strings</span>
+    <span class="n">supported_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">enum_cls</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pv_choices</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">supported_values</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">format_datatype</span><span class="p">(</span><span class="n">datatype</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="ow">and</span> <span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">):</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">get_dtype</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Array1D[np.</span><span class="si">{</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">]&quot;</span>
+    <span class="k">elif</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Sequence</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Sequence[</span><span class="si">{</span><span class="n">get_args</span><span class="p">(</span><span class="n">datatype</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">]&quot;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">datatype</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">EpicsSignalBackend</span><span class="p">(</span><span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">driver</span><span class="p">:</span> <span class="n">VimbaDriverIO</span><span class="p">,</span>
-        <span class="n">good_states</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADState</span><span class="p">]</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">DEFAULT_GOOD_STATES</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">good_states</span><span class="o">=</span><span class="n">good_states</span><span class="p">)</span>
-
-<div class="viewcode-block" id="VimbaController.get_deadtime">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaController.get_deadtime">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="mf">0.001</span></div>
+        <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_pv</span> <span class="o">=</span> <span class="n">read_pv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_pv</span> <span class="o">=</span> <span class="n">write_pv</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="VimbaController.prepare">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaController.prepare">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">TRIGGER_MODE</span><span class="p">[</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">]),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">exposure_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">EXPOSE_OUT_MODE</span><span class="p">[</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span><span class="p">]),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">num_images</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">total_number_of_exposures</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">image_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADImageMode</span><span class="o">.</span><span class="n">MULTIPLE</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">VARIABLE_GATE</span><span class="p">,</span>
-            <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">CONSTANT_GATE</span><span class="p">,</span>
-        <span class="p">]:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire_time</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_source</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">VimbaTriggerSource</span><span class="o">.</span><span class="n">LINE1</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_source</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">VimbaTriggerSource</span><span class="o">.</span><span class="n">FREERUN</span><span class="p">)</span></div>
-</div>
+<div class="viewcode-block" id="stop_busy_record">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.stop_busy_record">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop_busy_record</span><span class="p">(</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
 
 </pre></div>
 
