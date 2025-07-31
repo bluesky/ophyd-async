@@ -20,11 +20,11 @@ from ophyd_async.core._signal import (
 )
 from ophyd_async.core._status import AsyncStatus
 from ophyd_async.core._utils import DEFAULT_TIMEOUT, error_if_none
+from ophyd_async.epics.core._enums import EnableState
 
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
 from ._core_io import (
     ADBaseDatasetDescriber,
-    ADCallbacks,
     NDArrayBaseIO,
     NDFileIO,
     NDFilePluginIO,
@@ -89,7 +89,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         )
 
         if isinstance(self.fileio, NDFilePluginIO):
-            await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
+            await self.fileio.enable_callbacks.set(EnableState.ENABLE)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.

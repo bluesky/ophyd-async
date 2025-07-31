@@ -11,6 +11,16 @@ class OnStateCapitalised(StrictEnum):
     OFF = "OFF"
 
 
+class EnableState(StrictEnum):
+    ENABLE = "Enable"
+    DISABLE = "Disable"
+
+
+class EnableStateCapitalised(StrictEnum):
+    ENABLE = "ENABLE"
+    DISABLE = "DISABLE"
+
+
 class EnabledState(StrictEnum):
     ENABLED = "Enabled"
     DISABLED = "Disabled"

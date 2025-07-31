@@ -1,6 +1,8 @@
 from ._enums import (
     EnabledState,
     EnabledStateCapitalised,
+    EnableState,
+    EnableStateCapitalised,
     InState,
     InStateCapitalised,
     OnState,
@@ -22,6 +24,8 @@ from ._signal import (
 __all__ = [
     "EnabledState",
     "EnabledStateCapitalised",
+    "EnableState",
+    "EnableStateCapitalised",
     "InState",
     "InStateCapitalised",
     "OnState",
