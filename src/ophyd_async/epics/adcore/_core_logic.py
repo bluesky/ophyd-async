@@ -11,6 +11,7 @@ from ophyd_async.core import (
     set_and_wait_for_value,
 )
 from ophyd_async.epics.core._enums import EnableState
+from ophyd_async.epics.core import stop_busy_record
 
 from ._core_io import (
     ADBaseIO,
@@ -18,7 +19,7 @@ from ._core_io import (
     NDCBFlushOnSoftTrgMode,
     NDPluginCBIO,
 )
-from ._utils import ADImageMode, stop_busy_record
+from ._utils import ADImageMode
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well

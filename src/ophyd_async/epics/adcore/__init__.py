@@ -32,7 +32,6 @@ from ._utils import (
     NDAttributeParam,
     NDAttributePv,
     NDAttributePvDbrType,
-    stop_busy_record,
 )
 
 __all__ = [
@@ -62,7 +61,6 @@ __all__ = [
     "NDAttributePv",
     "NDAttributeParam",
     "NDAttributeDataType",
-    "stop_busy_record",
     "NDAttributePvDbrType",
     "NDCBFlushOnSoftTrgMode",
     "NDPluginCBIO",
