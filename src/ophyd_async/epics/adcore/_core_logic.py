@@ -10,8 +10,8 @@ from ophyd_async.core import (
     observe_value,
     set_and_wait_for_value,
 )
-from ophyd_async.epics.core._enums import EnableState
 from ophyd_async.epics.core import stop_busy_record
+from ophyd_async.epics.core._enums import EnableState
 
 from ._core_io import (
     ADBaseIO,
