@@ -6,7 +6,7 @@ from unittest.mock import ANY, AsyncMock, MagicMock
 import pytest
 
 from ophyd_async.core import init_devices
-from ophyd_async.epics.eiger import Odin, OdinWriter, Writing
+from ophyd_async.epics.odin import Odin, OdinWriter, Writing
 from ophyd_async.testing import (
     callback_on_mock_put,
     get_mock_put,
