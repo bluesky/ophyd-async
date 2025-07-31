@@ -1,3 +1,11 @@
+from ._enums import (
+    EnabledState,
+    EnabledStateCapitalised,
+    InState,
+    InStateCapitalised,
+    OnState,
+    OnStateCapitalised,
+)
 from ._epics_connector import EpicsDeviceConnector, PvSuffix
 from ._epics_device import EpicsDevice
 from ._pvi_connector import PviDeviceConnector
@@ -12,6 +20,12 @@ from ._signal import (
 )
 
 __all__ = [
+    "EnabledState",
+    "EnabledStateCapitalised",
+    "InState",
+    "InStateCapitalised",
+    "OnState",
+    "OnStateCapitalised",
     "PviDeviceConnector",
     "EpicsDeviceConnector",
     "PvSuffix",

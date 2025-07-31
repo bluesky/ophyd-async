@@ -2,7 +2,7 @@ from typing import Annotated as A
 
 from ophyd_async.core import SignalRW, StrictEnum
 from ophyd_async.epics import adcore
-from ophyd_async.epics.core import PvSuffix
+from ophyd_async.epics.core import OnState, PvSuffix
 
 
 class VimbaConvertFormat(StrictEnum):
@@ -30,15 +30,8 @@ class VimbaTriggerSource(StrictEnum):
 class VimbaOverlap(StrictEnum):
     """Overlap modes for the Vimba detector."""
 
-    OFF = "Off"
+    OFF = OnState.OFF
     PREV_FRAME = "PreviousFrame"
-
-
-class VimbaOnOff(StrictEnum):
-    """On/Off modes on the Vimba detector."""
-
-    ON = "On"
-    OFF = "Off"
 
 
 class VimbaExposeOutMode(StrictEnum):
@@ -55,6 +48,6 @@ class VimbaDriverIO(adcore.ADBaseIO):
         SignalRW[VimbaConvertFormat], PvSuffix("ConvertPixelFormat")
     ]
     trigger_source: A[SignalRW[VimbaTriggerSource], PvSuffix("TriggerSource")]
-    trigger_mode: A[SignalRW[VimbaOnOff], PvSuffix("TriggerMode")]
+    trigger_mode: A[SignalRW[OnState], PvSuffix("TriggerMode")]
     trigger_overlap: A[SignalRW[VimbaOverlap], PvSuffix("TriggerOverlap")]
     exposure_mode: A[SignalRW[VimbaExposeOutMode], PvSuffix("ExposureMode")]
