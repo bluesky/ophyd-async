@@ -1,7 +1,7 @@
 import pytest
 from numpy import ones
 from scanspec.core import Path
-from scanspec.specs import Line, fly
+from scanspec.specs import Fly, Line
 
 from ophyd_async.core import init_devices
 from ophyd_async.epics.motor import Motor
@@ -24,8 +24,8 @@ async def sim_y_motor():
     yield sim_motor
 
 
-async def test_trajectory_from_slice(sim_x_motor):
-    spec = fly(Line(sim_x_motor, 1, 5, 9), 2)
+async def test_trajectory_from_slice(sim_x_motor: Motor):
+    spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 9))
     slice = Path(spec.calculate()).consume()
 
     trajectory = Trajectory.from_slice(slice)
@@ -76,7 +76,7 @@ async def test_trajectory_from_slice(sim_x_motor):
         ]
     )
 
-    assert trajectory.user_programs.all() == ones(18, float).all()
+    assert (trajectory.user_programs == ones(18, float)).all()
 
     assert (
         trajectory.durations
@@ -106,8 +106,8 @@ async def test_trajectory_from_slice(sim_x_motor):
 async def test_trajectory_from_slice_raises_runtime_error_if_gap(
     sim_y_motor, sim_x_motor
 ):
-    spec = fly(Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5), 1)
-    slice = Path(spec.calculate()).consume()
+    spec = Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5)
+    slice = Path(Fly(2.0 @ spec).calculate()).consume()
 
     with pytest.raises(RuntimeError, match="Slice has gaps"):
         Trajectory.from_slice(slice)
