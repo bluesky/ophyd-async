@@ -4,9 +4,10 @@ import asyncio
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from ophyd_async.core._utils import gather_dict
+from ophyd_async.core import gather_dict
 from ophyd_async.epics.motor import Motor
-from ophyd_async.epics.pmac._pmac_io import CS_LETTERS, PmacIO
+
+from ._pmac_io import CS_LETTERS, PmacIO
 
 
 @dataclass
