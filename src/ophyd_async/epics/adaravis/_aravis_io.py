@@ -1,18 +1,8 @@
 from typing import Annotated as A
 
-from ophyd_async.core import SignalRW, StrictEnum, SubsetEnum
+from ophyd_async.core import OnOff, SignalRW, SubsetEnum
 from ophyd_async.epics import adcore
 from ophyd_async.epics.core import PvSuffix
-
-
-class AravisTriggerMode(StrictEnum):
-    """GigEVision GenICAM standard TriggerMode."""
-
-    ON = "On"
-    """Use TriggerSource to trigger each frame"""
-
-    OFF = "Off"
-    """Just trigger as fast as you can"""
 
 
 class AravisTriggerSource(SubsetEnum):
@@ -27,5 +17,5 @@ class AravisDriverIO(adcore.ADBaseIO):
     This mirrors the interface provided by ADAravis/db/aravisCamera.template.
     """
 
-    trigger_mode: A[SignalRW[AravisTriggerMode], PvSuffix.rbv("TriggerMode")]
+    trigger_mode: A[SignalRW[OnOff], PvSuffix.rbv("TriggerMode")]
     trigger_source: A[SignalRW[AravisTriggerSource], PvSuffix.rbv("TriggerSource")]

@@ -69,6 +69,7 @@ class PmacCoordIO(Device):
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self.defer_moves = epics_signal_rw(bool, f"{prefix}DeferMoves")
+        self.cs_port = epics_signal_r(str, f"{prefix}Port")
         self.cs_axis_setpoint = DeviceVector(
             {
                 i + 1: epics_signal_rw(np.float64, f"{prefix}M{i + 1}:DirectDemand")

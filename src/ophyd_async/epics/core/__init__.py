@@ -10,6 +10,7 @@ from ._signal import (
     epics_signal_w,
     epics_signal_x,
 )
+from ._util import stop_busy_record
 
 __all__ = [
     "PviDeviceConnector",
@@ -23,4 +24,5 @@ __all__ = [
     "epics_signal_rw_rbv",
     "epics_signal_w",
     "epics_signal_x",
+    "stop_busy_record",
 ]
