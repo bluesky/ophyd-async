@@ -1,57 +1,31 @@
 from collections.abc import Sequence
-from xml.etree import ElementTree as ET
 
 import bluesky.plan_stubs as bps
 
-from ophyd_async.core import Device
 from ophyd_async.epics.adcore import (
+    AreaDetector,
     NDArrayBaseIO,
     NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
     NDFileHDFIO,
+    ndattributes_to_xml,
 )
 
 
 def setup_ndattributes(
-    device: NDArrayBaseIO, ndattributes: Sequence[NDAttributePv | NDAttributeParam]
+    device: NDArrayBaseIO, ndattributes: Sequence[NDAttributeParam | NDAttributePv]
 ):
-    """Set up attributes on NdArray devices."""
-    root = ET.Element("Attributes")
-
-    for ndattribute in ndattributes:
-        if isinstance(ndattribute, NDAttributeParam):
-            ET.SubElement(
-                root,
-                "Attribute",
-                name=ndattribute.name,
-                type="PARAM",
-                source=ndattribute.param,
-                addr=str(ndattribute.addr),
-                datatype=ndattribute.datatype.value,
-                description=ndattribute.description,
-            )
-        elif isinstance(ndattribute, NDAttributePv):
-            ET.SubElement(
-                root,
-                "Attribute",
-                name=ndattribute.name,
-                type="EPICS_PV",
-                source=ndattribute.signal.source.split("ca://")[-1],
-                dbrtype=ndattribute.dbrtype.value,
-                description=ndattribute.description,
-            )
-        else:
-            raise ValueError(
-                f"Invalid type for ndattributes: {type(ndattribute)}. "
-                "Expected NDAttributePv or NDAttributeParam."
-            )
-    xml_text = ET.tostring(root, encoding="unicode")
-    yield from bps.abs_set(device.nd_attributes_file, xml_text, wait=True)
+    xml = ndattributes_to_xml(ndattributes)
+    yield from bps.abs_set(
+        device.nd_attributes_file,
+        xml,
+        wait=True,
+    )
 
 
-def setup_ndstats_sum(detector: Device):
-    """Set up nd stats for a detector."""
+def setup_ndstats_sum(detector: AreaDetector):
+    """Set up nd stats sum nd attribute for a detector."""
     hdf = getattr(detector, "fileio", None)
     if not isinstance(hdf, NDFileHDFIO):
         msg = (
