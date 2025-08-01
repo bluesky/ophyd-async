@@ -21,7 +21,7 @@ dependencies = [
     "pydantic>=2.0",
     "pydantic-numpy",
     "stamina>=23.1.0",
-    "scanspec@git+https://github.com/bluesky/scanspec#egg=172-create-duration-spec-and-update-fly-and-step",
+    "scanspec>=1.0a1",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"

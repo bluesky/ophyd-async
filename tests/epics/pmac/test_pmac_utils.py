@@ -1,6 +1,6 @@
 import pytest
 from scanspec.core import Path
-from scanspec.specs import Line, fly
+from scanspec.specs import Fly, Line
 
 from ophyd_async.core import init_devices
 from ophyd_async.epics.motor import Motor
@@ -27,7 +27,7 @@ async def sim_y_motor():
 
 
 async def test_calculate_ramp_position_and_duration(sim_x_motor, sim_y_motor):
-    spec = fly(Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5), 1)
+    spec = Fly(1.0 @ (Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5)))
     slice = Path(spec.calculate()).consume()
 
     # TODO: Replace with PmacMotorInfo.from_motors() https://github.com/bluesky/ophyd-async/issues/954
