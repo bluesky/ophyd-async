@@ -1,5 +1,4 @@
 import pytest
-from numpy import ones
 from scanspec.core import Path
 from scanspec.specs import Fly, Line
 
@@ -28,11 +27,12 @@ async def test_trajectory_from_slice(sim_x_motor: Motor):
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 9))
     slice = Path(spec.calculate()).consume()
 
-    trajectory = Trajectory.from_slice(slice)
+    trajectory = Trajectory.from_slice(slice, 2)
 
     assert trajectory.positions[sim_x_motor] == pytest.approx(
         [
             0.75,
+            1.0,
             1.25,
             1.5,
             1.75,
@@ -73,15 +73,40 @@ async def test_trajectory_from_slice(sim_x_motor: Motor):
             0.25,
             0.25,
             0.25,
+            0.25,
         ]
     )
 
-    assert (trajectory.user_programs == ones(18, float)).all()
+    assert (
+        trajectory.user_programs
+        == [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            8,
+        ]
+    ).all()
 
     assert (
         trajectory.durations
         == [
             2000000.0,
+            1000000.0,
             1000000.0,
             1000000.0,
             1000000.0,
@@ -110,4 +135,4 @@ async def test_trajectory_from_slice_raises_runtime_error_if_gap(
     slice = Path(Fly(2.0 @ spec).calculate()).consume()
 
     with pytest.raises(RuntimeError, match="Slice has gaps"):
-        Trajectory.from_slice(slice)
+        Trajectory.from_slice(slice, 2)

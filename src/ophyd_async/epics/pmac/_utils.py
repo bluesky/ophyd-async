@@ -25,10 +25,7 @@ class Trajectory:
     durations: npt.NDArray[np.float64]
 
     @classmethod
-    def from_slice(
-        cls,
-        slice: Slice[Motor],
-    ) -> Trajectory:
+    def from_slice(cls, slice: Slice[Motor], ramp_up_time: float) -> Trajectory:
         """Parse a trajectory with no gaps from a slice.
 
         :param slice: Information about a series of scan frames along a number of axes
@@ -40,7 +37,7 @@ class Trajectory:
         duration = error_if_none(slice.duration, "Slice must have a duration")
 
         # Check if any gaps other than initial gap.
-        if any(slice.gap[1:-1]):
+        if any(slice.gap[1:]):
             raise RuntimeError(
                 f"Cannot parse trajectory with gaps. Slice has gaps: {slice.gap}"
             )
@@ -52,41 +49,46 @@ class Trajectory:
         velocities: dict[Motor, npt.NDArray[np.float64]] = {}
 
         # Initialise arrays
-        positions = {motor: np.empty(2 * scan_size, float) for motor in motors}
-        velocities = {motor: np.empty(2 * scan_size, float) for motor in motors}
-        durations: npt.NDArray[np.float64] = np.empty(2 * scan_size, float)
-        user_programs: npt.NDArray[np.int32] = np.ones(2 * scan_size, float)
+        positions = {motor: np.empty(2 * scan_size + 1, float) for motor in motors}
+        velocities = {motor: np.empty(2 * scan_size + 1, float) for motor in motors}
+        durations: npt.NDArray[np.float64] = np.empty(2 * scan_size + 1, float)
+        user_programs: npt.NDArray[np.int32] = np.ones(2 * scan_size + 1, float)
+        user_programs[-1] = 8
 
         # Set starting points
         start = 0
         for motor in motors:
             positions[motor][start] = slice.lower[motor][start]
-            positions[motor][start + 1] = slice.upper[motor][start]
 
-            velocities[motor][start : start + 2] = np.repeat(
-                (slice.upper[motor][start] - slice.lower[motor][start])
-                / duration[start],
-                2,
-                axis=0,
-            )
+            velocities[motor][start] = (
+                2 * (slice.midpoints[motor][start] - slice.lower[motor][start])
+            ) / duration[start]
 
         # Half the time per point
-        durations = np.repeat(duration / (2 * TICK_S), 2)
-        # Full time for initial gap
-        durations[start] = int(duration[start] / TICK_S)
+        durations[1:] = np.repeat(duration / (2 * TICK_S), 2)
+        # Ramp up time for start of collection window
+        durations[start] = int(ramp_up_time / TICK_S)
 
         # Fill profile assuming no gaps
         # Excluding starting points, we begin at our next frame
         start = 1
+        half_durations = np.repeat(duration / 2, 2)
         for motor in motors:
-            positions[motor][start + 1 :: 2] = slice.midpoints[motor][start:]
-            positions[motor][start + 2 :: 2] = slice.upper[motor][start:]
+            positions[motor][start::2] = slice.midpoints[motor]
+            positions[motor][start + 1 :: 2] = slice.upper[motor]
 
-            velocities[motor][start + 1 :] = np.repeat(
-                (slice.upper[motor][start:] - slice.lower[motor][start:])
-                / duration[start:],
-                2,
-                axis=0,
+            lower_velocities = (
+                positions[motor][1:] - positions[motor][:-1]
+            ) / half_durations
+
+            upper_velocities = (
+                positions[motor][2:] - positions[motor][1:-1]
+            ) / half_durations[1:]
+
+            velocities[motor][1:-1] = (lower_velocities[-1] + upper_velocities) / 2
+
+            velocities[motor][-1] = (
+                slice.upper[motor][-1] - slice.midpoints[motor][-1] / half_durations[-1]
             )
 
         return cls(
