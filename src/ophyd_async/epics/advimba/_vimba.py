@@ -21,7 +21,7 @@ class VimbaDetector(adcore.AreaDetector[VimbaController]):
         writer_cls: type[adcore.ADWriter] = adcore.ADHDFWriter,
         fileio_suffix: str | None = None,
         name: str = "",
-        plugins: dict[str, adcore.NDPluginBaseIO] | None = None,
+        plugins: dict[str, adcore.NDArrayBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
     ):
         driver = VimbaDriverIO(prefix + drv_suffix)
