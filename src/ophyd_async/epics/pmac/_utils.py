@@ -4,6 +4,8 @@ import asyncio
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from scanspec.core import Slice
+
 from ophyd_async.core import gather_dict
 from ophyd_async.epics.motor import Motor
 
@@ -104,3 +106,33 @@ class _PmacMotorInfo:
         return _PmacMotorInfo(
             cs_port, cs_number, motor_cs_index, motor_acceleration_rate
         )
+
+
+def calculate_ramp_position_and_duration(
+    slice: Slice[Motor], motor_info: _PmacMotorInfo, is_up: bool
+) -> tuple[dict[Motor, float], float]:
+    if slice.duration is None:
+        raise ValueError("Slice must have a duration")
+
+    scan_axes = slice.axes()
+    idx = 0 if is_up else -1
+
+    velocities: dict[Motor, float] = {}
+    ramp_times: list[float] = []
+    for axis in scan_axes:
+        velocity = (slice.upper[axis][idx] - slice.lower[axis][idx]) / slice.duration[
+            idx
+        ]
+        velocities[axis] = velocity
+        ramp_times.append(abs(velocity) / motor_info.motor_acceleration_rate[axis])
+
+    max_ramp_time = max(ramp_times)
+
+    motor_to_ramp_position = {}
+    sign = -1 if is_up else 1
+    for axis, v in velocities.items():
+        ref_pos = slice.lower[axis][0] if is_up else slice.upper[axis][-1]
+        displacement = 0.5 * v * max_ramp_time
+        motor_to_ramp_position[axis] = ref_pos + sign * displacement
+
+    return (motor_to_ramp_position, max_ramp_time)
