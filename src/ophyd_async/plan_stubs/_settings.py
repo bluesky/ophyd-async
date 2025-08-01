@@ -13,10 +13,10 @@ from ophyd_async.core import (
     Settings,
     SettingsProvider,
     SignalRW,
+    Table,
     walk_config_signals,
     walk_rw_signals,
 )
-from ophyd_async.core._table import Table
 
 from ._utils import T
 from ._wait_for_awaitable import wait_for_awaitable

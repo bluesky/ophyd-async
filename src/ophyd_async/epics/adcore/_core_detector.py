@@ -1,7 +1,6 @@
 from collections.abc import Sequence
 
-from ophyd_async.core import SignalR, StandardDetector
-from ophyd_async.core._providers import PathProvider
+from ophyd_async.core import PathProvider, SignalR, StandardDetector
 
 from ._core_io import ADBaseIO, NDPluginBaseIO, NDPluginCBIO
 from ._core_logic import ADBaseContAcqController, ADBaseControllerT

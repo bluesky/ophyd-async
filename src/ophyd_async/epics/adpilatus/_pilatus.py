@@ -1,11 +1,7 @@
 from collections.abc import Sequence
 
-from ophyd_async.core import PathProvider
-from ophyd_async.core._signal import SignalR
-from ophyd_async.epics.adcore._core_detector import AreaDetector
-from ophyd_async.epics.adcore._core_io import NDPluginBaseIO
-from ophyd_async.epics.adcore._core_writer import ADWriter
-from ophyd_async.epics.adcore._hdf_writer import ADHDFWriter
+from ophyd_async.core import PathProvider, SignalR
+from ophyd_async.epics.adcore import ADHDFWriter, ADWriter, AreaDetector, NDPluginBaseIO
 
 from ._pilatus_controller import PilatusController, PilatusReadoutTime
 from ._pilatus_io import PilatusDriverIO
