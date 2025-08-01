@@ -7,7 +7,6 @@ from ._core_detector import AreaDetector, ContAcqAreaDetector
 from ._core_io import (
     ADBaseDatasetDescriber,
     ADBaseIO,
-    ADCallbacks,
     ADCompression,
     ADState,
     NDArrayBaseIO,
@@ -37,7 +36,6 @@ from ._utils import (
 
 __all__ = [
     "ADBaseIO",
-    "ADCallbacks",
     "ADCompression",
     "ADBaseContAcqController",
     "AreaDetector",

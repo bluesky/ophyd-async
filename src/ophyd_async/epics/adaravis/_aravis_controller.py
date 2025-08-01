@@ -1,9 +1,9 @@
 import asyncio
 
-from ophyd_async.core import DetectorTrigger, TriggerInfo
+from ophyd_async.core import DetectorTrigger, OnOff, TriggerInfo
 from ophyd_async.epics import adcore
 
-from ._aravis_io import AravisDriverIO, AravisTriggerMode, AravisTriggerSource
+from ._aravis_io import AravisDriverIO, AravisTriggerSource
 
 # The deadtime of an ADaravis controller varies depending on the exact model of camera.
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
@@ -23,14 +23,14 @@ class AravisController(adcore.ADBaseController[AravisDriverIO]):
 
         if trigger_info.trigger is DetectorTrigger.INTERNAL:
             # Set trigger mode off to ignore the trigger source
-            await self.driver.trigger_mode.set(AravisTriggerMode.OFF)
+            await self.driver.trigger_mode.set(OnOff.OFF)
         elif trigger_info.trigger in {
             DetectorTrigger.CONSTANT_GATE,
             DetectorTrigger.EDGE_TRIGGER,
         }:
             # Trigger on the rising edge of Line1
             # trigger mode must be set first and on it's own!
-            await self.driver.trigger_mode.set(AravisTriggerMode.ON)
+            await self.driver.trigger_mode.set(OnOff.ON)
             await self.driver.trigger_source.set(AravisTriggerSource.LINE1)
         else:
             raise ValueError(f"ADAravis does not support {trigger_info.trigger}")
