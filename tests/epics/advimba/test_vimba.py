@@ -2,7 +2,7 @@ from typing import cast
 
 import pytest
 
-from ophyd_async.core import DetectorTrigger, OnState, TriggerInfo
+from ophyd_async.core import DetectorTrigger, OnOff, TriggerInfo
 from ophyd_async.epics import adcore, advimba
 from ophyd_async.epics.advimba import (
     VimbaExposeOutMode,
@@ -27,7 +27,7 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
     driver = cast(advimba.VimbaDriverIO, test_advimba.driver)
 
     set_mock_value(driver.trigger_source, VimbaTriggerSource.FREERUN)
-    set_mock_value(driver.trigger_mode, OnState.OFF)
+    set_mock_value(driver.trigger_mode, OnOff.OFF)
     set_mock_value(driver.exposure_mode, VimbaExposeOutMode.TIMED)
 
     async def setup_trigger_mode(trig_mode: DetectorTrigger):
@@ -41,25 +41,25 @@ async def test_arming_trig_modes(test_advimba: advimba.VimbaDetector):
 
     # Default TriggerSource
     assert (await driver.trigger_source.get_value()) == VimbaTriggerSource.FREERUN
-    assert (await driver.trigger_mode.get_value()) == OnState.OFF
+    assert (await driver.trigger_mode.get_value()) == OnOff.OFF
     assert (await driver.exposure_mode.get_value()) == VimbaExposeOutMode.TIMED
 
     await setup_trigger_mode(DetectorTrigger.EDGE_TRIGGER)
     assert (await driver.trigger_source.get_value()) == VimbaTriggerSource.LINE1
-    assert (await driver.trigger_mode.get_value()) == OnState.ON
+    assert (await driver.trigger_mode.get_value()) == OnOff.ON
     assert (await driver.exposure_mode.get_value()) == VimbaExposeOutMode.TIMED
 
     await setup_trigger_mode(DetectorTrigger.CONSTANT_GATE)
     assert (await driver.trigger_source.get_value()) == VimbaTriggerSource.LINE1
-    assert (await driver.trigger_mode.get_value()) == OnState.ON
+    assert (await driver.trigger_mode.get_value()) == OnOff.ON
     assert (await driver.exposure_mode.get_value()) == VimbaExposeOutMode.TRIGGER_WIDTH
 
     await setup_trigger_mode(DetectorTrigger.INTERNAL)
     assert (await driver.trigger_source.get_value()) == VimbaTriggerSource.FREERUN
-    assert (await driver.trigger_mode.get_value()) == OnState.OFF
+    assert (await driver.trigger_mode.get_value()) == OnOff.OFF
     assert (await driver.exposure_mode.get_value()) == VimbaExposeOutMode.TIMED
 
     await setup_trigger_mode(DetectorTrigger.VARIABLE_GATE)
     assert (await driver.trigger_source.get_value()) == VimbaTriggerSource.LINE1
-    assert (await driver.trigger_mode.get_value()) == OnState.ON
+    assert (await driver.trigger_mode.get_value()) == OnOff.ON
     assert (await driver.exposure_mode.get_value()) == VimbaExposeOutMode.TRIGGER_WIDTH

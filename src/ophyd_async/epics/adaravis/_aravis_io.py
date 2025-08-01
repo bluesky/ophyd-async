@@ -1,6 +1,6 @@
 from typing import Annotated as A
 
-from ophyd_async.core import OnState, SignalRW, SubsetEnum
+from ophyd_async.core import OnOff, SignalRW, SubsetEnum
 from ophyd_async.epics import adcore
 from ophyd_async.epics.core import PvSuffix
 
@@ -17,5 +17,5 @@ class AravisDriverIO(adcore.ADBaseIO):
     This mirrors the interface provided by ADAravis/db/aravisCamera.template.
     """
 
-    trigger_mode: A[SignalRW[OnState], PvSuffix.rbv("TriggerMode")]
+    trigger_mode: A[SignalRW[OnOff], PvSuffix.rbv("TriggerMode")]
     trigger_source: A[SignalRW[AravisTriggerSource], PvSuffix.rbv("TriggerSource")]

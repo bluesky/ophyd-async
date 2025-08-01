@@ -12,7 +12,7 @@ from event_model import (  # type: ignore
 from pydantic import PositiveInt
 
 from ophyd_async.core._detector import DetectorWriter
-from ophyd_async.core._enums import EnableState
+from ophyd_async.core._enums import EnableDisable
 from ophyd_async.core._providers import DatasetDescriber, PathInfo, PathProvider
 from ophyd_async.core._signal import (
     observe_value,
@@ -89,7 +89,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         )
 
         if isinstance(self.fileio, NDFilePluginIO):
-            await self.fileio.enable_callbacks.set(EnableState.ENABLE)
+            await self.fileio.enable_callbacks.set(EnableDisable.ENABLE)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.

@@ -3,7 +3,7 @@ from typing import Annotated as A
 
 from ophyd_async.core import (
     DatasetDescriber,
-    EnableState,
+    EnableDisable,
     SignalR,
     SignalRW,
     StrictEnum,
@@ -54,7 +54,7 @@ class NDPluginBaseIO(NDArrayBaseIO):
     """
 
     nd_array_port: A[SignalRW[str], PvSuffix.rbv("NDArrayPort")]
-    enable_callbacks: A[SignalRW[EnableState], PvSuffix.rbv("EnableCallbacks")]
+    enable_callbacks: A[SignalRW[EnableDisable], PvSuffix.rbv("EnableCallbacks")]
     nd_array_address: A[SignalRW[int], PvSuffix.rbv("NDArrayAddress")]
     array_size0: A[SignalR[int], PvSuffix("ArraySize0_RBV")]
     array_size1: A[SignalR[int], PvSuffix("ArraySize1_RBV")]

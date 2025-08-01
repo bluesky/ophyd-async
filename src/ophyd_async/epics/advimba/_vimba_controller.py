@@ -1,15 +1,15 @@
 import asyncio
 
-from ophyd_async.core import DetectorTrigger, OnState, TriggerInfo
+from ophyd_async.core import DetectorTrigger, OnOff, TriggerInfo
 from ophyd_async.epics import adcore
 
 from ._vimba_io import VimbaDriverIO, VimbaExposeOutMode, VimbaTriggerSource
 
 TRIGGER_MODE = {
-    DetectorTrigger.INTERNAL: OnState.OFF,
-    DetectorTrigger.CONSTANT_GATE: OnState.ON,
-    DetectorTrigger.VARIABLE_GATE: OnState.ON,
-    DetectorTrigger.EDGE_TRIGGER: OnState.ON,
+    DetectorTrigger.INTERNAL: OnOff.OFF,
+    DetectorTrigger.CONSTANT_GATE: OnOff.ON,
+    DetectorTrigger.VARIABLE_GATE: OnOff.ON,
+    DetectorTrigger.EDGE_TRIGGER: OnOff.ON,
 }
 
 EXPOSE_OUT_MODE = {
