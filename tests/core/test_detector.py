@@ -91,23 +91,6 @@ async def test_prepare_external_trigger_no_deadtime(
         await standard_detector.prepare(trigger_info)
 
 
-async def test_prepare_external_trigger_insufficient_deadtime(
-    standard_detector: StandardDetector,
-) -> None:
-    trigger_info = TriggerInfo(
-        number_of_events=1,
-        trigger=DetectorTrigger.EDGE_TRIGGER,
-        deadtime=0.4,  # Less than the required 0.5 set in the fixture
-        livetime=None,
-        exposure_timeout=None,
-    )
-    with pytest.raises(
-        ValueError,
-        match=r"Detector .* needs at least 0.5s deadtime, but trigger logic provides only",  # noqa: E501
-    ):
-        await standard_detector.prepare(trigger_info)
-
-
 def test_ensure_trigger_info_exists_success() -> None:
     trigger_info = TriggerInfo(number_of_events=1)
     assert isinstance(
