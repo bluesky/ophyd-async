@@ -22,14 +22,14 @@ TICK_S = 0.000001
 
 
 @dataclass
-class Trajectory:
+class _Trajectory:
     positions: dict[Motor, np.ndarray]
     velocities: dict[Motor, np.ndarray]
     user_programs: npt.NDArray[np.int32]
     durations: npt.NDArray[np.float64]
 
     @classmethod
-    def from_slice(cls, slice: Slice[Motor], ramp_up_time: float) -> Trajectory:
+    def from_slice(cls, slice: Slice[Motor], ramp_up_time: float) -> _Trajectory:
         """Parse a trajectory with no gaps from a slice.
 
         :param slice: Information about a series of scan frames along a number of axes

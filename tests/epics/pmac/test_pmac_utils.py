@@ -8,8 +8,8 @@ from ophyd_async.epics.pmac import (
     PmacIO,
 )
 from ophyd_async.epics.pmac._utils import (
-    Trajectory,  # noqa: PLC2701
     _PmacMotorInfo,  # noqa: PLC2701
+    _Trajectory,  # noqa: PLC2701
     calculate_ramp_position_and_duration,  # noqa: PLC2701
 )
 from ophyd_async.testing import set_mock_value
@@ -47,7 +47,7 @@ async def test_line_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Motor
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 9))
     slice = Path(spec.calculate()).consume()
 
-    trajectory = Trajectory.from_slice(slice, 2)
+    trajectory = _Trajectory.from_slice(slice, 2)
 
     assert trajectory.positions[sim_x_motor] == pytest.approx(
         [
@@ -153,7 +153,7 @@ async def test_spiral_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Mot
     spec = Spiral(sim_x_motor, sim_y_motor, 0, 0, 5, 5, 3)
     slice = Path(Fly(2.0 @ spec).calculate()).consume()
 
-    trajectory = Trajectory.from_slice(slice, 2)
+    trajectory = _Trajectory.from_slice(slice, 2)
     assert trajectory.positions == {
         sim_x_motor: pytest.approx(
             [
@@ -219,7 +219,7 @@ async def test_trajectory_from_slice_raises_runtime_error_if_gap(
     slice = Path(Fly(2.0 @ spec).calculate()).consume()
 
     with pytest.raises(RuntimeError, match="Slice has gaps"):
-        Trajectory.from_slice(slice, 2)
+        _Trajectory.from_slice(slice, 2)
 
 
 async def test_calculate_ramp_position_and_duration(
