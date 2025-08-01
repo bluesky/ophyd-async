@@ -18,6 +18,7 @@ from ._core_io import (
     NDPluginBaseIO,
     NDPluginCBIO,
     NDPluginStatsIO,
+    NDROIStatIO,
 )
 from ._core_logic import DEFAULT_GOOD_STATES, ADBaseContAcqController, ADBaseController
 from ._core_writer import ADWriter
@@ -49,6 +50,7 @@ __all__ = [
     "NDFileHDFIO",
     "NDPluginBaseIO",
     "NDPluginStatsIO",
+    "NDROIStatIO",
     "DEFAULT_GOOD_STATES",
     "ADBaseDatasetDescriber",
     "ADBaseController",
