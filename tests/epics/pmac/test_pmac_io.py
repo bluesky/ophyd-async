@@ -106,6 +106,7 @@ def test_pmac_coord_io():
 
     assert pmac_coord.name == "p47-brick-01-coord"
     assert pmac_coord.defer_moves.source == "ca://BL47P-MO-BRICK-01:CS1:DeferMoves"
+    assert pmac_coord.cs_port.source == "ca://BL47P-MO-BRICK-01:CS1:Port"
     assert (
         pmac_coord.cs_axis_setpoint[1].source
         == "ca://BL47P-MO-BRICK-01:CS1:M1:DirectDemand"
