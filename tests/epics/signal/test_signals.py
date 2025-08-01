@@ -5,14 +5,15 @@ import typing
 from collections.abc import Awaitable, Callable
 from enum import Enum
 from pathlib import Path
-from typing import Generic, Literal, TypeVar, get_args
+from typing import Any, Generic, Literal, TypeVar, get_args
+from unittest.mock import patch
 
 import bluesky.plan_stubs as bps
 import numpy as np
 import numpy.typing as npt
 import pytest
 import yaml
-from aioca import purge_channel_caches
+from aioca import Subscription, purge_channel_caches
 from bluesky.protocols import Location
 from event_model import Dtype, Limits, LimitsRange
 from ophyd.signal import EpicsSignal
@@ -756,6 +757,48 @@ async def test_observe_ticking_signal_with_busy_loop(
     assert len(recv) == 2
     # Don't check values as CA and PVA have different algorithms for
     # dropping updates for slow callbacks
+
+
+@pytest.mark.parametrize(
+    "all_updates,expected_all_updates",
+    [("True", True), ("False", False)],
+)
+@pytest.mark.timeout(TIMEOUT + 0.6)
+async def test_all_updates_settable_with_environment_variable(
+    ioc_devices: EpicsTestIocAndDevices,
+    all_updates: Any,
+    expected_all_updates: bool,
+):
+    with patch.dict(
+        os.environ,
+        {**os.environ, "OPHYD_ASYNC_EPICS_CA_KEEP_ALL_UPDATES": all_updates},
+        clear=True,
+    ):
+        assert (
+            await default_all_updates(ioc_devices.get_pv("ca", "ticking"))
+        ) is expected_all_updates
+
+
+@pytest.mark.timeout(TIMEOUT + 0.6)
+async def test_all_updates_defaults_to_true(
+    ioc_devices: EpicsTestIocAndDevices,
+):
+    assert await default_all_updates(ioc_devices.get_pv("ca", "ticking"))
+
+
+async def default_all_updates(pv: str) -> bool:
+    sig = epics_signal_rw(int, pv)
+    await sig.connect()
+    backend = sig._connector.backend
+
+    try:
+        sig.subscribe_value(lambda v: ...)
+        assert isinstance(backend.subscription, Subscription)
+        assert isinstance(backend.subscription.all_updates, bool)
+        return backend.subscription.all_updates
+    finally:
+        backend.subscription.close()
+        sig.clear_sub(lambda v: ...)
 
 
 HERE = Path(__file__).absolute().parent

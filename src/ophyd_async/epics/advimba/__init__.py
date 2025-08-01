@@ -4,7 +4,6 @@ from ._vimba_io import (
     VimbaConvertFormat,
     VimbaDriverIO,
     VimbaExposeOutMode,
-    VimbaOnOff,
     VimbaOverlap,
     VimbaTriggerSource,
 )
@@ -14,7 +13,6 @@ __all__ = [
     "VimbaController",
     "VimbaDriverIO",
     "VimbaExposeOutMode",
-    "VimbaOnOff",
     "VimbaTriggerSource",
     "VimbaOverlap",
     "VimbaConvertFormat",
