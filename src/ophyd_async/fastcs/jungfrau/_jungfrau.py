@@ -17,7 +17,6 @@ class Jungfrau(StandardDetector[JungfrauController, OdinWriter]):
         odin_nodes: int,
         name="",
     ):
-        # TODO find out which of these should have defaults
         self.drv = JungfrauDriverIO(prefix + drv_suffix)
         writer = OdinWriter(
             path_provider,

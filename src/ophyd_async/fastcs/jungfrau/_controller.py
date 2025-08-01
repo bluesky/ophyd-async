@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -13,35 +14,14 @@ from ophyd_async.fastcs.jungfrau import (
     JungfrauDriverIO,
 )
 
-# TODO other assertions: external trigger mode: module must be triggered with signal at
-# least 100ns long
-# Exposure time > 2us
-# exposure timeout > 25ns
-# exposure period, don't exceed 100 per second
-# exposure time must be compatible with exposure period
-
-# Autotrigger mode:
-# trigger mode: auto
-# No. triggers: 1
-# No frames: Any
-# Exposure period: < 100
-
-# Internal trigger:
-# trigger mode: trigger
-# extsig0: in-rising-edge
-# no. triggers: any
-# No. frames = acqs per trigger, normally 1.
-# Exposure period: doesn't matter if above is 1
-
-# TODO create a util plan for create trigger_info_for_autotriggering and
-# # create_trigger_info_for_internal_triggering
+logger = logging.getLogger("ophyd_async")
 
 
 class JungfrauController(DetectorController):
     def __init__(self, driver: JungfrauDriverIO):
         self._driver = driver
 
-    def get_deadtime(self, exposure: float | None) -> float:
+    def get_deadtime(self, exposure: float | None = None) -> float:
         # See https://rtd.xfel.eu/docs/jungfrau-detector-documentation/en/latest/operation.html
         return 2.1e-6
 
@@ -53,40 +33,43 @@ class JungfrauController(DetectorController):
             raise ValueError(
                 "The trigger method can only be called with internal or edge triggering"
             )
+        if not trigger_info.deadtime:
+            trigger_info.deadtime = self.get_deadtime()
 
         coros = []
         if trigger_info.trigger == DetectorTrigger.INTERNAL:
-            if not TriggerInfo.livetime:
+            if not trigger_info.livetime:
                 raise ValueError(
                     "Must set TriggerInfo.Livetime for internal trigger mode"
                 )
+            if trigger_info.livetime < 2e-6:
+                logger.warning("Exposure time shorter than 2μs is not recommended")
+
             coros.extend(
                 [
-                    self._driver.exposure_time.set(TriggerInfo.livetime),
+                    self._driver.exposure_time.set(trigger_info.livetime),
                     self._driver.period_between_frames.set(
-                        TriggerInfo.livetime - TriggerInfo.deadtime
+                        trigger_info.livetime - trigger_info.deadtime
                     ),
                 ]
             )
-        if not isinstance(TriggerInfo.number_of_events, int):
+        if not isinstance(trigger_info.number_of_events, int):
             raise ValueError("Number of events must be an integer")
 
-        await self._driver.frames_per_acq.set(TriggerInfo.number_of_events)
+        await self._driver.frames_per_acq.set(trigger_info.number_of_events)
         coros.extend(
             [
                 self._driver.trigger_mode.set(
                     JUNGFRAU_TRIGGER_MODE_MAP[trigger_info.trigger]
                 ),
-                self._driver.frames_per_acq.set(TriggerInfo.number_of_events),
+                self._driver.frames_per_acq.set(trigger_info.number_of_events),
             ]
         )
-        # todo test if ordering of these signals matters.
         await asyncio.gather(*coros)
 
     async def arm(self):
         await self._driver.start.trigger()
 
-    # TODO double check sensible timeout
     async def wait_for_idle(self):
         await wait_for_value(
             self._driver.detector_status, DetectorStatus.IDLE, timeout=DEFAULT_TIMEOUT

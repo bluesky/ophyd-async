@@ -43,7 +43,6 @@ class JungfrauDriverIO(Device):
 
     exposure_time: SignalRW[float]  # in s
 
-    # This is 1/frame rate
     period_between_frames: SignalRW[float]  # in s
 
     # Sets the delay for the beginning of the exposure time after
@@ -53,23 +52,11 @@ class JungfrauDriverIO(Device):
     # frames per trigger
     frames_per_acq: SignalRW[NonNegativeInt]
 
-    # TODO Signals below this point need adding to fastcs
-
-    # bit depth
-    bit_depth: SignalR[
-        int
-    ]  # TODO need to add this signal to the fast-cs repo. The JF driver name
-    # for this signal is "dr" (for dynamic range)
-
-    # TODO driver name here is called "timing"
-    trigger_mode: SignalRW[JungfrauTriggerMode]
-
-    # Start is "start the triggering chain", acquire is just "take one image" (I think)
     start: SignalX
 
     acquisition_stop: SignalX
-
-    # TODO Change this in fast-cs from a string to enum signal
+    bit_depth: SignalR[int]
+    trigger_mode: SignalRW[JungfrauTriggerMode]
     detector_status: SignalR[DetectorStatus]
 
     def __init__(self, uri: str, name: str = ""):
