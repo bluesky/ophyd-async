@@ -1,10 +1,10 @@
 from ._pmac_io import PmacAxisAssignmentIO, PmacCoordIO, PmacIO, PmacTrajectoryIO
-from ._utils import PmacMotorInfo
+from ._utils import _PmacMotorInfo
 
 __all__ = [
     "PmacAxisAssignmentIO",
     "PmacCoordIO",
     "PmacIO",
     "PmacTrajectoryIO",
-    "PmacMotorInfo",
+    "_PmacMotorInfo",
 ]
