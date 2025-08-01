@@ -62,14 +62,14 @@
 ```
 ````
 
-````{py:function} setup_ndattributes(device: ~ophyd_async.epics.adcore.NDArrayBaseIO, ndattributes: ~collections.abc.Sequence[~ophyd_async.epics.adcore.NDAttributePv | ~ophyd_async.epics.adcore.NDAttributeParam])
+````{py:function} setup_ndattributes(device: ~ophyd_async.epics.adcore.NDArrayBaseIO, ndattributes: ~collections.abc.Sequence[~ophyd_async.epics.adcore.NDAttributeParam | ~ophyd_async.epics.adcore.NDAttributePv])
 :canonical: ophyd_async.plan_stubs._nd_attributes.setup_ndattributes
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndattributes
 ```
 ````
 
-````{py:function} setup_ndstats_sum(detector: ~ophyd_async.core.Device)
+````{py:function} setup_ndstats_sum(detector: ~ophyd_async.epics.adcore.AreaDetector)
 :canonical: ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum
 
 ```{autodoc2-docstring} ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum

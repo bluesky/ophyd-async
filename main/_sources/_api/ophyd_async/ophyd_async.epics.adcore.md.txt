@@ -129,6 +129,18 @@
     ```
 ````
 
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`ndattributes_to_xml <ophyd_async.epics.adcore._utils.ndattributes_to_xml>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ndattributes_to_xml
+    :summary:
+    ```
+````
+
 ### Data
 
 ````{list-table}
@@ -1972,3 +1984,10 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
 ````
 
 `````
+
+````{py:function} ndattributes_to_xml(ndattributes: ~collections.abc.Sequence[~ophyd_async.epics.adcore._utils.NDAttributeParam | ~ophyd_async.epics.adcore._utils.NDAttributePv]) -> str
+:canonical: ophyd_async.epics.adcore._utils.ndattributes_to_xml
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._utils.ndattributes_to_xml
+```
+````

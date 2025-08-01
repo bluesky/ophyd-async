@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.plan_stubs &#8212; ophyd-async 0.12.4.dev4+g115ed8831 documentation</title>
+    <title>ophyd_async.plan_stubs &#8212; ophyd-async 0.12.4.dev5+gd2f34b62b documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=db8a3bda"></script>
+    <script src="../../_static/documentation_options.js?v=289468fa"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev4+g115ed8831 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev4+g115ed8831 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev5+gd2f34b62b documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev5+gd2f34b62b documentation - Home"/>
   
   
 </a></div>
@@ -531,10 +531,10 @@
 <td><p>Plan stub to ensure devices are connected with a given timeout.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.setup_ndattributes" title="ophyd_async.plan_stubs._nd_attributes.setup_ndattributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndattributes</span></code></a></p></td>
-<td><p>Set up attributes on NdArray devices.</p></td>
+<td></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.setup_ndstats_sum" title="ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndstats_sum</span></code></a></p></td>
-<td><p>Set up nd stats for a detector.</p></td>
+<td><p>Set up nd stats sum nd attribute for a detector.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.apply_panda_settings" title="ophyd_async.plan_stubs._panda.apply_panda_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_panda_settings</span></code></a></p></td>
 <td><p>Apply given settings to a panda device.</p></td>
@@ -568,14 +568,13 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.plan_stubs.setup_ndattributes">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">setup_ndattributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore.NDArrayBaseIO"><span class="pre">NDArrayBaseIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndattributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributePv" title="ophyd_async.epics.adcore.NDAttributePv"><span class="pre">NDAttributePv</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributeParam" title="ophyd_async.epics.adcore.NDAttributeParam"><span class="pre">NDAttributeParam</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_nd_attributes.html#setup_ndattributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.setup_ndattributes" title="Link to this definition">#</a></dt>
-<dd><p>Set up attributes on NdArray devices.</p>
-</dd></dl>
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">setup_ndattributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore.NDArrayBaseIO"><span class="pre">NDArrayBaseIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndattributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributeParam" title="ophyd_async.epics.adcore.NDAttributeParam"><span class="pre">NDAttributeParam</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributePv" title="ophyd_async.epics.adcore.NDAttributePv"><span class="pre">NDAttributePv</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_nd_attributes.html#setup_ndattributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.setup_ndattributes" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.plan_stubs.setup_ndstats_sum">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">setup_ndstats_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><span class="pre">Device</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_nd_attributes.html#setup_ndstats_sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.setup_ndstats_sum" title="Link to this definition">#</a></dt>
-<dd><p>Set up nd stats for a detector.</p>
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">setup_ndstats_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.AreaDetector" title="ophyd_async.epics.adcore.AreaDetector"><span class="pre">AreaDetector</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_nd_attributes.html#setup_ndstats_sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.setup_ndstats_sum" title="Link to this definition">#</a></dt>
+<dd><p>Set up nd stats sum nd attribute for a detector.</p>
 </dd></dl>
 
 <dl class="py function">
