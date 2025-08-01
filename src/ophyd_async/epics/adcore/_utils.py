@@ -1,4 +1,6 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
+from xml.etree import ElementTree as ET
 
 from ophyd_async.core import (
     SignalR,
@@ -130,3 +132,39 @@ class NDAttributeParam:
     datatype: NDAttributeDataType  # The datatype of the parameter
     addr: int = 0  # The address as seen in the INP link of the record
     description: str = ""  # A description that appears in the HDF file as an attribute
+
+
+def ndattributes_to_xml(
+    ndattributes: Sequence[NDAttributeParam | NDAttributePv],
+) -> str:
+    """Convert a set of NDAttribute params to XML."""
+    root = ET.Element("Attributes")
+    for ndattribute in ndattributes:
+        if isinstance(ndattribute, NDAttributeParam):
+            ET.SubElement(
+                root,
+                "Attribute",
+                name=ndattribute.name,
+                type="PARAM",
+                source=ndattribute.param,
+                addr=str(ndattribute.addr),
+                datatype=ndattribute.datatype.value,
+                description=ndattribute.description,
+            )
+        elif isinstance(ndattribute, NDAttributePv):
+            ET.SubElement(
+                root,
+                "Attribute",
+                name=ndattribute.name,
+                type="EPICS_PV",
+                source=ndattribute.signal.source.split("ca://")[-1],
+                dbrtype=ndattribute.dbrtype.value,
+                description=ndattribute.description,
+            )
+        else:
+            raise ValueError(
+                f"Invalid type for ndattributes: {type(ndattribute)}. "
+                "Expected NDAttributePv or NDAttributeParam."
+            )
+    xml_text = ET.tostring(root, encoding="unicode")
+    return xml_text
