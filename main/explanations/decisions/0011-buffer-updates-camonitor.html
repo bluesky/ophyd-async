@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.tango &#8212; ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation</title>
+    <title>11. Buffer updates when using camonitor &#8212; ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_api/ophyd_async/ophyd_async.tango';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'explanations/decisions/0011-buffer-updates-camonitor';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -59,8 +59,8 @@
     <link rel="icon" href="../../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="ophyd_async.tango.core" href="ophyd_async.tango.core.html" />
-    <link rel="prev" title="ophyd_async.core" href="ophyd_async.core.html" />
+    <link rel="next" title="Declarative vs Procedural Devices" href="../declarative-vs-procedural.html" />
+    <link rel="prev" title="10. Decide on docstring format" href="0010-docstring-format.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -159,14 +159,14 @@
 </li>
 
 
-<li class="nav-item ">
+<li class="nav-item current active">
   <a class="nav-link nav-internal" href="../../explanations.html">
     Explanations
   </a>
 </li>
 
 
-<li class="nav-item current active">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../reference.html">
     Reference
   </a>
@@ -314,14 +314,14 @@
 </li>
 
 
-<li class="nav-item ">
+<li class="nav-item current active">
   <a class="nav-link nav-internal" href="../../explanations.html">
     Explanations
   </a>
 </li>
 
 
-<li class="nav-item current active">
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../reference.html">
     Reference
   </a>
@@ -410,48 +410,27 @@
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 current active has-children"><a class="reference internal" href="ophyd_async.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.sim.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.sim</span></code></a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.fastcs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.eiger.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.eiger</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.panda.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.odin.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.fastcs.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.fastcs.core</span></code></a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../decisions.html">Architectural Decision Records</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="0001-record-architecture-decisions.html">1. Record architecture decisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0002-switched-to-python-copier-template.html">2. Adopt python-copier-template for project structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0003-ophyd-async-migration.html">3. Ophyd Async migration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0004-repository-structure.html">4. Repository Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0005-respect-black-line-length.html">5. Respect black line length</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0006-procedural-device-definitions.html">6. Procedural Device Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0007-subpackage-structure.html">7. Sub-package Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0008-signal-types.html">8. Settle on Signal Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0009-procedural-vs-declarative-devices.html">9. Procedural vs Declarative Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0010-docstring-format.html">10. Decide on docstring format</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">11. Buffer updates when using <code class="docutils literal notranslate"><span class="pre">camonitor</span></code></a></li>
 </ul>
 </details></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></a></li>
-<li class="toctree-l3 current active has-children"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.tango.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.testing</span></code></a></li>
-</ul>
-</details></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.plan_stubs.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.plan_stubs</span></code></a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="ophyd_async.epics.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics</span></code></a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.eiger.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.eiger</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adandor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adandor</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adsimdetector.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adsimdetector</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.core</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adpilatus.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adpilatus</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adkinetix.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adkinetix</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adaravis.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adaravis</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.adcore.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.pmac.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.pmac</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.demo</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.advimba.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.advimba</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.testing</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.motor.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.motor</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="ophyd_async.epics.signal.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.epics.signal</span></code></a></li>
-</ul>
-</details></li>
-<li class="toctree-l3"><a class="reference internal" href="ophyd_async.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.testing</span></code></a></li>
-</ul>
-</details></li>
-</ul>
-</details></li>
-<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../declarative-vs-procedural.html">Declarative vs Procedural Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design-goals.html">Design goals and differences with ophyd sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../device-connection-strategies.html">Device connection strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../devices-signals-backends.html">Devices, Signals and their Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fly-scanning.html">What is the difference between step and fly scanning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plan-stubs.html">What plan stubs will do to Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../where-device-logic.html">Where should Device logic live?</a></li>
 </ul>
 </div>
 </nav></div>
@@ -493,15 +472,12 @@
       </a>
     </li>
     
-    <li class="breadcrumb-item"><a href="../../reference.html" class="nav-link">Reference</a></li>
+    <li class="breadcrumb-item"><a href="../../explanations.html" class="nav-link">Explanations</a></li>
     
     
-    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">API Reference</a></li>
+    <li class="breadcrumb-item"><a href="../decisions.html" class="nav-link">Architectural Decision Records</a></li>
     
-    
-    <li class="breadcrumb-item"><a href="ophyd_async.html" class="nav-link"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async</span></code></a></li>
-    
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">11. Buffer updates when using <code class="docutils literal notranslate"><span class="pre">camonitor</span></code></span></li>
   </ul>
 </nav>
 </div>
@@ -518,18 +494,34 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-ophyd_async.tango">
-<span id="ophyd-async-tango"></span><h1><a class="reference internal" href="#module-ophyd_async.tango" title="ophyd_async.tango"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango</span></code></a><a class="headerlink" href="#module-ophyd_async.tango" title="Link to this heading">#</a></h1>
-<p>Tango support for Signals, and Devices that use them.</p>
-<section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">#</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="ophyd_async.tango.core.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="ophyd_async.tango.demo.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.demo</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="ophyd_async.tango.testing.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.testing</span></code></a></li>
-</ul>
+  <section id="buffer-updates-when-using-camonitor">
+<h1>11. Buffer updates when using <code class="docutils literal notranslate"><span class="pre">camonitor</span></code><a class="headerlink" href="#buffer-updates-when-using-camonitor" title="Link to this heading">#</a></h1>
+<p>Date: 2025-07-30</p>
+<section id="status">
+<h2>Status<a class="headerlink" href="#status" title="Link to this heading">#</a></h2>
+<p>Accepted</p>
+</section>
+<section id="context">
+<h2>Context<a class="headerlink" href="#context" title="Link to this heading">#</a></h2>
+<p>The ChannelAccess signal backend uses aioca.camonitor to subscribe to changes in PV values. By default it deals with backpressure by dropping excessive updates that it is too slow to handle. It also has a mode whereby it will buffer the updates, lagging behind if there are too many.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># The following will buffer every update to the PV</span>
+<span class="n">aioca</span><span class="o">.</span><span class="n">camonitor</span><span class="p">(</span><span class="n">my_pv</span><span class="p">,</span> <span class="n">all_updates</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
 </div>
+</section>
+<section id="decision">
+<h2>Decision<a class="headerlink" href="#decision" title="Link to this heading">#</a></h2>
+<p>Default <code class="docutils literal notranslate"><span class="pre">all_updates</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> in the ChannelAccess backend, but provide a feature flag via an environment variable so it can be reverted at runtime if necessary.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># The following should restore the old behavior </span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OPHYD_ASYNC_EPICS_CA_KEEP_ALL_UPDATES</span><span class="o">=</span>False
+</pre></div>
+</div>
+</section>
+<section id="consequences">
+<h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading">#</a></h2>
+<p>If backpressure is causing a problem, ophyd-async will slow down and lag behind. This is deemed to be an easier problem to spot and debug than updates being silently dropped.</p>
+<p>It is the responsibility of IOCs to not push updates too quickly (&lt;=10Hz) rather than the responsibility of ophyd-async to handle them. If an IOC is pushing updates too quickly, it should be fixed.</p>
+<p>There may be unknown bugs and race conditions exposed by this change, they can be temporarily remedied by disabling the feature (see above).</p>
 </section>
 </section>
 
@@ -544,20 +536,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="ophyd_async.core.html"
+       href="0010-docstring-format.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.core</span></code></p>
+        <p class="prev-next-title">10. Decide on docstring format</p>
       </div>
     </a>
     <a class="right-next"
-       href="ophyd_async.tango.core.html"
+       href="../declarative-vs-procedural.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ophyd_async.tango.core</span></code></p>
+        <p class="prev-next-title">Declarative vs Procedural Devices</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -580,7 +572,10 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#status">Status</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#context">Context</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision">Decision</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#consequences">Consequences</a></li>
 </ul>
   </nav></div>
 
@@ -588,7 +583,7 @@
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/_api/ophyd_async/ophyd_async.tango.md">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/explanations/decisions/0011-buffer-updates-camonitor.md">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -604,7 +599,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="../../_sources/_api/ophyd_async/ophyd_async.tango.md.txt"
+      <li><a href="../../_sources/explanations/decisions/0011-buffer-updates-camonitor.md.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div></div>
