@@ -215,7 +215,7 @@ __all__ = [
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",
-    # Common enums
+    # Standard enums
     "EnabledDisabled",
     "EnableDisable",
     "InOut",
