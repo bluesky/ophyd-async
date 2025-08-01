@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adaravis &#8212; ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation</title>
+    <title>ophyd_async.epics.adaravis &#8212; ophyd-async 0.12.4.dev3+gae915c5f3 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=ab0680d2"></script>
+    <script src="../../_static/documentation_options.js?v=30b0f621"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev3+gae915c5f3 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev3+gae915c5f3 documentation - Home"/>
   
   
 </a></div>
@@ -540,10 +540,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adaravis.AravisDriverIO" title="ophyd_async.epics.adaravis._aravis_io.AravisDriverIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AravisDriverIO</span></code></a></p></td>
 <td><p>Generic Driver supporting all GiGE cameras.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adaravis.AravisTriggerMode" title="ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AravisTriggerMode</span></code></a></p></td>
-<td><p>GigEVision GenICAM standard TriggerMode.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adaravis.AravisTriggerSource" title="ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AravisTriggerSource</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adaravis.AravisTriggerSource" title="ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AravisTriggerSource</span></code></a></p></td>
 <td><p>Which trigger source to use when TriggerMode=On.</p></td>
 </tr>
 </tbody>
@@ -593,7 +590,7 @@ which must be done prior to preparing the detector</p>
 <p>This mirrors the interface provided by ADAravis/db/aravisCamera.template.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisDriverIO.trigger_mode">
-<span class="sig-name descname"><span class="pre">trigger_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adaravis.AravisTriggerMode" title="ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode"><span class="pre">AravisTriggerMode</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'TriggerMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisDriverIO.trigger_mode" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">trigger_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.OnOff" title="ophyd_async.core.OnOff"><span class="pre">OnOff</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'TriggerMode'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisDriverIO.trigger_mode" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
@@ -601,27 +598,6 @@ which must be done prior to preparing the detector</p>
 <dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisDriverIO.trigger_source">
 <span class="sig-name descname"><span class="pre">trigger_source</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Annotated" title="(in Python v3.13)"><span class="pre">Annotated</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adaravis.AravisTriggerSource" title="ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource"><span class="pre">AravisTriggerSource</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.core.html#ophyd_async.epics.core.PvSuffix.rbv" title="ophyd_async.epics.core.PvSuffix.rbv"><span class="pre">ophyd_async.epics.core.PvSuffix.rbv</span></a><span class="p"><span class="pre">(</span></span><span class="s"><span class="pre">'TriggerSource'</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisDriverIO.trigger_source" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisTriggerMode">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adaravis.</span></span><span class="sig-name descname"><span class="pre">AravisTriggerMode</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adaravis/_aravis_io.html#AravisTriggerMode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisTriggerMode" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StrictEnum" title="ophyd_async.core.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StrictEnum</span></code></a></p>
-<p>GigEVision GenICAM standard TriggerMode.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisTriggerMode.ON">
-<span class="sig-name descname"><span class="pre">ON</span></span><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisTriggerMode.ON" title="Link to this definition">#</a></dt>
-<dd><p>‘On’</p>
-<p>Use TriggerSource to trigger each frame</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.epics.adaravis.AravisTriggerMode.OFF">
-<span class="sig-name descname"><span class="pre">OFF</span></span><a class="headerlink" href="#ophyd_async.epics.adaravis.AravisTriggerMode.OFF" title="Link to this definition">#</a></dt>
-<dd><p>‘Off’</p>
-<p>Just trigger as fast as you can</p>
 </dd></dl>
 
 </dd></dl>
@@ -702,11 +678,6 @@ which must be done prior to preparing the detector</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisDriverIO"><code class="docutils literal notranslate"><span class="pre">AravisDriverIO</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisDriverIO.trigger_mode"><code class="docutils literal notranslate"><span class="pre">AravisDriverIO.trigger_mode</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisDriverIO.trigger_source"><code class="docutils literal notranslate"><span class="pre">AravisDriverIO.trigger_source</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisTriggerMode"><code class="docutils literal notranslate"><span class="pre">AravisTriggerMode</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisTriggerMode.ON"><code class="docutils literal notranslate"><span class="pre">AravisTriggerMode.ON</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisTriggerMode.OFF"><code class="docutils literal notranslate"><span class="pre">AravisTriggerMode.OFF</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adaravis.AravisTriggerSource"><code class="docutils literal notranslate"><span class="pre">AravisTriggerSource</span></code></a><ul class="nav section-nav flex-column">

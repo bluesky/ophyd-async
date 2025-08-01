@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.12.4.dev3+gae915c5f3 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=ab0680d2"></script>
+    <script src="../../_static/documentation_options.js?v=30b0f621"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev3+gae915c5f3 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev3+gae915c5f3 documentation - Home"/>
   
   
 </a></div>
@@ -694,6 +694,18 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DerivedSignalFactory" title="ophyd_async.core._derived_signal.DerivedSignalFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DerivedSignalFactory</span></code></a></p></td>
 <td><p>A factory that makes Derived Signals using a many-many Transform.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.EnabledDisabled" title="ophyd_async.core._enums.EnabledDisabled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnabledDisabled</span></code></a></p></td>
+<td><p>All members should exist in the Backend, and there will be no extras.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.EnableDisable" title="ophyd_async.core._enums.EnableDisable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnableDisable</span></code></a></p></td>
+<td><p>All members should exist in the Backend, and there will be no extras.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.InOut" title="ophyd_async.core._enums.InOut"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InOut</span></code></a></p></td>
+<td><p>All members should exist in the Backend, and there will be no extras.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.OnOff" title="ophyd_async.core._enums.OnOff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OnOff</span></code></a></p></td>
+<td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
 </tbody>
 </table>
@@ -3588,6 +3600,82 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <dd><p>‘_compat_format(…)’</p>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.EnabledDisabled">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">EnabledDisabled</span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_enums.html#EnabledDisabled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.EnabledDisabled" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.StrictEnum" title="ophyd_async.core._utils.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.StrictEnum</span></code></a></p>
+<p>All members should exist in the Backend, and there will be no extras.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.EnabledDisabled.ENABLED">
+<span class="sig-name descname"><span class="pre">ENABLED</span></span><a class="headerlink" href="#ophyd_async.core.EnabledDisabled.ENABLED" title="Link to this definition">#</a></dt>
+<dd><p>‘Enabled’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.EnabledDisabled.DISABLED">
+<span class="sig-name descname"><span class="pre">DISABLED</span></span><a class="headerlink" href="#ophyd_async.core.EnabledDisabled.DISABLED" title="Link to this definition">#</a></dt>
+<dd><p>‘Disabled’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.EnableDisable">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">EnableDisable</span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_enums.html#EnableDisable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.EnableDisable" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.StrictEnum" title="ophyd_async.core._utils.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.StrictEnum</span></code></a></p>
+<p>All members should exist in the Backend, and there will be no extras.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.EnableDisable.ENABLE">
+<span class="sig-name descname"><span class="pre">ENABLE</span></span><a class="headerlink" href="#ophyd_async.core.EnableDisable.ENABLE" title="Link to this definition">#</a></dt>
+<dd><p>‘Enable’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.EnableDisable.DISABLE">
+<span class="sig-name descname"><span class="pre">DISABLE</span></span><a class="headerlink" href="#ophyd_async.core.EnableDisable.DISABLE" title="Link to this definition">#</a></dt>
+<dd><p>‘Disable’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.InOut">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">InOut</span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_enums.html#InOut"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.InOut" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.StrictEnum" title="ophyd_async.core._utils.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.StrictEnum</span></code></a></p>
+<p>All members should exist in the Backend, and there will be no extras.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.InOut.IN">
+<span class="sig-name descname"><span class="pre">IN</span></span><a class="headerlink" href="#ophyd_async.core.InOut.IN" title="Link to this definition">#</a></dt>
+<dd><p>‘In’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.InOut.OUT">
+<span class="sig-name descname"><span class="pre">OUT</span></span><a class="headerlink" href="#ophyd_async.core.InOut.OUT" title="Link to this definition">#</a></dt>
+<dd><p>‘Out’</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.OnOff">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">OnOff</span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_enums.html#OnOff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.OnOff" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.StrictEnum" title="ophyd_async.core._utils.StrictEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.StrictEnum</span></code></a></p>
+<p>All members should exist in the Backend, and there will be no extras.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.OnOff.ON">
+<span class="sig-name descname"><span class="pre">ON</span></span><a class="headerlink" href="#ophyd_async.core.OnOff.ON" title="Link to this definition">#</a></dt>
+<dd><p>‘On’</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.OnOff.OFF">
+<span class="sig-name descname"><span class="pre">OFF</span></span><a class="headerlink" href="#ophyd_async.core.OnOff.OFF" title="Link to this definition">#</a></dt>
+<dd><p>‘Off’</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -4000,6 +4088,26 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.ConfigSignal"><code class="docutils literal notranslate"><span class="pre">ConfigSignal</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.HintedSignal"><code class="docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.EnabledDisabled"><code class="docutils literal notranslate"><span class="pre">EnabledDisabled</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.EnabledDisabled.ENABLED"><code class="docutils literal notranslate"><span class="pre">EnabledDisabled.ENABLED</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.EnabledDisabled.DISABLED"><code class="docutils literal notranslate"><span class="pre">EnabledDisabled.DISABLED</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.EnableDisable"><code class="docutils literal notranslate"><span class="pre">EnableDisable</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.EnableDisable.ENABLE"><code class="docutils literal notranslate"><span class="pre">EnableDisable.ENABLE</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.EnableDisable.DISABLE"><code class="docutils literal notranslate"><span class="pre">EnableDisable.DISABLE</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.InOut"><code class="docutils literal notranslate"><span class="pre">InOut</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.InOut.IN"><code class="docutils literal notranslate"><span class="pre">InOut.IN</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.InOut.OUT"><code class="docutils literal notranslate"><span class="pre">InOut.OUT</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.OnOff"><code class="docutils literal notranslate"><span class="pre">OnOff</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.OnOff.ON"><code class="docutils literal notranslate"><span class="pre">OnOff.ON</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.OnOff.OFF"><code class="docutils literal notranslate"><span class="pre">OnOff.OFF</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

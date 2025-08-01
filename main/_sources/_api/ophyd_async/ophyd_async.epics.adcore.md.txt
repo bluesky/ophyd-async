@@ -19,10 +19,6 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseIO
     :summary:
     ```
-* - {py:obj}`ADCallbacks <ophyd_async.epics.adcore._core_io.ADCallbacks>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCallbacks
-    :summary:
-    ```
 * - {py:obj}`ADCompression <ophyd_async.epics.adcore._core_io.ADCompression>`
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCompression
     :summary:
@@ -206,36 +202,6 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDArrayBaseIO`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseIO.detector_state
-```
-
-````
-
-`````
-
-`````{py:class} ADCallbacks()
-:canonical: ophyd_async.epics.adcore._core_io.ADCallbacks
-
-Bases: {py:obj}`ophyd_async.core.StrictEnum`
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCallbacks
-```
-
-````{py:attribute} ENABLE
-:canonical: ophyd_async.epics.adcore._core_io.ADCallbacks.ENABLE
-:value: >
-   'Enable'
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCallbacks.ENABLE
-```
-
-````
-
-````{py:attribute} DISABLE
-:canonical: ophyd_async.epics.adcore._core_io.ADCallbacks.DISABLE
-:value: >
-   'Disable'
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADCallbacks.DISABLE
 ```
 
 ````
@@ -945,7 +911,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDArrayBaseIO`
 
 ````{py:attribute} enable_callbacks
 :canonical: ophyd_async.epics.adcore._core_io.NDPluginBaseIO.enable_callbacks
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adcore._core_io.ADCallbacks], ophyd_async.epics.core.PvSuffix.rbv('EnableCallbacks')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.EnableDisable], ophyd_async.epics.core.PvSuffix.rbv('EnableCallbacks')]
 :value: >
    None
 

@@ -27,10 +27,6 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO
     :summary:
     ```
-* - {py:obj}`AravisTriggerMode <ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode
-    :summary:
-    ```
 * - {py:obj}`AravisTriggerSource <ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource>`
   - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource
     :summary:
@@ -86,7 +82,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 ````{py:attribute} trigger_mode
 :canonical: ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_mode
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.OnOff], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
 :value: >
    None
 
@@ -102,36 +98,6 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_source
-```
-
-````
-
-`````
-
-`````{py:class} AravisTriggerMode()
-:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode
-
-Bases: {py:obj}`ophyd_async.core.StrictEnum`
-
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode
-```
-
-````{py:attribute} ON
-:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode.ON
-:value: >
-   'On'
-
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode.ON
-```
-
-````
-
-````{py:attribute} OFF
-:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode.OFF
-:value: >
-   'Off'
-
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerMode.OFF
 ```
 
 ````

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.sim._blob_detector &#8212; ophyd-async 0.12.4.dev3+gae915c5f3 documentation</title>
+    <title>ophyd_async.core._enums &#8212; ophyd-async 0.12.4.dev3+gae915c5f3 documentation</title>
   
   
   
@@ -55,7 +55,7 @@
 import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.2.0/dist/mermaid.esm.min.mjs";
 window.addEventListener("load", () => mermaid.run());
 </script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/sim/_blob_detector';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/core/_enums';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -445,7 +445,7 @@ window.addEventListener("load", () => mermaid.run());
     
     <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.sim._blob_detector</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.core._enums</span></li>
   </ul>
 </nav>
 </div>
@@ -462,41 +462,39 @@ window.addEventListener("load", () => mermaid.run());
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.sim._blob_detector</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">PathProvider</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">StandardDetector</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">._blob_detector_controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobDetectorController</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._blob_detector_writer</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlobDetectorWriter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._pattern_generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">PatternGenerator</span>
+  <h1>Source code for ophyd_async.core._enums</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrictEnum</span>
 
 
-<div class="viewcode-block" id="SimBlobDetector">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimBlobDetector">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">SimBlobDetector</span><span class="p">(</span><span class="n">StandardDetector</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simulates a detector and writes Blobs to file.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="OnOff">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.OnOff">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">OnOff</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">ON</span> <span class="o">=</span> <span class="s2">&quot;On&quot;</span>
+    <span class="n">OFF</span> <span class="o">=</span> <span class="s2">&quot;Off&quot;</span></div>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
-        <span class="n">pattern_generator</span><span class="p">:</span> <span class="n">PatternGenerator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span> <span class="o">=</span> <span class="n">pattern_generator</span> <span class="ow">or</span> <span class="n">PatternGenerator</span><span class="p">()</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">controller</span><span class="o">=</span><span class="n">BlobDetectorController</span><span class="p">(</span>
-                <span class="n">pattern_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="n">writer</span><span class="o">=</span><span class="n">BlobDetectorWriter</span><span class="p">(</span>
-                <span class="n">pattern_generator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pattern_generator</span><span class="p">,</span>
-                <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
-            <span class="p">),</span>
-            <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="EnableDisable">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.EnableDisable">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EnableDisable</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">ENABLE</span> <span class="o">=</span> <span class="s2">&quot;Enable&quot;</span>
+    <span class="n">DISABLE</span> <span class="o">=</span> <span class="s2">&quot;Disable&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="EnabledDisabled">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.EnabledDisabled">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EnabledDisabled</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">ENABLED</span> <span class="o">=</span> <span class="s2">&quot;Enabled&quot;</span>
+    <span class="n">DISABLED</span> <span class="o">=</span> <span class="s2">&quot;Disabled&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="InOut">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.InOut">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InOut</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+    <span class="n">IN</span> <span class="o">=</span> <span class="s2">&quot;In&quot;</span>
+    <span class="n">OUT</span> <span class="o">=</span> <span class="s2">&quot;Out&quot;</span></div>
 
 </pre></div>
 

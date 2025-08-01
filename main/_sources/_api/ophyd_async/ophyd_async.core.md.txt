@@ -239,6 +239,22 @@
   - ```{autodoc2-docstring} ophyd_async.core._derived_signal.DerivedSignalFactory
     :summary:
     ```
+* - {py:obj}`EnabledDisabled <ophyd_async.core._enums.EnabledDisabled>`
+  - ```{autodoc2-docstring} ophyd_async.core._enums.EnabledDisabled
+    :summary:
+    ```
+* - {py:obj}`EnableDisable <ophyd_async.core._enums.EnableDisable>`
+  - ```{autodoc2-docstring} ophyd_async.core._enums.EnableDisable
+    :summary:
+    ```
+* - {py:obj}`InOut <ophyd_async.core._enums.InOut>`
+  - ```{autodoc2-docstring} ophyd_async.core._enums.InOut
+    :summary:
+    ```
+* - {py:obj}`OnOff <ophyd_async.core._enums.OnOff>`
+  - ```{autodoc2-docstring} ophyd_async.core._enums.OnOff
+    :summary:
+    ```
 ````
 
 ### Functions
@@ -2932,3 +2948,123 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._derived_signal_backe
 ```
 
 ````
+
+`````{py:class} EnabledDisabled()
+:canonical: ophyd_async.core._enums.EnabledDisabled
+
+Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.core._enums.EnabledDisabled
+```
+
+````{py:attribute} ENABLED
+:canonical: ophyd_async.core._enums.EnabledDisabled.ENABLED
+:value: >
+   'Enabled'
+
+```{autodoc2-docstring} ophyd_async.core._enums.EnabledDisabled.ENABLED
+```
+
+````
+
+````{py:attribute} DISABLED
+:canonical: ophyd_async.core._enums.EnabledDisabled.DISABLED
+:value: >
+   'Disabled'
+
+```{autodoc2-docstring} ophyd_async.core._enums.EnabledDisabled.DISABLED
+```
+
+````
+
+`````
+
+`````{py:class} EnableDisable()
+:canonical: ophyd_async.core._enums.EnableDisable
+
+Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.core._enums.EnableDisable
+```
+
+````{py:attribute} ENABLE
+:canonical: ophyd_async.core._enums.EnableDisable.ENABLE
+:value: >
+   'Enable'
+
+```{autodoc2-docstring} ophyd_async.core._enums.EnableDisable.ENABLE
+```
+
+````
+
+````{py:attribute} DISABLE
+:canonical: ophyd_async.core._enums.EnableDisable.DISABLE
+:value: >
+   'Disable'
+
+```{autodoc2-docstring} ophyd_async.core._enums.EnableDisable.DISABLE
+```
+
+````
+
+`````
+
+`````{py:class} InOut()
+:canonical: ophyd_async.core._enums.InOut
+
+Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.core._enums.InOut
+```
+
+````{py:attribute} IN
+:canonical: ophyd_async.core._enums.InOut.IN
+:value: >
+   'In'
+
+```{autodoc2-docstring} ophyd_async.core._enums.InOut.IN
+```
+
+````
+
+````{py:attribute} OUT
+:canonical: ophyd_async.core._enums.InOut.OUT
+:value: >
+   'Out'
+
+```{autodoc2-docstring} ophyd_async.core._enums.InOut.OUT
+```
+
+````
+
+`````
+
+`````{py:class} OnOff()
+:canonical: ophyd_async.core._enums.OnOff
+
+Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.core._enums.OnOff
+```
+
+````{py:attribute} ON
+:canonical: ophyd_async.core._enums.OnOff.ON
+:value: >
+   'On'
+
+```{autodoc2-docstring} ophyd_async.core._enums.OnOff.ON
+```
+
+````
+
+````{py:attribute} OFF
+:canonical: ophyd_async.core._enums.OnOff.OFF
+:value: >
+   'Off'
+
+```{autodoc2-docstring} ophyd_async.core._enums.OnOff.OFF
+```
+
+````
+
+`````

@@ -31,10 +31,6 @@
   - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode
     :summary:
     ```
-* - {py:obj}`VimbaOnOff <ophyd_async.epics.advimba._vimba_io.VimbaOnOff>`
-  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOnOff
-    :summary:
-    ```
 * - {py:obj}`VimbaTriggerSource <ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource>`
   - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource
     :summary:
@@ -120,7 +116,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 ````{py:attribute} trigger_mode
 :canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_mode
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaOnOff], PvSuffix('TriggerMode')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.OnOff], PvSuffix('TriggerMode')]
 :value: >
    None
 
@@ -177,36 +173,6 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
    'TriggerWidth'
 
 ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode.TRIGGER_WIDTH
-```
-
-````
-
-`````
-
-`````{py:class} VimbaOnOff()
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOnOff
-
-Bases: {py:obj}`ophyd_async.core.StrictEnum`
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOnOff
-```
-
-````{py:attribute} ON
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOnOff.ON
-:value: >
-   'On'
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOnOff.ON
-```
-
-````
-
-````{py:attribute} OFF
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOnOff.OFF
-:value: >
-   'Off'
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOnOff.OFF
 ```
 
 ````
@@ -304,7 +270,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 ````{py:attribute} OFF
 :canonical: ophyd_async.epics.advimba._vimba_io.VimbaOverlap.OFF
 :value: >
-   'Off'
+   None
 
 ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOverlap.OFF
 ```

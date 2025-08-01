@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.advimba._vimba_io &#8212; ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation</title>
+    <title>ophyd_async.epics.advimba._vimba_io &#8212; ophyd-async 0.12.4.dev3+gae915c5f3 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=ab0680d2"></script>
+    <script src="../../../../_static/documentation_options.js?v=30b0f621"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev2+gd6f7b8c34 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev3+gae915c5f3 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev3+gae915c5f3 documentation - Home"/>
   
   
 </a></div>
@@ -465,7 +465,7 @@ window.addEventListener("load", () => mermaid.run());
   <h1>Source code for ophyd_async.epics.advimba._vimba_io</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">StrictEnum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">OnOff</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">StrictEnum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adcore</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">PvSuffix</span>
 
@@ -503,18 +503,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">class</span><span class="w"> </span><span class="nc">VimbaOverlap</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Overlap modes for the Vimba detector.&quot;&quot;&quot;</span>
 
-    <span class="n">OFF</span> <span class="o">=</span> <span class="s2">&quot;Off&quot;</span>
+    <span class="n">OFF</span> <span class="o">=</span> <span class="n">OnOff</span><span class="o">.</span><span class="n">OFF</span>
     <span class="n">PREV_FRAME</span> <span class="o">=</span> <span class="s2">&quot;PreviousFrame&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="VimbaOnOff">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaOnOff">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">VimbaOnOff</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;On/Off modes on the Vimba detector.&quot;&quot;&quot;</span>
-
-    <span class="n">ON</span> <span class="o">=</span> <span class="s2">&quot;On&quot;</span>
-    <span class="n">OFF</span> <span class="o">=</span> <span class="s2">&quot;Off&quot;</span></div>
 
 
 
@@ -537,7 +527,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">SignalRW</span><span class="p">[</span><span class="n">VimbaConvertFormat</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ConvertPixelFormat&quot;</span><span class="p">)</span>
     <span class="p">]</span>
     <span class="n">trigger_source</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">VimbaTriggerSource</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;TriggerSource&quot;</span><span class="p">)]</span>
-    <span class="n">trigger_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">VimbaOnOff</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;TriggerMode&quot;</span><span class="p">)]</span>
+    <span class="n">trigger_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">OnOff</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;TriggerMode&quot;</span><span class="p">)]</span>
     <span class="n">trigger_overlap</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">VimbaOverlap</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;TriggerOverlap&quot;</span><span class="p">)]</span>
     <span class="n">exposure_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">VimbaExposeOutMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ExposureMode&quot;</span><span class="p">)]</span></div>
 
