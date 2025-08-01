@@ -133,7 +133,7 @@ class NDAttributeParam:
     addr: int = 0  # The address as seen in the INP link of the record
     description: str = ""  # A description that appears in the HDF file as an attribute
 
-      
+
 def ndattributes_to_xml(
     ndattributes: Sequence[NDAttributeParam | NDAttributePv],
 ) -> str:
