@@ -34,7 +34,7 @@ class Trajectory:
         :returns Trajectory: Data class representing our parsed trajectory
         :raises RuntimeError: Slice must have no gaps and a duration array
         """
-        duration = error_if_none(slice.duration, "Slice must have a duration")
+        slice_duration = error_if_none(slice.duration, "Slice must have a duration")
 
         # Check if any gaps other than initial gap.
         if any(slice.gap[1:]):
@@ -55,41 +55,43 @@ class Trajectory:
         user_programs: npt.NDArray[np.int32] = np.ones(2 * scan_size + 1, float)
         user_programs[-1] = 8
 
-        # Set starting points
-        start = 0
-        for motor in motors:
-            positions[motor][start] = slice.lower[motor][start]
-
-            velocities[motor][start] = (
-                2 * (slice.midpoints[motor][start] - slice.lower[motor][start])
-            ) / duration[start]
-
-        # Half the time per point
-        durations[1:] = np.repeat(duration / (2 * TICK_S), 2)
         # Ramp up time for start of collection window
-        durations[start] = int(ramp_up_time / TICK_S)
+        durations[0] = int(ramp_up_time / TICK_S)
+        # Half the time per point
+        durations[1:] = np.repeat(slice_duration / (2 * TICK_S), 2)
 
         # Fill profile assuming no gaps
         # Excluding starting points, we begin at our next frame
-        start = 1
-        half_durations = np.repeat(duration / 2, 2)
+        half_durations = slice_duration / 2
         for motor in motors:
-            positions[motor][start::2] = slice.midpoints[motor]
-            positions[motor][start + 1 :: 2] = slice.upper[motor]
-
-            lower_velocities = (
-                positions[motor][1:] - positions[motor][:-1]
+            # Set the first position to be lower bound, then
+            # alternate mid and upper as the upper and lower
+            # bounds of neighbouring points are the same as gap is false
+            positions[motor][0] = slice.lower[motor][0]
+            positions[motor][1::2] = slice.midpoints[motor]
+            positions[motor][2::2] = slice.upper[motor]
+            # For velocities we will need the relative distances
+            mid_to_upper_velocities = (
+                slice.upper[motor] - slice.midpoints[motor]
             ) / half_durations
-
-            upper_velocities = (
-                positions[motor][2:] - positions[motor][1:-1]
-            ) / half_durations[1:]
-
-            velocities[motor][1:-1] = (lower_velocities[-1] + upper_velocities) / 2
-
-            velocities[motor][-1] = (
-                slice.upper[motor][-1] - slice.midpoints[motor][-1] / half_durations[-1]
-            )
+            lower_to_mid_velocities = (
+                slice.midpoints[motor] - slice.lower[motor]
+            ) / half_durations
+            # First velocity is the lower -> mid of first point
+            velocities[motor][0] = lower_to_mid_velocities[0]
+            # For the midpoints, we take the average of the
+            # lower -> mid and mid-> upper velocities of the same point
+            velocities[motor][1::2] = (
+                lower_to_mid_velocities + mid_to_upper_velocities
+            ) / 2
+            # For the upper points, we need to take the average of the
+            # mid -> upper velocity of the previous point and
+            # lower -> mid velocity of the current point
+            velocities[motor][2:-1:2] = (
+                mid_to_upper_velocities[:-1] + lower_to_mid_velocities[1:]
+            ) / 2
+            # For the last velocity take the mid to upper velocity
+            velocities[motor][-1] = mid_to_upper_velocities[-1]
 
         return cls(
             positions=positions,
