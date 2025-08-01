@@ -15,7 +15,7 @@ from tango.asyncio_executor import (
     AsyncioExecutor,
     get_global_executor,
 )
-from test_base_device import TestDevice
+from test_base_device import TestDeviceServer
 from test_tango_signals import make_backend
 
 from ophyd_async.core import (
@@ -33,7 +33,7 @@ from ophyd_async.tango.core import (
     get_tango_trl,
     get_trl_descriptor,
 )
-from ophyd_async.tango.testing import OneOfEverythingTangoDevice
+from ophyd_async.tango.testing import OneOfEverythingTangoServer
 
 
 # --------------------------------------------------------------------
@@ -46,7 +46,7 @@ async def prepare_device(trl: str, pv: str, put_value: Any) -> None:
 @pytest.fixture(scope="module")
 def tango_test_device(subprocess_helper):
     with subprocess_helper(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
+        [{"class": TestDeviceServer, "devices": [{"name": "test/device/1"}]}]
     ) as context:
         yield context.trls["test/device/1"]
 
@@ -55,7 +55,7 @@ def tango_test_device(subprocess_helper):
 @pytest.fixture(scope="module")
 def echo_device(subprocess_helper):
     with subprocess_helper(
-        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/1"}]}]
+        [{"class": OneOfEverythingTangoServer, "devices": [{"name": "test/device/1"}]}]
     ) as context:
         yield context.trls["test/device/1"]
 

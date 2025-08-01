@@ -87,7 +87,7 @@ _all_attribute_definitions = [
 ]
 
 
-class OneOfEverythingTangoDevice(Device):
+class OneOfEverythingTangoServer(Device):
     attr_values = {}
     initial_values = {}
 
