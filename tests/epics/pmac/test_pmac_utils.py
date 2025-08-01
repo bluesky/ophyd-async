@@ -8,8 +8,8 @@ from ophyd_async.epics.pmac import (
     PmacIO,
 )
 from ophyd_async.epics.pmac._utils import (
-    calculate_ramp_position_and_duration,  # noqa: PLC2701
     _PmacMotorInfo,  # noqa: PLC2701
+    calculate_ramp_position_and_duration,  # noqa: PLC2701
 )
 from ophyd_async.testing import set_mock_value
 
