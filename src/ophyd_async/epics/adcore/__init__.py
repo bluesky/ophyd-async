@@ -32,6 +32,7 @@ from ._utils import (
     NDAttributeParam,
     NDAttributePv,
     NDAttributePvDbrType,
+    ndattributes_to_xml,
 )
 
 __all__ = [
@@ -64,4 +65,5 @@ __all__ = [
     "NDAttributePvDbrType",
     "NDCBFlushOnSoftTrgMode",
     "NDPluginCBIO",
+    "ndattributes_to_xml",
 ]
