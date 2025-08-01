@@ -3,12 +3,12 @@ from typing import Annotated as A
 
 from ophyd_async.core import (
     DatasetDescriber,
+    DeviceVector,
     EnableDisable,
     SignalR,
     SignalRW,
     StrictEnum,
 )
-from ophyd_async.core._device import DeviceVector
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
 from ._utils import ADBaseDataType, ADFileWriteMode, ADImageMode, convert_ad_dtype_to_np
