@@ -19,7 +19,7 @@ if __name__ == "__main__":
             device_names.append(device["name"])
 
     trls = {}
-    with MultiDeviceTestContext(context_args, process=True) as context:
+    with MultiDeviceTestContext(context_args, process=False) as context:
         for name in device_names:
             trls[name] = context.get_device_access(name)
         sock.send(pickle.dumps(trls))
