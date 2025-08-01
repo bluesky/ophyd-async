@@ -1,14 +1,10 @@
 from dataclasses import dataclass
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
-    SignalDatatypeT,
     SignalR,
-    SignalRW,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
-    wait_for_value,
 )
 
 
@@ -134,12 +130,3 @@ class NDAttributeParam:
     datatype: NDAttributeDataType  # The datatype of the parameter
     addr: int = 0  # The address as seen in the INP link of the record
     description: str = ""  # A description that appears in the HDF file as an attribute
-
-
-async def stop_busy_record(
-    signal: SignalRW[SignalDatatypeT],
-    value: SignalDatatypeT,
-    timeout: float = DEFAULT_TIMEOUT,
-) -> None:
-    await signal.set(value, wait=False)
-    await wait_for_value(signal, value, timeout=timeout)
