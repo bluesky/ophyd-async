@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.12.4.dev3+gae915c5f3 documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.12.4.dev4+g115ed8831 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=30b0f621"></script>
+    <script src="../../../_static/documentation_options.js?v=db8a3bda"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev3+gae915c5f3 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev3+gae915c5f3 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev4+g115ed8831 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev4+g115ed8831 documentation - Home"/>
   
   
 </a></div>
@@ -579,7 +579,11 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController.get_deadtime">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;For a given exposure, how long should the time between exposures be.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get state-independent deadtime.</span>
+
+<span class="sd">        For a given exposure, what is the safest minimum time between exposures that</span>
+<span class="sd">        can be determined without reading signals.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="DetectorController.prepare">
@@ -848,14 +852,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Deadtime must be supplied when in externally triggered mode&quot;</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="n">required_deadtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span> <span class="ow">and</span> <span class="n">required_deadtime</span> <span class="o">&gt;</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="si">}</span><span class="s2"> needs at least </span><span class="si">{</span><span class="n">required_deadtime</span><span class="si">}</span><span class="s2">s &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;deadtime, but trigger logic provides only </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="si">}</span><span class="s2">s&quot;</span>
-            <span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">:</span>
             <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span>
