@@ -1,4 +1,4 @@
-from ophyd_async.core._utils import StrictEnum
+from ._utils import StrictEnum
 
 
 class OnOff(StrictEnum):
