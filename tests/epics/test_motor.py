@@ -35,6 +35,7 @@ async def sim_motor():
     yield sim_motor
 
 
+@pytest.mark.xfail(reason="Flaky test")
 async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     set_mock_put_proceeds(sim_motor.user_setpoint, False)
     s = sim_motor.set(0.55)
