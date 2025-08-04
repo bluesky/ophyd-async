@@ -3,6 +3,7 @@ from typing import Annotated as A
 
 from ophyd_async.core import (
     DatasetDescriber,
+    DeviceVector,
     EnableDisable,
     SignalR,
     SignalRW,
@@ -86,6 +87,56 @@ class NDPluginStatsIO(NDPluginBaseIO):
     hist_size: A[SignalRW[int], PvSuffix.rbv("HistSize")]
     hist_min: A[SignalRW[float], PvSuffix.rbv("HistMin")]
     hist_max: A[SignalRW[float], PvSuffix.rbv("HistMax")]
+
+
+class NDROIStatIO(NDPluginBaseIO):
+    """Plugin for calculating basic statistics for multiple ROIs.
+
+    Each ROI is implemented as an instance of NDROIStatNIO,
+    and the collection of ROIs is held as a DeviceVector.
+
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROIStat.html
+    """
+
+    def __init__(self, prefix, num_channels=8, with_pvi=False, name=""):
+        self.channels = DeviceVector(
+            {i: NDROIStatNIO(f"{prefix}{i}:") for i in range(1, num_channels + 1)}
+        )
+        super().__init__(prefix, with_pvi, name)
+
+
+class NDROIStatNIO(EpicsDevice):
+    """Defines the parameters for a single ROI used for statistics calculation.
+
+    Each instance represents a single ROI, with attributes for its position
+    (min_x, min_y) and size (size_x, size_y), as well as a name and use status.
+
+    See definition in ADApp/pluginSrc/NDPluginROIStat.h in https://github.com/areaDetector/ADCore.
+
+    Attributes:
+        name: The name of the ROI.
+        use: Flag indicating whether the ROI is used.
+        min_x: The start X-coordinate of the ROI.
+        min_y: The start Y-coordinate of the ROI.
+        size_x: The width of the ROI.
+        size_y: The height of the ROI.
+        min_value: Minimum count value in the ROI.
+        max_value: Maximum count value in the ROI.
+        mean_value: Mean counts value in the ROI.
+        total: Total counts in the ROI.
+    """
+
+    name_: A[SignalRW[str], PvSuffix("Name")]
+    use: A[SignalRW[bool], PvSuffix.rbv("Use")]
+    min_x: A[SignalRW[int], PvSuffix.rbv("MinX")]
+    min_y: A[SignalRW[int], PvSuffix.rbv("MinY")]
+    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
+    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
+    # stats
+    min_value: A[SignalR[float], PvSuffix("MinValue_RBV")]
+    max_value: A[SignalR[float], PvSuffix("MaxValue_RBV")]
+    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
+    total: A[SignalR[float], PvSuffix("Total_RBV")]
 
 
 class ADState(StrictEnum):

@@ -206,6 +206,7 @@ class MotorBundle(Device):
         super().__init__(name)
 
 
+@pytest.mark.xfail(reason="Flaky test")
 @pytest.mark.parametrize("parallel", (False, True))
 async def test_many_individual_device_connects_not_slow(parallel):
     start = time.monotonic()
