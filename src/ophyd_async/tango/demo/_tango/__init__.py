@@ -1,3 +1,3 @@
-from ._servers import DemoCounter, DemoMover
+from ._servers import DemoCounterServer, DemoMotorServer
 
-__all__ = ["DemoCounter", "DemoMover"]
+__all__ = ["DemoCounterServer", "DemoMotorServer"]

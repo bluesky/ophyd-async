@@ -1,6 +1,6 @@
 from ._one_of_everything import (
     ExampleStrEnum,
-    OneOfEverythingTangoDevice,
+    OneOfEverythingTangoServer,
 )
 
-__all__ = ["ExampleStrEnum", "OneOfEverythingTangoDevice"]
+__all__ = ["ExampleStrEnum", "OneOfEverythingTangoServer"]

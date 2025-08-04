@@ -6,7 +6,7 @@ from typing import TypeVar
 
 import numpy as np
 import pytest
-from test_base_device import TestDevice
+from test_base_device import TestDeviceServer
 
 from ophyd_async.core import SignalRW, StandardReadable
 from ophyd_async.core import StandardReadableFormat as Format
@@ -22,7 +22,7 @@ from ophyd_async.tango.core import (
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
-    OneOfEverythingTangoDevice,
+    OneOfEverythingTangoServer,
 )
 from ophyd_async.testing import (
     MonitorQueue,
@@ -35,13 +35,13 @@ T = TypeVar("T")
 
 
 # --------------------------------------------------------------------
-#               TestDevice
+#               TestDeviceServer
 # --------------------------------------------------------------------
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
 def tango_test_device(subprocess_helper):
     with subprocess_helper(
-        [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
+        [{"class": TestDeviceServer, "devices": [{"name": "test/device/1"}]}]
     ) as context:
         yield context.trls["test/device/1"]
 
@@ -63,7 +63,7 @@ def assert_enum(initial_value, readout_value):
 @pytest.fixture(scope="module")
 def everything_device_trl(subprocess_helper):
     with subprocess_helper(
-        [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/2"}]}]
+        [{"class": OneOfEverythingTangoServer, "devices": [{"name": "test/device/2"}]}]
     ) as context:
         yield context.trls["test/device/2"]
 
