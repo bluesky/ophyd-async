@@ -99,12 +99,6 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             )
         ]
 
-        self._composer = HDFDocumentComposer(
-            # See https://github.com/bluesky/ophyd-async/issues/122
-            f"{self._path_info.directory_uri}{self._path_info.filename}{self._file_extension}",
-            self._datasets,
-        )
-
         # And all the scalar datasets
         for plugin in self._plugins.values():
             maybe_xml = await plugin.nd_attributes_file.get_value()
@@ -135,6 +129,12 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                             chunk_shape=(16384,),
                         )
                     )
+
+        self._composer = HDFDocumentComposer(
+            # See https://github.com/bluesky/ophyd-async/issues/122
+            f"{self._path_info.directory_uri}{self._path_info.filename}{self._file_extension}",
+            self._datasets,
+        )
 
         describe = {
             ds.data_key: DataKey(
