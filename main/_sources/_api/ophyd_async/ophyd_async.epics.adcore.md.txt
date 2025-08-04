@@ -63,6 +63,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDPluginStatsIO
     :summary:
     ```
+* - {py:obj}`NDROIStatIO <ophyd_async.epics.adcore._core_io.NDROIStatIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDROIStatIO
+    :summary:
+    ```
 * - {py:obj}`ADBaseDatasetDescriber <ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber>`
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber
     :summary:
@@ -1141,6 +1145,16 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
 ````
 
 `````
+
+````{py:class} NDROIStatIO(prefix, num_channels=8, with_pvi=False, name='')
+:canonical: ophyd_async.epics.adcore._core_io.NDROIStatIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._core_io.NDROIStatIO
+```
+
+````
 
 ````{py:data} DEFAULT_GOOD_STATES
 :canonical: ophyd_async.epics.adcore._core_logic.DEFAULT_GOOD_STATES

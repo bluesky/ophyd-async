@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.12.4.dev8+g3e0c3c25c documentation</title>
+    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.12.4.dev9+g8a3013daf documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=02228ce6"></script>
+    <script src="../../_static/documentation_options.js?v=eacf70c6"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev8+g3e0c3c25c documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev8+g3e0c3c25c documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev9+g8a3013daf documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev9+g8a3013daf documentation - Home"/>
   
   
 </a></div>
@@ -567,52 +567,55 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginStatsIO" title="ophyd_async.epics.adcore._core_io.NDPluginStatsIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDPluginStatsIO</span></code></a></p></td>
 <td><p>Plugin for computing statistics from an image or ROI within an image.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDatasetDescriber" title="ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseDatasetDescriber</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDROIStatIO" title="ophyd_async.epics.adcore._core_io.NDROIStatIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDROIStatIO</span></code></a></p></td>
+<td><p>Plugin for calculating basic statistics for multiple ROIs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDatasetDescriber" title="ophyd_async.epics.adcore._core_io.ADBaseDatasetDescriber"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseDatasetDescriber</span></code></a></p></td>
 <td><p>For describing datasets in file writing.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseController" title="ophyd_async.epics.adcore._core_logic.ADBaseController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseController</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseController" title="ophyd_async.epics.adcore._core_logic.ADBaseController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseController</span></code></a></p></td>
 <td><p>Detector logic for arming and disarming the detector.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADWriter" title="ophyd_async.epics.adcore._core_writer.ADWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADWriter</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADWriter" title="ophyd_async.epics.adcore._core_writer.ADWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADWriter</span></code></a></p></td>
 <td><p>Common behavior for all areaDetector writers.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADHDFWriter" title="ophyd_async.epics.adcore._hdf_writer.ADHDFWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADHDFWriter</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADHDFWriter" title="ophyd_async.epics.adcore._hdf_writer.ADHDFWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADHDFWriter</span></code></a></p></td>
 <td><p>Allow <code class="docutils literal notranslate"><span class="pre">NDFileHDFIO</span></code> to be used within <code class="docutils literal notranslate"><span class="pre">StandardDetector</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADTIFFWriter" title="ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADTIFFWriter</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADTIFFWriter" title="ophyd_async.epics.adcore._tiff_writer.ADTIFFWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADTIFFWriter</span></code></a></p></td>
 <td><p>Common behavior for all areaDetector writers.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADJPEGWriter" title="ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADJPEGWriter</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADJPEGWriter" title="ophyd_async.epics.adcore._jpeg_writer.ADJPEGWriter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADJPEGWriter</span></code></a></p></td>
 <td><p>Common behavior for all areaDetector writers.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.SingleTriggerDetector" title="ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SingleTriggerDetector</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.SingleTriggerDetector" title="ophyd_async.epics.adcore._single_trigger.SingleTriggerDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SingleTriggerDetector</span></code></a></p></td>
 <td><p>Device that provides selected child Device values in <code class="docutils literal notranslate"><span class="pre">read()</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType" title="ophyd_async.epics.adcore._utils.ADBaseDataType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseDataType</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseDataType" title="ophyd_async.epics.adcore._utils.ADBaseDataType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADBaseDataType</span></code></a></p></td>
 <td><p>Some members should exist in the Backend, and there should be no extras.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADFileWriteMode" title="ophyd_async.epics.adcore._utils.ADFileWriteMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADFileWriteMode</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADFileWriteMode" title="ophyd_async.epics.adcore._utils.ADFileWriteMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADFileWriteMode</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADImageMode" title="ophyd_async.epics.adcore._utils.ADImageMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADImageMode</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ADImageMode" title="ophyd_async.epics.adcore._utils.ADImageMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ADImageMode</span></code></a></p></td>
 <td><p>All members should exist in the Backend, but there may be extras.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributePv" title="ophyd_async.epics.adcore._utils.NDAttributePv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributePv</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributePv" title="ophyd_async.epics.adcore._utils.NDAttributePv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributePv</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributeParam" title="ophyd_async.epics.adcore._utils.NDAttributeParam"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributeParam</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributeParam" title="ophyd_async.epics.adcore._utils.NDAttributeParam"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributeParam</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributeDataType" title="ophyd_async.epics.adcore._utils.NDAttributeDataType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributeDataType</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributeDataType" title="ophyd_async.epics.adcore._utils.NDAttributeDataType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributeDataType</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributePvDbrType" title="ophyd_async.epics.adcore._utils.NDAttributePvDbrType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributePvDbrType</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributePvDbrType" title="ophyd_async.epics.adcore._utils.NDAttributePvDbrType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDAttributePvDbrType</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode" title="ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDCBFlushOnSoftTrgMode</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDCBFlushOnSoftTrgMode" title="ophyd_async.epics.adcore._core_io.NDCBFlushOnSoftTrgMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDCBFlushOnSoftTrgMode</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginCBIO" title="ophyd_async.epics.adcore._core_io.NDPluginCBIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDPluginCBIO</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginCBIO" title="ophyd_async.epics.adcore._core_io.NDPluginCBIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NDPluginCBIO</span></code></a></p></td>
 <td><p>Base class from which plugins are derived.</p></td>
 </tr>
 </tbody>
@@ -1249,6 +1252,16 @@ See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginStat
 <dd><p>None</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.NDROIStatIO">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">NDROIStatIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_pvi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_core_io.html#NDROIStatIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.NDROIStatIO" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore._core_io.NDPluginBaseIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.epics.adcore._core_io.NDPluginBaseIO</span></code></a></p>
+<p>Plugin for calculating basic statistics for multiple ROIs.</p>
+<p>Each ROI is implemented as an instance of NDROIStatNIO,
+and the collection of ROIs is held as a DeviceVector.</p>
+<p>See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROIStat.html</p>
 </dd></dl>
 
 <dl class="py data">
@@ -1999,6 +2012,7 @@ See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginDriv
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDPluginStatsIO.hist_max"><code class="docutils literal notranslate"><span class="pre">NDPluginStatsIO.hist_max</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.NDROIStatIO"><code class="docutils literal notranslate"><span class="pre">NDROIStatIO</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.DEFAULT_GOOD_STATES"><code class="docutils literal notranslate"><span class="pre">DEFAULT_GOOD_STATES</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDatasetDescriber"><code class="docutils literal notranslate"><span class="pre">ADBaseDatasetDescriber</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADBaseDatasetDescriber.np_datatype"><code class="docutils literal notranslate"><span class="pre">ADBaseDatasetDescriber.np_datatype()</span></code></a></li>

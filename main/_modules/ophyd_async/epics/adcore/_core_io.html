@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.12.4.dev8+g3e0c3c25c documentation</title>
+    <title>ophyd_async.epics.adcore._core_io &#8212; ophyd-async 0.12.4.dev9+g8a3013daf documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=02228ce6"></script>
+    <script src="../../../../_static/documentation_options.js?v=eacf70c6"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev8+g3e0c3c25c documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev8+g3e0c3c25c documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.12.4.dev9+g8a3013daf documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.12.4.dev9+g8a3013daf documentation - Home"/>
   
   
 </a></div>
@@ -468,6 +468,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DatasetDescriber</span><span class="p">,</span>
+    <span class="n">DeviceVector</span><span class="p">,</span>
     <span class="n">EnableDisable</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
@@ -569,6 +570,59 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">hist_min</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;HistMin&quot;</span><span class="p">)]</span>
     <span class="n">hist_max</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;HistMax&quot;</span><span class="p">)]</span></div>
 
+
+
+<div class="viewcode-block" id="NDROIStatIO">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDROIStatIO">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NDROIStatIO</span><span class="p">(</span><span class="n">NDPluginBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plugin for calculating basic statistics for multiple ROIs.</span>
+
+<span class="sd">    Each ROI is implemented as an instance of NDROIStatNIO,</span>
+<span class="sd">    and the collection of ROIs is held as a DeviceVector.</span>
+
+<span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROIStat.html</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">num_channels</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">with_pvi</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">DeviceVector</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">NDROIStatNIO</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">i</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_channels</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)}</span>
+        <span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">with_pvi</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">NDROIStatNIO</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines the parameters for a single ROI used for statistics calculation.</span>
+
+<span class="sd">    Each instance represents a single ROI, with attributes for its position</span>
+<span class="sd">    (min_x, min_y) and size (size_x, size_y), as well as a name and use status.</span>
+
+<span class="sd">    See definition in ADApp/pluginSrc/NDPluginROIStat.h in https://github.com/areaDetector/ADCore.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        name: The name of the ROI.</span>
+<span class="sd">        use: Flag indicating whether the ROI is used.</span>
+<span class="sd">        min_x: The start X-coordinate of the ROI.</span>
+<span class="sd">        min_y: The start Y-coordinate of the ROI.</span>
+<span class="sd">        size_x: The width of the ROI.</span>
+<span class="sd">        size_y: The height of the ROI.</span>
+<span class="sd">        min_value: Minimum count value in the ROI.</span>
+<span class="sd">        max_value: Maximum count value in the ROI.</span>
+<span class="sd">        mean_value: Mean counts value in the ROI.</span>
+<span class="sd">        total: Total counts in the ROI.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Name&quot;</span><span class="p">)]</span>
+    <span class="n">use</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Use&quot;</span><span class="p">)]</span>
+    <span class="n">min_x</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;MinX&quot;</span><span class="p">)]</span>
+    <span class="n">min_y</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;MinY&quot;</span><span class="p">)]</span>
+    <span class="n">size_x</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SizeX&quot;</span><span class="p">)]</span>
+    <span class="n">size_y</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;SizeY&quot;</span><span class="p">)]</span>
+    <span class="c1"># stats</span>
+    <span class="n">min_value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;MinValue_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">max_value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;MaxValue_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">mean_value</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;MeanValue_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">total</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Total_RBV&quot;</span><span class="p">)]</span>
 
 
 <div class="viewcode-block" id="ADState">
