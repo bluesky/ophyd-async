@@ -8,7 +8,8 @@ from ophyd_async.core import (
     TriggerInfo,
     wait_for_value,
 )
-from ophyd_async.fastcs.jungfrau import (
+
+from ._signals import (
     JUNGFRAU_TRIGGER_MODE_MAP,
     DetectorStatus,
     JungfrauDriverIO,
@@ -75,7 +76,7 @@ class JungfrauController(DetectorController):
         await asyncio.gather(*coros)
 
     async def arm(self):
-        await self._driver.start.trigger()
+        await self._driver.acquisition_start.trigger()
 
     async def wait_for_idle(self):
         await wait_for_value(

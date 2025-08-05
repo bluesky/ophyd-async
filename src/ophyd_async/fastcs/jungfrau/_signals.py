@@ -1,5 +1,3 @@
-from enum import StrEnum
-
 from pydantic import NonNegativeInt
 
 from ophyd_async.core import (
@@ -13,21 +11,12 @@ from ophyd_async.core import (
 from ophyd_async.fastcs.core import fastcs_connector
 
 
-class JungfrauTriggerMode(StrEnum):
-    # according to https://rtd.xfel.eu/docs/jungfrau-detector-documentation/en/latest/general_introduction.html
-    # we have autotrigger mode and external trigger mode
-    EXTERNAL = "TRIGGER_EXPOSURE"
-    AUTO = "AUTO_TIMING"
-    # Got these names from the slsdet module. Not sure if it's strenum or intenum though
+# These values will need to be changed after https://github.com/DiamondLightSource/FastCS/issues/175
+class JungfrauTriggerMode(StrictEnum):
+    INTERNAL = "INTERNAL"
+    EXTERNAL = "EXTERNAL"
 
 
-JUNGFRAU_TRIGGER_MODE_MAP = {
-    DetectorTrigger.EDGE_TRIGGER: JungfrauTriggerMode.EXTERNAL,
-    DetectorTrigger.INTERNAL: JungfrauTriggerMode.AUTO,
-}
-
-
-# Used for all SLS detectors
 class DetectorStatus(StrictEnum):
     IDLE = "IDLE"
     ERROR = "ERROR"
@@ -36,6 +25,12 @@ class DetectorStatus(StrictEnum):
     TRANSMITTING = "TRANSMITTING"
     RUNNING = "RUNNING"
     STOPPED = "STOPPED"
+
+
+JUNGFRAU_TRIGGER_MODE_MAP = {
+    DetectorTrigger.EDGE_TRIGGER: JungfrauTriggerMode.EXTERNAL,
+    DetectorTrigger.INTERNAL: JungfrauTriggerMode.INTERNAL,
+}
 
 
 class JungfrauDriverIO(Device):
@@ -52,7 +47,7 @@ class JungfrauDriverIO(Device):
     # frames per trigger
     frames_per_acq: SignalRW[NonNegativeInt]
 
-    start: SignalX
+    acquisition_start: SignalX
 
     acquisition_stop: SignalX
     bit_depth: SignalR[int]
