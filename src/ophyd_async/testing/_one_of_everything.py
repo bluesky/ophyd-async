@@ -6,6 +6,7 @@ import numpy as np
 from ophyd_async.core import (
     Array1D,
     Device,
+    DeviceVector,
     DTypeScalar_co,
     SignalRW,
     StandardReadable,
@@ -15,7 +16,6 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.core._device import DeviceVector
 
 
 class ExampleEnum(StrictEnum):

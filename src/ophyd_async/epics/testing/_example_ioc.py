@@ -4,8 +4,7 @@ from typing import Annotated as A
 
 import numpy as np
 
-from ophyd_async.core import Array1D, SignalR, SignalRW, StrictEnum, Table
-from ophyd_async.core._utils import SubsetEnum
+from ophyd_async.core import Array1D, SignalR, SignalRW, StrictEnum, SubsetEnum, Table
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
 from ._utils import TestingIOC, generate_random_pv_prefix
