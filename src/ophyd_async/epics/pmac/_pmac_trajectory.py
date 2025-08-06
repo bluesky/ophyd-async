@@ -8,6 +8,7 @@ from scanspec.specs import Spec
 from ophyd_async.core import FlyerController, wait_for_value
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
+from ophyd_async.epics.pmac._pmac_io import CS_LETTERS
 from ophyd_async.epics.pmac._utils import (
     TICK_S,
     _PmacMotorInfo,
@@ -40,7 +41,6 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTriggerLogic]):
             self._build_trajectory(traj, motor_info, ramp_down_pos, ramp_down_time),
             self._move_to_start(motor_info, ramp_up_pos),
         )
-        return await super().prepare(value)
 
     async def kickoff(self):
         if not self.scantime:
@@ -69,19 +69,24 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTriggerLogic]):
         ramp_down_time: float,
     ):
         await self.pmac.trajectory.profile_cs_name.set(motor_info.cs_port)
-        await self.pmac.trajectory.points_to_build.set(len(trajectory.positions))
         new_time = np.append(trajectory.durations, [int(ramp_down_time / TICK_S)])
         self.scantime = np.sum(new_time)
         await self.pmac.trajectory.time_array.set(new_time)
         await self.pmac.trajectory.user_array.set(trajectory.user_programs)
 
+        # Unselect axes to later select only the ones that will be used in the scan
+        for axis in range(len(CS_LETTERS)):
+            await self.pmac.trajectory.use_axis[axis + 1].set(False)
+
+        size = 0
         for motor, number in motor_info.motor_cs_index.items():
             new_pos = np.append(trajectory.positions[motor], [ramp_down_pos[motor]])
             new_vel = np.append(trajectory.velocities[motor], [0])
             await self.pmac.trajectory.use_axis[number + 1].set(True)
             await self.pmac.trajectory.positions[number + 1].set(new_pos)
             await self.pmac.trajectory.velocities[number + 1].set(new_vel)
-
+            size += len(new_pos)
+        await self.pmac.trajectory.points_to_build.set(size)
         await self.pmac.trajectory.calculate_velocities.set(False)
         await self.pmac.trajectory.build_profile.set(True)
 
@@ -91,6 +96,5 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTriggerLogic]):
         coord = self.pmac.coord[motor_info.cs_number]
         await coord.defer_moves.set(True)
         for motor, position in ramp_up_position.items():
-            cs_index = motor_info.motor_cs_index[motor]
-            await coord.cs_axis_setpoint[cs_index + 1].set(position)
+            await motor.set(position)
         await coord.defer_moves.set(False)
