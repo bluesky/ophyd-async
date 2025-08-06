@@ -12,20 +12,18 @@ from ophyd_async.fastcs.core import fastcs_connector
 
 
 class JungfrauTriggerMode(StrictEnum):
-    # These values will need to be changed after https://github.com/DiamondLightSource/FastCS/issues/175
-    INTERNAL = "INTERNAL"
-    EXTERNAL = "EXTERNAL"
+    INTERNAL = "Internal"
+    EXTERNAL = "External"
 
 
 class DetectorStatus(StrictEnum):
-    # These values will need to be changed after https://github.com/DiamondLightSource/FastCS/issues/175
-    IDLE = "IDLE"
-    ERROR = "ERROR"
-    WAITING = "WAITING"
-    RUN_FINISHED = "RUN_FINISHED"
-    TRANSMITTING = "TRANSMITTING"
-    RUNNING = "RUNNING"
-    STOPPED = "STOPPED"
+    IDLE = "Idle"
+    ERROR = "Error"
+    WAITING = "Waiting"
+    RUN_FINISHED = "Run Finished"
+    TRANSMITTING = "Transmitting"
+    RUNNING = "Running"
+    STOPPED = "Stopped"
 
 
 JUNGFRAU_TRIGGER_MODE_MAP = {
