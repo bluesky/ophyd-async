@@ -72,7 +72,7 @@ async def test_bit_depth_is_passed_before_open_and_set_to_data_type_after_open(
     driver, writer = odin_driver_and_writer
     initialise_signals_to_armed(driver)
 
-    assert await writer._eiger_bit_depth().get_value() == EIGER_BIT_DEPTH
+    assert await writer._detector_bit_depth().get_value() == EIGER_BIT_DEPTH
     assert await driver.data_type.get_value() == ""
     await writer.open(ODIN_DETECTOR_NAME)
     get_mock_put(driver.data_type).assert_called_once_with(

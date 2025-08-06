@@ -45,12 +45,19 @@ class JungfrauController(DetectorController):
             if trigger_info.livetime < 2e-6:
                 logger.warning("Exposure time shorter than 2μs is not recommended")
 
+            period_between_frames = trigger_info.livetime - trigger_info.deadtime
+
+            if period_between_frames < trigger_info.livetime:
+                raise ValueError(
+                    f"Period between frames (exposure time - deadtime) "
+                    f"{period_between_frames} cannot be lower than exposure time of "
+                    f"{trigger_info.livetime}"
+                )
+
             coros.extend(
                 [
                     self._driver.exposure_time.set(trigger_info.livetime),
-                    self._driver.period_between_frames.set(
-                        trigger_info.livetime - trigger_info.deadtime
-                    ),
+                    self._driver.period_between_frames.set(period_between_frames),
                 ]
             )
         if not isinstance(trigger_info.number_of_events, int):
