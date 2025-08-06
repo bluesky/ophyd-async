@@ -60,9 +60,8 @@ async def test_prepare_val_error_on_bad_trigger_info(
 async def test_prepare_warn_on_small_exposure(jungfrau: Jungfrau, caplog):
     bad_trigger_info = TriggerInfo(livetime=1e-6)
     with caplog.at_level(logging.WARNING):
-        with pytest.raises(ValueError):
-            await jungfrau.prepare(bad_trigger_info)
-        assert "Exposure time shorter than 2μs is not recommended" in caplog.messages
+        await jungfrau.prepare(bad_trigger_info)
+    assert "Exposure time shorter than 2μs is not recommended" in caplog.messages
 
 
 async def test_prepare_error_on_bad_no_of_event(
