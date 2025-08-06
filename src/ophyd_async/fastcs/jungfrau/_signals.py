@@ -20,7 +20,7 @@ class DetectorStatus(StrictEnum):
     IDLE = "Idle"
     ERROR = "Error"
     WAITING = "Waiting"
-    RUN_FINISHED = "Run Finished"
+    RUN_FINISHED = "RunFinished"
     TRANSMITTING = "Transmitting"
     RUNNING = "Running"
     STOPPED = "Stopped"
