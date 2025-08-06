@@ -16,6 +16,12 @@ from ._detector import (
 )
 from ._device import Device, DeviceConnector, DeviceVector, init_devices
 from ._device_filler import DeviceFiller
+from ._enums import (
+    EnabledDisabled,
+    EnableDisable,
+    InOut,
+    OnOff,
+)
 from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
 from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
 from ._log import config_ophyd_async_logging
@@ -209,4 +215,9 @@ __all__ = [
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",
+    # Standard enums
+    "EnabledDisabled",
+    "EnableDisable",
+    "InOut",
+    "OnOff",
 ]

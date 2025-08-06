@@ -1,3 +1,5 @@
+import re
+
 import inflection
 import pytest
 
@@ -25,8 +27,40 @@ def get_rec_subclasses(cls: type):
 @pytest.mark.parametrize("cls", list(get_rec_subclasses(adcore.NDArrayBaseIO)))
 async def test_regularly_named_attributes(cls: Device):
     io = cls("")
-    for name, signal in io.children():
-        assert isinstance(signal, Signal)
-        # Strip off the ca:// prefix and an _RBV suffix
-        pv = signal.source.split("://")[-1].split("_RBV")[0]
+    for name, device in io.children():
+        check_name(name, device)
+
+
+def check_name(name: str, device: Device):
+    if isinstance(device, Signal):
+        pv = extract_last_pv_part(device.source)
+        # remove trailing underscore from name,
+        # used to resolve clashes with Bluesky terms
+        name = name[:-1] if name.endswith("_") else name
         assert inflection.underscore(pv) == name
+    else:
+        for name, signal in device.children():
+            check_name(name, signal)
+
+
+def extract_last_pv_part(raw_pv):
+    """Extracts prefices and _RBV suffices.
+
+    e.g. extracts DEVICE from the following
+    ca://DEVICE
+    ca://SYSTEM:DEVICE
+    ca://SYSTEM:DEVICE_RBV
+    """
+    pattern = re.compile(
+        r"""
+        ca://           # Literal prefix "ca://"
+        (?:.*:)?        # Optional prefix ending with a colon (non-capturing)
+        ([^:_]+)        # Capturing group: base name without colon or underscore
+        (?:_RBV)?       # Optional "_RBV" suffix (non-capturing)
+        $               # End of string
+        """,
+        re.VERBOSE,
+    )
+
+    match = pattern.search(raw_pv)
+    return str(match.group(1) if match else None)
