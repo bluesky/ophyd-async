@@ -4,13 +4,16 @@ from typing import Any, TypeVar, get_args, get_origin
 import numpy as np
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     SignalBackend,
     SignalDatatypeT,
+    SignalRW,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
     get_dtype,
     get_enum_cls,
+    wait_for_value,
 )
 
 T = TypeVar("T")
@@ -76,3 +79,12 @@ class EpicsSignalBackend(SignalBackend[SignalDatatypeT]):
         self.read_pv = read_pv
         self.write_pv = write_pv
         super().__init__(datatype)
+
+
+async def stop_busy_record(
+    signal: SignalRW[SignalDatatypeT],
+    value: SignalDatatypeT,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> None:
+    await signal.set(value, wait=False)
+    await wait_for_value(signal, value, timeout=timeout)

@@ -20,7 +20,8 @@ dependencies = [
     "colorlog",
     "pydantic>=2.0",
     "pydantic-numpy",
-    "stamina>=23.1.0"
+    "stamina>=23.1.0",
+    "scanspec>=1.0a1",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
@@ -29,7 +30,7 @@ requires-python = ">=3.11"
 
 [project.optional-dependencies]
 sim = ["h5py"]
-ca = ["aioca>=1.6"]
+ca = ["aioca>=2.0a4"]
 pva = ["p4p>=4.2.0"]
 tango = ["pytango==10.0.0"]
 demo = ["ipython", "matplotlib", "pyqt6"]
