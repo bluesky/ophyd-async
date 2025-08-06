@@ -28,7 +28,6 @@ from ._core_io import (
     NDArrayBaseIO,
     NDFileIO,
     NDFilePluginIO,
-    NDPluginBaseIO,
 )
 from ._utils import ADFileWriteMode
 
@@ -48,7 +47,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         dataset_describer: DatasetDescriber,
         file_extension: str = "",
         mimetype: str = "",
-        plugins: dict[str, NDPluginBaseIO] | None = None,
+        plugins: dict[str, NDArrayBaseIO] | None = None,
     ) -> None:
         self._plugins = plugins or {}
         self.fileio = fileio
@@ -70,7 +69,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         path_provider: PathProvider,
         dataset_source: NDArrayBaseIO | None = None,
         fileio_suffix: str | None = None,
-        plugins: dict[str, NDPluginBaseIO] | None = None,
+        plugins: dict[str, NDArrayBaseIO] | None = None,
     ) -> ADWriterT:
         try:
             fileio_cls = get_args(cls.__orig_bases__[0])[0]  # type: ignore
