@@ -4,6 +4,7 @@ from ._signals import (
     JUNGFRAU_TRIGGER_MODE_MAP,
     DetectorStatus,
     JungfrauDriverIO,
+    JungfrauTriggerMode,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "JungfrauController",
     "DetectorStatus",
     "JungfrauDriverIO",
+    "JungfrauTriggerMode",
 ]

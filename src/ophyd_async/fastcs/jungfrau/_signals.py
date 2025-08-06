@@ -18,6 +18,7 @@ class JungfrauTriggerMode(StrictEnum):
 
 
 class DetectorStatus(StrictEnum):
+    # These values will need to be changed after https://github.com/DiamondLightSource/FastCS/issues/175
     IDLE = "IDLE"
     ERROR = "ERROR"
     WAITING = "WAITING"
