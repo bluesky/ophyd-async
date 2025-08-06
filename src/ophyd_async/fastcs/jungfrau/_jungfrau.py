@@ -18,9 +18,10 @@ class Jungfrau(StandardDetector[JungfrauController, OdinWriter]):
         name="",
     ):
         self.drv = JungfrauDriverIO(prefix + drv_suffix)
+        self.odin = Odin(prefix + hdf_suffix, nodes=odin_nodes)
         writer = OdinWriter(
             path_provider,
-            Odin(prefix + hdf_suffix, nodes=odin_nodes),
+            self.odin,
             self.drv.bit_depth,
         )
         controller = JungfrauController(self.drv)

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -48,7 +49,9 @@ class JungfrauController(DetectorController):
 
             period_between_frames = trigger_info.livetime - trigger_info.deadtime
 
-            if period_between_frames < trigger_info.livetime:
+            if period_between_frames < trigger_info.livetime and not math.isclose(
+                period_between_frames, trigger_info.livetime, abs_tol=1e-3
+            ):
                 raise ValueError(
                     f"Period between frames (exposure time - deadtime) "
                     f"{period_between_frames} cannot be lower than exposure time of "
@@ -62,7 +65,7 @@ class JungfrauController(DetectorController):
                 ]
             )
         if not isinstance(trigger_info.number_of_events, int):
-            raise ValueError("Number of events must be an integer")
+            raise TypeError("Number of events must be an integer")
 
         await self._driver.frames_per_acq.set(trigger_info.number_of_events)
         coros.extend(
