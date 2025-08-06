@@ -38,6 +38,9 @@ class JungfrauController(DetectorController):
         if not trigger_info.deadtime:
             trigger_info.deadtime = self.get_deadtime()
 
+        if not isinstance(trigger_info.number_of_events, int):
+            raise TypeError("Number of events must be an integer")
+
         coros = []
         if trigger_info.trigger == DetectorTrigger.INTERNAL:
             if not trigger_info.livetime:
@@ -64,8 +67,6 @@ class JungfrauController(DetectorController):
                     self._driver.period_between_frames.set(period_between_frames),
                 ]
             )
-        if not isinstance(trigger_info.number_of_events, int):
-            raise TypeError("Number of events must be an integer")
 
         await self._driver.frames_per_acq.set(trigger_info.number_of_events)
         coros.extend(

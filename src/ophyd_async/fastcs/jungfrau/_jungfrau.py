@@ -8,6 +8,8 @@ from ophyd_async.fastcs.jungfrau._signals import JungfrauDriverIO
 
 
 class Jungfrau(StandardDetector[JungfrauController, OdinWriter]):
+    """Ophyd-async implementation of a Jungfrau Detector."""
+
     def __init__(
         self,
         prefix: str,

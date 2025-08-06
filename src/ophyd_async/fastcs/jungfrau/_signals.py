@@ -11,8 +11,8 @@ from ophyd_async.core import (
 from ophyd_async.fastcs.core import fastcs_connector
 
 
-# These values will need to be changed after https://github.com/DiamondLightSource/FastCS/issues/175
 class JungfrauTriggerMode(StrictEnum):
+    # These values will need to be changed after https://github.com/DiamondLightSource/FastCS/issues/175
     INTERNAL = "INTERNAL"
     EXTERNAL = "EXTERNAL"
 
