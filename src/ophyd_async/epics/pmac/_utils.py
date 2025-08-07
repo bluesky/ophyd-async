@@ -203,7 +203,7 @@ class _PmacMotorInfo:
 
 def calculate_ramp_position_and_duration(
     slice: Slice[Motor], motor_info: _PmacMotorInfo, is_up: bool
-) -> tuple[dict[Motor, float], float]:
+) -> tuple[dict[Motor, np.float64], float]:
     if slice.duration is None:
         raise ValueError("Slice must have a duration")
 
