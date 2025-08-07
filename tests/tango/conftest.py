@@ -23,6 +23,11 @@ from ophyd_async.testing import (
 T = TypeVar("T")
 
 
+def pytest_configure(config):
+    config.option.forked = True
+    config.option.timeout = 2
+
+
 @pytest.fixture(autouse=True)
 def reset_tango_asyncio():
     set_global_executor(None)

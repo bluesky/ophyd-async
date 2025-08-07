@@ -373,6 +373,7 @@ async def test_attribute_unsubscribe_callback(echo_device):
     assert attr_proxy.has_subscription()
     attr_proxy.unsubscribe_callback()
     assert not attr_proxy.has_subscription()
+    await asyncio.sleep(0.1)
 
 
 # --------------------------------------------------------------------
