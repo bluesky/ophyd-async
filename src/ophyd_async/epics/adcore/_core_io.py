@@ -229,7 +229,7 @@ class NDFileHDFIO(NDFilePluginIO):
     swmr_mode: A[SignalRW[bool], PvSuffix.rbv("SWMRMode")]
     flush_now: A[SignalRW[bool], PvSuffix("FlushNow")]
     xml_file_name: A[SignalRW[str], PvSuffix.rbv("XMLFileName")]
-    num_frames_chunks: A[SignalR[int], PvSuffix("NumFramesChunks_RBV")]
+    num_frames_chunks: A[SignalRW[int], PvSuffix.rbv("NumFramesChunks")]
     chunk_size_auto: A[SignalRW[bool], PvSuffix.rbv("ChunkSizeAuto")]
     lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]
 
