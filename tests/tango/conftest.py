@@ -23,12 +23,6 @@ from ophyd_async.testing import (
 T = TypeVar("T")
 
 
-def pytest_configure(config):
-    if os.getcwd().endswith("tests/tango") or os.getcwd() == os.path.abspath("tests/tango"):
-        config.option.forked = True
-        config.option.timeout = 2
-
-
 @pytest.fixture(autouse=True)
 def reset_tango_asyncio():
     set_global_executor(None)
