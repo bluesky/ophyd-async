@@ -24,8 +24,9 @@ T = TypeVar("T")
 
 
 def pytest_configure(config):
-    config.option.forked = True
-    config.option.timeout = 2
+    if os.getcwd().endswith("tests/tango") or os.getcwd() == os.path.abspath("tests/tango"):
+        config.option.forked = True
+        config.option.timeout = 2
 
 
 @pytest.fixture(autouse=True)
