@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import math
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -16,6 +15,7 @@ from ._signals import (
     JungfrauDriverIO,
 )
 
+JUNGFRAU_DEADTIME_S = 2.1e-6
 logger = logging.getLogger("ophyd_async")
 
 
@@ -24,10 +24,14 @@ class JungfrauController(DetectorController):
         self._driver = driver
 
     def get_deadtime(self, exposure: float | None = None) -> float:
-        # See https://rtd.xfel.eu/docs/jungfrau-detector-documentation/en/latest/operation.html
-        return 2.1e-6
+        return JUNGFRAU_DEADTIME_S
 
     async def prepare(self, trigger_info: TriggerInfo) -> None:
+        # ValueErrors and warnings in this function come from the jungfrau operation
+        # docs: https://rtd.xfel.eu/docs/jungfrau-detector-documentation/en/latest/operation.html
+
+        # Deadtime here is really used as "time between frames"
+
         if trigger_info.trigger not in (
             DetectorTrigger.INTERNAL,
             DetectorTrigger.EDGE_TRIGGER,
@@ -35,32 +39,36 @@ class JungfrauController(DetectorController):
             raise ValueError(
                 "The trigger method can only be called with internal or edge triggering"
             )
-        if not trigger_info.deadtime:
-            trigger_info.deadtime = self.get_deadtime()
 
         if not isinstance(trigger_info.number_of_events, int):
             raise TypeError("Number of events must be an integer")
 
+        if not trigger_info.deadtime:
+            trigger_info.deadtime = self.get_deadtime()
+
+        if not trigger_info.livetime:
+            raise ValueError("Must set TriggerInfo.livetime")
+
+        if trigger_info.livetime < 2e-6:
+            logger.warning("Exposure time shorter than 2μs is not recommended")
+
+        period_between_frames = trigger_info.livetime + trigger_info.deadtime
+
+        if period_between_frames < self.get_deadtime():
+            raise ValueError(
+                f"Period between frames (exposure time - deadtime) = "
+                f"{period_between_frames}s cannot be lower than minimum detector "
+                f"deadtime {self.get_deadtime()}"
+            )
+        frame_rate = 1 / period_between_frames
+        if frame_rate >= 100:
+            logger.warning(
+                f"Requested TriggerInfo results in a frame rate of "
+                f"{frame_rate}Hz. Exceeding 100Hz may result in packet loss"
+            )
+
         coros = []
-        if trigger_info.trigger == DetectorTrigger.INTERNAL:
-            if not trigger_info.livetime:
-                raise ValueError(
-                    "Must set TriggerInfo.Livetime for internal trigger mode"
-                )
-            if trigger_info.livetime < 2e-6:
-                logger.warning("Exposure time shorter than 2μs is not recommended")
-
-            period_between_frames = trigger_info.livetime - trigger_info.deadtime
-
-            if period_between_frames < trigger_info.livetime and not math.isclose(
-                period_between_frames, trigger_info.livetime, abs_tol=1e-3
-            ):
-                raise ValueError(
-                    f"Period between frames (exposure time - deadtime) "
-                    f"{period_between_frames} cannot be lower than exposure time of "
-                    f"{trigger_info.livetime}"
-                )
-
+        if trigger_info.livetime:
             coros.extend(
                 [
                     self._driver.exposure_time.set(trigger_info.livetime),

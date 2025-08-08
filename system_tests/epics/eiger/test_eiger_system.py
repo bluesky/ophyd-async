@@ -5,7 +5,6 @@ from pathlib import Path
 import h5py
 import pytest
 from bluesky.run_engine import RunEngine
-from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
 
 from ophyd_async.core import (
     DetectorTrigger,
@@ -14,6 +13,7 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.epics.core import epics_signal_rw
+from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
 
 SAVE_PATH = "/tmp"
 

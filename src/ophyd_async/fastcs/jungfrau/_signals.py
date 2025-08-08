@@ -13,6 +13,9 @@ from ophyd_async.fastcs.core import fastcs_connector
 
 class JungfrauTriggerMode(StrictEnum):
     INTERNAL = "Internal"
+
+    # Detector waits for external trigger to start frame series, but still
+    # controls exposure time and frame period internally
     EXTERNAL = "External"
 
 
@@ -37,6 +40,7 @@ class JungfrauDriverIO(Device):
 
     exposure_time: SignalRW[float]  # in s
 
+    # Includes deadtime
     period_between_frames: SignalRW[float]  # in s
 
     # Sets the delay for the beginning of the exposure time after

@@ -2,6 +2,7 @@ import logging
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import DetectorTrigger, TriggerInfo, init_devices
 from ophyd_async.fastcs.jungfrau import DetectorStatus, Jungfrau
@@ -12,7 +13,7 @@ from ophyd_async.testing import (
 
 
 @pytest.fixture
-def jungfrau(RE):
+def jungfrau(RE: RunEngine):
     with init_devices(mock=True):
         detector = Jungfrau("prefix", MagicMock(), "", "", 4, "jungfrau")
 
@@ -38,12 +39,8 @@ def jungfrau(RE):
             "The trigger method can only be called with internal or edge triggering",
         ),
         (
-            TriggerInfo(trigger=DetectorTrigger.INTERNAL),
-            "Must set TriggerInfo.Livetime for internal trigger mode",
-        ),
-        (
-            TriggerInfo(livetime=1, deadtime=0.96),
-            "Period between frames (exposure time - deadtime)*",
+            TriggerInfo(),
+            "Must set TriggerInfo.livetime",
         ),
     ],
 )
@@ -62,6 +59,13 @@ async def test_prepare_warn_on_small_exposure(jungfrau: Jungfrau, caplog):
     with caplog.at_level(logging.WARNING):
         await jungfrau.prepare(bad_trigger_info)
     assert "Exposure time shorter than 2μs is not recommended" in caplog.messages
+
+
+async def test_prepare_warn_on_fast_frame_rate(jungfrau: Jungfrau, caplog):
+    bad_trigger_info = TriggerInfo(livetime=5e-3, deadtime=4e-3)
+    with caplog.at_level(logging.WARNING):
+        await jungfrau.prepare(bad_trigger_info)
+    assert "Requested TriggerInfo results in a frame rate of " in caplog.messages[0]
 
 
 async def test_prepare_error_on_bad_no_of_event(
