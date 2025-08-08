@@ -1,4 +1,5 @@
-from ._jungfrau import Jungfrau, JungfrauController
+from ._controller import JungfrauController
+from ._jungfrau import Jungfrau
 from ._signals import (
     DetectorStatus,
 )
