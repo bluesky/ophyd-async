@@ -67,24 +67,15 @@ class JungfrauController(DetectorController):
                 f"{frame_rate}Hz. Exceeding 100Hz may result in packet loss"
             )
 
-        coros = []
-        if trigger_info.livetime:
-            coros.extend(
-                [
-                    self._driver.exposure_time.set(trigger_info.livetime),
-                    self._driver.period_between_frames.set(period_between_frames),
-                ]
-            )
+        coros = [
+            self._driver.trigger_mode.set(
+                JUNGFRAU_TRIGGER_MODE_MAP[trigger_info.trigger]
+            ),
+            self._driver.frames_per_acq.set(trigger_info.number_of_events),
+            self._driver.exposure_time.set(trigger_info.livetime),
+            self._driver.period_between_frames.set(period_between_frames),
+        ]
 
-        await self._driver.frames_per_acq.set(trigger_info.number_of_events)
-        coros.extend(
-            [
-                self._driver.trigger_mode.set(
-                    JUNGFRAU_TRIGGER_MODE_MAP[trigger_info.trigger]
-                ),
-                self._driver.frames_per_acq.set(trigger_info.number_of_events),
-            ]
-        )
         await asyncio.gather(*coros)
 
     async def arm(self):

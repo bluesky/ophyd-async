@@ -12,13 +12,13 @@ def create_jungfrau_external_triggering_info(
     """Create safe Jungfrau TriggerInfo for external triggering.
 
     Uses parameters which more closely-align with Jungfrau terminology
-    to create TriggerInfo
+    to create TriggerInfo.
 
     Args:
         total_triggers: Total external triggers expected before ending acquisition.
         frames_per_trigger: How many frames to take for each external trigger.
-        exposure_time_s: How long to expose the detector for each of its frames
-        period_between_frames_s: Time between each frame, including deadtime
+        exposure_time_s: How long to expose the detector for each of its frames.
+        period_between_frames_s: Time between each frame, including deadtime.
 
     Returns:
         `TriggerInfo`
@@ -40,12 +40,12 @@ def create_jungfrau_internal_triggering_info(
     """Create safe Jungfrau TriggerInfo for internal triggering.
 
     Uses parameters which more closely-align with Jungfrau terminology
-    to create TriggerInfo
+    to create TriggerInfo.
 
     Args:
         number_of_frames: Total frames taken after starting acquisition.
-        exposure_time_s: How long to expose the detector for each of its frames
-        period_between_frames_s: Time between each frame, including deadtime
+        exposure_time_s: How long to expose the detector for each of its frames.
+        period_between_frames_s: Time between each frame, including deadtime.
 
     Returns:
         `TriggerInfo`

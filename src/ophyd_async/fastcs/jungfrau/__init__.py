@@ -1,4 +1,4 @@
-from ._jungfrau import Jungfrau
+from ._jungfrau import Jungfrau, JungfrauController
 from ._signals import (
     DetectorStatus,
 )
@@ -12,4 +12,5 @@ __all__ = [
     "DetectorStatus",
     "create_jungfrau_external_triggering_info",
     "create_jungfrau_internal_triggering_info",
+    "JungfrauController",
 ]
