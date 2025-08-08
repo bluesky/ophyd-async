@@ -873,7 +873,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDFilePluginIO`
 
 ````{py:attribute} num_frames_chunks
 :canonical: ophyd_async.epics.adcore._core_io.NDFileHDFIO.num_frames_chunks
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('NumFramesChunks_RBV')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[int], ophyd_async.epics.core.PvSuffix.rbv('NumFramesChunks')]
 :value: >
    None
 
