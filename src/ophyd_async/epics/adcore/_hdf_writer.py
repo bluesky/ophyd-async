@@ -75,8 +75,13 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         # Used by the base class
         self._exposures_per_event = exposures_per_event
 
-        # Determine number of frames that will be saved per HDF chunk
+        # Determine number of frames that will be saved per HDF chunk.
+        # On a fresh IOC startup, this is set to zero until the first capture,
+        # so if it is zero, set it to 1.
         frames_per_chunk = await self.fileio.num_frames_chunks.get_value()
+        if frames_per_chunk == 0:
+            frames_per_chunk = 1
+            await self.fileio.num_frames_chunks.set(frames_per_chunk)
 
         if not _is_fully_described(detector_shape):
             # Questions:
