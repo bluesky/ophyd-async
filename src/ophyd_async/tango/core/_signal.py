@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import logging
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 import numpy.typing as npt
 from tango import (
-    AttrDataFormat,
     AttrWriteType,
-    CmdArgType,
     DeviceProxy,
     DevState,
 )
@@ -25,7 +23,12 @@ from ophyd_async.core import (
     SignalX,
 )
 
-from ._tango_transport import TangoSignalBackend, get_python_type
+from ._tango_transport import (
+    CommandProxyReadCharacter,
+    TangoSignalBackend,
+    get_command_character,
+    get_python_type,
+)
 from ._utils import get_device_trl_and_attr
 
 logger = logging.getLogger("ophyd_async")
@@ -148,22 +151,13 @@ async def infer_python_type(
 
     if tr_name in dev_proxy.get_command_list():
         config = await dev_proxy.get_command_config(tr_name)
-        isarray, py_type, _ = get_python_type(config.in_type)
+        py_type = get_python_type(config)
     elif tr_name in dev_proxy.get_attribute_list():
         config = await dev_proxy.get_attribute_config(tr_name)
-        isarray, py_type, _ = get_python_type(config.data_type)
-        if py_type is Enum:
-            enum_dict = {label: i for i, label in enumerate(config.enum_labels)}
-            py_type = IntEnum("TangoEnum", enum_dict)
-        if config.data_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
-            isarray = True
+        py_type = get_python_type(config)
     else:
         raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
-
-    if py_type is CmdArgType.DevState:
-        py_type = DevState
-
-    return npt.NDArray[py_type] if isarray else py_type
+    return py_type
 
 
 async def infer_signal_type(
@@ -190,11 +184,13 @@ async def infer_signal_type(
 
     if tr_name in dev_proxy.get_command_list():
         config = await dev_proxy.get_command_config(tr_name)
-        if config.in_type == CmdArgType.DevVoid:
-            return SignalX
-        elif config.in_type != config.out_type:
-            logger.debug("Commands with different in and out dtypes are not supported")
-            return None
-        else:
+        command_character = get_command_character(config)
+        if command_character == CommandProxyReadCharacter.READ:
+            return SignalR
+        elif command_character == CommandProxyReadCharacter.WRITE:
+            return SignalW
+        elif command_character == CommandProxyReadCharacter.READ_WRITE:
             return SignalRW
+        elif command_character == CommandProxyReadCharacter.EXECUTE:
+            return SignalX
     raise RuntimeError(f"Unable to infer signal character for {trl}")
