@@ -30,7 +30,7 @@ class VimbaTriggerSource(StrictEnum):
 class VimbaOverlap(StrictEnum):
     """Overlap modes for the Vimba detector."""
 
-    OFF = OnOff.OFF
+    OFF = OnOff.OFF.value
     PREV_FRAME = "PreviousFrame"
 
 
