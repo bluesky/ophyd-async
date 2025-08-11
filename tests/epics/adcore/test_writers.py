@@ -246,6 +246,52 @@ async def test_stats_describe_when_plugin_configured_in_memory(RE, detectors):
             }
 
 
+async def test_stats_collect_when_plugin_configured(
+    hdf_writer_with_stats: adcore.ADHDFWriter,
+):
+    set_mock_value(hdf_writer_with_stats.fileio.file_path_exists, True)
+    set_mock_value(
+        hdf_writer_with_stats._plugins["stats"].nd_attributes_file,
+        """<?xml version='1.0' encoding='utf-8'?>
+<Attributes>
+    <Attribute
+        name="mydetector-sum"
+        type="PARAM"
+        source="TOTAL" addr="0"
+        datatype="DOUBLE"
+        description="Sum of each detector frame" />
+    <Attribute
+        name="mydetector-Temperature"
+        type="EPICS_PV"
+        source="LINKAM:TEMP"
+        dbrtype="DBR_FLOAT"/>
+</Attributes>
+""",
+    )
+    with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
+        await hdf_writer_with_stats.open(DETECTOR_NAME)
+
+    # Check for stream resource documents for the ndattributes
+    docs = [
+        doc
+        async for doc in hdf_writer_with_stats.collect_stream_docs(
+            "mydetector", indices_written=3
+        )
+    ]
+    resource_names = [
+        doc["data_key"] for name, doc in docs if name == "stream_resource"
+    ]
+    assert "mydetector-sum" in resource_names
+    assert "mydetector-Temperature" in resource_names
+
+    # Check for stream datum documents for the ndattributes
+    resource_uids = {doc["uid"] for name, doc in docs if name == "stream_resource"}
+    datum_resources = {
+        doc["stream_resource"] for name, doc in docs if name == "stream_datum"
+    }
+    assert resource_uids == datum_resources
+
+
 async def test_nd_attributes_plan_stub(RE, detectors):
     for detector in detectors:
         await detector.connect(mock=True)

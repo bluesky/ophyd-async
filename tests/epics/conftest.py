@@ -88,9 +88,6 @@ def ad_standard_det_factory(
         set_mock_value(test_adstandard_det.driver.array_size_x, (9 + number))
         set_mock_value(test_adstandard_det.driver.array_size_y, (9 + number))
 
-        if isinstance(test_adstandard_det.fileio, adcore.NDFileHDFIO):
-            set_mock_value(test_adstandard_det.fileio.num_frames_chunks, 1)
-
         return test_adstandard_det
 
     return generate_ad_standard_det

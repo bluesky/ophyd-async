@@ -17,6 +17,7 @@ from ._core_io import (
     NDPluginBaseIO,
     NDPluginCBIO,
     NDPluginStatsIO,
+    NDROIStatIO,
 )
 from ._core_logic import DEFAULT_GOOD_STATES, ADBaseContAcqController, ADBaseController
 from ._core_writer import ADWriter
@@ -32,6 +33,7 @@ from ._utils import (
     NDAttributeParam,
     NDAttributePv,
     NDAttributePvDbrType,
+    ndattributes_to_xml,
 )
 
 __all__ = [
@@ -47,6 +49,7 @@ __all__ = [
     "NDFileHDFIO",
     "NDPluginBaseIO",
     "NDPluginStatsIO",
+    "NDROIStatIO",
     "DEFAULT_GOOD_STATES",
     "ADBaseDatasetDescriber",
     "ADBaseController",
@@ -64,4 +67,5 @@ __all__ = [
     "NDAttributePvDbrType",
     "NDCBFlushOnSoftTrgMode",
     "NDPluginCBIO",
+    "ndattributes_to_xml",
 ]
