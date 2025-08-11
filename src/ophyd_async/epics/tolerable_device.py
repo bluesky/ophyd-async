@@ -13,6 +13,7 @@ from bluesky.protocols import (
 )
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     Callback,
     StandardReadable,
     WatchableAsyncStatus,
@@ -50,24 +51,25 @@ class TolerableDevice(
             self.user_setpoint = epics_signal_rw(Signal_data_type, setpoint_pv)
             self.tolerance = soft_signal_rw(Signal_data_type)
 
+        # Whether set() should complete successfully or not
+        self._set_success = True
         super().__init__(name=name)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, value: float | int):
+    async def set(self, value: float | int, timeout: float = DEFAULT_TIMEOUT):
         """Set signal and wait until it is within tolerance."""
+        self._set_success = True
         tolerance = await self.tolerance.get_value()
         old_position, tolerance = await asyncio.gather(
             self.user_readback.get_value(), self.tolerance.get_value()
         )
 
-        def check(current_value):
-            return abs(value - current_value) < tolerance
-
         move_status = await set_and_wait_for_other_value(
             set_signal=self.user_setpoint,
             set_value=value,
             match_signal=self.user_readback,
-            match_value=check,
+            match_value=lambda current_value: abs(value - current_value) < tolerance,
+            timeout=timeout,
         )
 
         async for current_position in observe_value(
@@ -79,6 +81,8 @@ class TolerableDevice(
                 target=value,
                 name=self.name,
             )
+        if not self._set_success:
+            raise RuntimeError("Device was stopped")
 
     async def locate(self) -> Location:
         """Return the setpoint and readback."""
