@@ -1,7 +1,6 @@
 """A device that mimic a signal to allow tolerance."""
 
 import asyncio
-from typing import TypeVar
 
 from bluesky.protocols import (
     Locatable,
@@ -25,14 +24,14 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
-T = TypeVar("T")
+__all__ = ["TolerableDevice"]
 
 
 class TolerableDevice(
     StandardReadable,
-    Locatable[float | int],
-    Movable[float | int],
-    Subscribable[float | int],
+    Locatable[float],
+    Movable[float],
+    Subscribable[float],
     Stoppable,
 ):
     """Tolerable Signal Device."""
@@ -41,15 +40,14 @@ class TolerableDevice(
         self,
         setpoint_pv: str,
         readback_pv: str,
-        Signal_data_type: type[float | int],
         name="",
     ):
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
-            self.user_readback = epics_signal_r(Signal_data_type, readback_pv)
+            self.user_readback = epics_signal_r(float, readback_pv)
 
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
-            self.user_setpoint = epics_signal_rw(Signal_data_type, setpoint_pv)
-            self.tolerance = soft_signal_rw(Signal_data_type)
+            self.user_setpoint = epics_signal_rw(float, setpoint_pv)
+            self.tolerance = soft_signal_rw(float)
 
         # Whether set() should complete successfully or not
         self._set_success = True
@@ -97,10 +95,10 @@ class TolerableDevice(
         self._set_success = success
         await self.user_setpoint.set(await self.user_readback.get_value(), wait=False)
 
-    def subscribe(self, function: Callback[dict[str, Reading[float | int]]]) -> None:
+    def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Subscribe."""
         self.user_readback.subscribe(function)
 
-    def clear_sub(self, function: Callback[dict[str, Reading[float | int]]]) -> None:
+    def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Unsubscribe."""
         self.user_readback.clear_sub(function)
