@@ -13,6 +13,7 @@ from bluesky.protocols import (
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    AsyncStatus,
     Callback,
     StandardReadable,
     WatchableAsyncStatus,
@@ -51,25 +52,27 @@ class TolerableDevice(
 
         # Whether set() should complete successfully or not
         self._set_success = True
+        self._stop = False
         super().__init__(name=name)
 
     @WatchableAsyncStatus.wrap
-    async def set(self, value: float | int, timeout: float = DEFAULT_TIMEOUT):
+    async def set(
+        self,
+        value: float,
+        timeout: float = DEFAULT_TIMEOUT,
+        wait_for_set_completion: bool = True,
+    ):
         """Set signal and wait until it is within tolerance."""
         self._set_success = True
-        tolerance = await self.tolerance.get_value()
         old_position, tolerance = await asyncio.gather(
             self.user_readback.get_value(), self.tolerance.get_value()
         )
-
-        move_status = await set_and_wait_for_other_value(
-            set_signal=self.user_setpoint,
-            set_value=value,
-            match_signal=self.user_readback,
-            match_value=lambda current_value: abs(value - current_value) < tolerance,
+        move_status = self._set(
+            value,
+            tolerance=tolerance,
             timeout=timeout,
+            wait_for_set_completion=wait_for_set_completion,
         )
-
         async for current_position in observe_value(
             self.user_readback, done_status=move_status
         ):
@@ -90,9 +93,31 @@ class TolerableDevice(
         )
         return Location(setpoint=setpoint, readback=readback)
 
+    @AsyncStatus.wrap
+    async def _set(
+        self,
+        new_position: float,
+        tolerance: float,
+        timeout,
+        wait_for_set_completion: bool,
+    ):
+        self._stop = False
+        await set_and_wait_for_other_value(
+            set_signal=self.user_setpoint,
+            set_value=new_position,
+            match_signal=self.user_readback,
+            match_value=lambda current_value: (
+                abs(new_position - current_value) < tolerance
+            )
+            or self._stop,
+            timeout=timeout,
+            wait_for_set_completion=wait_for_set_completion,
+        )
+
     async def stop(self, success=False):
         """Mimic a stop by setting the set point to readback."""
         self._set_success = success
+        self._stop = True
         await self.user_setpoint.set(await self.user_readback.get_value(), wait=False)
 
     def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
