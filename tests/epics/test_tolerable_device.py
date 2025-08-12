@@ -77,6 +77,7 @@ async def test_tolerable_device_stopped(sim_tolerable_device: TolerableDevice):
         await sim_tolerable_device.user_setpoint.get_value()
         == await sim_tolerable_device.user_readback.get_value()
     )
+    await s
     assert s.done
     assert s.success is False
 
