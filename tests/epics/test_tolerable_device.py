@@ -1,10 +1,10 @@
+import asyncio
 from unittest.mock import ANY
 
 import pytest
+from bluesky.protocols import Reading
 
-from ophyd_async.core import (
-    init_devices,
-)
+from ophyd_async.core import init_devices
 from ophyd_async.epics.tolerable_device import TolerableDevice
 from ophyd_async.testing import (
     StatusWatcher,
@@ -56,7 +56,7 @@ async def test_tolerable_device_set_and_watch(
 
 
 async def test_tolerable_device_set_timeout(sim_tolerable_device: TolerableDevice):
-    with pytest.raises(TimeoutError):
+    with pytest.raises(asyncio.TimeoutError):
         await sim_tolerable_device.set(0.55, timeout=0.1)
 
 
@@ -95,3 +95,17 @@ async def test_locatable(sim_tolerable_device: TolerableDevice) -> None:
     await move_status
     assert (await sim_tolerable_device.locate())["readback"] == 10
     assert (await sim_tolerable_device.locate())["setpoint"] == 10
+
+
+async def test_subscribable(sim_tolerable_device: TolerableDevice):
+    q: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
+    sim_tolerable_device.subscribe(q.put_nowait)
+    assert (await q.get())["sim_tolerable_device-user_readback"]["value"] == 0.0
+    set_mock_value(sim_tolerable_device.user_readback, 23)
+    assert (await q.get())["sim_tolerable_device-user_readback"]["value"] == 23.0
+    sim_tolerable_device.clear_sub(q.put_nowait)
+    set_mock_value(sim_tolerable_device.user_readback, 3)
+    assert (await sim_tolerable_device.read())["sim_tolerable_device-user_readback"][
+        "value"
+    ] == 3.0
+    assert q.empty()
