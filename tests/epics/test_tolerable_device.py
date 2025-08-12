@@ -11,6 +11,7 @@ from ophyd_async.testing import (
     callback_on_mock_put,
     mock_puts_blocked,
     set_mock_value,
+    wait_for_pending_wakeups,
 )
 
 
@@ -77,7 +78,7 @@ async def test_tolerable_device_stopped(sim_tolerable_device: TolerableDevice):
         await sim_tolerable_device.user_setpoint.get_value()
         == await sim_tolerable_device.user_readback.get_value()
     )
-    await s
+    await wait_for_pending_wakeups()
     assert s.done
     assert s.success is False
 
