@@ -104,15 +104,17 @@ class TolerableDevice(
         wait_for_set_completion: bool,
     ):
         """Set the device to a new position and wait until within tolerance."""
+
+        def tolerable_condition(current_value: float) -> bool:
+            """Condition to stop the set operation."""
+            return abs(new_position - current_value) < abs(tolerance) or self._stop
+
         self._stop = False
         await set_and_wait_for_other_value(
             set_signal=self.user_setpoint,
             set_value=new_position,
             match_signal=self.user_readback,
-            match_value=lambda current_value: (
-                abs(new_position - current_value) < tolerance
-            )
-            or self._stop,
+            match_value=tolerable_condition,
             timeout=timeout,
             wait_for_set_completion=wait_for_set_completion,
         )
