@@ -1,4 +1,4 @@
-"""A device that mimic a signal to allow tolerance."""
+"""A device that mimic a signal to allow an tolerance between set and readback."""
 
 import asyncio
 
@@ -43,12 +43,13 @@ class TolerableDevice(
         readback_pv: str,
         name="",
     ):
+        """Initialize the TolerableDevice with default 0.01 tolerance."""
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
             self.user_readback = epics_signal_r(float, readback_pv)
 
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.user_setpoint = epics_signal_rw(float, setpoint_pv)
-            self.tolerance = soft_signal_rw(float)
+            self.tolerance = soft_signal_rw(float, initial_value=0.01)
 
         # Whether set() should complete successfully or not
         self._set_success = True
@@ -62,7 +63,7 @@ class TolerableDevice(
         timeout: float = DEFAULT_TIMEOUT,
         wait_for_set_completion: bool = True,
     ):
-        """Set signal and wait until it is within tolerance."""
+        """Set the device to a new position and wait until within tolerance."""
         self._set_success = True
         old_position, tolerance = await asyncio.gather(
             self.user_readback.get_value(), self.tolerance.get_value()
@@ -73,6 +74,7 @@ class TolerableDevice(
             timeout=timeout,
             wait_for_set_completion=wait_for_set_completion,
         )
+        """keep watch on the readback value until it is within tolerance."""
         async for current_position in observe_value(
             self.user_readback, done_status=move_status
         ):
@@ -83,7 +85,7 @@ class TolerableDevice(
                 name=self.name,
             )
         if not self._set_success:
-            raise RuntimeError("Device was stopped")
+            raise RuntimeError(f"Device '{self.name}' was stopped")
 
     async def locate(self) -> Location:
         """Return the setpoint and readback."""
@@ -101,6 +103,7 @@ class TolerableDevice(
         timeout,
         wait_for_set_completion: bool,
     ):
+        """Set the device to a new position and wait until within tolerance."""
         self._stop = False
         await set_and_wait_for_other_value(
             set_signal=self.user_setpoint,
@@ -114,8 +117,8 @@ class TolerableDevice(
             wait_for_set_completion=wait_for_set_completion,
         )
 
-    async def stop(self, success=False):
-        """Mimic a stop by setting the set point to readback."""
+    async def stop(self, success: bool = False):
+        """Stop the device by setting the setpoint to the current readback."""
         self._set_success = success
         self._stop = True
         await self.user_setpoint.set(await self.user_readback.get_value(), wait=False)
