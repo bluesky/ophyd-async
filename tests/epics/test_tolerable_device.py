@@ -42,9 +42,9 @@ async def test_tolerable_device_set_and_watch(
         time_elapsed=ANY,
     )
     assert s.done is False
-    set_mock_value(sim_tolerable_device.user_readback, 0.45)
+    set_mock_value(sim_tolerable_device.user_readback, 0.444)
     await watcher.wait_for_call(
-        current=0.45,
+        current=0.444,
         initial=0.0,
         target=0.55,
         name="sim_tolerable_device",
