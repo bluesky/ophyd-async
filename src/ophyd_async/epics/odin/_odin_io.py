@@ -90,11 +90,11 @@ class OdinWriter(DetectorWriter):
         self,
         path_provider: PathProvider,
         odin_driver: Odin,
-        eiger_bit_depth: SignalR[int],
+        detector_bit_depth: SignalR[int],
     ) -> None:
         self._drv = odin_driver
         self._path_provider = path_provider
-        self._eiger_bit_depth = Reference(eiger_bit_depth)
+        self._detector_bit_depth = Reference(detector_bit_depth)
         self._capture_status: AsyncStatus | None = None
         super().__init__()
 
@@ -103,7 +103,9 @@ class OdinWriter(DetectorWriter):
         self._exposures_per_event = exposures_per_event
 
         await asyncio.gather(
-            self._drv.data_type.set(f"UInt{await self._eiger_bit_depth().get_value()}"),
+            self._drv.data_type.set(
+                f"UInt{await self._detector_bit_depth().get_value()}"
+            ),
             self._drv.num_to_capture.set(0),
             self._drv.file_path.set(str(info.directory_path)),
             self._drv.file_name.set(info.filename),
