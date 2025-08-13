@@ -54,7 +54,7 @@ class TolerableDevice(
 
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.user_setpoint = epics_signal_rw(float, setpoint_pv)
-            self.tolerance = soft_signal_rw(float, initial_value=0.1)
+            self.tolerance = soft_signal_rw(float, initial_value=0.01)
 
         self._set_success = True
         self._stop = False
