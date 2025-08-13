@@ -1,3 +1,7 @@
+import asyncio
+import re
+from asyncio import CancelledError
+from functools import partial
 from unittest.mock import patch
 
 import pytest
@@ -9,6 +13,8 @@ from ophyd_async.core import (
     SoftSignalBackend,
     NotConnected,
     SignalRW,
+    enhanced_gather,
+    AsyncStatus,
 )
 from ophyd_async.core import soft_signal_rw
 from ophyd_async.epics.core import epics_signal_rw
@@ -294,3 +300,44 @@ async def test_format_error_string_input():
     ):
         not_connected = NotConnected({"test": 123})
         str(not_connected)
+
+
+@pytest.mark.parametrize(
+    "set_to_delay, expected_message",
+    [
+        [
+            "x",
+            "test_enhanced_gather_populates_cancelled_error_message_on_timeout.<locals>.async_set()",
+        ],
+        ["y", "AsyncStatus, device: my_device"],
+        ["z", "set z"],
+    ],
+)
+async def test_enhanced_gather_populates_cancelled_error_message_on_timeout(
+    set_to_delay: str, expected_message: str
+):
+    async def async_set(name: str, value: float):
+        if set_to_delay == name:
+            await asyncio.sleep(20)
+
+    plain_awaitable = async_set("x", 1.0)
+
+    class GenericDevice(Device):
+        def __init__(self, name):
+            super().__init__(name)
+
+        @AsyncStatus.wrap
+        async def set(self, value: float):
+            await async_set("y", value)
+
+    async_status_device = GenericDevice("my_device")
+    task_wrapped = asyncio.create_task(async_set("z", 1.0), name="set z")
+
+    with pytest.raises(TimeoutError) as exc_info:
+        gather_awaitable = enhanced_gather(
+            plain_awaitable, async_status_device.set(1.0), task_wrapped
+        )
+        await asyncio.wait_for(gather_awaitable, timeout=0.3)
+    cause = exc_info.value.__cause__
+    assert isinstance(cause, CancelledError)
+    assert re.search(expected_message, cause.args[0])

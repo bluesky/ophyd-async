@@ -255,10 +255,17 @@ class SignalTransformer(Generic[TransformT]):
             derived = await self.get_locations()
             setpoints = {k: v["setpoint"] for k, v in derived.items()}
             setpoints[name] = value
-            await _set_derived(setpoints)
+            try:
+                await _set_derived(setpoints)
+            except BaseException as e:
+                raise e
         else:
             # Only one derived signal, so pass it directly
-            await _set_derived(value)
+            try:
+                await _set_derived(value)
+            except BaseException as e:
+                print(f"Caught exception {e}")
+                raise e
 
 
 class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
