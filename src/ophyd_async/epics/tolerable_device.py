@@ -1,4 +1,4 @@
-"""A device that mimic a signal to allow an tolerance between set and readback."""
+"""A device that mimic a signal to allow a tolerance between set and readback."""
 
 import asyncio
 
