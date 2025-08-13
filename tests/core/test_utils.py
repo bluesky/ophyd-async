@@ -1,5 +1,6 @@
 import asyncio
 import re
+import sys
 from asyncio import CancelledError
 from functools import partial
 from unittest.mock import patch
@@ -302,6 +303,12 @@ async def test_format_error_string_input():
         str(not_connected)
 
 
+# Cancellation propagation is broken in asyncio.gather on Python 3.10, so the exception
+# with the message is not reachable via the __cause__ chain however you will still get
+# the message in the stack trace
+@pytest.mark.skipif(
+    sys.version_info < (3, 11), reason="https://github.com/python/cpython/issues/112534"
+)
 @pytest.mark.parametrize(
     "set_to_delay, expected_message",
     [
@@ -333,7 +340,7 @@ async def test_enhanced_gather_populates_cancelled_error_message_on_timeout(
     async_status_device = GenericDevice("my_device")
     task_wrapped = asyncio.create_task(async_set("z", 1.0), name="set z")
 
-    with pytest.raises(TimeoutError) as exc_info:
+    with pytest.raises(asyncio.TimeoutError) as exc_info:
         gather_awaitable = enhanced_gather(
             plain_awaitable, async_status_device.set(1.0), task_wrapped
         )
