@@ -15,7 +15,10 @@ from ._signals import (
     JungfrauDriverIO,
 )
 
-JUNGFRAU_DEADTIME_S = 2.1e-6
+# Deadtime is dependant on a wide combination of settings and on trigger mode
+# but this is safe upper-limit
+JUNGFRAU_DEADTIME_S = 2e-5
+
 logger = logging.getLogger("ophyd_async")
 
 
