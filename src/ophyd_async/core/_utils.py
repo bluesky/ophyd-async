@@ -306,25 +306,24 @@ def _cancelled_awaitables(awaitables):
     ]
 
 
-async def enhanced_gather(
-    *coros_or_futures: Awaitable[V], return_exceptions: bool = False
-):
+async def enhanced_gather(*coros_or_futures: Awaitable[V]):
     """Perform an asyncio.gather, but with better error handling.
 
-    By default asyncio.gather() will raise CancelledError on a timeout, which will
-    contain absolutely no useful information. This function attempts to remedy this
-    behaviour.
+    By default ``asyncio.gather()`` will raise ``CancelledError`` on a timeout, which
+    will contain absolutely no useful information. This function attempts to remedy
+    this behaviour.
 
-    This function has the same behaviour as asyncio.gather() with the only difference
-    being that CancelledError will contain additional information in the message about
-    what was cancelled, if the awaitables are Status or Task objects.
+    This function has the same behaviour as ``asyncio.gather()`` with the only
+    difference being that ``CancelledError`` will contain additional information in the
+    message about what was cancelled, if the awaitables are ``Status`` or ``Task``
+    objects.
 
-    Note that unlike asyncio.gather, this does not return an asyncio.Future and so
-    does not afford the ability to be cancelled directly.
+    Note that unlike asyncio.gather, this does not return an ``asyncio.Future`` and so
+    does not afford the ability to be cancelled directly. For simplicity this function
+    also does not support the ``return_exceptions`` argument.
 
     Args:
         coros_or_futures: The awaitables to await on
-        return_exceptions: Behaves as for asyncio.await()
 
     Returns:
          The results of the tasks
@@ -340,9 +339,7 @@ async def enhanced_gather(
         for awaitable in coros_or_futures
     ]
     try:
-        gather_results = await asyncio.gather(
-            *wrapped_awaitables, return_exceptions=return_exceptions
-        )
+        gather_results = await asyncio.gather(*wrapped_awaitables)
     except CancelledError as e:
         awaitables = _cancelled_awaitables(wrapped_awaitables)
         raise CancelledError(
