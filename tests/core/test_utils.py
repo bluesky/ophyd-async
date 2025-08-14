@@ -310,41 +310,48 @@ async def test_format_error_string_input():
     sys.version_info < (3, 11), reason="https://github.com/python/cpython/issues/112534"
 )
 @pytest.mark.parametrize(
-    "set_to_delay, expected_message",
+    "set_to_delay, expected_message, expected_results",
     [
         [
             "x",
-            "test_enhanced_gather_populates_cancelled_error_message_on_timeout.<locals>.async_set()",
+            "test_enhanced_gather_populates_cancelled_error_message_on_timeout.<locals>.async_func()",
+            None,
         ],
-        ["y", "AsyncStatus, device: my_device"],
-        ["z", "set z"],
+        ["y", "AsyncStatus, device: my_device", None],
+        ["z", "set z", None],
+        [None, None, [1, None, 1]],
     ],
 )
 async def test_enhanced_gather_populates_cancelled_error_message_on_timeout(
-    set_to_delay: str, expected_message: str
+    set_to_delay: str, expected_message: str, expected_results: list
 ):
-    async def async_set(name: str, value: float):
+    async def async_func(name: str, value: int) -> int:
         if set_to_delay == name:
             await asyncio.sleep(20)
+        return value
 
-    plain_awaitable = async_set("x", 1.0)
+    plain_awaitable = async_func("x", 1)
 
     class GenericDevice(Device):
         def __init__(self, name):
             super().__init__(name)
 
         @AsyncStatus.wrap
-        async def set(self, value: float):
-            await async_set("y", value)
+        async def set(self, value: int):
+            await async_func("y", value)
 
     async_status_device = GenericDevice("my_device")
-    task_wrapped = asyncio.create_task(async_set("z", 1.0), name="set z")
+    task_wrapped = asyncio.create_task(async_func("z", 1), name="set z")
 
-    with pytest.raises(asyncio.TimeoutError) as exc_info:
-        gather_awaitable = enhanced_gather(
-            plain_awaitable, async_status_device.set(1.0), task_wrapped
-        )
-        await asyncio.wait_for(gather_awaitable, timeout=0.3)
-    cause = exc_info.value.__cause__
-    assert isinstance(cause, CancelledError)
-    assert re.search(expected_message, cause.args[0])
+    gather_awaitable = enhanced_gather(
+        plain_awaitable, async_status_device.set(1), task_wrapped
+    )
+    if set_to_delay:
+        with pytest.raises(asyncio.TimeoutError) as exc_info:
+            await asyncio.wait_for(gather_awaitable, timeout=0.3)
+        cause = exc_info.value.__cause__
+        assert isinstance(cause, CancelledError)
+        assert re.search(expected_message, cause.args[0])
+    else:
+        results = await gather_awaitable
+        assert results == expected_results

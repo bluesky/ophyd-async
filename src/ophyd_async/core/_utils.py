@@ -340,7 +340,7 @@ async def enhanced_gather(
         for awaitable in coros_or_futures
     ]
     try:
-        results = await asyncio.gather(
+        gather_results = await asyncio.gather(
             *wrapped_awaitables, return_exceptions=return_exceptions
         )
     except CancelledError as e:
@@ -349,7 +349,12 @@ async def enhanced_gather(
             f"asyncio.gather() was cancelled with the following"
             f" cancelled items {[repr(a) for a in awaitables]}"
         ) from e
-    return results
+    return [
+        gather_result if wrapped is unwrapped else wrapped.result()  # type: ignore
+        for gather_result, wrapped, unwrapped in zip(
+            gather_results, wrapped_awaitables, coros_or_futures, strict=True
+        )
+    ]
 
 
 async def gather_dict(coros: Mapping[T, Awaitable[V]]) -> dict[T, V]:
