@@ -19,6 +19,7 @@ from tango import (
     DeviceProxy,
     DevState,
     EventType,
+    GreenMode,
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.asyncio_executor import (
@@ -264,6 +265,17 @@ class AttributeProxy(TangoProxy):
     def has_subscription(self) -> bool:
         return bool(self._callback)
 
+    @ensure_proper_executor
+    async def _subscribe_to_event(self):
+        if not self._eid:
+            self._eid = await self._proxy.subscribe_event(
+                self._name,
+                EventType.CHANGE_EVENT,
+                self._event_processor,
+                stateless=True,
+                green_mode=GreenMode.Asyncio,
+            )
+
     def subscribe_callback(self, callback: Callback | None):
         # If the attribute supports events, then we can subscribe to them
         # If the callback is not a callable, then we raise an error
@@ -272,14 +284,9 @@ class AttributeProxy(TangoProxy):
 
         self._callback = callback
         if self.support_events:
-            """add user callback to CHANGE event subscription"""
-            if not self._eid:
-                self._eid = self._proxy.subscribe_event(
-                    self._name,
-                    EventType.CHANGE_EVENT,
-                    self._event_processor,
-                    green_mode=False,
-                )
+            asyncio.run_coroutine_threadsafe(
+                self._subscribe_to_event(), asyncio.get_running_loop()
+            )
         elif self._allow_polling:
             """start polling if no events supported"""
             if self._callback is not None:
@@ -316,7 +323,8 @@ class AttributeProxy(TangoProxy):
                     pass
         self._callback = None
 
-    def _event_processor(self, event):
+    @ensure_proper_executor
+    async def _event_processor(self, event):
         if not event.err:
             reading = Reading(
                 value=self._converter.value(event.attr_value.value),

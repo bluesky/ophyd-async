@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from test_base_device import TestDevice
 
-from ophyd_async.core import SignalRW, StandardReadable
+from ophyd_async.core import NotConnected, SignalRW, StandardReadable
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import (
     DevStateEnum,
@@ -475,3 +475,114 @@ async def test_assert_val_reading_everything_tango(
     await assert_val_reading(
         everything_device.my_state_image, esi["my_state_image"].initial
     )
+
+
+@pytest.mark.asyncio
+async def test_set_callback(everything_device_trl):
+    # await prepare_device(everything_device_trl, "float32", 1.0)
+    source = get_full_attr_trl(everything_device_trl, "float32")
+    transport = await make_backend(float, source, connect=False)
+
+    with pytest.raises(NotConnected) as exc_info:
+        await transport.put(1.0)
+    assert "Not connected" in str(exc_info.value)
+
+    await transport.connect(1)
+    val = None
+
+    def callback(reading):
+        nonlocal val
+        val = reading["value"]
+
+    # Correct usage
+    transport.set_callback(callback)
+    current_value = await transport.get_value()
+    new_value = current_value + 2
+    await transport.put(new_value)
+    await asyncio.sleep(0.1)
+    assert val == new_value
+
+    # Try to add second callback
+    with pytest.raises(RuntimeError) as exc_info:
+        transport.set_callback(callback)
+    assert "Cannot set a callback when one is already set"
+
+    transport.set_callback(None)
+
+    # Try to add a callback to a non-callable proxy
+    transport.allow_events(False)
+    transport.set_polling(False)
+    with pytest.raises(RuntimeError) as exc_info:
+        transport.set_callback(callback)
+    assert "Cannot set event" in str(exc_info.value)
+
+    # Try to add a non-callable callback
+    transport.allow_events(True)
+    with pytest.raises(RuntimeError) as exc_info:
+        transport.set_callback(1)
+    assert "Callback must be a callable" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("allow", [True, False])
+async def test_tango_transport_allow_events(everything_device_trl, allow):
+    # await prepare_device(echo_device, "float32", 1.0)
+    source = get_full_attr_trl(everything_device_trl, "float32")
+    transport = await make_backend(float, source, connect=False)
+    transport.allow_events(allow)
+    assert transport.support_events == allow
+
+
+@pytest.mark.asyncio
+async def test_tango_transport_set_polling(everything_device_trl):
+    # await prepare_device(echo_device, "float32", 1.0)
+    source = get_full_attr_trl(everything_device_trl, "float32")
+    transport = await make_backend(float, source, connect=False)
+    transport.set_polling(True, 0.1, 1, 0.1)
+    assert transport._polling == (True, 0.1, 1, 0.1)
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(12.0)
+async def test_attribute_subscribe_callback(everything_device_trl):
+    # await prepare_device(echo_device, "float32", 1.0)
+    source = get_full_attr_trl(everything_device_trl, "int64")
+    backend = await make_backend(int, source)
+    attr_proxy = backend.proxies[source]
+    val = None
+
+    def callback(reading):
+        nonlocal val
+        val = reading["value"]
+
+    attr_proxy.subscribe_callback(callback)
+    assert attr_proxy.has_subscription()
+    old_value = await attr_proxy.get()
+    new_value = old_value + 1
+    await attr_proxy.put(new_value)
+    await asyncio.sleep(0.2)
+    attr_proxy.unsubscribe_callback()
+    assert val == new_value
+
+    attr_proxy.set_polling(False)
+    attr_proxy.support_events = False
+    with pytest.raises(RuntimeError) as exc_info:
+        attr_proxy.subscribe_callback(callback)
+    assert "Cannot set a callback" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_attribute_unsubscribe_callback(everything_device_trl):
+    # await prepare_device(echo_device, "float32", 1.0)
+    source = get_full_attr_trl(everything_device_trl, "float32")
+    backend = await make_backend(float, source)
+    attr_proxy = backend.proxies[source]
+
+    def callback(reading):
+        pass
+
+    attr_proxy.subscribe_callback(callback)
+    assert attr_proxy.has_subscription()
+    attr_proxy.unsubscribe_callback()
+    assert not attr_proxy.has_subscription()
+    await asyncio.sleep(0.1)
