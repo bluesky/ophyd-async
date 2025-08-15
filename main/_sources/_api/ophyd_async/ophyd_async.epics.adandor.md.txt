@@ -35,7 +35,7 @@
 
 ### API
 
-````{py:class} Andor2Detector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix='cam1:', writer_cls: type[~ophyd_async.epics.adcore.ADWriter] = adcore.ADHDFWriter, fileio_suffix: str | None = None, name: str = '', config_sigs: ~collections.abc.Sequence[~ophyd_async.core._signal.SignalR] = (), plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None)
+````{py:class} Andor2Detector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix='cam1:', writer_cls: type[~ophyd_async.epics.adcore.ADWriter] = adcore.ADHDFWriter, fileio_suffix: str | None = None, name: str = '', config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None)
 :canonical: ophyd_async.epics.adandor._andor.Andor2Detector
 
 Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adandor._andor_controller.Andor2Controller`\]

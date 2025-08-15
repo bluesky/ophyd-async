@@ -39,10 +39,10 @@
 
 ### API
 
-````{py:class} PilatusDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, readout_time: ~ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime = PilatusReadoutTime.PILATUS3, drv_suffix: str = 'cam1:', writer_cls: type[~ophyd_async.epics.adcore._core_writer.ADWriter] = ADHDFWriter, fileio_suffix: str | None = None, name: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core._signal.SignalR] = ())
+````{py:class} PilatusDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, readout_time: ~ophyd_async.epics.adpilatus._pilatus_controller.PilatusReadoutTime = PilatusReadoutTime.PILATUS3, drv_suffix: str = 'cam1:', writer_cls: type[~ophyd_async.epics.adcore.ADWriter] = ADHDFWriter, fileio_suffix: str | None = None, name: str = '', plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = ())
 :canonical: ophyd_async.epics.adpilatus._pilatus.PilatusDetector
 
-Bases: {py:obj}`ophyd_async.epics.adcore._core_detector.AreaDetector`\[{py:obj}`ophyd_async.epics.adpilatus._pilatus_controller.PilatusController`\]
+Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adpilatus._pilatus_controller.PilatusController`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus._pilatus.PilatusDetector
 ```

@@ -515,7 +515,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
-````{py:class} ContAcqAreaDetector(prefix: str, path_provider: ~ophyd_async.core._providers.PathProvider, drv_cls: type[~ophyd_async.epics.adcore._core_io.ADBaseIO] = ADBaseIO, drv_suffix: str = 'cam1:', cb_suffix: str = 'CB1:', writer_cls: type[~ophyd_async.epics.adcore._core_writer.ADWriter] = ADHDFWriter, fileio_suffix: str | None = None, name: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = ())
+````{py:class} ContAcqAreaDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_cls: type[~ophyd_async.epics.adcore._core_io.ADBaseIO] = ADBaseIO, drv_suffix: str = 'cam1:', cb_suffix: str = 'CB1:', writer_cls: type[~ophyd_async.epics.adcore._core_writer.ADWriter] = ADHDFWriter, fileio_suffix: str | None = None, name: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = ())
 :canonical: ophyd_async.epics.adcore._core_detector.ContAcqAreaDetector
 
 Bases: {py:obj}`ophyd_async.epics.adcore._core_detector.AreaDetector`\[{py:obj}`ophyd_async.epics.adcore._core_logic.ADBaseContAcqController`\]
@@ -1259,10 +1259,10 @@ Bases: {py:obj}`ophyd_async.core.DetectorController`, {py:obj}`typing.Generic`\[
 
 `````
 
-`````{py:class} ADWriter(fileio: ~ophyd_async.epics.adcore._core_writer.NDFileIOT, path_provider: ~ophyd_async.core._providers.PathProvider, dataset_describer: ~ophyd_async.core._providers.DatasetDescriber, file_extension: str = '', mimetype: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
+`````{py:class} ADWriter(fileio: ~ophyd_async.epics.adcore._core_writer.NDFileIOT, path_provider: ~ophyd_async.core.PathProvider, dataset_describer: ~ophyd_async.core.DatasetDescriber, file_extension: str = '', mimetype: str = '', plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None)
 :canonical: ophyd_async.epics.adcore._core_writer.ADWriter
 
-Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._core_writer.NDFileIOT`\]
+Bases: {py:obj}`ophyd_async.core.DetectorWriter`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._core_writer.NDFileIOT`\]
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._core_writer.ADWriter
 ```
@@ -1278,7 +1278,7 @@ Bases: {py:obj}`ophyd_async.core._detector.DetectorWriter`, {py:obj}`typing.Gene
 
 ````
 
-````{py:method} with_io(prefix: str, path_provider: ~ophyd_async.core._providers.PathProvider, dataset_source: ~ophyd_async.epics.adcore._core_io.NDArrayBaseIO | None = None, fileio_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None) -> ~ophyd_async.epics.adcore._core_writer.ADWriterT
+````{py:method} with_io(prefix: str, path_provider: ~ophyd_async.core.PathProvider, dataset_source: ~ophyd_async.epics.adcore._core_io.NDArrayBaseIO | None = None, fileio_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore._core_io.NDPluginBaseIO] | None = None) -> ~ophyd_async.epics.adcore._core_writer.ADWriterT
 :canonical: ophyd_async.epics.adcore._core_writer.ADWriter.with_io
 :classmethod:
 

@@ -379,7 +379,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 `````{py:class} EpicsTestSubsetEnum()
 :canonical: ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum
 
-Bases: {py:obj}`ophyd_async.core._utils.SubsetEnum`
+Bases: {py:obj}`ophyd_async.core.SubsetEnum`
 
 ```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestSubsetEnum
 ```

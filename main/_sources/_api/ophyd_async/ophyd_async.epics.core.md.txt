@@ -94,7 +94,7 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 
 ````
 
-````{py:method} connect_mock(device: ~ophyd_async.core.Device, mock: ~ophyd_async.core._utils.LazyMock)
+````{py:method} connect_mock(device: ~ophyd_async.core.Device, mock: ~ophyd_async.core.LazyMock)
 :canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_mock
 :async:
 
