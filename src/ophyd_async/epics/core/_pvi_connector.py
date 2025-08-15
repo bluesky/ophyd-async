@@ -6,13 +6,13 @@ from ophyd_async.core import (
     Device,
     DeviceConnector,
     DeviceFiller,
+    LazyMock,
     Signal,
     SignalR,
     SignalRW,
     SignalW,
     SignalX,
 )
-from ophyd_async.core._utils import LazyMock
 
 from ._epics_connector import fill_backend_with_prefix
 from ._signal import PvaSignalBackend, pvget_with_timeout
