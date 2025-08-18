@@ -2,17 +2,13 @@
 
 set -xe
 
-# Override these if needed (export SERVICES_REPO=..., etc.)
-SERVICES_REPO="https://github.com/epics-containers/example-services.git"
-SERVICES_VERSION="main"
-SERVICES_REPO_LOCAL="build/example-services"
-
+THIS_DIR=$(realpath $(dirname ${0}))
+REPO_ROOT="${THIS_DIR}/../../.."
+SERVICES_REPO_LOCAL="${REPO_ROOT}/example-services"
 COMPOSE_FILE="${SERVICES_REPO_LOCAL}/compose.yaml"
 
-# Ensure a fresh copy of the example services
-rm -rf ${SERVICES_REPO_LOCAL}
-mkdir -p ${SERVICES_REPO_LOCAL}
-git clone ${SERVICES_REPO} ${SERVICES_REPO_LOCAL} -b ${SERVICES_VERSION}
+# Take down any IOCs that are already running
+${REPO_ROOT}/system_tests/epics/adsim/stop_iocs.sh
 
-# Run IOCs
+# Run fresh IOCs
 docker compose -f ${COMPOSE_FILE} up -d

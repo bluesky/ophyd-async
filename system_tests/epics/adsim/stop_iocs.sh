@@ -2,10 +2,13 @@
 
 set -xe
 
-# Override these if needed (export SERVICES_REPO=..., etc.)
-SERVICES_REPO_LOCAL="build/example-services"
-
+THIS_DIR=$(realpath $(dirname ${0}))
+REPO_ROOT="${THIS_DIR}/../../.."
+SERVICES_REPO_LOCAL="${REPO_ROOT}/example-services"
 COMPOSE_FILE="${SERVICES_REPO_LOCAL}/compose.yaml"
 
-# Run IOCs
+# Ensure the example services are present
+git submodule init
+
+# Shut down IOCs
 docker compose -f ${COMPOSE_FILE} down
