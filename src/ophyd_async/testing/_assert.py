@@ -21,11 +21,11 @@ from ophyd_async.core import (
 from ._utils import T
 
 
-def partial_reading(val: Any) -> dict[str, Any]:
-    """Helper function for building expected reading or configuration dicts.
+def partial_reading(val: Any) -> Mapping[str, Any]:
+    """Helper function for building expected reading or configuration mapping.
 
-    :param val: Value to be wrapped in dict with "value" as the key.
-    :return: The dict that has wrapped the val with key "value".
+    :param val: Value to be wrapped in mapping with "value" as the key.
+    :return: The mapping that has wrapped the val with key "value".
     """
     return {"value": val}
 
@@ -100,7 +100,7 @@ def _assert_readings_approx_equal(
 
 async def assert_configuration(
     configurable: AsyncConfigurable,
-    expected_configuration: dict[str, dict[str, Any]],
+    expected_configuration: Mapping[str, Mapping[str, Any]],
     full_match: bool = True,
 ) -> None:
     """Assert that a configurable Device has the given configuration.
@@ -108,7 +108,7 @@ async def assert_configuration(
     :param configurable:
         Device with an async ``read_configuration()`` method to get the
         configuration from.
-    :param configuration: The expected configuration from the configurable.
+    :param expected_configuration: The expected configuration from the configurable.
     :param full_match: if expected_reading keys set is same as actual keys set.
         true: exact match
         false: expected_reading keys is subset of actual reading keys
