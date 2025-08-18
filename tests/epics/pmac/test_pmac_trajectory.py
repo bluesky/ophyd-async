@@ -33,8 +33,10 @@ async def sim_motors():
     set_mock_value(pmac_y.cs_number, 1)
     set_mock_value(pmac_y.cs_axis_letter, "Y")
     set_mock_value(sim_x_motor.acceleration_time, 0.5)
+    set_mock_value(sim_x_motor.velocity, 1)
     set_mock_value(sim_x_motor.max_velocity, 5)
     set_mock_value(sim_y_motor.acceleration_time, 0.5)
+    set_mock_value(sim_y_motor.velocity, 1)
     set_mock_value(sim_y_motor.max_velocity, 10)
 
     yield (sim_pmac, sim_x_motor, sim_y_motor)
@@ -42,13 +44,108 @@ async def sim_motors():
 
 async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmacIO, sim_x_motor, sim_y_motor = sim_motors
-    spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
+    spec = Fly(1.0 @ Line(sim_x_motor, 1, 5, 9))
     trigger_logic = PmacTriggerLogic(spec=spec)
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
     await pmac_trajectory.prepare(trigger_logic)
 
-    assert await pmacIO.coord[1].cs_axis_setpoint[7].get_value() == -1.2
+    assert await sim_x_motor.user_setpoint.get_value() == 0.7375
+    assert pmac_trajectory.scantime == 9100000
+
     assert await pmacIO.trajectory.positions[7].get_value() == pytest.approx(
-        [-1.0, 1, 3, 5, 7, 7.2]
+        [
+            0.75,
+            1.0,
+            1.25,
+            1.5,
+            1.75,
+            2.0,
+            2.25,
+            2.5,
+            2.75,
+            3.0,
+            3.25,
+            3.5,
+            3.75,
+            4.0,
+            4.25,
+            4.5,
+            4.75,
+            5.0,
+            5.25,
+            5.2625,
+        ]
     )
-    assert pmac_trajectory.scantime == 4400000
+    assert await pmacIO.trajectory.velocities[7].get_value() == pytest.approx(
+        [
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.5,
+            0.0,
+        ]
+    )
+
+    assert await pmacIO.trajectory.time_array.get_value() == pytest.approx(
+        [
+            50000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            50000,
+        ]
+    )
+
+    assert await pmacIO.trajectory.user_array.get_value() == pytest.approx(
+        [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            8,
+        ]
+    )
