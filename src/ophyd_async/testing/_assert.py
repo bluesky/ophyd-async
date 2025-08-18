@@ -21,11 +21,11 @@ from ophyd_async.core import (
 from ._utils import T
 
 
-def partial_reading(val: Any) -> dict[str, Any]:
-    """Helper function for building expected reading or configuration dicts.
+def partial_reading(val: Any) -> Mapping[str, Any]:
+    """Helper function for building expected reading or configuration mapping.
 
-    :param val: Value to be wrapped in dict with "value" as the key.
-    :return: The dict that has wrapped the val with key "value".
+    :param val: Value to be wrapped in mapping with "value" as the key.
+    :return: The mapping that has wrapped the val with key "value".
     """
     return {"value": val}
 
