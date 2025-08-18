@@ -100,7 +100,7 @@ def _assert_readings_approx_equal(
 
 async def assert_configuration(
     configurable: AsyncConfigurable,
-    expected_configuration: dict[str, dict[str, Any]],
+    expected_configuration: Mapping[str, Mapping[str, Any]],
     full_match: bool = True,
 ) -> None:
     """Assert that a configurable Device has the given configuration.
