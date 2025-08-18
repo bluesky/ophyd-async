@@ -108,7 +108,7 @@ async def assert_configuration(
     :param configurable:
         Device with an async ``read_configuration()`` method to get the
         configuration from.
-    :param configuration: The expected configuration from the configurable.
+    :param expected_configuration: The expected configuration from the configurable.
     :param full_match: if expected_reading keys set is same as actual keys set.
         true: exact match
         false: expected_reading keys is subset of actual reading keys
