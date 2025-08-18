@@ -243,6 +243,7 @@ def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
     """
     if get_origin(datatype) is Sequence:
         datatype = get_args(datatype)[0]
+    datatype = get_origin_class(datatype)
     if datatype and issubclass(datatype, Enum):
         if not issubclass(datatype, EnumTypes):
             raise TypeError(
