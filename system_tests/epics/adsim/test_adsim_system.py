@@ -37,16 +37,10 @@ def with_env():
         {
             "EPICS_CA_NAME_SERVERS": "127.0.0.1:9064",
             "EPICS_PVA_NAME_SERVERS": "127.0.0.1:9075",
-            "EPICS_CA_ADDR_LIST": "127.0.0.1:9064",
         },
         clear=True,
     ):
         yield
-
-
-@pytest.fixture
-def RE():
-    return RunEngine(call_returns_result=True)
 
 
 @pytest.fixture
