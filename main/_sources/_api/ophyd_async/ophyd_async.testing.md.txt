@@ -162,7 +162,7 @@
 ```
 ````
 
-````{py:function} assert_configuration(configurable: ~ophyd_async.core.AsyncConfigurable, expected_configuration: dict[str, dict[str, ~typing.Any]], full_match: bool = True) -> None
+````{py:function} assert_configuration(configurable: ~ophyd_async.core.AsyncConfigurable, expected_configuration: ~collections.abc.Mapping[str, ~collections.abc.Mapping[str, ~typing.Any]], full_match: bool = True) -> None
 :canonical: ophyd_async.testing._assert.assert_configuration
 :async:
 
@@ -185,7 +185,7 @@
 ```
 ````
 
-````{py:function} partial_reading(val: ~typing.Any) -> dict[str, ~typing.Any]
+````{py:function} partial_reading(val: ~typing.Any) -> ~collections.abc.Mapping[str, ~typing.Any]
 :canonical: ophyd_async.testing._assert.partial_reading
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.partial_reading
