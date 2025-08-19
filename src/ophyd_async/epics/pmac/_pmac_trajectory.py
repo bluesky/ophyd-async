@@ -96,5 +96,6 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTriggerLogic]):
         coord = self.pmac.coord[motor_info.cs_number]
         await coord.defer_moves.set(True)
         for motor, position in ramp_up_position.items():
-            await motor.set(position)
+            cs_index = motor_info.motor_cs_index[motor]
+            await coord.cs_axis_setpoint[cs_index + 1].set(position)
         await coord.defer_moves.set(False)
