@@ -54,8 +54,8 @@ Structure now read from `.value` rather than `.pvi`. Supported in FastCS. Requir
 ## `StrictEnum` is now requried for all strictly checked `Enums`
 ```python
 # old
-from enum import Enum
-class MyEnum(str, Enum):
+from enum import StrEnum
+class MyEnum(StrEnum):
     ONE = "one"
     TWO = "two"
 # new

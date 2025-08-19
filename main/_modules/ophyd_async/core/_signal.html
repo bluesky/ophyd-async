@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.13.1.dev5+g3d8bc2058 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.13.1.dev6+g228f25c8b documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=a167fd66"></script>
+    <script src="../../../_static/documentation_options.js?v=7c4f134d"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.1.dev5+g3d8bc2058 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.1.dev5+g3d8bc2058 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.1.dev6+g228f25c8b documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.1.dev6+g228f25c8b documentation - Home"/>
   
   
 </a></div>
@@ -504,8 +504,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_wait_for</span><span class="p">(</span><span class="n">coro</span><span class="p">:</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">coro</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_add_timeout</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
@@ -1025,7 +1025,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">last_item</span> <span class="o">=</span> <span class="p">()</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">overall_deadline</span> <span class="ow">and</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">overall_deadline</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">(</span>
+                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;observe_value was still observing signals &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">signal</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">signals</span><span class="p">]</span><span class="si">}</span><span class="s2"> after &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;timeout </span><span class="si">{</span><span class="n">done_timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
@@ -1033,8 +1033,8 @@ window.addEventListener("load", () => mermaid.run());
             <span class="n">iteration_timeout</span> <span class="o">=</span> <span class="n">_get_iteration_timeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">,</span> <span class="n">overall_deadline</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">item</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">iteration_timeout</span><span class="p">)</span>
-            <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">(</span>
+            <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Timeout Error while waiting </span><span class="si">{</span><span class="n">iteration_timeout</span><span class="si">}</span><span class="s2">s to update &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">source</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">signal</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">signals</span><span class="p">]</span><span class="si">}</span><span class="s2">. &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;Last observed signal and value were </span><span class="si">{</span><span class="n">last_item</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -1070,8 +1070,8 @@ window.addEventListener("load", () => mermaid.run());
     <span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">),</span> <span class="n">timeout</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">(</span>
+        <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> didn&#39;t match </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_matcher_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s, &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;last value </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_value</span><span class="si">!r}</span><span class="s2">&quot;</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
@@ -1174,8 +1174,8 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">_wait_for_value</span><span class="p">(),</span> <span class="n">timeout</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">wait_for_set_completion</span><span class="p">:</span>
                 <span class="k">await</span> <span class="n">status</span>
-        <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">(</span>
+        <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">match_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> value didn&#39;t match value from&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">matcher</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">() in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>

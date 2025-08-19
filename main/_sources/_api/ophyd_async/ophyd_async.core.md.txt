@@ -1195,7 +1195,7 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
 ````{py:class} StrictEnum()
 :canonical: ophyd_async.core._utils.StrictEnum
 
-Bases: {py:obj}`str`, {py:obj}`enum.Enum`
+Bases: {py:obj}`enum.StrEnum`
 
 ```{autodoc2-docstring} ophyd_async.core._utils.StrictEnum
 ```
@@ -1205,7 +1205,7 @@ Bases: {py:obj}`str`, {py:obj}`enum.Enum`
 ````{py:class} SubsetEnum()
 :canonical: ophyd_async.core._utils.SubsetEnum
 
-Bases: {py:obj}`str`, {py:obj}`enum.Enum`
+Bases: {py:obj}`enum.StrEnum`
 
 ```{autodoc2-docstring} ophyd_async.core._utils.SubsetEnum
 ```
@@ -1215,7 +1215,7 @@ Bases: {py:obj}`str`, {py:obj}`enum.Enum`
 ````{py:class} SupersetEnum()
 :canonical: ophyd_async.core._utils.SupersetEnum
 
-Bases: {py:obj}`str`, {py:obj}`enum.Enum`
+Bases: {py:obj}`enum.StrEnum`
 
 ```{autodoc2-docstring} ophyd_async.core._utils.SupersetEnum
 ```

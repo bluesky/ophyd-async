@@ -159,7 +159,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 ````{py:attribute} SENSITIVITY
 :canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SENSITIVITY
 :value: >
-   1
+   '1'
 
 ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SENSITIVITY
 ```
@@ -169,7 +169,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 ````{py:attribute} SPEED
 :canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SPEED
 :value: >
-   2
+   '2'
 
 ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SPEED
 ```
@@ -179,7 +179,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 ````{py:attribute} DYNAMIC_RANGE
 :canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.DYNAMIC_RANGE
 :value: >
-   3
+   '3'
 
 ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.DYNAMIC_RANGE
 ```
@@ -189,7 +189,7 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 ````{py:attribute} SUB_ELECTRON
 :canonical: ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SUB_ELECTRON
 :value: >
-   4
+   '4'
 
 ```{autodoc2-docstring} ophyd_async.epics.adkinetix._kinetix_io.KinetixReadoutMode.SUB_ELECTRON
 ```
