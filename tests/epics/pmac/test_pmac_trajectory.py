@@ -53,7 +53,6 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
     await pmac_trajectory.prepare(trigger_logic)
 
-    # assert await sim_x_motor.user_setpoint.get_value() == -1.2
     assert await pmacIO.coord[1].cs_axis_setpoint[7].get_value() == -1.2
 
     assert await pmacIO.trajectory.positions[7].get_value() == pytest.approx(

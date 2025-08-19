@@ -5,7 +5,7 @@ import numpy as np
 from scanspec.core import Path
 from scanspec.specs import Spec
 
-from ophyd_async.core import FlyerController, wait_for_value
+from ophyd_async.core import FlyerController, set_and_wait_for_value, wait_for_value
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_io import CS_LETTERS
@@ -94,8 +94,18 @@ class PmacTrajectoryTriggerLogic(FlyerController[PmacTriggerLogic]):
         self, motor_info: _PmacMotorInfo, ramp_up_position: dict[Motor, np.float64]
     ):
         coord = self.pmac.coord[motor_info.cs_number]
+        coros = []
         await coord.defer_moves.set(True)
         for motor, position in ramp_up_position.items():
             cs_index = motor_info.motor_cs_index[motor]
-            await coord.cs_axis_setpoint[cs_index + 1].set(position)
+            coros.append(
+                set_and_wait_for_value(
+                    coord.cs_axis_setpoint[cs_index + 1],
+                    position,
+                    set_timeout=10,
+                    wait_for_set_completion=False,
+                )
+            )
+        statuses = await asyncio.gather(*coros)
         await coord.defer_moves.set(False)
+        await asyncio.gather(*statuses)
