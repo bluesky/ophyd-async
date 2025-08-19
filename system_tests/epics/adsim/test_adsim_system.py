@@ -1,4 +1,3 @@
-import itertools
 import os
 from pathlib import Path
 from typing import Any
@@ -22,10 +21,16 @@ from event_model.documents import (
 from ophyd_async.core import (
     StaticPathProvider,
     TriggerInfo,
+    YamlSettingsProvider,
     init_devices,
 )
-from ophyd_async.epics.adcore import ADImageMode, ADState
 from ophyd_async.epics.adsimdetector import SimDetector
+from ophyd_async.plan_stubs import (
+    apply_settings,
+    apply_settings_if_different,
+    get_current_settings,
+    retrieve_settings,
+)
 
 TIMEOUT = 10.0
 
@@ -55,31 +60,24 @@ def adsim(RE: RunEngine) -> SimDetector:
             fileio_suffix="HDF5:",
         )
 
-    RE(configure_detector_to_known_state(adsim))
+    RE(apply_baseline_settings(adsim))
 
     return adsim
 
 
-def configure_detector_to_known_state(adsim: SimDetector) -> MsgGenerator[None]:
-    initial_values = {
-        # Ensure everything is disarmed first
-        adsim.driver.acquire: False,
-        adsim.fileio.capture: False,
-        # Driver settings
-        adsim.driver.acquire_time: 0.1,
-        adsim.driver.acquire_period: 0.005,
-        adsim.driver.image_mode: ADImageMode.CONTINUOUS,
-        adsim.driver.array_counter: 0,
-        # File writer settings
-        adsim.fileio.array_counter: 0,
-        adsim.fileio.num_capture: 0,
-        adsim.fileio.file_path: "/nowhere",
-    }
-
-    yield from bps.mv(*itertools.chain.from_iterable(initial_values.items()), wait=True)
-
-    detector_state = yield from bps.rd(adsim.driver.detector_state)
-    assert detector_state == ADState.IDLE
+def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
+    current_settings = yield from get_current_settings(adsim)
+    provider = YamlSettingsProvider(Path(__file__).parent)
+    baseline_settings = yield from retrieve_settings(
+        provider,
+        "baseline",
+        adsim,
+    )
+    yield from apply_settings_if_different(
+        baseline_settings,
+        apply_plan=apply_settings,
+        current_settings=current_settings,
+    )
 
 
 @pytest.mark.timeout(TIMEOUT + 3.0)
