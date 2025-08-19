@@ -7,9 +7,9 @@ name = "ophyd-async"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 description = "Asynchronous Bluesky hardware abstraction code, compatible with control systems like EPICS and Tango"
 dependencies = [
@@ -26,13 +26,13 @@ dependencies = [
 dynamic = ["version"]
 license.file = "LICENSE"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [project.optional-dependencies]
 sim = ["h5py"]
 ca = ["aioca>=2.0a4"]
 pva = ["p4p>=4.2.0"]
-tango = ["pytango==10.0.0"]
+tango = ["pytango==10.0.2"]
 demo = ["ipython", "matplotlib", "pyqt6"]
 dev = [
     "ophyd_async[sim]",

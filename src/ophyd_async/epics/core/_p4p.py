@@ -22,7 +22,6 @@ from ophyd_async.core import (
     SignalDatatype,
     SignalDatatypeT,
     SignalMetadata,
-    StrictEnum,
     Table,
     get_enum_cls,
     get_unique,
@@ -82,7 +81,7 @@ def _metadata_from_value(datatype: type[SignalDatatype], value: Any) -> SignalMe
     if (limits := _limits_from_value(value)) and specifier[-1] in _number_specifiers:
         metadata["limits"] = limits
     # Get choices from display or value
-    if datatype is str or issubclass(datatype, StrictEnum):
+    if datatype is str or get_enum_cls(datatype) is not None:
         if hasattr(display_data, "choices"):
             metadata["choices"] = display_data.choices
         elif hasattr(value_data, "choices"):
@@ -327,7 +326,7 @@ def context() -> Context:
 async def pvget_with_timeout(pv: str, timeout: float) -> Any:
     try:
         return await asyncio.wait_for(context().get(pv), timeout=timeout)
-    except asyncio.TimeoutError as exc:
+    except TimeoutError as exc:
         logger.debug(f"signal pva://{pv} timed out", exc_info=True)
         raise NotConnected(f"pva://{pv}") from exc
 
