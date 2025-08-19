@@ -192,3 +192,16 @@ source_modules = [
     "ophyd_async.tango.*",
 ]
 ignore_imports = ["ophyd_async.*.testing.* -> ophyd_async.testing"]
+
+[[tool.importlinter.contracts]]
+name = "ophyd_async.core private modules are not to be used outside ophyd_async.core"
+type = "forbidden"
+forbidden_modules = ["ophyd_async.core.*"]
+source_modules = [
+    "ophyd_async.testing",
+    "ophyd_async.plan_stubs",
+    "ophyd_async.fastcs.*",
+    "ophyd_async.epics.*",
+    "ophyd_async.tango.*",
+]
+allow_indirect_imports = true
