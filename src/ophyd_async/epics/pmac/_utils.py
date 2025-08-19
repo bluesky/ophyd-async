@@ -218,7 +218,7 @@ def calculate_ramp_position_and_duration(
         ]
         velocities[axis] = velocity
         ramp_times.append(abs(velocity) / motor_info.motor_acceleration_rate[axis])
-
+    ramp_times.append(0.002)  # Adding a 2ms ramp time as a min tournaround time
     max_ramp_time = max(ramp_times)
 
     motor_to_ramp_position = {}
