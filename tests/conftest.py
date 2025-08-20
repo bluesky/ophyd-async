@@ -34,23 +34,6 @@ EXTRA_BLOCKS_RECORD = str(
     Path(__file__).parent / "fastcs" / "panda" / "db" / "extra_blocks_panda.db"
 )
 
-# Prevent pytest from catching exceptions when debugging in vscode so that break on
-# exception works correctly (see: https://github.com/pytest-dev/pytest/issues/7409)
-if os.getenv("PYTEST_RAISE", "0") == "1":
-
-    @pytest.hookimpl(tryfirst=True)
-    def pytest_exception_interact(call: pytest.CallInfo[Any]):
-        if call.excinfo is not None:
-            raise call.excinfo.value
-        else:
-            raise RuntimeError(
-                f"{call} has no exception data, an unknown error has occurred"
-            )
-
-    @pytest.hookimpl(tryfirst=True)
-    def pytest_internalerror(excinfo: pytest.ExceptionInfo[Any]):
-        raise excinfo.value
-
 
 # Autouse fixture that will set all EPICS networking env vars to use lo interface
 # to avoid false failures caused by things like firewalls blocking EPICS traffic.
@@ -225,8 +208,10 @@ def static_filename_provider():
 
 @pytest.fixture
 def static_path_provider_factory(tmp_path: Path):
-    def create_static_dir_provider_given_fp(fp: FilenameProvider):
-        return StaticPathProvider(fp, tmp_path)
+    def create_static_dir_provider_given_fp(
+        fp: FilenameProvider, directory_uri: str | None = None
+    ):
+        return StaticPathProvider(fp, tmp_path, directory_uri=directory_uri)
 
     return create_static_dir_provider_given_fp
 

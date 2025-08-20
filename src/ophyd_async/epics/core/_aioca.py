@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import typing
 from collections.abc import Mapping, Sequence
@@ -38,6 +39,10 @@ from ophyd_async.core import (
 from ._util import EpicsSignalBackend, format_datatype, get_supported_values
 
 logger = logging.getLogger("ophyd_async")
+
+
+def _all_updates() -> bool:
+    return os.environ.get("OPHYD_ASYNC_EPICS_CA_KEEP_ALL_UPDATES", "True") == "True"
 
 
 def _limits_from_augmented_value(value: AugmentedValue) -> Limits:
@@ -250,12 +255,11 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
-        all_updates: bool = True,
     ):
         self.converter: CaConverter = DisconnectedCaConverter(float, dbr.DBR_DOUBLE)
         self.initial_values: dict[str, AugmentedValue] = {}
         self.subscription: Subscription | None = None
-        self._all_updates = all_updates
+        self._all_updates = _all_updates()
         super().__init__(datatype, read_pv, write_pv)
 
     def source(self, name: str, read: bool):

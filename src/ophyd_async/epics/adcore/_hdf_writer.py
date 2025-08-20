@@ -1,6 +1,5 @@
 import asyncio
 from collections.abc import AsyncIterator
-from pathlib import Path
 from typing import TypeGuard
 from xml.etree import ElementTree as ET
 
@@ -65,8 +64,10 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
             self.fileio.xml_file_name.set(""),
         )
 
+        self._path_info = self._path_provider(device_name=name)
+
         # Set common AD file plugin params, begin capturing
-        await self.begin_capture(name)
+        await self._begin_capture(name)
 
         detector_shape = await self._dataset_describer.shape()
         np_dtype = await self._dataset_describer.np_datatype()
@@ -74,8 +75,13 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
         # Used by the base class
         self._exposures_per_event = exposures_per_event
 
-        # Determine number of frames that will be saved per HDF chunk
+        # Determine number of frames that will be saved per HDF chunk.
+        # On a fresh IOC startup, this is set to zero until the first capture,
+        # so if it is zero, set it to 1.
         frames_per_chunk = await self.fileio.num_frames_chunks.get_value()
+        if frames_per_chunk == 0:
+            frames_per_chunk = 1
+            await self.fileio.num_frames_chunks.set(frames_per_chunk)
 
         if not _is_fully_described(detector_shape):
             # Questions:
@@ -97,12 +103,6 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                 chunk_shape=(frames_per_chunk, *detector_shape),
             )
         ]
-
-        self._composer = HDFDocumentComposer(
-            # See https://github.com/bluesky/ophyd-async/issues/122
-            Path(await self.fileio.full_file_name.get_value()),
-            self._datasets,
-        )
 
         # And all the scalar datasets
         for plugin in self._plugins.values():
@@ -134,6 +134,12 @@ class ADHDFWriter(ADWriter[NDFileHDFIO]):
                             chunk_shape=(16384,),
                         )
                     )
+
+        self._composer = HDFDocumentComposer(
+            # See https://github.com/bluesky/ophyd-async/issues/122
+            f"{self._path_info.directory_uri}{self._path_info.filename}{self._file_extension}",
+            self._datasets,
+        )
 
         describe = {
             ds.data_key: DataKey(

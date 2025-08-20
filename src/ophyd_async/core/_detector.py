@@ -84,7 +84,7 @@ class TriggerInfo(ConfinedModel):
     A exposures_per_event > 1 can be useful to have exposures from a faster detector
     able to be zipped with a single exposure from a slower detector. E.g. if
     number_of_events=10 and exposures_per_event=5 then the detector will take
-    10 exposures, but publish 2 StreamDatum indices, and describe() will show a
+    50 exposures, but publish 10 StreamDatum indices, and describe() will show a
     shape of (5, h, w) for each.
     Default is 1.
     """
@@ -104,7 +104,11 @@ class DetectorController(ABC):
 
     @abstractmethod
     def get_deadtime(self, exposure: float | None) -> float:
-        """For a given exposure, how long should the time between exposures be."""
+        """Get state-independent deadtime.
+
+        For a given exposure, what is the safest minimum time between exposures that
+        can be determined without reading signals.
+        """
 
     @abstractmethod
     async def prepare(self, trigger_info: TriggerInfo) -> None:
@@ -313,14 +317,7 @@ class StandardDetector(
         if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
             msg = "Deadtime must be supplied when in externally triggered mode"
             raise ValueError(msg)
-        required_deadtime = self._controller.get_deadtime(value.livetime)
-        if value.deadtime and required_deadtime > value.deadtime:
-            msg = (
-                f"Detector {self._controller} needs at least {required_deadtime}s "
-                f"deadtime, but trigger logic provides only {value.deadtime}s"
-            )
-            raise ValueError(msg)
-        elif not value.deadtime:
+        if not value.deadtime:
             value.deadtime = self._controller.get_deadtime(value.livetime)
         self._trigger_info = value
         self._number_of_events_iter = iter(

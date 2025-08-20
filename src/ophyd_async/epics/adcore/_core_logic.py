@@ -6,19 +6,20 @@ from ophyd_async.core import (
     AsyncStatus,
     DetectorController,
     DetectorTrigger,
+    EnableDisable,
     TriggerInfo,
     observe_value,
     set_and_wait_for_value,
 )
+from ophyd_async.epics.core import stop_busy_record
 
 from ._core_io import (
     ADBaseIO,
-    ADCallbacks,
     ADState,
     NDCBFlushOnSoftTrgMode,
     NDPluginCBIO,
 )
-from ._utils import ADImageMode, stop_busy_record
+from ._utils import ADImageMode
 
 # Default set of states that we should consider "good" i.e. the acquisition
 #  is complete and went well
@@ -65,7 +66,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
     async def disarm(self):
         # We can't use caput callback as we already used it in arm() and we can't have
         # 2 or they will deadlock
-        await stop_busy_record(self.driver.acquire, False, timeout=1)
+        await stop_busy_record(self.driver.acquire, False)
 
     async def set_exposure_time_and_acquire_period_if_supplied(
         self,
@@ -129,7 +130,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                 ):
                     if state in self.good_states:
                         return
-            except asyncio.TimeoutError as exc:
+            except TimeoutError as exc:
                 if state is not None:
                     raise ValueError(
                         f"Final detector state {state.value} not in valid end "
@@ -137,7 +138,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                     ) from exc
                 else:
                     # No updates from the detector, something else is wrong
-                    raise asyncio.TimeoutError(
+                    raise TimeoutError(
                         "Could not monitor detector state: "
                         + self.driver.detector_state.source
                     ) from exc
@@ -198,7 +199,7 @@ class ADBaseContAcqController(ADBaseController[ADBaseIO]):
 
         # Configure the CB plugin to collect the correct number of triggers
         await asyncio.gather(
-            self.cb_plugin.enable_callbacks.set(ADCallbacks.ENABLE),
+            self.cb_plugin.enable_callbacks.set(EnableDisable.ENABLE),
             self.cb_plugin.pre_count.set(0),
             self.cb_plugin.post_count.set(trigger_info.total_number_of_exposures),
             self.cb_plugin.preset_trigger_count.set(1),
@@ -218,7 +219,7 @@ class ADBaseContAcqController(ADBaseController[ADBaseIO]):
         await self.cb_plugin.trigger.set(True, wait=False)
 
     async def disarm(self) -> None:
-        await stop_busy_record(self.cb_plugin.capture, False, timeout=1)
+        await stop_busy_record(self.cb_plugin.capture, False)
         if self._arm_status and not self._arm_status.done:
             await self._arm_status
         self._arm_status = None

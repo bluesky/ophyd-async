@@ -1,3 +1,8 @@
-from ._pmac_io import PmacAxisIO, PmacCoordIO, PmacIO, PmacTrajectoryIO
+from ._pmac_io import PmacAxisAssignmentIO, PmacCoordIO, PmacIO, PmacTrajectoryIO
 
-__all__ = ["PmacAxisIO", "PmacCoordIO", "PmacIO", "PmacTrajectoryIO"]
+__all__ = [
+    "PmacAxisAssignmentIO",
+    "PmacCoordIO",
+    "PmacIO",
+    "PmacTrajectoryIO",
+]
