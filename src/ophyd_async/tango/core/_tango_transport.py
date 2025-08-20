@@ -213,7 +213,7 @@ class AttributeProxy(TangoProxy):
 
                 task = asyncio.create_task(_write())
                 await asyncio.wait_for(task, timeout)
-            except asyncio.TimeoutError as te:
+            except TimeoutError as te:
                 raise TimeoutError(f"{self._name} attr put failed: Timeout") from te
             except DevFailed as de:
                 raise RuntimeError(
@@ -459,7 +459,7 @@ class CommandProxy(TangoProxy):
                     timestamp=time.time(),
                     alarm_severity=0,
                 )
-            except asyncio.TimeoutError as te:
+            except TimeoutError as te:
                 raise TimeoutError(f"{self._name} command failed: Timeout") from te
             except DevFailed as de:
                 raise RuntimeError(

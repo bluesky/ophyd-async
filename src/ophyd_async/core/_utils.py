@@ -4,7 +4,7 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from enum import Enum, EnumMeta
+from enum import Enum, EnumMeta, StrEnum
 from typing import (
     Any,
     Generic,
@@ -59,15 +59,15 @@ class AnyStringUppercaseNameEnumMeta(UppercaseNameEnumMeta):
         return super().__call__(value, *args, **kwargs)
 
 
-class StrictEnum(str, Enum, metaclass=UppercaseNameEnumMeta):
+class StrictEnum(StrEnum, metaclass=UppercaseNameEnumMeta):
     """All members should exist in the Backend, and there will be no extras."""
 
 
-class SubsetEnum(str, Enum, metaclass=AnyStringUppercaseNameEnumMeta):
+class SubsetEnum(StrEnum, metaclass=AnyStringUppercaseNameEnumMeta):
     """All members should exist in the Backend, but there may be extras."""
 
 
-class SupersetEnum(str, Enum, metaclass=UppercaseNameEnumMeta):
+class SupersetEnum(StrEnum, metaclass=UppercaseNameEnumMeta):
     """Some members should exist in the Backend, and there should be no extras."""
 
 
@@ -243,6 +243,7 @@ def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
     """
     if get_origin(datatype) is Sequence:
         datatype = get_args(datatype)[0]
+    datatype = get_origin_class(datatype)
     if datatype and issubclass(datatype, Enum):
         if not issubclass(datatype, EnumTypes):
             raise TypeError(
