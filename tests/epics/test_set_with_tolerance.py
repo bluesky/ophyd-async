@@ -88,7 +88,6 @@ async def test_set_with_tolerance_set_timeout(sim_set_tolerable: SetWithToleranc
 
 async def test_set_with_tolerance_stopped(sim_set_tolerable: SetWithTolerance):
     set_status = sim_set_tolerable.set(0.55)
-    set_mock_value(sim_set_tolerable.user_setpoint, 0.55)
     await wait_for_pending_wakeups()
     set_mock_value(sim_set_tolerable.user_readback, 0.45)
     assert not set_status.done
@@ -108,7 +107,6 @@ async def test_set_with_tolerance_double_set_success(
     sim_set_tolerable: SetWithTolerance,
 ):
     set_status = sim_set_tolerable.set(0.55)
-    await wait_for_pending_wakeups()
     set_status2 = sim_set_tolerable.set(0.45)
     await wait_for_pending_wakeups()
     set_mock_value(sim_set_tolerable.user_readback, 0.45)
@@ -123,7 +121,6 @@ async def test_set_with_tolerance_change_tolerance_success(
 ):
     await sim_set_tolerable.tolerance.set(0)
     set_status = sim_set_tolerable.set(0.55)
-    await wait_for_pending_wakeups()
     set_mock_value(sim_set_tolerable.user_readback, 0.45)
 
     assert set_status.done is False
