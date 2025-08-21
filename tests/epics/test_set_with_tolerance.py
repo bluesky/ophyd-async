@@ -30,11 +30,11 @@ async def sim_set_tolerable():
 
 
 @pytest.mark.parametrize(
-    "tolerance, new_position, final_readback",
+    "tolerance, new_position, intermediate_position, final_readback",
     [
-        (0.1, 1, 0.92),
-        (1.5, -3, -2.4),
-        (-0.3, -6, -5.8),
+        (0.1, 1, 0.5, 0.92),
+        (1.5, -3, 4, -2.4),
+        (-0.3, -6, -0.25, -5.8),
     ],
 )
 async def test_tolerable_device_set_and_watch(
@@ -49,6 +49,15 @@ async def test_tolerable_device_set_and_watch(
     watcher = StatusWatcher(set_status)
     await watcher.wait_for_call(
         current=0.0,
+        initial=0.0,
+        target=new_position,
+        name="sim_set_tolerable",
+        time_elapsed=ANY,
+    )
+    assert set_status.done is False
+    set_mock_value(sim_set_tolerable.user_readback, intermediate_position)
+    await watcher.wait_for_call(
+        current=intermediate_position,
         initial=0.0,
         target=new_position,
         name="sim_set_tolerable",
