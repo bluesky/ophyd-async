@@ -1,4 +1,4 @@
-"""A device that mimic a signal to allow a tolerance between set and readback."""
+"""A device that mimics a signal to allow a tolerance between setpoint and readback."""
 
 import asyncio
 
@@ -36,7 +36,7 @@ class SetWithTolerance(
     Subscribable[float],
     Stoppable,
 ):
-    """Tolerable Signal Device."""
+    """SetWithTolerance allowing a tolerance between setpoint and readback."""
 
     def __init__(
         self,
@@ -49,6 +49,7 @@ class SetWithTolerance(
 
         :param setpoint_pv: The PV for the setpoint.
         :param readback_pv: The PV  for the readback.
+        :param tolerance: Allowed tolerance between setpoint and readback.
         :param name: The name of the device.
         """
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
@@ -70,6 +71,7 @@ class SetWithTolerance(
     def _within_tolerance(
         self, setpoint: float, readback: float, tolerance: float
     ) -> bool:
+        """Check if the readback is within the tolerance of the setpoint."""
         return abs(setpoint - readback) < abs(tolerance)
 
     @WatchableAsyncStatus.wrap
@@ -83,13 +85,13 @@ class SetWithTolerance(
         :param value: The target value to set.
         :param timeout: The maximum time to wait for the set operation to complete.
         """
-        await self.stop(success=True)  # stop previous set and mark them as success.
+        await self.stop(success=True)  # Stop previous set and mark them as success.
         old_position = await self.user_readback.get_value()
         move_status = self._set(
             value,
             timeout=timeout,
         )
-        """keep watch on the readback value until it is within tolerance."""
+        # Keep watch on the readback value until it is within tolerance.
         async for current_position in observe_value(
             self.user_readback, done_status=move_status
         ):
@@ -114,11 +116,11 @@ class SetWithTolerance(
     async def _set(
         self,
         new_position: float,
-        timeout,
+        timeout: float,
     ):
         """Set the device to a new position and wait until within tolerance."""
         # Preset setpoint as set_and_wait_for_other_value
-        # as it ssume readback and setpoint are different at start.
+        # assumes readback and setpoint are different at start.
         await self.user_setpoint.set(new_position, False)
         await set_and_wait_for_other_value(
             set_signal=self.user_setpoint,
