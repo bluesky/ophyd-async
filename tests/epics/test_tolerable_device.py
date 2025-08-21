@@ -5,7 +5,7 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import init_devices
-from ophyd_async.epics.tolerable_device import SetWithTolerance
+from ophyd_async.epics.set_with_tolerance import SetWithTolerance
 from ophyd_async.testing import (
     StatusWatcher,
     callback_on_mock_put,
@@ -38,7 +38,11 @@ async def sim_set_tolerable():
     ],
 )
 async def test_tolerable_device_set_and_watch(
-    sim_set_tolerable: SetWithTolerance, tolerance, new_position, final_readback
+    sim_set_tolerable: SetWithTolerance,
+    tolerance,
+    new_position,
+    intermediate_position,
+    final_readback,
 ) -> None:
     await sim_set_tolerable.tolerance.set(tolerance)
     set_status = sim_set_tolerable.set(new_position)
@@ -59,6 +63,7 @@ async def test_tolerable_device_set_and_watch(
         name="sim_set_tolerable",
         time_elapsed=ANY,
     )
+    assert set_status.done is False
     await set_status
     assert set_status.done is True
     assert await sim_set_tolerable.user_readback.get_value() == final_readback
