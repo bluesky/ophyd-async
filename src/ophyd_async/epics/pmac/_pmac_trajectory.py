@@ -68,7 +68,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         ramp_down_pos: dict[Motor, np.float64],
         ramp_down_time: float,
     ):
-        trajectory = trajectory.with_ramp_down(ramp_down_pos, ramp_down_time, 0)
+        trajectory = trajectory.append_ramp_down(ramp_down_pos, ramp_down_time, 0)
         self.scantime = np.sum(trajectory.durations)
         use_axis = {axis + 1: False for axis in range(len(CS_LETTERS))}
 

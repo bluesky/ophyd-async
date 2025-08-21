@@ -94,6 +94,7 @@ async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert (
         await pmacIO.trajectory.positions[7].get_value() == [-1.0, 1, 3, 5, 7, 7.2]
     ).all()
+
     assert (
         await pmacIO.trajectory.velocities[7].get_value()
         == [
