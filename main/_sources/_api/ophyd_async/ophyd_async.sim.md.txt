@@ -150,7 +150,7 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.S
 
 `````
 
-````{py:class} SimStage(pattern_generator: ~ophyd_async.sim._pattern_generator.PatternGenerator, name='')
+`````{py:class} SimStage(pattern_generator: ~ophyd_async.sim._pattern_generator.PatternGenerator, name='')
 :canonical: ophyd_async.sim._stage.SimStage
 
 Bases: {py:obj}`ophyd_async.core.StandardReadable`
@@ -158,7 +158,23 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 ```{autodoc2-docstring} ophyd_async.sim._stage.SimStage
 ```
 
+````{py:method} stage()
+:canonical: ophyd_async.sim._stage.SimStage.stage
+
+```{autodoc2-docstring} ophyd_async.sim._stage.SimStage.stage
+```
+
 ````
+
+````{py:method} unstage()
+:canonical: ophyd_async.sim._stage.SimStage.unstage
+
+```{autodoc2-docstring} ophyd_async.sim._stage.SimStage.unstage
+```
+
+````
+
+`````
 
 `````{py:class} PatternGenerator(sleep=asyncio.sleep)
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator
@@ -234,7 +250,7 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 `````
 
-`````{py:class} SimPointDetector(generator: ~ophyd_async.sim._pattern_generator.PatternGenerator, num_channels: int = 3, name: str = '')
+`````{py:class} SimPointDetector(pattern_generator: ~ophyd_async.sim._pattern_generator.PatternGenerator | None, num_channels: int = 3, name: str = '')
 :canonical: ophyd_async.sim._point_detector.SimPointDetector
 
 Bases: {py:obj}`ophyd_async.core.StandardReadable`
