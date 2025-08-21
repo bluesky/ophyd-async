@@ -18,9 +18,10 @@ from ophyd_async.core import (
     StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
+    derived_signal_r,
     observe_value,
-    set_and_wait_for_other_value,
     soft_signal_rw,
+    wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
@@ -57,9 +58,20 @@ class SetWithTolerance(
             self.user_setpoint = epics_signal_rw(float, setpoint_pv)
             self.tolerance = soft_signal_rw(float, initial_value=tolerance)
 
+        self.within_tolerance = derived_signal_r(
+            raw_to_derived=self._within_tolerance,
+            setpoint=self.user_setpoint,
+            readback=self.user_readback,
+            tolerance=self.tolerance,
+        )
         self._set_success = True
         self._stop = False
         super().__init__(name=name)
+
+    def _within_tolerance(
+        self, setpoint: float, readback: float, tolerance: float
+    ) -> bool:
+        return abs(setpoint - readback) < abs(tolerance) or self._stop
 
     @WatchableAsyncStatus.wrap
     async def set(
@@ -75,13 +87,10 @@ class SetWithTolerance(
         :param wait_for_set_completion: If True, wait for the set signal to return true
             (Continue to wait even readback is within tolerance).
         """
-        self._set_success = True
-        old_position, tolerance = await asyncio.gather(
-            self.user_readback.get_value(), self.tolerance.get_value()
-        )
+        await self.stop(success=True)  # stop previous set and mark them as success.
+        old_position = await self.user_readback.get_value()
         move_status = self._set(
             value,
-            tolerance=tolerance,
             timeout=timeout,
             wait_for_set_completion=wait_for_set_completion,
         )
@@ -110,25 +119,13 @@ class SetWithTolerance(
     async def _set(
         self,
         new_position: float,
-        tolerance: float,
         timeout,
         wait_for_set_completion: bool,
     ):
         """Set the device to a new position and wait until within tolerance."""
-
-        def tolerable_condition(current_value: float) -> bool:
-            """Condition to stop the set operation."""
-            return abs(new_position - current_value) < abs(tolerance) or self._stop
-
         self._stop = False
-        await set_and_wait_for_other_value(
-            set_signal=self.user_setpoint,
-            set_value=new_position,
-            match_signal=self.user_readback,
-            match_value=tolerable_condition,
-            timeout=timeout,
-            wait_for_set_completion=wait_for_set_completion,
-        )
+        await self.user_setpoint.set(new_position, wait=wait_for_set_completion)
+        await wait_for_value(self.within_tolerance, True, timeout=timeout)
 
     async def stop(self, success: bool = False):
         """Stop the device by setting the setpoint to the current readback."""

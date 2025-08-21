@@ -38,7 +38,7 @@ async def sim_set_tolerable():
         (-0.3, -6, -0.25, -5.8),
     ],
 )
-async def test_tolerable_device_set_and_watch(
+async def test_set_with_tolerance_set_and_watch(
     sim_set_tolerable: SetWithTolerance,
     tolerance,
     new_position,
@@ -47,6 +47,7 @@ async def test_tolerable_device_set_and_watch(
 ) -> None:
     await sim_set_tolerable.tolerance.set(tolerance)
     set_status = sim_set_tolerable.set(new_position)
+    await wait_for_pending_wakeups()
     watcher = StatusWatcher(set_status)
     await watcher.wait_for_call(
         current=0.0,
@@ -79,21 +80,15 @@ async def test_tolerable_device_set_and_watch(
     assert await sim_set_tolerable.user_readback.get_value() == final_readback
 
 
-async def test_tolerable_device_set_timeout(sim_set_tolerable: SetWithTolerance):
+async def test_set_with_tolerance_set_timeout(sim_set_tolerable: SetWithTolerance):
     with pytest.raises(asyncio.TimeoutError):
         await sim_set_tolerable.set(0.55, timeout=0.1)
+        await wait_for_pending_wakeups()
 
 
-async def test_tolerable_device_stopped(sim_set_tolerable: SetWithTolerance):
+async def test_set_with_tolerance_stopped(sim_set_tolerable: SetWithTolerance):
     set_status = sim_set_tolerable.set(0.55)
-    watcher = StatusWatcher(set_status)
-    await watcher.wait_for_call(
-        current=0.0,
-        initial=0.0,
-        target=0.55,
-        name="sim_set_tolerable",
-        time_elapsed=ANY,
-    )
+    await wait_for_pending_wakeups()
     set_mock_value(sim_set_tolerable.user_readback, 0.45)
     assert not set_status.done
     await sim_set_tolerable.stop()
@@ -102,9 +97,39 @@ async def test_tolerable_device_stopped(sim_set_tolerable: SetWithTolerance):
         await sim_set_tolerable.user_setpoint.get_value()
         == await sim_set_tolerable.user_readback.get_value()
     )
-    await wait_for_pending_wakeups()
+    with pytest.raises(RuntimeError):
+        await set_status
     assert set_status.done
     assert set_status.success is False
+
+
+async def test_set_with_tolerance_double_set_success(
+    sim_set_tolerable: SetWithTolerance,
+):
+    set_status = sim_set_tolerable.set(0.55)
+    await wait_for_pending_wakeups()
+    set_status2 = sim_set_tolerable.set(0.45)
+    await wait_for_pending_wakeups()
+    set_mock_value(sim_set_tolerable.user_readback, 0.45)
+
+    await set_status2
+    assert set_status2.done == set_status.done is True
+    assert set_status2.success == set_status.success is True
+
+
+async def test_set_with_tolerance_change_tolerance_success(
+    sim_set_tolerable: SetWithTolerance,
+):
+    await sim_set_tolerable.tolerance.set(0)
+    set_status = sim_set_tolerable.set(0.55)
+    await wait_for_pending_wakeups()
+    set_mock_value(sim_set_tolerable.user_readback, 0.45)
+
+    assert set_status.done is False
+    await sim_set_tolerable.tolerance.set(1)
+    await set_status
+    assert set_status.done
+    assert set_status.success
 
 
 async def test_locatable(sim_set_tolerable: SetWithTolerance) -> None:
