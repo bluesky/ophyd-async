@@ -20,8 +20,8 @@ from ophyd_async.core import (
     WatcherUpdate,
     derived_signal_r,
     observe_value,
+    set_and_wait_for_other_value,
     soft_signal_rw,
-    wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
@@ -117,8 +117,16 @@ class SetWithTolerance(
         timeout,
     ):
         """Set the device to a new position and wait until within tolerance."""
-        await self.user_setpoint.set(new_position)
-        await wait_for_value(self.within_tolerance, True, timeout=timeout)
+        # Preset setpoint as set_and_wait_for_other_value
+        # as it ssume readback and setpoint are different at start.
+        await self.user_setpoint.set(new_position, False)
+        await set_and_wait_for_other_value(
+            set_signal=self.user_setpoint,
+            set_value=new_position,
+            match_signal=self.within_tolerance,
+            match_value=True,
+            timeout=timeout,
+        )
 
     async def stop(self, success: bool = False):
         """Stop the device by setting the setpoint to the current readback."""
