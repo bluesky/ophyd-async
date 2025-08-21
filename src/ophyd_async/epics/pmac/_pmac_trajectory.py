@@ -30,9 +30,11 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         ramp_down_pos, ramp_down_time = calculate_ramp_position_and_duration(
             slice, motor_info, False
         )
-        traj = _Trajectory.from_slice(slice, ramp_up_time)
+        trajectory = _Trajectory.from_slice(slice, ramp_up_time)
         await asyncio.gather(
-            self._build_trajectory(traj, motor_info, ramp_down_pos, ramp_down_time),
+            self._build_trajectory(
+                trajectory, motor_info, ramp_down_pos, ramp_down_time
+            ),
             self._move_to_start(motor_info, ramp_up_pos),
         )
 
@@ -62,9 +64,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         ramp_down_pos: dict[Motor, np.float64],
         ramp_down_time: float,
     ):
-        trajectory = trajectory.with_ramp_down(
-            ramp_down_pos, ramp_down_time, 0, motor_info
-        )
+        trajectory = trajectory.with_ramp_down(ramp_down_pos, ramp_down_time, 0)
         self.scantime = np.sum(trajectory.durations)
         use_axis = {axis + 1: False for axis in range(len(CS_LETTERS))}
 

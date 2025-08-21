@@ -110,14 +110,16 @@ class _Trajectory:
         ramp_down_pos: dict[Motor, np.float64],
         ramp_down_time: float,
         ramp_down_velocity: float,
-        motor_info: _PmacMotorInfo,
     ) -> _Trajectory:
         new_time = np.append(self.durations, [int(ramp_down_time / TICK_S)])
-        new_pos = {}
-        new_vel = {}
-        for motor, _ in motor_info.motor_cs_index.items():
-            new_pos[motor] = np.append(self.positions[motor], [ramp_down_pos[motor]])
-            new_vel[motor] = np.append(self.velocities[motor], [ramp_down_velocity])
+        new_pos = {
+            motor: np.append(self.positions[motor], [ramp_down_pos[motor]])
+            for motor in ramp_down_pos.keys()
+        }
+        new_vel = {
+            motor: np.append(self.velocities[motor], [ramp_down_velocity])
+            for motor in ramp_down_pos.keys()
+        }
         return _Trajectory(
             positions=new_pos,
             velocities=new_vel,
