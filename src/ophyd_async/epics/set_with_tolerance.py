@@ -65,20 +65,18 @@ class SetWithTolerance(
             tolerance=self.tolerance,
         )
         self._set_success = True
-        self._stop = False
         super().__init__(name=name)
 
     def _within_tolerance(
         self, setpoint: float, readback: float, tolerance: float
     ) -> bool:
-        return abs(setpoint - readback) < abs(tolerance) or self._stop
+        return abs(setpoint - readback) < abs(tolerance)
 
     @WatchableAsyncStatus.wrap
     async def set(
         self,
         value: float,
         timeout: float = DEFAULT_TIMEOUT,
-        wait_for_set_completion: bool = True,
     ):
         """Set the device to a new position and wait until within tolerance.
 
@@ -92,7 +90,6 @@ class SetWithTolerance(
         move_status = self._set(
             value,
             timeout=timeout,
-            wait_for_set_completion=wait_for_set_completion,
         )
         """keep watch on the readback value until it is within tolerance."""
         async for current_position in observe_value(
@@ -120,18 +117,15 @@ class SetWithTolerance(
         self,
         new_position: float,
         timeout,
-        wait_for_set_completion: bool,
     ):
         """Set the device to a new position and wait until within tolerance."""
-        self._stop = False
-        await self.user_setpoint.set(new_position, wait=wait_for_set_completion)
+        await self.user_setpoint.set(new_position, wait=True)
         await wait_for_value(self.within_tolerance, True, timeout=timeout)
 
     async def stop(self, success: bool = False):
         """Stop the device by setting the setpoint to the current readback."""
         self._set_success = success
-        self._stop = True
-        await self.user_setpoint.set(await self.user_readback.get_value(), wait=False)
+        await self.user_setpoint.set(await self.user_readback.get_value())
 
     def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Subscribe."""
