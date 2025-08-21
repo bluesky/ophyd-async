@@ -82,8 +82,6 @@ class SetWithTolerance(
 
         :param value: The target value to set.
         :param timeout: The maximum time to wait for the set operation to complete.
-        :param wait_for_set_completion: If True, wait for the set signal to return true
-            (Continue to wait even readback is within tolerance).
         """
         await self.stop(success=True)  # stop previous set and mark them as success.
         old_position = await self.user_readback.get_value()
@@ -119,7 +117,7 @@ class SetWithTolerance(
         timeout,
     ):
         """Set the device to a new position and wait until within tolerance."""
-        await self.user_setpoint.set(new_position, wait=True)
+        await self.user_setpoint.set(new_position)
         await wait_for_value(self.within_tolerance, True, timeout=timeout)
 
     async def stop(self, success: bool = False):
