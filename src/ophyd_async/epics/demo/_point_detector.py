@@ -29,7 +29,7 @@ class DemoPointDetector(StandardReadable, EpicsDevice, Triggerable):
         with self.add_children_as_readables():
             self.channel = DeviceVector(
                 {
-                    i: DemoPointDetectorChannel(f"{prefix}{i}:")
+                    i: DemoPointDetectorChannel(f"{prefix}C{i}:")
                     for i in range(1, num_channels + 1)
                 }
             )

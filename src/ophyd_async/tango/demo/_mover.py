@@ -20,7 +20,7 @@ from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import DevStateEnum, TangoPolling, TangoReadable
 
 
-class TangoMover(TangoReadable, Movable, Stoppable):
+class DemoMotor(TangoReadable, Movable, Stoppable):
     """Tango moving device."""
 
     # Enter the name and type of the signals you want to use
