@@ -38,6 +38,8 @@ jobs:
   docs:
     uses: ./.github/workflows/_docs.yml
 
+  system_tests:
+    uses: ./.github/workflows/_system_test.yml
 
   dist:
     uses: ./.github/workflows/_dist.yml
@@ -53,7 +55,7 @@ jobs:
     uses: ./.github/workflows/_codeql.yml
 
   release:
-    needs: [dist, test, docs]
+    needs: [dist, test, docs, system_tests]
     if: github.ref_type == 'tag'
     uses: ./.github/workflows/_release.yml
     permissions:

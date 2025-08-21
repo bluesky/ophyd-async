@@ -1,0 +1,3 @@
+[submodule "example-services"]
+	path = example-services
+	url = https://github.com/epics-containers/example-services.git
