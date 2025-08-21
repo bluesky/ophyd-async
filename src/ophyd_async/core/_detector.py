@@ -84,7 +84,7 @@ class TriggerInfo(ConfinedModel):
     A exposures_per_event > 1 can be useful to have exposures from a faster detector
     able to be zipped with a single exposure from a slower detector. E.g. if
     number_of_events=10 and exposures_per_event=5 then the detector will take
-    10 exposures, but publish 2 StreamDatum indices, and describe() will show a
+    50 exposures, but publish 10 StreamDatum indices, and describe() will show a
     shape of (5, h, w) for each.
     Default is 1.
     """

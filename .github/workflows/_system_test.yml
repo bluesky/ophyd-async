@@ -1,0 +1,38 @@
+on:
+  workflow_call:
+
+env:
+  # https://github.com/pytest-dev/pytest/issues/2042
+  PY_IGNORE_IMPORTMISMATCH: "1"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Need this to get version number from last tag
+          fetch-depth: 0
+
+      - name: Install dev versions of python packages
+        uses: ./.github/actions/install_requirements
+
+      - name: Checkout simulated devices
+        uses: actions/checkout@v4
+        with:
+          repository: epics-containers/example-services
+          path: example-services
+          ref: 'main'
+
+      - name: Run docker compose
+        uses: hoverkraft-tech/compose-action@v2.3.0
+        with:
+          compose-file: "./example-services/compose.yaml"
+          services: |
+            bl01t-di-cam-01
+            ca-gateway
+
+      - name: Run system tests
+        run: pytest system_tests/epics/adsim

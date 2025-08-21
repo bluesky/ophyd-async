@@ -13,6 +13,8 @@ updates:
       actions:
         patterns:
           - "*"
+    commit-message:
+      prefix: "chore"
 
   - package-ecosystem: "pip"
     directory: "/"
@@ -22,3 +24,5 @@ updates:
       dev-dependencies:
         patterns:
           - "*"
+    commit-message:
+      prefix: "chore"
