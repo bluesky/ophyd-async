@@ -25,10 +25,10 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
-__all__ = ["TolerableDevice"]
+__all__ = ["SetWithTolerance"]
 
 
-class TolerableDevice(
+class SetWithTolerance(
     StandardReadable,
     Locatable[float],
     Movable[float],
@@ -43,7 +43,7 @@ class TolerableDevice(
         readback_pv: str,
         name="",
     ):
-        """Initialize the TolerableDevice with default 0.01 tolerance.
+        """Initialize the SetWithTolerance with default 0.01 tolerance.
 
         :param setpoint_pv: The PV for the setpoint.
         :param readback_pv: The PV  for the readback.

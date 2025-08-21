@@ -5,7 +5,7 @@ import pytest
 from bluesky.protocols import Reading
 
 from ophyd_async.core import init_devices
-from ophyd_async.epics.tolerable_device import TolerableDevice
+from ophyd_async.epics.tolerable_device import SetWithTolerance
 from ophyd_async.testing import (
     StatusWatcher,
     callback_on_mock_put,
@@ -16,17 +16,17 @@ from ophyd_async.testing import (
 
 
 @pytest.fixture
-async def sim_tolerable_device():
+async def sim_set_tolerable():
     async with init_devices(mock=True):
-        sim_tolerable_device = TolerableDevice(
+        sim_set_tolerable = SetWithTolerance(
             readback_pv="BLxxI-MO-X",
             setpoint_pv="BLxxI-MO-X_RBV",
-            name="sim_tolerable_device",
+            name="sim_set_tolerable",
         )
-    set_mock_value(sim_tolerable_device.tolerance, 0.1)
-    set_mock_value(sim_tolerable_device.user_readback, 0.0)
-    set_mock_value(sim_tolerable_device.user_setpoint, 0.0)
-    yield sim_tolerable_device
+    set_mock_value(sim_set_tolerable.tolerance, 0.1)
+    set_mock_value(sim_set_tolerable.user_readback, 0.0)
+    set_mock_value(sim_set_tolerable.user_setpoint, 0.0)
+    yield sim_set_tolerable
 
 
 @pytest.mark.parametrize(
@@ -38,83 +38,83 @@ async def sim_tolerable_device():
     ],
 )
 async def test_tolerable_device_set_and_watch(
-    sim_tolerable_device: TolerableDevice, tolerance, new_position, final_readback
+    sim_set_tolerable: SetWithTolerance, tolerance, new_position, final_readback
 ) -> None:
-    await sim_tolerable_device.tolerance.set(tolerance)
-    s = sim_tolerable_device.set(new_position)
-    watcher = StatusWatcher(s)
+    await sim_set_tolerable.tolerance.set(tolerance)
+    set_status = sim_set_tolerable.set(new_position)
+    watcher = StatusWatcher(set_status)
     await watcher.wait_for_call(
         current=0.0,
         initial=0.0,
         target=new_position,
-        name="sim_tolerable_device",
+        name="sim_set_tolerable",
         time_elapsed=ANY,
     )
-    assert s.done is False
-    set_mock_value(sim_tolerable_device.user_readback, final_readback)
+    assert set_status.done is False
+    set_mock_value(sim_set_tolerable.user_readback, final_readback)
     await watcher.wait_for_call(
         current=final_readback,
         initial=0.0,
         target=new_position,
-        name="sim_tolerable_device",
+        name="sim_set_tolerable",
         time_elapsed=ANY,
     )
-    await s
-    assert s.done is True
-    assert await sim_tolerable_device.user_readback.get_value() == final_readback
+    await set_status
+    assert set_status.done is True
+    assert await sim_set_tolerable.user_readback.get_value() == final_readback
 
 
-async def test_tolerable_device_set_timeout(sim_tolerable_device: TolerableDevice):
+async def test_tolerable_device_set_timeout(sim_set_tolerable: SetWithTolerance):
     with pytest.raises(asyncio.TimeoutError):
-        await sim_tolerable_device.set(0.55, timeout=0.1)
+        await sim_set_tolerable.set(0.55, timeout=0.1)
 
 
-async def test_tolerable_device_stopped(sim_tolerable_device: TolerableDevice):
-    s = sim_tolerable_device.set(0.55)
-    watcher = StatusWatcher(s)
+async def test_tolerable_device_stopped(sim_set_tolerable: SetWithTolerance):
+    set_status = sim_set_tolerable.set(0.55)
+    watcher = StatusWatcher(set_status)
     await watcher.wait_for_call(
         current=0.0,
         initial=0.0,
         target=0.55,
-        name="sim_tolerable_device",
+        name="sim_set_tolerable",
         time_elapsed=ANY,
     )
-    set_mock_value(sim_tolerable_device.user_readback, 0.45)
-    assert not s.done
-    await sim_tolerable_device.stop()
+    set_mock_value(sim_set_tolerable.user_readback, 0.45)
+    assert not set_status.done
+    await sim_set_tolerable.stop()
 
     assert (
-        await sim_tolerable_device.user_setpoint.get_value()
-        == await sim_tolerable_device.user_readback.get_value()
+        await sim_set_tolerable.user_setpoint.get_value()
+        == await sim_set_tolerable.user_readback.get_value()
     )
     await wait_for_pending_wakeups()
-    assert s.done
-    assert s.success is False
+    assert set_status.done
+    assert set_status.success is False
 
 
-async def test_locatable(sim_tolerable_device: TolerableDevice) -> None:
+async def test_locatable(sim_set_tolerable: SetWithTolerance) -> None:
     callback_on_mock_put(
-        sim_tolerable_device.user_setpoint,
-        lambda x, *_, **__: set_mock_value(sim_tolerable_device.user_readback, x),
+        sim_set_tolerable.user_setpoint,
+        lambda x, *_, **__: set_mock_value(sim_set_tolerable.user_readback, x),
     )
-    assert (await sim_tolerable_device.locate())["readback"] == 0
-    with mock_puts_blocked(sim_tolerable_device.user_setpoint):
-        move_status = sim_tolerable_device.set(10)
-        assert (await sim_tolerable_device.locate())["readback"] == 0
+    assert (await sim_set_tolerable.locate())["readback"] == 0
+    with mock_puts_blocked(sim_set_tolerable.user_setpoint):
+        move_status = sim_set_tolerable.set(10)
+        assert (await sim_set_tolerable.locate())["readback"] == 0
     await move_status
-    assert (await sim_tolerable_device.locate())["readback"] == 10
-    assert (await sim_tolerable_device.locate())["setpoint"] == 10
+    assert (await sim_set_tolerable.locate())["readback"] == 10
+    assert (await sim_set_tolerable.locate())["setpoint"] == 10
 
 
-async def test_subscribable(sim_tolerable_device: TolerableDevice):
+async def test_subscribable(sim_set_tolerable: SetWithTolerance):
     q: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
-    sim_tolerable_device.subscribe(q.put_nowait)
-    assert (await q.get())["sim_tolerable_device-user_readback"]["value"] == 0.0
-    set_mock_value(sim_tolerable_device.user_readback, 23)
-    assert (await q.get())["sim_tolerable_device-user_readback"]["value"] == 23.0
-    sim_tolerable_device.clear_sub(q.put_nowait)
-    set_mock_value(sim_tolerable_device.user_readback, 3)
-    assert (await sim_tolerable_device.read())["sim_tolerable_device-user_readback"][
+    sim_set_tolerable.subscribe(q.put_nowait)
+    assert (await q.get())["sim_set_tolerable-user_readback"]["value"] == 0.0
+    set_mock_value(sim_set_tolerable.user_readback, 23)
+    assert (await q.get())["sim_set_tolerable-user_readback"]["value"] == 23.0
+    sim_set_tolerable.clear_sub(q.put_nowait)
+    set_mock_value(sim_set_tolerable.user_readback, 3)
+    assert (await sim_set_tolerable.read())["sim_set_tolerable-user_readback"][
         "value"
     ] == 3.0
     assert q.empty()
