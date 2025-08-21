@@ -41,6 +41,7 @@ class SetWithTolerance(
         self,
         setpoint_pv: str,
         readback_pv: str,
+        tolerance: float = 0.01,
         name="",
     ):
         """Initialize the SetWithTolerance with default 0.01 tolerance.
@@ -54,7 +55,7 @@ class SetWithTolerance(
 
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.user_setpoint = epics_signal_rw(float, setpoint_pv)
-            self.tolerance = soft_signal_rw(float, initial_value=0.01)
+            self.tolerance = soft_signal_rw(float, initial_value=tolerance)
 
         self._set_success = True
         self._stop = False

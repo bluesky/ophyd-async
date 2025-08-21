@@ -21,9 +21,10 @@ async def sim_set_tolerable():
         sim_set_tolerable = SetWithTolerance(
             readback_pv="BLxxI-MO-X",
             setpoint_pv="BLxxI-MO-X_RBV",
+            tolerance=0.1,
             name="sim_set_tolerable",
         )
-    set_mock_value(sim_set_tolerable.tolerance, 0.1)
+    assert await sim_set_tolerable.tolerance.get_value() == 0.1
     set_mock_value(sim_set_tolerable.user_readback, 0.0)
     set_mock_value(sim_set_tolerable.user_setpoint, 0.0)
     yield sim_set_tolerable
