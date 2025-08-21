@@ -9,7 +9,6 @@ from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_trajectory import (
     PmacTrajectoryTriggerLogic,  # noqa: PLC2701
-    PmacTriggerLogic,  # noqa: PLC2701
 )
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,  # noqa: PLC2701
@@ -49,9 +48,8 @@ async def sim_motors():
 async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmacIO, sim_x_motor, sim_y_motor = sim_motors
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
-    trigger_logic = PmacTriggerLogic(spec=spec)
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
-    await pmac_trajectory.prepare(trigger_logic)
+    await pmac_trajectory.prepare(spec)
 
     assert await pmacIO.coord[1].cs_axis_setpoint[7].get_value() == -1.2
 
