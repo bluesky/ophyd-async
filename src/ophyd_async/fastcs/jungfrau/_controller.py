@@ -46,9 +46,6 @@ class JungfrauController(DetectorController):
         if not isinstance(trigger_info.number_of_events, int):
             raise TypeError("Number of events must be an integer")
 
-        if not trigger_info.deadtime:
-            trigger_info.deadtime = self.get_deadtime()
-
         if not trigger_info.livetime:
             raise ValueError("Must set TriggerInfo.livetime")
 
