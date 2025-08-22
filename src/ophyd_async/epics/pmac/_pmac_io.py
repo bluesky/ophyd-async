@@ -72,7 +72,7 @@ class PmacCoordIO(Device):
         self.cs_port = epics_signal_r(str, f"{prefix}Port")
         self.cs_axis_setpoint = DeviceVector(
             {
-                i + 1: epics_signal_rw(np.float64, f"{prefix}M{i + 1}:DirectDemand")
+                i + 1: epics_signal_rw(float, f"{prefix}M{i + 1}:DirectDemand")
                 for i in range(len(CS_LETTERS))
             }
         )
@@ -93,7 +93,7 @@ class PmacIO(Device):
 
         self.assignment = DeviceVector(
             {
-                i: PmacAxisAssignmentIO(motor_prefix)
+                i: PmacAxisAssignmentIO(motor_prefix + ":")
                 for i, motor_prefix in enumerate(motor_prefixes)
             }
         )

@@ -10,8 +10,8 @@ from ophyd_async.epics.pmac import (
 def test_pmac_io():
     """Instantiate a PmacIO object that looks like the P47 training beamline"""
     raw_motors = [
-        Motor("BL47P-MO-MAP-01:STAGE:X:"),
-        Motor("BL47P-MO-MAP-01:STAGE:A:"),
+        Motor("BL47P-MO-MAP-01:STAGE:X"),
+        Motor("BL47P-MO-MAP-01:STAGE:A"),
     ]
 
     pmac = PmacIO(
