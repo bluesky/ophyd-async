@@ -103,10 +103,9 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         coros = []
         await coord.defer_moves.set(True)
         for motor, position in ramp_up_position.items():
-            cs_index = motor_info.motor_cs_index[motor]
             coros.append(
                 set_and_wait_for_value(
-                    coord.cs_axis_setpoint[cs_index + 1],
+                    coord.cs_axis_setpoint[motor_info.motor_cs_index[motor] + 1],
                     position,
                     set_timeout=10,
                     wait_for_set_completion=False,

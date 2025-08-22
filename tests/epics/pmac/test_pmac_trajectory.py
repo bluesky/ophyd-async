@@ -46,7 +46,7 @@ async def sim_motors():
 
 
 async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
-    pmacIO, sim_x_motor, sim_y_motor = sim_motors
+    pmacIO, sim_x_motor, _ = sim_motors
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
     await pmac_trajectory.prepare(spec)
@@ -60,7 +60,7 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
 
 
 async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
-    pmacIO, sim_x_motor, sim_y_motor = sim_motors
+    pmacIO, sim_x_motor, _ = sim_motors
     trajectory = _Trajectory(
         {sim_x_motor: np.array([-1.0, 1.0, 3.0, 5.0, 7.0])},
         {sim_x_motor: np.array([2.0, 2.0, 2.0, 2.0, 2.0])},
@@ -137,21 +137,21 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
 
 
 async def test_pmac_trajectory_kickoff(sim_motors: tuple[PmacIO, Motor, Motor]):
-    pmacIO, sim_x_motor, sim_y_motor = sim_motors
+    pmacIO, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
     with pytest.raises(RuntimeError, match="Cannot kickoff. Must call prepare first."):
         await pmac_trajectory.kickoff()
 
 
 async def test_pmac_trajectory_complete(sim_motors: tuple[PmacIO, Motor, Motor]):
-    pmacIO, sim_x_motor, sim_y_motor = sim_motors
+    pmacIO, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
     with pytest.raises(RuntimeError, match="Cannot complete. Must call prepare first."):
         await pmac_trajectory.complete()
 
 
 async def test_pmac_trajectory_stop(sim_motors: tuple[PmacIO, Motor, Motor]):
-    pmacIO, sim_x_motor, sim_y_motor = sim_motors
+    pmacIO, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
     assert await pmac_trajectory.pmac.trajectory.abort_profile.get_value() is not True
     await pmac_trajectory.stop()
