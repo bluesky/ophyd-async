@@ -8,7 +8,7 @@ SERVICES_REPO_LOCAL="${REPO_ROOT}/example-services"
 COMPOSE_FILE="${SERVICES_REPO_LOCAL}/compose.yaml"
 
 # Ensure the example services are present
-git submodule init
+git submodule update
 
 # Shut down IOCs
 docker compose -f ${COMPOSE_FILE} down
