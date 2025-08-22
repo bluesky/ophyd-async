@@ -142,3 +142,9 @@ class SetWithTolerance(
     def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Unsubscribe."""
         self.user_readback.clear_sub(function)
+
+    def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
+        """Set name of the motor and its children."""
+        super().set_name(name, child_name_separator=child_name_separator)
+        # SetPoint and Readback should be named the same as its parent in read()
+        self.user_readback.set_name(name)

@@ -147,12 +147,10 @@ async def test_locatable(sim_set_tolerable: SetWithTolerance) -> None:
 async def test_subscribable(sim_set_tolerable: SetWithTolerance):
     q: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
     sim_set_tolerable.subscribe(q.put_nowait)
-    assert (await q.get())["sim_set_tolerable-user_readback"]["value"] == 0.0
+    assert (await q.get())["sim_set_tolerable"]["value"] == 0.0
     set_mock_value(sim_set_tolerable.user_readback, 23)
-    assert (await q.get())["sim_set_tolerable-user_readback"]["value"] == 23.0
+    assert (await q.get())["sim_set_tolerable"]["value"] == 23.0
     sim_set_tolerable.clear_sub(q.put_nowait)
     set_mock_value(sim_set_tolerable.user_readback, 3)
-    assert (await sim_set_tolerable.read())["sim_set_tolerable-user_readback"][
-        "value"
-    ] == 3.0
+    assert (await sim_set_tolerable.read())["sim_set_tolerable"]["value"] == 3.0
     assert q.empty()
