@@ -87,10 +87,18 @@ class SetWithTolerance(
         """
         await self.stop(success=True)  # Stop previous set and mark them as success.
         old_position = await self.user_readback.get_value()
-        move_status = self._set(
-            value,
-            timeout=timeout,
+        # Preset setpoint as set_and_wait_for_other_value does first check before set.
+        await self.user_setpoint.set(value, False)
+        move_status = AsyncStatus(
+            set_and_wait_for_other_value(
+                set_signal=self.user_setpoint,
+                set_value=value,
+                match_signal=self.within_tolerance,
+                match_value=True,
+                timeout=timeout,
+            )
         )
+
         # Keep watch on the readback value until it is within tolerance.
         async for current_position in observe_value(
             self.user_readback, done_status=move_status
@@ -111,24 +119,6 @@ class SetWithTolerance(
             self.user_readback.get_value(),
         )
         return Location(setpoint=setpoint, readback=readback)
-
-    @AsyncStatus.wrap
-    async def _set(
-        self,
-        new_position: float,
-        timeout: float,
-    ):
-        """Set the device to a new position and wait until within tolerance."""
-        # Preset setpoint as set_and_wait_for_other_value
-        # assumes readback and setpoint are different at start.
-        await self.user_setpoint.set(new_position, False)
-        await set_and_wait_for_other_value(
-            set_signal=self.user_setpoint,
-            set_value=new_position,
-            match_signal=self.within_tolerance,
-            match_value=True,
-            timeout=timeout,
-        )
 
     async def stop(self, success: bool = False):
         """Stop the device by setting the setpoint to the current readback."""
