@@ -47,7 +47,7 @@ async def test_set_with_tolerance_set_and_watch(
 ) -> None:
     await sim_set_tolerable.tolerance.set(tolerance)
     set_status = sim_set_tolerable.set(new_position)
-    await wait_for_pending_wakeups()
+    await wait_for_pending_wakeups(max_yields=30)
     watcher = StatusWatcher(set_status)
     await watcher.wait_for_call(
         current=0.0,
@@ -56,6 +56,7 @@ async def test_set_with_tolerance_set_and_watch(
         name="sim_set_tolerable",
         time_elapsed=ANY,
     )
+
     assert set_status.done is False
     set_mock_value(sim_set_tolerable.user_readback, intermediate_position)
     await watcher.wait_for_call(
@@ -83,13 +84,16 @@ async def test_set_with_tolerance_set_and_watch(
 async def test_set_with_tolerance_set_timeout(sim_set_tolerable: SetWithTolerance):
     with pytest.raises(asyncio.TimeoutError):
         await sim_set_tolerable.set(0.55, timeout=0.1)
-        await wait_for_pending_wakeups()
+        await wait_for_pending_wakeups(max_yields=30)
+
+    assert await sim_set_tolerable._timeout.get_value() == 0.1
 
 
 async def test_set_with_tolerance_stopped(sim_set_tolerable: SetWithTolerance):
     set_status = sim_set_tolerable.set(0.55)
-    await wait_for_pending_wakeups()
+    await wait_for_pending_wakeups(max_yields=30)
     set_mock_value(sim_set_tolerable.user_readback, 0.45)
+
     assert not set_status.done
     await sim_set_tolerable.stop()
 
@@ -108,7 +112,7 @@ async def test_set_with_tolerance_double_set_success(
 ):
     set_status = sim_set_tolerable.set(0.55)
     set_status2 = sim_set_tolerable.set(0.45)
-    await wait_for_pending_wakeups()
+    await wait_for_pending_wakeups(max_yields=30)
     set_mock_value(sim_set_tolerable.user_readback, 0.45)
 
     await set_status2

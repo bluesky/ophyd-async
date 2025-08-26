@@ -21,6 +21,7 @@ from ophyd_async.core import (
     derived_signal_r,
     observe_value,
     set_and_wait_for_other_value,
+    soft_signal_r_and_setter,
     soft_signal_rw,
 )
 from ophyd_async.core import StandardReadableFormat as Format
@@ -58,7 +59,9 @@ class SetWithTolerance(
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.user_setpoint = epics_signal_rw(float, setpoint_pv)
             self.tolerance = soft_signal_rw(float, initial_value=tolerance)
-
+            self._timeout, self._timeout_setter = soft_signal_r_and_setter(
+                float, initial_value=DEFAULT_TIMEOUT
+            )
         self.within_tolerance = derived_signal_r(
             raw_to_derived=self._within_tolerance,
             setpoint=self.user_setpoint,
@@ -78,7 +81,7 @@ class SetWithTolerance(
     async def set(
         self,
         value: float,
-        timeout: float = DEFAULT_TIMEOUT,
+        timeout: float | None = None,
     ):
         """Set the device to a new position and wait until within tolerance.
 
@@ -86,6 +89,10 @@ class SetWithTolerance(
         :param timeout: The maximum time to wait for the set operation to complete.
         """
         await self.stop(success=True)  # Stop previous set and mark them as success.
+        if timeout is None:
+            timeout = await self._timeout.get_value()
+        else:
+            self._timeout_setter(timeout)
         old_position = await self.user_readback.get_value()
         # Preset setpoint as set_and_wait_for_other_value does first check before set.
         await self.user_setpoint.set(value, False)
