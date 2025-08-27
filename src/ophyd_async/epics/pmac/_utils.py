@@ -183,6 +183,7 @@ class _Trajectory:
         ramp_down_velocity: float,
     ) -> _Trajectory:
         self.durations = np.append(self.durations, [int(ramp_down_time / TICK_S)])
+        self.user_programs = np.append(self.user_programs, 8)
         for motor in ramp_down_pos.keys():
             self.positions[motor] = np.append(
                 self.positions[motor], [ramp_down_pos[motor]]
