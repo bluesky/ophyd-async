@@ -330,7 +330,7 @@ async def test_blank_cs_axis_letter_raises_value_error(
 
 
 async def test_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]):
-    sim_pmac, sim_x_motor, sim_y_motor = sim_motors
+    _, sim_x_motor, sim_y_motor = sim_motors
     spec = Fly(1.0 @ (Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5)))
     slice = Path(spec.calculate()).consume()
     motor_info = _PmacMotorInfo(
@@ -558,7 +558,7 @@ async def test_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]):
             1,
             1,
             1,
-            8,
+            1,
         ]
     )
 
