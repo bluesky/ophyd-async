@@ -1,6 +1,6 @@
 # When should a device extend movable
 
-The [Movable](#bluesky.protocols.Movable) protocol indicates that a device has a `set` method which can be called in the bluesky through the plan stubs [`bps.abs_set`](#bluesky.plan_stubs.abs_set) and [bps.mv](#bluesky.plan_stubs.mv). The [RunEngine](#bluesky.run_engine.RunEngine) treats this `set` as an atomic operation. A `Movable` device is appropriate when:
+The [`Movable`](#bluesky.protocols.Movable) protocol indicates that a device has a `set` method which can be called in the bluesky through the plan stubs [`bps.abs_set`](#bluesky.plan_stubs.abs_set) and [`bps.mv`](#bluesky.plan_stubs.mv). The [RunEngine](#bluesky.run_engine.RunEngine) treats this `set` as an atomic operation. A `Movable` device is appropriate when:
 
 - The `set` involves changing multiple signals in parallel alongside a desired ordering of the setting of signals - having this logic inside an asyncio function can provide speedup.
 
