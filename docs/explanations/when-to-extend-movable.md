@@ -14,4 +14,4 @@ The `set` method, in general, should be used be used with primitive values rathe
 
 ## What to use instead
 
-If the device doesn't satisfy the above criteria, it is generally more suitable to be using combinations of [`bps.mv`](#bluesky.plan_stubs.mv) and [`bps.abs_set`](#bluesky.plan_stubs.abs_set). This avoids adding unnecessary complexity to the device whilst giving the plan more flexability.
+If the device doesn't satisfy the above criteria, it is generally more suitable to be using combinations of [`bps.mv`](#bluesky.plan_stubs.mv) and [`bps.abs_set`](#bluesky.plan_stubs.abs_set) on individual signals of a plan's devices. This avoids adding unnecessary complexity to the device whilst giving the plan more flexability.
