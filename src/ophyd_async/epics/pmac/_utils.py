@@ -67,7 +67,9 @@ class _Trajectory:
         half_durations = slice_duration / 2
 
         # Precompute gaps
-        gap_points = {}
+        gap_positions: dict[int, dict[Motor, npt.NDArray[float64]]] = {}
+        gap_velocities: dict[int, dict[Motor, npt.NDArray[float64]]] = {}
+        gap_durations: dict[int, list[float]] = {}
         for gap in gaps[1:-1]:
             # Get entry velocities, exit velocities, and distances across gap
             start_velocities, end_velocities, distances = _get_start_and_end_velocities(
@@ -79,27 +81,21 @@ class _Trajectory:
                 motors, motor_info, start_velocities, end_velocities, distances
             )
 
-            start_positions = {motor: slice.upper[motor][gap - 1] for motor in motors}
+            start_positions: dict[Motor, npt.NDArray[float64]] = {
+                motor: slice.upper[motor][gap - 1] for motor in motors
+            }
 
             # Calculate gap position, velocity, and time profiles from
             # velocity and time profiles
-            (
-                gap_positions,
-                gap_velocities,
-                gap_durations,
-            ) = _calculate_profile_from_velocities(
-                motors, time_arrays, velocity_arrays, start_positions
+            gap_positions[gap], gap_velocities[gap], gap_durations[gap] = (
+                _calculate_profile_from_velocities(
+                    motors, time_arrays, velocity_arrays, start_positions
+                )
             )
-
-            gap_points[gap] = {
-                "positions": gap_positions,
-                "velocities": gap_velocities,
-                "durations": gap_durations,
-            }
 
         # Fill trajectory with gaps
         for motor in motors:
-            gap_offset = 0
+            gap_offset: int = 0
             for start_idx, end_idx in zip(gaps[:-1], gaps[1:], strict=False):
                 # Interleave points and offset by added pvt points
                 start_traj = 2 * start_idx + gap_offset
@@ -151,20 +147,20 @@ class _Trajectory:
                     (half_durations[start_idx:end_idx] / TICK_S).astype(int), 2
                 )
 
-                if gap_points.get(end_idx):
+                if gap_positions.get(end_idx):
                     # How many gap points do we need to add
-                    num_gap_points = len(gap_points[end_idx]["positions"][motor])
+                    num_gap_points = len(gap_positions[end_idx][motor])
                     # Update how many gap points we've added so far
                     gap_offset += num_gap_points
                     # Insert gap points into end of collection window
                     positions[motor][end_traj + 1 : end_traj + 1 + num_gap_points] = (
-                        gap_points[end_idx]["positions"][motor]
+                        gap_positions[end_idx][motor]
                     )
                     velocities[motor][end_traj + 1 : end_traj + 1 + num_gap_points] = (
-                        gap_points[end_idx]["velocities"][motor]
+                        gap_velocities[end_idx][motor]
                     )
                     durations[end_traj + 1 : end_traj + 1 + num_gap_points] = (
-                        np.array(gap_points[end_idx]["durations"]) / TICK_S
+                        np.array(gap_durations[end_idx]) / TICK_S
                     ).astype(int)
                     # Set user program to 2 for gap points
                     user_programs[end_traj + 1 : end_traj + num_gap_points] = 2
@@ -330,7 +326,7 @@ def _get_velocity_profile(
     start_velocities: dict,
     end_velocities: dict,
     distances: dict,
-):
+) -> tuple[dict[Motor, npt.NDArray[np.float64]], dict[Motor, npt.NDArray[np.float64]]]:
     profiles: dict[Motor, vp] = {}
     time_arrays = {}
     velocity_arrays = {}
@@ -433,10 +429,14 @@ def _calculate_profile_from_velocities(
 
 def _get_start_and_end_velocities(
     motors: list[Motor], slice: Slice, half_durations: npt.NDArray[float64], gap: int
-):
-    start_velocities = {}
-    end_velocities = {}
-    distances = {}
+) -> tuple[
+    dict[Motor, npt.NDArray[np.float64]],
+    dict[Motor, npt.NDArray[np.float64]],
+    dict[Motor, float],
+]:
+    start_velocities: dict[Motor, npt.NDArray[np.float64]] = {}
+    end_velocities: dict[Motor, npt.NDArray[np.float64]] = {}
+    distances: dict[Motor, float] = {}
     for motor in motors:
         # Velocity from point just before gap (exit velocity)
         start_velocities[motor] = 2 * (
