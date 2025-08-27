@@ -70,6 +70,39 @@ class DeviceConnector:
         await wait_for_connection(**coros)
 
 
+DEVICE_RESERVED_ATTRS = {
+    "add_callback",
+    "exception",
+    "done",
+    "success",
+    "name",
+    "collect_asset_docs",
+    "get_index",
+    "read_configuration",
+    "describe_configuration",
+    "trigger",
+    "prepare",
+    "read",
+    "describe",
+    "describe_collect",
+    "collect",
+    "collect_pages",
+    "set",
+    "locate",
+    "kickoff",
+    "complete",
+    "stage",
+    "unstage",
+    "pause",
+    "resume",
+    "stop",
+    "subscribe",
+    "clear_sub",
+    "check_value",
+    "hints",
+}
+
+
 class Device(HasName):
     """Common base class for all Ophyd Async Devices.
 
@@ -152,6 +185,11 @@ class Device(HasName):
         # ...hence not doing an isinstance check for attributes we
         # know not to be Devices
         elif name not in _not_device_attrs and isinstance(value, Device):
+            if name in DEVICE_RESERVED_ATTRS:
+                raise NameError(
+                    f"`{name}` is used in one of the bluesky protocols. "
+                    f"Please use `{name}_` instead."
+                )
             value.parent = self
             self._child_devices[name] = value
             # And if the name is set, then set the name of all children,
