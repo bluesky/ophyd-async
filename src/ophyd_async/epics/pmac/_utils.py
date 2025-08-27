@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 import numpy.typing as npt
 from scanspec.core import Slice
+from velocity_profile.velocityprofile import VelocityProfile as vp
 
 from ophyd_async.core import error_if_none, gather_dict
 from ophyd_async.epics.motor import Motor
@@ -20,6 +21,7 @@ from ._pmac_io import CS_LETTERS, PmacIO
 # Therefore, we must divide scanspec durations by 10e-6
 TICK_S = 0.000001
 MIN_TURNAROUND = 0.002
+MIN_INTERVAL = 0.002
 
 
 @dataclass
@@ -30,7 +32,9 @@ class _Trajectory:
     durations: npt.NDArray[np.float64]
 
     @classmethod
-    def from_slice(cls, slice: Slice[Motor], ramp_up_time: float) -> _Trajectory:
+    def from_slice(
+        cls, slice: Slice[Motor], ramp_up_time: float, motor_info: _PmacMotorInfo
+    ) -> _Trajectory:
         """Parse a trajectory with no gaps from a slice.
 
         :param slice: Information about a series of scan frames along a number of axes
@@ -41,62 +45,148 @@ class _Trajectory:
         """
         slice_duration = error_if_none(slice.duration, "Slice must have a duration")
 
-        # Check if any gaps other than initial gap.
-        if any(slice.gap[1:]):
-            raise RuntimeError(
-                f"Cannot parse trajectory with gaps. Slice has gaps: {slice.gap}"
-            )
-
         scan_size = len(slice)
+        gaps: list[int] = np.where(slice.gap)[0].tolist()
+        gaps.append(len(slice))
         motors = slice.axes()
 
         positions: dict[Motor, npt.NDArray[np.float64]] = {}
         velocities: dict[Motor, npt.NDArray[np.float64]] = {}
 
         # Initialise arrays
-        positions = {motor: np.empty(2 * scan_size + 1, float) for motor in motors}
-        velocities = {motor: np.empty(2 * scan_size + 1, float) for motor in motors}
-        durations: npt.NDArray[np.float64] = np.empty(2 * scan_size + 1, float)
-        user_programs: npt.NDArray[np.int32] = np.ones(2 * scan_size + 1, float)
-        user_programs[-1] = 8
+        trajectory_size = ((2 * scan_size) + 1) + ((len(gaps) - 2) * 4)
+        positions = {motor: np.empty(trajectory_size, float) for motor in motors}
+        velocities = {motor: np.empty(trajectory_size, float) for motor in motors}
+        durations: npt.NDArray[np.float64] = np.empty(trajectory_size, float)
+        user_programs: npt.NDArray[np.int32] = np.ones(trajectory_size, float)
 
         # Ramp up time for start of collection window
         durations[0] = int(ramp_up_time / TICK_S)
-        # Half the time per point
-        durations[1:] = np.repeat(slice_duration / (2 * TICK_S), 2)
 
-        # Fill profile assuming no gaps
-        # Excluding starting points, we begin at our next frame
         half_durations = slice_duration / 2
-        for motor in motors:
-            # Set the first position to be lower bound, then
-            # alternate mid and upper as the upper and lower
-            # bounds of neighbouring points are the same as gap is false
-            positions[motor][0] = slice.lower[motor][0]
-            positions[motor][1::2] = slice.midpoints[motor]
-            positions[motor][2::2] = slice.upper[motor]
-            # For velocities we will need the relative distances
-            mid_to_upper_velocities = (
-                slice.upper[motor] - slice.midpoints[motor]
-            ) / half_durations
-            lower_to_mid_velocities = (
-                slice.midpoints[motor] - slice.lower[motor]
-            ) / half_durations
-            # First velocity is the lower -> mid of first point
-            velocities[motor][0] = lower_to_mid_velocities[0]
-            # For the midpoints, we take the average of the
-            # lower -> mid and mid-> upper velocities of the same point
-            velocities[motor][1::2] = (
-                lower_to_mid_velocities + mid_to_upper_velocities
-            ) / 2
-            # For the upper points, we need to take the average of the
-            # mid -> upper velocity of the previous point and
-            # lower -> mid velocity of the current point
-            velocities[motor][2:-1:2] = (
-                mid_to_upper_velocities[:-1] + lower_to_mid_velocities[1:]
-            ) / 2
-            # For the last velocity take the mid to upper velocity
-            velocities[motor][-1] = mid_to_upper_velocities[-1]
+        added_points = 0
+        for start_idx, end_idx in zip(gaps[:-1], gaps[1:], strict=False):
+            # Interleave points and offset by added pvt points
+            start_traj = added_points + 2 * start_idx
+            end_traj = added_points + 2 * end_idx
+            for motor in motors:
+                # Lower bound at the segment start
+                positions[motor][start_traj] = slice.lower[motor][start_idx]
+
+                # Fill mids into odd slots, uppers into even slots
+                positions[motor][start_traj + 1 : (end_traj) + 1 : 2] = slice.midpoints[
+                    motor
+                ][start_idx:end_idx]
+                positions[motor][start_traj + 2 : (end_traj) + 1 : 2] = slice.upper[
+                    motor
+                ][start_idx:end_idx]
+
+                # For velocities we will need the relative distances
+                mid_to_upper_velocities = (
+                    slice.upper[motor][start_idx:end_idx]
+                    - slice.midpoints[motor][start_idx:end_idx]
+                ) / half_durations[start_idx:end_idx]
+                lower_to_mid_velocities = (
+                    slice.midpoints[motor][start_idx:end_idx]
+                    - slice.lower[motor][start_idx:end_idx]
+                ) / half_durations[start_idx:end_idx]
+
+                # First velocity is the lower -> mid of first point
+                velocities[motor][start_traj] = lower_to_mid_velocities[0]
+
+                # For the midpoints, we take the average of the
+                # lower -> mid and mid-> upper velocities of the same point
+                velocities[motor][start_traj + 1 : (end_traj) + 1 : 2] = (
+                    lower_to_mid_velocities + mid_to_upper_velocities
+                ) / 2
+
+                # For the upper points, we need to take the average of the
+                # mid -> upper velocity of the previous point and
+                # lower -> mid velocity of the current point
+                velocities[motor][start_traj + 2 : (end_traj) : 2] = (
+                    mid_to_upper_velocities[:-1] + lower_to_mid_velocities[1:]
+                ) / 2
+
+                # For the last velocity take the mid to upper velocity
+                velocities[motor][end_traj] = mid_to_upper_velocities[-1]
+
+                user_programs[start_traj:end_traj] = 1
+
+                durations[start_traj + 1 : end_traj + 1] = np.repeat(
+                    (half_durations[start_idx:end_idx] / TICK_S).astype(int), 2
+                )
+
+            # If there is another collection window, fill gap with pvts
+            if end_idx != gaps[-1]:
+                start_velocities = {}
+                end_velocities = {}
+                distances = {}
+                for motor in motors:
+                    # Velocity from point just before gap (exit velocity)
+                    start_velocities[motor] = (
+                        2
+                        * (
+                            slice.upper[motor][end_idx - 1]
+                            - slice.midpoints[motor][end_idx - 1]
+                        )
+                        / half_durations[end_idx - 1]
+                        - (
+                            slice.upper[motor][end_idx - 1]
+                            - slice.lower[motor][end_idx - 1]
+                        )
+                        / slice_duration[end_idx - 1]
+                    )
+
+                    # Velocity from point just after gap
+                    end_velocities[motor] = (
+                        2
+                        * (
+                            slice.midpoints[motor][end_idx]
+                            - slice.lower[motor][end_idx]
+                        )
+                        / half_durations[end_idx]
+                        - (slice.upper[motor][end_idx] - slice.lower[motor][end_idx])
+                        / slice_duration[end_idx]
+                    )
+                    # Travel distance across gap
+                    distances[motor] = (
+                        slice.lower[motor][end_idx] - slice.upper[motor][end_idx - 1]
+                    )
+                    if np.isclose(distances[motor], 0.0, atol=1e-12):
+                        distances[motor] = 0.0
+
+                time_arrays, velocity_arrays = _get_velocity_profile(
+                    motors, motor_info, start_velocities, end_velocities, distances
+                )
+                start_positions = {
+                    motor: slice.upper[motor][end_idx - 1] for motor in motors
+                }
+                (
+                    gap_positons,
+                    gap_velocities,
+                    gap_durations,
+                ) = _calculate_profile_from_velocities(
+                    motors, time_arrays, velocity_arrays, start_positions
+                )
+
+                num_points = 0
+                for motor in motors:
+                    num_points = max(len(gap_positons[motor]), num_points)
+                    positions[motor][
+                        end_traj + 1 : end_traj + 1 + len(gap_positons[motor])
+                    ] = gap_positons[motor]
+                    velocities[motor][
+                        end_traj + 1 : end_traj + 1 + len(gap_velocities[motor])
+                    ] = gap_velocities[motor]
+                    durations[
+                        end_traj + 1 : end_traj + 1 + len(gap_velocities[motor])
+                    ] = (np.array(gap_durations) / TICK_S).astype(int)
+                added_points += num_points
+
+                user_programs[end_traj + 1 : end_traj + num_points] = 2
+
+        # After trajectory, set to 8, to programs are trajectory_size + 1
+        user_programs[-1] = 8
 
         return cls(
             positions=positions,
@@ -123,12 +213,120 @@ class _Trajectory:
         return self
 
 
+def _get_velocity_profile(
+    motors: list[Motor],
+    motor_info: _PmacMotorInfo,
+    start_velocities: dict,
+    end_velocities: dict,
+    distances: dict,
+):
+    profiles: dict[Motor, vp] = {}
+    time_arrays = {}
+    velocity_arrays = {}
+
+    min_time = MIN_TURNAROUND
+    iterations = 2
+
+    while iterations > 0:
+        new_min_time = 0.0  # reset for this iteration
+
+        for motor in motors:
+            # Build profile for this motor
+            p = vp(
+                start_velocities[motor],
+                end_velocities[motor],
+                distances[motor],
+                min_time,
+                motor_info.motor_acceleration_rate[motor],
+                motor_info.motor_cs_index[motor],
+                0,
+                MIN_INTERVAL,
+            )
+            p.get_profile()
+
+            profiles[motor] = p
+            new_min_time = max(new_min_time, p.t_total)
+
+        # Check if all profiles have converged on min_time
+        if np.isclose(new_min_time, min_time):
+            for motor in motors:
+                time_arrays[motor], velocity_arrays[motor] = profiles[
+                    motor
+                ].make_arrays()
+            return time_arrays, velocity_arrays
+        else:
+            min_time = new_min_time
+            iterations -= 1  # Get profiles with new minimum turnaround
+
+    raise ValueError("Can't get a consistent time in 2 iterations")
+
+
+def _calculate_profile_from_velocities(
+    motors: list[Motor],
+    time_arrays: dict[Motor, npt.NDArray[np.float64]],
+    velocity_arrays: dict[Motor, npt.NDArray[np.float64]],
+    current_positions: dict[Motor, npt.NDArray[np.float64]],
+) -> tuple[
+    dict[Motor, npt.NDArray[np.float64]],
+    dict[Motor, npt.NDArray[np.float64]],
+    list[float],
+]:
+    """Convert per-axis time/velocity profiles into aligned time/position profiles."""
+    # All unique non‑zero time points across all axes
+    combined_times = np.unique(np.concatenate(list(time_arrays.values())))
+    combined_times = np.sort(combined_times)[1:]  # drop t=0
+    num_intervals = len(combined_times)
+
+    # Convert absolute times to interval durations
+    time_intervals = np.diff(np.concatenate(([0.0], combined_times))).tolist()
+
+    turnaround_profile: dict[Motor, npt.NDArray[np.float64]] = {}
+    turnaround_velocity: dict[Motor, npt.NDArray[np.float64]] = {}
+
+    for motor in motors:
+        axis_times = time_arrays[motor]
+        axis_vels = velocity_arrays[motor]
+        pos = current_positions[motor]
+        prev_vel = axis_vels[0]
+        time_since_axis_point = 0.0
+        axis_pt = 1  # index into this axis's profile
+
+        turnaround_profile[motor] = np.empty(num_intervals, dtype=np.float64)
+        turnaround_velocity[motor] = np.empty(num_intervals, dtype=np.float64)
+
+        for i, dt in enumerate(time_intervals):
+            next_vel = axis_vels[axis_pt]
+            prev_axis_vel = axis_vels[axis_pt - 1]
+            axis_dt = axis_times[axis_pt] - axis_times[axis_pt - 1]
+
+            if np.isclose(combined_times[i], axis_times[axis_pt]):
+                # Exact match with a defined velocity point
+                this_vel = next_vel
+                axis_pt += 1
+                time_since_axis_point = 0.0
+            else:
+                # Interpolate between velocity points
+                time_since_axis_point += dt
+                frac = time_since_axis_point / axis_dt
+                this_vel = prev_axis_vel + frac * (next_vel - prev_axis_vel)
+
+            delta_pos = 0.5 * (prev_vel + this_vel) * dt
+            pos += delta_pos
+            prev_vel = this_vel
+
+            turnaround_profile[motor][i] = pos
+            turnaround_velocity[motor][i] = this_vel
+
+    return turnaround_profile, turnaround_velocity, time_intervals
+
+
 @dataclass
 class _PmacMotorInfo:
     cs_port: str
     cs_number: int
     motor_cs_index: dict[Motor, int]
     motor_acceleration_rate: dict[Motor, float]
+    motor_max_velocity: dict[Motor, float]
 
     @classmethod
     async def from_motors(cls, pmac: PmacIO, motors: Sequence[Motor]) -> _PmacMotorInfo:
@@ -215,7 +413,7 @@ class _PmacMotorInfo:
         }
 
         return _PmacMotorInfo(
-            cs_port, cs_number, motor_cs_index, motor_acceleration_rate
+            cs_port, cs_number, motor_cs_index, motor_acceleration_rate, velocities
         )
 
 
