@@ -23,11 +23,13 @@ from ophyd_async.core import StandardReadableFormat as Format
 class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float]):
     """For usage when simulating a motor."""
 
-    def __init__(self, name="", instant=True) -> None:
+    def __init__(self, name="", instant=True, initial_value=0.0, units="mm") -> None:
         """Simulate a motor, with optional velocity.
 
         :param name: name of device
         :param instant: whether to move instantly or calculate move time using velocity
+        :param initial_value: initial position of the motor
+        :param units: units of the motor position
         """
         # Define some signals
         with self.add_children_as_readables(Format.HINTED_SIGNAL):
@@ -37,8 +39,8 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float
         with self.add_children_as_readables(Format.CONFIG_SIGNAL):
             self.velocity = soft_signal_rw(float, 0 if instant else 1.0)
             self.acceleration_time = soft_signal_rw(float, 0.5)
-            self.units = soft_signal_rw(str, "mm")
-        self.user_setpoint = soft_signal_rw(float, 0)
+            self.units = soft_signal_rw(str, units)
+        self.user_setpoint = soft_signal_rw(float, initial_value)
 
         # Whether set() should complete successfully or not
         self._set_success = True
