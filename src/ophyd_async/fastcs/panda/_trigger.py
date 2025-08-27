@@ -1,8 +1,12 @@
 import asyncio
 
-from pydantic import Field
+import numpy as np
+from pydantic import BaseModel, Field
+from scanspec.core import Path, Slice
+from scanspec.specs import Spec
 
 from ophyd_async.core import ConfinedModel, FlyerController, wait_for_value
+from ophyd_async.epics.motor import Motor
 
 from ._block import (
     PandaBitMux,
@@ -11,7 +15,7 @@ from ._block import (
     PcompBlock,
     SeqBlock,
 )
-from ._table import SeqTable
+from ._table import SeqTable, SeqTrigger
 
 
 class SeqTableInfo(ConfinedModel):
@@ -20,6 +24,11 @@ class SeqTableInfo(ConfinedModel):
     sequence_table: SeqTable = Field(strict=True)
     repeats: int = Field(ge=0)
     prescale_as_us: float = Field(default=1, ge=0)  # microseconds
+
+
+class ScanSpecInfo(BaseModel):
+    spec: Spec[Motor]
+    deadtime: float
 
 
 class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
@@ -49,6 +58,93 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
     async def stop(self):
         await self.seq.enable.set(PandaBitMux.ZERO)
         await wait_for_value(self.seq.active, False, timeout=1)
+
+
+class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
+    def __init__(self, seq: SeqBlock, name="") -> None:
+        self.seq = seq
+        self.name = name
+
+    async def prepare(self, value: ScanSpecInfo):
+        await self.seq.enable.set(PandaBitMux.ZERO)
+        slice = Path(value.spec.calculate()).consume()
+
+        gaps = self._calculate_gaps(slice)
+        if gaps[0] == 0:
+            gaps = np.delete(gaps, 0)
+        scan_size = len(slice)
+
+        gaps = np.append(gaps, scan_size)
+        fast_axis = slice.axes()[len(slice.axes()) - 2]
+
+        # Resolution from PandA Encoder
+        resolution = await fast_axis.encoder_res.get_value()
+        start = 0
+
+        # GPIO goes low
+        rows = SeqTable.row(trigger=SeqTrigger.BITA_0)
+        for gap in gaps:
+            # GPIO goes high
+            rows += SeqTable.row(trigger=SeqTrigger.BITA_1)
+            # Wait for position
+            if (
+                slice.midpoints[fast_axis][gap - 1] * resolution
+                > slice.midpoints[fast_axis][start] * resolution
+            ):
+                trig = SeqTrigger.POSA_GT
+                dir = False if resolution > 0 else True
+
+            else:
+                trig = SeqTrigger.POSA_LT
+                dir = True if resolution > 0 else False
+            rows += SeqTable.row(
+                trigger=trig,
+                position=int(
+                    slice.lower[fast_axis][start]
+                    / await fast_axis.encoder_res.get_value()
+                ),
+            )
+
+            # Time based Triggers
+            rows += SeqTable.row(
+                repeats=gap - start,
+                trigger=SeqTrigger.IMMEDIATE,
+                time1=(slice.duration[0] - value.deadtime) * 10**6,  # type: ignore
+                time2=int(value.deadtime * 10**6),
+                outa1=True,
+                outb1=dir,
+                outa2=False,
+                outb2=dir,
+            )
+
+            # GPIO goes low
+            rows += SeqTable.row(trigger=SeqTrigger.BITA_0)
+
+            start = gap
+        await asyncio.gather(
+            self.seq.prescale.set(1.0),
+            self.seq.prescale_units.set(PandaTimeUnits.US),
+            self.seq.repeats.set(1),
+            self.seq.table.set(rows),
+        )
+
+    async def kickoff(self) -> None:
+        await self.seq.enable.set(PandaBitMux.ONE)
+        await wait_for_value(self.seq.active, True, timeout=1)
+
+    async def complete(self) -> None:
+        await wait_for_value(self.seq.active, False, timeout=None)
+
+    async def stop(self):
+        await self.seq.enable.set(PandaBitMux.ZERO)
+        await wait_for_value(self.seq.active, False, timeout=1)
+
+    def _calculate_gaps(self, slice: Slice[Motor]):
+        inds = np.argwhere(slice.gap)
+        if len(inds) == 0:
+            return [len(slice)]
+        else:
+            return inds
 
 
 class PcompInfo(ConfinedModel):
