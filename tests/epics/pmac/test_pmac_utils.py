@@ -124,7 +124,7 @@ async def test_line_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Motor
             1,
             1,
             1,
-            8,
+            1,
         ]
     ).all()
 
@@ -220,7 +220,7 @@ async def test_spiral_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Mot
         [2000000.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0]
     )
 
-    assert trajectory.user_programs == pytest.approx([1, 1, 1, 1, 1, 1, 8])
+    assert trajectory.user_programs == pytest.approx([1, 1, 1, 1, 1, 1, 1])
 
 
 async def test_calculate_ramp_position_and_duration(
