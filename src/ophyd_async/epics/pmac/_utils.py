@@ -45,31 +45,18 @@ class _Trajectory:
         :raises RuntimeError: Slice must have no gaps and a duration array
         """
         slice_duration = error_if_none(slice.duration, "Slice must have a duration")
+        half_durations = slice_duration / 2
 
         scan_size = len(slice)
         gaps: list[int] = np.where(slice.gap)[0].tolist()
         gaps.append(len(slice))
         motors = slice.axes()
 
-        positions: dict[Motor, npt.NDArray[np.float64]] = {}
-        velocities: dict[Motor, npt.NDArray[np.float64]] = {}
-
-        # Initialise arrays
-        trajectory_size = ((2 * scan_size) + 1) + ((len(gaps) - 2) * 4)
-        positions = {motor: np.empty(trajectory_size, float) for motor in motors}
-        velocities = {motor: np.empty(trajectory_size, float) for motor in motors}
-        durations: npt.NDArray[np.float64] = np.empty(trajectory_size, float)
-        user_programs: npt.NDArray[np.int32] = np.ones(trajectory_size, float)
-
-        # Ramp up time for start of collection window
-        durations[0] = int(ramp_up_time / TICK_S)
-
-        half_durations = slice_duration / 2
-
         # Precompute gaps
         gap_positions: dict[int, dict[Motor, npt.NDArray[float64]]] = {}
         gap_velocities: dict[int, dict[Motor, npt.NDArray[float64]]] = {}
         gap_durations: dict[int, list[float]] = {}
+        total_gap_points = 0
         for gap in gaps[1:-1]:
             # Get entry velocities, exit velocities, and distances across gap
             start_velocities, end_velocities, distances = _get_start_and_end_velocities(
@@ -92,6 +79,21 @@ class _Trajectory:
                     motors, time_arrays, velocity_arrays, start_positions
                 )
             )
+
+            total_gap_points += len(gap_positions[gap][motors[0]])
+
+        positions: dict[Motor, npt.NDArray[np.float64]] = {}
+        velocities: dict[Motor, npt.NDArray[np.float64]] = {}
+
+        # Initialise arrays
+        trajectory_size = ((2 * scan_size) + 1) + total_gap_points
+        positions = {motor: np.empty(trajectory_size, float) for motor in motors}
+        velocities = {motor: np.empty(trajectory_size, float) for motor in motors}
+        durations: npt.NDArray[np.float64] = np.empty(trajectory_size, float)
+        user_programs: npt.NDArray[np.int32] = np.ones(trajectory_size, float)
+
+        # Ramp up time for start of collection window
+        durations[0] = int(ramp_up_time / TICK_S)
 
         # Fill trajectory with gaps
         for motor in motors:
