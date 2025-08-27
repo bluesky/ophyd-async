@@ -19,6 +19,7 @@ from ._pmac_io import CS_LETTERS, PmacIO
 # (see https://github.com/DiamondLightSource/pmac/blob/afe81f8bb9179c3a20eff351f30bc6cfd1539ad9/pmacApp/pmc/trajectory_scan_code_ppmac.pmc#L241)
 # Therefore, we must divide scanspec durations by 10e-6
 TICK_S = 0.000001
+MIN_TURNAROUND = 0.002
 
 
 @dataclass
@@ -103,6 +104,23 @@ class _Trajectory:
             user_programs=user_programs,
             durations=durations,
         )
+
+    def append_ramp_down(
+        self,
+        ramp_down_pos: dict[Motor, np.float64],
+        ramp_down_time: float,
+        ramp_down_velocity: float,
+    ) -> _Trajectory:
+        self.durations = np.append(self.durations, [int(ramp_down_time / TICK_S)])
+        for motor in ramp_down_pos.keys():
+            self.positions[motor] = np.append(
+                self.positions[motor], [ramp_down_pos[motor]]
+            )
+            self.velocities[motor] = np.append(
+                self.velocities[motor], [ramp_down_velocity]
+            )
+
+        return self
 
 
 @dataclass
@@ -203,7 +221,7 @@ class _PmacMotorInfo:
 
 def calculate_ramp_position_and_duration(
     slice: Slice[Motor], motor_info: _PmacMotorInfo, is_up: bool
-) -> tuple[dict[Motor, float], float]:
+) -> tuple[dict[Motor, np.float64], float]:
     if slice.duration is None:
         raise ValueError("Slice must have a duration")
 
@@ -218,7 +236,9 @@ def calculate_ramp_position_and_duration(
         ]
         velocities[axis] = velocity
         ramp_times.append(abs(velocity) / motor_info.motor_acceleration_rate[axis])
-
+    ramp_times.append(
+        MIN_TURNAROUND
+    )  # Adding a 2ms ramp time as a min tournaround time
     max_ramp_time = max(ramp_times)
 
     motor_to_ramp_position = {}
