@@ -4,6 +4,8 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorController,
     DetectorTrigger,
+    Reference,
+    SignalRW,
     TriggerInfo,
     wait_for_value,
 )
@@ -19,11 +21,9 @@ EIGER_TRIGGER_MODE_MAP = {
 
 
 class EigerController(DetectorController):
-    def __init__(
-        self,
-        driver: EigerDriverIO,
-    ) -> None:
+    def __init__(self, driver: EigerDriverIO, odin_fan_ready: SignalRW[float]) -> None:
         self._drv = driver
+        self._odin_fan_ready = Reference(odin_fan_ready)
 
     def get_deadtime(self, exposure: float | None) -> float:
         # See https://media.dectris.com/filer_public/30/14/3014704e-5f3b-43ba-8ccf-8ef720e60d2a/240202_usermanual_eiger2.pdf
@@ -60,6 +60,7 @@ class EigerController(DetectorController):
         # but will return after the Eiger has completed arming in 0.9.0.
         # https://github.com/DiamondLightSource/FastCS/pull/141
         await self._drv.detector.arm.trigger(timeout=DEFAULT_TIMEOUT)
+        await wait_for_value(self._odin_fan_ready(), 1, DEFAULT_TIMEOUT)
 
     async def wait_for_idle(self):
         await wait_for_value(self._drv.detector.state, "idle", timeout=DEFAULT_TIMEOUT)
