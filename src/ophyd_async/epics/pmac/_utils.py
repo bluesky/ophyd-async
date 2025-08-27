@@ -65,12 +65,46 @@ class _Trajectory:
         durations[0] = int(ramp_up_time / TICK_S)
 
         half_durations = slice_duration / 2
-        added_points = 0
-        for start_idx, end_idx in zip(gaps[:-1], gaps[1:], strict=False):
-            # Interleave points and offset by added pvt points
-            start_traj = added_points + 2 * start_idx
-            end_traj = added_points + 2 * end_idx
-            for motor in motors:
+
+        # Precompute gaps
+        gap_points = {}
+        for gap in gaps[1:-1]:
+            # Get entry velocities, exit velocities, and distances across gap
+            start_velocities, end_velocities, distances = _get_start_and_end_velocities(
+                motors, slice, half_durations, gap
+            )
+
+            # Get velocity and time profiles across gap
+            time_arrays, velocity_arrays = _get_velocity_profile(
+                motors, motor_info, start_velocities, end_velocities, distances
+            )
+
+            start_positions = {motor: slice.upper[motor][gap - 1] for motor in motors}
+
+            # Calculate gap position, velocity, and time profiles from
+            # velocity and time profiles
+            (
+                gap_positions,
+                gap_velocities,
+                gap_durations,
+            ) = _calculate_profile_from_velocities(
+                motors, time_arrays, velocity_arrays, start_positions
+            )
+
+            gap_points[gap] = {
+                "positions": gap_positions,
+                "velocities": gap_velocities,
+                "durations": gap_durations,
+            }
+
+        # Fill trajectory with gaps
+        for motor in motors:
+            gap_offset = 0
+            for start_idx, end_idx in zip(gaps[:-1], gaps[1:], strict=False):
+                # Interleave points and offset by added pvt points
+                start_traj = 2 * start_idx + gap_offset
+                end_traj = 2 * end_idx + gap_offset
+
                 # Lower bound at the segment start
                 positions[motor][start_traj] = slice.lower[motor][start_idx]
 
@@ -117,56 +151,23 @@ class _Trajectory:
                     (half_durations[start_idx:end_idx] / TICK_S).astype(int), 2
                 )
 
-            # If there is another collection window, fill intermediate gap with pvts
-            if end_idx != gaps[-1]:
-                # Get entry velocities, exit velocities, and distances across gap
-                start_velocities, end_velocities, distances = (
-                    _get_start_and_end_velocities(
-                        motors, slice, half_durations, end_idx
-                    )
-                )
-
-                # Get velocity and time profiles across gap
-                time_arrays, velocity_arrays = _get_velocity_profile(
-                    motors, motor_info, start_velocities, end_velocities, distances
-                )
-
-                start_positions = {
-                    motor: slice.upper[motor][end_idx - 1] for motor in motors
-                }
-
-                # Calculate gap position, velocity, and time profiles from
-                # velocity and time profiles
-                (
-                    gap_positions,
-                    gap_velocities,
-                    gap_durations,
-                ) = _calculate_profile_from_velocities(
-                    motors, time_arrays, velocity_arrays, start_positions
-                )
-
-                # All gap_* arrays should have the same length
-                num_gap_points = len(gap_positions[motors[0]])
-
-                # Insert gap arrays into trajectory arrays
-                for motor in motors:
+                if gap_points.get(end_idx):
+                    # How many gap points do we need to add
+                    num_gap_points = len(gap_points[end_idx]["positions"][motor])
+                    # Update how many gap points we've added so far
+                    gap_offset += num_gap_points
+                    # Insert gap points into end of collection window
                     positions[motor][end_traj + 1 : end_traj + 1 + num_gap_points] = (
-                        gap_positions[motor]
+                        gap_points[end_idx]["positions"][motor]
                     )
                     velocities[motor][end_traj + 1 : end_traj + 1 + num_gap_points] = (
-                        gap_velocities[motor]
+                        gap_points[end_idx]["velocities"][motor]
                     )
                     durations[end_traj + 1 : end_traj + 1 + num_gap_points] = (
-                        np.array(gap_durations) / TICK_S
+                        np.array(gap_points[end_idx]["durations"]) / TICK_S
                     ).astype(int)
-
-                # Record offset introduced from gap points into next collection window
-                # This will cause redifinition of final gap point with lower point of
-                # the next collection window, as they should be approximately equal
-                added_points += num_gap_points
-
-                # Set user program to 2 for gap points
-                user_programs[end_traj + 1 : end_traj + num_gap_points] = 2
+                    # Set user program to 2 for gap points
+                    user_programs[end_traj + 1 : end_traj + num_gap_points] = 2
 
         return cls(
             positions=positions,
