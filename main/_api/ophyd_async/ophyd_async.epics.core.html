@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.core &#8212; ophyd-async 0.13.2.dev4+gc9d01fbf7 documentation</title>
+    <title>ophyd_async.epics.core &#8212; ophyd-async 0.13.2.dev5+g9d2016b89 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=48f86b60"></script>
+    <script src="../../_static/documentation_options.js?v=d35ca51d"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.2.dev4+gc9d01fbf7 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.2.dev4+gc9d01fbf7 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.2.dev5+g9d2016b89 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.2.dev5+g9d2016b89 documentation - Home"/>
   
   
 </a></div>
@@ -661,6 +661,20 @@ during <code class="docutils literal notranslate"><span class="pre">__init__</sp
 <dt class="sig sig-object py" id="ophyd_async.epics.core.PvSuffix">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.core.</span></span><span class="sig-name descname"><span class="pre">PvSuffix</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/core/_epics_connector.html#PvSuffix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.core.PvSuffix" title="Link to this definition">#</a></dt>
 <dd><p>Define the PV suffix to be appended to the device prefix.</p>
+<p>For a SignalRW:</p>
+<ul class="simple">
+<li><p>If you use the same “Suffix” for the read and write PV then use PvSuffix(“Suffix”)</p></li>
+<li><p>If you have “Suffix” for the write PV and “Suffix_RBV” for the read PV then use
+PvSuffix.rbv(“Suffix”)</p></li>
+<li><p>If you have “WriteSuffix” for the write PV and “ReadSuffix” for the read PV then
+you use PvSuffix(read_suffix=”ReadSuffix”, write_suffix=”WriteSuffix”)</p></li>
+</ul>
+<p>For a SignalR:</p>
+<ul class="simple">
+<li><p>If you have “Suffix” for the read PV then use PvSuffix(“Suffix”)</p></li>
+<li><p>If you have “Suffix_RBV” for the read PV then use PvSuffix(“Suffix_RBV”), do not
+use PvSuffix.rbv as that will try to connect to multiple PVs</p></li>
+</ul>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.epics.core.PvSuffix.read_suffix">
 <span class="sig-name descname"><span class="pre">read_suffix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#ophyd_async.epics.core.PvSuffix.read_suffix" title="Link to this definition">#</a></dt>
