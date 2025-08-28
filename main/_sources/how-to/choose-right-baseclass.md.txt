@@ -18,7 +18,7 @@ There are some utility baseclasses that allow you to create a Device pre-populat
 
 There are some [bluesky protocols](inv:bluesky#hardware) that show the verbs you can implement to add functionality in standard plans. For example:
 
-- [](#bluesky.protocols.Movable) to add behavior during `bps.mv` and `bps.abs_set`
+- [](#bluesky.protocols.Movable) to add behavior during `bps.mv` and `bps.abs_set`. See [here](../explanations/when-to-extend-movable.md) for deciding if a device should extend movable.
 - [](#bluesky.protocols.Triggerable) to add behavior before `read()` in `bps.scan`
 
 It is not strictly required to add the protocol class as a baseclass (the presence of a method with the right signature is all that is required) but generally this is done so that the IDE gives you help when filling in the method, and the type checker knows to check that you have filled it in correctly.
