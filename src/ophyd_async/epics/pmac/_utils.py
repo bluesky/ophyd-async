@@ -48,6 +48,7 @@ class _Trajectory:
         half_durations = slice_duration / 2
 
         scan_size = len(slice)
+        # List of indices to the first frame of a collection window, after a gap
         gaps: list[int] = np.where(slice.gap)[0].tolist()
         gaps.append(len(slice))
         motors = slice.axes()
@@ -86,10 +87,14 @@ class _Trajectory:
         velocities: dict[Motor, npt.NDArray[np.float64]] = {}
 
         # Initialise arrays
+        # Trajectory size calculated from 2 points per frame (midpoint and upper)
+        # Plus an initial lower point
+        # Plus PVT points added between collection windows (gaps)
         trajectory_size = ((2 * scan_size) + 1) + total_gap_points
         positions = {motor: np.empty(trajectory_size, float) for motor in motors}
         velocities = {motor: np.empty(trajectory_size, float) for motor in motors}
         durations: npt.NDArray[np.float64] = np.empty(trajectory_size, float)
+        # Default to program 1 to assume we acquire at all points
         user_programs: npt.NDArray[np.int32] = np.ones(trajectory_size, float)
 
         # Ramp up time for start of collection window
@@ -142,8 +147,6 @@ class _Trajectory:
 
                 # For the last velocity take the mid to upper velocity
                 velocities[motor][end_traj] = mid_to_upper_velocities[-1]
-
-                user_programs[start_traj:end_traj] = 1
 
                 durations[start_traj + 1 : end_traj + 1] = np.repeat(
                     (half_durations[start_idx:end_idx] / TICK_S).astype(int), 2
