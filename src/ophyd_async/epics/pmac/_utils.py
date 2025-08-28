@@ -559,20 +559,20 @@ def _calculate_profile_from_velocities(
         pos = current_positions[motor]
         prev_vel = axis_vels[0]
         time_since_axis_point = 0.0
-        axis_pt = 1  # index into this axis's profile
+        axis_idx = 1  # index into this axis's profile
 
         turnaround_profile[motor] = np.empty(num_intervals, dtype=np.float64)
         turnaround_velocity[motor] = np.empty(num_intervals, dtype=np.float64)
 
         for i, dt in enumerate(time_intervals):
-            next_vel = axis_vels[axis_pt]
-            prev_axis_vel = axis_vels[axis_pt - 1]
-            axis_dt = axis_times[axis_pt] - axis_times[axis_pt - 1]
+            next_vel = axis_vels[axis_idx]
+            prev_axis_vel = axis_vels[axis_idx - 1]
+            axis_dt = axis_times[axis_idx] - axis_times[axis_idx - 1]
 
-            if np.isclose(combined_times[i], axis_times[axis_pt]):
+            if np.isclose(combined_times[i], axis_times[axis_idx]):
                 # Exact match with a defined velocity point
                 this_vel = next_vel
-                axis_pt += 1
+                axis_idx += 1
                 time_since_axis_point = 0.0
             else:
                 # Interpolate between velocity points
