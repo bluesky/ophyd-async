@@ -14,7 +14,7 @@ class PvSuffix:
 
     For a SignalRW:
     - If you use the same "Suffix" for the read and write PV then use PvSuffix("Suffix")
-    - If you have "Suffix" for the write PV and "Suffix_RBV" then use
+    - If you have "Suffix" for the write PV and "Suffix_RBV" for the read PV then use
       PvSuffix.rbv("Suffix")
     - If you have "WriteSuffix" for the write PV and "ReadSuffix" for the read PV then
       you use PvSuffix(read_suffix="ReadSuffix", write_suffix="WriteSuffix")
