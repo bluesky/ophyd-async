@@ -391,6 +391,43 @@ def _get_velocity_profile(
     raise ValueError("Can't get a consistent time in 2 iterations")
 
 
+def _get_start_and_end_velocities(
+    motors: list[Motor],
+    motor_info: _PmacMotorInfo,
+    slice: Slice,
+    half_durations: npt.NDArray[float64],
+    gap: int,
+) -> tuple[
+    dict[Motor, np.float64],
+    dict[Motor, np.float64],
+    dict[Motor, float],
+]:
+    start_velocities: dict[Motor, np.float64] = {}
+    end_velocities: dict[Motor, np.float64] = {}
+    distances: dict[Motor, float] = {}
+    for motor in motors:
+        # Velocity from point just before gap (exit velocity)
+        start_velocities[motor] = 2 * (
+            slice.upper[motor][gap - 1] - slice.midpoints[motor][gap - 1]
+        ) / half_durations[gap - 1] - (
+            slice.upper[motor][gap - 1] - slice.lower[motor][gap - 1]
+        ) / (half_durations[gap - 1] * 2)
+
+        # Velocity from point just after gap
+        end_velocities[motor] = 2 * (
+            slice.midpoints[motor][gap] - slice.lower[motor][gap]
+        ) / half_durations[gap] - (
+            slice.upper[motor][gap] - slice.lower[motor][gap]
+        ) / (half_durations[gap] * 2)
+
+        # Travel distance across gap
+        distances[motor] = slice.lower[motor][gap] - slice.upper[motor][gap - 1]
+        if np.isclose(distances[motor], 0.0, atol=1e-12):
+            distances[motor] = 0.0
+
+    return start_velocities, end_velocities, distances
+
+
 def _calculate_profile_from_velocities(
     motors: list[Motor],
     time_arrays: dict[Motor, npt.NDArray[np.float64]],
@@ -448,40 +485,3 @@ def _calculate_profile_from_velocities(
             turnaround_velocity[motor][i] = this_vel
 
     return turnaround_profile, turnaround_velocity, time_intervals
-
-
-def _get_start_and_end_velocities(
-    motors: list[Motor],
-    motor_info: _PmacMotorInfo,
-    slice: Slice,
-    half_durations: npt.NDArray[float64],
-    gap: int,
-) -> tuple[
-    dict[Motor, np.float64],
-    dict[Motor, np.float64],
-    dict[Motor, float],
-]:
-    start_velocities: dict[Motor, np.float64] = {}
-    end_velocities: dict[Motor, np.float64] = {}
-    distances: dict[Motor, float] = {}
-    for motor in motors:
-        # Velocity from point just before gap (exit velocity)
-        start_velocities[motor] = 2 * (
-            slice.upper[motor][gap - 1] - slice.midpoints[motor][gap - 1]
-        ) / half_durations[gap - 1] - (
-            slice.upper[motor][gap - 1] - slice.lower[motor][gap - 1]
-        ) / (half_durations[gap - 1] * 2)
-
-        # Velocity from point just after gap
-        end_velocities[motor] = 2 * (
-            slice.midpoints[motor][gap] - slice.lower[motor][gap]
-        ) / half_durations[gap] - (
-            slice.upper[motor][gap] - slice.lower[motor][gap]
-        ) / (half_durations[gap] * 2)
-
-        # Travel distance across gap
-        distances[motor] = slice.lower[motor][gap] - slice.upper[motor][gap - 1]
-        if np.isclose(distances[motor], 0.0, atol=1e-12):
-            distances[motor] = 0.0
-
-    return start_velocities, end_velocities, distances
