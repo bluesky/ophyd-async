@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 from numpy import float64
 from scanspec.core import Slice
-from velocity_profile.velocityprofile import VelocityProfile as vp
+from velocity_profile.velocityprofile import VelocityProfile
 
 from ophyd_async.core import error_if_none, gather_dict
 from ophyd_async.epics.motor import Motor
@@ -350,7 +350,7 @@ def _get_velocity_profile(
     end_velocities: dict[Motor, np.float64],
     distances: dict,
 ) -> tuple[dict[Motor, npt.NDArray[np.float64]], dict[Motor, npt.NDArray[np.float64]]]:
-    profiles: dict[Motor, vp] = {}
+    profiles: dict[Motor, VelocityProfile] = {}
     time_arrays = {}
     velocity_arrays = {}
 
@@ -362,7 +362,7 @@ def _get_velocity_profile(
 
         for motor in motors:
             # Build profile for this motor
-            p = vp(
+            p = VelocityProfile(
                 start_velocities[motor],
                 end_velocities[motor],
                 distances[motor],
