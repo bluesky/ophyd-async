@@ -60,7 +60,7 @@ class _Trajectory:
         for gap in gaps[1:-1]:
             # Get entry velocities, exit velocities, and distances across gap
             start_velocities, end_velocities, distances = _get_start_and_end_velocities(
-                motors, slice, half_durations, gap
+                motors, motor_info, slice, half_durations, gap
             )
 
             # Get velocity and time profiles across gap
@@ -166,6 +166,24 @@ class _Trajectory:
                     ).astype(int)
                     # Set user program to 2 for gap points
                     user_programs[end_traj + 1 : end_traj + num_gap_points] = 2
+
+                # Check that calculated velocities do not exceed motor's max velocity
+                velocities_above_limit = (
+                    np.abs(velocities[motor][start_traj : end_traj + gap_offset])
+                    - motor_info.motor_max_velocity[motor]
+                ) / motor_info.motor_max_velocity[motor] >= 1e-6
+                if velocities_above_limit.any():
+                    # Velocities above motor max velocity
+                    bad_vals = velocities[motor][start_traj : end_traj + gap_offset][
+                        velocities_above_limit
+                    ]
+                    # Indices in trajectory above motor max velocity
+                    bad_indices = np.nonzero(velocities_above_limit)[0]
+                    raise ValueError(
+                        f"{motor.name} velocity exceeds motor's max velocity of "
+                        f"{motor_info.motor_max_velocity[motor]} "
+                        f"at trajectory indices {bad_indices.tolist()}: {bad_vals}"
+                    )
 
         return cls(
             positions=positions,
@@ -325,8 +343,8 @@ def calculate_ramp_position_and_duration(
 def _get_velocity_profile(
     motors: list[Motor],
     motor_info: _PmacMotorInfo,
-    start_velocities: dict,
-    end_velocities: dict,
+    start_velocities: dict[Motor, np.float64],
+    end_velocities: dict[Motor, np.float64],
     distances: dict,
 ) -> tuple[dict[Motor, npt.NDArray[np.float64]], dict[Motor, npt.NDArray[np.float64]]]:
     profiles: dict[Motor, vp] = {}
@@ -430,14 +448,18 @@ def _calculate_profile_from_velocities(
 
 
 def _get_start_and_end_velocities(
-    motors: list[Motor], slice: Slice, half_durations: npt.NDArray[float64], gap: int
+    motors: list[Motor],
+    motor_info: _PmacMotorInfo,
+    slice: Slice,
+    half_durations: npt.NDArray[float64],
+    gap: int,
 ) -> tuple[
-    dict[Motor, npt.NDArray[np.float64]],
-    dict[Motor, npt.NDArray[np.float64]],
+    dict[Motor, np.float64],
+    dict[Motor, np.float64],
     dict[Motor, float],
 ]:
-    start_velocities: dict[Motor, npt.NDArray[np.float64]] = {}
-    end_velocities: dict[Motor, npt.NDArray[np.float64]] = {}
+    start_velocities: dict[Motor, np.float64] = {}
+    end_velocities: dict[Motor, np.float64] = {}
     distances: dict[Motor, float] = {}
     for motor in motors:
         # Velocity from point just before gap (exit velocity)
