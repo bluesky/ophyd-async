@@ -17,8 +17,11 @@ def test_validate_then_get_deadtime():
 
 
 def test_create_jungfrau_internal_triggering_info():
-    assert create_jungfrau_internal_triggering_info(5, 1, 2) == TriggerInfo(
-        number_of_events=1, deadtime=1, livetime=1, exposures_per_event=5
+    assert create_jungfrau_internal_triggering_info(5, 1) == TriggerInfo(
+        number_of_events=1,
+        deadtime=0,
+        livetime=1,
+        exposures_per_event=5,
     )
 
 
@@ -34,4 +37,27 @@ def test_create_jungfrau_external_triggering_info():
         deadtime=0.01,
         livetime=0.01,
         exposures_per_event=5,
+    )
+
+
+def test_create_jungfrau_external_triggering_info_type_error_on_missing_info():
+    with pytest.raises(ValueError):
+        create_jungfrau_external_triggering_info(
+            total_triggers=5,
+            frames_per_trigger=5,
+            exposure_time_s=0.01,
+        )
+
+
+def test_create_external_triggering_info_regular_deadtime_if_period_not_specified():
+    assert create_jungfrau_external_triggering_info(
+        total_triggers=5,
+        frames_per_trigger=1,
+        exposure_time_s=0.01,
+    ) == TriggerInfo(
+        number_of_events=5,
+        trigger=DetectorTrigger.EDGE_TRIGGER,
+        deadtime=0,
+        livetime=0.01,
+        exposures_per_event=1,
     )

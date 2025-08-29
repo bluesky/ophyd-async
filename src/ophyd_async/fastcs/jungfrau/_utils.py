@@ -1,13 +1,15 @@
+from pydantic import PositiveInt
+
 from ophyd_async.core import DetectorTrigger, TriggerInfo
 
 from ._controller import JUNGFRAU_DEADTIME_S
 
 
 def create_jungfrau_external_triggering_info(
-    total_triggers: int,
-    frames_per_trigger: int,
+    total_triggers: PositiveInt,
+    frames_per_trigger: PositiveInt,
     exposure_time_s: float,
-    period_between_frames_s: float,
+    period_between_frames_s: float | None = None,
 ) -> TriggerInfo:
     """Create safe Jungfrau TriggerInfo for external triggering.
 
@@ -18,12 +20,18 @@ def create_jungfrau_external_triggering_info(
         total_triggers: Total external triggers expected before ending acquisition.
         frames_per_trigger: How many frames to take for each external trigger.
         exposure_time_s: How long to expose the detector for each of its frames.
-        period_between_frames_s: Time between each frame, including deadtime.
+        period_between_frames_s: Time between each frame, including deadtime. Not
+        required if frames_per_trigger is 1
 
     Returns:
         `TriggerInfo`
     """
-    deadtime = _validate_then_get_deadtime(exposure_time_s, period_between_frames_s)
+    if frames_per_trigger > 1 and period_between_frames_s is None:
+        raise ValueError("Must specify period_between_frames if frames_per_trigger > 1")
+    elif period_between_frames_s:
+        deadtime = _validate_then_get_deadtime(exposure_time_s, period_between_frames_s)
+    else:
+        deadtime = 0  # Gets set to JF controller deadtime during prepare
 
     return TriggerInfo(
         number_of_events=total_triggers,
@@ -35,27 +43,23 @@ def create_jungfrau_external_triggering_info(
 
 
 def create_jungfrau_internal_triggering_info(
-    number_of_frames: int, exposure_time_s: float, period_between_frames_s: float
+    number_of_frames: PositiveInt, exposure_time_s: float
 ) -> TriggerInfo:
     """Create safe Jungfrau TriggerInfo for internal triggering.
 
     Uses parameters which more closely-align with Jungfrau terminology
-    to create TriggerInfo.
+    to create TriggerInfo. Frames
 
     Args:
         number_of_frames: Total frames taken after starting acquisition.
         exposure_time_s: How long to expose the detector for each of its frames.
-        period_between_frames_s: Time between each frame, including deadtime.
 
     Returns:
         `TriggerInfo`
     """
-    deadtime = _validate_then_get_deadtime(exposure_time_s, period_between_frames_s)
-
     return TriggerInfo(
         number_of_events=1,
         trigger=DetectorTrigger.INTERNAL,
-        deadtime=deadtime,
         livetime=exposure_time_s,
         exposures_per_event=number_of_frames,
     )
