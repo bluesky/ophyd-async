@@ -654,5 +654,5 @@ def _calculate_profile_from_velocities(
         turnaround_profile,
         turnaround_velocity,
         time_intervals,
-        len(turnaround_profile[motors[0]]),  # Assume motors have same gap lengths
+        len(turnaround_profile[motors[0]]),  # Motors have same gap lengths
     )
