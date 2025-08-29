@@ -215,12 +215,12 @@ class _Trajectory:
                 motors, motor_info, entry_velocities, exit_velocities, distances
             )
 
-            start_positions: dict[Motor, npt.NDArray[float64]] = {
-                motor: slice.upper[motor][collection_end - 1] for motor in motors
-            }
-
             gap_segment = _calculate_profile_from_velocities(
-                motors, time_arrays, velocity_arrays, start_positions
+                motors,
+                slice,
+                collection_end,
+                time_arrays,
+                velocity_arrays,
             )
 
             # Add a gap segment
@@ -445,7 +445,7 @@ def _get_velocity_profile(
     motor_info: _PmacMotorInfo,
     start_velocities: dict[Motor, np.float64],
     end_velocities: dict[Motor, np.float64],
-    distances: dict,
+    distances: dict[Motor, float],
 ) -> tuple[dict[Motor, npt.NDArray[np.float64]], dict[Motor, npt.NDArray[np.float64]]]:
     profiles: dict[Motor, VelocityProfile] = {}
     time_arrays = {}
@@ -554,9 +554,10 @@ def _get_entry_and_exit_velocities(
 
 def _calculate_profile_from_velocities(
     motors: list[Motor],
+    slice: Slice,
+    gap: int,
     time_arrays: dict[Motor, npt.NDArray[np.float64]],
     velocity_arrays: dict[Motor, npt.NDArray[np.float64]],
-    current_positions: dict[Motor, npt.NDArray[np.float64]],
 ) -> GapSegment:
     """Convert per-axis time/velocity profiles into aligned time/position profiles."""
     # All unique non‑zero time points across all axes
@@ -573,7 +574,7 @@ def _calculate_profile_from_velocities(
     for motor in motors:
         axis_times = time_arrays[motor]
         axis_vels = velocity_arrays[motor]
-        pos = current_positions[motor]
+        pos = slice.upper[motor][gap - 1]
         prev_vel = axis_vels[0]
         time_since_axis_point = 0.0
         axis_idx = 1  # index into this axis's profile
@@ -608,5 +609,5 @@ def _calculate_profile_from_velocities(
         turnaround_profile,
         turnaround_velocity,
         time_intervals,
-        len(turnaround_profile),
+        len(turnaround_profile[motors[0]]),  # Assume motors have same gap lengths
     )
