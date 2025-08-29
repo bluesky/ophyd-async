@@ -268,7 +268,6 @@ class _Trajectory:
                     motor=motor,
                 )
                 index_into_trajectory += len(segment)
-                pass
 
             # Check that calculated velocities do not exceed motor's max velocity
             velocities_above_limit_mask = (
