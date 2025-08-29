@@ -1,11 +1,16 @@
 import asyncio
 
 import numpy as np
-from pydantic import BaseModel, Field
-from scanspec.core import Path, Slice
+from pydantic import Field
+from scanspec.core import Path
 from scanspec.specs import Spec
 
-from ophyd_async.core import ConfinedModel, FlyerController, wait_for_value
+from ophyd_async.core import (
+    ConfinedModel,
+    FlyerController,
+    error_if_none,
+    wait_for_value,
+)
 from ophyd_async.epics.motor import Motor
 
 from ._block import (
@@ -26,7 +31,7 @@ class SeqTableInfo(ConfinedModel):
     prescale_as_us: float = Field(default=1, ge=0)  # microseconds
 
 
-class ScanSpecInfo(BaseModel):
+class ScanSpecInfo(ConfinedModel):
     spec: Spec[Motor]
     deadtime: float
 
@@ -68,14 +73,16 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
     async def prepare(self, value: ScanSpecInfo):
         await self.seq.enable.set(PandaBitMux.ZERO)
         slice = Path(value.spec.calculate()).consume()
+        slice_duration = error_if_none(slice.duration, "Slice must have duration")
 
-        gaps = self._calculate_gaps(slice)
+        # gaps = self._calculate_gaps(slice)
+        gaps = np.where(slice.gap)[0]
         if gaps[0] == 0:
             gaps = np.delete(gaps, 0)
         scan_size = len(slice)
 
         gaps = np.append(gaps, scan_size)
-        fast_axis = slice.axes()[len(slice.axes()) - 2]
+        fast_axis = slice.axes()[-1]
 
         # Resolution from PandA Encoder
         resolution = await fast_axis.encoder_res.get_value()
@@ -99,17 +106,14 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
                 dir = True if resolution > 0 else False
             rows += SeqTable.row(
                 trigger=trig,
-                position=int(
-                    slice.lower[fast_axis][start]
-                    / await fast_axis.encoder_res.get_value()
-                ),
+                position=int(slice.lower[fast_axis][start] / resolution),
             )
 
             # Time based Triggers
             rows += SeqTable.row(
                 repeats=gap - start,
                 trigger=SeqTrigger.IMMEDIATE,
-                time1=(slice.duration[0] - value.deadtime) * 10**6,  # type: ignore
+                time1=int((slice_duration[0] - value.deadtime) * 10**6),
                 time2=int(value.deadtime * 10**6),
                 outa1=True,
                 outb1=dir,
@@ -138,13 +142,6 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
     async def stop(self):
         await self.seq.enable.set(PandaBitMux.ZERO)
         await wait_for_value(self.seq.active, False, timeout=1)
-
-    def _calculate_gaps(self, slice: Slice[Motor]):
-        inds = np.argwhere(slice.gap)
-        if len(inds) == 0:
-            return [len(slice)]
-        else:
-            return inds
 
 
 class PcompInfo(ConfinedModel):

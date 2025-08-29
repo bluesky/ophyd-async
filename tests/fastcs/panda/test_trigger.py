@@ -85,7 +85,7 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
     assert out.trigger == [
         SeqTrigger.BITA_0,
         SeqTrigger.BITA_1,
-        SeqTrigger.POSA_LT,
+        SeqTrigger.POSA_GT,
         SeqTrigger.IMMEDIATE,
         SeqTrigger.BITA_0,
         SeqTrigger.BITA_1,
@@ -93,13 +93,34 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
         SeqTrigger.IMMEDIATE,
         SeqTrigger.BITA_0,
         SeqTrigger.BITA_1,
-        SeqTrigger.POSA_LT,
+        SeqTrigger.POSA_GT,
         SeqTrigger.IMMEDIATE,
         SeqTrigger.BITA_0,
     ]
-    assert (out.position == [0, 0, 5, 0, 0, 0, 7, 0, 0, 0, 10, 0, 0]).all()
+    assert (out.position == [0, 0, 25, 0, 0, 0, 275, 0, 0, 0, 25, 0, 0]).all()
     assert (out.time1 == [0, 0, 0, 900000, 0, 0, 0, 900000, 0, 0, 0, 900000, 0]).all()
     assert (out.time2 == [0, 0, 0, 100000, 0, 0, 0, 100000, 0, 0, 0, 100000, 0]).all()
+
+
+async def test_seq_scanspec_trigger_logic_iii(
+    mock_panda, sim_x_motor, sim_y_motor
+) -> None:
+    spec = Fly(2.0 @ (Line(sim_y_motor, 1, 2, 3)))
+    info = ScanSpecInfo(spec=spec, deadtime=0.1)
+    trigger_logic = ScanSpecSeqTableTriggerLogic(mock_panda.seq[1])
+    await trigger_logic.prepare(info)
+    out = await trigger_logic.seq.table.get_value()
+    assert (out.repeats == [1, 1, 1, 3, 1]).all()
+    assert out.trigger == [
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.POSA_GT,
+        SeqTrigger.IMMEDIATE,
+        SeqTrigger.BITA_0,
+    ]
+    assert (out.position == [0, 0, 3, 0, 0]).all()
+    assert (out.time1 == [0, 0, 0, 1900000, 0]).all()
+    assert (out.time2 == [0, 0, 0, 100000, 0]).all()
 
 
 async def test_pcomp_trigger_logic(mock_panda):
