@@ -1,4 +1,4 @@
-record(mbbo, "$(P)$(CHANNEL):Mode") {
+record(mbbo, "$(P)C$(CHANNEL):Mode") {
     field(DESC, "Energy sensitivity of the image")
     field(DTYP, "Raw Soft Channel")
     field(PINI, "YES")
@@ -8,12 +8,12 @@ record(mbbo, "$(P)$(CHANNEL):Mode") {
     field(ONST, "High Energy")
 }
 
-record(calc, "$(P)$(CHANNEL):Value") {
+record(calc, "$(P)C$(CHANNEL):Value") {
     field(DESC, "Sensor value simulated from X and Y")
     field(INPA,  "$(X)Readback")
     field(INPB,  "$(Y)Readback")
     field(INPC,  "$(CHANNEL)")
-    field(INPD,  "$(P)$(CHANNEL):Mode.RVAL")
+    field(INPD,  "$(P)C$(CHANNEL):Mode.RVAL")
     field(INPE,  "$(P)Elapsed CP")
     field(CALC, "FLOOR((SIN(A)**C+COS(A*B+D)+2)*2500*E)")
     field(EGU,  "cts")
