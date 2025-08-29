@@ -559,50 +559,96 @@ def _calculate_profile_from_velocities(
     time_arrays: dict[Motor, npt.NDArray[np.float64]],
     velocity_arrays: dict[Motor, npt.NDArray[np.float64]],
 ) -> GapSegment:
-    """Convert per-axis time/velocity profiles into aligned time/position profiles."""
-    # All unique non‑zero time points across all axes
+    """Convert per-axis time/velocity profiles into aligned time/position profiles.
+
+    Given per-axis arrays of times and corresponding velocities,
+    this builds a single unified timeline containing all unique velocity change points
+    from every axis. It then steps through that timeline, and for each axis:
+
+    * If the current time matches one of the axis's own velocity change points,
+        use that known velocity.
+    * Otherwise, linearly interpolate between the axis's previous and next
+        known velocities, based on how far through that section we are.
+
+    At each unified time step, the velocity is integrated over the step duration
+    (using the trapezoidal rule) to update the axis's position. This produces
+    per-axis position and velocity arrays that are aligned to the same global
+    time grid.
+
+    Example:
+        combined_times = [0.1, 0.2, 0.3, 0.4]
+        axis_times[motor] = [0.1, 0.4]
+        velocity_array[motor] = [2, 5]
+
+        At 0.1 → known vel = 2 (use directly)
+        At 0.2 → 1/3 of the way to next vel → 3.0
+        At 0.3 → 2/3 of the way to next vel → 4.0
+        At 0.4 → known vel = 5 (use directly)
+
+        These instantaneous velocities are integrated over each Δt to yield
+        positions aligned with the global timeline.
+    """
+    # Combine all per-axis time points into a single sorted arrat of times
+    # This way we can evaluate each motor along the same timeline
     combined_times = np.unique(np.concatenate(list(time_arrays.values())))
-    combined_times = np.sort(combined_times)[1:]  # drop t=0
+
+    # We know all axes positions at t=0, so we drop this point
+    combined_times = np.sort(combined_times)[1:]
     num_intervals = len(combined_times)
 
-    # Convert absolute times to interval durations
+    # We convert a list of t into a list of Δt
+    # We do this by substracting against previous cumulative time
     time_intervals = np.diff(np.concatenate(([0.0], combined_times))).tolist()
 
+    # Prepare dicts for the resulting position and velocity profiles over the turnaround
     turnaround_profile: dict[Motor, npt.NDArray[np.float64]] = {}
     turnaround_velocity: dict[Motor, npt.NDArray[np.float64]] = {}
 
+    # Loop over each motor and integrate its velocity profile over the unified times
     for motor in motors:
         axis_times = time_arrays[motor]
-        axis_vels = velocity_arrays[motor]
-        pos = slice.upper[motor][gap - 1]
-        prev_vel = axis_vels[0]
-        time_since_axis_point = 0.0
-        axis_idx = 1  # index into this axis's profile
+        axis_velocities = velocity_arrays[motor]
+        axis_position = slice.upper[motor][
+            gap - 1
+        ]  # start position at beginning of the gap
+        prev_vel = axis_velocities[0]  # last velocity seen (start at initial velocity)
+        time_since_prev_axis_point = 0.0  # elapsed time since the last velocity point
+        axis_idx = 1  # index into this axis's velocity/time arrays
 
+        # Allocate output arrays for this motor with correct size
         turnaround_profile[motor] = np.empty(num_intervals, dtype=np.float64)
         turnaround_velocity[motor] = np.empty(num_intervals, dtype=np.float64)
 
+        # Step through each interval in the Δt list
         for i, dt in enumerate(time_intervals):
-            next_vel = axis_vels[axis_idx]
-            prev_axis_vel = axis_vels[axis_idx - 1]
+            next_vel = axis_velocities[axis_idx]
+            prev_axis_vel = axis_velocities[axis_idx - 1]
             axis_dt = axis_times[axis_idx] - axis_times[axis_idx - 1]
 
             if np.isclose(combined_times[i], axis_times[axis_idx]):
-                # Exact match with a defined velocity point
+                # If the current combined time exactly matches this motor's
+                # next velocity change point, no interpolation is needed, so:
                 this_vel = next_vel
                 axis_idx += 1
-                time_since_axis_point = 0.0
+                time_since_prev_axis_point = 0.0
             else:
-                # Interpolate between velocity points
-                time_since_axis_point += dt
-                frac = time_since_axis_point / axis_dt
+                # Otherwise, linearly interpolate velocity between the previous
+                # and next known velocity points for this motor
+                time_since_prev_axis_point += dt
+                # The fraction of the way we are from previous to next known velocities
+                # for this motor
+                frac = time_since_prev_axis_point / axis_dt
+                # Interpolate for our velocity
                 this_vel = prev_axis_vel + frac * (next_vel - prev_axis_vel)
 
+            # Integrate velocity over this interval to update position.
+            # Using the trapezoidal rule:
             delta_pos = 0.5 * (prev_vel + this_vel) * dt
-            pos += delta_pos
-            prev_vel = this_vel
+            axis_position += delta_pos
+            prev_vel = this_vel  # update for next loop
 
-            turnaround_profile[motor][i] = pos
+            # Store the computed position and velocity for this interval
+            turnaround_profile[motor][i] = axis_position
             turnaround_velocity[motor][i] = this_vel
 
     return GapSegment(
