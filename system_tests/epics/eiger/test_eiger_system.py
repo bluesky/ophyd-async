@@ -4,7 +4,6 @@ from pathlib import Path
 
 import h5py
 import pytest
-from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DetectorTrigger,
@@ -41,11 +40,6 @@ class SetupDevice(Device):
 @pytest.fixture
 def ioc_prefixes():
     return os.environ["eiger_ioc"] + ":", os.environ["odin_ioc"] + ":"
-
-
-@pytest.fixture
-def RE():
-    return RunEngine()
 
 
 @pytest.fixture

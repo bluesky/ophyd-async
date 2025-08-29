@@ -16,10 +16,10 @@ class KinetixTriggerMode(StrictEnum):
 class KinetixReadoutMode(StrictEnum):
     """Readout mode for ADKinetix detector."""
 
-    SENSITIVITY = 1
-    SPEED = 2
-    DYNAMIC_RANGE = 3
-    SUB_ELECTRON = 4
+    SENSITIVITY = "1"
+    SPEED = "2"
+    DYNAMIC_RANGE = "3"
+    SUB_ELECTRON = "4"
 
 
 class KinetixDriverIO(adcore.ADBaseIO):
