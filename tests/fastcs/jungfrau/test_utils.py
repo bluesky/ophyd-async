@@ -4,6 +4,7 @@ from ophyd_async.core import DetectorTrigger, TriggerInfo
 from ophyd_async.fastcs.jungfrau import (
     create_jungfrau_external_triggering_info,
     create_jungfrau_internal_triggering_info,
+    create_jungfrau_pedestal_triggering_info,
 )
 from ophyd_async.fastcs.jungfrau._utils import (
     _validate_then_get_deadtime,  # noqa: PLC2701
@@ -28,7 +29,6 @@ def test_create_jungfrau_internal_triggering_info():
 def test_create_jungfrau_external_triggering_info():
     assert create_jungfrau_external_triggering_info(
         total_triggers=5,
-        frames_per_trigger=5,
         exposure_time_s=0.01,
         period_between_frames_s=0.02,
     ) == TriggerInfo(
@@ -36,28 +36,27 @@ def test_create_jungfrau_external_triggering_info():
         trigger=DetectorTrigger.EDGE_TRIGGER,
         deadtime=0.01,
         livetime=0.01,
-        exposures_per_event=5,
     )
-
-
-def test_create_jungfrau_external_triggering_info_type_error_on_missing_info():
-    with pytest.raises(ValueError):
-        create_jungfrau_external_triggering_info(
-            total_triggers=5,
-            frames_per_trigger=5,
-            exposure_time_s=0.01,
-        )
 
 
 def test_create_external_triggering_info_regular_deadtime_if_period_not_specified():
     assert create_jungfrau_external_triggering_info(
         total_triggers=5,
-        frames_per_trigger=1,
         exposure_time_s=0.01,
     ) == TriggerInfo(
         number_of_events=5,
         trigger=DetectorTrigger.EDGE_TRIGGER,
         deadtime=0,
         livetime=0.01,
-        exposures_per_event=1,
+    )
+
+
+async def test_create_jungfrau_pedestal_triggering_info():
+    assert create_jungfrau_pedestal_triggering_info(
+        exposure_time_s=0.01, pedestal_frames=5, pedestal_loops=10
+    ) == TriggerInfo(
+        trigger=DetectorTrigger.INTERNAL,
+        number_of_events=10,
+        exposures_per_event=5,
+        livetime=0.01,
     )

@@ -7,7 +7,6 @@ from ._controller import JUNGFRAU_DEADTIME_S
 
 def create_jungfrau_external_triggering_info(
     total_triggers: PositiveInt,
-    frames_per_trigger: PositiveInt,
     exposure_time_s: float,
     period_between_frames_s: float | None = None,
 ) -> TriggerInfo:
@@ -18,7 +17,6 @@ def create_jungfrau_external_triggering_info(
 
     Args:
         total_triggers: Total external triggers expected before ending acquisition.
-        frames_per_trigger: How many frames to take for each external trigger.
         exposure_time_s: How long to expose the detector for each of its frames.
         period_between_frames_s: Time between each frame, including deadtime. Not
         required if frames_per_trigger is 1
@@ -26,9 +24,7 @@ def create_jungfrau_external_triggering_info(
     Returns:
         `TriggerInfo`
     """
-    if frames_per_trigger > 1 and period_between_frames_s is None:
-        raise ValueError("Must specify period_between_frames if frames_per_trigger > 1")
-    elif period_between_frames_s:
+    if period_between_frames_s:
         deadtime = _validate_then_get_deadtime(exposure_time_s, period_between_frames_s)
     else:
         deadtime = 0  # Gets set to JF controller deadtime during prepare
@@ -36,7 +32,6 @@ def create_jungfrau_external_triggering_info(
     return TriggerInfo(
         number_of_events=total_triggers,
         trigger=DetectorTrigger.EDGE_TRIGGER,
-        exposures_per_event=frames_per_trigger,
         livetime=exposure_time_s,
         deadtime=deadtime,
     )
@@ -48,7 +43,7 @@ def create_jungfrau_internal_triggering_info(
     """Create safe Jungfrau TriggerInfo for internal triggering.
 
     Uses parameters which more closely-align with Jungfrau terminology
-    to create TriggerInfo. Frames
+    to create TriggerInfo.
 
     Args:
         number_of_frames: Total frames taken after starting acquisition.
@@ -62,6 +57,35 @@ def create_jungfrau_internal_triggering_info(
         trigger=DetectorTrigger.INTERNAL,
         livetime=exposure_time_s,
         exposures_per_event=number_of_frames,
+    )
+
+
+def create_jungfrau_pedestal_triggering_info(
+    exposure_time_s: float,
+    pedestal_frames: PositiveInt,
+    pedestal_loops: PositiveInt,
+):
+    """Create safe Jungfrau TriggerInfo for pedestal triggering.
+
+    Uses parameters which more closely-align with Jungfrau terminology
+    to create TriggerInfo.
+
+    NOTE: To trigger the jungfrau in pedestal mode, you must first set the
+    jungfrau acquisition_type signal to AcquisitionType.PEDESTAL!
+
+    Args:
+        exposure_time_s: How long to expose the detector for each of its frames.
+        pedestal_frames: Number of frames taken once triggering begins
+        pedestal_loops: Number of repeats of the pedestal scan before detector disarms.
+
+    Returns:
+        `TriggerInfo`
+    """
+    return TriggerInfo(
+        number_of_events=pedestal_loops,
+        exposures_per_event=pedestal_frames,
+        trigger=DetectorTrigger.INTERNAL,
+        livetime=exposure_time_s,
     )
 
 

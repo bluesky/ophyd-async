@@ -68,7 +68,7 @@ class JungfrauDriverIO(Device):
     delay_after_trigger: SignalRW[float]  # in s
 
     # In internal trigger mode, this is frames per trigger. In external trigger mode,
-    # this is frames per overall acquisition.
+    # this is frames per overall acquisition. In pedestal mode, this signal is not set.
     frames_per_acq: SignalRW[NonNegativeInt]
 
     pedestal_mode: SignalRW[PedestalMode]

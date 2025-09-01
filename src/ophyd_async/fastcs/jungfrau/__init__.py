@@ -9,6 +9,7 @@ from ._signals import (
 from ._utils import (
     create_jungfrau_external_triggering_info,
     create_jungfrau_internal_triggering_info,
+    create_jungfrau_pedestal_triggering_info,
 )
 
 __all__ = [
@@ -16,6 +17,7 @@ __all__ = [
     "DetectorStatus",
     "create_jungfrau_external_triggering_info",
     "create_jungfrau_internal_triggering_info",
+    "create_jungfrau_pedestal_triggering_info",
     "JungfrauController",
     "JungfrauDriverIO",
     "JungfrauTriggerMode",

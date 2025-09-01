@@ -122,9 +122,6 @@ class JungfrauController(DetectorController):
                             trigger_info.number_of_events
                         ),
                         self._driver.pedestal_mode.set(PedestalMode.ON),
-                        self._driver.frames_per_acq.set(
-                            trigger_info.exposures_per_event
-                        ),
                     ]
                 )
 
