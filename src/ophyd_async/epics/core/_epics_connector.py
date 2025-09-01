@@ -10,7 +10,20 @@ from ._signal import EpicsSignalBackend, get_signal_backend_type, split_protocol
 
 @dataclass
 class PvSuffix:
-    """Define the PV suffix to be appended to the device prefix."""
+    """Define the PV suffix to be appended to the device prefix.
+
+    For a SignalRW:
+    - If you use the same "Suffix" for the read and write PV then use PvSuffix("Suffix")
+    - If you have "Suffix" for the write PV and "Suffix_RBV" for the read PV then use
+      PvSuffix.rbv("Suffix")
+    - If you have "WriteSuffix" for the write PV and "ReadSuffix" for the read PV then
+      you use PvSuffix(read_suffix="ReadSuffix", write_suffix="WriteSuffix")
+
+    For a SignalR:
+    - If you have "Suffix" for the read PV then use PvSuffix("Suffix")
+    - If you have "Suffix_RBV" for the read PV then use PvSuffix("Suffix_RBV"), do not
+      use PvSuffix.rbv as that will try to connect to multiple PVs
+    """
 
     read_suffix: str
     write_suffix: str | None = None
