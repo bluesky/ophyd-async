@@ -60,12 +60,6 @@ class JungfrauController(DetectorController):
                 f"{period_between_frames}s cannot be lower than minimum detector "
                 f"deadtime {self.get_deadtime()}"
             )
-        frame_rate = 1 / period_between_frames
-        if frame_rate >= 100:
-            logger.warning(
-                f"Requested TriggerInfo results in a frame rate of "
-                f"{frame_rate}Hz. Exceeding 100Hz may result in packet loss"
-            )
 
         coros = [
             self._driver.trigger_mode.set(
