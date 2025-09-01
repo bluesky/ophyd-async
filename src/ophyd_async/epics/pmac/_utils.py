@@ -271,13 +271,17 @@ class _Trajectory:
 
             # Check that calculated velocities do not exceed motor's max velocity
             velocities_above_limit_mask = (
-                np.abs(velocities[motor]) - motor_info.motor_max_velocity[motor]
+                np.abs(trajectory.velocities[motor])
+                - motor_info.motor_max_velocity[motor]
             ) / motor_info.motor_max_velocity[motor] >= 1e-6
             if velocities_above_limit_mask.any():
                 # Velocities above motor max velocity
-                bad_velocities = velocities[motor][velocities_above_limit_mask]
+                bad_velocities = trajectory.velocities[motor][
+                    velocities_above_limit_mask
+                ]
                 # Indices in trajectory above motor max velocity
-                indices_to_bad_velocities = np.nonzero(bad_velocities)[0]
+                # np.nonzero returns tuple, but as only one mask passed, we need index 0
+                indices_to_bad_velocities = np.nonzero(velocities_above_limit_mask)[0]
                 raise ValueError(
                     f"{motor.name} velocity exceeds motor's max velocity of "
                     f"{motor_info.motor_max_velocity[motor]} "
