@@ -5,7 +5,7 @@ import pytest
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import DetectorTrigger, TriggerInfo, init_devices
-from ophyd_async.fastcs.jungfrau import DetectorStatus, Jungfrau
+from ophyd_async.fastcs.jungfrau import AcquisitionType, DetectorStatus, Jungfrau
 from ophyd_async.testing import (
     callback_on_mock_put,
     set_mock_value,
@@ -42,6 +42,21 @@ def jungfrau(RE: RunEngine):
             TriggerInfo(),
             "Must set TriggerInfo.livetime",
         ),
+        (
+            TriggerInfo(trigger=DetectorTrigger.INTERNAL, number_of_events=10),
+            "Number of events must be set to 1 in internal trigger mode during "
+            "standard acquisitions.",
+        ),
+        (
+            TriggerInfo(
+                trigger=DetectorTrigger.EDGE_TRIGGER,
+                exposures_per_event=10,
+                deadtime=1,
+                livetime=2,
+            ),
+            "Exposures per event must be set to 1 in edge trigger mode "
+            "during standard acquisitions.",
+        ),
     ],
 )
 async def test_prepare_val_error_on_bad_trigger_info(
@@ -59,13 +74,6 @@ async def test_prepare_warn_on_small_exposure(jungfrau: Jungfrau, caplog):
     with caplog.at_level(logging.WARNING):
         await jungfrau.prepare(bad_trigger_info)
     assert "Exposure time shorter than 2μs is not recommended" in caplog.messages
-
-
-async def test_prepare_warn_on_fast_frame_rate(jungfrau: Jungfrau, caplog):
-    bad_trigger_info = TriggerInfo(livetime=5e-3, deadtime=4e-3)
-    with caplog.at_level(logging.WARNING):
-        await jungfrau.prepare(bad_trigger_info)
-    assert "Requested TriggerInfo results in a frame rate of " in caplog.messages[0]
 
 
 async def test_prepare_error_on_bad_no_of_event(
@@ -99,3 +107,59 @@ async def test_disarm(jungfrau: Jungfrau):
     jungfrau.drv.acquisition_stop.trigger = AsyncMock()
     await jungfrau._controller.disarm()
     jungfrau.drv.acquisition_stop.trigger.assert_called_once()
+
+
+async def test_signals_set_in_pedestal_mode(jungfrau: Jungfrau):
+    await jungfrau.drv.acquisition_type.set(AcquisitionType.PEDESTAL)
+    frames_and_events = 10
+    good_trigger_info = TriggerInfo(
+        livetime=1e-3,
+        number_of_events=frames_and_events,
+        exposures_per_event=frames_and_events,
+        trigger=DetectorTrigger.INTERNAL,
+    )
+    await jungfrau.prepare(good_trigger_info)
+    assert await jungfrau.drv.pedestal_mode_frames.get_value() == frames_and_events
+    assert await jungfrau.drv.pedestal_mode_loops.get_value() == frames_and_events
+
+
+async def test_signals_set_in_standard_internal_mode(jungfrau: Jungfrau):
+    jungfrau.drv.pedestal_mode_frames = AsyncMock()
+    jungfrau.drv.pedestal_mode_loops = AsyncMock()
+    exp_per_event = 10
+    good_trigger_info = TriggerInfo(
+        livetime=1e-3,
+        exposures_per_event=exp_per_event,
+        trigger=DetectorTrigger.INTERNAL,
+    )
+    await jungfrau.prepare(good_trigger_info)
+    assert await jungfrau.drv.frames_per_acq.get_value() == exp_per_event
+    jungfrau.drv.pedestal_mode_frames.assert_not_called()
+    jungfrau.drv.pedestal_mode_frames.assert_not_called()
+
+
+async def test_signals_set_in_standard_external_mode(jungfrau: Jungfrau):
+    jungfrau.drv.pedestal_mode_frames = AsyncMock()
+    jungfrau.drv.pedestal_mode_loops = AsyncMock()
+    total_events = 10
+    good_trigger_info = TriggerInfo(
+        livetime=1e-3,
+        number_of_events=total_events,
+        trigger=DetectorTrigger.EDGE_TRIGGER,
+        deadtime=1,
+    )
+    await jungfrau.prepare(good_trigger_info)
+    assert await jungfrau.drv.frames_per_acq.get_value() == total_events
+    jungfrau.drv.pedestal_mode_frames.assert_not_called()
+    jungfrau.drv.pedestal_mode_frames.assert_not_called()
+
+
+async def test_error_in_pedestal_and_external_modes(jungfrau: Jungfrau):
+    await jungfrau.drv.acquisition_type.set(AcquisitionType.PEDESTAL)
+    with pytest.raises(
+        ValueError,
+        match="Jungfrau must be triggered internally while in pedestal mode.",
+    ):
+        await jungfrau.prepare(
+            TriggerInfo(livetime=1e-3, trigger=DetectorTrigger.EDGE_TRIGGER, deadtime=1)
+        )

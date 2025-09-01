@@ -11,8 +11,10 @@ from ophyd_async.core import (
 
 from ._signals import (
     JUNGFRAU_TRIGGER_MODE_MAP,
+    AcquisitionType,
     DetectorStatus,
     JungfrauDriverIO,
+    PedestalMode,
 )
 
 # Deadtime is dependant on a wide combination of settings and on trigger mode
@@ -35,6 +37,9 @@ class JungfrauController(DetectorController):
 
         # Deadtime here is really used as "time between frames"
 
+        acquisition_type = await self._driver.acquisition_type.get_value()
+        logger.info(f"Preparing Jungfrau in {acquisition_type} mode.")
+
         if trigger_info.trigger not in (
             DetectorTrigger.INTERNAL,
             DetectorTrigger.EDGE_TRIGGER,
@@ -42,9 +47,35 @@ class JungfrauController(DetectorController):
             raise ValueError(
                 "The trigger method can only be called with internal or edge triggering"
             )
+        if (
+            acquisition_type == AcquisitionType.PEDESTAL
+            and trigger_info.trigger != DetectorTrigger.INTERNAL
+        ):
+            raise ValueError(
+                "Jungfrau must be triggered internally while in pedestal mode."
+            )
 
         if not isinstance(trigger_info.number_of_events, int):
             raise TypeError("Number of events must be an integer")
+
+        if acquisition_type != AcquisitionType.PEDESTAL:
+            if (
+                trigger_info.trigger == DetectorTrigger.INTERNAL
+                and trigger_info.number_of_events != 1
+            ):
+                raise ValueError(
+                    "Number of events must be set to 1 in internal trigger mode during "
+                    "standard acquisitions."
+                )
+
+            if (
+                trigger_info.trigger == DetectorTrigger.EDGE_TRIGGER
+                and trigger_info.exposures_per_event != 1
+            ):
+                raise ValueError(
+                    "Exposures per event must be set to 1 in edge trigger mode "
+                    "during standard acquisitions."
+                )
 
         if not trigger_info.livetime:
             raise ValueError("Must set TriggerInfo.livetime")
@@ -65,10 +96,37 @@ class JungfrauController(DetectorController):
             self._driver.trigger_mode.set(
                 JUNGFRAU_TRIGGER_MODE_MAP[trigger_info.trigger]
             ),
-            self._driver.frames_per_acq.set(trigger_info.number_of_events),
-            self._driver.exposure_time.set(trigger_info.livetime),
             self._driver.period_between_frames.set(period_between_frames),
+            self._driver.exposure_time.set(trigger_info.livetime),
         ]
+
+        match acquisition_type:
+            case AcquisitionType.STANDARD:
+                frames_signal = (
+                    trigger_info.exposures_per_event
+                    if trigger_info.trigger is DetectorTrigger.INTERNAL
+                    else trigger_info.number_of_events
+                )
+                coros.extend(
+                    [
+                        self._driver.frames_per_acq.set(frames_signal),
+                    ]
+                )
+            case AcquisitionType.PEDESTAL:
+                coros.extend(
+                    [
+                        self._driver.pedestal_mode_frames.set(
+                            trigger_info.exposures_per_event
+                        ),
+                        self._driver.pedestal_mode_loops.set(
+                            trigger_info.number_of_events
+                        ),
+                        self._driver.pedestal_mode.set(PedestalMode.ON),
+                        self._driver.frames_per_acq.set(
+                            trigger_info.exposures_per_event
+                        ),
+                    ]
+                )
 
         await asyncio.gather(*coros)
 

@@ -7,6 +7,7 @@ from ophyd_async.core import (
     SignalRW,
     SignalX,
     StrictEnum,
+    soft_signal_rw,
 )
 from ophyd_async.fastcs.core import fastcs_connector
 
@@ -43,6 +44,11 @@ class PedestalMode(StrictEnum):
     OFF = "Off"
 
 
+class AcquisitionType(StrictEnum):
+    STANDARD = "Standard"
+    PEDESTAL = "Pedestal"
+
+
 JUNGFRAU_TRIGGER_MODE_MAP = {
     DetectorTrigger.EDGE_TRIGGER: JungfrauTriggerMode.EXTERNAL,
     DetectorTrigger.INTERNAL: JungfrauTriggerMode.INTERNAL,
@@ -61,10 +67,13 @@ class JungfrauDriverIO(Device):
     # trigger input
     delay_after_trigger: SignalRW[float]  # in s
 
-    # frames per trigger
+    # In internal trigger mode, this is frames per trigger. In external trigger mode,
+    # this is frames per overall acquisition.
     frames_per_acq: SignalRW[NonNegativeInt]
 
     pedestal_mode: SignalRW[PedestalMode]
+    pedestal_mode_frames: SignalRW[int]
+    pedestal_mode_loops: SignalRW[int]
 
     gain_mode: SignalRW[GainMode]
 
@@ -76,4 +85,8 @@ class JungfrauDriverIO(Device):
     detector_status: SignalR[DetectorStatus]
 
     def __init__(self, uri: str, name: str = ""):
+        # Determines how the TriggerInfo gets mapped to the Jungfrau during prepare
+        self.acquisition_type = soft_signal_rw(
+            AcquisitionType, AcquisitionType.STANDARD
+        )
         super().__init__(name=name, connector=fastcs_connector(self, uri))
