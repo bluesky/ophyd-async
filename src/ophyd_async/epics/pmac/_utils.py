@@ -76,18 +76,6 @@ class GapSegment:
         trajectory.velocities[motor][
             index_into_trajectory : index_into_trajectory + num_gap_points
         ] = self.velocities[motor]
-        # We append an extra duration
-        # This is because we need to insert the duration it takes
-        # to get from the final gap point to the next collection window point
-        # This duration is calculated alongside gaps so is inserted here for
-        # the next collection window
-        trajectory.durations[
-            index_into_trajectory : index_into_trajectory + num_gap_points + 1
-        ] = (np.array(self.duration) / TICK_S).astype(int)
-
-        trajectory.user_programs[
-            index_into_trajectory : index_into_trajectory + num_gap_points
-        ] = 2
 
     def insert_durations_and_user_programs_into_trajectory(
         self,
@@ -95,6 +83,11 @@ class GapSegment:
         trajectory: _Trajectory,
     ) -> None:
         num_gap_points = self.__len__()
+        # We append an extra duration (i.e., num_gap_points + 1)
+        # This is because we need to insert the duration it takes
+        # to get from the final gap point to the next collection window point
+        # This duration is calculated alongside gaps so is inserted here for
+        # the next collection window
         trajectory.durations[
             index_into_trajectory : index_into_trajectory + num_gap_points + 1
         ] = (np.array(self.duration) / TICK_S).astype(int)
@@ -166,13 +159,6 @@ class CollectionWindow:
 
         # For the last velocity take the mid to upper velocity
         trajectory.velocities[motor][window_end_idx - 1] = mid_to_upper_velocities[-1]
-
-        trajectory.durations[window_start_idx + 1 : window_end_idx] = np.repeat(
-            (self.half_durations[self.start : self.end] / TICK_S).astype(int),
-            2,
-        )
-
-        trajectory.user_programs[window_start_idx:window_end_idx] = 1
 
     def insert_durations_and_user_programs_into_trajectory(
         self,
