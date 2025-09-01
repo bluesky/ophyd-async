@@ -4,6 +4,7 @@ https://github.com/epics-modules/motor
 """
 
 import asyncio
+from asyncio import CancelledError
 
 from bluesky.protocols import (
     Flyable,
@@ -205,19 +206,24 @@ class Motor(
         await self.check_motor_limit(old_position, new_position)
 
         move_status = self.user_setpoint.set(new_position, wait=True, timeout=timeout)
-        async for current_position in observe_value(
-            self.user_readback, done_status=move_status
-        ):
-            yield WatcherUpdate(
-                current=current_position,
-                initial=old_position,
-                target=new_position,
-                name=self.name,
-                unit=units,
-                precision=precision,
-            )
-        if not self._set_success:
-            raise RuntimeError("Motor was stopped")
+        try:
+            async for current_position in observe_value(
+                self.user_readback, done_status=move_status
+            ):
+                yield WatcherUpdate(
+                    current=current_position,
+                    initial=old_position,
+                    target=new_position,
+                    name=self.name,
+                    unit=units,
+                    precision=precision,
+                )
+            if not self._set_success:
+                raise RuntimeError("Motor was stopped")
+        except CancelledError:
+            if task := getattr(move_status, "task", False):
+                task.cancel()
+            raise
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
