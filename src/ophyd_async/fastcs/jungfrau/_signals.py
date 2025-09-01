@@ -36,6 +36,8 @@ class GainMode(StrictEnum):
     FORCE_SWITCH_G2 = "ForceSwitchG2"
     FIX_G1 = "FixG1"
     FIX_G2 = "FixG2"
+
+    # Use with caution - this may damage the detector
     FIX_G0 = "FixG0"
 
 
