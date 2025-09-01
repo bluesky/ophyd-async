@@ -284,9 +284,7 @@ class AttributeProxy(TangoProxy):
 
         self._callback = callback
         if self.support_events:
-            asyncio.run_coroutine_threadsafe(
-                self._subscribe_to_event(), asyncio.get_running_loop()
-            )
+            asyncio.create_task(self._subscribe_to_event())
         elif self._allow_polling:
             """start polling if no events supported"""
             if self._callback is not None:
