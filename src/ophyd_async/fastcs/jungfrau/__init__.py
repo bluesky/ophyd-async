@@ -3,6 +3,7 @@ from ._jungfrau import Jungfrau
 from ._signals import (
     AcquisitionType,
     DetectorStatus,
+    GainMode,
     JungfrauDriverIO,
     JungfrauTriggerMode,
 )
@@ -22,4 +23,5 @@ __all__ = [
     "JungfrauDriverIO",
     "JungfrauTriggerMode",
     "AcquisitionType",
+    "GainMode",
 ]
