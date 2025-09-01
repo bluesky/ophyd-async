@@ -29,6 +29,15 @@ class DetectorStatus(StrictEnum):
     STOPPED = "Stopped"
 
 
+class GainMode(StrictEnum):
+    DYNAMIC = "Dynamic"
+    FORCE_SWITCH_G1 = "ForceSwitchG1"
+    FORCE_SWITCH_G2 = "ForceSwitchG2"
+    FIX_G1 = "FixG1"
+    FIX_G2 = "FixG2"
+    FIX_G0 = "FixG0"
+
+
 JUNGFRAU_TRIGGER_MODE_MAP = {
     DetectorTrigger.EDGE_TRIGGER: JungfrauTriggerMode.EXTERNAL,
     DetectorTrigger.INTERNAL: JungfrauTriggerMode.INTERNAL,
@@ -49,6 +58,8 @@ class JungfrauDriverIO(Device):
 
     # frames per trigger
     frames_per_acq: SignalRW[NonNegativeInt]
+
+    gain_mode: SignalRW[GainMode]
 
     acquisition_start: SignalX
 
