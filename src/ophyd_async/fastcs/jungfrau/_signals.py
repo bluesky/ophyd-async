@@ -38,6 +38,11 @@ class GainMode(StrictEnum):
     FIX_G0 = "FixG0"
 
 
+class PedestalMode(StrictEnum):
+    ON = "On"
+    OFF = "Off"
+
+
 JUNGFRAU_TRIGGER_MODE_MAP = {
     DetectorTrigger.EDGE_TRIGGER: JungfrauTriggerMode.EXTERNAL,
     DetectorTrigger.INTERNAL: JungfrauTriggerMode.INTERNAL,
@@ -58,6 +63,8 @@ class JungfrauDriverIO(Device):
 
     # frames per trigger
     frames_per_acq: SignalRW[NonNegativeInt]
+
+    pedestal_mode: SignalRW[PedestalMode]
 
     gain_mode: SignalRW[GainMode]
 
