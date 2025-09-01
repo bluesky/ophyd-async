@@ -27,11 +27,17 @@ MIN_INTERVAL = 0.002
 
 
 class FillableWindow(Protocol):
-    def insert_points_into_trajectory(
+    def insert_positions_and_velocities_into_trajectory(
         self,
         index_into_trajectory: int,
         trajectory: _Trajectory,
         motor: Motor,
+    ) -> None: ...
+
+    def insert_durations_and_user_programs_into_trajectory(
+        self,
+        index_into_trajectory: int,
+        trajectory: _Trajectory,
     ) -> None: ...
 
     def __len__(self) -> int: ...
@@ -53,7 +59,7 @@ class GapSegment:
     def __len__(self):
         return self.gap_length
 
-    def insert_points_into_trajectory(
+    def insert_positions_and_velocities_into_trajectory(
         self,
         index_into_trajectory: int,
         trajectory: _Trajectory,
@@ -81,6 +87,20 @@ class GapSegment:
             index_into_trajectory : index_into_trajectory + num_gap_points
         ] = 2
 
+    def insert_durations_and_user_programs_into_trajectory(
+        self,
+        index_into_trajectory: int,
+        trajectory: _Trajectory,
+    ) -> None:
+        num_gap_points = self.__len__()
+        trajectory.durations[
+            index_into_trajectory : index_into_trajectory + num_gap_points + 1
+        ] = (np.array(self.duration) / TICK_S).astype(int)
+
+        trajectory.user_programs[
+            index_into_trajectory : index_into_trajectory + num_gap_points
+        ] = 2
+
 
 class CollectionWindow:
     def __init__(
@@ -94,7 +114,7 @@ class CollectionWindow:
     def __len__(self):
         return ((self.end - self.start) * 2) + 1
 
-    def insert_points_into_trajectory(
+    def insert_positions_and_velocities_into_trajectory(
         self,
         index_into_trajectory: int,
         trajectory: _Trajectory,
@@ -144,6 +164,21 @@ class CollectionWindow:
 
         # For the last velocity take the mid to upper velocity
         trajectory.velocities[motor][window_end_idx - 1] = mid_to_upper_velocities[-1]
+
+        trajectory.durations[window_start_idx + 1 : window_end_idx] = np.repeat(
+            (self.half_durations[self.start : self.end] / TICK_S).astype(int),
+            2,
+        )
+
+        trajectory.user_programs[window_start_idx:window_end_idx] = 1
+
+    def insert_durations_and_user_programs_into_trajectory(
+        self,
+        index_into_trajectory: int,
+        trajectory: _Trajectory,
+    ) -> None:
+        window_start_idx = index_into_trajectory
+        window_end_idx = index_into_trajectory + self.__len__()
 
         trajectory.durations[window_start_idx + 1 : window_end_idx] = np.repeat(
             (self.half_durations[self.start : self.end] / TICK_S).astype(int),
@@ -254,15 +289,28 @@ class _Trajectory:
         )
 
         # Fill trajectory
+        # Start by filling durations and user_programs once
+        # as this is identical for all motors of a trajectory
+        # Index keeps track of where we are in the trajectory
+        index_into_trajectory = 0
+        # Iterate over collection windows or gaps
+        for segment in segments:
+            # This inserts slice or gap durations and user_programs
+            # into the output trajectory
+            segment.insert_durations_and_user_programs_into_trajectory(
+                index_into_trajectory=index_into_trajectory,
+                trajectory=trajectory,
+            )
+            # The length of each segment moves the trajectory index
+            index_into_trajectory += len(segment)
+        # Now fill positions and velocities for each motor
         for motor in motors:
-            # Keeps track of where we are in the trajectory
+            # Reset index for positions and velocities, for each motor
             index_into_trajectory = 0
-            # Iterate over collection windows or gaps
             for segment in segments:
-                # This inserts slice points or gap points into the output arrays
-                # Returns a new index into our trajectory arrays
-                # where more points can be inserted
-                segment.insert_points_into_trajectory(
+                # This inserts slice or gap positions and velocites
+                # into the output trajectory
+                segment.insert_positions_and_velocities_into_trajectory(
                     index_into_trajectory=index_into_trajectory,
                     trajectory=trajectory,
                     motor=motor,
