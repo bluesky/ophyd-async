@@ -32,13 +32,15 @@ class FillableWindow(Protocol):
         index_into_trajectory: int,
         trajectory: _Trajectory,
         motor: Motor,
-    ) -> None: ...
+    ) -> None:
+        pass
 
     def insert_durations_and_user_programs_into_trajectory(
         self,
         index_into_trajectory: int,
         trajectory: _Trajectory,
-    ) -> None: ...
+    ) -> None:
+        pass
 
     def __len__(self) -> int: ...
 
