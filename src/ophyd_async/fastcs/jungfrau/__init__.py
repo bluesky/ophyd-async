@@ -6,6 +6,7 @@ from ._signals import (
     GainMode,
     JungfrauDriverIO,
     JungfrauTriggerMode,
+    PedestalMode,
 )
 from ._utils import (
     create_jungfrau_external_triggering_info,
@@ -24,4 +25,5 @@ __all__ = [
     "JungfrauTriggerMode",
     "AcquisitionType",
     "GainMode",
+    "PedestalMode",
 ]
