@@ -145,7 +145,7 @@ class CollectionWindow:
         trajectory.velocities[motor][window_start_idx] = lower_to_mid_velocities[0]
 
         # For the midpoints, we take the average of the
-        # lower -> mid and mid-> upper velocities of the same point
+        # lower -> mid and mid -> upper velocities of the same point
         trajectory.velocities[motor][window_start_idx + 1 : window_end_idx : 2] = (
             lower_to_mid_velocities + mid_to_upper_velocities
         ) / 2
@@ -200,21 +200,21 @@ class _Trajectory:
 
         scan_size = len(slice)
         # List of indices of the first frame of a collection window, after a gap
-        collection_windows: list[int] = np.where(slice.gap)[0].tolist()
+        collection_window_idxs: list[int] = np.where(slice.gap)[0].tolist()
         motors = slice.axes()
 
         # Precompute gaps
         # We structure our trajectory as a list of collection windows and gap segments
         segments: list[FillableWindow] = []
         total_gap_points = 0
-        for collection_start, collection_end in zip(
-            collection_windows[:-1], collection_windows[1:], strict=False
+        for collection_start_idx, collection_end_idx in zip(
+            collection_window_idxs[:-1], collection_window_idxs[1:], strict=False
         ):
             # Add a collection window that we will fill later
             segments.append(
                 CollectionWindow(
-                    start=collection_start,
-                    end=collection_end,
+                    start=collection_start_idx,
+                    end=collection_end_idx,
                     slice=slice,
                     half_durations=half_durations,
                 )
@@ -224,7 +224,7 @@ class _Trajectory:
             # Get entry velocities, exit velocities, and distances across gap
             entry_velocities, exit_velocities, distances = (
                 _get_entry_and_exit_velocities(
-                    motors, slice, half_durations, collection_end
+                    motors, slice, half_durations, collection_end_idx
                 )
             )
 
@@ -236,7 +236,7 @@ class _Trajectory:
             gap_segment = _calculate_profile_from_velocities(
                 motors,
                 slice,
-                collection_end,
+                collection_end_idx,
                 time_arrays,
                 velocity_arrays,
             )
@@ -244,13 +244,15 @@ class _Trajectory:
             # Add a gap segment
             segments.append(gap_segment)
 
-            total_gap_points += gap_segment.gap_length
+            total_gap_points += len(gap_segment)
 
         # "collection_windows" does not include final window,
         # as no subsequeny gap to mark its termination
         # So, we add it here, ending it at the end of the slice
         segments.append(
-            CollectionWindow(collection_windows[-1], len(slice), slice, half_durations)
+            CollectionWindow(
+                collection_window_idxs[-1], len(slice), slice, half_durations
+            )
         )
 
         positions: dict[Motor, npt.NDArray[np.float64]] = {}
@@ -260,7 +262,9 @@ class _Trajectory:
         # Trajectory size calculated from 2 points per frame (midpoint and upper)
         # Plus an initial lower point at the start of every collection window
         # Plus PVT points added between collection windows (gaps)
-        trajectory_size = (2 * scan_size + len(collection_windows)) + total_gap_points
+        trajectory_size = (
+            2 * scan_size + len(collection_window_idxs)
+        ) + total_gap_points
         positions = {motor: np.empty(trajectory_size, float) for motor in motors}
         velocities = {motor: np.empty(trajectory_size, float) for motor in motors}
         durations: npt.NDArray[np.float64] = np.empty(trajectory_size, float)
@@ -622,7 +626,7 @@ def _calculate_profile_from_velocities(
         These instantaneous velocities are integrated over each Δt to yield
         positions aligned with the global timeline.
     """
-    # Combine all per-axis time points into a single sorted arrat of times
+    # Combine all per-axis time points into a single sorted array of times
     # This way we can evaluate each motor along the same timeline
     # We know all axes positions at t=0, so we drop this point
     combined_times = np.sort(np.unique(np.concatenate(list(time_arrays.values()))))[1:]
@@ -631,15 +635,15 @@ def _calculate_profile_from_velocities(
     # We do this by substracting against previous cumulative time
     time_intervals = np.diff(np.concatenate(([0.0], combined_times))).tolist()
 
-    # We also now all axes positions when t=t_final, so we drop this point
+    # We also know all axes positions when t=t_final, so we drop this point
     # However, we need the interval for the next collection window, so we store it
     *time_intervals, final_interval = time_intervals
     combined_times = combined_times[:-1]
     num_intervals = len(time_intervals)
 
-    # Prepare dicts for the resulting position and velocity profiles over the turnaround
-    turnaround_profile: dict[Motor, npt.NDArray[np.float64]] = {}
-    turnaround_velocity: dict[Motor, npt.NDArray[np.float64]] = {}
+    # Prepare dicts for the resulting position and velocity profiles over the gap
+    positions: dict[Motor, npt.NDArray[np.float64]] = {}
+    velocities: dict[Motor, npt.NDArray[np.float64]] = {}
 
     # Loop over each motor and integrate its velocity profile over the unified times
     for motor in motors:
@@ -653,13 +657,13 @@ def _calculate_profile_from_velocities(
         axis_idx = 1  # index into this axis's velocity/time arrays
 
         # Allocate output arrays for this motor with correct size
-        turnaround_profile[motor] = np.empty(num_intervals, dtype=np.float64)
-        turnaround_velocity[motor] = np.empty(num_intervals, dtype=np.float64)
+        positions[motor] = np.empty(num_intervals, dtype=np.float64)
+        velocities[motor] = np.empty(num_intervals, dtype=np.float64)
 
         # Step through each interval in the Δt list
         for i, dt in enumerate(time_intervals):
             next_vel = axis_velocities[axis_idx]
-            prev_axis_vel = axis_velocities[axis_idx - 1]
+            prev_vel = axis_velocities[axis_idx - 1]
             axis_dt = axis_times[axis_idx] - axis_times[axis_idx - 1]
 
             if np.isclose(combined_times[i], axis_times[axis_idx]):
@@ -676,7 +680,7 @@ def _calculate_profile_from_velocities(
                 # for this motor
                 frac = time_since_prev_axis_point / axis_dt
                 # Interpolate for our velocity
-                this_vel = prev_axis_vel + frac * (next_vel - prev_axis_vel)
+                this_vel = prev_vel + frac * (next_vel - prev_vel)
 
             # Integrate velocity over this interval to update position.
             # Using the trapezoidal rule:
@@ -685,14 +689,14 @@ def _calculate_profile_from_velocities(
             prev_vel = this_vel  # update for next loop
 
             # Store the computed position and velocity for this interval
-            turnaround_profile[motor][i] = axis_position
-            turnaround_velocity[motor][i] = this_vel
+            positions[motor][i] = axis_position
+            velocities[motor][i] = this_vel
 
-    profile_length = len(turnaround_profile[motors[0]])  # Motors have same gap lengths
+    gap_length = len(positions[motors[0]])  # Motors have same gap lengths
 
     return GapSegment(
-        positions=turnaround_profile,
-        velocities=turnaround_velocity,
+        positions=positions,
+        velocities=velocities,
         duration=time_intervals + [final_interval],
-        gap_length=profile_length,
+        gap_length=gap_length,
     )
