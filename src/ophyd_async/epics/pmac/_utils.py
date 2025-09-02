@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Sequence
 from dataclasses import dataclass
+from enum import IntEnum
 from typing import Protocol
 
 import numpy as np
@@ -24,6 +25,12 @@ from ._pmac_io import CS_LETTERS, PmacIO
 TICK_S = 0.000001
 MIN_TURNAROUND = 0.002
 MIN_INTERVAL = 0.002
+
+
+class UserProgram(IntEnum):
+    COLLECTION_WINDOW = 1
+    GAP = 2
+    END = 8
 
 
 class FillableSegment(Protocol):
@@ -95,7 +102,7 @@ class GapSegment:
 
         trajectory.user_programs[
             index_into_trajectory : index_into_trajectory + num_gap_points
-        ] = 2
+        ] = UserProgram.GAP
 
 
 class CollectionWindow:
@@ -174,7 +181,9 @@ class CollectionWindow:
             2,
         )
 
-        trajectory.user_programs[window_start_idx:window_end_idx] = 1
+        trajectory.user_programs[window_start_idx:window_end_idx] = (
+            UserProgram.COLLECTION_WINDOW
+        )
 
 
 @dataclass
@@ -269,7 +278,7 @@ class _Trajectory:
         positions = {motor: np.empty(trajectory_size, float) for motor in motors}
         velocities = {motor: np.empty(trajectory_size, float) for motor in motors}
         durations: npt.NDArray[np.float64] = np.empty(trajectory_size, float)
-        user_programs: npt.NDArray[np.int32] = np.empty(trajectory_size, float)
+        user_programs: npt.NDArray[np.int32] = np.empty(trajectory_size, int)
         # Ramp up time for start of collection window
         durations[0] = int(ramp_up_time / TICK_S)
 
@@ -339,7 +348,7 @@ class _Trajectory:
         ramp_down_velocity: float,
     ) -> _Trajectory:
         self.durations = np.append(self.durations, [int(ramp_down_time / TICK_S)])
-        self.user_programs = np.append(self.user_programs, 8)
+        self.user_programs = np.append(self.user_programs, UserProgram.END)
         for motor in ramp_down_pos.keys():
             self.positions[motor] = np.append(
                 self.positions[motor], [ramp_down_pos[motor]]
