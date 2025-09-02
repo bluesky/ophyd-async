@@ -51,15 +51,16 @@ class GapSegment:
         positions: dict[Motor, np.ndarray],
         velocities: dict[Motor, np.ndarray],
         duration: list[float],
-        gap_length: int,
     ):
         self.positions = positions
         self.velocities = velocities
         self.duration = duration
-        self.gap_length = gap_length
 
     def __len__(self):
-        return self.gap_length
+        # Gap length is the number of per-axis position points
+        # This number is identical for all motors
+        # as all motors follow a unified timeline through a gap
+        return next(iter(self.positions.values())).shape[0]
 
     def insert_positions_and_velocities_into_trajectory(
         self,
@@ -652,7 +653,9 @@ def _calculate_profile_from_velocities(
         axis_position = slice.upper[motor][
             gap - 1
         ]  # start position at beginning of the gap
-        prev_vel = axis_velocities[0]  # last velocity seen (start at initial velocity)
+        prev_interval_vel = axis_velocities[
+            0
+        ]  # last velocity seen from the previous global time interval
         time_since_prev_axis_point = 0.0  # elapsed time since the last velocity point
         axis_idx = 1  # index into this axis's velocity/time arrays
 
@@ -684,19 +687,16 @@ def _calculate_profile_from_velocities(
 
             # Integrate velocity over this interval to update position.
             # Using the trapezoidal rule:
-            delta_pos = 0.5 * (prev_vel + this_vel) * dt
+            delta_pos = 0.5 * (prev_interval_vel + this_vel) * dt
             axis_position += delta_pos
-            prev_vel = this_vel  # update for next loop
+            prev_interval_vel = this_vel  # update for next loop
 
             # Store the computed position and velocity for this interval
             positions[motor][i] = axis_position
             velocities[motor][i] = this_vel
 
-    gap_length = len(positions[motors[0]])  # Motors have same gap lengths
-
     return GapSegment(
         positions=positions,
         velocities=velocities,
         duration=time_intervals + [final_interval],
-        gap_length=gap_length,
     )
