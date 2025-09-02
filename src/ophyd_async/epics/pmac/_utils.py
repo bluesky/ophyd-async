@@ -28,18 +28,33 @@ MIN_INTERVAL = 0.002
 
 
 class UserProgram(IntEnum):
-    COLLECTION_WINDOW = 1
-    GAP = 2
-    END = 8
+    COLLECTION_WINDOW = 1  # Period within a collection window
+    GAP = 2  # Transition period between collection windows
+    END = 8  # Post-scan state
 
 
 class FillableSegment(Protocol):
+    """Protocol for trajectory segments that can insert their data into a trajectory.
+
+    A 'FillableSegment' represents a contiguous portion of a trajectory
+    that knows how to:
+      - Insert its motor positions and velocities into a '_Trajectory'.
+      - Insert its durations and associated user programs into a '_Trajectory'.
+      - Report its own length.
+    """
+
     def insert_positions_and_velocities_into_trajectory(
         self,
         index_into_trajectory: int,
         trajectory: _Trajectory,
         motor: Motor,
     ) -> None:
+        """Insert segment's positions and velocities for a given motor.
+
+        :param index_into_trajectory: Index into the trajectory this segment is inserted
+        :param trajectory: Instance of '_Trajectory' that will be populated
+        :param motor: Motor we are populating '_Trajectory' for
+        """
         pass
 
     def insert_durations_and_user_programs_into_trajectory(
@@ -47,9 +62,16 @@ class FillableSegment(Protocol):
         index_into_trajectory: int,
         trajectory: _Trajectory,
     ) -> None:
+        """Insert segment's durations and user programs.
+
+        :param index_into_trajectory: Index into the trajectory this segment is inserted
+        :param trajectory: Instance of '_Trajectory' that will be populated
+        """
         pass
 
-    def __len__(self) -> int: ...
+    def __len__(self) -> int:
+        """Return the number of trajectory points in this segment."""
+        ...
 
 
 class GapSegment:
@@ -59,6 +81,12 @@ class GapSegment:
         velocities: dict[Motor, np.ndarray],
         duration: list[float],
     ):
+        """Represents a gap between collection windows in a trajectory.
+
+        :param positions: Motor to gap positions
+        :param velocities: Motor to gap velocities
+        :param duration: List of time required to achieve gap point
+        """
         self.positions = positions
         self.velocities = velocities
         self.duration = duration
@@ -75,6 +103,11 @@ class GapSegment:
         trajectory: _Trajectory,
         motor: Motor,
     ):
+        """Inserts gap positions and velocities into the trajectory.
+
+        This function will populate a '_Trajectory' with the current 'GapSegment's
+        pre-computed positions and velocities for a given motor.
+        """
         num_gap_points = self.__len__()
         # Update how many gap points we've added so far
         # Insert gap points into end of collection window
@@ -90,6 +123,11 @@ class GapSegment:
         index_into_trajectory: int,
         trajectory: _Trajectory,
     ) -> None:
+        """Inserts gap durations and user programs into the trajectory.
+
+        This function will populate a '_Trajectory' with the current 'GapSegment's
+        pre-computed durations and set user programs to 'UserProgram.GAP'.
+        """
         num_gap_points = self.__len__()
         # We append an extra duration (i.e., num_gap_points + 1)
         # This is because we need to insert the duration it takes
@@ -109,6 +147,13 @@ class CollectionWindow:
     def __init__(
         self, start: int, end: int, slice: Slice, half_durations: npt.NDArray[float64]
     ):
+        """Represents a collection window in a trajectory.
+
+        :param start: Index into slice where this collection window starts
+        :param end: Index into slice where this collection window ends
+        :param slice: Information about a series of scan frames along a number of axes
+        :param half_durations: Array of half the time required to get to a frame
+        """
         self.start = start
         self.end = end
         self.slice = slice
@@ -123,6 +168,19 @@ class CollectionWindow:
         trajectory: _Trajectory,
         motor: Motor,
     ):
+        """Inserts collection window positions and velocities into the trajectory.
+
+        For all frames of the slice that fall within this window, this function will:
+          - Insert an initial lower point to the trajectory
+          - Insert a sequence of midpoint → upper → midpoint → ... → upper points
+            until window ends
+          - Calculate and insert a 2 point average velocity from the initial
+            lower → midpoint (for the first velocity) and from the final
+            midpoint → upper (for last velocity)
+          - Calculate and insert 3 point average velocities from intermediate
+            points, as these points have a previous and next point to use in the
+            calculation
+        """
         window_start_idx = index_into_trajectory
         window_end_idx = index_into_trajectory + self.__len__()
 
@@ -173,6 +231,16 @@ class CollectionWindow:
         index_into_trajectory: int,
         trajectory: _Trajectory,
     ) -> None:
+        """Inserts collection window durations and user programs into the trajectory.
+
+        For all frames from the slice that fall within this window, this function will:
+          - Insert a half duration for each midpoint and upper in the window,
+            where a full duration is the duration of the corresponding slice frame
+          - Insert user programs into the window as 'UserProgram.COLLECTION_WINDOW'
+
+        Note: this function will not insert the first duration of the window,
+        as this must be filled in by preceding ramp up duration or a gap segment
+        """
         window_start_idx = index_into_trajectory
         window_end_idx = index_into_trajectory + self.__len__()
 
@@ -460,6 +528,22 @@ class _PmacMotorInfo:
 def calculate_ramp_position_and_duration(
     slice: Slice[Motor], motor_info: _PmacMotorInfo, is_up: bool
 ) -> tuple[dict[Motor, np.float64], float]:
+    """Calculate the the required ramp position and duration of a trajectory.
+
+    This function will:
+      - Calculate the ramp time required to achieve each motor's
+        initial entry velocity into the first frame of a slice
+        or final exit velocity out of the last frame of a slice
+      - Use the longest ramp time to calculate all motor's
+        ramp up positions.
+
+    :param slice: Information about a series of scan frames along a number of axes
+    :param motor_info: Instance of _PmacMotorInfo
+    :param is_up: Boolean representing ramping up into a frame or down out of a frame
+    :returns tuple: A tuple containing:
+        dict: Motor to ramp positions
+        float: Ramp time required for all motors
+    """
     if slice.duration is None:
         raise ValueError("Slice must have a duration")
 
@@ -496,6 +580,30 @@ def _get_velocity_profile(
     end_velocities: dict[Motor, np.float64],
     distances: dict[Motor, float],
 ) -> tuple[dict[Motor, npt.NDArray[np.float64]], dict[Motor, npt.NDArray[np.float64]]]:
+    """Generate time and velocity profiles for motors across a gap.
+
+    For each motor, a `VelocityProfile` is constructed.
+    Profiles are iteratively recalculated to converge on a
+    consistent minimum total gap time across all motors.
+
+    This function will:
+      - Initialise with a minimum turnaround time (`MIN_TURNAROUND`).
+      - Build a velocity profile for each motor and determine the total
+        move time required.
+      - Update the minimum total gap time to the maximum of these totals.
+      - Repeat until all profiles agree on the same minimum time or an
+        iteration limit (i.e., 2) is reached.
+
+    :param motors: Sequence of motors involved in trajectory
+    :param motor_info: Instance of _PmacMotorInfo
+    :param start_velocities: Motor velocities at start of gap
+    :param end_velocities: Motor velocities at end of gap
+    :param distances: Motor distances required to travel accross gap
+    :raises ValueError: Cannot converge on common minimum time in 2 iterations
+    :returns tuple: A tuple containing:
+        dict: Motor's absolute timestamps of their velocity changes
+        dict: Motor's velocity changes
+    """
     profiles: dict[Motor, VelocityProfile] = {}
     time_arrays = {}
     velocity_arrays = {}
@@ -514,7 +622,7 @@ def _get_velocity_profile(
                 distances[motor],
                 min_time,
                 motor_info.motor_acceleration_rate[motor],
-                motor_info.motor_cs_index[motor],
+                motor_info.motor_max_velocity[motor],
                 0,
                 MIN_INTERVAL,
             )
@@ -549,6 +657,25 @@ def _get_entry_and_exit_velocities(
     dict[Motor, np.float64],
     dict[Motor, float],
 ]:
+    """Compute motor entry and exit velocities across a gap.
+
+    For each motor, this function:
+      - Calculates the midpoint velocity before and after the gap
+      - Uses midpoint distances (lower → midpoint and midpoint → upper) to
+        calculate the velocity just before entering the gap (entry velocity)
+        and just after exiting the gap (exit velocity).
+      - Computes the travel distance across the gap from the upper point of
+        the preceding frame to the lower point of the following frame.
+
+    :param motors: Sequence of motors involved in trajectory
+    :param slice: Information about a series of scan frames along a number of axes
+    :param half_durations: Array of half the time required to get to a frame
+    :param gap: Index into the slice where gap has occured
+    :returns tuple: A tuple containing:
+        dict: Motor to entry velocity into gap
+        dict: Motor to exit velocity out of gap
+        dict: Motor to distance to travel across gap
+    """
     entry_velocities: dict[Motor, np.float64] = {}
     exit_velocities: dict[Motor, np.float64] = {}
     distances: dict[Motor, float] = {}
@@ -637,6 +764,13 @@ def _calculate_profile_from_velocities(
 
         These instantaneous velocities are integrated over each Δt to yield
         positions aligned with the global timeline.
+
+    :param motors: Sequence of motors involved in trajectory
+    :param slice: Information about a series of scan frames along a number of axes
+    :param gap: Index into slice where gap has occured
+    :param time_arrays: Motor's absolute timestamps of velocity changes
+    :param velocity_arrays: Motor's velocity changes
+    :returns GapSegment: Class representing a segment of a trajectory that is a gap
     """
     # Combine all per-axis time points into a single sorted array of times
     # This way we can evaluate each motor along the same timeline
