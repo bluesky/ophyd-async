@@ -19,7 +19,6 @@ def test_create_jungfrau_external_triggering_info():
     assert create_jungfrau_external_triggering_info(
         total_triggers=5,
         exposure_time_s=0.01,
-        period_between_frames_s=0.02,
     ) == TriggerInfo(
         number_of_events=5,
         trigger=DetectorTrigger.EDGE_TRIGGER,
