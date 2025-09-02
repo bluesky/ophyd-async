@@ -547,7 +547,7 @@ def _get_entry_and_exit_velocities(
         #            x
         #        x       x
         #    x               x
-        #    vl  vlp vp  vpu vu
+        #    vl  vlm vm  vmu vu
         # Given distances from Frame, lower, midpoint, upper, calculate
         # vl for entry into gap (i.e., gap-1) and vu for exit out of gap
         entry_lower_upper_distance = (
@@ -560,18 +560,20 @@ def _get_entry_and_exit_velocities(
         )
         exit_midpoint_velocity = exit_lower_upper_distance / (2 * half_durations[gap])
 
-        # For entry, halfway point is vlp, so calculate dlp
+        # For entry, halfway point is vlm
+        # so calculate lower to midpoint distance (i.e., dlm)
         lower_midpoint_distance = (
             slice.midpoints[motor][gap - 1] - slice.lower[motor][gap - 1]
         )
-        # For exit, halfway point is vpu, so calculate dpu
+        # For exit, halfway point is vmu
+        # so calculate midpoint to upper distance (i.e., dmu)
         midpoint_upper_distance = slice.upper[motor][gap] - slice.midpoints[motor][gap]
 
         # Extrapolate to get our entry or exit velocity
         # For example:
-        # (vl + vp) / 2 = vlp
-        # so vl = 2 * vlp - vp
-        # where vlp = dlp / (t/2)
+        # (vl + vm) / 2 = vlm
+        # so vl = 2 * vlm - vm
+        # where vlm = dlm / (t/2)
         # Therefore, velocity from point just before gap
         entry_velocities[motor] = (
             2 * (lower_midpoint_distance / half_durations[gap - 1])
