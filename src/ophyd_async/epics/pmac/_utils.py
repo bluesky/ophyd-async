@@ -26,7 +26,7 @@ MIN_TURNAROUND = 0.002
 MIN_INTERVAL = 0.002
 
 
-class FillableWindow(Protocol):
+class FillableSegment(Protocol):
     def insert_positions_and_velocities_into_trajectory(
         self,
         index_into_trajectory: int,
@@ -206,7 +206,7 @@ class _Trajectory:
 
         # Precompute gaps
         # We structure our trajectory as a list of collection windows and gap segments
-        segments: list[FillableWindow] = []
+        segments: list[FillableSegment] = []
         total_gap_points = 0
         for collection_start_idx, collection_end_idx in zip(
             collection_window_idxs[:-1], collection_window_idxs[1:], strict=False
