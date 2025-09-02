@@ -243,7 +243,7 @@ class NDPluginCBIO(NDPluginBaseIO):
     pre_count: A[SignalRW[int], PvSuffix.rbv("PreCount")]
     post_count: A[SignalRW[int], PvSuffix.rbv("PostCount")]
     preset_trigger_count: A[SignalRW[int], PvSuffix.rbv("PresetTriggerCount")]
-    trigger: A[SignalRW[bool], PvSuffix.rbv("Trigger")]
+    trigger_: A[SignalRW[bool], PvSuffix.rbv("Trigger")]
     capture: A[SignalRW[bool], PvSuffix.rbv("Capture")]
     flush_on_soft_trg: A[
         SignalRW[NDCBFlushOnSoftTrgMode], PvSuffix.rbv("FlushOnSoftTrg")

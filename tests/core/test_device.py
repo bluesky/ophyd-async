@@ -16,6 +16,7 @@ from ophyd_async.core import (
     soft_signal_rw,
     wait_for_connection,
 )
+from ophyd_async.core._device import DEVICE_RESERVED_ATTRS  # noqa: PLC2701
 from ophyd_async.epics import motor
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -65,6 +66,19 @@ class DeviceWithRefToSignal(Device):
 
     def get_source(self) -> str:
         return self.signal_ref().source
+
+
+@pytest.mark.parametrize("attr_name", DEVICE_RESERVED_ATTRS)
+def test_attr_in_bluesky_protocols(attr_name):
+    class DeviceWithProtocolName(Device):
+        def __init__(self, name: str = "") -> None:
+            super().__init__(name)
+            # use setattr so we can inject the name dynamically
+            setattr(self, attr_name, soft_signal_rw(int, name="foo"))
+
+    expected_msg = f"Please use `{attr_name}_` instead"
+    with pytest.raises(NameError, match=expected_msg):
+        DeviceWithProtocolName("bar")
 
 
 async def test_device_connect_missing_connector() -> None:

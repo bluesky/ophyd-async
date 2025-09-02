@@ -70,6 +70,35 @@ class DeviceConnector:
         await wait_for_connection(**coros)
 
 
+DEVICE_RESERVED_ATTRS = {
+    "name",
+    "collect_asset_docs",
+    "get_index",
+    "read_configuration",
+    "describe_configuration",
+    "trigger",
+    "prepare",
+    "read",
+    "describe",
+    "describe_collect",
+    "collect",
+    "collect_pages",
+    "set",
+    "locate",
+    "kickoff",
+    "complete",
+    "stage",
+    "unstage",
+    "pause",
+    "resume",
+    "stop",
+    "subscribe",
+    "clear_sub",
+    "check_value",
+    "hints",
+}
+
+
 class Device(HasName):
     """Common base class for all Ophyd Async Devices.
 
@@ -143,7 +172,14 @@ class Device(HasName):
     def __setattr__(self, name: str, value: Any) -> None:
         # Bear in mind that this function is called *a lot*, so
         # we need to make sure nothing expensive happens in it...
-        if name == "parent":
+        if name in _not_device_attrs:
+            pass
+        elif name in DEVICE_RESERVED_ATTRS:
+            raise NameError(
+                f"`{name}` is used in one of the bluesky protocols. "
+                f"Please use `{name}_` instead."
+            )
+        elif name == "parent":
             if self.parent not in (value, None):
                 raise TypeError(
                     f"Cannot set the parent of {self} to be {value}: "
@@ -151,7 +187,7 @@ class Device(HasName):
                 )
         # ...hence not doing an isinstance check for attributes we
         # know not to be Devices
-        elif name not in _not_device_attrs and isinstance(value, Device):
+        elif isinstance(value, Device):
             value.parent = self
             self._child_devices[name] = value
             # And if the name is set, then set the name of all children,
