@@ -1,20 +1,9 @@
-import pytest
-
 from ophyd_async.core import DetectorTrigger, TriggerInfo
 from ophyd_async.fastcs.jungfrau import (
     create_jungfrau_external_triggering_info,
     create_jungfrau_internal_triggering_info,
     create_jungfrau_pedestal_triggering_info,
 )
-from ophyd_async.fastcs.jungfrau._utils import (
-    _validate_then_get_deadtime,  # noqa: PLC2701
-)
-
-
-def test_validate_then_get_deadtime():
-    with pytest.raises(ValueError):
-        _validate_then_get_deadtime(1, 0.5)
-    assert _validate_then_get_deadtime(1, 2) == 1
 
 
 def test_create_jungfrau_internal_triggering_info():
@@ -34,7 +23,6 @@ def test_create_jungfrau_external_triggering_info():
     ) == TriggerInfo(
         number_of_events=5,
         trigger=DetectorTrigger.EDGE_TRIGGER,
-        deadtime=0.01,
         livetime=0.01,
     )
 
