@@ -265,13 +265,13 @@ class _Trajectory:
     def from_slice(
         cls, slice: Slice[Motor], ramp_up_time: float, motor_info: _PmacMotorInfo
     ) -> _Trajectory:
-        """Parse a trajectory with no gaps from a slice.
+        """Parse a trajectory from a slice.
 
         :param slice: Information about a series of scan frames along a number of axes
         :param ramp_up_duration: Time required to ramp up to speed
         :param ramp_down: Booleon representing if we ramp down or not
         :returns Trajectory: Data class representing our parsed trajectory
-        :raises RuntimeError: Slice must have no gaps and a duration array
+        :raises RuntimeError: Slice must a duration array
         """
         slice_duration = error_if_none(slice.duration, "Slice must have a duration")
         half_durations = slice_duration / 2
