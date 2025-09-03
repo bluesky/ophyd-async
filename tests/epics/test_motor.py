@@ -32,6 +32,8 @@ async def sim_motor():
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
     set_mock_value(sim_motor.velocity, 1)
+    set_mock_value(sim_motor.low_limit_travel, -10.01)
+    set_mock_value(sim_motor.high_limit_travel, 20.01)
     yield sim_motor
 
 
