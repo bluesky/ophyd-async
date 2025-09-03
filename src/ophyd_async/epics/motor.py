@@ -202,6 +202,8 @@ class Motor(
                 msg = "Mover has zero velocity"
                 raise ValueError(msg) from error
 
+        await self.check_motor_limit(old_position, new_position)
+
         move_status = self.user_setpoint.set(new_position, wait=True, timeout=timeout)
         async for current_position in observe_value(
             self.user_readback, done_status=move_status
