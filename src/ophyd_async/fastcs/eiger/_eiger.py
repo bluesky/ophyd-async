@@ -1,8 +1,10 @@
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     AsyncStatus,
     PathProvider,
     StandardDetector,
     TriggerInfo,
+    wait_for_value,
 )
 from ophyd_async.epics.eiger import Odin, OdinWriter
 
@@ -41,3 +43,8 @@ class EigerDetector(StandardDetector):
     @AsyncStatus.wrap
     async def prepare(self, value: TriggerInfo) -> None:
         await super().prepare(value)
+
+    @AsyncStatus.wrap
+    async def kickoff(self) -> None:
+        await super().kickoff()
+        await wait_for_value(self.odin.fan_ready, 1, DEFAULT_TIMEOUT)
