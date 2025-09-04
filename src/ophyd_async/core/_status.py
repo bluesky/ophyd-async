@@ -23,7 +23,7 @@ class AsyncStatusBase(Status, Awaitable[None]):
         if isinstance(awaitable, asyncio.Task):
             self.task = awaitable
         else:
-            self.task = asyncio.create_task(awaitable)
+            self.task = asyncio.create_task(awaitable, name="Unknown task")
         self.task.add_done_callback(self._run_callbacks)
         self._callbacks: list[Callback[Status]] = []
         self._name = name

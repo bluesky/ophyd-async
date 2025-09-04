@@ -1,4 +1,10 @@
+import asyncio
+import re
+import sys
+from asyncio import CancelledError
+from functools import partial
 from unittest.mock import patch
+import traceback
 
 import pytest
 
@@ -9,9 +15,13 @@ from ophyd_async.core import (
     SoftSignalBackend,
     NotConnected,
     SignalRW,
+    enhanced_gather,
+    AsyncStatus,
 )
 from ophyd_async.core import soft_signal_rw
 from ophyd_async.epics.core import epics_signal_rw
+from ophyd_async.epics.motor import Motor
+from ophyd_async.testing import get_mock_put, set_mock_value
 
 
 class ValueErrorBackend(SoftSignalBackend):
@@ -294,3 +304,88 @@ async def test_format_error_string_input():
     ):
         not_connected = NotConnected({"test": 123})
         str(not_connected)
+
+
+# Cancellation propagation is broken in asyncio.gather on Python 3.10, so the exception
+# with the message is not reachable via the __cause__ chain however you will still get
+# the message in the stack trace
+@pytest.mark.skipif(
+    sys.version_info < (3, 11), reason="https://github.com/python/cpython/issues/112534"
+)
+@pytest.mark.parametrize(
+    "set_to_delay, expected_message, expected_results",
+    [
+        [
+            "x",
+            "test_enhanced_gather_populates_cancelled_error_message_on_timeout.<locals>.async_func()",
+            None,
+        ],
+        ["y", "AsyncStatus, device: my_device", None],
+        ["z", "set z", None],
+        ["omega", "BL03I-MO-OMEGA", None],
+        [None, None, [1, None, 1, None]],
+    ],
+)
+async def test_enhanced_gather_populates_cancelled_error_message_on_timeout(
+    set_to_delay: str, expected_message: str, expected_results: list
+):
+    async def async_func(name: str, value: int) -> int:
+        if set_to_delay == name:
+            await asyncio.sleep(20)
+        return value
+
+    plain_awaitable = async_func("x", 1)
+
+    class GenericDevice(Device):
+        def __init__(self, name):
+            super().__init__(name)
+
+        @AsyncStatus.wrap
+        async def set(self, value: int):
+            await async_func("y", value)
+
+    class MotorDevice(Device):
+        def __init__(self, name):
+            self.omega = Motor("BL03I-MO-OMEGA")
+            super().__init__(name)
+
+        async def set_omega(self, value: int, *args, **kwargs):
+            await async_func("omega", value)
+
+    async_status_device = GenericDevice("my_device")
+    task_wrapped = asyncio.create_task(async_func("z", 1), name="set z")
+    motor_device = MotorDevice("my_motor_device")
+    await motor_device.connect(mock=True)
+    _patch_motor(motor_device.omega)
+    get_mock_put(motor_device.omega.user_setpoint).side_effect = motor_device.set_omega
+
+    gather_awaitable = enhanced_gather(
+        plain_awaitable,
+        async_status_device.set(1),
+        task_wrapped,
+        motor_device.omega.set(1),
+    )
+    if set_to_delay:
+        with pytest.raises(asyncio.TimeoutError) as exc_info:
+            await asyncio.wait_for(gather_awaitable, timeout=0.3)
+        cause = exc_info.value.__cause__
+        assert isinstance(cause, CancelledError)
+        assert _contains_message(cause, expected_message)
+    else:
+        results = await gather_awaitable
+        assert results == expected_results
+
+
+def _contains_message(e: BaseException, expected_message: str) -> bool:
+    return re.search(expected_message, e.args[0]) or (
+        e.__cause__ and _contains_message(e.__cause__, expected_message)
+    )
+
+
+def _patch_motor(motor: Motor, initial_position=0):
+    set_mock_value(motor.user_setpoint, initial_position)
+    set_mock_value(motor.user_readback, initial_position)
+    set_mock_value(motor.deadband, 0.001)
+    set_mock_value(motor.motor_done_move, 1)
+    set_mock_value(motor.velocity, 3)
+    set_mock_value(motor.max_velocity, 5)
