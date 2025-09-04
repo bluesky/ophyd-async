@@ -16,6 +16,7 @@
 ophyd_async.fastcs.odin
 ophyd_async.fastcs.eiger
 ophyd_async.fastcs.panda
+ophyd_async.fastcs.jungfrau
 ```
 
 ## Submodules
