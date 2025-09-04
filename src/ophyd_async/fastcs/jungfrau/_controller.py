@@ -121,7 +121,7 @@ class JungfrauController(DetectorController):
                         self._driver.pedestal_mode_loops.set(
                             trigger_info.number_of_events
                         ),
-                        self._driver.pedestal_mode.set(PedestalMode.ON),
+                        self._driver.pedestal_mode_state.set(PedestalMode.ON),
                     ]
                 )
 

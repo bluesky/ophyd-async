@@ -73,9 +73,9 @@ class JungfrauDriverIO(Device):
     # this is frames per overall acquisition. In pedestal mode, this signal is not set.
     frames_per_acq: SignalRW[NonNegativeInt]
 
-    pedestal_mode: SignalRW[PedestalMode]
-    pedestal_mode_frames: SignalRW[int]
-    pedestal_mode_loops: SignalRW[int]
+    pedestal_mode_state: SignalRW[PedestalMode]
+    pedestal_mode_frames: SignalRW[NonNegativeInt]
+    pedestal_mode_loops: SignalRW[NonNegativeInt]
 
     gain_mode: SignalRW[GainMode]
 
