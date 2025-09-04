@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.2.dev6+g94e42663d documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.2.dev7+gd3123d179 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=617760dd"></script>
+    <script src="../../_static/documentation_options.js?v=7a84f0a9"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.2.dev6+g94e42663d documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.2.dev6+g94e42663d documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.2.dev7+gd3123d179 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.2.dev7+gd3123d179 documentation - Home"/>
   
   
 </a></div>
@@ -560,6 +560,12 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.motor.Motor.check_motor_limit">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_motor_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abs_start_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">abs_end_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/motor.html#Motor.check_motor_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.Motor.check_motor_limit" title="Link to this definition">#</a></dt>
+<dd><p>Check the motor limit with the absolute positions.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.Motor.prepare">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.FlyMotorInfo" title="ophyd_async.core.FlyMotorInfo"><span class="pre">FlyMotorInfo</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/motor.html#Motor.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.Motor.prepare" title="Link to this definition">#</a></dt>
 <dd><p>Move to the beginning of a suitable run-up distance ready for a fly scan.</p>
@@ -666,6 +672,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.MotorLimitsException"><code class="docutils literal notranslate"><span class="pre">MotorLimitsException</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor"><code class="docutils literal notranslate"><span class="pre">Motor</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.set_name"><code class="docutils literal notranslate"><span class="pre">Motor.set_name()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.check_motor_limit"><code class="docutils literal notranslate"><span class="pre">Motor.check_motor_limit()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.prepare"><code class="docutils literal notranslate"><span class="pre">Motor.prepare()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.kickoff"><code class="docutils literal notranslate"><span class="pre">Motor.kickoff()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.motor.Motor.complete"><code class="docutils literal notranslate"><span class="pre">Motor.complete()</span></code></a></li>

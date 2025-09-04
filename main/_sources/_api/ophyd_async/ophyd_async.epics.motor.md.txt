@@ -49,6 +49,15 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.L
 
 ````
 
+````{py:method} check_motor_limit(abs_start_pos: float, abs_end_pos: float)
+:canonical: ophyd_async.epics.motor.Motor.check_motor_limit
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.motor.Motor.check_motor_limit
+```
+
+````
+
 ````{py:method} prepare(value: ~ophyd_async.core.FlyMotorInfo)
 :canonical: ophyd_async.epics.motor.Motor.prepare
 :async:
