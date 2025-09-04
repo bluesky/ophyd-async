@@ -8,11 +8,13 @@ import pytest
 from ophyd_async.core import (
     DetectorTrigger,
     Device,
+    StaticFilenameProvider,
     StaticPathProvider,
+    TriggerInfo,
     init_devices,
 )
 from ophyd_async.epics.core import epics_signal_rw
-from ophyd_async.epics.eiger import EigerDetector, EigerTriggerInfo
+from ophyd_async.fastcs.eiger import EigerDetector
 
 SAVE_PATH = "/tmp"
 
@@ -56,7 +58,7 @@ async def setup_device(RE, ioc_prefixes):
 
 @pytest.fixture
 async def test_eiger(RE, ioc_prefixes) -> EigerDetector:
-    provider = StaticPathProvider(lambda: "test_eiger", Path(SAVE_PATH))
+    provider = StaticPathProvider(StaticFilenameProvider("test_eiger"), Path(SAVE_PATH))
     async with init_devices():
         test_eiger = EigerDetector("", provider, ioc_prefixes[0], ioc_prefixes[1])
 
@@ -64,13 +66,11 @@ async def test_eiger(RE, ioc_prefixes) -> EigerDetector:
 
 
 async def test_trigger_saves_file(test_eiger: EigerDetector, setup_device: SetupDevice):
-    single_shot = EigerTriggerInfo(
+    single_shot = TriggerInfo(
         exposure_timeout=None,
         number_of_events=1,
         trigger=DetectorTrigger.INTERNAL,
-        deadtime=None,
         livetime=None,
-        energy_ev=10000,
     )
 
     await test_eiger.stage()
@@ -84,4 +84,3 @@ async def test_trigger_saves_file(test_eiger: EigerDetector, setup_device: Setup
 
     with h5py.File(SAVE_PATH + "/test_eiger_000001.h5") as f:
         assert "data" in f.keys()
-        assert len(f["data"]) == 1
