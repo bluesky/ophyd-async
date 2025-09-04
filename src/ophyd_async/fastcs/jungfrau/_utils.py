@@ -2,10 +2,13 @@ from pydantic import PositiveInt
 
 from ophyd_async.core import DetectorTrigger, TriggerInfo
 
+from ._controller import JUNGFRAU_DEADTIME_S
+
 
 def create_jungfrau_external_triggering_info(
     total_triggers: PositiveInt,
     exposure_time_s: float,
+    deadtime_s: float = JUNGFRAU_DEADTIME_S,
 ) -> TriggerInfo:
     """Create safe Jungfrau TriggerInfo for external triggering.
 
@@ -16,6 +19,7 @@ def create_jungfrau_external_triggering_info(
     Args:
         total_triggers: Total external triggers expected before ending acquisition.
         exposure_time_s: How long to expose the detector for each of its frames.
+        deadtime_s: Time between exposures
 
     Returns:
         `TriggerInfo`
@@ -24,6 +28,7 @@ def create_jungfrau_external_triggering_info(
         number_of_events=total_triggers,
         trigger=DetectorTrigger.EDGE_TRIGGER,
         livetime=exposure_time_s,
+        deadtime=deadtime_s,
     )
 
 
