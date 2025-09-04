@@ -32,6 +32,8 @@ async def sim_motor():
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
     set_mock_value(sim_motor.velocity, 1)
+    set_mock_value(sim_motor.low_limit_travel, -10.01)
+    set_mock_value(sim_motor.high_limit_travel, 20.01)
     yield sim_motor
 
 
@@ -144,6 +146,26 @@ async def test_set_with_zero_velocity(sim_motor: motor.Motor) -> None:
     await sim_motor.velocity.set(0)
     with pytest.raises(ValueError, match="Mover has zero velocity"):
         await sim_motor.set(3.14)
+
+
+@pytest.mark.parametrize(
+    "position, upper_limit, lower_limit",
+    [
+        (-10, 9.99, -9.99),  # Goes below lower_limit
+        (10, 9.99, -9.99),  # Goes above upper_limit
+    ],
+)
+async def test_set_motor_limits_error(
+    sim_motor: motor.Motor,
+    position,
+    upper_limit,
+    lower_limit,
+):
+    set_mock_value(sim_motor.velocity, 10)
+    set_mock_value(sim_motor.low_limit_travel, lower_limit)
+    set_mock_value(sim_motor.high_limit_travel, upper_limit)
+    with pytest.raises(motor.MotorLimitsException):
+        await sim_motor.set(position)
 
 
 @pytest.mark.parametrize(
