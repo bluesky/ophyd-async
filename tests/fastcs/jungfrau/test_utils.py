@@ -1,5 +1,6 @@
 from ophyd_async.core import DetectorTrigger, TriggerInfo
 from ophyd_async.fastcs.jungfrau import (
+    JUNGFRAU_DEADTIME_S,
     create_jungfrau_external_triggering_info,
     create_jungfrau_internal_triggering_info,
     create_jungfrau_pedestal_triggering_info,
@@ -23,6 +24,7 @@ def test_create_jungfrau_external_triggering_info():
         number_of_events=5,
         trigger=DetectorTrigger.EDGE_TRIGGER,
         livetime=0.01,
+        deadtime=JUNGFRAU_DEADTIME_S,
     )
 
 
@@ -33,7 +35,7 @@ def test_create_external_triggering_info_regular_deadtime_if_period_not_specifie
     ) == TriggerInfo(
         number_of_events=5,
         trigger=DetectorTrigger.EDGE_TRIGGER,
-        deadtime=0,
+        deadtime=JUNGFRAU_DEADTIME_S,
         livetime=0.01,
     )
 
