@@ -106,7 +106,6 @@ class Motor(
         # Readback should be named the same as its parent in read()
         self.user_readback.set_name(name)
 
-    @AsyncStatus.wrap
     async def check_motor_limit(self, abs_start_pos: float, abs_end_pos: float):
         """Check the motor limit with the absolute starting position and absolute ending position"""
         motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
