@@ -23,7 +23,13 @@ from ophyd_async.core import StandardReadableFormat as Format
 class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float]):
     """For usage when simulating a motor."""
 
-    def __init__(self, name="", instant=True, initial_value=0.0, units="mm") -> None:
+    def __init__(
+        self,
+        name: str = "",
+        instant: bool = True,
+        initial_value: float = 0.0,
+        units: str = "mm",
+    ) -> None:
         """Simulate a motor, with optional velocity.
 
         :param name: name of device
