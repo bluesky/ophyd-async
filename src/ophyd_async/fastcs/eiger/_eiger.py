@@ -4,7 +4,7 @@ from ophyd_async.core import (
     StandardDetector,
     TriggerInfo,
 )
-from ophyd_async.epics.eiger import Odin, OdinWriter
+from ophyd_async.epics.odin import Odin, OdinWriter
 
 from ._eiger_controller import EigerController
 from ._eiger_io import EigerDriverIO

@@ -69,7 +69,13 @@ async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
             [200000.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0], dtype=np.float64
         ),
     )
-    motor_info = _PmacMotorInfo("CS1", 1, {sim_x_motor: 6}, {sim_x_motor: 10})
+    motor_info = _PmacMotorInfo(
+        "CS1",
+        1,
+        {sim_x_motor: 6},
+        {sim_x_motor: 10},
+        {sim_x_motor: 10},
+    )
     ramp_down_position = {sim_x_motor: np.float64(7.2)}
     ramp_down_time = 0.2
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
@@ -112,7 +118,11 @@ async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
 async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmacIO, sim_x_motor, sim_y_motor = sim_motors
     motor_info = _PmacMotorInfo(
-        "CS1", 1, {sim_x_motor: 6, sim_y_motor: 7}, {sim_x_motor: 10, sim_y_motor: 20}
+        "CS1",
+        1,
+        {sim_x_motor: 6, sim_y_motor: 7},
+        {sim_x_motor: 10, sim_y_motor: 20},
+        {sim_x_motor: 10, sim_y_motor: 10},
     )
     coord = pmacIO.coord[motor_info.cs_number]
     ramp_up_position = {sim_x_motor: np.float64(-1.2), sim_y_motor: np.float64(-0.6)}
@@ -136,8 +146,10 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert coord_mock_calls[3] == call.defer_moves.put(False, wait=True)
 
 
-async def test_pmac_trajectory_kickoff(sim_motors: tuple[PmacIO, Motor, Motor]):
-    pmacIO, _, _ = sim_motors
+async def test_pmac_trajectory_kickoff_raises_exception_if_no_prepare(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmacIO, sim_x_motor, sim_y_motor = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
     with pytest.raises(RuntimeError, match="Cannot kickoff. Must call prepare first."):
         await pmac_trajectory.kickoff()
