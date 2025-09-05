@@ -85,7 +85,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             self.pmac.trajectory.profile_cs_name.set(motor_info.cs_port),
             self.pmac.trajectory.time_array.set(trajectory.durations),
             self.pmac.trajectory.user_array.set(trajectory.user_programs),
-            self.pmac.trajectory.points_to_build.set(len(trajectory.user_programs)),
+            self.pmac.trajectory.points_to_build.set(len(trajectory.durations)),
             self.pmac.trajectory.calculate_velocities.set(False),
         ] + [
             self.pmac.trajectory.use_axis[number].set(use)
