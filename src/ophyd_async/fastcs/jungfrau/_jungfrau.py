@@ -2,12 +2,12 @@ from ophyd_async.core import (
     PathProvider,
     StandardDetector,
 )
-from ophyd_async.epics.odin import Odin, OdinWriter
 from ophyd_async.fastcs.jungfrau._controller import JungfrauController
 from ophyd_async.fastcs.jungfrau._signals import JungfrauDriverIO
+from ophyd_async.fastcs.jungfrau._writer import JunfrauCommissioningWriter
 
 
-class Jungfrau(StandardDetector[JungfrauController, OdinWriter]):
+class Jungfrau(StandardDetector[JungfrauController, JunfrauCommissioningWriter]):
     """Ophyd-async implementation of a Jungfrau Detector."""
 
     def __init__(
@@ -20,11 +20,6 @@ class Jungfrau(StandardDetector[JungfrauController, OdinWriter]):
         name="",
     ):
         self.drv = JungfrauDriverIO(prefix + drv_suffix)
-        self.odin = Odin(prefix + hdf_suffix, nodes=odin_nodes)
-        writer = OdinWriter(
-            path_provider,
-            self.odin,
-            self.drv.bit_depth,
-        )
+        writer = JunfrauCommissioningWriter()
         controller = JungfrauController(self.drv)
         super().__init__(controller, writer, name=name)
