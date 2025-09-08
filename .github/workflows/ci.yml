@@ -20,10 +20,6 @@ jobs:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
         python-version: ["3.11", "3.12", "3.13"]
-        include:
-          # Include one that runs in the dev environment
-          - runs-on: "ubuntu-latest"
-            python-version: "dev"
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
@@ -31,9 +27,6 @@ jobs:
       python-version: ${{ matrix.python-version }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-  import_with_no_extras:
-    uses: ./.github/workflows/_import_with_no_extras.yml
 
   docs:
     uses: ./.github/workflows/_docs.yml

@@ -35,6 +35,8 @@ ca = ["aioca>=2.0a4"]
 pva = ["p4p>=4.2.0"]
 tango = ["pytango==10.0.2"]
 demo = ["ipython", "matplotlib", "pyqt6"]
+
+[dependency-groups]
 dev = [
     "ophyd_async[sim]",
     "ophyd_async[ca]",

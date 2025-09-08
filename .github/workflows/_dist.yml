@@ -27,10 +27,16 @@ jobs:
         run: pipx run twine check --strict dist/*
 
       - name: Install produced wheel
-        uses: ./.github/actions/install_requirements
-        with:
-          pip-install: dist/*.whl
+        run: python -m pip install dist/*.whl
 
       - name: Test module --version works using the installed wheel
         # If more than one module in src/ replace with module name to test
         run: python -m $(ls --hide='*.egg-info' src | head -1) --version
+
+      - name: Check APIs are importable
+        run: |
+          python -c "import ophyd_async"
+          python -c "import ophyd_async.core"
+          python -c "import ophyd_async.epics.core"
+          python -c "import ophyd_async.epics.motor"
+          python -c "import ophyd_async.plan_stubs"
