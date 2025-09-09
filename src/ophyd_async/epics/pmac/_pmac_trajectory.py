@@ -34,7 +34,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         ramp_down_pos, ramp_down_time = calculate_ramp_position_and_duration(
             slice, motor_info, False
         )
-        trajectory = _Trajectory.from_slice(slice, ramp_up_time)
+        trajectory = _Trajectory.from_slice(slice, ramp_up_time, motor_info)
         await asyncio.gather(
             self._build_trajectory(
                 trajectory, motor_info, ramp_down_pos, ramp_down_time
