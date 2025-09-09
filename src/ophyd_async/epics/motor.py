@@ -118,7 +118,7 @@ class Motor(
             or not motor_upper_limit >= abs_end_pos >= motor_lower_limit
         ):
             raise MotorLimitsException(
-                f"Motor trajectory for requested fly/move is from "
+                f"{self.name} motor trajectory for requested fly/move is from "
                 f"{abs_start_pos}{egu} to "
                 f"{abs_end_pos}{egu} but motor limits are "
                 f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
