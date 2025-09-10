@@ -20,6 +20,7 @@ from ._table import (
 )
 from ._trigger import (
     PcompInfo,
+    PosOutScaleOffset,
     ScanSpecInfo,
     ScanSpecSeqTableTriggerLogic,
     SeqTableInfo,
@@ -52,4 +53,5 @@ __all__ = [
     "StaticSeqTableTriggerLogic",
     "ScanSpecInfo",
     "ScanSpecSeqTableTriggerLogic",
+    "PosOutScaleOffset",
 ]

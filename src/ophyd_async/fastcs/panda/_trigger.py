@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import asyncio
+from dataclasses import dataclass
 
 import numpy as np
 from pydantic import Field
@@ -14,6 +17,7 @@ from ophyd_async.core import (
 from ophyd_async.epics.motor import Motor
 
 from ._block import (
+    CommonPandaBlocks,
     PandaBitMux,
     PandaPcompDirection,
     PandaTimeUnits,
@@ -65,17 +69,36 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
         await wait_for_value(self.seq.active, False, timeout=1)
 
 
+@dataclass
+class PosOutScaleOffset:
+    name: str
+    scale: float
+    offset: float
+
+    @classmethod
+    async def from_inenc(
+        cls, panda: CommonPandaBlocks, number: int
+    ) -> PosOutScaleOffset:
+        inenc = panda.inenc[number]
+        return cls(
+            name=f"INENC{number}.VAL",
+            scale=await inenc.val_scale.get_value(),
+            offset=await inenc.val_offset.get_value(),
+        )
+
+
 class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
-    def __init__(self, seq: SeqBlock, name="") -> None:
+    def __init__(
+        self, seq: SeqBlock, motor_pos_outs: dict[Motor, PosOutScaleOffset]
+    ) -> None:
         self.seq = seq
-        self.name = name
+        self.motor_pos_outs = motor_pos_outs
 
     async def prepare(self, value: ScanSpecInfo):
         await self.seq.enable.set(PandaBitMux.ZERO)
         slice = Path(value.spec.calculate()).consume()
         slice_duration = error_if_none(slice.duration, "Slice must have duration")
 
-        # gaps = self._calculate_gaps(slice)
         gaps = np.where(slice.gap)[0]
         if gaps[0] == 0:
             gaps = np.delete(gaps, 0)
@@ -83,9 +106,17 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
 
         gaps = np.append(gaps, scan_size)
         fast_axis = slice.axes()[-1]
+        if not self.motor_pos_outs.get(fast_axis):
+            raise RuntimeError("Failed to fetch motor")
+        else:
+            motor_pos_outs = self.motor_pos_outs
+            _, scale, _ = (
+                motor_pos_outs[fast_axis].name,
+                motor_pos_outs[fast_axis].scale,
+                motor_pos_outs[fast_axis].offset,
+            )
+            resolution = scale
 
-        # Resolution from PandA Encoder
-        resolution = await fast_axis.encoder_res.get_value()
         start = 0
 
         # GPIO goes low

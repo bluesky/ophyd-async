@@ -97,11 +97,19 @@ class PcapBlock(Device):
     arm: SignalRW[bool]
 
 
+class InencBlock(Device):
+    """In encoder block in the PandA."""
+
+    val_scale: SignalRW[float]
+    val_offset: SignalRW[float]
+
+
 class CommonPandaBlocks(Device):
     """Pandablocks device with blocks which are common and required on introspection."""
 
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcomp: DeviceVector[PcompBlock]
+    inenc: DeviceVector[InencBlock]
     pcap: PcapBlock
     data: DataBlock
