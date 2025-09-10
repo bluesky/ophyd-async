@@ -10,7 +10,7 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 from ophyd_async.fastcs.core import fastcs_connector
-
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_rw_rbv
 
 class JungfrauTriggerMode(StrictEnum):
     INTERNAL = "Internal"
@@ -86,9 +86,11 @@ class JungfrauDriverIO(Device):
     trigger_mode: SignalRW[JungfrauTriggerMode]
     detector_status: SignalR[DetectorStatus]
 
+
     def __init__(self, uri: str, name: str = ""):
         # Determines how the TriggerInfo gets mapped to the Jungfrau during prepare
         self.acquisition_type = soft_signal_rw(
             AcquisitionType, AcquisitionType.STANDARD
         )
+
         super().__init__(name=name, connector=fastcs_connector(self, uri))
