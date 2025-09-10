@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from scanspec.core import Path
 from scanspec.specs import Fly, Line, Spiral
@@ -46,8 +48,14 @@ async def test_line_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Motor
     _, sim_x_motor, _ = sim_motors
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 9))
     slice = Path(spec.calculate()).consume()
-
-    trajectory = _Trajectory.from_slice(slice, 2)
+    motor_info = _PmacMotorInfo(
+        "CS1",
+        1,
+        {sim_x_motor: 6},
+        {sim_x_motor: 10},
+        {sim_x_motor: 5},
+    )
+    trajectory = _Trajectory.from_slice(slice, 2, motor_info)
 
     assert trajectory.positions[sim_x_motor] == pytest.approx(
         [
@@ -118,7 +126,7 @@ async def test_line_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Motor
             1,
             1,
             1,
-            8,
+            1,
         ]
     ).all()
 
@@ -152,8 +160,14 @@ async def test_spiral_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Mot
     _, sim_x_motor, sim_y_motor = sim_motors
     spec = Spiral(sim_x_motor, sim_y_motor, 0, 0, 5, 5, 3)
     slice = Path(Fly(2.0 @ spec).calculate()).consume()
-
-    trajectory = _Trajectory.from_slice(slice, 2)
+    motor_info = _PmacMotorInfo(
+        "CS1",
+        1,
+        {sim_x_motor: 6, sim_y_motor: 7},
+        {sim_x_motor: 10, sim_y_motor: 10},
+        {sim_x_motor: 5, sim_y_motor: 5},
+    )
+    trajectory = _Trajectory.from_slice(slice, 2, motor_info)
     assert trajectory.positions == {
         sim_x_motor: pytest.approx(
             [
@@ -208,18 +222,7 @@ async def test_spiral_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Mot
         [2000000.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0]
     )
 
-    assert trajectory.user_programs == pytest.approx([1, 1, 1, 1, 1, 1, 8])
-
-
-async def test_trajectory_from_slice_raises_runtime_error_if_gap(
-    sim_motors: tuple[PmacIO, Motor, Motor],
-):
-    _, sim_x_motor, sim_y_motor = sim_motors
-    spec = Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5)
-    slice = Path(Fly(2.0 @ spec).calculate()).consume()
-
-    with pytest.raises(RuntimeError, match="Slice has gaps"):
-        _Trajectory.from_slice(slice, 2)
+    assert trajectory.user_programs == pytest.approx([1, 1, 1, 1, 1, 1, 1])
 
 
 async def test_calculate_ramp_position_and_duration(
@@ -250,7 +253,11 @@ async def test_motor_info_from_motors(sim_motors: tuple[PmacIO, Motor, Motor]):
     sim_pmac, sim_x_motor, sim_y_motor = sim_motors
     motor_info = await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
     expected_motor_info = _PmacMotorInfo(
-        "CS1", 1, {sim_x_motor: 6, sim_y_motor: 7}, {sim_x_motor: 10, sim_y_motor: 20}
+        "CS1",
+        1,
+        {sim_x_motor: 6, sim_y_motor: 7},
+        {sim_x_motor: 10, sim_y_motor: 20},
+        {sim_x_motor: 5, sim_y_motor: 10},
     )
     assert motor_info == expected_motor_info
 
@@ -322,3 +329,594 @@ async def test_blank_cs_axis_letter_raises_value_error(
 
     with pytest.raises(ValueError, match="Failed to get motor CS index"):
         await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
+
+
+async def test_snaked_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]):
+    _, sim_x_motor, sim_y_motor = sim_motors
+    spec = Fly(1.0 @ (Line(sim_y_motor, 10, 12, 3) * ~Line(sim_x_motor, 1, 5, 5)))
+    slice = Path(spec.calculate()).consume()
+    motor_info = _PmacMotorInfo(
+        "CS1",
+        1,
+        {sim_x_motor: 6, sim_y_motor: 7},
+        {sim_x_motor: 10, sim_y_motor: 10},
+        {sim_x_motor: 5, sim_y_motor: 5},
+    )
+    trajectory = _Trajectory.from_slice(slice, 1.0, motor_info)
+
+    assert trajectory.positions[sim_x_motor] == pytest.approx(
+        [
+            0.5,
+            1.0,
+            1.5,
+            2.0,
+            2.5,
+            3.0,
+            3.5,
+            4.0,
+            4.5,
+            5.0,
+            5.5,
+            5.55,
+            5.55,
+            5.55,
+            5.5,
+            5.0,
+            4.5,
+            4.0,
+            3.5,
+            3.0,
+            2.5,
+            2.0,
+            1.5,
+            1.0,
+            0.5,
+            0.45,
+            0.45,
+            0.45,
+            0.5,
+            1.0,
+            1.5,
+            2.0,
+            2.5,
+            3.0,
+            3.5,
+            4.0,
+            4.5,
+            5.0,
+            5.5,
+        ]
+    )
+
+    assert trajectory.velocities[sim_x_motor] == pytest.approx(
+        [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            -0.0,
+            0.0,
+            -0.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -1.0,
+            -0.0,
+            0.0,
+            -0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+        ]
+    )
+
+    assert trajectory.positions[sim_y_motor] == pytest.approx(
+        [
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.05,
+            10.5,
+            10.95,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.05,
+            11.5,
+            11.95,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+        ]
+    )
+
+    assert trajectory.velocities[sim_y_motor] == pytest.approx(
+        [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            3.16227766,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            3.16227766,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+    )
+
+    assert trajectory.user_programs == pytest.approx(
+        [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+        ]
+    )
+
+    assert trajectory.durations == pytest.approx(
+        [
+            1000000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            100000,
+            216227,
+            216227,
+            100000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            100000,
+            216227,
+            216227,
+            100000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+        ]
+    )
+
+
+async def test_grid_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]):
+    _, sim_x_motor, sim_y_motor = sim_motors
+    spec = Fly(1.0 @ (Line(sim_y_motor, 10, 12, 3) * Line(sim_x_motor, 1, 5, 5)))
+    slice = Path(spec.calculate()).consume()
+    motor_info = _PmacMotorInfo(
+        "CS1",
+        1,
+        {sim_x_motor: 6, sim_y_motor: 7},
+        {sim_x_motor: 10, sim_y_motor: 10},
+        {sim_x_motor: 5, sim_y_motor: 5},
+    )
+    trajectory = _Trajectory.from_slice(slice, 1.0, motor_info)
+
+    assert trajectory.positions[sim_x_motor] == pytest.approx(
+        [
+            0.5,
+            1.0,
+            1.5,
+            2.0,
+            2.5,
+            3.0,
+            3.5,
+            4.0,
+            4.5,
+            5.0,
+            5.5,
+            5.5421,
+            4.30,
+            1.70,
+            0.4579,
+            0.5,
+            1.0,
+            1.5,
+            2.0,
+            2.5,
+            3.0,
+            3.5,
+            4.0,
+            4.5,
+            5.0,
+            5.5,
+            5.5421,
+            4.30,
+            1.70,
+            0.4579,
+            0.5,
+            1.0,
+            1.5,
+            2.0,
+            2.5,
+            3.0,
+            3.5,
+            4.0,
+            4.5,
+            5.0,
+            5.5,
+        ]
+    )
+
+    assert trajectory.velocities[sim_x_motor] == pytest.approx(
+        [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.3975,
+            -5.0,
+            -5.0,
+            0.3975,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            0.3975,
+            -5.0,
+            -5.0,
+            0.3975,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+        ]
+    )
+
+    assert trajectory.positions[sim_y_motor] == pytest.approx(
+        [
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            10.01815,
+            10.34335,
+            10.65665,
+            10.98185,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.0,
+            11.01815,
+            11.34335,
+            11.65665,
+            11.98185,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+            12.0,
+        ]
+    )
+
+    assert trajectory.velocities[sim_y_motor] == pytest.approx(
+        [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.602500390747,
+            0.602500390747,
+            0.602500390747,
+            0.602500390747,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.602500390747,
+            0.602500390747,
+            0.602500390747,
+            0.602500390747,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+    )
+
+    assert trajectory.user_programs == pytest.approx(
+        [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            2,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+        ]
+    )
+
+    assert trajectory.durations == pytest.approx(
+        [
+            1000000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            60250.0,
+            539749.0,
+            520000.0,
+            539749.0,
+            60250.0,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            60250.0,
+            539749.0,
+            520000.0,
+            539749.0,
+            60250.0,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+            500000,
+        ]
+    )
+
+
+async def test_velocities_above_motor_max_raise_exception(
+    sim_motors,
+):
+    _, _, sim_y_motor = sim_motors
+    spec = Fly(1.0 @ (Line(sim_y_motor, 10, 12, 2)))
+    slice = Path(spec.calculate()).consume()
+    motor_info = _PmacMotorInfo(
+        "CS1",
+        1,
+        {sim_y_motor: 7},
+        {sim_y_motor: 10},
+        {sim_y_motor: 1},
+    )
+
+    error_msg = (
+        "sim_y_motor velocity exceeds motor's max velocity of "
+        "1 at trajectory indices [0, 1, 2, 3, 4]: [2. 2. 2. 2. 2.]"
+    )
+
+    with pytest.raises(ValueError, match=re.escape(error_msg)):
+        _Trajectory.from_slice(slice, 1.0, motor_info)
