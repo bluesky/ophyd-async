@@ -22,6 +22,7 @@ dependencies = [
     "pydantic-numpy",
     "stamina>=23.1.0",
     "scanspec>=1.0a1",
+    "velocity-profile",
 ]
 dynamic = ["version"]
 license.file = "LICENSE"

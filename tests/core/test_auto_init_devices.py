@@ -96,6 +96,8 @@ def test_async_init_devices_run_engine_same_event_loop():
         async with init_devices(mock=True):
             mock_motor = motor.Motor("BLxxI-MO-TABLE-01:X")
         set_mock_value(mock_motor.velocity, 1)
+        set_mock_value(mock_motor.low_limit_travel, -10.01)
+        set_mock_value(mock_motor.high_limit_travel, 20.01)
         return mock_motor
 
     loop = asyncio.new_event_loop()
