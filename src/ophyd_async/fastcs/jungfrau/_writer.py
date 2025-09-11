@@ -6,27 +6,26 @@ from ophyd_async.core import YMDPathProvider
 from ophyd_async.core import AsyncStatus, DetectorWriter, observe_value, wait_for_value
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw_rbv, epics_signal_rw
 from ophyd_async.core import StandardReadable
-
+from ophyd_async.core import SignalRW
 class JunfrauCommissioningWriter(DetectorWriter, StandardReadable):
     def __init__(
         self,
         path_provider: YMDPathProvider
     ) -> None:
         with self.add_children_as_readables():
-            self._capture_status: AsyncStatus | None = None
             self._path_info = path_provider()
             self.frame_counter = epics_signal_rw(int, "BL24I-JUNGFRAU-META:FD:NumCapture", "BL24I-JUNGFRAU-META:FD:NumCaptured_RBV")
             self.file_name = epics_signal_rw_rbv(str, "BL24I-JUNGFRAU-META:FD:FileName")
             self.file_path = epics_signal_rw_rbv(str, "BL24I-JUNGFRAU-META:FD:FilePath")
-            self.writer_ready = epics_signal_r(str, "BL24I-JUNGFRAU-META:FD:Ready_RBV")
+            self.writer_ready = epics_signal_r(int, "BL24I-JUNGFRAU-META:FD:Ready_RBV")
         super().__init__()
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         self._exposures_per_event = exposures_per_event
         await self.file_name.set(self._path_info.filename)
-        await self.file_name.set(self._path_info.directory_path)
+        await self.file_path.set(str(self._path_info.directory_path))
         await self.frame_counter.set(0)
-        await wait_for_value(self.writer_ready, True, timeout=10)
+        await wait_for_value(self.writer_ready, 1, timeout=10)
         return await self._describe()
 
     async def _describe(self) -> dict[str, DataKey]:
