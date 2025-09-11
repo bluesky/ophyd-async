@@ -142,4 +142,8 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
         "seq.2.repeats": 0,
         "seq.2.prescale": 0.0,
         "seq.2.enable": "ZERO",
+        "inenc.1.val_offset": 0.0,
+        "inenc.1.val_scale": 0.0,
+        "inenc.2.val_offset": 0.0,
+        "inenc.2.val_scale": 0.0,
     }

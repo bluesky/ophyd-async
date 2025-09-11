@@ -1,6 +1,7 @@
 from ._block import (
     CommonPandaBlocks,
     DataBlock,
+    InencBlock,
     PandaBitMux,
     PandaCaptureMode,
     PandaPcompDirection,
@@ -32,6 +33,7 @@ from ._writer import PandaHDFWriter
 __all__ = [
     "CommonPandaBlocks",
     "DataBlock",
+    "InencBlock",
     "PandaBitMux",
     "PandaCaptureMode",
     "PcapBlock",
