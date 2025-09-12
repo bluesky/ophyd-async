@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import functools
 import time
+from asyncio import CancelledError
 from collections.abc import AsyncIterator, Awaitable, Callable, Coroutine
 from dataclasses import asdict, replace
 from typing import Generic
@@ -23,7 +24,16 @@ class AsyncStatusBase(Status, Awaitable[None]):
         if isinstance(awaitable, asyncio.Task):
             self.task = awaitable
         else:
-            self.task = asyncio.create_task(awaitable, name="Unknown task")
+
+            async def wait_with_error_message(awaitable):
+                try:
+                    await awaitable
+                except CancelledError as e:
+                    raise CancelledError(
+                        f"CancelledError while awaiting {awaitable} on {name}"
+                    ) from e
+
+            self.task = asyncio.create_task(wait_with_error_message(awaitable))
         self.task.add_done_callback(self._run_callbacks)
         self._callbacks: list[Callback[Status]] = []
         self._name = name

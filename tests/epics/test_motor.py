@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import CancelledError, Event, get_event_loop
 from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
@@ -185,6 +186,35 @@ async def test_set(sim_motor: motor.Motor, setpoint, velocity, timeout) -> None:
     await sim_motor.velocity.set(velocity)
     await sim_motor.set(setpoint, timeout=timeout)
     assert (await sim_motor.locate()).get("setpoint") == setpoint
+
+
+async def test_cancellederror_in_set_ensures_motor_setpoint_set_task_is_cancelled(
+    sim_motor: motor.Motor,
+):
+    sleep_result = get_event_loop().create_future()
+    block_until_ready = Event()
+
+    async def wait_forever_in_setpoint_set(value: float, *args, **kwargs):
+        try:
+            block_until_ready.set()
+            await asyncio.sleep(20)
+            sleep_result.set_result(None)
+        except CancelledError as e:
+            sleep_result.set_exception(e)
+            raise
+
+    await sim_motor.velocity.set(1)
+    get_mock_put(sim_motor.user_setpoint).side_effect = wait_forever_in_setpoint_set
+
+    status = sim_motor.set(1)
+    await block_until_ready.wait()
+    assert status.task.cancel()
+    with pytest.raises(CancelledError):
+        await status
+    with pytest.raises(CancelledError):
+        await sleep_result
+    assert sleep_result.done()
+    assert isinstance(sleep_result.exception(), CancelledError)
 
 
 async def test_prepare_velocity_limit_error(sim_motor: motor.Motor):

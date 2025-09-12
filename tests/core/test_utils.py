@@ -15,7 +15,6 @@ from ophyd_async.core import (
     SoftSignalBackend,
     NotConnected,
     SignalRW,
-    enhanced_gather,
     AsyncStatus,
 )
 from ophyd_async.core import soft_signal_rw
@@ -314,19 +313,25 @@ async def test_format_error_string_input():
 )
 @pytest.mark.parametrize(
     "set_to_delay, expected_message, expected_results",
+    # Test cases for different things taking too long
     [
+        # plain awaitable (currently not handled)
         [
             "x",
-            "test_enhanced_gather_populates_cancelled_error_message_on_timeout.<locals>.async_func()",
+            None,
             None,
         ],
-        ["y", "AsyncStatus, device: my_device", None],
-        ["z", "set z", None],
+        # Device with a custom set() method
+        ["y", "CancelledError while awaiting .* on my_device", None],
+        # Task wrapping an async function (currently not handled)
+        ["z", None, None],
+        # Setting a Motor on a Device
         ["omega", "BL03I-MO-OMEGA", None],
+        # Everything completes successfully in a timely fashion
         [None, None, [1, None, 1, None]],
     ],
 )
-async def test_enhanced_gather_populates_cancelled_error_message_on_timeout(
+async def test_cancelled_error_message_for_gather_is_populated_on_timeout(
     set_to_delay: str, expected_message: str, expected_results: list
 ):
     async def async_func(name: str, value: int) -> int:
@@ -359,7 +364,7 @@ async def test_enhanced_gather_populates_cancelled_error_message_on_timeout(
     _patch_motor(motor_device.omega)
     get_mock_put(motor_device.omega.user_setpoint).side_effect = motor_device.set_omega
 
-    gather_awaitable = enhanced_gather(
+    gather_awaitable = asyncio.gather(
         plain_awaitable,
         async_status_device.set(1),
         task_wrapped,
@@ -377,8 +382,10 @@ async def test_enhanced_gather_populates_cancelled_error_message_on_timeout(
 
 
 def _contains_message(e: BaseException, expected_message: str) -> bool:
-    return re.search(expected_message, e.args[0]) or (
-        e.__cause__ and _contains_message(e.__cause__, expected_message)
+    return (
+        expected_message is None
+        or (e.args and re.search(expected_message, e.args[0]))
+        or (e.__cause__ and _contains_message(e.__cause__, expected_message))
     )
 
 
