@@ -178,7 +178,8 @@ async def test_wait_for_connection():
 async def test_wait_for_connection_propagates_error(
     normal_coroutine, failing_coroutine
 ):
-    failing_coros = {"test": normal_coroutine(), "failing": failing_coroutine()}
+    coro, is_running = normal_coroutine
+    failing_coros = {"test": coro(), "failing": failing_coroutine()}
 
     with pytest.raises(NotConnected) as e:
         await wait_for_connection(**failing_coros)
