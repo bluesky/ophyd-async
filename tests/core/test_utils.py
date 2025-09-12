@@ -2,9 +2,6 @@ import asyncio
 import re
 import sys
 from asyncio import CancelledError
-from functools import partial
-from unittest.mock import patch
-import traceback
 
 import pytest
 
@@ -396,3 +393,5 @@ def _patch_motor(motor: Motor, initial_position=0):
     set_mock_value(motor.motor_done_move, 1)
     set_mock_value(motor.velocity, 3)
     set_mock_value(motor.max_velocity, 5)
+    set_mock_value(motor.high_limit_travel, float("inf"))
+    set_mock_value(motor.low_limit_travel, float("-inf"))
