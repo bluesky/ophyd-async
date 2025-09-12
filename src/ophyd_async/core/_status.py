@@ -34,6 +34,9 @@ class AsyncStatusBase(Status, Awaitable[None]):
                     ) from e
 
             self.task = asyncio.create_task(wait_with_error_message(awaitable))
+            # Avoid complaints about awaitable not awaited if task is
+            # pre-emptively cancelled, by ensuring it is always disposed
+            self.task.add_done_callback(lambda _: awaitable.close())
         self.task.add_done_callback(self._run_callbacks)
         self._callbacks: list[Callback[Status]] = []
         self._name = name

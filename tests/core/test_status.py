@@ -33,7 +33,8 @@ async def test_async_status_propagates_exception(failing_coroutine):
 
 
 async def test_async_status_propagates_cancelled_error(normal_coroutine):
-    status = AsyncStatus(normal_coroutine())
+    coro, is_running = normal_coroutine
+    status = AsyncStatus(coro())
     assert status.exception() is None
 
     status.task.exception = Mock(side_effect=asyncio.CancelledError(""))
@@ -55,11 +56,12 @@ async def test_async_status_propagates_cancelled_error_with_message():
     with pytest.raises(CancelledError) as e:
         await device.set(1)
 
-    assert re.search("CancelledError while awaiting .* on MY_DEVICE", e.value.args[0])
+    assert re.search("CancelledError while awaiting .*MY_DEVICE", e.value.args[0])
 
 
 async def test_async_status_has_no_exception_if_coroutine_successful(normal_coroutine):
-    status = AsyncStatus(normal_coroutine())
+    coro, is_running = normal_coroutine
+    status = AsyncStatus(coro())
     assert status.exception() is None
 
     await status
@@ -67,12 +69,15 @@ async def test_async_status_has_no_exception_if_coroutine_successful(normal_coro
     assert status.exception() is None
 
 
-async def test_async_status_success_if_cancelled(normal_coroutine):
+@pytest.mark.parametrize("wait_to_run", [True, False])
+async def test_async_status_success_if_cancelled(normal_coroutine, wait_to_run):
     cbs = []
-    coro = normal_coroutine()
-    status = AsyncStatus(coro)
+    coro, is_running = normal_coroutine
+    status = AsyncStatus(coro())
     status.add_callback(cbs.append)
     assert status.exception() is None
+    if wait_to_run:
+        await is_running.wait()
     status.task.cancel()
     assert not cbs
     with pytest.raises(asyncio.CancelledError):
@@ -95,7 +100,8 @@ async def test_async_status_wrap() -> None:
 
 
 async def test_async_status_initialised_with_a_task(normal_coroutine):
-    normal_task = asyncio.Task(normal_coroutine())
+    coro, is_running = normal_coroutine
+    normal_task = asyncio.Task(coro())
     status = AsyncStatus(normal_task)
 
     await status
@@ -103,7 +109,8 @@ async def test_async_status_initialised_with_a_task(normal_coroutine):
 
 
 async def test_async_status_str_for_normal_coroutine(normal_coroutine):
-    normal_task = asyncio.Task(normal_coroutine())
+    coro, is_running = normal_coroutine
+    normal_task = asyncio.Task(coro())
     status = AsyncStatus(normal_task)
 
     for comment_chunk in ["<AsyncStatus,", "normal_coroutine", "pending>"]:
@@ -143,7 +150,7 @@ class FailingMovable(Movable, Device):
 
 
 async def test_status_propogates_traceback_under_RE(RE) -> None:
-    expected_call_stack = ["set", "_fail"]
+    expected_call_stack = ["wait_with_error_message", "set", "_fail"]
     d = FailingMovable()
     with pytest.raises(FailedStatus) as ctx:
         RE(bps.mv(d, 3))
