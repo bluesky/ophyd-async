@@ -1,5 +1,7 @@
 import asyncio
+import re
 import traceback
+from asyncio import CancelledError
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
@@ -38,6 +40,22 @@ async def test_async_status_propagates_cancelled_error(normal_coroutine):
     await status
 
     assert isinstance(status.exception(), asyncio.CancelledError)
+
+
+class SelfCancellingDevice(Device):
+    @AsyncStatus.wrap
+    async def set(self, value):
+        await asyncio.sleep(0.1)
+        raise CancelledError()
+
+
+async def test_async_status_propagates_cancelled_error_with_message():
+    device = SelfCancellingDevice("MY_DEVICE")
+
+    with pytest.raises(CancelledError) as e:
+        await device.set(1)
+
+    assert re.search("CancelledError while awaiting .* on MY_DEVICE", e.value.args[0])
 
 
 async def test_async_status_has_no_exception_if_coroutine_successful(normal_coroutine):
