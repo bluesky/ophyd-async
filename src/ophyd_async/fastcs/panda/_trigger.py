@@ -1,17 +1,30 @@
+from __future__ import annotations
+
 import asyncio
+from dataclasses import dataclass
 
+import numpy as np
 from pydantic import Field
+from scanspec.core import Path
+from scanspec.specs import Spec
 
-from ophyd_async.core import ConfinedModel, FlyerController, wait_for_value
+from ophyd_async.core import (
+    ConfinedModel,
+    FlyerController,
+    error_if_none,
+    wait_for_value,
+)
+from ophyd_async.epics.motor import Motor
 
 from ._block import (
+    CommonPandaBlocks,
     PandaBitMux,
     PandaPcompDirection,
     PandaTimeUnits,
     PcompBlock,
     SeqBlock,
 )
-from ._table import SeqTable
+from ._table import SeqTable, SeqTrigger
 
 
 class SeqTableInfo(ConfinedModel):
@@ -20,6 +33,11 @@ class SeqTableInfo(ConfinedModel):
     sequence_table: SeqTable = Field(strict=True)
     repeats: int = Field(ge=0)
     prescale_as_us: float = Field(default=1, ge=0)  # microseconds
+
+
+class ScanSpecInfo(ConfinedModel):
+    spec: Spec[Motor]
+    deadtime: float
 
 
 class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
@@ -37,6 +55,112 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
             self.seq.prescale.set(value.prescale_as_us),
             self.seq.repeats.set(value.repeats),
             self.seq.table.set(value.sequence_table),
+        )
+
+    async def kickoff(self) -> None:
+        await self.seq.enable.set(PandaBitMux.ONE)
+        await wait_for_value(self.seq.active, True, timeout=1)
+
+    async def complete(self) -> None:
+        await wait_for_value(self.seq.active, False, timeout=None)
+
+    async def stop(self):
+        await self.seq.enable.set(PandaBitMux.ZERO)
+        await wait_for_value(self.seq.active, False, timeout=1)
+
+
+@dataclass
+class PosOutScaleOffset:
+    name: str
+    scale: float
+    offset: float
+
+    @classmethod
+    async def from_inenc(
+        cls, panda: CommonPandaBlocks, number: int
+    ) -> PosOutScaleOffset:
+        inenc = panda.inenc[number]
+        return cls(
+            name=f"INENC{number}.VAL",
+            scale=await inenc.val_scale.get_value(),
+            offset=await inenc.val_offset.get_value(),
+        )
+
+
+class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
+    def __init__(
+        self, seq: SeqBlock, motor_pos_outs: dict[Motor, PosOutScaleOffset]
+    ) -> None:
+        self.seq = seq
+        self.motor_pos_outs = motor_pos_outs
+
+    async def prepare(self, value: ScanSpecInfo):
+        await self.seq.enable.set(PandaBitMux.ZERO)
+        slice = Path(value.spec.calculate()).consume()
+        slice_duration = error_if_none(slice.duration, "Slice must have duration")
+
+        gaps = np.where(slice.gap)[0]
+        if gaps[0] == 0:
+            gaps = np.delete(gaps, 0)
+        scan_size = len(slice)
+
+        gaps = np.append(gaps, scan_size)
+        fast_axis = slice.axes()[-1]
+        if not self.motor_pos_outs.get(fast_axis):
+            raise RuntimeError("Failed to fetch motor")
+        else:
+            motor_pos_outs = self.motor_pos_outs
+            _, scale, _ = (
+                motor_pos_outs[fast_axis].name,
+                motor_pos_outs[fast_axis].scale,
+                motor_pos_outs[fast_axis].offset,
+            )
+            resolution = scale
+
+        start = 0
+
+        # GPIO goes low
+        rows = SeqTable.row(trigger=SeqTrigger.BITA_0)
+        for gap in gaps:
+            # GPIO goes high
+            rows += SeqTable.row(trigger=SeqTrigger.BITA_1)
+            # Wait for position
+            if (
+                slice.midpoints[fast_axis][gap - 1] * resolution
+                > slice.midpoints[fast_axis][start] * resolution
+            ):
+                trig = SeqTrigger.POSA_GT
+                dir = False if resolution > 0 else True
+
+            else:
+                trig = SeqTrigger.POSA_LT
+                dir = True if resolution > 0 else False
+            rows += SeqTable.row(
+                trigger=trig,
+                position=int(slice.lower[fast_axis][start] / resolution),
+            )
+
+            # Time based Triggers
+            rows += SeqTable.row(
+                repeats=gap - start,
+                trigger=SeqTrigger.IMMEDIATE,
+                time1=int((slice_duration[0] - value.deadtime) * 10**6),
+                time2=int(value.deadtime * 10**6),
+                outa1=True,
+                outb1=dir,
+                outa2=False,
+                outb2=dir,
+            )
+
+            # GPIO goes low
+            rows += SeqTable.row(trigger=SeqTrigger.BITA_0)
+
+            start = gap
+        await asyncio.gather(
+            self.seq.prescale.set(1.0),
+            self.seq.prescale_units.set(PandaTimeUnits.US),
+            self.seq.repeats.set(1),
+            self.seq.table.set(rows),
         )
 
     async def kickoff(self) -> None:
