@@ -221,7 +221,7 @@ class Motor(
             if not self._set_success:
                 raise RuntimeError("Motor was stopped")
         except CancelledError:
-            if task := getattr(move_status, "task", False):
+            if task := getattr(move_status, "task", None):
                 task.cancel()
             raise
 
