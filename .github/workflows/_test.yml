@@ -16,6 +16,7 @@ on:
 env:
   # https://github.com/pytest-dev/pytest/issues/2042
   PY_IGNORE_IMPORTMISMATCH: "1"
+  UV_PYTHON: ${{ inputs.python-version }}
 
 jobs:
   run:
@@ -27,41 +28,23 @@ jobs:
         run: |
           mkdir "D:\\Temp"
           echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           # Need this to get version number from last tag
           fetch-depth: 0
 
-      - if: inputs.python-version == 'dev'
-        name: Install dev versions of python packages
-        uses: ./.github/actions/install_requirements
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
-      - if: inputs.python-version == 'dev'
-        name: Write the requirements as an artifact
-        run: pip freeze --exclude-editable > /tmp/dev-requirements.txt
-
-      - if: inputs.python-version == 'dev'
-        name: Upload dev-requirements.txt
-        uses: actions/upload-artifact@v4
-        with:
-          name: dev-requirements
-          path: /tmp/dev-requirements.txt
-
-      - if: inputs.python-version != 'dev'
-        name: Install latest versions of python packages
-        uses: ./.github/actions/install_requirements
-        with:
-          python-version: ${{ inputs.python-version }}
-          pip-install: ".[dev]"
-          
       - name: Run tests win
         if: inputs.runs-on == 'windows-latest'
-        run: tox -e tests -- --timeout=6
+        run: uv run tox -e tests -- --timeout=6
 
       - name: Non win tests
         if: inputs.runs-on != 'windows-latest'
-        run: tox -e tests -- --timeout=2
+        run: uv run tox -e tests -- --timeout=2
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
