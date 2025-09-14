@@ -244,7 +244,8 @@ async def test_tango_signal_w(everything_device_trl: str, everything_signal_info
         status = signal.set(put_value, wait=True, timeout=timeout)
         await status
         assert status.done is True and status.success is True
-        status = signal.set(put_value, wait=False, timeout=timeout)
+
+        status = signal.set(put_value, timeout=timeout)
         await status
         assert status.done is True and status.success is True
 
@@ -252,7 +253,7 @@ async def test_tango_signal_w(everything_device_trl: str, everything_signal_info
         await status
         assert status.done is True and status.success is True
 
-        status = signal.set(put_value, wait=False)
+        status = signal.set(put_value)
         await status
         assert status.done is True and status.success is True
 

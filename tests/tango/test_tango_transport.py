@@ -224,20 +224,15 @@ async def test_attribute_proxy_get(tango_test_device, attr):
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "attr, wait",
-    [("justvalue", True), ("justvalue", False), ("array", True), ("array", False)],
+    "attr",
+    ["justvalue", "array"],
 )
-async def test_attribute_proxy_put(tango_test_device, attr, wait):
+async def test_attribute_proxy_put(tango_test_device, attr):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, attr)
     old_value = await attr_proxy.get()
     new_value = old_value + 1
-    status = await attr_proxy.put(new_value, wait=wait, timeout=0.1)
-    if status:
-        await status
-    else:
-        if not wait:
-            raise AssertionError("If wait is False, put should return a status object")
+    await attr_proxy.put(new_value)
     await asyncio.sleep(
         0.1
     )  # for some reason this is required otherwise justvalue fails???
@@ -250,25 +245,21 @@ async def test_attribute_proxy_put(tango_test_device, attr, wait):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize("wait", [True, False])
-async def test_attribute_proxy_put_force_timeout(tango_test_device, wait):
+async def test_attribute_proxy_put_force_timeout(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "slow_attribute")
     with pytest.raises(TimeoutError) as exc_info:
-        status = await attr_proxy.put(3.0, wait=wait, timeout=0.1)
-        await status
-    assert "attr put failed" in str(exc_info.value)
+        await attr_proxy.put(3.0, timeout=0.1)
+    assert "Timeout" in str(exc_info.value)
 
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-@pytest.mark.parametrize("wait", [True, False])
-async def test_attribute_proxy_put_exceptions(tango_test_device, wait):
+async def test_attribute_proxy_put_exceptions(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "raise_exception_attr")
     with pytest.raises(RuntimeError) as exc_info:
-        status = await attr_proxy.put(3.0, wait=wait)
-        await status
+        await attr_proxy.put(3.0)
     assert "device failure" in str(exc_info.value)
 
 
@@ -465,23 +456,28 @@ async def test_command_proxy_put_nowait(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "slow_command")
 
+    # Try to set wait=False
+    with pytest.raises(RuntimeError) as exc_info:
+        await cmd_proxy.put(None, wait=False)
+    assert "is not supported" in str(exc_info.value)
+
     # Reply before timeout
     cmd_proxy._last_reading = None
-    status = await cmd_proxy.put(None, wait=False, timeout=0.5)
+    status = cmd_proxy.put(None, timeout=0.5)
     assert cmd_proxy._last_reading is None
     await status
     assert cmd_proxy._last_reading["value"] == "Completed slow command"
 
     # Timeout
     cmd_proxy._last_reading = None
-    status = await cmd_proxy.put(None, wait=False, timeout=0.1)
+    status = cmd_proxy.put(None, timeout=0.1)
     with pytest.raises(TimeoutError) as exc_info:
         await status
-    assert str(exc_info.value) == "Timeout while waiting for command reply"
+    assert "Timeout" in str(exc_info.value)
 
     # No timeout
     cmd_proxy._last_reading = None
-    status = await cmd_proxy.put(None, wait=False)
+    status = cmd_proxy.put(None)
     assert cmd_proxy._last_reading is None
     await status
     assert cmd_proxy._last_reading["value"] == "Completed slow command"
