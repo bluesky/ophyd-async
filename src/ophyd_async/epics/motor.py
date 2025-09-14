@@ -106,6 +106,24 @@ class Motor(
         # Readback should be named the same as its parent in read()
         self.user_readback.set_name(name)
 
+    async def check_motor_limit(self, abs_start_pos: float, abs_end_pos: float):
+        """Check the motor limit with the absolute positions."""
+        motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
+            self.low_limit_travel.get_value(),
+            self.high_limit_travel.get_value(),
+            self.motor_egu.get_value(),
+        )
+        if (
+            not motor_upper_limit >= abs_start_pos >= motor_lower_limit
+            or not motor_upper_limit >= abs_end_pos >= motor_lower_limit
+        ):
+            raise MotorLimitsException(
+                f"{self.name} motor trajectory for requested fly/move is from "
+                f"{abs_start_pos}{egu} to "
+                f"{abs_end_pos}{egu} but motor limits are "
+                f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
+            )
+
     @AsyncStatus.wrap
     async def prepare(self, value: FlyMotorInfo):
         """Move to the beginning of a suitable run-up distance ready for a fly scan."""
@@ -126,22 +144,7 @@ class Motor(
         ramp_up_start_pos = value.ramp_up_start_pos(acceleration_time)
         ramp_down_end_pos = value.ramp_down_end_pos(acceleration_time)
 
-        motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
-            self.low_limit_travel.get_value(),
-            self.high_limit_travel.get_value(),
-            self.motor_egu.get_value(),
-        )
-
-        if (
-            not motor_upper_limit >= ramp_up_start_pos >= motor_lower_limit
-            or not motor_upper_limit >= ramp_down_end_pos >= motor_lower_limit
-        ):
-            raise MotorLimitsException(
-                f"Motor trajectory for requested fly is from "
-                f"{ramp_up_start_pos}{egu} to "
-                f"{ramp_down_end_pos}{egu} but motor limits are "
-                f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
-            )
+        await self.check_motor_limit(ramp_up_start_pos, ramp_down_end_pos)
 
         # move to prepare position at maximum velocity
         await self.velocity.set(abs(max_speed))
@@ -198,6 +201,8 @@ class Motor(
             except ZeroDivisionError as error:
                 msg = "Mover has zero velocity"
                 raise ValueError(msg) from error
+
+        await self.check_motor_limit(old_position, new_position)
 
         move_status = self.user_setpoint.set(new_position, wait=True, timeout=timeout)
         async for current_position in observe_value(
