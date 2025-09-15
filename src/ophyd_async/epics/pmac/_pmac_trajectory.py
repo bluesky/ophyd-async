@@ -13,9 +13,9 @@ from ophyd_async.core import (
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_io import CS_LETTERS
+from ophyd_async.epics.pmac._pmac_trajectory_generation import _Trajectory
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,
-    _Trajectory,
     calculate_ramp_position_and_duration,
 )
 
