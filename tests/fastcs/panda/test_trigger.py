@@ -5,11 +5,12 @@ import pytest
 from pydantic import ValidationError
 from scanspec.specs import Fly, Line
 
-from ophyd_async.core import init_devices
+from ophyd_async.core import DeviceVector, init_devices
 from ophyd_async.epics.motor import Motor
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
+    InencBlock,
     PandaPcompDirection,
     PcompInfo,
     PosOutScaleOffset,
@@ -27,14 +28,17 @@ from ophyd_async.testing import set_mock_value
 @pytest.fixture
 async def mock_panda():
     class Panda(CommonPandaBlocks):
+        inenc: DeviceVector[InencBlock]
+
         def __init__(self, uri: str, name: str = ""):
             super().__init__(name=name, connector=fastcs_connector(self, uri))
 
     async with init_devices(mock=True):
         mock_panda = Panda("PANDAQSRV:", "mock_panda")
-    inenc = mock_panda.inenc[1]
-    set_mock_value(inenc.val_scale, 0.02)
-    set_mock_value(inenc.val_offset, 0.0)
+    set_mock_value(mock_panda.inenc[1].val_scale, 0.02)
+    set_mock_value(mock_panda.inenc[1].val_offset, 0.0)
+    set_mock_value(mock_panda.inenc[2].val_scale, 0.2)
+    set_mock_value(mock_panda.inenc[2].val_offset, 0.0)
     assert mock_panda.name == "mock_panda"
     return mock_panda
 
@@ -42,10 +46,10 @@ async def mock_panda():
 async def test_from_inenc(mock_panda):
     panda = mock_panda
     number = 1
-    pos_out_scale_offset = await PosOutScaleOffset.from_inenc(panda, number)
-    assert pos_out_scale_offset == PosOutScaleOffset(
-        name="INENC1.VAL", scale=0.02, offset=0.0
-    )
+    pos_out_scale_offset = PosOutScaleOffset.from_inenc(panda, number)
+    assert pos_out_scale_offset.name == "INENC1.VAL"
+    assert await pos_out_scale_offset.scale.get_value() == 0.02
+    assert await pos_out_scale_offset.offset.get_value() == 0.0
 
 
 async def test_seq_table_trigger_logic(mock_panda):
@@ -89,8 +93,16 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
     trigger_logic = ScanSpecSeqTableTriggerLogic(
         mock_panda.seq[1],
         {
-            sim_x_motor: PosOutScaleOffset("INENC1.VAL", 0.02, 0.0),
-            sim_y_motor: PosOutScaleOffset("INENC2.VAL", 0.2, 0.0),
+            sim_x_motor: PosOutScaleOffset(
+                "INENC1.VAL",
+                mock_panda.inenc[1].val_scale,
+                mock_panda.inenc[1].val_offset,
+            ),  # type: ignore
+            sim_y_motor: PosOutScaleOffset(
+                "INENC2.VAL",
+                mock_panda.inenc[2].val_scale,
+                mock_panda.inenc[2].val_offset,
+            ),  # type: ignore
         },
     )
     await trigger_logic.prepare(info)
@@ -123,7 +135,13 @@ async def test_seq_scanspec_trigger_logic_no_gaps(
     info = ScanSpecInfo(spec=spec, deadtime=0.1)
     trigger_logic = ScanSpecSeqTableTriggerLogic(
         mock_panda.seq[1],
-        {sim_y_motor: PosOutScaleOffset("2", 0.2, 0.0)},
+        {
+            sim_y_motor: PosOutScaleOffset(
+                "INENC2.VAL",
+                mock_panda.inenc[2].val_scale,
+                mock_panda.inenc[2].val_offset,
+            )
+        },
     )
     await trigger_logic.prepare(info)
     out = await trigger_logic.seq.table.get_value()
@@ -148,8 +166,16 @@ async def test_seq_scanspec_trigger_logic_duration_error(
     trigger_logic = ScanSpecSeqTableTriggerLogic(
         mock_panda.seq[1],
         {
-            sim_x_motor: PosOutScaleOffset("1", 0.02, 0.0),
-            sim_y_motor: PosOutScaleOffset("2", 0.2, 0.0),
+            sim_x_motor: PosOutScaleOffset(
+                "INENC1.VAL",
+                mock_panda.inenc[1].val_scale,
+                mock_panda.inenc[1].val_offset,
+            ),
+            sim_y_motor: PosOutScaleOffset(
+                "INENC2.VAL",
+                mock_panda.inenc[2].val_scale,
+                mock_panda.inenc[2].val_offset,
+            ),
         },
     )
     with pytest.raises(RuntimeError, match="Slice must have duration"):
@@ -163,7 +189,13 @@ async def test_seq_scanspec_trigger_logic_runtime_error(
     info = ScanSpecInfo(spec=spec, deadtime=0.1)
     trigger_logic = ScanSpecSeqTableTriggerLogic(
         mock_panda.seq[1],
-        {sim_x_motor: PosOutScaleOffset("1", 0.02, 0.0)},
+        {
+            sim_x_motor: PosOutScaleOffset(
+                "INENC1.VAL",
+                mock_panda.inenc[1].val_scale,
+                mock_panda.inenc[1].val_offset,
+            )
+        },
     )
     with pytest.raises(RuntimeError, match="Failed to fetch motor"):
         await trigger_logic.prepare(info)

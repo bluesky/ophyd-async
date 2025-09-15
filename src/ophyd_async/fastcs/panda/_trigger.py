@@ -11,6 +11,7 @@ from scanspec.specs import Spec
 from ophyd_async.core import (
     ConfinedModel,
     FlyerController,
+    SignalRW,
     error_if_none,
     wait_for_value,
 )
@@ -72,18 +73,16 @@ class StaticSeqTableTriggerLogic(FlyerController[SeqTableInfo]):
 @dataclass
 class PosOutScaleOffset:
     name: str
-    scale: float
-    offset: float
+    scale: SignalRW[float]
+    offset: SignalRW[float]
 
     @classmethod
-    async def from_inenc(
-        cls, panda: CommonPandaBlocks, number: int
-    ) -> PosOutScaleOffset:
-        inenc = panda.inenc[number]
+    def from_inenc(cls, panda: CommonPandaBlocks, number: int) -> PosOutScaleOffset:
+        inenc = panda.inenc[number]  # type: ignore
         return cls(
             name=f"INENC{number}.VAL",
-            scale=await inenc.val_scale.get_value(),
-            offset=await inenc.val_offset.get_value(),
+            scale=inenc.val_scale,  # type: ignore
+            offset=inenc.val_offset,  # type: ignore
         )
 
 
@@ -112,8 +111,8 @@ class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
             motor_pos_outs = self.motor_pos_outs
             _, scale, _ = (
                 motor_pos_outs[fast_axis].name,
-                motor_pos_outs[fast_axis].scale,
-                motor_pos_outs[fast_axis].offset,
+                await motor_pos_outs[fast_axis].scale.get_value(),
+                await motor_pos_outs[fast_axis].offset.get_value(),
             )
             resolution = scale
 

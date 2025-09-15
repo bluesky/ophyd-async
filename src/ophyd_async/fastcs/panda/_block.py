@@ -110,6 +110,5 @@ class CommonPandaBlocks(Device):
     pulse: DeviceVector[PulseBlock]
     seq: DeviceVector[SeqBlock]
     pcomp: DeviceVector[PcompBlock]
-    inenc: DeviceVector[InencBlock]
     pcap: PcapBlock
     data: DataBlock
