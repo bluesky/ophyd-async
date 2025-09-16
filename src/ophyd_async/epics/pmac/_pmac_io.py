@@ -108,4 +108,6 @@ class PmacIO(Device):
         # Trajectory PVs have the same prefix as the pmac device
         self.trajectory = PmacTrajectoryIO(prefix)
 
+        self.total_points = epics_signal_r(int, f"{prefix}TotalPoints_RBV")
+
         super().__init__(name=name)

@@ -1,62 +1,107 @@
 import asyncio
 
 import numpy as np
-from scanspec.core import Path
+from scanspec.core import Path, Slice
 from scanspec.specs import Spec
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     FlyerController,
+    WatchableAsyncStatus,
+    WatcherUpdate,
+    observe_value,
     set_and_wait_for_value,
     wait_for_value,
 )
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_io import CS_LETTERS
-from ophyd_async.epics.pmac._pmac_trajectory_generation import _Trajectory
+from ophyd_async.epics.pmac._pmac_trajectory_generation import PVT, _Trajectory
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
 )
+
+# PMAC durations are in milliseconds
+# We must convert from scanspec durations (seconds) to milliseconds
+# PMAC motion program multiples durations by 0.001
+# (see https://github.com/DiamondLightSource/pmac/blob/afe81f8bb9179c3a20eff351f30bc6cfd1539ad9/pmacApp/pmc/trajectory_scan_code_ppmac.pmc#L241)
+# Therefore, we must divide scanspec durations by 10e-6
+TICK_S = 0.000001
+SLICE_SIZE = 4000
 
 
 class PmacTrajectoryTriggerLogic(FlyerController):
     def __init__(self, pmac: PmacIO) -> None:
         self.pmac = pmac
         self.scantime: float | None = None
+        self.path: Path | None = None
+        self.next_pvt: PVT | None = None
+        self.motor_info: _PmacMotorInfo | None = None
+        self.trajectory_status: WatchableAsyncStatus | None = None
 
     async def prepare(self, value: Spec[Motor]):
-        slice = Path(value.calculate()).consume()
-        motor_info = await _PmacMotorInfo.from_motors(self.pmac, slice.axes())
+        self.path = Path(value.calculate())
+        slice = self.path.consume(SLICE_SIZE)
+        motors = slice.axes()
+        self.motor_info = await _PmacMotorInfo.from_motors(self.pmac, motors)
         ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
-            slice, motor_info, True
+            slice, self.motor_info, True
         )
-        ramp_down_pos, ramp_down_time = calculate_ramp_position_and_duration(
-            slice, motor_info, False
-        )
-        trajectory = _Trajectory.from_slice(slice, ramp_up_time, motor_info)
         await asyncio.gather(
-            self._build_trajectory(
-                trajectory, motor_info, ramp_down_pos, ramp_down_time
-            ),
-            self._move_to_start(motor_info, ramp_up_pos),
+            self._append_trajectory(slice, ramp_up_time),
+            self._move_to_start(self.motor_info, ramp_up_pos),
         )
+
+    async def _append_trajectory(self, slice: Slice, ramp_up_time: float | None = None):
+        if self.motor_info is None or self.path is None:
+            raise RuntimeError("Cannot append to trajectory. Must call prepare first.")
+
+        trajectory, exit_pvt = _Trajectory.from_slice(
+            slice,
+            self.motor_info,
+            None if ramp_up_time else self.next_pvt,
+            ramp_up_time=ramp_up_time,
+        )
+
+        if len(self.path) == 0:
+            ramp_down_pos, ramp_down_time = calculate_ramp_position_and_duration(
+                slice, self.motor_info, False
+            )
+            trajectory = trajectory.append_ramp_down(
+                exit_pvt, ramp_down_pos, ramp_down_time, 0
+            )
+        self.next_pvt = exit_pvt
+        await self._build_trajectory(trajectory, self.motor_info)
+
+    @WatchableAsyncStatus.wrap
+    async def _execute_trajectory(self):
+        if not self.path:
+            raise RuntimeError("Cannot execute trajectory. Must call prepare first.")
+        loaded = SLICE_SIZE
+        execute_status = self.pmac.trajectory.execute_profile.set(True)
+        async for current_point in observe_value(
+            self.pmac.total_points, done_status=execute_status
+        ):
+            if loaded - current_point < SLICE_SIZE:
+                # We have less than SLICE_SIZE points in the buffer, so refill
+                await self._append_trajectory(self.path.consume(SLICE_SIZE))
+            yield WatcherUpdate(
+                current=current_point,
+                initial=0,
+                target=self.path.end_index,
+                name=self.pmac.name,
+            )
 
     async def kickoff(self):
-        if not self.scantime:
-            raise RuntimeError("Cannot kickoff. Must call prepare first.")
-        self.status = await self.pmac.trajectory.execute_profile.set(
-            True, timeout=self.scantime + 1
-        )
+        self.trajectory_status = self._execute_trajectory()
+        # Wait for the ramp up to happen
+        await wait_for_value(self.pmac.total_points, lambda v: v >= 1, DEFAULT_TIMEOUT)
 
     async def complete(self):
-        if not self.scantime:
-            raise RuntimeError("Cannot complete. Must call prepare first.")
-        await wait_for_value(
-            self.pmac.trajectory.execute_profile,
-            False,
-            timeout=self.scantime + DEFAULT_TIMEOUT,
-        )
+        if not self.trajectory_status:
+            raise RuntimeError("Cannot complete. Must call kickoff first.")
+        await self.trajectory_status
 
     async def stop(self):
         await self.pmac.trajectory.abort_profile.set(True)
@@ -65,11 +110,8 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         self,
         trajectory: _Trajectory,
         motor_info: _PmacMotorInfo,
-        ramp_down_pos: dict[Motor, np.float64],
-        ramp_down_time: float,
     ):
-        trajectory = trajectory.append_ramp_down(ramp_down_pos, ramp_down_time, 0)
-        self.scantime = np.sum(trajectory.durations)
+        self.scantime = np.sum(trajectory.durations / TICK_S)
         use_axis = {axis + 1: False for axis in range(len(CS_LETTERS))}
 
         size = 0
@@ -85,7 +127,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
 
         coros = [
             self.pmac.trajectory.profile_cs_name.set(motor_info.cs_port),
-            self.pmac.trajectory.time_array.set(trajectory.durations),
+            self.pmac.trajectory.time_array.set(trajectory.durations / TICK_S),
             self.pmac.trajectory.user_array.set(trajectory.user_programs),
             self.pmac.trajectory.points_to_build.set(size),
             self.pmac.trajectory.calculate_velocities.set(False),

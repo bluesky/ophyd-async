@@ -13,15 +13,8 @@ from velocity_profile.velocityprofile import VelocityProfile
 
 from ophyd_async.core import error_if_none
 from ophyd_async.epics.motor import Motor
+from ophyd_async.epics.pmac._utils import _PmacMotorInfo
 
-from ._pmac_trajectory import _PmacMotorInfo
-
-# PMAC durations are in milliseconds
-# We must convert from scanspec durations (seconds) to milliseconds
-# PMAC motion program multiples durations by 0.001
-# (see https://github.com/DiamondLightSource/pmac/blob/afe81f8bb9179c3a20eff351f30bc6cfd1539ad9/pmacApp/pmc/trajectory_scan_code_ppmac.pmc#L241)
-# Therefore, we must divide scanspec durations by 10e-6
-TICK_S = 0.000001
 MIN_TURNAROUND = 0.002
 MIN_INTERVAL = 0.002
 
@@ -36,12 +29,19 @@ class UserProgram(IntEnum):
 
 @dataclass
 class PVT:
+    """Represents a single position, velocity, and time point for multiple motors."""
+
     position: dict[Motor, float64]
     velocity: dict[Motor, float64]
     time: float64
 
     @classmethod
     def default(cls, motors: list[Motor]) -> PVT:
+        """Initialise a PVT with zeros.
+
+        :param motors: List of motors
+        :returns: PVT instance with zero value placeholders
+        """
         return cls(
             position={motor: np.float64(0.0) for motor in motors},
             velocity={motor: np.float64(0.0) for motor in motors},
@@ -93,19 +93,33 @@ class _Trajectory:
         cls,
         slice: Slice[Motor],
         motor_info: _PmacMotorInfo,
-        entry_pvt: PVT,
+        entry_pvt: PVT | None = None,
         ramp_up_time: float | None = None,
     ) -> tuple[_Trajectory, PVT]:
+        """Parse a trajectory from a slice.
+
+        :param slice: Information about a series of scan frames along a number of axes
+        :param motor_info: Instance of _PmacMotorInfo
+        :param entry_pvt: PVT entering this trajectory
+        :param ramp_up_time: Time required to ramp up to speed
+        :returns Trajectory: Data class representing our parsed trajectory
+        """
         # List of indices into slice where gaps occur
         gap_indices: list[int] = np.where(slice.gap)[0].tolist()
         motors = slice.axes()
 
         # Given a ramp up time is provided, we must be at a
         # gap in the trajectory, that we can ramp up through
-        if gap_indices[0] != 0 and ramp_up_time:
+        if (not gap_indices or gap_indices[0] != 0) and ramp_up_time:
             raise RuntimeError(
                 "Slice does not start with a gap, if ramp up time provided. "
                 f"Ramp up time given: {ramp_up_time}."
+            )
+
+        # Given a ramp up time is provided, we need to construct the PVT
+        if (ramp_up_time is None) == (entry_pvt is None):
+            raise RuntimeError(
+                "Exactly one of ramp_up_time or entry_pvt must be provided."
             )
 
         # Find change points in the slice
@@ -146,10 +160,8 @@ class _Trajectory:
         )
 
         sub_traj_funcs = []
-        # Given a segment is either a gap or a collection window
-        # we can iterate over each segment and advance the
-        # gap OR collection window iterator safely.
         if ramp_up_time:
+            # Insert specific ramp up gap
             gap_index = next(gap_iter)
             sub_traj_funcs.append(
                 partial(
@@ -162,6 +174,9 @@ class _Trajectory:
                 )
             )
             is_gap_segment = is_gap_segment[1:]
+        # Given a segment is either a gap or a collection window
+        # we can iterate over each segment and advance the
+        # gap OR collection window iterator safely.
         for is_gap in is_gap_segment:
             if is_gap:
                 gap_index = next(gap_iter)
@@ -199,21 +214,20 @@ class _Trajectory:
             entry_pvt = exit_pvt
             sub_trajectories.append(traj)
 
-        # If we are ramping up, we are already starting at the
-        # ramp up position, so remove this point from the
-        # trajectory
-        if ramp_up_time:
-            sub_trajectories[0] = sub_trajectories[0][1:]
-
         # Combine sub trajectories
         total_trajectory = _Trajectory.from_trajectories(sub_trajectories, motors)
 
-        return total_trajectory, exit_pvt
+        return total_trajectory, (exit_pvt or PVT.default(motors))
 
     @classmethod
     def from_trajectories(
         cls, sub_trajectories: list[_Trajectory], motors: list[Motor]
     ) -> _Trajectory:
+        """Parse a trajectory from smaller strajectories.
+
+        :param sub_trajectories: List of trajectories to concatenate
+        :returns: _Trajectory instance as concatenation of all sub trajectories
+        """
         # Initialise arrays to insert sub arrays into
         total_points = sum(len(trajectory) for trajectory in sub_trajectories)
         positions = {motor: np.empty(total_points, float) for motor in motors}
@@ -259,6 +273,23 @@ class _Trajectory:
         slice: Slice,
         entry_pvt: PVT,
     ) -> tuple[_Trajectory, PVT]:
+        """Parse a trajectory from a collection window.
+
+        For all frames of the slice that fall within this window, this function will:
+          - Insert a sequence of midpoint → upper → midpoint → ... → upper points
+            until window ends
+          - Calculate and insert 3 point average velocities for these points, using the
+            entry PVT to blend with previous trajectories
+
+        :param start: Index into slice where collection window starts
+        :param end: Index into slice where collection window end
+        :param motors: List of motors involved in trajectory
+        :param slice: Information about a series of scan frames along a number of axes
+        :param entry_pvt: PVT entering this trajectory
+        :returns: Tuple of:
+            _Trajectory instance encompassing collection window points
+            PVT at exit of collection window
+        """
         slice_duration = error_if_none(slice.duration, "Slice must have a duration")
         half_durations = slice_duration / 2
         if end > len(half_durations):
@@ -274,13 +305,17 @@ class _Trajectory:
         exit_pvt = PVT.default(motors)
 
         for motor in motors:
+            # Insert lower -> mid -> lower -> mid... positions
             positions[motor][::2] = slice.lower[motor][start:end]
             positions[motor][1::2] = slice.midpoints[motor][start:end]
 
             # For velocities we will need the relative distances
-            mid_to_upper_velocities, lower_to_mid_velocities = get_half_velocities(
-                motor, slice, half_durations, start, end
-            )
+            mid_to_upper_velocities = (
+                slice.upper[motor][start:end] - slice.midpoints[motor][start:end]
+            ) / half_durations[start:end]
+            lower_to_mid_velocities = (
+                slice.midpoints[motor][start:end] - slice.lower[motor][start:end]
+            ) / half_durations[start:end]
 
             # Smooth first lower point velocity with previous PVT
             velocities[motor][0] = (
@@ -293,21 +328,21 @@ class _Trajectory:
                 lower_to_mid_velocities + mid_to_upper_velocities
             ) / 2
 
-            # For the upper points, we need to take the average of the
+            # For the lower points, we need to take the average of the
             # mid -> upper velocity of the previous point and
             # lower -> mid velocity of the current point
             velocities[motor][2::2] = (
                 mid_to_upper_velocities[:-1] + lower_to_mid_velocities[1:]
             ) / 2
 
+            # Exit PVT is the final upper point and its mid to upper velocity
             exit_pvt.position[motor] = slice.upper[motor][end - 1]
             exit_pvt.velocity[motor] = mid_to_upper_velocities[-1]
 
-        durations[0] = entry_pvt.time
-        durations[1:] = np.repeat(
+        durations = np.repeat(
             (half_durations[start:end]),
             2,
-        )[1:]
+        )
 
         user_programs = np.repeat(UserProgram.COLLECTION_WINDOW, len(user_programs))
 
@@ -332,8 +367,67 @@ class _Trajectory:
         entry_pvt: PVT,
         ramp_up_time: float | None = None,
     ) -> tuple[_Trajectory, PVT]:
+        """Parse a trajectory from a gap.
+
+        This function will:
+          - Compute gap PVT points to bridge a previous and next collection window
+          - Insert the previous collecion windows upper point into the trajectory
+          - Insert the next collection windows first lower and midpoint
+          - Calculate a 2 point average velocity for the first lower and midpoint
+          - Produce an exit PVT of the next frames upper, midpoint-upper velocity, and
+            time
+
+        :param motor_info: Instance of _PmacMotorInfo
+        :param gap: Index into slice where gap must occur
+        :param motors: List of motors involved in trajectory
+        :param slice: Information about a series of scan frames along a number of axes
+        :param entry_pvt: PVT entering this trajectory
+        :returns: Tuple of:
+            _Trajectory instance bridging previous and next collection windows with gap
+            PVT at the start of the next collection window
+        """
         slice_duration = error_if_none(slice.duration, "Slice must have a duration")
         half_durations = slice_duration / 2
+
+        # Initialise exit PVT
+        exit_pvt = PVT.default(motors)
+
+        # Fill arrays for gap exit (start of next collection window)
+        end_positions = {motor: np.empty(2, dtype=np.float64) for motor in motors}
+        end_velocities = {motor: np.empty(2, dtype=np.float64) for motor in motors}
+        end_durations = np.empty(2, dtype=np.float64)
+        for motor in motors:
+            end_positions[motor][0] = slice.lower[motor][gap]
+            end_positions[motor][1] = slice.midpoints[motor][gap]
+
+            mid_to_upper_velocity = (
+                slice.upper[motor][gap] - slice.midpoints[motor][gap]
+            ) / half_durations[gap]
+            lower_to_mid_velocity = (
+                slice.midpoints[motor][gap] - slice.lower[motor][gap]
+            ) / half_durations[gap]
+
+            end_velocities[motor][0] = lower_to_mid_velocity
+
+            end_velocities[motor][1] = (
+                lower_to_mid_velocity + mid_to_upper_velocity
+            ) / 2
+            end_durations[1] = half_durations[gap]
+
+            exit_pvt.position[motor] = slice.upper[motor][gap]
+            exit_pvt.velocity[motor] = mid_to_upper_velocity
+
+        exit_pvt.time = half_durations[gap]
+
+        # If we are ramping up, don't compute gap PVTs
+        if ramp_up_time:
+            end_durations[0] = ramp_up_time
+            return _Trajectory(
+                positions=end_positions,
+                velocities=end_velocities,
+                durations=end_durations,
+                user_programs=np.array([1, 1], dtype=int),
+            ), exit_pvt
 
         entry_velocities = entry_pvt.velocity
         exit_velocities = {
@@ -359,9 +453,9 @@ class _Trajectory:
             entry_velocities,
             exit_velocities,
             distances,
-            ramp_up_time,
         )
 
+        # Calculate gap PVTs
         gap_positions, gap_velocities, gap_durations = (
             _calculate_profile_from_velocities(
                 motors,
@@ -371,6 +465,11 @@ class _Trajectory:
             )
         )
 
+        # Initialise larger arrays for last collection windows
+        # final upper point, the gap points, and the next collection windows
+        # initial lower and midpoints
+        # gap_duration includes duration for next collection windows initial
+        # lower point, so array_size = len(gap_duration) + 2
         positions = {
             motor: np.empty(len(gap_durations) + 2, dtype=np.float64)
             for motor in motors
@@ -380,9 +479,6 @@ class _Trajectory:
             for motor in motors
         }
         durations = np.empty(len(gap_durations) + 2, dtype=np.float64)
-
-        # Initialise exit PVT
-        exit_pvt = PVT.default(motors)
 
         for motor in motors:
             # Insert last collection windows upper point
@@ -395,24 +491,10 @@ class _Trajectory:
             velocities[motor][1:-2] = gap_velocities[motor]
             durations[1:-1] = gap_durations
 
-            # Insert first 2 points of next collection window
-            positions[motor][-2] = slice.lower[motor][gap]
-            positions[motor][-1] = slice.midpoints[motor][gap]
-
-            mid_to_upper_velocity, lower_to_mid_velocity = get_half_velocities(
-                motor, slice, half_durations, gap, gap + 1
-            )
-            velocities[motor][-2] = lower_to_mid_velocity[0]
-
-            velocities[motor][-1] = (
-                lower_to_mid_velocity[0] + mid_to_upper_velocity[0]
-            ) / 2
-            durations[-1] = half_durations[gap]
-
-            exit_pvt.position[motor] = slice.upper[motor][gap]
-            exit_pvt.velocity[motor] = mid_to_upper_velocity[0]
-
-        exit_pvt.time = half_durations[gap]
+            # Append first 2 points of next collection window
+            positions[motor][-2:] = end_positions[motor]
+            velocities[motor][-2:] = end_velocities[motor]
+            durations[-1] = end_durations[-1]
 
         trajectory = _Trajectory(
             positions=positions,
@@ -432,7 +514,6 @@ def _get_velocity_profile(
     start_velocities: dict[Motor, np.float64],
     end_velocities: dict[Motor, np.float64],
     distances: dict[Motor, float],
-    ramp_up_time: float | None = None,
 ) -> tuple[dict[Motor, npt.NDArray[np.float64]], dict[Motor, npt.NDArray[np.float64]]]:
     """Generate time and velocity profiles for motors across a gap.
 
@@ -462,7 +543,8 @@ def _get_velocity_profile(
     time_arrays = {}
     velocity_arrays = {}
 
-    min_time = ramp_up_time or MIN_TURNAROUND
+    min_time = MIN_TURNAROUND
+
     iterations = 2
 
     while iterations > 0:
@@ -620,20 +702,3 @@ def _calculate_profile_from_velocities(
         velocities,
         time_intervals + [final_interval],
     )
-
-
-def get_half_velocities(
-    motor: Motor,
-    slice: Slice,
-    half_durations: npt.NDArray[float64],
-    start: int,
-    end: int,
-) -> tuple[npt.NDArray[float64], npt.NDArray[float64]]:
-    mid_to_upper_velocities = (
-        slice.upper[motor][start:end] - slice.midpoints[motor][start:end]
-    ) / half_durations[start:end]
-    lower_to_mid_velocities = (
-        slice.midpoints[motor][start:end] - slice.lower[motor][start:end]
-    ) / half_durations[start:end]
-
-    return mid_to_upper_velocities, lower_to_mid_velocities

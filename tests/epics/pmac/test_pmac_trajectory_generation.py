@@ -56,12 +56,8 @@ async def test_line_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Motor
         {sim_x_motor: 10},
         {sim_x_motor: 5},
     )
-    entry_pvt = PVT.default([sim_x_motor])
-    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, entry_pvt, 2)
+    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, ramp_up_time=2)
     trajectory.append_ramp_down(exit_pvt, {sim_x_motor: np.float64(6)}, 2, 0)
-
-    # Ignoring ramp up points
-    trajectory = trajectory[2:]
 
     assert trajectory.positions[sim_x_motor] == pytest.approx(
         [
@@ -141,7 +137,7 @@ async def test_line_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Motor
 
     assert trajectory.durations == pytest.approx(
         [
-            0.01290072,
+            2.0,
             1.0,
             1.0,
             1.0,
@@ -162,7 +158,6 @@ async def test_line_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Motor
             1.0,
             2.0,
         ],
-        1e-5,
     )
 
 
@@ -178,15 +173,10 @@ async def test_spiral_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Mot
         {sim_x_motor: 5, sim_y_motor: 5},
     )
 
-    entry_pvt = PVT.default([sim_x_motor, sim_y_motor])
-
-    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, entry_pvt, 2.0)
+    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, ramp_up_time=2.0)
     trajectory.append_ramp_down(
         exit_pvt, {sim_x_motor: np.float64(0), sim_y_motor: np.float64(0)}, 2.0, 0
     )
-
-    # Exclude ramping up from our assertions
-    trajectory = trajectory[4:]
 
     assert trajectory.positions == {
         sim_x_motor: pytest.approx(
@@ -243,7 +233,7 @@ async def test_spiral_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Mot
     }
 
     assert trajectory.durations == pytest.approx(
-        [0.06148327, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0], 1e-5
+        [2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0], 1e-5
     )
 
     assert trajectory.user_programs == pytest.approx([1, 1, 1, 1, 1, 1, 1, 8])
@@ -261,23 +251,13 @@ async def test_snaked_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Moto
         {sim_x_motor: 5, sim_y_motor: 5},
     )
 
-    # Ramp up position
-    entry_pvt = PVT(
-        position={sim_x_motor: np.float64(0), sim_y_motor: np.float64(9)},
-        velocity={sim_x_motor: np.float64(0), sim_y_motor: np.float64(0)},
-        time=np.float64(0),
-    )
-
-    # This trajectory will include ramp up PVT points
-    # As this test is not interested in this segment
-    # we will only check points after this segment
-    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, entry_pvt, 1.0)
+    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
 
     trajectory.append_ramp_down(
         exit_pvt, {sim_x_motor: np.float64(6.0), sim_y_motor: np.float64(12)}, 1.0, 0
     )
 
-    assert trajectory.positions[sim_x_motor][4:] == pytest.approx(
+    assert trajectory.positions[sim_x_motor] == pytest.approx(
         [
             0.5,
             1.0,
@@ -322,7 +302,7 @@ async def test_snaked_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Moto
         ]
     )
 
-    assert trajectory.velocities[sim_x_motor][4:] == pytest.approx(
+    assert trajectory.velocities[sim_x_motor] == pytest.approx(
         [
             1.0,
             1.0,
@@ -367,7 +347,7 @@ async def test_snaked_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Moto
         ]
     )
 
-    assert trajectory.positions[sim_y_motor][4:] == pytest.approx(
+    assert trajectory.positions[sim_y_motor] == pytest.approx(
         [
             10.0,
             10.0,
@@ -412,7 +392,7 @@ async def test_snaked_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Moto
         ]
     )
 
-    assert trajectory.velocities[sim_y_motor][4:] == pytest.approx(
+    assert trajectory.velocities[sim_y_motor] == pytest.approx(
         [
             0.0,
             0.0,
@@ -457,7 +437,7 @@ async def test_snaked_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Moto
         ]
     )
 
-    assert trajectory.user_programs[4:] == pytest.approx(
+    assert trajectory.user_programs == pytest.approx(
         [
             1,
             1,
@@ -502,14 +482,9 @@ async def test_snaked_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Moto
         ]
     )
 
-    # The sum of the initial gap points that take us from
-    # ramp up position to first collection window point
-    # should be equal to provided ramp_up_time
-    assert sum(trajectory.durations[:5]) == pytest.approx(1.0)
-
-    assert trajectory.durations[4:] == pytest.approx(
+    assert trajectory.durations == pytest.approx(
         [
-            0.05,
+            1.000000,
             0.500000,
             0.500000,
             0.500000,
@@ -566,19 +541,7 @@ async def test_grid_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]
         {sim_x_motor: 5, sim_y_motor: 5},
     )
 
-    # Ramp up position
-    entry_pvt = PVT(
-        position={sim_x_motor: np.float64(0), sim_y_motor: np.float64(9)},
-        velocity={sim_x_motor: np.float64(0), sim_y_motor: np.float64(0)},
-        time=np.float64(0),
-    )
-
-    # This trajectory will include ramp up PVT points
-    # As this test is not interested in this segment
-    # we will only check points after this segment
-    trajectory, exit_pvt = _Trajectory.from_slice(
-        slice, motor_info, entry_pvt=entry_pvt, ramp_up_time=1.0
-    )
+    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
 
     trajectory.append_ramp_down(
         exit_pvt,
@@ -587,7 +550,7 @@ async def test_grid_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]
         0.0,
     )
 
-    assert trajectory.positions[sim_x_motor][4:] == pytest.approx(
+    assert trajectory.positions[sim_x_motor] == pytest.approx(
         [
             0.5,
             1.0,
@@ -634,7 +597,7 @@ async def test_grid_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]
         ]
     )
 
-    assert trajectory.velocities[sim_x_motor][4:] == pytest.approx(
+    assert trajectory.velocities[sim_x_motor] == pytest.approx(
         [
             1.0,
             1.0,
@@ -681,7 +644,7 @@ async def test_grid_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]
         ]
     )
 
-    assert trajectory.positions[sim_y_motor][4:] == pytest.approx(
+    assert trajectory.positions[sim_y_motor] == pytest.approx(
         [
             10.0,
             10.0,
@@ -728,7 +691,7 @@ async def test_grid_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]
         ]
     )
 
-    assert trajectory.velocities[sim_y_motor][4:] == pytest.approx(
+    assert trajectory.velocities[sim_y_motor] == pytest.approx(
         [
             0.0,
             0.0,
@@ -775,7 +738,7 @@ async def test_grid_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]
         ]
     )
 
-    assert trajectory.user_programs[4:] == pytest.approx(
+    assert trajectory.user_programs == pytest.approx(
         [
             1,
             1,
@@ -822,14 +785,9 @@ async def test_grid_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]
         ]
     )
 
-    # The sum of the initial gap points that take us from
-    # ramp up position to first collection window point
-    # should be equal to provided ramp_up_time
-    assert sum(trajectory.durations[:5]) == pytest.approx(1.0)
-
-    assert trajectory.durations[4:] == pytest.approx(
+    assert trajectory.durations == pytest.approx(
         [
-            0.05,
+            1.000000,
             0.500000,
             0.500000,
             0.500000,
@@ -1012,19 +970,9 @@ async def test_appending_trajectory(sim_motors):  # noqa: D103
         {sim_x_motor: 5, sim_y_motor: 5},
     )
 
-    # Ramp up position
-    entry_pvt = PVT(
-        position={sim_x_motor: np.float64(0), sim_y_motor: np.float64(9)},
-        velocity={sim_x_motor: np.float64(0), sim_y_motor: np.float64(0)},
-        time=np.float64(0),
-    )
-
     first_trajectory, first_exit_pvt = _Trajectory.from_slice(
-        slice, motor_info, entry_pvt, 1
+        slice, motor_info, ramp_up_time=1
     )
-
-    # Slice out ramp up points
-    first_trajectory = first_trajectory[4:]
 
     slice = path.consume()
     second_trajectory, second_exit_pvt = _Trajectory.from_slice(
@@ -1137,7 +1085,7 @@ async def test_appending_trajectory(sim_motors):  # noqa: D103
 
     assert overall_trajectory.durations == pytest.approx(
         [
-            0.05,
+            1.0,
             0.5,
             0.5,
             0.5,

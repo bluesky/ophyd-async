@@ -1,4 +1,4 @@
-from unittest.mock import call
+from unittest.mock import call, patch
 
 import numpy as np
 import pytest
@@ -10,11 +10,16 @@ from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_trajectory import (
     PmacTrajectoryTriggerLogic,  # noqa: PLC2701
 )
-from ophyd_async.epics.pmac._utils import (
-    _PmacMotorInfo,  # noqa: PLC2701
+from ophyd_async.epics.pmac._pmac_trajectory_generation import (
     _Trajectory,  # noqa: PLC2701
 )
-from ophyd_async.testing import get_mock, set_mock_value
+from ophyd_async.epics.pmac._utils import (
+    _PmacMotorInfo,  # noqa: PLC2701
+)
+from ophyd_async.testing import (
+    get_mock,
+    set_mock_value,
+)
 
 
 @pytest.fixture
@@ -56,7 +61,7 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert await pmacIO.trajectory.positions[7].get_value() == pytest.approx(
         [-1.0, 1.0, 3.0, 5.0, 7.0, 7.2]
     )
-    assert pmac_trajectory.scantime == 4400000
+    assert pmac_trajectory.scantime == pytest.approx(4.400000)
 
 
 async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
@@ -65,9 +70,7 @@ async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
         {sim_x_motor: np.array([-1.0, 1.0, 3.0, 5.0, 7.0])},
         {sim_x_motor: np.array([2.0, 2.0, 2.0, 2.0, 2.0])},
         np.array([1, 1, 1, 1, 8], dtype=np.int32),
-        np.array(
-            [200000.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0], dtype=np.float64
-        ),
+        np.array([0.2, 1.0, 1.0, 1.0, 1.0], dtype=np.float64),
     )
     motor_info = _PmacMotorInfo(
         "CS1",
@@ -76,29 +79,24 @@ async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
         {sim_x_motor: 10},
         {sim_x_motor: 10},
     )
-    ramp_down_position = {sim_x_motor: np.float64(7.2)}
-    ramp_down_time = 0.2
+
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
-    await pmac_trajectory._build_trajectory(
-        trajectory, motor_info, ramp_down_position, ramp_down_time
-    )
+    await pmac_trajectory._build_trajectory(trajectory, motor_info)
 
     assert await pmacIO.trajectory.profile_cs_name.get_value() == "CS1"
-    assert pmac_trajectory.scantime == 4400000
-    assert (
-        await pmacIO.trajectory.time_array.get_value()
-        == [
+    assert pmac_trajectory.scantime == pytest.approx(4200000)
+    assert await pmacIO.trajectory.time_array.get_value() == pytest.approx(
+        [
             200000.0,
             1000000.0,
             1000000.0,
             1000000.0,
             1000000.0,
-            200000.0,
         ]
-    ).all()
+    )
 
     assert (
-        await pmacIO.trajectory.positions[7].get_value() == [-1.0, 1, 3, 5, 7, 7.2]
+        await pmacIO.trajectory.positions[7].get_value() == [-1.0, 1, 3, 5, 7.0]
     ).all()
 
     assert (
@@ -109,10 +107,9 @@ async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
             2.0,
             2.0,
             2.0,
-            0.0,
         ]
     ).all()
-    assert await pmacIO.trajectory.points_to_build.get_value() == 6
+    assert await pmacIO.trajectory.points_to_build.get_value() == 5
 
 
 async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
@@ -146,19 +143,88 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert coord_mock_calls[3] == call.defer_moves.put(False, wait=True)
 
 
-async def test_pmac_trajectory_kickoff_raises_exception_if_no_prepare(
+async def test_pmac_trajectory_kickoff(
     sim_motors: tuple[PmacIO, Motor, Motor],
 ):
     pmacIO, sim_x_motor, sim_y_motor = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
-    with pytest.raises(RuntimeError, match="Cannot kickoff. Must call prepare first."):
-        await pmac_trajectory.kickoff()
+    spec = Fly(2.0 @ Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2))
+    with patch("ophyd_async.epics.pmac._pmac_trajectory.SLICE_SIZE", 2):
+        # This will prepare the buffer with 2 frames of info
+        await pmac_trajectory.prepare(spec)
+        # This will consume another 2 frames
+        set_mock_value(
+            pmacIO.total_points, 2
+        )  # Only one value in observe_value(total_points)
+        await pmac_trajectory.kickoff()  # Executes trajectory, appending once
+        await pmac_trajectory.complete()  # Block until trajectory is complete
+
+    sim_y_motor_position_arrays = [
+        np.array(call.args[0])
+        for call in get_mock(pmacIO.trajectory.positions[7]).mock_calls
+    ]
+
+    sim_x_motor_position_arrays = [
+        np.array(call.args[0])
+        for call in get_mock(pmacIO.trajectory.positions[8]).mock_calls
+    ]
+
+    # Appended to buffer once in prepare and once after kickoff
+    assert len(sim_x_motor_position_arrays) == len(sim_y_motor_position_arrays) == 2
+
+    assert np.concatenate(sim_y_motor_position_arrays) == pytest.approx(
+        [
+            -1.0,
+            1.0,
+            3.0,
+            5.0,
+            7.0,
+            7.2,
+            7.2,
+            7.2,
+            7.0,
+            5.0,
+            3.0,
+            1.0,
+            -1,
+            -1.2,
+        ]
+    )
+    assert np.concatenate(sim_x_motor_position_arrays) == pytest.approx(
+        [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.4,
+            3.0,
+            4.6,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+            5.0,
+        ]
+    )
+
+
+async def test_pmac_trajectory_execute_trajectory_raises_exception_if_no_prepare(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmacIO, _, _ = sim_motors
+    pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
+    with pytest.raises(
+        RuntimeError, match="Cannot execute trajectory. Must call prepare first."
+    ):
+        await pmac_trajectory._execute_trajectory()
 
 
 async def test_pmac_trajectory_complete(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmacIO, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
-    with pytest.raises(RuntimeError, match="Cannot complete. Must call prepare first."):
+    with pytest.raises(RuntimeError, match="Cannot complete. Must call kickoff first."):
         await pmac_trajectory.complete()
 
 
