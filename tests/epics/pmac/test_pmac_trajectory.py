@@ -61,7 +61,7 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert await pmacIO.trajectory.positions[7].get_value() == pytest.approx(
         [-1.0, 1.0, 3.0, 5.0, 7.0, 7.2]
     )
-    assert pmac_trajectory.scantime == pytest.approx(4.400000)
+    assert pmac_trajectory.scantime == pytest.approx(4400000)
 
 
 async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
