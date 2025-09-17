@@ -97,11 +97,9 @@ def _error_and_kill_pending_tasks(
 
 @pytest.fixture(autouse=True, scope="function")
 async def fail_test_on_unclosed_tasks(request: FixtureRequest):
-    """
-    Used on every test to ensure failure if there are pending tasks
+    """Used on every test to ensure failure if there are pending tasks
     by the end of the test.
     """
-
     try:
         fail_count = request.session.testsfailed
         loop = asyncio.get_running_loop()
