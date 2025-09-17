@@ -9,6 +9,10 @@ on:
         type: string
         description: The runner to run this job on
         required: true
+      tests-path:
+        type: string
+        description: The path to look for tests
+        required: true
     secrets:
       CODECOV_TOKEN:
         required: true
@@ -57,11 +61,11 @@ jobs:
           
       - name: Run tests win
         if: inputs.runs-on == 'windows-latest'
-        run: tox -e tests -- --timeout=6
+        run: tox -e tests -- --timeout=6 ${{ inputs.tests-path}}
 
       - name: Non win tests
         if: inputs.runs-on != 'windows-latest'
-        run: tox -e tests -- --timeout=2
+        run: tox -e tests -- --timeout=2 ${{ inputs.tests-path}}
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
