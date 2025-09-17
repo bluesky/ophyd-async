@@ -20,11 +20,7 @@ jobs:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
         python-version: ["3.11", "3.12", "3.13"]
-<<<<<<< HEAD
         tests-path: ["tests/unit_tests"]
-=======
-        tests-path: ["tests"]
->>>>>>> 5bcb4b15b (initial restructure)
         include:
           # Include one that runs in the dev environment
           - runs-on: "ubuntu-latest"
