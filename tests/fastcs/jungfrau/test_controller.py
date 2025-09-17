@@ -118,7 +118,7 @@ async def test_signals_set_in_pedestal_mode(jungfrau: Jungfrau):
     frames_and_events = 10
     good_trigger_info = TriggerInfo(
         livetime=1e-3,
-        number_of_events=frames_and_events,
+        number_of_events=frames_and_events * 2,
         exposures_per_event=frames_and_events,
         trigger=DetectorTrigger.INTERNAL,
     )
