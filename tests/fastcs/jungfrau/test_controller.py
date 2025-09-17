@@ -177,13 +177,14 @@ async def test_prepare_val_error_if_pedestal_mode_and_odd_number_of_events(
 
     trigger_info = TriggerInfo(livetime=1e-3, deadtime=1)
 
-    with pytest.raises(
-        ValueError,
-        match=f"Invalid trigger info for pedestal mode. "
-        f"{trigger_info.number_of_events=} must be divisible by two. "
-        f"Was create_jungfrau_pedestal_triggering_info used?",
-    ):
-        await jungfrau.prepare(trigger_info)
+    with patch("ophyd_async.core._signal.SignalW.set", return_value=None):
+        with pytest.raises(
+            ValueError,
+            match=f"Invalid trigger info for pedestal mode. "
+            f"{trigger_info.number_of_events=} must be divisible by two. "
+            f"Was create_jungfrau_pedestal_triggering_info used?",
+        ):
+            await jungfrau.prepare(trigger_info)
 
 
 async def test_prepare_pedestal_mode_sets_trigger_mode_before_pedestal_mode(
