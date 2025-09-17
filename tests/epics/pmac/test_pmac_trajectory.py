@@ -148,7 +148,7 @@ async def test_pmac_trajectory_kickoff(
 ):
     pmacIO, sim_x_motor, sim_y_motor = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
-    spec = Fly(2.0 @ Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2))
+    spec = Fly(2.0 @ (Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2)))
     with patch("ophyd_async.epics.pmac._pmac_trajectory.SLICE_SIZE", 2):
         # This will prepare the buffer with 2 frames of info
         await pmac_trajectory.prepare(spec)
