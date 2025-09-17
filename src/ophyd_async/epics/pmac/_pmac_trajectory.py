@@ -111,7 +111,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         trajectory: _Trajectory,
         motor_info: _PmacMotorInfo,
     ):
-        self.scantime = np.sum(trajectory.durations / TICK_S)
+        self.scantime = np.sum(trajectory.durations)
         use_axis = {axis + 1: False for axis in range(len(CS_LETTERS))}
 
         for motor, number in motor_info.motor_cs_index.items():
