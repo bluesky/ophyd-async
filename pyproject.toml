@@ -35,12 +35,14 @@ ca = ["aioca>=2.0a4"]
 pva = ["p4p>=4.2.0"]
 tango = ["pytango==10.0.2"]
 demo = ["ipython", "matplotlib", "pyqt6"]
+fastcs = ["fastcs  @ git+https://github.com/DiamondLightSource/FastCS@main"]
 dev = [
     "ophyd_async[sim]",
     "ophyd_async[ca]",
     "ophyd_async[pva]",
     "ophyd_async[tango]",
     "ophyd_async[demo]",
+    "ophyd_async[fastcs]",
     "inflection",
     "import-linter",
     "myst-parser",
