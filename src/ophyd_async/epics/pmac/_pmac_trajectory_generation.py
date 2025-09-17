@@ -112,7 +112,7 @@ class _Trajectory:
         # gap in the trajectory, that we can ramp up through
         if (not gap_indices or gap_indices[0] != 0) and ramp_up_time:
             raise RuntimeError(
-                "Slice does not start with a gap, if ramp up time provided. "
+                "Slice must start with a gap, if ramp up time provided. "
                 f"Ramp up time given: {ramp_up_time}."
             )
 
@@ -120,6 +120,7 @@ class _Trajectory:
         if (ramp_up_time is None) == (entry_pvt is None):
             raise RuntimeError(
                 "Exactly one of ramp_up_time or entry_pvt must be provided."
+                f"Provided ramp up time: {ramp_up_time} and entry PVT: {entry_pvt}"
             )
 
         # Find change points in the slice
@@ -160,25 +161,14 @@ class _Trajectory:
         )
 
         sub_traj_funcs = []
-        if ramp_up_time:
-            # Insert specific ramp up gap
-            gap_index = next(gap_iter)
-            sub_traj_funcs.append(
-                partial(
-                    _Trajectory.from_gap,
-                    motor_info,
-                    gap_index,
-                    motors,
-                    slice,
-                    ramp_up_time=ramp_up_time,
-                )
-            )
-            is_gap_segment = is_gap_segment[1:]
         # Given a segment is either a gap or a collection window
         # we can iterate over each segment and advance the
         # gap OR collection window iterator safely.
-        for is_gap in is_gap_segment:
+        for segment_idx, is_gap in enumerate(is_gap_segment):
             if is_gap:
+                kwargs = {}
+                if segment_idx == 0 and ramp_up_time:
+                    kwargs["ramp_up_time"] = ramp_up_time
                 gap_index = next(gap_iter)
                 sub_traj_funcs.append(
                     partial(
@@ -187,6 +177,7 @@ class _Trajectory:
                         gap_index,
                         motors,
                         slice,
+                        **kwargs,
                     )
                 )
             else:
