@@ -1,11 +1,15 @@
 import logging
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
 import pytest
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import DetectorTrigger, TriggerInfo, init_devices
 from ophyd_async.fastcs.jungfrau import AcquisitionType, DetectorStatus, Jungfrau
+from ophyd_async.fastcs.jungfrau._signals import (
+    JungfrauTriggerMode,  # noqa: PLC2701
+    PedestalMode,  # noqa: PLC2701
+)
 from ophyd_async.testing import (
     callback_on_mock_put,
     set_mock_value,
@@ -163,3 +167,41 @@ async def test_error_in_pedestal_and_external_modes(jungfrau: Jungfrau):
         await jungfrau.prepare(
             TriggerInfo(livetime=1e-3, trigger=DetectorTrigger.EDGE_TRIGGER, deadtime=1)
         )
+
+
+async def test_prepare_val_error_if_pedestal_mode_and_odd_number_of_events(
+    jungfrau: Jungfrau,
+):
+    # No. events = pedestal loops * 2, so it should always be even
+    await jungfrau.drv.acquisition_type.set(AcquisitionType.PEDESTAL)
+
+    trigger_info = TriggerInfo(livetime=1e-3, deadtime=1)
+
+    with pytest.raises(
+        ValueError,
+        match=f"Invalid trigger info for pedestal mode. "
+        f"{trigger_info.number_of_events=} must be divisible by two. "
+        f"Was create_jungfrau_pedestal_triggering_info used?",
+    ):
+        await jungfrau.prepare(trigger_info)
+
+
+async def test_prepare_pedestal_mode_sets_trigger_mode_before_pedestal_mode(
+    jungfrau: Jungfrau,
+):
+    await jungfrau.drv.acquisition_type.set(AcquisitionType.PEDESTAL)
+    trigger_info = TriggerInfo(
+        livetime=1e-3,
+        number_of_events=4,
+        deadtime=1,
+    )
+    parent_mock = MagicMock()
+    jungfrau.drv.pedestal_mode_state.set = AsyncMock()
+    jungfrau.drv.trigger_mode.set = AsyncMock()
+    parent_mock.attach_mock(jungfrau.drv.pedestal_mode_state.set, "pedestal_mode_state")
+    parent_mock.attach_mock(jungfrau.drv.trigger_mode.set, "trigger_mode")
+    await jungfrau.prepare(trigger_info)
+    assert parent_mock.mock_calls == [
+        call.trigger_mode(JungfrauTriggerMode.INTERNAL),
+        call.pedestal_mode_state(PedestalMode.ON),
+    ]
