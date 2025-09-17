@@ -88,7 +88,6 @@ class Motor(
         # we must write 1 to stop the motor. Simply processing the record is not
         # sufficient.
         self.motor_stop = epics_signal_w(int, prefix + ".STOP")
-        self.encoder_res = epics_signal_rw(float, prefix + ".ERES")
 
         # Whether set() should complete successfully or not
         self._set_success = True

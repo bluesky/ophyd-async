@@ -91,6 +91,11 @@ class Table(ConfinedModel):
                 raise TypeError(f"Cannot use annotation {anno} in a Table")
             cls.__annotations__[k] = new_anno
 
+    @classmethod
+    def empty(cls: type[TableSubclass]) -> TableSubclass:
+        """Makes an empty table with zero length columns."""
+        return cls()  # type: ignore
+
     def __add__(self, right: TableSubclass) -> TableSubclass:
         """Concatenate the arrays in field values."""
         cls = type(right)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 from pydantic import Field
@@ -21,6 +22,7 @@ from ._block import (
     CommonPandaBlocks,
     PandaBitMux,
     PandaPcompDirection,
+    PandaPosMux,
     PandaTimeUnits,
     PcompBlock,
     SeqBlock,
@@ -88,76 +90,71 @@ class PosOutScaleOffset:
 
 class ScanSpecSeqTableTriggerLogic(FlyerController[ScanSpecInfo]):
     def __init__(
-        self, seq: SeqBlock, motor_pos_outs: dict[Motor, PosOutScaleOffset]
+        self,
+        seq: SeqBlock,
+        motor_pos_outs: dict[Motor, PosOutScaleOffset] | None = None,
     ) -> None:
         self.seq = seq
-        self.motor_pos_outs = motor_pos_outs
+        self.motor_pos_outs = motor_pos_outs or {}
 
     async def prepare(self, value: ScanSpecInfo):
         await self.seq.enable.set(PandaBitMux.ZERO)
         slice = Path(value.spec.calculate()).consume()
         slice_duration = error_if_none(slice.duration, "Slice must have duration")
 
-        gaps = np.where(slice.gap)[0]
-        if gaps[0] == 0:
-            gaps = np.delete(gaps, 0)
-        scan_size = len(slice)
-
-        gaps = np.append(gaps, scan_size)
+        # Start of window is where the is a gap to the previous point
+        window_start = np.nonzero(slice.gap)[0]
+        # End of window is either the next gap, or the end of the scan
+        window_end = np.append(window_start[1:], len(slice))
         fast_axis = slice.axes()[-1]
-        if not self.motor_pos_outs.get(fast_axis):
-            raise RuntimeError("Failed to fetch motor")
+        pos_out = self.motor_pos_outs.get(fast_axis)
+        # If we have a motor to compare against, get its scale and offset
+        # otherwise don't connect POSA to anything
+        if pos_out is not None:
+            scale, offset = await asyncio.gather(
+                pos_out.scale.get_value(),
+                pos_out.offset.get_value(),
+            )
+            compare_pos_name = cast(PandaPosMux, pos_out.name)
         else:
-            motor_pos_outs = self.motor_pos_outs
-            _, scale, _ = (
-                motor_pos_outs[fast_axis].name,
-                await motor_pos_outs[fast_axis].scale.get_value(),
-                await motor_pos_outs[fast_axis].offset.get_value(),
-            )
-            resolution = scale
+            scale, offset = 1, 0
+            compare_pos_name = PandaPosMux.ZERO
 
-        start = 0
-
-        # GPIO goes low
-        rows = SeqTable.row(trigger=SeqTrigger.BITA_0)
-        for gap in gaps:
-            # GPIO goes high
+        rows = SeqTable.empty()
+        for start, end in zip(window_start, window_end, strict=True):
+            # GPIO goes low then high
+            rows += SeqTable.row(trigger=SeqTrigger.BITA_0)
             rows += SeqTable.row(trigger=SeqTrigger.BITA_1)
-            # Wait for position
-            if (
-                slice.midpoints[fast_axis][gap - 1] * resolution
-                > slice.midpoints[fast_axis][start] * resolution
-            ):
-                trig = SeqTrigger.POSA_GT
-                dir = False if resolution > 0 else True
-
-            else:
-                trig = SeqTrigger.POSA_LT
-                dir = True if resolution > 0 else False
-            rows += SeqTable.row(
-                trigger=trig,
-                position=int(slice.lower[fast_axis][start] / resolution),
-            )
+            # Wait for position if we are comparing against a motor
+            if pos_out is not None:
+                lower = (slice.lower[fast_axis][start] - offset) / scale
+                midpoint = (slice.midpoints[fast_axis][start] - offset) / scale
+                if midpoint > lower:
+                    trigger = SeqTrigger.POSA_GT
+                elif midpoint < lower:
+                    trigger = SeqTrigger.POSA_LT
+                else:
+                    trigger = None
+                if trigger is not None:
+                    rows += SeqTable.row(
+                        trigger=trigger,
+                        position=int(lower),
+                    )
 
             # Time based Triggers
             rows += SeqTable.row(
-                repeats=gap - start,
+                repeats=end - start,
                 trigger=SeqTrigger.IMMEDIATE,
                 time1=int((slice_duration[0] - value.deadtime) * 10**6),
                 time2=int(value.deadtime * 10**6),
                 outa1=True,
-                outb1=dir,
                 outa2=False,
-                outb2=dir,
             )
-
-            # GPIO goes low
-            rows += SeqTable.row(trigger=SeqTrigger.BITA_0)
-
-            start = gap
+        # Need to do units before value for PandA, otherwise it scales the current value
+        await self.seq.prescale_units.set(PandaTimeUnits.US)
         await asyncio.gather(
+            self.seq.posa.set(compare_pos_name),
             self.seq.prescale.set(1.0),
-            self.seq.prescale_units.set(PandaTimeUnits.US),
             self.seq.repeats.set(1),
             self.seq.table.set(rows),
         )

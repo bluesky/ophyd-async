@@ -107,7 +107,7 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
     )
     await trigger_logic.prepare(info)
     out = await trigger_logic.seq.table.get_value()
-    assert (out.repeats == [1, 1, 1, 5, 1, 1, 1, 5, 1, 1, 1, 5, 1]).all()
+    assert out.repeats == pytest.approx([1, 1, 1, 5, 1, 1, 1, 5, 1, 1, 1, 5])
     assert out.trigger == [
         SeqTrigger.BITA_0,
         SeqTrigger.BITA_1,
@@ -121,11 +121,14 @@ async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) 
         SeqTrigger.BITA_1,
         SeqTrigger.POSA_GT,
         SeqTrigger.IMMEDIATE,
-        SeqTrigger.BITA_0,
     ]
-    assert (out.position == [0, 0, 25, 0, 0, 0, 275, 0, 0, 0, 25, 0, 0]).all()
-    assert (out.time1 == [0, 0, 0, 900000, 0, 0, 0, 900000, 0, 0, 0, 900000, 0]).all()
-    assert (out.time2 == [0, 0, 0, 100000, 0, 0, 0, 100000, 0, 0, 0, 100000, 0]).all()
+    assert out.position == pytest.approx([0, 0, 25, 0, 0, 0, 275, 0, 0, 0, 25, 0])
+    assert out.time1 == pytest.approx(
+        [0, 0, 0, 900000, 0, 0, 0, 900000, 0, 0, 0, 900000]
+    )
+    assert out.time2 == pytest.approx(
+        [0, 0, 0, 100000, 0, 0, 0, 100000, 0, 0, 0, 100000]
+    )
 
 
 async def test_seq_scanspec_trigger_logic_no_gaps(
@@ -145,17 +148,16 @@ async def test_seq_scanspec_trigger_logic_no_gaps(
     )
     await trigger_logic.prepare(info)
     out = await trigger_logic.seq.table.get_value()
-    assert (out.repeats == [1, 1, 1, 3, 1]).all()
+    assert out.repeats == pytest.approx([1, 1, 1, 3])
     assert out.trigger == [
         SeqTrigger.BITA_0,
         SeqTrigger.BITA_1,
         SeqTrigger.POSA_GT,
         SeqTrigger.IMMEDIATE,
-        SeqTrigger.BITA_0,
     ]
-    assert (out.position == [0, 0, 3, 0, 0]).all()
-    assert (out.time1 == [0, 0, 0, 1900000, 0]).all()
-    assert (out.time2 == [0, 0, 0, 100000, 0]).all()
+    assert out.position == pytest.approx([0, 0, 3, 0])
+    assert out.time1 == pytest.approx([0, 0, 0, 1900000])
+    assert out.time2 == pytest.approx([0, 0, 0, 100000])
 
 
 async def test_seq_scanspec_trigger_logic_duration_error(
@@ -182,7 +184,7 @@ async def test_seq_scanspec_trigger_logic_duration_error(
         await trigger_logic.prepare(info)
 
 
-async def test_seq_scanspec_trigger_logic_runtime_error(
+async def test_seq_scanspec_trigger_logic_motor_not_passed(
     mock_panda, sim_x_motor, sim_y_motor
 ) -> None:
     spec = Fly(2.0 @ (Line(sim_y_motor, 1, 2, 3)))
@@ -197,8 +199,51 @@ async def test_seq_scanspec_trigger_logic_runtime_error(
             )
         },
     )
-    with pytest.raises(RuntimeError, match="Failed to fetch motor"):
-        await trigger_logic.prepare(info)
+    await trigger_logic.prepare(info)
+    out = await trigger_logic.seq.table.get_value()
+    assert out.repeats == pytest.approx([1, 1, 3])
+    assert out.trigger == [
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.IMMEDIATE,
+    ]
+    assert out.position == pytest.approx([0, 0, 0])
+    assert out.time1 == pytest.approx([0, 0, 1900000])
+    assert out.time2 == pytest.approx([0, 0, 100000])
+
+
+async def test_seq_scanspec_trigger_logic_equal(
+    mock_panda, sim_x_motor, sim_y_motor
+) -> None:
+    spec = 2.0 @ (Line(sim_x_motor, 1, 2, 3))
+    info = ScanSpecInfo(spec=spec, deadtime=0.1)
+    trigger_logic = ScanSpecSeqTableTriggerLogic(
+        mock_panda.seq[1],
+        {
+            sim_x_motor: PosOutScaleOffset(
+                "INENC1.VAL",
+                mock_panda.inenc[1].val_scale,
+                mock_panda.inenc[1].val_offset,
+            )
+        },
+    )
+    await trigger_logic.prepare(info)
+    out = await trigger_logic.seq.table.get_value()
+    assert out.repeats == pytest.approx([1, 1, 1, 1, 1, 1, 1, 1, 1])
+    assert out.trigger == [
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.IMMEDIATE,
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.IMMEDIATE,
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.IMMEDIATE,
+    ]
+    assert out.position == pytest.approx([0, 0, 0, 0, 0, 0, 0, 0, 0])
+    assert out.time1 == pytest.approx([0, 0, 1900000, 0, 0, 1900000, 0, 0, 1900000])
+    assert out.time2 == pytest.approx([0, 0, 100000, 0, 0, 100000, 0, 0, 100000])
 
 
 async def test_pcomp_trigger_logic(mock_panda):
