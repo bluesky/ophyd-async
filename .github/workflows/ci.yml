@@ -25,6 +25,7 @@ jobs:
           # Include one that runs in the dev environment
           - runs-on: "ubuntu-latest"
             python-version: "dev"
+            tests-path: "tests"
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
