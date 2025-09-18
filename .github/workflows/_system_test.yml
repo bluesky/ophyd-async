@@ -35,4 +35,4 @@ jobs:
             ca-gateway
 
       - name: Run system tests
-        run: pytest system_tests/epics/adsim
+        run: pytest tests/system_tests
