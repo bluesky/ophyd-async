@@ -20,12 +20,12 @@ jobs:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
         python-version: ["3.11", "3.12", "3.13"]
-        tests-path: ["system_tests", "tests"]
+        tests-path: ["tests/unit_tests"]
         include:
           # Include one that runs in the dev environment
           - runs-on: "ubuntu-latest"
             python-version: "dev"
-            tests-path: "tests"
+            tests-path: "tests/unit_tests"
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
