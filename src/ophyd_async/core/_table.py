@@ -13,6 +13,7 @@ TableSubclass = TypeVar("TableSubclass", bound="Table")
 
 
 def _concat(value1, value2):
+    """Concatenate two values, supports both NumPy arrays and generic types."""
     if isinstance(value1, np.ndarray):
         return np.concatenate((value1, value2))
     else:
@@ -20,6 +21,8 @@ def _concat(value1, value2):
 
 
 def _make_default_factory(dtype: np.dtype) -> Callable[[], np.ndarray]:
+    """Creates a default factory, returns an empty Numpy array of a specified dtype."""
+
     def numpy_array_default_factory() -> np.ndarray:
         return np.array([], dtype)
 
