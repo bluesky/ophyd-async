@@ -18,6 +18,7 @@ class Jungfrau(StandardDetector[JungfrauController, JunfrauCommissioningWriter])
         name="",
     ):
         self.drv = JungfrauDriverIO(prefix)
+        self.provider = path_provider
         writer = JunfrauCommissioningWriter(path_provider)
         controller = JungfrauController(self.drv)
         super().__init__(controller, writer, name=name)

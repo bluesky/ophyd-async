@@ -92,5 +92,6 @@ class JungfrauDriverIO(Device):
         self.acquisition_type = soft_signal_rw(
             AcquisitionType, AcquisitionType.STANDARD
         )
+        self.expected_frames = epics_signal_rw(int, "BL24I-JUNGFRAU-META:FD:NumCapture")
 
         super().__init__(name=name, connector=fastcs_connector(self, uri))

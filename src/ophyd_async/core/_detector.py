@@ -365,6 +365,7 @@ class StandardDetector(
         )
         try:
             async for index in indices_written:
+                print(f" got index {index} in async for loop in complete")
                 yield WatcherUpdate(
                     name=self.name,
                     current=index,
@@ -377,7 +378,9 @@ class StandardDetector(
                     else None,
                 )
                 if index >= self._events_to_complete:
+                    #print(f"{index=}, breaking...")
                     break
+            print(f"{self._events_to_complete=}")
         finally:
             await indices_written.aclose()
             if self._completable_exposures >= trigger_info.total_number_of_exposures:

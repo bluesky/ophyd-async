@@ -93,12 +93,11 @@ class JungfrauController(DetectorController):
             )
 
         coros = [
-            self._driver.trigger_mode.set(
-                JUNGFRAU_TRIGGER_MODE_MAP[trigger_info.trigger]
-            ),
             self._driver.period_between_frames.set(period_between_frames),
             self._driver.exposure_time.set(trigger_info.livetime),
         ]
+
+        await self._driver.expected_frames.set(trigger_info.exposures_per_event*trigger_info.number_of_events)
 
         match acquisition_type:
             case AcquisitionType.STANDARD:
@@ -110,22 +109,28 @@ class JungfrauController(DetectorController):
                 coros.extend(
                     [
                         self._driver.frames_per_acq.set(frames_signal),
+                        self._driver.trigger_mode.set(
+                        JUNGFRAU_TRIGGER_MODE_MAP[trigger_info.trigger]),
                     ]
                 )
             case AcquisitionType.PEDESTAL:
                 coros.extend(
                     [
                         self._driver.pedestal_mode_frames.set(
-                            trigger_info.exposures_per_event
+                            trigger_info.exposures_per_event, wait=True
                         ),
                         self._driver.pedestal_mode_loops.set(
-                            trigger_info.number_of_events
-                        ),
-                        self._driver.pedestal_mode_state.set(PedestalMode.ON),
+                            trigger_info.number_of_events, wait=True
+                        )
                     ]
                 )
+                val = await self._driver.expected_frames.get_value()
+                await self._driver.expected_frames.set(val*2)
 
         await asyncio.gather(*coros)
+        await asyncio.sleep(0.5) #maybe race condition?
+        if acquisition_type == AcquisitionType.PEDESTAL:
+            await self._driver.pedestal_mode_state.set(PedestalMode.ON, wait=True)
 
     async def arm(self):
         await self._driver.acquisition_start.trigger()
