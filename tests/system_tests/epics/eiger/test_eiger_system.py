@@ -120,6 +120,7 @@ async def test_eiger(RE, ioc_prefixes) -> EigerDetector:
     return test_eiger
 
 
+@pytest.mark.skip_as_not_ready
 async def test_trigger_saves_file(test_eiger: EigerDetector, setup_device: SetupDevice):
     single_shot = TriggerInfo(
         exposure_timeout=None,
