@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.3.dev3+gaeded110f documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.3.dev4+gabcdf5983 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=b4de7946"></script>
+    <script src="../../_static/documentation_options.js?v=ab672e65"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.3.dev3+gaeded110f documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.3.dev3+gaeded110f documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.3.dev4+gabcdf5983 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.3.dev4+gabcdf5983 documentation - Home"/>
   
   
 </a></div>
@@ -562,7 +562,9 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.motor.Motor.check_motor_limit">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_motor_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abs_start_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">abs_end_pos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/motor.html#Motor.check_motor_limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.motor.Motor.check_motor_limit" title="Link to this definition">#</a></dt>
-<dd><p>Check the motor limit with the absolute positions.</p>
+<dd><p>Check the positions are within limits.</p>
+<p>Will raise a MotorLimitsException if the given absolute positions will be
+outside the motor soft limits.</p>
 </dd></dl>
 
 <dl class="py method">
