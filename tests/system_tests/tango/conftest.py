@@ -64,10 +64,29 @@ class TangoSubprocessHelper:
         self.trls = pickle.loads(self.conn.recv(1024))
         return self
 
-    def __exit__(self, A, B, C):
-        self.conn.close()
-        self.sock.close()
-        self.process.communicate()
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            self.conn.close()
+        except Exception:
+            pass
+
+        try:
+            self.sock.close()
+        except Exception:
+            pass
+
+        if self.process.poll() is None:  # Process is still running
+            try:
+                self.process.terminate()
+                self.process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+                self.process.wait()
+
+        try:
+            self.process.communicate(timeout=5)  # Avoid hanging
+        except Exception:
+            pass
 
 
 @pytest.fixture(scope="module")
