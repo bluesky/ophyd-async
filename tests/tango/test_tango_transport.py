@@ -1,5 +1,4 @@
 import asyncio
-import re
 from enum import Enum
 from typing import Any
 
@@ -30,7 +29,6 @@ from ophyd_async.tango.core import (
     get_dtype_extended,
     get_full_attr_trl,
     get_python_type,
-    get_tango_trl,
     get_trl_descriptor,
 )
 
@@ -176,36 +174,6 @@ async def test_get_trl_descriptor(
     }
     descriptor = get_trl_descriptor(datatype, tango_resource, tr_configs)
     assert descriptor == expected_descriptor
-
-
-# --------------------------------------------------------------------
-# @pytest.mark.asyncio
-# @pytest.mark.parametrize(
-#     "attr_name, proxy_needed, expected_type, should_raise",
-#     [
-#         ("justvalue", True, AttributeProxy, False),
-#         ("justvalue", False, AttributeProxy, False),
-#         ("clear", True, CommandProxy, False),
-#         ("clear", False, CommandProxy, False),
-#         ("nonexistent", True, None, True),
-#     ],
-# )
-# async def test_get_tango_trl(
-#     tango_test_device, attr_name, proxy_needed, expected_type, should_raise
-# ):
-#     trl = get_full_attr_trl(tango_test_device, attr_name)
-#     assert re.match(
-#         r"tango://[a-zA-Z0-9\.-_:]*/test/device/1/" + attr_name + r"#dbase=no", trl
-#     )
-#     # tango_test_device is of form tango://127.0.0.1:<port>/test/device/1#dbase=no
-#     proxy = await DeviceProxy(tango_test_device) if proxy_needed else None
-#     if should_raise:
-#         with pytest.raises(RuntimeError):
-#             await get_tango_trl(trl, proxy, 1)
-#     else:
-#         await asyncio.sleep(0.1)
-#         result = await get_tango_trl(trl, proxy, 1)
-#         assert isinstance(result, expected_type)
 
 
 # --------------------------------------------------------------------
