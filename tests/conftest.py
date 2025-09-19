@@ -35,6 +35,23 @@ EXTRA_BLOCKS_RECORD = str(
 )
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "skip_as_not_ready: mark test to be skipped as not ready for general use",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    for item in items:
+        if "skip_as_not_ready" in item.keywords:
+            item.add_marker(
+                pytest.mark.skip(
+                    reason="This test is skipped as not ready for general use"
+                )
+            )
+
+
 # Autouse fixture that will set all EPICS networking env vars to use lo interface
 # to avoid false failures caused by things like firewalls blocking EPICS traffic.
 @pytest.fixture(scope="session", autouse=True)
