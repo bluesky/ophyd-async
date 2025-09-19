@@ -43,7 +43,7 @@ def pytest_collection_modifyitems(config, items):
             ):  # expect "win32", but open to a future change: https://mail.python.org/pipermail/patches/2000-May/000648.html
                 item.add_marker(
                     pytest.mark.skip(
-                        reason="Ophyd-async currently does not support Tango on Windows"
+                        reason="Ophyd-async is currently not tested on Windows + Tango"
                     )
                 )
 
