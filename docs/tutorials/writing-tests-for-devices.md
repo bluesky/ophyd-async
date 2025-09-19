@@ -21,7 +21,7 @@ If we need to add a feature to a particular Device, or fix a bug, and it only af
 
 We will be writing a test using the pytest framework which encourages fixtures to setup and teardown the Devices we wish to test. In this case we will create the `DemoMotor` from the previous tutorial:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: mock_motor
 ```
 
@@ -49,7 +49,7 @@ asyncio_mode = "auto"
 
 Let's test some verbs. We want to check that we can `read()` and `read_configuration()` on a `DemoMotor` while staged, and that we can still call them when unstaged:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_read_motor
 ```
 
@@ -63,7 +63,7 @@ Some of our tests produce timestamps, instead of checking their values we use []
 
 Now let's call some verbs and check that they do the right thing. We want to check that `stop()` triggers the [](#SignalX) `stop_`, waiting for it to complete:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_motor_stopped
 ```
 
@@ -73,7 +73,7 @@ This time we use [](#get_mock_put) to get a [](#unittest.mock.Mock) that will be
 
 Now let's pretend to be a progress bar and check that we get the right outputs. We want to check that `set()` will call any progress watchers with appropriate updates, and also terminate when the readback value reaches the correct value:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_motor_moving_well
 ```
 
@@ -109,11 +109,11 @@ def RE():
 
 Now you can run a plan, and check that it produces the correct bluesky documents. Let's go back to the demo and test the `DemoPointDetector` in a `bp.count` plan:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: mock_point_detector
 ```
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_point_detector_in_plan
 ```
 
