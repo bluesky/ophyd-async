@@ -23,15 +23,32 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import adsimdetector
 
-PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
+PANDA_RECORD = str(
+    Path(__file__).parent / "unit_tests" / "fastcs" / "panda" / "db" / "panda.db"
+)
 INCOMPLETE_BLOCK_RECORD = str(
-    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_block_panda.db"
+    Path(__file__).parent
+    / "unit_tests"
+    / "fastcs"
+    / "panda"
+    / "db"
+    / "incomplete_block_panda.db"
 )
 INCOMPLETE_RECORD = str(
-    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_panda.db"
+    Path(__file__).parent
+    / "unit_tests"
+    / "fastcs"
+    / "panda"
+    / "db"
+    / "incomplete_panda.db"
 )
 EXTRA_BLOCKS_RECORD = str(
-    Path(__file__).parent / "fastcs" / "panda" / "db" / "extra_blocks_panda.db"
+    Path(__file__).parent
+    / "unit_tests"
+    / "fastcs"
+    / "panda"
+    / "db"
+    / "extra_blocks_panda.db"
 )
 
 
