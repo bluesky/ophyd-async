@@ -155,7 +155,7 @@ async def test_set_with_zero_velocity(sim_motor: motor.Motor) -> None:
         (10, 9.99, -9.99),  # Goes above upper_limit
     ],
 )
-async def test_set_motor_limits_error(
+async def test_move_outside_motor_limits_causes_error(
     sim_motor: motor.Motor,
     position,
     upper_limit,
@@ -166,6 +166,16 @@ async def test_set_motor_limits_error(
     set_mock_value(sim_motor.high_limit_travel, upper_limit)
     with pytest.raises(motor.MotorLimitsException):
         await sim_motor.set(position)
+
+
+async def test_given_limits_of_0_0_then_move_causes_no_error(
+    sim_motor: motor.Motor,
+):
+    set_mock_value(sim_motor.velocity, 10)
+    set_mock_value(sim_motor.low_limit_travel, 0)
+    set_mock_value(sim_motor.high_limit_travel, 0)
+    await sim_motor.set(100)
+    assert (await sim_motor.user_setpoint.get_value()) == 100
 
 
 @pytest.mark.parametrize(
