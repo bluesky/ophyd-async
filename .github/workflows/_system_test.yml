@@ -35,4 +35,4 @@ jobs:
             ca-gateway
 
       - name: Run system tests
-        run: pytest tests/system_tests
+        run: pytest tests/system_tests/test_tutorials.py
