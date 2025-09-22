@@ -35,19 +35,6 @@ from ophyd_async.plan_stubs import (
 TIMEOUT = 10.0
 
 
-# @pytest.fixture(scope="module")
-# def with_env():
-#     with patch.dict(
-#         os.environ,
-#         {
-#             "EPICS_CA_NAME_SERVERS": "127.0.0.1:9064",
-#             "EPICS_PVA_NAME_SERVERS": "127.0.0.1:9075",
-#         },
-#         clear=True,
-#     ):
-#         yield
-
-
 @pytest.fixture(scope="module")
 def with_env():
     target_env = {
