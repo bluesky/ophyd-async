@@ -3,36 +3,37 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import ANY
 
-# import bluesky.plan_stubs as bps
-# import bluesky.plans as bp
-# import pytest
-# from bluesky.run_engine import RunEngine
-# from bluesky.utils import MsgGenerator
-# from event_model.documents import (
-#     DocumentType,
-#     Event,
-#     EventDescriptor,
-#     RunStart,
-#     RunStop,
-#     StreamDatum,
-#     StreamResource,
-# )
 
-# from ophyd_async.core import (
-#     StaticPathProvider,
-#     TriggerInfo,
-#     YamlSettingsProvider,
-#     init_devices,
-# )
-# from ophyd_async.epics.adsimdetector import SimDetector
-# from ophyd_async.plan_stubs import (
-#     apply_settings,
-#     apply_settings_if_different,
-#     get_current_settings,
-#     retrieve_settings,
-# )
+import bluesky.plan_stubs as bps
+import bluesky.plans as bp
+import pytest
+from bluesky.run_engine import RunEngine
+from bluesky.utils import MsgGenerator
+from event_model.documents import (
+    DocumentType,
+    Event,
+    EventDescriptor,
+    RunStart,
+    RunStop,
+    StreamDatum,
+    StreamResource,
+)
 
-# TIMEOUT = 10.0
+from ophyd_async.core import (
+    StaticPathProvider,
+    TriggerInfo,
+    YamlSettingsProvider,
+    init_devices,
+)
+from ophyd_async.epics.adsimdetector import SimDetector
+from ophyd_async.plan_stubs import (
+    apply_settings,
+    apply_settings_if_different,
+    get_current_settings,
+    retrieve_settings,
+)
+
+TIMEOUT = 10.0
 
 
 @pytest.fixture(scope="module")
@@ -54,36 +55,36 @@ def with_env():
         os.environ.update(original_env)
 
 
-# @pytest.fixture
-# def adsim(RE: RunEngine) -> SimDetector:
-#     prefix = "BL01T"
-#     provider = StaticPathProvider(lambda _: "adsim", Path("/tmp"))
-#     with init_devices():
-#         adsim = SimDetector(
-#             f"{prefix}-DI-CAM-01:",
-#             path_provider=provider,
-#             drv_suffix="DET:",
-#             fileio_suffix="HDF5:",
-#         )
+@pytest.fixture
+def adsim(RE: RunEngine) -> SimDetector:
+    prefix = "BL01T"
+    provider = StaticPathProvider(lambda _: "adsim", Path("/tmp"))
+    with init_devices():
+        adsim = SimDetector(
+            f"{prefix}-DI-CAM-01:",
+            path_provider=provider,
+            drv_suffix="DET:",
+            fileio_suffix="HDF5:",
+        )
 
-#     RE(apply_baseline_settings(adsim))
+    RE(apply_baseline_settings(adsim))
 
-#     return adsim
+    return adsim
 
 
-# def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
-#     current_settings = yield from get_current_settings(adsim)
-#     provider = YamlSettingsProvider(Path(__file__).parent)
-#     baseline_settings = yield from retrieve_settings(
-#         provider,
-#         "baseline",
-#         adsim,
-#     )
-#     yield from apply_settings_if_different(
-#         baseline_settings,
-#         apply_plan=apply_settings,
-#         current_settings=current_settings,
-#     )
+def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
+    current_settings = yield from get_current_settings(adsim)
+    provider = YamlSettingsProvider(Path(__file__).parent)
+    baseline_settings = yield from retrieve_settings(
+        provider,
+        "baseline",
+        adsim,
+    )
+    yield from apply_settings_if_different(
+        baseline_settings,
+        apply_plan=apply_settings,
+        current_settings=current_settings,
+    )
 
 
 @pytest.mark.timeout(TIMEOUT + 3.0)
@@ -99,14 +100,16 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
         )
         yield from bp.count([adsim])
 
+    RE(prepare_then_count())
 
-#     RE(prepare_then_count())
-
-#     actual_exposure_time: float = RE(bps.rd(adsim.driver.acquire_time)).plan_result
-#     assert actual_exposure_time == 0.2
+    actual_exposure_time: float = RE(bps.rd(adsim.driver.acquire_time)).plan_result
+    assert actual_exposure_time == 0.2
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 65e8fe920 (add adsim back with explicit with_env (no autouse))
 @pytest.mark.timeout(TIMEOUT + 15.0)
 def test_software_triggering(RE: RunEngine, adsim: SimDetector, with_env: None) -> None:
     docs = run_plan_and_get_documents(RE, bp.count([adsim], num=2))
@@ -237,9 +240,9 @@ def test_software_triggering(RE: RunEngine, adsim: SimDetector, with_env: None) 
     ]
 
 
-# def run_plan_and_get_documents(
-#     RE: RunEngine, plan: MsgGenerator[Any]
-# ) -> list[DocumentType]:
-#     docs = []
-#     RE(plan, lambda name, doc: docs.append(doc))
-#     return docs
+def run_plan_and_get_documents(
+    RE: RunEngine, plan: MsgGenerator[Any]
+) -> list[DocumentType]:
+    docs = []
+    RE(plan, lambda name, doc: docs.append(doc))
+    return docs
