@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import ANY
 
-
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import pytest
@@ -34,6 +33,19 @@ from ophyd_async.plan_stubs import (
 )
 
 TIMEOUT = 10.0
+
+
+# @pytest.fixture(scope="module")
+# def with_env():
+#     with patch.dict(
+#         os.environ,
+#         {
+#             "EPICS_CA_NAME_SERVERS": "127.0.0.1:9064",
+#             "EPICS_PVA_NAME_SERVERS": "127.0.0.1:9075",
+#         },
+#         clear=True,
+#     ):
+#         yield
 
 
 @pytest.fixture(scope="module")
