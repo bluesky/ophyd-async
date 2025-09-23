@@ -59,7 +59,7 @@ jobs:
     uses: ./.github/workflows/_codeql.yml
 
   release:
-    needs: [dist, test, docs, system_tests]
+    needs: [dist, test, docs]
     if: github.ref_type == 'tag'
     uses: ./.github/workflows/_release.yml
     permissions:
