@@ -37,27 +37,6 @@ jobs:
           mkdir "D:\\Temp"
           echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV
 
-      - if: inputs.needs-services
-        name: Install dev versions of python packages
-        uses: ./.github/actions/install_requirements
-
-      - if: inputs.needs-services
-        name: Checkout simulated devices
-        uses: actions/checkout@v4
-        with:
-          repository: epics-containers/example-services
-          path: example-services
-          ref: 'main'
-
-      - if: inputs.needs-services
-        name: Run docker compose
-        uses: hoverkraft-tech/compose-action@v2.3.0
-        with:
-          compose-file: "./example-services/compose.yaml"
-          services: |
-            bl01t-di-cam-01
-            ca-gateway
-
       - if: inputs.python-version == 'dev'
         name: Install dev versions of python packages
         uses: ./.github/actions/install_requirements
@@ -79,6 +58,27 @@ jobs:
         with:
           python-version: ${{ inputs.python-version }}
           pip-install: ".[dev]"
+
+      - if: inputs.needs-services
+        name: Install dev versions of python packages
+        uses: ./.github/actions/install_requirements
+
+      - if: inputs.needs-services
+        name: Checkout simulated devices
+        uses: actions/checkout@v4
+        with:
+          repository: epics-containers/example-services
+          path: example-services
+          ref: 'main'
+
+      - if: inputs.needs-services
+        name: Run docker compose
+        uses: hoverkraft-tech/compose-action@v2.3.0
+        with:
+          compose-file: "./example-services/compose.yaml"
+          services: |
+            bl01t-di-cam-01
+            ca-gateway
           
       - name: Run tests win
         if: inputs.runs-on == 'windows-latest'
