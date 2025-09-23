@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from typing import Any
 from unittest.mock import ANY
@@ -107,8 +108,14 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 65e8fe920 (add adsim back with explicit with_env (no autouse))
+=======
+@pytest.mark.skipif(
+    sys.platform.startswith("win"), reason="Services not set up on Windows"
+)
+>>>>>>> a61f6bcd0 (skip adsim test_software_triggering on windows)
 @pytest.mark.timeout(TIMEOUT + 15.0)
 def test_software_triggering(RE: RunEngine, adsim: SimDetector, with_env: None) -> None:
     docs = run_plan_and_get_documents(RE, bp.count([adsim], num=2))
