@@ -40,11 +40,11 @@ class PmacTrajectoryIO(StandardReadable):
                 for i, letter in enumerate(CS_LETTERS)
             }
         )
+        self.total_points = epics_signal_r(int, f"{prefix}TotalPoints_RBV")
         self.points_to_build = epics_signal_rw(int, prefix + "ProfilePointsToBuild")
         self.build_profile = epics_signal_rw(bool, prefix + "ProfileBuild")
         self.append_profile = epics_signal_rw(bool, prefix + "ProfileAppend")
         self.execute_profile = epics_signal_rw(bool, prefix + "ProfileExecute")
-        self.scan_percent = epics_signal_r(float, prefix + "TscanPercent_RBV")
         self.abort_profile = epics_signal_rw(bool, prefix + "ProfileAbort")
         self.profile_cs_name = epics_signal_rw(str, prefix + "ProfileCsName")
         self.calculate_velocities = epics_signal_rw(bool, prefix + "ProfileCalcVel")
@@ -108,7 +108,5 @@ class PmacIO(Device):
         )
         # Trajectory PVs have the same prefix as the pmac device
         self.trajectory = PmacTrajectoryIO(prefix)
-
-        self.total_points = epics_signal_r(int, f"{prefix}TotalPoints_RBV")
 
         super().__init__(name=name)

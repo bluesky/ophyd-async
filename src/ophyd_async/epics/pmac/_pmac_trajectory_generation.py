@@ -59,14 +59,6 @@ class _Trajectory:
     def __len__(self) -> int:
         return len(self.user_programs)
 
-    def __getitem__(self, idx: IndexType) -> _Trajectory:
-        return _Trajectory(
-            positions={m: arr[idx] for m, arr in self.positions.items()},
-            velocities={m: arr[idx] for m, arr in self.velocities.items()},
-            user_programs=self.user_programs[idx],
-            durations=self.durations[idx],
-        )
-
     def append_ramp_down(
         self,
         entry_pvt: PVT,

@@ -9,6 +9,7 @@ from ophyd_async.core import (
     FlyerController,
     WatchableAsyncStatus,
     WatcherUpdate,
+    error_if_none,
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
@@ -83,7 +84,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         loaded = SLICE_SIZE
         execute_status = self.pmac.trajectory.execute_profile.set(True)
         async for current_point in observe_value(
-            self.pmac.total_points, done_status=execute_status
+            self.pmac.trajectory.total_points, done_status=execute_status
         ):
             if loaded - current_point < SLICE_SIZE:
                 if len(self.path) != 0:
@@ -100,12 +101,15 @@ class PmacTrajectoryTriggerLogic(FlyerController):
     async def kickoff(self):
         self.trajectory_status = self._execute_trajectory()
         # Wait for the ramp up to happen
-        await wait_for_value(self.pmac.total_points, lambda v: v >= 1, DEFAULT_TIMEOUT)
+        await wait_for_value(
+            self.pmac.trajectory.total_points, lambda v: v >= 1, DEFAULT_TIMEOUT
+        )
 
     async def complete(self):
-        if not self.trajectory_status:
-            raise RuntimeError("Cannot complete. Must call kickoff first.")
-        await self.trajectory_status
+        trajectory_status = error_if_none(
+            self.trajectory_status, "Cannot complete. Must call kickoff first."
+        )
+        await trajectory_status
 
     async def stop(self):
         await self.pmac.trajectory.abort_profile.set(True)

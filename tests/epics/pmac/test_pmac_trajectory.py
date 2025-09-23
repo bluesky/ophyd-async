@@ -154,7 +154,7 @@ async def test_pmac_trajectory_kickoff(
         await pmac_trajectory.prepare(spec)
         # This will consume another 2 frames
         set_mock_value(
-            pmacIO.total_points, 2
+            pmacIO.trajectory.total_points, 2
         )  # Only one value in observe_value(total_points)
         await pmac_trajectory.kickoff()  # Executes trajectory, appending once
         await pmac_trajectory.complete()  # Block until trajectory is complete
