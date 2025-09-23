@@ -17,7 +17,7 @@ from ophyd_async.core import (
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_io import CS_LETTERS
-from ophyd_async.epics.pmac._pmac_trajectory_generation import PVT, _Trajectory
+from ophyd_async.epics.pmac._pmac_trajectory_generation import PVT, Trajectory
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
@@ -58,7 +58,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         if self.motor_info is None or self.path is None:
             raise RuntimeError("Cannot append to trajectory. Must call prepare first.")
 
-        trajectory, exit_pvt = _Trajectory.from_slice(
+        trajectory, exit_pvt = Trajectory.from_slice(
             slice,
             self.motor_info,
             None if ramp_up_time else self.next_pvt,
@@ -115,7 +115,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         await self.pmac.trajectory.abort_profile.set(True)
 
     async def _build_trajectory(
-        self, trajectory: _Trajectory, motor_info: _PmacMotorInfo, append: bool
+        self, trajectory: Trajectory, motor_info: _PmacMotorInfo, append: bool
     ):
         self.scantime = np.sum(trajectory.durations)
         use_axis = {axis + 1: False for axis in range(len(CS_LETTERS))}

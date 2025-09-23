@@ -11,7 +11,7 @@ from ophyd_async.epics.pmac._pmac_trajectory import (
     PmacTrajectoryTriggerLogic,  # noqa: PLC2701
 )
 from ophyd_async.epics.pmac._pmac_trajectory_generation import (
-    _Trajectory,  # noqa: PLC2701
+    Trajectory,  # noqa: PLC2701
 )
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,  # noqa: PLC2701
@@ -75,7 +75,7 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
 
 async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmacIO, sim_x_motor, _ = sim_motors
-    trajectory = _Trajectory(
+    trajectory = Trajectory(
         {sim_x_motor: np.array([-1.0, 1.0, 3.0, 5.0, 7.0])},
         {sim_x_motor: np.array([2.0, 2.0, 2.0, 2.0, 2.0])},
         np.array([1, 1, 1, 1, 8], dtype=np.int32),

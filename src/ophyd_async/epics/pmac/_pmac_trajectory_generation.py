@@ -50,7 +50,7 @@ class PVT:
 
 
 @dataclass
-class _Trajectory:
+class Trajectory:
     positions: dict[Motor, np.ndarray]
     velocities: dict[Motor, np.ndarray]
     user_programs: npt.NDArray[np.int32]
@@ -65,7 +65,7 @@ class _Trajectory:
         ramp_down_pos: dict[Motor, np.float64],
         ramp_down_time: float,
         ramp_down_velocity: float,
-    ) -> _Trajectory:
+    ) -> Trajectory:
         self.durations = np.append(self.durations, [entry_pvt.time, ramp_down_time])
         self.user_programs = np.append(
             self.user_programs, [UserProgram.COLLECTION_WINDOW, UserProgram.END]
@@ -87,7 +87,7 @@ class _Trajectory:
         motor_info: _PmacMotorInfo,
         entry_pvt: PVT | None = None,
         ramp_up_time: float | None = None,
-    ) -> tuple[_Trajectory, PVT]:
+    ) -> tuple[Trajectory, PVT]:
         """Parse a trajectory from a slice.
 
         :param slice: Information about a series of scan frames along a number of axes
@@ -164,7 +164,7 @@ class _Trajectory:
                 gap_index = next(gap_iter)
                 sub_traj_funcs.append(
                     partial(
-                        _Trajectory.from_gap,
+                        Trajectory.from_gap,
                         motor_info,
                         gap_index,
                         motors,
@@ -176,7 +176,7 @@ class _Trajectory:
                 start, end = next(collection_window_iter)
                 sub_traj_funcs.append(
                     partial(
-                        _Trajectory.from_collection_window,
+                        Trajectory.from_collection_window,
                         start,
                         end,
                         motors,
@@ -184,7 +184,7 @@ class _Trajectory:
                     )
                 )
 
-        sub_trajectories: list[_Trajectory] = []
+        sub_trajectories: list[Trajectory] = []
         # If no sub trajectories, initial frame is the end frame
         exit_pvt = entry_pvt
         for func in sub_traj_funcs:
@@ -198,18 +198,18 @@ class _Trajectory:
             sub_trajectories.append(traj)
 
         # Combine sub trajectories
-        total_trajectory = _Trajectory.from_trajectories(sub_trajectories, motors)
+        total_trajectory = Trajectory.from_trajectories(sub_trajectories, motors)
 
         return total_trajectory, (exit_pvt or PVT.default(motors))
 
     @classmethod
     def from_trajectories(
-        cls, sub_trajectories: list[_Trajectory], motors: list[Motor]
-    ) -> _Trajectory:
+        cls, sub_trajectories: list[Trajectory], motors: list[Motor]
+    ) -> Trajectory:
         """Parse a trajectory from smaller strajectories.
 
         :param sub_trajectories: List of trajectories to concatenate
-        :returns: _Trajectory instance as concatenation of all sub trajectories
+        :returns: Trajectory instance as concatenation of all sub trajectories
         """
         # Initialise arrays to insert sub arrays into
         total_points = sum(len(trajectory) for trajectory in sub_trajectories)
@@ -238,7 +238,7 @@ class _Trajectory:
             # Update where we are in the overall trajectory
             index_into_trajectory += len(trajectory)
 
-        trajectory = _Trajectory(
+        trajectory = Trajectory(
             positions=positions,
             velocities=velocities,
             durations=durations,
@@ -255,7 +255,7 @@ class _Trajectory:
         motors: list[Motor],
         slice: Slice,
         entry_pvt: PVT,
-    ) -> tuple[_Trajectory, PVT]:
+    ) -> tuple[Trajectory, PVT]:
         """Parse a trajectory from a collection window.
 
         For all frames of the slice that fall within this window, this function will:
@@ -270,7 +270,7 @@ class _Trajectory:
         :param slice: Information about a series of scan frames along a number of axes
         :param entry_pvt: PVT entering this trajectory
         :returns: Tuple of:
-            _Trajectory instance encompassing collection window points
+            Trajectory instance encompassing collection window points
             PVT at exit of collection window
         """
         slice_duration = error_if_none(slice.duration, "Slice must have a duration")
@@ -331,7 +331,7 @@ class _Trajectory:
 
         exit_pvt.time = half_durations[end - 1]
 
-        trajectory = _Trajectory(
+        trajectory = Trajectory(
             positions=positions,
             velocities=velocities,
             durations=durations,
@@ -349,7 +349,7 @@ class _Trajectory:
         slice: Slice,
         entry_pvt: PVT,
         ramp_up_time: float | None = None,
-    ) -> tuple[_Trajectory, PVT]:
+    ) -> tuple[Trajectory, PVT]:
         """Parse a trajectory from a gap.
 
         This function will:
@@ -366,7 +366,7 @@ class _Trajectory:
         :param slice: Information about a series of scan frames along a number of axes
         :param entry_pvt: PVT entering this trajectory
         :returns: Tuple of:
-            _Trajectory instance bridging previous and next collection windows with gap
+            Trajectory instance bridging previous and next collection windows with gap
             PVT at the start of the next collection window
         """
         slice_duration = error_if_none(slice.duration, "Slice must have a duration")
@@ -405,7 +405,7 @@ class _Trajectory:
         # If we are ramping up, don't compute gap PVTs
         if ramp_up_time:
             end_durations[0] = ramp_up_time
-            return _Trajectory(
+            return Trajectory(
                 positions=end_positions,
                 velocities=end_velocities,
                 durations=end_durations,
@@ -479,7 +479,7 @@ class _Trajectory:
             velocities[motor][-2:] = end_velocities[motor]
             durations[-1] = end_durations[-1]
 
-        trajectory = _Trajectory(
+        trajectory = Trajectory(
             positions=positions,
             velocities=velocities,
             durations=durations,

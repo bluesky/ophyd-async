@@ -10,7 +10,7 @@ from ophyd_async.epics.pmac import (
 )
 from ophyd_async.epics.pmac._pmac_trajectory_generation import (
     PVT,  # noqa: PLC2701
-    _Trajectory,  # noqa: PLC2701
+    Trajectory,  # noqa: PLC2701
 )
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,  # noqa: PLC2701
@@ -56,7 +56,7 @@ async def test_line_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Motor
         {sim_x_motor: 10},
         {sim_x_motor: 5},
     )
-    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, ramp_up_time=2)
+    trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=2)
     trajectory.append_ramp_down(exit_pvt, {sim_x_motor: np.float64(6)}, 2, 0)
 
     assert trajectory.positions[sim_x_motor] == pytest.approx(
@@ -173,7 +173,7 @@ async def test_spiral_trajectory_from_slice(sim_motors: tuple[PmacIO, Motor, Mot
         {sim_x_motor: 5, sim_y_motor: 5},
     )
 
-    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, ramp_up_time=2.0)
+    trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=2.0)
     trajectory.append_ramp_down(
         exit_pvt, {sim_x_motor: np.float64(0), sim_y_motor: np.float64(0)}, 2.0, 0
     )
@@ -251,7 +251,7 @@ async def test_snaked_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Moto
         {sim_x_motor: 5, sim_y_motor: 5},
     )
 
-    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
+    trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
 
     trajectory.append_ramp_down(
         exit_pvt, {sim_x_motor: np.float64(6.0), sim_y_motor: np.float64(12)}, 1.0, 0
@@ -541,7 +541,7 @@ async def test_grid_trajectory_with_gaps(sim_motors: tuple[PmacIO, Motor, Motor]
         {sim_x_motor: 5, sim_y_motor: 5},
     )
 
-    trajectory, exit_pvt = _Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
+    trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
 
     trajectory.append_ramp_down(
         exit_pvt,
@@ -853,7 +853,7 @@ async def test_from_gap(sim_motors):
         time=np.float64(1),
     )
 
-    trajectory, _ = _Trajectory.from_gap(
+    trajectory, _ = Trajectory.from_gap(
         motor_info, 5, [sim_x_motor, sim_y_motor], slice, entry_pvt
     )
 
@@ -932,7 +932,7 @@ async def test_from_collection_window(sim_motors):  # noqa: D103
         time=np.float64(0.5),
     )
 
-    trajectory, _ = _Trajectory.from_collection_window(
+    trajectory, _ = Trajectory.from_collection_window(
         1, 5, [sim_y_motor], slice, entry_pvt
     )
 
@@ -970,16 +970,16 @@ async def test_appending_trajectory(sim_motors):  # noqa: D103
         {sim_x_motor: 5, sim_y_motor: 5},
     )
 
-    first_trajectory, first_exit_pvt = _Trajectory.from_slice(
+    first_trajectory, first_exit_pvt = Trajectory.from_slice(
         slice, motor_info, ramp_up_time=1
     )
 
     slice = path.consume()
-    second_trajectory, second_exit_pvt = _Trajectory.from_slice(
+    second_trajectory, second_exit_pvt = Trajectory.from_slice(
         slice, motor_info, first_exit_pvt
     )
 
-    overall_trajectory = _Trajectory.from_trajectories(
+    overall_trajectory = Trajectory.from_trajectories(
         [first_trajectory, second_trajectory], [sim_x_motor, sim_y_motor]
     )
 
