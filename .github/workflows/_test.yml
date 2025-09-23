@@ -77,7 +77,7 @@ jobs:
           path: example-services
           ref: 'main'
 
-      - if: inputs.needs-services
+      - if: inputs.needs-services && inputs.runs-on != 'windows-latest'
         name: Run docker compose
         uses: hoverkraft-tech/compose-action@v2.3.0
         with:
