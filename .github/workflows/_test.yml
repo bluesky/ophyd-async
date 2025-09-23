@@ -26,6 +26,9 @@ jobs:
     runs-on: ${{ inputs.runs-on }}
 
     steps:
+      - name: Get Submodules
+        run: git submodule update --init --recursive
+
       - name: Set TEMP to D:/Temp
         if: inputs.runs-on == 'windows-latest'
         run: |
