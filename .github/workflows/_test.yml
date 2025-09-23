@@ -16,8 +16,7 @@ on:
       needs-services:
         type: boolean
         description: Whether to start external services
-        required: false
-        default: false
+        required: true
     secrets:
       CODECOV_TOKEN:
         required: true
