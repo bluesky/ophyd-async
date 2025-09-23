@@ -30,6 +30,7 @@ jobs:
           - runs-on: "ubuntu-latest"
             python-version: "dev"
             tests-path: "tests/unit_tests"
+            needs-services: false
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
@@ -46,9 +47,6 @@ jobs:
 
   docs:
     uses: ./.github/workflows/_docs.yml
-
-  # system_tests:
-  #   uses: ./.github/workflows/_system_test.yml
 
   dist:
     uses: ./.github/workflows/_dist.yml
