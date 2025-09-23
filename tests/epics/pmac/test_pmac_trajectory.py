@@ -61,6 +61,15 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert await pmacIO.trajectory.positions[7].get_value() == pytest.approx(
         [-1.0, 1.0, 3.0, 5.0, 7.0, 7.2]
     )
+
+    assert await pmacIO.trajectory.velocities[7].get_value() == pytest.approx(
+        [2.0, 2.0, 2.0, 2.0, 2.0, 0]
+    )
+
+    assert await pmacIO.trajectory.time_array.get_value() == pytest.approx(
+        [200000, 1000000, 1000000, 1000000, 1000000, 200000]
+    )
+
     assert pmac_trajectory.scantime == pytest.approx(4.4)
 
 
@@ -207,6 +216,54 @@ async def test_pmac_trajectory_kickoff(
             5.0,
             5.0,
         ]
+    )
+
+    sim_y_motor_velocity_arrays = [
+        np.array(call.args[0])
+        for call in get_mock(pmacIO.trajectory.velocities[7]).mock_calls
+    ]
+
+    sim_x_motor_velocity_arrays = [
+        np.array(call.args[0])
+        for call in get_mock(pmacIO.trajectory.velocities[8]).mock_calls
+    ]
+
+    assert np.concatenate(sim_y_motor_velocity_arrays) == pytest.approx(
+        [
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+            0.0,
+            0.0,
+            0.0,
+            -2.0,
+            -2.0,
+            -2.0,
+            -2.0,
+            -2.0,
+            0.0,
+        ]
+    )
+    assert np.concatenate(sim_x_motor_velocity_arrays) == pytest.approx(
+        [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            4.0,
+            8.9442,
+            4.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ],
+        1e-5,
     )
 
 
