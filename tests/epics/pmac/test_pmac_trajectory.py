@@ -81,7 +81,7 @@ async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
     )
 
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
-    await pmac_trajectory._build_trajectory(trajectory, motor_info)
+    await pmac_trajectory._build_trajectory(trajectory, motor_info, False)
 
     assert await pmacIO.trajectory.profile_cs_name.get_value() == "CS1"
     assert pmac_trajectory.scantime == pytest.approx(4.2)

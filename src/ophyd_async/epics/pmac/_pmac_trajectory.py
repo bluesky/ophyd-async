@@ -72,11 +72,13 @@ class PmacTrajectoryTriggerLogic(FlyerController):
                 exit_pvt, ramp_down_pos, ramp_down_time, 0
             )
         self.next_pvt = exit_pvt
-        await self._build_trajectory(trajectory, self.motor_info)
+        await self._build_trajectory(
+            trajectory, self.motor_info, append=False if ramp_up_time else True
+        )
 
     @WatchableAsyncStatus.wrap
     async def _execute_trajectory(self):
-        if not self.path:
+        if self.path is None:
             raise RuntimeError("Cannot execute trajectory. Must call prepare first.")
         loaded = SLICE_SIZE
         execute_status = self.pmac.trajectory.execute_profile.set(True)
@@ -84,8 +86,10 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             self.pmac.total_points, done_status=execute_status
         ):
             if loaded - current_point < SLICE_SIZE:
-                # We have less than SLICE_SIZE points in the buffer, so refill
-                await self._append_trajectory(self.path.consume(SLICE_SIZE))
+                if len(self.path) != 0:
+                    # We have less than SLICE_SIZE points in the buffer, so refill
+                    await self._append_trajectory(self.path.consume(SLICE_SIZE))
+                    loaded += SLICE_SIZE
             yield WatcherUpdate(
                 current=current_point,
                 initial=0,
@@ -107,9 +111,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         await self.pmac.trajectory.abort_profile.set(True)
 
     async def _build_trajectory(
-        self,
-        trajectory: _Trajectory,
-        motor_info: _PmacMotorInfo,
+        self, trajectory: _Trajectory, motor_info: _PmacMotorInfo, append: bool
     ):
         self.scantime = np.sum(trajectory.durations)
         use_axis = {axis + 1: False for axis in range(len(CS_LETTERS))}
@@ -134,7 +136,10 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             for number, use in use_axis.items()
         ]
         await asyncio.gather(*coros)
-        await self.pmac.trajectory.build_profile.set(True)
+        if append:
+            await self.pmac.trajectory.append_profile.set(True)
+        else:
+            await self.pmac.trajectory.build_profile.set(True)
 
     async def _move_to_start(
         self, motor_info: _PmacMotorInfo, ramp_up_position: dict[Motor, np.float64]

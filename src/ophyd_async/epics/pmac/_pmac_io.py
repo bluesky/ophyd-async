@@ -42,6 +42,7 @@ class PmacTrajectoryIO(StandardReadable):
         )
         self.points_to_build = epics_signal_rw(int, prefix + "ProfilePointsToBuild")
         self.build_profile = epics_signal_rw(bool, prefix + "ProfileBuild")
+        self.append_profile = epics_signal_rw(bool, prefix + "ProfileAppend")
         self.execute_profile = epics_signal_rw(bool, prefix + "ProfileExecute")
         self.scan_percent = epics_signal_r(float, prefix + "TscanPercent_RBV")
         self.abort_profile = epics_signal_rw(bool, prefix + "ProfileAbort")
