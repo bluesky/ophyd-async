@@ -6,7 +6,7 @@ from ._derived_signal import (
     derived_signal_rw,
     derived_signal_w,
 )
-from ._derived_signal_backend import Transform
+from ._derived_signal_backend import Transform, merge_gathered_dicts
 from ._detector import (
     DetectorController,
     DetectorTrigger,
@@ -212,6 +212,7 @@ __all__ = [
     "derived_signal_w",
     "Transform",
     "DerivedSignalFactory",
+    "merge_gathered_dicts",
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",

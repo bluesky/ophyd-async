@@ -34,7 +34,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         ramp_down_pos, ramp_down_time = calculate_ramp_position_and_duration(
             slice, motor_info, False
         )
-        trajectory = _Trajectory.from_slice(slice, ramp_up_time)
+        trajectory = _Trajectory.from_slice(slice, ramp_up_time, motor_info)
         await asyncio.gather(
             self._build_trajectory(
                 trajectory, motor_info, ramp_down_pos, ramp_down_time
@@ -72,7 +72,6 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         self.scantime = np.sum(trajectory.durations)
         use_axis = {axis + 1: False for axis in range(len(CS_LETTERS))}
 
-        size = 0
         for motor, number in motor_info.motor_cs_index.items():
             use_axis[number + 1] = True
             await self.pmac.trajectory.positions[number + 1].set(
@@ -81,13 +80,12 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             await self.pmac.trajectory.velocities[number + 1].set(
                 trajectory.velocities[motor]
             )
-            size += len(trajectory.positions[motor])
 
         coros = [
             self.pmac.trajectory.profile_cs_name.set(motor_info.cs_port),
             self.pmac.trajectory.time_array.set(trajectory.durations),
             self.pmac.trajectory.user_array.set(trajectory.user_programs),
-            self.pmac.trajectory.points_to_build.set(size),
+            self.pmac.trajectory.points_to_build.set(len(trajectory.durations)),
             self.pmac.trajectory.calculate_velocities.set(False),
         ] + [
             self.pmac.trajectory.use_axis[number].set(use)

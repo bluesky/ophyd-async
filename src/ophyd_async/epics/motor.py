@@ -107,18 +107,27 @@ class Motor(
         self.user_readback.set_name(name)
 
     async def check_motor_limit(self, abs_start_pos: float, abs_end_pos: float):
-        """Check the motor limit with the absolute positions."""
+        """Check the positions are within limits.
+
+        Will raise a MotorLimitsException if the given absolute positions will be
+        outside the motor soft limits.
+        """
         motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
             self.low_limit_travel.get_value(),
             self.high_limit_travel.get_value(),
             self.motor_egu.get_value(),
         )
+
+        # EPICS motor record treats limits of 0, 0 as no limit
+        if motor_lower_limit == 0 and motor_upper_limit == 0:
+            return
+
         if (
             not motor_upper_limit >= abs_start_pos >= motor_lower_limit
             or not motor_upper_limit >= abs_end_pos >= motor_lower_limit
         ):
             raise MotorLimitsException(
-                f"Motor trajectory for requested fly/move is from "
+                f"{self.name} motor trajectory for requested fly/move is from "
                 f"{abs_start_pos}{egu} to "
                 f"{abs_end_pos}{egu} but motor limits are "
                 f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
