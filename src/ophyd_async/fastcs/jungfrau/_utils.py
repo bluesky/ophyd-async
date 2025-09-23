@@ -8,18 +8,16 @@ from ._controller import JUNGFRAU_DEADTIME_S
 def create_jungfrau_external_triggering_info(
     total_triggers: PositiveInt,
     exposure_time_s: float,
-    deadtime_s: float = JUNGFRAU_DEADTIME_S,
 ) -> TriggerInfo:
     """Create safe Jungfrau TriggerInfo for external triggering.
 
     Uses parameters which more closely-align with Jungfrau terminology
     to create TriggerInfo. This device currently only supports one frame per trigger
-    when being externally triggered, but support for this can be added if needed
+    when being externally triggered.
 
     Args:
         total_triggers: Total external triggers expected before ending acquisition.
         exposure_time_s: How long to expose the detector for each of its frames.
-        deadtime_s: Time between exposures
 
     Returns:
         `TriggerInfo`
@@ -28,7 +26,7 @@ def create_jungfrau_external_triggering_info(
         number_of_events=total_triggers,
         trigger=DetectorTrigger.EDGE_TRIGGER,
         livetime=exposure_time_s,
-        deadtime=deadtime_s,
+        deadtime=JUNGFRAU_DEADTIME_S,
     )
 
 
