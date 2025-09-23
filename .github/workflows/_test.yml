@@ -26,19 +26,18 @@ jobs:
     runs-on: ${{ inputs.runs-on }}
 
     steps:
-      - name: Get Submodules
-        run: git submodule update --init --recursive
-
       - name: Set TEMP to D:/Temp
         if: inputs.runs-on == 'windows-latest'
         run: |
           mkdir "D:\\Temp"
           echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           # Need this to get version number from last tag
           fetch-depth: 0
+          submodules: recursive
 
       - if: inputs.python-version == 'dev'
         name: Install dev versions of python packages
