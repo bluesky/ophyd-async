@@ -21,9 +21,9 @@ jobs:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
         python-version: ["3.11", "3.12", "3.13"]
         test-config:
-          - path: "tests/unit_tests"
+          - tests-path: "tests/unit_tests"
             needs-services: false
-          - path: "tests/system_tests"
+          - tests-path: "tests/system_tests"
             needs-services: true
         include:
           # Include one that runs in the dev environment
@@ -36,7 +36,7 @@ jobs:
     with:
       runs-on: ${{ matrix.runs-on }}
       python-version: ${{ matrix.python-version }}
-      tests-path: ${{ matrix.test-config.path }}
+      tests-path: ${{ matrix.test-config.tests-path }}
       needs-services: ${{ matrix.test-config.needs-services }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
