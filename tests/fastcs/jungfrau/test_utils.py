@@ -43,7 +43,7 @@ async def test_create_jungfrau_pedestal_triggering_info():
         exposure_time_s=0.01, pedestal_frames=5, pedestal_loops=10
     ) == TriggerInfo(
         trigger=DetectorTrigger.INTERNAL,
-        number_of_events=10,
+        number_of_events=20,
         exposures_per_event=5,
         livetime=0.01,
     )
