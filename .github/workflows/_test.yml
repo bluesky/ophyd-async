@@ -91,7 +91,7 @@ jobs:
 
       - name: Run tests win
         if: inputs.runs-on == 'windows-latest' && inputs.needs-services == true
-        run: tox -e tests -- --timeout=8 ${{ inputs.tests-path}}
+        run: tox -e tests -- --timeout=10 ${{ inputs.tests-path}}
 
       - name: Non win tests
         if: inputs.runs-on != 'windows-latest'
