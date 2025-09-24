@@ -1146,4 +1146,74 @@ async def test_hardware_triggered_step_scan(sim_motors):
     )
     trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=2)
     trajectory.append_ramp_down(exit_pvt, {sim_x_motor: np.float64(6)}, 2, 0)
-    pass
+
+    assert trajectory.positions[sim_x_motor] == pytest.approx(
+        [
+            1.0,
+            1.0,
+            1.0,
+            1.5,
+            2.0,
+            2.0,
+            2.0,
+            2.5,
+            3.0,
+            3.0,
+            3.0,
+            6.0,
+        ]
+    )
+
+    assert trajectory.velocities[sim_x_motor] == pytest.approx(
+        [
+            0.0,
+            0.0,
+            0.0,
+            3.1623,
+            0.0,
+            0.0,
+            0.0,
+            3.1623,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ],
+        1e-5,
+    )
+
+    assert trajectory.durations == pytest.approx(
+        [
+            2.0,
+            0.5,
+            0.5,
+            0.31623,
+            0.31623,
+            0.5,
+            0.5,
+            0.31623,
+            0.31623,
+            0.5,
+            0.5,
+            2.0,
+        ],
+        1e-5,
+    )
+
+    assert (
+        trajectory.user_programs
+        == [
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            1,
+            2,
+            1,
+            1,
+            1,
+            8,
+        ]
+    ).all()
