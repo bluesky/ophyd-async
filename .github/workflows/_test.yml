@@ -29,6 +29,9 @@ jobs:
   run:
     runs-on: ${{ inputs.runs-on }}
 
+    env:
+      COVERAGE_PROCESS_START: .coveragerc
+
     steps:
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4

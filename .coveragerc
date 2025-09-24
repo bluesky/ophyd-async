@@ -1,0 +1,9 @@
+[run]
+branch = True
+parallel = True
+concurrency = multiprocessing
+
+[paths]
+source =
+    ophyd_async
+    */site-packages/ophyd_async
