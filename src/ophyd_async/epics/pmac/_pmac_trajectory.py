@@ -36,6 +36,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
     def __init__(self, pmac: PmacIO) -> None:
         self.pmac = pmac
         self.scantime: float | None = None
+        self.ramp_up_time: float | None = None
         self.path: Path | None = None
         self.next_pvt: PVT | None = None
         self.motor_info: _PmacMotorInfo | None = None
@@ -46,11 +47,11 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         slice = self.path.consume(SLICE_SIZE)
         motors = slice.axes()
         self.motor_info = await _PmacMotorInfo.from_motors(self.pmac, motors)
-        ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
+        ramp_up_pos, self.ramp_up_time = calculate_ramp_position_and_duration(
             slice, self.motor_info, True
         )
         await asyncio.gather(
-            self._append_trajectory(slice, ramp_up_time),
+            self._append_trajectory(slice, self.ramp_up_time),
             self._move_to_start(self.motor_info, ramp_up_pos),
         )
 
@@ -79,10 +80,12 @@ class PmacTrajectoryTriggerLogic(FlyerController):
 
     @WatchableAsyncStatus.wrap
     async def _execute_trajectory(self):
-        if self.path is None:
+        if self.path is None or self.scantime is None:
             raise RuntimeError("Cannot execute trajectory. Must call prepare first.")
         loaded = SLICE_SIZE
-        execute_status = self.pmac.trajectory.execute_profile.set(True)
+        execute_status = self.pmac.trajectory.execute_profile.set(
+            True, timeout=self.scantime + DEFAULT_TIMEOUT
+        )
         async for current_point in observe_value(
             self.pmac.trajectory.total_points, done_status=execute_status
         ):
@@ -99,10 +102,15 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             )
 
     async def kickoff(self):
+        ramp_up_time = error_if_none(
+            self.ramp_up_time, "Cannot kickoff. Must call prepare first."
+        )
         self.trajectory_status = self._execute_trajectory()
         # Wait for the ramp up to happen
         await wait_for_value(
-            self.pmac.trajectory.total_points, lambda v: v >= 1, DEFAULT_TIMEOUT
+            self.pmac.trajectory.total_points,
+            lambda v: v >= 1,
+            ramp_up_time + DEFAULT_TIMEOUT,
         )
 
     async def complete(self):
