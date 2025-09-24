@@ -15,8 +15,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install python packages
-        uses: ./.github/actions/install_requirements
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Run tox
-        run: tox -e ${{ inputs.tox }}
+        run: uv run --locked tox -e ${{ inputs.tox }}
