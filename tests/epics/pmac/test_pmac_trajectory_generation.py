@@ -1130,3 +1130,20 @@ async def test_appending_trajectory(sim_motors):  # noqa: D103
         ],
         1e-5,
     )
+
+
+async def test_hardware_triggered_step_scan(sim_motors):
+    _, sim_x_motor, _ = sim_motors
+    spec = 1.0 @ Line(sim_x_motor, 1, 3, 3)
+    path = Path(spec.calculate())
+    slice = path.consume()
+    motor_info = _PmacMotorInfo(
+        "CS1",
+        1,
+        {sim_x_motor: 6},
+        {sim_x_motor: 10},
+        {sim_x_motor: 5},
+    )
+    trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=2)
+    trajectory.append_ramp_down(exit_pvt, {sim_x_motor: np.float64(6)}, 2, 0)
+    pass

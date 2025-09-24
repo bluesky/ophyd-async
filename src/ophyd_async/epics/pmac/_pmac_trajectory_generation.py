@@ -115,64 +115,45 @@ class Trajectory:
                 f"Provided ramp up time: {ramp_up_time} and entry PVT: {entry_pvt}"
             )
 
-        # Find change points in the slice
-        # For example, if we have [True, False, False, False, False, True, False],
-        # there are changes between indices 0-1, 4-5, and 5-6, so our change points
-        # become [1, 5, 6]
-        change_points = np.flatnonzero(slice.gap[1:] != slice.gap[:-1]) + 1
-        # We must always handle the entire slice we are given, so we ensure
-        # index 0 and len(slice) are included
-        boundaries = np.r_[0, change_points, len(slice)]
-        # At this point, we have boundaries of slice segments
-        # Using our previous example, we get [0, 1, 5, 6, 7]
-        # which tells us our segments are at 0-1, 1-5, 5-6, and 6-7
+        # Find start and end indices for collection windows
+        collection_windows = np.argwhere(
+            np.diff(~(slice.gap), prepend=False, append=False)
+        ).reshape((-1, 2))
 
-        # For each segment of our slice (i.e., a collection window or a gap),
-        # we get a single boolean representing if the segment is a gap or not
-        # We only need to look at the start of our segments to determine
-        # if they are gaps or not (i.e., boundaries[:-1])
-        # Using our previous example, we find that:
-        #   0-1: gap
-        #   1-5: collection window
-        #   5-6: gap
-        #   6-7: collection window
-        is_gap_segment = slice.gap[boundaries[:-1]]
-
-        # Indexing into segments that are not gaps
-        # we extract the collection window start and end indices
-        collection_window_starts = boundaries[:-1][~is_gap_segment]
-        collection_window_ends = boundaries[1:][~is_gap_segment]
-        # `starts` and `ends` are taken from the same mask (i.e., ~is_segment_gap),
-        # so they always have the same length.
-        # Every segment is either a gap or a collection window,
-        # so len(starts) + len(gap_indices) == len(is_segment_gap).
-
+        collection_window_iter = iter(collection_windows)
         gap_iter = iter(gap_indices)
-        collection_window_iter = iter(
-            zip(collection_window_starts, collection_window_ends, strict=False)
-        )
-
         sub_traj_funcs = []
-        # Given a segment is either a gap or a collection window
-        # we can iterate over each segment and advance the
-        # gap OR collection window iterator safely.
-        for segment_idx, is_gap in enumerate(is_gap_segment):
-            if is_gap:
-                kwargs = {}
-                if segment_idx == 0 and ramp_up_time:
-                    kwargs["ramp_up_time"] = ramp_up_time
-                gap_index = next(gap_iter)
-                sub_traj_funcs.append(
-                    partial(
-                        Trajectory.from_gap,
-                        motor_info,
-                        gap_index,
-                        motors,
-                        slice,
-                        **kwargs,
-                    )
+
+        # Given we start at a collection window, insert it
+        if gap_indices[0] != 0:
+            start, end = next(collection_window_iter)
+            sub_traj_funcs.append(
+                partial(
+                    Trajectory.from_collection_window,
+                    start,
+                    end,
+                    motors,
+                    slice,
                 )
-            else:
+            )
+
+        # For each gap, insert a gap, followed by a collection window
+        # given the distance to the next gap is greater than 1
+        for gap in gap_iter:
+            kwargs = {}
+            if gap == 0 and ramp_up_time:
+                kwargs["ramp_up_time"] = ramp_up_time
+            sub_traj_funcs.append(
+                partial(
+                    Trajectory.from_gap,
+                    motor_info,
+                    gap,
+                    motors,
+                    slice,
+                    **kwargs,
+                )
+            )
+            if gap != len(slice.gap) - 1 and not slice.gap[gap + 1]:
                 start, end = next(collection_window_iter)
                 sub_traj_funcs.append(
                     partial(
