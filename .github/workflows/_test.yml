@@ -86,8 +86,12 @@ jobs:
             ca-gateway
           
       - name: Run tests win
-        if: inputs.runs-on == 'windows-latest'
+        if: inputs.runs-on == 'windows-latest' && inputs.needs-services == false
         run: tox -e tests -- --timeout=6 ${{ inputs.tests-path}}
+
+      - name: Run tests win
+        if: inputs.runs-on == 'windows-latest' && inputs.needs-services == true
+        run: tox -e tests -- --timeout=8 ${{ inputs.tests-path}}
 
       - name: Non win tests
         if: inputs.runs-on != 'windows-latest'
