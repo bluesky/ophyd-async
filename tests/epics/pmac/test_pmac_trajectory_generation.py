@@ -35,7 +35,7 @@ async def test_line_trajectory_from_slice(
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 9))
     slice = Path(spec.calculate()).consume()
     trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=2)
-    trajectory.append_ramp_down(exit_pvt, {sim_x_motor: np.float64(6)}, 2, 0)
+    trajectory = trajectory.with_ramp_down(exit_pvt, {sim_x_motor: np.float64(6)}, 2, 0)
 
     assert trajectory.positions[sim_x_motor] == pytest.approx(
         [
@@ -147,7 +147,7 @@ async def test_spiral_trajectory_from_slice(
     slice = Path(Fly(2.0 @ spec).calculate()).consume()
 
     trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=2.0)
-    trajectory.append_ramp_down(
+    trajectory = trajectory.with_ramp_down(
         exit_pvt, {sim_x_motor: np.float64(0), sim_y_motor: np.float64(0)}, 2.0, 0
     )
 
@@ -220,7 +220,7 @@ async def test_snaked_trajectory_with_gaps(
     slice = Path(spec.calculate()).consume()
 
     trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
-    trajectory.append_ramp_down(
+    trajectory = trajectory.with_ramp_down(
         exit_pvt, {sim_x_motor: np.float64(6.0), sim_y_motor: np.float64(12)}, 1.0, 0
     )
 
@@ -505,7 +505,7 @@ async def test_grid_trajectory_with_gaps(
     slice = Path(spec.calculate()).consume()
 
     trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=1.0)
-    trajectory.append_ramp_down(
+    trajectory = trajectory.with_ramp_down(
         exit_pvt,
         {sim_x_motor: np.float64(6.0), sim_y_motor: np.float64(12.0)},
         1.0,
@@ -926,7 +926,7 @@ async def test_appending_trajectory(
         [first_trajectory, second_trajectory], [sim_x_motor, sim_y_motor]
     )
 
-    overall_trajectory.append_ramp_down(
+    overall_trajectory = overall_trajectory.with_ramp_down(
         second_exit_pvt,
         {sim_x_motor: np.float64(0), sim_y_motor: np.float64(11.0)},
         1.0,
@@ -1083,7 +1083,7 @@ async def test_hardware_triggered_step_scan(
     slice = path.consume()
 
     trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=2)
-    trajectory.append_ramp_down(exit_pvt, {sim_x_motor: np.float64(6)}, 2, 0)
+    trajectory = trajectory.with_ramp_down(exit_pvt, {sim_x_motor: np.float64(6)}, 2, 0)
 
     assert trajectory.positions[sim_x_motor] == pytest.approx(
         [
