@@ -51,34 +51,59 @@ class PVT:
 
 @dataclass
 class Trajectory:
-    positions: dict[Motor, np.ndarray]
-    velocities: dict[Motor, np.ndarray]
+    positions: dict[Motor, npt.NDArray[np.float64]]
+    velocities: dict[Motor, npt.NDArray[np.float64]]
     user_programs: npt.NDArray[np.int32]
     durations: npt.NDArray[np.float64]
 
     def __len__(self) -> int:
         return len(self.user_programs)
 
-    def append_ramp_down(
+    def with_ramp_down(
         self,
         entry_pvt: PVT,
         ramp_down_pos: dict[Motor, np.float64],
         ramp_down_time: float,
         ramp_down_velocity: float,
     ) -> Trajectory:
-        self.durations = np.append(self.durations, [entry_pvt.time, ramp_down_time])
-        self.user_programs = np.append(
-            self.user_programs, [UserProgram.COLLECTION_WINDOW, UserProgram.END]
-        )
-        for motor in ramp_down_pos.keys():
-            self.positions[motor] = np.append(
-                self.positions[motor], [entry_pvt.position[motor], ramp_down_pos[motor]]
-            )
-            self.velocities[motor] = np.append(
-                self.velocities[motor], [entry_pvt.velocity[motor], ramp_down_velocity]
-            )
+        # Make room for additional two points to ramp down
+        # from a collection window upper to ramp down position
+        trajectory_length = len(self.user_programs)
+        total_length = trajectory_length + 2
+        motors = ramp_down_pos.keys()
 
-        return self
+        positions = {motor: np.empty(total_length, float) for motor in motors}
+        velocities = {motor: np.empty(total_length, float) for motor in motors}
+        durations: npt.NDArray[np.float64] = np.empty(total_length, float)
+        user_programs: npt.NDArray[np.int32] = np.empty(total_length, int)
+
+        durations[:trajectory_length] = self.durations
+        durations[trajectory_length:] = [entry_pvt.time, ramp_down_time]
+
+        user_programs[:trajectory_length] = self.user_programs
+        user_programs[trajectory_length:] = [
+            UserProgram.COLLECTION_WINDOW,
+            UserProgram.END,
+        ]
+
+        for motor in ramp_down_pos.keys():
+            positions[motor][:trajectory_length] = self.positions[motor]
+            positions[motor][trajectory_length:] = [
+                entry_pvt.position[motor],
+                ramp_down_pos[motor],
+            ]
+            velocities[motor][:trajectory_length] = self.velocities[motor]
+            velocities[motor][trajectory_length:] = [
+                entry_pvt.velocity[motor],
+                ramp_down_velocity,
+            ]
+
+        return Trajectory(
+            positions=positions,
+            velocities=velocities,
+            user_programs=user_programs,
+            durations=durations,
+        )
 
     @classmethod
     def from_slice(
@@ -121,7 +146,6 @@ class Trajectory:
         ).reshape((-1, 2))
 
         collection_window_iter = iter(collection_windows)
-        gap_iter = iter(gap_indices)
         sub_traj_funcs = []
 
         # Given we start at a collection window, insert it
@@ -139,7 +163,7 @@ class Trajectory:
 
         # For each gap, insert a gap, followed by a collection window
         # given the distance to the next gap is greater than 1
-        for gap in gap_iter:
+        for gap in gap_indices:
             kwargs = {}
             if gap == 0 and ramp_up_time:
                 kwargs["ramp_up_time"] = ramp_up_time
@@ -240,7 +264,7 @@ class Trajectory:
         """Parse a trajectory from a collection window.
 
         For all frames of the slice that fall within this window, this function will:
-          - Insert a sequence of midpoint → upper → midpoint → ... → upper points
+          - Insert a sequence of lower → midpoint → lower → ... → midpoint points
             until window ends
           - Calculate and insert 3 point average velocities for these points, using the
             entry PVT to blend with previous trajectories
