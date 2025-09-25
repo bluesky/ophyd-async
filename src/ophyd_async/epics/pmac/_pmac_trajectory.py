@@ -51,55 +51,9 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             slice, self.motor_info, True
         )
         await asyncio.gather(
-            self._append_trajectory(slice, self.ramp_up_time),
+            self._build_trajectory(self.motor_info, slice, self.ramp_up_time),
             self._move_to_start(self.motor_info, ramp_up_pos),
         )
-
-    async def _append_trajectory(self, slice: Slice, ramp_up_time: float | None = None):
-        if self.motor_info is None or self.path is None:
-            raise RuntimeError("Cannot append to trajectory. Must call prepare first.")
-
-        trajectory, exit_pvt = Trajectory.from_slice(
-            slice,
-            self.motor_info,
-            None if ramp_up_time else self.next_pvt,
-            ramp_up_time=ramp_up_time,
-        )
-
-        if len(self.path) == 0:
-            ramp_down_pos, ramp_down_time = calculate_ramp_position_and_duration(
-                slice, self.motor_info, False
-            )
-            trajectory = trajectory.append_ramp_down(
-                exit_pvt, ramp_down_pos, ramp_down_time, 0
-            )
-        self.next_pvt = exit_pvt
-        await self._build_trajectory(
-            trajectory, self.motor_info, append=False if ramp_up_time else True
-        )
-
-    @WatchableAsyncStatus.wrap
-    async def _execute_trajectory(self):
-        if self.path is None or self.scantime is None:
-            raise RuntimeError("Cannot execute trajectory. Must call prepare first.")
-        loaded = SLICE_SIZE
-        execute_status = self.pmac.trajectory.execute_profile.set(
-            True, timeout=self.scantime + DEFAULT_TIMEOUT
-        )
-        async for current_point in observe_value(
-            self.pmac.trajectory.total_points, done_status=execute_status
-        ):
-            if loaded - current_point < SLICE_SIZE:
-                if len(self.path) != 0:
-                    # We have less than SLICE_SIZE points in the buffer, so refill
-                    await self._append_trajectory(self.path.consume(SLICE_SIZE))
-                    loaded += SLICE_SIZE
-            yield WatcherUpdate(
-                current=current_point,
-                initial=0,
-                target=self.path.end_index,
-                name=self.pmac.name,
-            )
 
     async def kickoff(self):
         ramp_up_time = error_if_none(
@@ -122,36 +76,116 @@ class PmacTrajectoryTriggerLogic(FlyerController):
     async def stop(self):
         await self.pmac.trajectory.abort_profile.set(True)
 
-    async def _build_trajectory(
-        self, trajectory: Trajectory, motor_info: _PmacMotorInfo, append: bool
-    ):
-        self.scantime = np.sum(trajectory.durations)
-        use_axis = {axis + 1: False for axis in range(len(CS_LETTERS))}
+    @WatchableAsyncStatus.wrap
+    async def _execute_trajectory(self):
+        if self.path is None or self.scantime is None or self.motor_info is None:
+            raise RuntimeError("Cannot execute trajectory. Must call prepare first.")
+        loaded = SLICE_SIZE
+        execute_status = self.pmac.trajectory.execute_profile.set(
+            True, timeout=self.scantime + DEFAULT_TIMEOUT
+        )
+        async for current_point in observe_value(
+            self.pmac.trajectory.total_points, done_status=execute_status
+        ):
+            if loaded - current_point < SLICE_SIZE:
+                if len(self.path) != 0:
+                    # We have less than SLICE_SIZE points in the buffer, so refill
+                    await self._append_trajectory(
+                        self.path.consume(SLICE_SIZE), self.motor_info
+                    )
+                    loaded += SLICE_SIZE
+            yield WatcherUpdate(
+                current=current_point,
+                initial=0,
+                target=self.path.end_index,
+                name=self.pmac.name,
+            )
 
-        for motor, number in motor_info.motor_cs_index.items():
-            use_axis[number + 1] = True
-            await self.pmac.trajectory.positions[number + 1].set(
-                trajectory.positions[motor]
-            )
-            await self.pmac.trajectory.velocities[number + 1].set(
-                trajectory.velocities[motor]
-            )
+    async def _append_trajectory(self, slice: Slice, motor_info: _PmacMotorInfo):
+        trajectory = await self._parse_trajectory(slice, motor_info)
+        await self._set_trajectory_arrays(trajectory)
+        await self.pmac.trajectory.append_profile.set(True)
+
+    async def _build_trajectory(
+        self,
+        motor_info: _PmacMotorInfo,
+        slice: Slice,
+        ramp_up_time: float,
+    ):
+        trajectory = await self._parse_trajectory(slice, motor_info, ramp_up_time)
+        self.scantime = np.sum(trajectory.durations)
+        use_axis = {
+            axis + 1: (axis in motor_info.motor_cs_index.values())
+            for axis in range(len(CS_LETTERS))
+        }
 
         coros = [
             self.pmac.trajectory.profile_cs_name.set(motor_info.cs_port),
-            self.pmac.trajectory.time_array.set(trajectory.durations / TICK_S),
-            self.pmac.trajectory.user_array.set(trajectory.user_programs),
-            self.pmac.trajectory.points_to_build.set(len(trajectory.durations)),
             self.pmac.trajectory.calculate_velocities.set(False),
+            self._set_trajectory_arrays(trajectory),
         ] + [
             self.pmac.trajectory.use_axis[number].set(use)
             for number, use in use_axis.items()
         ]
+
         await asyncio.gather(*coros)
-        if append:
-            await self.pmac.trajectory.append_profile.set(True)
-        else:
-            await self.pmac.trajectory.build_profile.set(True)
+        await self.pmac.trajectory.build_profile.set(True)
+
+    async def _parse_trajectory(
+        self,
+        slice: Slice,
+        motor_info: _PmacMotorInfo,
+        ramp_up_time: float | None = None,
+    ) -> Trajectory:
+        path = error_if_none(
+            self.path, "Cannot parse trajectory. Must call prepare first."
+        )
+
+        trajectory, exit_pvt = Trajectory.from_slice(
+            slice,
+            motor_info,
+            None if ramp_up_time else self.next_pvt,
+            ramp_up_time=ramp_up_time,
+        )
+
+        if len(path) == 0:
+            ramp_down_pos, ramp_down_time = calculate_ramp_position_and_duration(
+                slice, motor_info, False
+            )
+            trajectory = trajectory.with_ramp_down(
+                exit_pvt, ramp_down_pos, ramp_down_time, 0
+            )
+        self.next_pvt = exit_pvt
+
+        return trajectory
+
+    async def _set_trajectory_arrays(
+        self,
+        trajectory: Trajectory,
+    ):
+        motor_info = error_if_none(
+            self.motor_info, "Cannot set pmac arrays. Must call prepare first."
+        )
+        coros = []
+        for motor, number in motor_info.motor_cs_index.items():
+            coros.append(
+                self.pmac.trajectory.positions[number + 1].set(
+                    trajectory.positions[motor]
+                )
+            )
+            coros.append(
+                self.pmac.trajectory.velocities[number + 1].set(
+                    trajectory.velocities[motor]
+                )
+            )
+        coros.extend(
+            [
+                self.pmac.trajectory.time_array.set(trajectory.durations / TICK_S),
+                self.pmac.trajectory.user_array.set(trajectory.user_programs),
+                self.pmac.trajectory.points_to_build.set(len(trajectory.durations)),
+            ]
+        )
+        await asyncio.gather(*coros)
 
     async def _move_to_start(
         self, motor_info: _PmacMotorInfo, ramp_up_position: dict[Motor, np.float64]
