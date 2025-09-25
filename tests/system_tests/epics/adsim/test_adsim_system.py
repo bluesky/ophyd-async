@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Any
-from unittest.mock import ANY
+from unittest.mock import ANY, patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
@@ -36,23 +36,17 @@ from ophyd_async.plan_stubs import (
 TIMEOUT = 10.0
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module", autouse=True)
 def with_env():
-    target_env = {
-        "EPICS_CA_NAME_SERVERS": "127.0.0.1:9064",
-        "EPICS_PVA_NAME_SERVERS": "127.0.0.1:9075",
-    }
-    # Save original values to restore later
-    original_env = {key: os.environ.get(key, "") for key in target_env}
-
-    # Set the test values
-    os.environ.update(target_env)
-
-    try:
+    with patch.dict(
+        os.environ,
+        {
+            "EPICS_CA_NAME_SERVERS": "127.0.0.1:9064",
+            "EPICS_PVA_NAME_SERVERS": "127.0.0.1:9075",
+        },
+        clear=False,
+    ):
         yield
-    finally:
-        # Restore original values (or delete if originally unset)
-        os.environ.update(original_env)
 
 
 @pytest.fixture
@@ -90,7 +84,7 @@ def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
 @pytest.mark.timeout(TIMEOUT + 3.0)
 @pytest.mark.xfail(reason="https://github.com/bluesky/ophyd-async/issues/998")
 def test_prepare_is_idempotent_and_sets_exposure_time(
-    RE: RunEngine, adsim: SimDetector, with_env: None
+    RE: RunEngine, adsim: SimDetector
 ) -> None:
     def prepare_then_count() -> MsgGenerator[None]:
         yield from bps.prepare(
@@ -111,7 +105,7 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
     sys.platform.startswith("win"), reason="Services not set up on Windows"
 )
 @pytest.mark.timeout(TIMEOUT + 15.0)
-def test_software_triggering(RE: RunEngine, adsim: SimDetector, with_env: None) -> None:
+def test_software_triggering(RE: RunEngine, adsim: SimDetector) -> None:
     docs = run_plan_and_get_documents(RE, bp.count([adsim], num=2))
     assert docs == [
         RunStart(
