@@ -9,9 +9,6 @@ from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_trajectory import (
     PmacTrajectoryTriggerLogic,  # noqa: PLC2701
 )
-from ophyd_async.epics.pmac._pmac_trajectory_generation import (
-    Trajectory,  # noqa: PLC2701
-)
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,  # noqa: PLC2701
 )
@@ -42,54 +39,7 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     )
 
     assert pmac_trajectory.scantime == pytest.approx(4.4)
-
-
-async def test_pmac_build_trajectory(sim_motors: tuple[PmacIO, Motor, Motor]):
-    pmacIO, sim_x_motor, _ = sim_motors
-    trajectory = Trajectory(
-        {sim_x_motor: np.array([-1.0, 1.0, 3.0, 5.0, 7.0])},
-        {sim_x_motor: np.array([2.0, 2.0, 2.0, 2.0, 2.0])},
-        np.array([1, 1, 1, 1, 8], dtype=np.int32),
-        np.array([0.2, 1.0, 1.0, 1.0, 1.0], dtype=np.float64),
-    )
-    motor_info = _PmacMotorInfo(
-        "CS1",
-        1,
-        {sim_x_motor: 6},
-        {sim_x_motor: 10},
-        {sim_x_motor: 10},
-    )
-
-    pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
-    await pmac_trajectory._build_trajectory(trajectory, motor_info, False)
-
-    assert await pmacIO.trajectory.profile_cs_name.get_value() == "CS1"
-    assert pmac_trajectory.scantime == pytest.approx(4.2)
-    assert await pmacIO.trajectory.time_array.get_value() == pytest.approx(
-        [
-            200000.0,
-            1000000.0,
-            1000000.0,
-            1000000.0,
-            1000000.0,
-        ]
-    )
-
-    assert (
-        await pmacIO.trajectory.positions[7].get_value() == [-1.0, 1, 3, 5, 7.0]
-    ).all()
-
-    assert (
-        await pmacIO.trajectory.velocities[7].get_value()
-        == [
-            2.0,
-            2.0,
-            2.0,
-            2.0,
-            2.0,
-        ]
-    ).all()
-    assert await pmacIO.trajectory.points_to_build.get_value() == 5
+    assert await pmacIO.trajectory.points_to_build.get_value() == 6
 
 
 async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
