@@ -85,7 +85,9 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         loaded = SLICE_SIZE
         execute_status = self.pmac.trajectory.execute_profile.set(True, timeout=None)
         async for current_point in observe_value(
-            self.pmac.trajectory.total_points, done_status=execute_status
+            self.pmac.trajectory.total_points,
+            done_status=execute_status,
+            timeout=DEFAULT_TIMEOUT,
         ):
             if loaded - current_point < SLICE_SIZE:
                 if len(self.path) != 0:
