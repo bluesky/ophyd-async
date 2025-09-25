@@ -109,6 +109,9 @@ asyncio_default_fixture_loop_scope = "function"
 timeout = 1
 [tool.coverage.run]
 data_file = "/tmp/ophyd_async.coverage"
+branch = true
+parallel = true
+concurrency = ["multiprocessing"]
 
 [tool.coverage.paths]
 # Tests are run from installed location, map back to the src directory
