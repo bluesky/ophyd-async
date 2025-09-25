@@ -38,7 +38,6 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
         [200000, 1000000, 1000000, 1000000, 1000000, 200000]
     )
 
-    assert pmac_trajectory.scantime == pytest.approx(4.4)
     assert await pmacIO.trajectory.points_to_build.get_value() == 6
 
 

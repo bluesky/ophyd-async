@@ -35,7 +35,6 @@ SLICE_SIZE = 4000
 class PmacTrajectoryTriggerLogic(FlyerController):
     def __init__(self, pmac: PmacIO) -> None:
         self.pmac = pmac
-        self.scantime: float | None = None
         self.ramp_up_time: float | None = None
         self.path: Path | None = None
         self.next_pvt: PVT | None = None
@@ -81,12 +80,10 @@ class PmacTrajectoryTriggerLogic(FlyerController):
 
     @WatchableAsyncStatus.wrap
     async def _execute_trajectory(self):
-        if self.path is None or self.scantime is None or self.motor_info is None:
+        if self.path is None or self.motor_info is None:
             raise RuntimeError("Cannot execute trajectory. Must call prepare first.")
         loaded = SLICE_SIZE
-        execute_status = self.pmac.trajectory.execute_profile.set(
-            True, timeout=self.scantime + DEFAULT_TIMEOUT
-        )
+        execute_status = self.pmac.trajectory.execute_profile.set(True, timeout=None)
         async for current_point in observe_value(
             self.pmac.trajectory.total_points, done_status=execute_status
         ):
@@ -123,7 +120,6 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         trajectory = await self._parse_trajectory(
             slice, path_length, motor_info, ramp_up_time
         )
-        self.scantime = np.sum(trajectory.durations)
         use_axis = {
             axis + 1: (axis in motor_info.motor_cs_index.values())
             for axis in range(len(CS_LETTERS))

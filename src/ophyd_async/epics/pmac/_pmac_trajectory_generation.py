@@ -149,7 +149,7 @@ class Trajectory:
         sub_traj_funcs = []
 
         # Given we start at a collection window, insert it
-        if gap_indices and gap_indices[0] != 0:
+        if not gap_indices or gap_indices[0] != 0:
             start, end = next(collection_window_iter)
             sub_traj_funcs.append(
                 partial(
