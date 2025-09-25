@@ -113,7 +113,6 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
 @pytest.mark.timeout(TIMEOUT + 15.0)
 def test_software_triggering(RE: RunEngine, adsim: SimDetector, with_env: None) -> None:
     docs = run_plan_and_get_documents(RE, bp.count([adsim], num=2))
-    print("::debug::", docs)
     assert docs == [
         RunStart(
             uid=ANY,
