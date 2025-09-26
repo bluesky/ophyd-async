@@ -29,7 +29,13 @@ from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, ConfinedModel, WatcherUpdate, merge_gathered_dicts
+from ._utils import (
+    DEFAULT_TIMEOUT,
+    ConfinedModel,
+    WatcherUpdate,
+    error_if_none,
+    merge_gathered_dicts,
+)
 
 
 class DetectorTrigger(Enum):
@@ -279,22 +285,32 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        if self._trigger_info is None:
+        """Trigger the detector to collect a single frame.
+
+        Arm the detector and observe the collection of a single frame. The detector is
+        prepared for a single internal trigger, armed, and waited upon to write a frame.
+
+        If prepare was called on the detector before trigger, checks are made to ensure
+        the trigger info is valid for internal triggering.
+        """
+        if self._trigger_info:
+            if self._trigger_info.trigger is not DetectorTrigger.INTERNAL:
+                msg = "The trigger method can only be called with INTERNAL triggering"
+                raise ValueError(msg)
+            if self._trigger_info.number_of_events != 1:
+                raise ValueError(
+                    "Triggering is not supported for multiple events, the detector was"
+                    " prepared with number_of_events="
+                    f"{self._trigger_info.number_of_events}."
+                )
+        else:
             await self.prepare(
                 TriggerInfo(
                     number_of_events=1,
                     trigger=DetectorTrigger.INTERNAL,
                 )
             )
-        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
-        if trigger_info.trigger is not DetectorTrigger.INTERNAL:
-            msg = "The trigger method can only be called with INTERNAL triggering"
-            raise ValueError(msg)
-        if trigger_info.number_of_events != 1:
-            raise ValueError(
-                "Triggering is not supported for multiple events, the detector was "
-                f"prepared with number_of_events={trigger_info.number_of_events}."
-            )
+        trigger_info = error_if_none(self._trigger_info, "Trigger info must be set")
 
         # Arm the detector and wait for it to finish.
         indices_written = await self._writer.get_indices_written()
@@ -313,22 +329,14 @@ class StandardDetector(
         """Arm detector.
 
         Prepare the detector with trigger information. This is determined at and passed
-        in from the plan level.
+        in from the plan level.The detector controller is prepared with this TriggerInfo
+        and the detector writer is opened.
 
-        :param value: TriggerInfo describing how to trigger the detector
+        For externally triggered scans (hardware triggered scanning) the number of
+        events are determined and controller armed.
+
+        :param value: TriggerInfo, describing how to trigger the detector
         """
-        if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
-            msg = "Deadtime must be supplied when in externally triggered mode"
-            raise ValueError(msg)
-        if not value.deadtime:
-            value.deadtime = self._controller.get_deadtime(value.livetime)
-        self._trigger_info = value
-        self._number_of_events_iter = iter(
-            value.number_of_events
-            if isinstance(value.number_of_events, list)
-            else [value.number_of_events]
-        )
-
         await self._controller.prepare(value)
 
         if self._writer_open is not True:
@@ -337,9 +345,24 @@ class StandardDetector(
             )
             self._writer_open = True
 
-        self._initial_frame = await self._writer.get_indices_written()
+        # Deadtime is mutated if not defined for internal triggered scans
+        if value.trigger == DetectorTrigger.INTERNAL and value.deadtime == 0.0:
+            value.deadtime = self._controller.get_deadtime(value.livetime)
+
+        # External triggered scanning
         if value.trigger != DetectorTrigger.INTERNAL:
+            if value.deadtime == 0.0:
+                msg = "Deadtime must be supplied when in externally triggered mode"
+                raise ValueError(msg)
+
+            self._number_of_events_iter = iter(
+                value.number_of_events
+                if isinstance(value.number_of_events, list)
+                else [value.number_of_events]
+            )
+            self._initial_frame = await self._writer.get_indices_written()
             await self._controller.arm()
+
         self._trigger_info = value
 
     @AsyncStatus.wrap
