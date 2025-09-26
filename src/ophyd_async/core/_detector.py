@@ -398,7 +398,7 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         """Disarm the detector and stop file writing."""
-        await asyncio.gather(super().stage(), self._writer.close())
+        await asyncio.gather(super().unstage(), self._writer.close())
 
     async def read(self) -> dict[str, Reading]:
         """There is no data to be placed in events, so this is empty."""
