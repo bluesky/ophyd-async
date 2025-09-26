@@ -1,6 +1,7 @@
 """Module which defines abstract classes to work with detectors."""
 
 import asyncio
+import math
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, Sequence
@@ -28,6 +29,7 @@ from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
 from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
+from ._signal_backend import Array1D
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import DEFAULT_TIMEOUT, ConfinedModel, WatcherUpdate, merge_gathered_dicts
 
@@ -49,7 +51,7 @@ class DetectorTrigger(Enum):
 
 
 class TriggerInfo(ConfinedModel):
-    """Minimal set of information required to setup triggering on a flying detector."""
+    """Minimal set of information required to setup triggering on a detector."""
 
     number_of_events: NonNegativeInt | list[NonNegativeInt] = Field(default=1)
     """Number of events that will be processed, (0 means infinite).
@@ -278,7 +280,7 @@ class StepDetector(
     BaseDetector,
     Generic[DetectorControllerT],
 ):
-    """A basic step detector that holds core logic on arming detector."""
+    """Step Detector that is given a sequence of AsyncReadables to save."""
 
     def __init__(
         self,
@@ -300,6 +302,50 @@ class StepDetector(
 
     async def describe(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts(sig.describe() for sig in self._read_sigs)
+
+
+class ImageShapeDataSetDescriber(AsyncReadable):
+    """Helper data set describer to alter image signal shape via two other signals."""
+
+    def __init__(
+        self,
+        image_signal: SignalR[Array1D],
+        x_size_signal: SignalR[int],
+        y_size_siganl: SignalR[int],
+    ):
+        self._image_signal = image_signal
+        self._x_size_signal = x_size_signal
+        self._y_size_signal = y_size_siganl
+
+    @property
+    def name(self) -> str:
+        return self._image_signal.name
+
+    def _get_shape(self, describe_data: dict[str, DataKey]) -> list:
+        return describe_data[self.name]["shape"]
+
+    def _set_shape(self, describe_data: dict[str, DataKey], shape: list) -> None:
+        describe_data[self.name]["shape"] = shape
+
+    async def read(self) -> dict[str, Reading]:
+        return await self._image_signal.read()
+
+    async def describe(self) -> dict[str, DataKey]:
+        image_describe = await self._image_signal.describe()
+        x = await self._x_size_signal.get_value()
+        y = await self._y_size_signal.get_value()
+        current_shape = self._get_shape(image_describe)
+        current_size = math.prod(x for x in current_shape if x is not None)
+        new_shape = [x, y]
+        new_size = x * y
+        if current_size != new_size:
+            raise ValueError(
+                f"The size of signal {self._image_signal.name} is of shape "
+                f"{current_shape}. Failed to resize to new shape "
+                f"{new_shape} as new size is {new_size}."
+            )
+        self._set_shape(image_describe, new_shape)
+        return image_describe
 
 
 class StreamDetector(
