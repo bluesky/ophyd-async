@@ -15,6 +15,7 @@ from typing import (
 from bluesky.protocols import (
     Collectable,
     Flyable,
+    HasName,
     Hints,
     Preparable,
     Reading,
@@ -186,6 +187,28 @@ def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo
     return trigger_info
 
 
+def check_signals_named(signals: Sequence[HasName] | HasName) -> None:
+    signals = [signals] if isinstance(signals, HasName) else signals
+    for signal in signals:
+        if signal.name == "":
+            raise Exception(
+                "config signal must be named before it is passed to the detector"
+            )
+
+
+async def check_signals_connected(signals: Sequence[SignalR] | SignalR) -> None:
+    """Check configuration signals are named and connected."""
+    signals = [signals] if isinstance(signals, SignalR) else signals
+    for signal in signals:
+        try:
+            await signal.get_value()
+        except NotImplementedError as e:
+            raise Exception(
+                f"config signal {signal.name} must be connected before it is "
+                + "passed to the detector"
+            ) from e
+
+
 class BaseDetector(
     Device,
     Stageable,
@@ -212,7 +235,10 @@ class BaseDetector(
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
-        await self._controller.disarm()
+        check_signals_named(self._config_sigs)
+        await asyncio.gather(
+            check_signals_connected(self._config_sigs), self._controller.disarm()
+        )
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
@@ -317,6 +343,11 @@ class StepDetector(
             )
         self._read_sigs = read_sigs
         super().__init__(controller, config_sigs, name, connector)
+
+    @AsyncStatus.wrap
+    async def stage(self) -> None:
+        check_signals_named(self._read_sigs)
+        await super().stage()
 
     async def read(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._read_sigs)
