@@ -277,7 +277,7 @@ class BaseDetector(
 
 
 class StepDetector(
-    BaseDetector,
+    BaseDetector[DetectorControllerT],
     Generic[DetectorControllerT],
 ):
     """Step Detector that is given a sequence of AsyncReadables to save."""
@@ -321,10 +321,12 @@ class ImageShapeDataSetDescriber(AsyncReadable):
     def name(self) -> str:
         return self._image_signal.name
 
-    def _get_shape(self, describe_data: dict[str, DataKey]) -> list:
+    def _get_shape(self, describe_data: dict[str, DataKey]) -> list[int | None]:
         return describe_data[self.name]["shape"]
 
-    def _set_shape(self, describe_data: dict[str, DataKey], shape: list) -> None:
+    def _set_shape(
+        self, describe_data: dict[str, DataKey], shape: list[int | None]
+    ) -> None:
         describe_data[self.name]["shape"] = shape
 
     async def read(self) -> dict[str, Reading]:
@@ -336,7 +338,7 @@ class ImageShapeDataSetDescriber(AsyncReadable):
         y = await self._y_size_signal.get_value()
         current_shape = self._get_shape(image_describe)
         current_size = math.prod(x for x in current_shape if x is not None)
-        new_shape = [x, y]
+        new_shape: list[int | None] = [x, y]
         new_size = x * y
         if current_size != new_size:
             raise ValueError(
