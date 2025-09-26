@@ -219,6 +219,17 @@ class BaseDetector(
         """Disarm the detector."""
         await self._controller.disarm()
 
+    def _default_trigger_info_deadtime(self, trigger_info: TriggerInfo) -> TriggerInfo:
+        if (
+            trigger_info.trigger != DetectorTrigger.INTERNAL
+            and not trigger_info.deadtime
+        ):
+            msg = "Deadtime must be supplied when in externally triggered mode"
+            raise ValueError(msg)
+        if not trigger_info.deadtime:
+            trigger_info.deadtime = self._controller.get_deadtime(trigger_info.livetime)
+        return trigger_info
+
     @AsyncStatus.wrap
     async def prepare(self, value: TriggerInfo) -> None:
         """Arm detector.
@@ -228,12 +239,7 @@ class BaseDetector(
 
         :param value: TriggerInfo describing how to trigger the detector
         """
-        if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
-            msg = "Deadtime must be supplied when in externally triggered mode"
-            raise ValueError(msg)
-        if not value.deadtime:
-            value.deadtime = self._controller.get_deadtime(value.livetime)
-        self._trigger_info = value
+        self._trigger_info = self._default_trigger_info_deadtime(value)
         await self._controller.prepare(value)
         if value.trigger != DetectorTrigger.INTERNAL:
             await self._controller.arm()
@@ -252,17 +258,18 @@ class BaseDetector(
     async def describe(self) -> dict[str, DataKey]:
         """Describe the data read at every point."""
 
-    @AsyncStatus.wrap
-    async def trigger(self) -> None:
-        """Arm the detector and wait for it to finish."""
-        if self._trigger_info is None:
-            await self.prepare(
-                TriggerInfo(
-                    number_of_events=1,
-                    trigger=DetectorTrigger.INTERNAL,
-                )
+    async def _prepare_default_trigger_info_if_none(
+        self, trigger_info: TriggerInfo | None
+    ) -> TriggerInfo:
+        if trigger_info is None:
+            trigger_info = TriggerInfo(
+                number_of_events=1,
+                trigger=DetectorTrigger.INTERNAL,
             )
-        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
+            await self.prepare(trigger_info)
+        return trigger_info
+
+    def _check_valid_trigger_info(self, trigger_info: TriggerInfo) -> None:
         if trigger_info.trigger is not DetectorTrigger.INTERNAL:
             msg = "The trigger method can only be called with INTERNAL triggering"
             raise ValueError(msg)
@@ -272,6 +279,13 @@ class BaseDetector(
                 f"prepared with number_of_events={trigger_info.number_of_events}."
             )
 
+    @AsyncStatus.wrap
+    async def trigger(self) -> None:
+        """Arm the detector and wait for it to finish."""
+        trigger_info = await self._prepare_default_trigger_info_if_none(
+            self._trigger_info
+        )
+        self._check_valid_trigger_info(trigger_info)
         await self._controller.arm()
         await self._controller.wait_for_idle()
 
@@ -414,22 +428,10 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        if self._trigger_info is None:
-            await self.prepare(
-                TriggerInfo(
-                    number_of_events=1,
-                    trigger=DetectorTrigger.INTERNAL,
-                )
-            )
-        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
-        if trigger_info.trigger is not DetectorTrigger.INTERNAL:
-            msg = "The trigger method can only be called with INTERNAL triggering"
-            raise ValueError(msg)
-        if trigger_info.number_of_events != 1:
-            raise ValueError(
-                "Triggering is not supported for multiple events, the detector was "
-                f"prepared with number_of_events={trigger_info.number_of_events}."
-            )
+        trigger_info = await self._prepare_default_trigger_info_if_none(
+            self._trigger_info
+        )
+        self._check_valid_trigger_info(trigger_info)
 
         # Arm the detector and wait for it to finish.
         indices_written = await self._writer.get_indices_written()
@@ -452,12 +454,7 @@ class StandardDetector(
 
         :param value: TriggerInfo describing how to trigger the detector
         """
-        if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
-            msg = "Deadtime must be supplied when in externally triggered mode"
-            raise ValueError(msg)
-        if not value.deadtime:
-            value.deadtime = self._controller.get_deadtime(value.livetime)
-        self._trigger_info = value
+        self._trigger_info = self._default_trigger_info_deadtime(value)
         self._number_of_events_iter = iter(
             value.number_of_events
             if isinstance(value.number_of_events, list)
