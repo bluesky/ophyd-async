@@ -220,6 +220,7 @@ class BaseDetector(
         await self._controller.disarm()
 
     def _default_trigger_info_deadtime(self, trigger_info: TriggerInfo) -> TriggerInfo:
+        """If deadtime not provided by trigger_info, use value from controller."""
         if (
             trigger_info.trigger != DetectorTrigger.INTERNAL
             and not trigger_info.deadtime
@@ -259,6 +260,7 @@ class BaseDetector(
         """Describe the data read at every point."""
 
     def _default_trigger_info(self) -> TriggerInfo:
+        """Return the default trigger_info. Can be overwritten by subclasses."""
         return TriggerInfo(
             number_of_events=1,
             trigger=DetectorTrigger.INTERNAL,
@@ -267,12 +269,14 @@ class BaseDetector(
     async def _prepare_default_trigger_info_if_none(
         self, trigger_info: TriggerInfo | None
     ) -> TriggerInfo:
+        """Check if trigger_info is none, if so get default and prepare detector."""
         if trigger_info is None:
             trigger_info = self._default_trigger_info()
             await self.prepare(trigger_info)
         return trigger_info
 
     def _check_valid_trigger_info(self, trigger_info: TriggerInfo) -> None:
+        """Check trigger_info is valid for a trigger."""
         if trigger_info.trigger is not DetectorTrigger.INTERNAL:
             msg = "The trigger method can only be called with INTERNAL triggering"
             raise ValueError(msg)
