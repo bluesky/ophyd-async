@@ -187,15 +187,13 @@ async def test_pmac_trajectory_kickoff(
     )
 
 
-async def test_pmac_trajectory_execute_trajectory_raises_exception_if_no_prepare(
+async def test_pmac_trajectory_kickoff_trajectory_raises_exception_if_no_prepare(
     sim_motors: tuple[PmacIO, Motor, Motor],
 ):
     pmacIO, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
-    with pytest.raises(
-        RuntimeError, match="Cannot execute trajectory. Must call prepare first."
-    ):
-        await pmac_trajectory._execute_trajectory()
+    with pytest.raises(RuntimeError, match="Cannot kickoff. Must call prepare first."):
+        await pmac_trajectory.kickoff()
 
 
 async def test_pmac_trajectory_complete(sim_motors: tuple[PmacIO, Motor, Motor]):
@@ -208,6 +206,6 @@ async def test_pmac_trajectory_complete(sim_motors: tuple[PmacIO, Motor, Motor])
 async def test_pmac_trajectory_stop(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmacIO, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmacIO)
-    assert await pmac_trajectory.pmac.trajectory.abort_profile.get_value() is not True
+    abort_profile = get_mock(pmac_trajectory.pmac.trajectory.abort_profile)
     await pmac_trajectory.stop()
-    assert await pmac_trajectory.pmac.trajectory.abort_profile.get_value() is True
+    abort_profile.put.assert_called_once()
