@@ -49,7 +49,7 @@ class DetectorTrigger(Enum):
 
 
 class TriggerInfo(ConfinedModel):
-    """Minimal set of information required to setup triggering on a detector."""
+    """Minimal set of information required to setup triggering on a flying detector."""
 
     number_of_events: NonNegativeInt | list[NonNegativeInt] = Field(default=1)
     """Number of events that will be processed, (0 means infinite).
@@ -187,6 +187,7 @@ def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo
 class BaseDetector(
     Device,
     Stageable,
+    Preparable,
     AsyncConfigurable,
     AsyncReadable,
     Triggerable,
@@ -203,6 +204,7 @@ class BaseDetector(
     ) -> None:
         self._controller = controller
         self._config_sigs = list(config_sigs)
+        self._trigger_info: TriggerInfo | None = None
         super().__init__(name, connector=connector)
 
     @AsyncStatus.wrap
@@ -214,6 +216,25 @@ class BaseDetector(
     async def unstage(self) -> None:
         """Disarm the detector."""
         await asyncio.gather(self._controller.disarm())
+
+    @AsyncStatus.wrap
+    async def prepare(self, value: TriggerInfo) -> None:
+        """Arm detector.
+
+        Prepare the detector with trigger information. This is determined at and passed
+        in from the plan level.
+
+        :param value: TriggerInfo describing how to trigger the detector
+        """
+        if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
+            msg = "Deadtime must be supplied when in externally triggered mode"
+            raise ValueError(msg)
+        if not value.deadtime:
+            value.deadtime = self._controller.get_deadtime(value.livetime)
+        self._trigger_info = value
+        await self._controller.prepare(value)
+        if value.trigger != DetectorTrigger.INTERNAL:
+            await self._controller.arm()
 
     async def read_configuration(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
@@ -232,6 +253,23 @@ class BaseDetector(
     @AsyncStatus.wrap
     async def trigger(self) -> None:
         """Arm the detector and wait for it to finish."""
+        if self._trigger_info is None:
+            await self.prepare(
+                TriggerInfo(
+                    number_of_events=1,
+                    trigger=DetectorTrigger.INTERNAL,
+                )
+            )
+        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
+        if trigger_info.trigger is not DetectorTrigger.INTERNAL:
+            msg = "The trigger method can only be called with INTERNAL triggering"
+            raise ValueError(msg)
+        if trigger_info.number_of_events != 1:
+            raise ValueError(
+                "Triggering is not supported for multiple events, the detector was "
+                f"prepared with number_of_events={trigger_info.number_of_events}."
+            )
+
         await self._controller.arm()
         await self._controller.wait_for_idle()
 
@@ -266,7 +304,6 @@ class StepDetector(
 
 class StreamDetector(
     BaseDetector[DetectorControllerT],
-    Preparable,
     Flyable,
     Collectable,
     WritesStreamAssets,
@@ -292,9 +329,6 @@ class StreamDetector(
     ) -> None:
         self._writer = writer
         self._describe: dict[str, DataKey] = {}
-        # For prepare
-        self._arm_status: AsyncStatus | None = None
-        self._trigger_info: TriggerInfo | None = None
         # For kickoff
         self._watchers: list[Callable] = []
         self._fly_status: WatchableAsyncStatus | None = None
@@ -328,29 +362,11 @@ class StreamDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        if self._trigger_info is None:
-            await self.prepare(
-                TriggerInfo(
-                    number_of_events=1,
-                    trigger=DetectorTrigger.INTERNAL,
-                )
-            )
-        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
-        if trigger_info.trigger is not DetectorTrigger.INTERNAL:
-            msg = "The trigger method can only be called with INTERNAL triggering"
-            raise ValueError(msg)
-        if trigger_info.number_of_events != 1:
-            raise ValueError(
-                "Triggering is not supported for multiple events, the detector was "
-                f"prepared with number_of_events={trigger_info.number_of_events}."
-            )
-
-        # Arm the detector and wait for it to finish.
         indices_written = await self._writer.get_indices_written()
-        # Do data collection from parent.
+        # Arm the detector and wait for it to finish.
         await super().trigger()
         end_observation = indices_written + 1
-
+        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
         async for index in self._writer.observe_indices_written(
             DEFAULT_TIMEOUT + (trigger_info.livetime or 0) + trigger_info.deadtime
         ):
@@ -366,25 +382,14 @@ class StreamDetector(
 
         :param value: TriggerInfo describing how to trigger the detector
         """
-        if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
-            msg = "Deadtime must be supplied when in externally triggered mode"
-            raise ValueError(msg)
-        if not value.deadtime:
-            value.deadtime = self._controller.get_deadtime(value.livetime)
-        self._trigger_info = value
+        self._describe = await self._writer.open(self.name, value.exposures_per_event)
+        self._initial_frame = await self._writer.get_indices_written()
         self._number_of_events_iter = iter(
             value.number_of_events
             if isinstance(value.number_of_events, list)
             else [value.number_of_events]
         )
-
-        await self._controller.prepare(value)
-        self._describe = await self._writer.open(self.name, value.exposures_per_event)
-
-        self._initial_frame = await self._writer.get_indices_written()
-        if value.trigger != DetectorTrigger.INTERNAL:
-            await self._controller.arm()
-        self._trigger_info = value
+        await super().prepare(value)
 
     @AsyncStatus.wrap
     async def kickoff(self):
