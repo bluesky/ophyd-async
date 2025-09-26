@@ -107,7 +107,7 @@ class DetectorController(ABC):
         """Get state-independent deadtime.
 
         For a given exposure, what is the safest minimum time between exposures that
-        can be determined without reading signals.
+        can be determined without reading signals. Used for fly scanning.
         """
 
     @abstractmethod
@@ -184,12 +184,88 @@ def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo
     return trigger_info
 
 
-class StandardDetector(
+class BaseDetector(
     Device,
     Stageable,
     AsyncConfigurable,
     AsyncReadable,
     Triggerable,
+    Generic[DetectorControllerT],
+):
+    """Provides some basic core logic for other detectors to expand upon."""
+
+    def __init__(
+        self,
+        controller: DetectorControllerT,
+        config_sigs: Sequence[SignalR] = (),
+        name: str = "",
+        connector: DeviceConnector | None = None,
+    ) -> None:
+        self._controller = controller
+        self._config_sigs = list(config_sigs)
+        super().__init__(name, connector=connector)
+
+    @AsyncStatus.wrap
+    async def stage(self) -> None:
+        """Make sure the detector is idle and ready to be used."""
+        await asyncio.gather(self._controller.disarm())
+
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
+        """Disarm the detector."""
+        await asyncio.gather(self._controller.disarm())
+
+    async def read_configuration(self) -> dict[str, Reading]:
+        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
+
+    async def describe_configuration(self) -> dict[str, DataKey]:
+        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
+
+    @abstractmethod
+    async def read(self) -> dict[str, Reading]:
+        """Data to be read at every point."""
+
+    @abstractmethod
+    async def describe(self) -> dict[str, DataKey]:
+        """Describe the data read at every point."""
+
+    @AsyncStatus.wrap
+    async def trigger(self) -> None:
+        """Arm the detector and wait for it to finish."""
+        await self._controller.arm()
+        await self._controller.wait_for_idle()
+
+
+class StepDetector(
+    BaseDetector,
+    Generic[DetectorControllerT],
+):
+    """A basic step detector that holds core logic on arming detector."""
+
+    def __init__(
+        self,
+        controller: DetectorControllerT,
+        read_sigs: Sequence[AsyncReadable],
+        config_sigs: Sequence[SignalR] = (),
+        name: str = "",
+        connector: DeviceConnector | None = None,
+    ) -> None:
+        if len(read_sigs) == 0:
+            raise ValueError(
+                "read_configs is of size zero. It must have at least one read signal."
+            )
+        self._read_sigs = read_sigs
+        super().__init__(controller, config_sigs, name, connector)
+
+    async def read(self) -> dict[str, Reading]:
+        return await merge_gathered_dicts(sig.read() for sig in self._read_sigs)
+
+    async def describe(self) -> dict[str, DataKey]:
+        return await merge_gathered_dicts(sig.describe() for sig in self._read_sigs)
+
+
+class StreamDetector(
+    BaseDetector[DetectorControllerT],
     Preparable,
     Flyable,
     Collectable,
@@ -214,10 +290,8 @@ class StandardDetector(
         name: str = "",
         connector: DeviceConnector | None = None,
     ) -> None:
-        self._controller = controller
         self._writer = writer
         self._describe: dict[str, DataKey] = {}
-        self._config_sigs = list(config_sigs)
         # For prepare
         self._arm_status: AsyncStatus | None = None
         self._trigger_info: TriggerInfo | None = None
@@ -231,40 +305,18 @@ class StandardDetector(
         self._completable_exposures: int = 0
         self._number_of_events_iter: Iterator[int] | None = None
         self._initial_frame: int = 0
-        super().__init__(name, connector=connector)
+        super().__init__(controller, config_sigs, name, connector=connector)
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
-        await self._check_config_sigs()
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
+        await asyncio.gather(super().stage(), self._writer.close())
         self._trigger_info = None
-
-    async def _check_config_sigs(self):
-        """Check configuration signals are named and connected."""
-        for signal in self._config_sigs:
-            if signal.name == "":
-                raise Exception(
-                    "config signal must be named before it is passed to the detector"
-                )
-            try:
-                await signal.get_value()
-            except NotImplementedError as e:
-                raise Exception(
-                    f"config signal {signal.name} must be connected before it is "
-                    + "passed to the detector"
-                ) from e
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         """Disarm the detector and stop file writing."""
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
-
-    async def read_configuration(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
-
-    async def describe_configuration(self) -> dict[str, DataKey]:
-        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
+        await asyncio.gather(super().stage(), self._writer.close())
 
     async def read(self) -> dict[str, Reading]:
         """There is no data to be placed in events, so this is empty."""
@@ -295,8 +347,8 @@ class StandardDetector(
 
         # Arm the detector and wait for it to finish.
         indices_written = await self._writer.get_indices_written()
-        await self._controller.arm()
-        await self._controller.wait_for_idle()
+        # Do data collection from parent.
+        await super().trigger()
         end_observation = indices_written + 1
 
         async for index in self._writer.observe_indices_written(
