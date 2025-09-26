@@ -221,6 +221,7 @@ class StandardDetector(
         # For prepare
         self._arm_status: AsyncStatus | None = None
         self._trigger_info: TriggerInfo | None = None
+        self._writer_open: bool = False
         # For kickoff
         self._watchers: list[Callable] = []
         self._fly_status: WatchableAsyncStatus | None = None
@@ -239,6 +240,7 @@ class StandardDetector(
         await self._check_config_sigs()
         await asyncio.gather(self._writer.close(), self._controller.disarm())
         self._trigger_info = None
+        self._writer_open = False
 
     async def _check_config_sigs(self):
         """Check configuration signals are named and connected."""
@@ -259,6 +261,7 @@ class StandardDetector(
     async def unstage(self) -> None:
         """Disarm the detector and stop file writing."""
         await asyncio.gather(self._writer.close(), self._controller.disarm())
+        self._writer_open = False
 
     async def read_configuration(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
@@ -327,7 +330,12 @@ class StandardDetector(
         )
 
         await self._controller.prepare(value)
-        self._describe = await self._writer.open(self.name, value.exposures_per_event)
+
+        if self._writer_open is not True:
+            self._describe = await self._writer.open(
+                self.name, value.exposures_per_event
+            )
+            self._writer_open = True
 
         self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
