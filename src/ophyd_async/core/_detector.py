@@ -258,14 +258,17 @@ class BaseDetector(
     async def describe(self) -> dict[str, DataKey]:
         """Describe the data read at every point."""
 
+    def _default_trigger_info(self) -> TriggerInfo:
+        return TriggerInfo(
+            number_of_events=1,
+            trigger=DetectorTrigger.INTERNAL,
+        )
+
     async def _prepare_default_trigger_info_if_none(
         self, trigger_info: TriggerInfo | None
     ) -> TriggerInfo:
         if trigger_info is None:
-            trigger_info = TriggerInfo(
-                number_of_events=1,
-                trigger=DetectorTrigger.INTERNAL,
-            )
+            trigger_info = self._default_trigger_info()
             await self.prepare(trigger_info)
         return trigger_info
 
