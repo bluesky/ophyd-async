@@ -348,7 +348,7 @@ class ImageShapeDataSetDescriber(AsyncReadable):
         return image_describe
 
 
-class StreamDetector(
+class StandardDetector(
     BaseDetector[DetectorControllerT],
     Flyable,
     Collectable,
