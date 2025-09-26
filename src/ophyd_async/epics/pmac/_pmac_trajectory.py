@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import dataclass
 
 import numpy as np
 from scanspec.core import Path, Slice
@@ -32,76 +33,84 @@ TICK_S = 0.000001
 SLICE_SIZE = 4000
 
 
+@dataclass
+class PmacPrepareContext:
+    path: Path
+    motor_info: _PmacMotorInfo
+    ramp_up_time: float
+
+
 class PmacTrajectoryTriggerLogic(FlyerController):
     def __init__(self, pmac: PmacIO) -> None:
         self.pmac = pmac
-        self.ramp_up_time: float | None = None
-        self.path: Path | None = None
-        self.next_pvt: PVT | None = None
-        self.motor_info: _PmacMotorInfo | None = None
-        self.trajectory_status: WatchableAsyncStatus | None = None
+        self._next_pvt: PVT | None = None
+        self._trajectory_status: WatchableAsyncStatus | None = None
+        self._prepare_context: PmacPrepareContext | None = None
 
     async def prepare(self, value: Spec[Motor]):
-        self.path = Path(value.calculate())
-        slice = self.path.consume(SLICE_SIZE)
-        path_length = len(self.path)
+        path = Path(value.calculate())
+        slice = path.consume(SLICE_SIZE)
+        path_length = len(path)
         motors = slice.axes()
-        self.motor_info = await _PmacMotorInfo.from_motors(self.pmac, motors)
-        ramp_up_pos, self.ramp_up_time = calculate_ramp_position_and_duration(
-            slice, self.motor_info, True
+        motor_info = await _PmacMotorInfo.from_motors(self.pmac, motors)
+        ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
+            slice, motor_info, True
+        )
+        self._prepare_context = PmacPrepareContext(
+            path=path, motor_info=motor_info, ramp_up_time=ramp_up_time
         )
         await asyncio.gather(
-            self._build_trajectory(
-                self.motor_info, slice, path_length, self.ramp_up_time
-            ),
-            self._move_to_start(self.motor_info, ramp_up_pos),
+            self._build_trajectory(motor_info, slice, path_length, ramp_up_time),
+            self._move_to_start(motor_info, ramp_up_pos),
         )
 
     async def kickoff(self):
-        ramp_up_time = error_if_none(
-            self.ramp_up_time, "Cannot kickoff. Must call prepare first."
+        prepare_context = error_if_none(
+            self._prepare_context, "Cannot kickoff. Must call prepare first."
         )
-        self.trajectory_status = self._execute_trajectory()
+        self._prepare_context = None
+        self._trajectory_status = self._execute_trajectory(
+            prepare_context.path, prepare_context.motor_info
+        )
         # Wait for the ramp up to happen
         await wait_for_value(
             self.pmac.trajectory.total_points,
             lambda v: v >= 1,
-            ramp_up_time + DEFAULT_TIMEOUT,
+            prepare_context.ramp_up_time + DEFAULT_TIMEOUT,
         )
 
     async def complete(self):
         trajectory_status = error_if_none(
-            self.trajectory_status, "Cannot complete. Must call kickoff first."
+            self._trajectory_status, "Cannot complete. Must call kickoff first."
         )
+        self._trajectory_status = None
         await trajectory_status
 
     async def stop(self):
-        await self.pmac.trajectory.abort_profile.set(True)
+        await self.pmac.trajectory.abort_profile.trigger()
 
     @WatchableAsyncStatus.wrap
-    async def _execute_trajectory(self):
-        if self.path is None or self.motor_info is None:
-            raise RuntimeError("Cannot execute trajectory. Must call prepare first.")
+    async def _execute_trajectory(self, path: Path, motor_info: _PmacMotorInfo):
         loaded = SLICE_SIZE
-        execute_status = self.pmac.trajectory.execute_profile.set(True, timeout=None)
+        execute_status = self.pmac.trajectory.execute_profile.trigger(
+            wait=True, timeout=None
+        )
         async for current_point in observe_value(
             self.pmac.trajectory.total_points,
             done_status=execute_status,
             timeout=DEFAULT_TIMEOUT,
         ):
             if loaded - current_point < SLICE_SIZE:
-                if len(self.path) != 0:
+                if len(path) != 0:
                     # We have less than SLICE_SIZE points in the buffer, so refill
-                    next_slice = self.path.consume(SLICE_SIZE)
-                    path_length = len(self.path)
-                    await self._append_trajectory(
-                        next_slice, path_length, self.motor_info
-                    )
+                    next_slice = path.consume(SLICE_SIZE)
+                    path_length = len(path)
+                    await self._append_trajectory(next_slice, path_length, motor_info)
                     loaded += SLICE_SIZE
             yield WatcherUpdate(
                 current=current_point,
                 initial=0,
-                target=self.path.end_index,
+                target=path.end_index,
                 name=self.pmac.name,
             )
 
@@ -110,7 +119,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
     ):
         trajectory = await self._parse_trajectory(slice, path_length, motor_info)
         await self._set_trajectory_arrays(trajectory, motor_info)
-        await self.pmac.trajectory.append_profile.set(True)
+        await self.pmac.trajectory.append_profile.trigger()
 
     async def _build_trajectory(
         self,
@@ -137,7 +146,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         ]
 
         await asyncio.gather(*coros)
-        await self.pmac.trajectory.build_profile.set(True)
+        await self.pmac.trajectory.build_profile.trigger()
 
     async def _parse_trajectory(
         self,
@@ -149,7 +158,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         trajectory, exit_pvt = Trajectory.from_slice(
             slice,
             motor_info,
-            None if ramp_up_time else self.next_pvt,
+            None if ramp_up_time else self._next_pvt,
             ramp_up_time=ramp_up_time,
         )
 
@@ -160,7 +169,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             trajectory = trajectory.with_ramp_down(
                 exit_pvt, ramp_down_pos, ramp_down_time, 0
             )
-        self.next_pvt = exit_pvt
+        self._next_pvt = exit_pvt
 
         return trajectory
 
