@@ -309,17 +309,17 @@ class ImageShapeDataSetDescriber(AsyncReadable):
 
     def __init__(
         self,
-        image_signal: SignalR[Array1D],
-        x_size_signal: SignalR[int],
-        y_size_siganl: SignalR[int],
+        image: SignalR[Array1D],
+        x_size: SignalR[int],
+        y_size: SignalR[int],
     ):
-        self._image_signal = image_signal
-        self._x_size_signal = x_size_signal
-        self._y_size_signal = y_size_siganl
+        self._image = image
+        self._x_size = x_size
+        self._y_size = y_size
 
     @property
     def name(self) -> str:
-        return self._image_signal.name
+        return self._image.name
 
     def _get_shape(self, describe_data: dict[str, DataKey]) -> list[int | None]:
         return describe_data[self.name]["shape"]
@@ -330,19 +330,21 @@ class ImageShapeDataSetDescriber(AsyncReadable):
         describe_data[self.name]["shape"] = shape
 
     async def read(self) -> dict[str, Reading]:
-        return await self._image_signal.read()
+        return await self._image.read()
 
     async def describe(self) -> dict[str, DataKey]:
-        image_describe = await self._image_signal.describe()
-        x = await self._x_size_signal.get_value()
-        y = await self._y_size_signal.get_value()
+        image_describe, x, y = await asyncio.gather(
+            self._image.describe(),
+            self._x_size.get_value(),
+            self._y_size.get_value(),
+        )
         current_shape = self._get_shape(image_describe)
         current_size = math.prod(x for x in current_shape if x is not None)
         new_shape: list[int | None] = [x, y]
         new_size = x * y
         if current_size != new_size:
             raise ValueError(
-                f"The size of signal {self._image_signal.name} is of shape "
+                f"The size of signal {self._image.name} is of shape "
                 f"{current_shape}. Failed to resize to new shape "
                 f"{new_shape} as new size is {new_size}."
             )
