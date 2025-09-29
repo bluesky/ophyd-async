@@ -197,15 +197,12 @@ def check_signals_named(signals: Sequence[HasName]) -> None:
 
 
 async def check_signal_connected(
-    signals: Sequence[AsyncReadable] | Sequence[AsyncConfigurable],
+    signals: Sequence[AsyncReadable],
 ) -> None:
     """Check signals are connected."""
     for signal in signals:
         try:
-            if isinstance(signal, AsyncConfigurable):
-                await signal.read_configuration()
-            else:
-                await signal.read()
+            await signal.read()
         except NotImplementedError as e:
             raise Exception(
                 f"Config signal {signal.name} must be connected before it is "
