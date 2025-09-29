@@ -34,9 +34,11 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         self,
         driver: ADBaseIOT,
         good_states: frozenset[ADState] = DEFAULT_GOOD_STATES,
+        image_mode: ADImageMode = ADImageMode.MULTIPLE,
     ) -> None:
         self.driver: ADBaseIOT = driver
         self.good_states = good_states
+        self.image_mode = image_mode
         self.frame_timeout = DEFAULT_TIMEOUT
         self._arm_status: AsyncStatus | None = None
 
@@ -52,7 +54,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         )
         await asyncio.gather(
             self.driver.num_images.set(trigger_info.total_number_of_exposures),
-            self.driver.image_mode.set(ADImageMode.MULTIPLE),
+            self.driver.image_mode.set(self.image_mode),
         )
 
     async def arm(self):
