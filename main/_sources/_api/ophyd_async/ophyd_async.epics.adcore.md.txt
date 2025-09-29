@@ -1195,7 +1195,7 @@ Bases: {py:obj}`ophyd_async.core.DatasetDescriber`
 
 `````
 
-`````{py:class} ADBaseController(driver: ~ophyd_async.epics.adcore._core_logic.ADBaseIOT, good_states: frozenset[~ophyd_async.epics.adcore._core_io.ADState] = DEFAULT_GOOD_STATES)
+`````{py:class} ADBaseController(driver: ~ophyd_async.epics.adcore._core_logic.ADBaseIOT, good_states: frozenset[~ophyd_async.epics.adcore._core_io.ADState] = DEFAULT_GOOD_STATES, image_mode: ~ophyd_async.epics.adcore._utils.ADImageMode = ADImageMode.MULTIPLE)
 :canonical: ophyd_async.epics.adcore._core_logic.ADBaseController
 
 Bases: {py:obj}`ophyd_async.core.DetectorController`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._core_logic.ADBaseIOT`\]
