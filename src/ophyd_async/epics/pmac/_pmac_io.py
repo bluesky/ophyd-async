@@ -44,7 +44,10 @@ class PmacTrajectoryIO(StandardReadable):
         self.points_to_build = epics_signal_rw(int, prefix + "ProfilePointsToBuild")
         self.build_profile = epics_signal_x(prefix + "ProfileBuild")
         self.append_profile = epics_signal_x(prefix + "ProfileAppend")
-        self.execute_profile = epics_signal_x(prefix + "ProfileExecute")
+        # This should be a SignalX, but because it is a Busy record, must
+        # be a SignalRW to be waited on in PmacTrajectoryTriggerLogic.
+        # TODO: Change record type to bo from busy (https://github.com/DiamondLightSource/pmac/issues/154)
+        self.execute_profile = epics_signal_rw(bool, prefix + "ProfileExecute")
         self.abort_profile = epics_signal_x(prefix + "ProfileAbort")
         self.profile_cs_name = epics_signal_rw(str, prefix + "ProfileCsName")
         self.calculate_velocities = epics_signal_rw(bool, prefix + "ProfileCalcVel")
