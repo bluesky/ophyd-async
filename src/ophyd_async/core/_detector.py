@@ -192,7 +192,7 @@ def check_signals_named(signals: Sequence[HasName]) -> None:
     for signal in signals:
         if signal.name == "":
             raise Exception(
-                "Config signal must be named before it is passed to the detector."
+                "config signal must be named before it is passed to the detector"
             )
 
 
@@ -203,8 +203,8 @@ async def check_signal_connected(signals: Sequence[AsyncReadable]) -> None:
             await signal.read()
         except NotImplementedError as e:
             raise Exception(
-                f"Config signal {signal.name} must be connected before it is "
-                + "passed to the detector."
+                f"config signal {signal.name} must be connected before it is "
+                + "passed to the detector"
             ) from e
 
 
