@@ -196,9 +196,7 @@ def check_signals_named(signals: Sequence[HasName]) -> None:
             )
 
 
-async def check_signal_connected(
-    signals: Sequence[AsyncReadable],
-) -> None:
+async def check_signal_connected(signals: Sequence[AsyncReadable]) -> None:
     """Check signals are connected."""
     for signal in signals:
         try:
