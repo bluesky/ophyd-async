@@ -7,9 +7,8 @@ from scanspec.specs import Spec
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    AsyncStatus,
     FlyerController,
-    WatchableAsyncStatus,
-    WatcherUpdate,
     error_if_none,
     observe_value,
     set_and_wait_for_value,
@@ -43,8 +42,9 @@ class PmacPrepareContext:
 class PmacTrajectoryTriggerLogic(FlyerController):
     def __init__(self, pmac: PmacIO) -> None:
         self.pmac = pmac
-        self._next_pvt: PVT | None = None
-        self._trajectory_status: WatchableAsyncStatus | None = None
+        self._next_pvt: PVT | None
+        self._loaded: int = 0
+        self._trajectory_status: AsyncStatus | None = None
         self._prepare_context: PmacPrepareContext | None = None
 
     async def prepare(self, value: Spec[Motor]):
@@ -83,36 +83,35 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         trajectory_status = error_if_none(
             self._trajectory_status, "Cannot complete. Must call kickoff first."
         )
-        self._trajectory_status = None
         await trajectory_status
+        # Reset trajectory status and number of loaded points
+        self._trajectory_status = None
+        self._loaded = 0
 
     async def stop(self):
         await self.pmac.trajectory.abort_profile.trigger()
 
-    @WatchableAsyncStatus.wrap
+    @AsyncStatus.wrap
     async def _execute_trajectory(self, path: Path, motor_info: _PmacMotorInfo):
-        loaded = SLICE_SIZE
-        execute_status = self.pmac.trajectory.execute_profile.trigger(
-            wait=True, timeout=None
+        execute_status = self.pmac.trajectory.execute_profile.set(
+            True, wait=True, timeout=None
         )
+        # We consume SLICE_SIZE from self.path and parse a trajectory
+        # containing at least 2 * SLICE_SIZE, as a gapless trajectory
+        # will contain 2 points per slice frame. If gaps are present,
+        # additional points are inserted, overfilling the buffer.
+        min_buffer_size = SLICE_SIZE * 2
         async for current_point in observe_value(
             self.pmac.trajectory.total_points,
             done_status=execute_status,
             timeout=DEFAULT_TIMEOUT,
         ):
-            if loaded - current_point < SLICE_SIZE:
-                if len(path) != 0:
-                    # We have less than SLICE_SIZE points in the buffer, so refill
-                    next_slice = path.consume(SLICE_SIZE)
-                    path_length = len(path)
-                    await self._append_trajectory(next_slice, path_length, motor_info)
-                    loaded += SLICE_SIZE
-            yield WatcherUpdate(
-                current=current_point,
-                initial=0,
-                target=path.end_index,
-                name=self.pmac.name,
-            )
+            # Ensure we maintain a minimum buffer size, if we have more points to append
+            if len(path) != 0 and self._loaded - current_point < min_buffer_size:
+                # We have less than SLICE_SIZE * 2 points in the buffer, so refill
+                next_slice = path.consume(SLICE_SIZE)
+                path_length = len(path)
+                await self._append_trajectory(next_slice, path_length, motor_info)
 
     async def _append_trajectory(
         self, slice: Slice, path_length: int, motor_info: _PmacMotorInfo
@@ -170,6 +169,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
                 exit_pvt, ramp_down_pos, ramp_down_time, 0
             )
         self._next_pvt = exit_pvt
+        self._loaded += len(trajectory)
 
         return trajectory
 
