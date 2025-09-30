@@ -19,7 +19,7 @@ def mock_controller() -> MagicMock:
 @pytest.fixture
 def mock_writer() -> MagicMock:
     writer = MagicMock()
-    writer.open = AsyncMock(return_value={})
+    writer.open = AsyncMock(return_value={"name": "test_detector"})
     writer.get_indices_written = AsyncMock(return_value=0)
     return writer
 
