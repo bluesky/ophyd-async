@@ -26,30 +26,30 @@ async def test_panda_controller_not_filled_blocks():
     class PcapBlock(Device):
         pass  # Not filled
 
-    pandaController = PandaPcapController(pcap=PcapBlock())
+    controller = PandaPcapController(pcap=PcapBlock())
     with patch("ophyd_async.fastcs.panda._control.wait_for_value", return_value=None):
         with pytest.raises(AttributeError) as exc:
-            await pandaController.prepare(
+            await controller.prepare(
                 TriggerInfo(number_of_events=1, trigger=DetectorTrigger.CONSTANT_GATE)
             )
-            await pandaController.arm()
+            await controller.arm()
     assert ("'PcapBlock' object has no attribute 'arm'") in str(exc.value)
 
 
 async def test_panda_controller_arm_disarm(mock_panda):
-    pandaController = PandaPcapController(mock_panda.pcap)
+    controller = PandaPcapController(mock_panda.pcap)
     with patch("ophyd_async.fastcs.panda._control.wait_for_value", return_value=None):
-        await pandaController.prepare(
+        await controller.prepare(
             TriggerInfo(number_of_events=1, trigger=DetectorTrigger.CONSTANT_GATE)
         )
-        await pandaController.arm()
-        await pandaController.wait_for_idle()
-    await pandaController.disarm()
+        await controller.arm()
+        await controller.wait_for_idle()
+    await controller.disarm()
 
 
 async def test_panda_controller_wrong_trigger():
-    pandaController = PandaPcapController(None)
+    controller = PandaPcapController(None)
     with pytest.raises(TypeError):
-        await pandaController.prepare(
+        await controller.prepare(
             TriggerInfo(number_of_events=1, trigger=DetectorTrigger.INTERNAL)
         )

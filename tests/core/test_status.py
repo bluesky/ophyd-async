@@ -124,7 +124,7 @@ class FailingMovable(Movable, Device):
             return self._fail()
 
 
-async def test_status_propogates_traceback_under_RE(RE) -> None:
+async def test_status_propogates_traceback_under_re(RE) -> None:
     expected_call_stack = ["set", "_fail"]
     d = FailingMovable()
     with pytest.raises(FailedStatus) as ctx:
@@ -203,7 +203,7 @@ async def test_completed_status():
     await completed_status()
 
 
-async def test_device_name_in_failure_message_AsyncStatus_wrap(RE):
+async def test_device_name_in_failure_message_asyncstatus_wrap(RE):
     device_name = "MyFailingMovable"
     d = FailingMovable(name=device_name)
     with pytest.raises(FailedStatus) as ctx:

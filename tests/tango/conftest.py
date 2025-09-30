@@ -56,7 +56,7 @@ class TangoSubprocessHelper:
         self.trls = pickle.loads(self.conn.recv(1024))
         return self
 
-    def __exit__(self, A, B, C):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.conn.close()
         self.sock.close()
         self.process.communicate()

@@ -11,7 +11,7 @@ from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     LazyMock,
-    NotConnected,
+    NotConnectedError,
     init_devices,
 )
 from ophyd_async.epics import demo
@@ -203,7 +203,7 @@ async def test_zero_velocity(mock_motor: demo.DemoMotor) -> None:
 
 
 async def test_mover_disconnected():
-    with pytest.raises(NotConnected):
+    with pytest.raises(NotConnectedError):
         async with init_devices(timeout=0.1):
             m = demo.DemoMotor("ca://PRE:", name="motor")
     assert m.name == "motor"
@@ -260,7 +260,7 @@ async def test_assembly_renaming() -> None:
 
 
 async def test_point_detector_disconnected():
-    with pytest.raises(NotConnected) as e:
+    with pytest.raises(NotConnectedError) as e:
         async with init_devices(timeout=0.1):
             det = demo.DemoPointDetector("MOCK:DET:")
     expected = """

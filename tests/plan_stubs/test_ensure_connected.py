@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from ophyd_async.core import Device, NotConnected, soft_signal_rw
+from ophyd_async.core import Device, NotConnectedError, soft_signal_rw
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.plan_stubs import ensure_connected
 
@@ -19,12 +19,12 @@ def test_ensure_connected(RE):
         yield from ensure_connected(device1, mock=False, timeout=0.1)
 
     with pytest.raises(
-        NotConnected,
+        NotConnectedError,
         match="device1: NotConnected:\n    signal: NotConnected: pva://PREFIX1:SIGNAL",
     ):
         RE(connect())
 
-    assert isinstance(device1.signal._connect_task.exception(), NotConnected)
+    assert isinstance(device1.signal._connect_task.exception(), NotConnectedError)
 
     device1.signal = soft_signal_rw(str)
     RE(connect())

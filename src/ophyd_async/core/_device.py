@@ -13,7 +13,7 @@ from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 from ._utils import (
     DEFAULT_TIMEOUT,
     LazyMock,
-    NotConnected,
+    NotConnectedError,
     error_if_none,
     wait_for_connection,
 )
@@ -54,7 +54,7 @@ class DeviceConnector:
             except Exception as e:
                 exceptions[name] = e
         if exceptions:
-            raise NotConnected.with_other_exceptions_logged(exceptions)
+            raise NotConnectedError.with_other_exceptions_logged(exceptions)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Use during [](#Device.connect) with `mock=False`.
@@ -335,7 +335,7 @@ class DeviceProcessor:
         try:
             fut = call_in_bluesky_event_loop(self._on_exit())
         except RuntimeError as e:
-            raise NotConnected(
+            raise NotConnectedError(
                 "Could not connect devices. Is the bluesky event loop running? See "
                 "https://blueskyproject.io/ophyd-async/main/"
                 "user/explanations/event-loop-choice.html for more info."

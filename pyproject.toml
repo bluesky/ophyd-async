@@ -232,6 +232,13 @@ convention = "google" # not really, but close enough...
 "src/ophyd_async/testing/**/*" = ["SLF001", "S101"]
 "system_tests/**/*" = ["SLF001", "S101", "D"]
 
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+# We often shorten "Annotated" to "A" for brevity
+"typing.Annotated" = "A"
+
+[tool.ruff.lint.pep8-naming]
+# The fixture RE is commonly used in tests
+extend-ignore-names = ["RE"]
 
 [tool.importlinter]
 root_package = "ophyd_async"

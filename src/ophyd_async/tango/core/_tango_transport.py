@@ -31,7 +31,7 @@ from tango.utils import is_array, is_binary, is_bool, is_float, is_int, is_str
 from ophyd_async.core import (
     AsyncStatus,
     Callback,
-    NotConnected,
+    NotConnectedError,
     SignalBackend,
     SignalDatatypeT,
     StrictEnum,
@@ -736,14 +736,14 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         try:
             self.proxies[trl] = await get_tango_trl(trl, self.proxies[trl], timeout)
             if self.proxies[trl] is None:
-                raise NotConnected(f"Not connected to {trl}")
+                raise NotConnectedError(f"Not connected to {trl}")
             # Pyright does not believe that self.proxies[trl] is not None despite
             # the check above
             await self.proxies[trl].connect()  # type: ignore
             self.trl_configs[trl] = await self.proxies[trl].get_config()  # type: ignore
             self.proxies[trl].support_events = self.support_events  # type: ignore
         except TimeoutError as ce:
-            raise NotConnected(f"tango://{trl}") from ce
+            raise NotConnectedError(f"tango://{trl}") from ce
 
     async def connect(self, timeout: float) -> None:
         if not self.read_trl:
@@ -766,7 +766,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
 
     async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None) -> None:
         if self.proxies[self.write_trl] is None:
-            raise NotConnected(f"Not connected to {self.write_trl}")
+            raise NotConnectedError(f"Not connected to {self.write_trl}")
         self.status = None
         put_status = await self.proxies[self.write_trl].put(value, wait, timeout)  # type: ignore
         self.status = put_status
@@ -776,31 +776,31 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
         if self.proxies[self.read_trl] is None:
-            raise NotConnected(f"Not connected to {self.read_trl}")
+            raise NotConnectedError(f"Not connected to {self.read_trl}")
         reading = await self.proxies[self.read_trl].get_reading()  # type: ignore
         return reading
 
     async def get_value(self) -> SignalDatatypeT:
         if self.proxies[self.read_trl] is None:
-            raise NotConnected(f"Not connected to {self.read_trl}")
+            raise NotConnectedError(f"Not connected to {self.read_trl}")
         proxy = self.proxies[self.read_trl]
         if proxy is None:
-            raise NotConnected(f"Not connected to {self.read_trl}")
+            raise NotConnectedError(f"Not connected to {self.read_trl}")
         value = await proxy.get()
         return cast(SignalDatatypeT, value)
 
     async def get_setpoint(self) -> SignalDatatypeT:
         if self.proxies[self.write_trl] is None:
-            raise NotConnected(f"Not connected to {self.write_trl}")
+            raise NotConnectedError(f"Not connected to {self.write_trl}")
         proxy = self.proxies[self.write_trl]
         if proxy is None:
-            raise NotConnected(f"Not connected to {self.write_trl}")
+            raise NotConnectedError(f"Not connected to {self.write_trl}")
         w_value = await proxy.get_w_value()
         return cast(SignalDatatypeT, w_value)
 
     def set_callback(self, callback: Callback | None) -> None:
         if self.proxies[self.read_trl] is None:
-            raise NotConnected(f"Not connected to {self.read_trl}")
+            raise NotConnectedError(f"Not connected to {self.read_trl}")
         if self.support_events is False and self._polling[0] is False:
             raise RuntimeError(
                 f"Cannot set event for {self.read_trl}. "
