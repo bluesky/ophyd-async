@@ -238,9 +238,7 @@ class StandardDetector(
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
         await self._check_config_sigs()
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
-        self._trigger_info = None
-        self._writer_open = False
+        await self._clear_state()
 
     async def _check_config_sigs(self):
         """Check configuration signals are named and connected."""
@@ -257,11 +255,15 @@ class StandardDetector(
                     + "passed to the detector"
                 ) from exc
 
+    async def _clear_state(self) -> None:
+        await asyncio.gather(self._writer.close(), self._controller.disarm())
+        self._trigger_info = None
+        self._describe = {}
+
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         """Disarm the detector and stop file writing."""
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
-        self._writer_open = False
+        await self._clear_state()
 
     async def read_configuration(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
@@ -331,11 +333,10 @@ class StandardDetector(
 
         await self._controller.prepare(value)
 
-        if self._writer_open is not True:
+        if self._describe == {}:
             self._describe = await self._writer.open(
                 self.name, value.exposures_per_event
             )
-            self._writer_open = True
 
         self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
