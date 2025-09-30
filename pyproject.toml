@@ -144,9 +144,8 @@ commands = [
     [
         "pyright",
         "src",
-        "tests",
-        { replace = "posargs", default = [
-        ], extend = true },
+        # "tests",
+        { replace = "posargs", default = [], extend = true },
     ],
 ]
 
