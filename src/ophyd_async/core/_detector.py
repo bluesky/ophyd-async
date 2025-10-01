@@ -350,8 +350,6 @@ class StandardDetector(
     ) -> None:
         self._writer = writer
         self._describe: dict[str, DataKey] = {}
-        # For prepare
-        self._arm_status: AsyncStatus | None = None  # Can this be removed?
         # For kickoff
         self._watchers: list[Callable] = []
         self._fly_status: WatchableAsyncStatus | None = None
