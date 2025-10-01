@@ -133,7 +133,7 @@ async def test_error_handling_connection_timeout(caplog):
 
 
 async def test_error_handling_value_errors(caplog):
-    """Checks that NotConnected is aggregated correctly across Devices."""
+    """Checks that NotConnectedError is aggregated correctly across Devices."""
 
     caplog.set_level(10)
 
@@ -143,11 +143,8 @@ async def test_error_handling_value_errors(caplog):
 
     # This should fail since the error is a ValueError
     with pytest.raises(NotConnectedError) as e:
-        (
-            await dummy_device_two_working_one_timeout_two_value_error.connect(
-                timeout=0.01
-            ),
-        )
+        await dummy_device_two_working_one_timeout_two_value_error.connect(timeout=0.01)
+
     assert str(e.value) == str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
 
     logs = caplog.get_records("call")
@@ -249,13 +246,13 @@ async def test_error_handling_init_devices(caplog):
 
 def test_not_connected_error_output():
     assert str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT) == (
-        "\ntimeout_child_device_ca: NotConnected:\n"
-        "    timeout_signal: NotConnected: ca://A_NON_EXISTENT_SIGNAL\n"
-        "timeout_child_device_pva: NotConnected:\n"
-        "    timeout_signal: NotConnected: pva://A_NON_EXISTENT_SIGNAL\n"
-        "value_error_child_device1: NotConnected:\n"
+        "\ntimeout_child_device_ca: NotConnectedError:\n"
+        "    timeout_signal: NotConnectedError: ca://A_NON_EXISTENT_SIGNAL\n"
+        "timeout_child_device_pva: NotConnectedError:\n"
+        "    timeout_signal: NotConnectedError: pva://A_NON_EXISTENT_SIGNAL\n"
+        "value_error_child_device1: NotConnectedError:\n"
         "    value_error_signal: ValueError: Some ValueError text\n"
-        "value_error_child_device2: NotConnected:\n"
+        "value_error_child_device2: NotConnectedError:\n"
         "    value_error_signal: ValueError\n"
     )
 
@@ -265,8 +262,8 @@ async def test_combining_top_level_signal_and_child_device():
     with pytest.raises(NotConnectedError) as e:
         await dummy_device1.connect(timeout=0.01)
     assert str(e.value) == (
-        "\ntimeout_signal: NotConnected: ca://A_NON_EXISTENT_SIGNAL\n"
-        "sub_device: NotConnected:\n"
+        "\ntimeout_signal: NotConnectedError: ca://A_NON_EXISTENT_SIGNAL\n"
+        "sub_device: NotConnectedError:\n"
         "    value_error_signal: ValueError: Some ValueError text\n"
     )
 
@@ -274,9 +271,9 @@ async def test_combining_top_level_signal_and_child_device():
         async with init_devices(timeout=0.1):
             dummy_device2 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
     assert str(e.value) == (
-        "\ndummy_device2: NotConnected:\n"
-        "    timeout_signal: NotConnected: ca://A_NON_EXISTENT_SIGNAL\n"
-        "    sub_device: NotConnected:\n"
+        "\ndummy_device2: NotConnectedError:\n"
+        "    timeout_signal: NotConnectedError: ca://A_NON_EXISTENT_SIGNAL\n"
+        "    sub_device: NotConnectedError:\n"
         "        value_error_signal: ValueError: Some ValueError text\n"
     )
 

@@ -62,7 +62,7 @@ class DeviceConnector:
         This is called when there is no cached connect done in `mock=False`
         mode. It connects the Device and all its children in real mode in parallel.
         """
-        # Connect in parallel, gathering up NotConnected errors
+        # Connect in parallel, gathering up NotConnectedErrors
         coros = {
             name: child_device.connect(timeout=timeout, force_reconnect=force_reconnect)
             for name, child_device in device.children()
@@ -372,7 +372,7 @@ def init_devices(
     :param mock: If True, connect Signals in mock mode.
     :param timeout: How long to wait for connect before logging an exception.
     :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
-    :raises NotConnected: If devices could not be connected.
+    :raises NotConnectedError: If devices could not be connected.
 
     For example, to connect and name 2 motors in parallel:
     ```python

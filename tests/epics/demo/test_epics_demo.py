@@ -264,21 +264,21 @@ async def test_point_detector_disconnected():
         async with init_devices(timeout=0.1):
             det = demo.DemoPointDetector("MOCK:DET:")
     expected = """
-det: NotConnected:
-    channel: NotConnected:
-        1: NotConnected:
-            value: NotConnected: ca://MOCK:DET:1:Value
-            mode: NotConnected: ca://MOCK:DET:1:Mode
-        2: NotConnected:
-            value: NotConnected: ca://MOCK:DET:2:Value
-            mode: NotConnected: ca://MOCK:DET:2:Mode
-        3: NotConnected:
-            value: NotConnected: ca://MOCK:DET:3:Value
-            mode: NotConnected: ca://MOCK:DET:3:Mode
-    acquire_time: NotConnected: ca://MOCK:DET:AcquireTime
-    start: NotConnected: ca://MOCK:DET:Start.PROC
-    acquiring: NotConnected: ca://MOCK:DET:Acquiring
-    reset: NotConnected: ca://MOCK:DET:Reset.PROC
+det: NotConnectedError:
+    channel: NotConnectedError:
+        1: NotConnectedError:
+            value: NotConnectedError: ca://MOCK:DET:1:Value
+            mode: NotConnectedError: ca://MOCK:DET:1:Mode
+        2: NotConnectedError:
+            value: NotConnectedError: ca://MOCK:DET:2:Value
+            mode: NotConnectedError: ca://MOCK:DET:2:Mode
+        3: NotConnectedError:
+            value: NotConnectedError: ca://MOCK:DET:3:Value
+            mode: NotConnectedError: ca://MOCK:DET:3:Mode
+    acquire_time: NotConnectedError: ca://MOCK:DET:AcquireTime
+    start: NotConnectedError: ca://MOCK:DET:Start.PROC
+    acquiring: NotConnectedError: ca://MOCK:DET:Acquiring
+    reset: NotConnectedError: ca://MOCK:DET:Reset.PROC
 """
     assert str(e.value) == expected
 

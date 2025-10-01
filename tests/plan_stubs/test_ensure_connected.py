@@ -20,7 +20,7 @@ def test_ensure_connected(RE):
 
     with pytest.raises(
         NotConnectedError,
-        match="device1: NotConnected:\n    signal: NotConnected: pva://PREFIX1:SIGNAL",
+        match="device1: NotConnectedError:\n    signal: NotConnectedError: pva://PREFIX1:SIGNAL",
     ):
         RE(connect())
 
