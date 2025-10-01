@@ -291,3 +291,8 @@ async def test_format_error_string_input():
     ):
         not_connected = NotConnectedError({"test": 123})
         str(not_connected)
+
+
+def test_core_notconnected_emits_deprecation_warning():
+    with pytest.deprecated_call():
+        from ophyd_async.core import NotConnected  # noqa: F401
