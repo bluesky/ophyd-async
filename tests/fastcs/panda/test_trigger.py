@@ -3,13 +3,19 @@ import asyncio
 import numpy as np
 import pytest
 from pydantic import ValidationError
+from scanspec.specs import Fly, Line
 
-from ophyd_async.core import init_devices
+from ophyd_async.core import DeviceVector, init_devices
+from ophyd_async.epics.motor import Motor
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
+    InencBlock,
     PandaPcompDirection,
     PcompInfo,
+    PosOutScaleOffset,
+    ScanSpecInfo,
+    ScanSpecSeqTableTriggerLogic,
     SeqTable,
     SeqTableInfo,
     SeqTrigger,
@@ -22,14 +28,28 @@ from ophyd_async.testing import set_mock_value
 @pytest.fixture
 async def mock_panda():
     class Panda(CommonPandaBlocks):
+        inenc: DeviceVector[InencBlock]
+
         def __init__(self, uri: str, name: str = ""):
             super().__init__(name=name, connector=fastcs_connector(self, uri))
 
     async with init_devices(mock=True):
         mock_panda = Panda("PANDAQSRV:", "mock_panda")
-
+    set_mock_value(mock_panda.inenc[1].val_scale, 0.02)
+    set_mock_value(mock_panda.inenc[1].val_offset, 0.0)
+    set_mock_value(mock_panda.inenc[2].val_scale, 0.2)
+    set_mock_value(mock_panda.inenc[2].val_offset, 0.0)
     assert mock_panda.name == "mock_panda"
     return mock_panda
+
+
+async def test_from_inenc(mock_panda):
+    panda = mock_panda
+    number = 1
+    pos_out_scale_offset = PosOutScaleOffset.from_inenc(panda, number)
+    assert pos_out_scale_offset.name == "INENC1.VAL"
+    assert await pos_out_scale_offset.scale.get_value() == 0.02
+    assert await pos_out_scale_offset.offset.get_value() == 0.0
 
 
 async def test_seq_table_trigger_logic(mock_panda):
@@ -49,6 +69,181 @@ async def test_seq_table_trigger_logic(mock_panda):
     await trigger_logic.prepare(seq_table_info)
     await asyncio.gather(trigger_logic.kickoff(), set_active(True))
     await asyncio.gather(trigger_logic.complete(), set_active(False))
+
+
+@pytest.fixture
+async def sim_x_motor():
+    async with init_devices(mock=True):
+        sim_motor = Motor("BLxxI-MO-STAGE-01:X", name="sim_x_motor")
+
+    yield sim_motor
+
+
+@pytest.fixture
+async def sim_y_motor():
+    async with init_devices(mock=True):
+        sim_motor = Motor("BLxxI-MO-STAGE-01:Y", name="sim_x_motor")
+
+    yield sim_motor
+
+
+async def test_seq_scanspec_trigger_logic(mock_panda, sim_x_motor, sim_y_motor) -> None:
+    spec = Fly(1.0 @ (Line(sim_y_motor, 1, 2, 3) * ~Line(sim_x_motor, 1, 5, 5)))
+    info = ScanSpecInfo(spec=spec, deadtime=0.1)
+    trigger_logic = ScanSpecSeqTableTriggerLogic(
+        mock_panda.seq[1],
+        {
+            sim_x_motor: PosOutScaleOffset(
+                "INENC1.VAL",
+                mock_panda.inenc[1].val_scale,
+                mock_panda.inenc[1].val_offset,
+            ),  # type: ignore
+            sim_y_motor: PosOutScaleOffset(
+                "INENC2.VAL",
+                mock_panda.inenc[2].val_scale,
+                mock_panda.inenc[2].val_offset,
+            ),  # type: ignore
+        },
+    )
+    await trigger_logic.prepare(info)
+    out = await trigger_logic.seq.table.get_value()
+    assert out.repeats == pytest.approx([1, 1, 1, 5, 1, 1, 1, 5, 1, 1, 1, 5])
+    assert out.trigger == [
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.POSA_GT,
+        SeqTrigger.IMMEDIATE,
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.POSA_LT,
+        SeqTrigger.IMMEDIATE,
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.POSA_GT,
+        SeqTrigger.IMMEDIATE,
+    ]
+    assert out.position == pytest.approx([0, 0, 25, 0, 0, 0, 275, 0, 0, 0, 25, 0])
+    assert out.time1 == pytest.approx(
+        [0, 0, 0, 900000, 0, 0, 0, 900000, 0, 0, 0, 900000]
+    )
+    assert out.time2 == pytest.approx(
+        [0, 0, 0, 100000, 0, 0, 0, 100000, 0, 0, 0, 100000]
+    )
+
+
+async def test_seq_scanspec_trigger_logic_no_gaps(
+    mock_panda, sim_x_motor, sim_y_motor
+) -> None:
+    spec = Fly(2.0 @ (Line(sim_y_motor, 1, 2, 3)))
+    info = ScanSpecInfo(spec=spec, deadtime=0.1)
+    trigger_logic = ScanSpecSeqTableTriggerLogic(
+        mock_panda.seq[1],
+        {
+            sim_y_motor: PosOutScaleOffset(
+                "INENC2.VAL",
+                mock_panda.inenc[2].val_scale,
+                mock_panda.inenc[2].val_offset,
+            )
+        },
+    )
+    await trigger_logic.prepare(info)
+    out = await trigger_logic.seq.table.get_value()
+    assert out.repeats == pytest.approx([1, 1, 1, 3])
+    assert out.trigger == [
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.POSA_GT,
+        SeqTrigger.IMMEDIATE,
+    ]
+    assert out.position == pytest.approx([0, 0, 3, 0])
+    assert out.time1 == pytest.approx([0, 0, 0, 1900000])
+    assert out.time2 == pytest.approx([0, 0, 0, 100000])
+
+
+async def test_seq_scanspec_trigger_logic_duration_error(
+    mock_panda, sim_x_motor, sim_y_motor
+) -> None:
+    spec = Fly(Line(sim_y_motor, 1, 2, 3) * ~Line(sim_x_motor, 1, 5, 5))
+    info = ScanSpecInfo(spec=spec, deadtime=0.1)
+    trigger_logic = ScanSpecSeqTableTriggerLogic(
+        mock_panda.seq[1],
+        {
+            sim_x_motor: PosOutScaleOffset(
+                "INENC1.VAL",
+                mock_panda.inenc[1].val_scale,
+                mock_panda.inenc[1].val_offset,
+            ),
+            sim_y_motor: PosOutScaleOffset(
+                "INENC2.VAL",
+                mock_panda.inenc[2].val_scale,
+                mock_panda.inenc[2].val_offset,
+            ),
+        },
+    )
+    with pytest.raises(RuntimeError, match="Slice must have duration"):
+        await trigger_logic.prepare(info)
+
+
+async def test_seq_scanspec_trigger_logic_motor_not_passed(
+    mock_panda, sim_x_motor, sim_y_motor
+) -> None:
+    spec = Fly(2.0 @ (Line(sim_y_motor, 1, 2, 3)))
+    info = ScanSpecInfo(spec=spec, deadtime=0.1)
+    trigger_logic = ScanSpecSeqTableTriggerLogic(
+        mock_panda.seq[1],
+        {
+            sim_x_motor: PosOutScaleOffset(
+                "INENC1.VAL",
+                mock_panda.inenc[1].val_scale,
+                mock_panda.inenc[1].val_offset,
+            )
+        },
+    )
+    await trigger_logic.prepare(info)
+    out = await trigger_logic.seq.table.get_value()
+    assert out.repeats == pytest.approx([1, 1, 3])
+    assert out.trigger == [
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.IMMEDIATE,
+    ]
+    assert out.position == pytest.approx([0, 0, 0])
+    assert out.time1 == pytest.approx([0, 0, 1900000])
+    assert out.time2 == pytest.approx([0, 0, 100000])
+
+
+async def test_seq_scanspec_trigger_logic_equal(
+    mock_panda, sim_x_motor, sim_y_motor
+) -> None:
+    spec = 2.0 @ (Line(sim_x_motor, 1, 2, 3))
+    info = ScanSpecInfo(spec=spec, deadtime=0.1)
+    trigger_logic = ScanSpecSeqTableTriggerLogic(
+        mock_panda.seq[1],
+        {
+            sim_x_motor: PosOutScaleOffset(
+                "INENC1.VAL",
+                mock_panda.inenc[1].val_scale,
+                mock_panda.inenc[1].val_offset,
+            )
+        },
+    )
+    await trigger_logic.prepare(info)
+    out = await trigger_logic.seq.table.get_value()
+    assert out.repeats == pytest.approx([1, 1, 1, 1, 1, 1, 1, 1, 1])
+    assert out.trigger == [
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.IMMEDIATE,
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.IMMEDIATE,
+        SeqTrigger.BITA_0,
+        SeqTrigger.BITA_1,
+        SeqTrigger.IMMEDIATE,
+    ]
+    assert out.position == pytest.approx([0, 0, 0, 0, 0, 0, 0, 0, 0])
+    assert out.time1 == pytest.approx([0, 0, 1900000, 0, 0, 1900000, 0, 0, 1900000])
+    assert out.time2 == pytest.approx([0, 0, 100000, 0, 0, 100000, 0, 0, 100000])
 
 
 async def test_pcomp_trigger_logic(mock_panda):
@@ -75,7 +270,7 @@ async def test_pcomp_trigger_logic(mock_panda):
     [
         (
             {
-                "sequence_table_factory": lambda: SeqTable.row(outc2=1),
+                "sequence_table_factory": lambda: SeqTable.row(outc2=True),
                 "repeats": 0,
                 "prescale_as_us": -1,
             },
