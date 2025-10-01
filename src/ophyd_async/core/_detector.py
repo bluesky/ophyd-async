@@ -1,7 +1,6 @@
 """Module which defines abstract classes to work with detectors."""
 
 import asyncio
-import math
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, Sequence
@@ -15,7 +14,6 @@ from typing import (
 from bluesky.protocols import (
     Collectable,
     Flyable,
-    HasName,
     Hints,
     Preparable,
     Reading,
@@ -30,7 +28,6 @@ from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
 from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
-from ._signal_backend import Array1D
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import DEFAULT_TIMEOUT, ConfinedModel, WatcherUpdate, merge_gathered_dicts
 
@@ -187,27 +184,6 @@ def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo
     return trigger_info
 
 
-def check_signals_named(signals: Sequence[HasName]) -> None:
-    """Check signal names are not blank."""
-    for signal in signals:
-        if signal.name == "":
-            raise Exception(
-                "config signal must be named before it is passed to the detector"
-            )
-
-
-async def check_signal_connected(signals: Sequence[AsyncReadable]) -> None:
-    """Check signals are connected."""
-    for signal in signals:
-        try:
-            await signal.read()
-        except NotImplementedError as e:
-            raise Exception(
-                f"config signal {signal.name} must be connected before it is "
-                + "passed to the detector"
-            ) from e
-
-
 class BaseDetector(
     Device,
     Stageable,
@@ -234,11 +210,7 @@ class BaseDetector(
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
-        check_signals_named(self._config_sigs)
-        await asyncio.gather(
-            check_signal_connected(self._config_sigs),
-            self._controller.disarm(),
-        )
+        await self._controller.disarm()
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
@@ -344,63 +316,11 @@ class StepDetector(
         self._read_sigs = read_sigs
         super().__init__(controller, config_sigs, name, connector)
 
-    @AsyncStatus.wrap
-    async def stage(self) -> None:
-        asyncio.gather(check_signal_connected(self._read_sigs), super().stage())
-
     async def read(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._read_sigs)
 
     async def describe(self) -> dict[str, DataKey]:
         return await merge_gathered_dicts(sig.describe() for sig in self._read_sigs)
-
-
-class ImageShapeDataSetDescriber(AsyncReadable):
-    """Helper data set describer to alter image signal shape via two other signals."""
-
-    def __init__(
-        self,
-        image: SignalR[Array1D],
-        x_size: SignalR[int],
-        y_size: SignalR[int],
-    ):
-        self._image = image
-        self._x_size = x_size
-        self._y_size = y_size
-
-    @property
-    def name(self) -> str:
-        return self._image.name
-
-    def _get_shape(self, describe_data: dict[str, DataKey]) -> list[int | None]:
-        return describe_data[self.name]["shape"]
-
-    def _set_shape(
-        self, describe_data: dict[str, DataKey], shape: list[int | None]
-    ) -> None:
-        describe_data[self.name]["shape"] = shape
-
-    async def read(self) -> dict[str, Reading]:
-        return await self._image.read()
-
-    async def describe(self) -> dict[str, DataKey]:
-        image_describe, x, y = await asyncio.gather(
-            self._image.describe(),
-            self._x_size.get_value(),
-            self._y_size.get_value(),
-        )
-        current_shape = self._get_shape(image_describe)
-        current_size = math.prod(x for x in current_shape if x is not None)
-        new_shape: list[int | None] = [x, y]
-        new_size = x * y
-        if current_size != new_size:
-            raise ValueError(
-                f"The size of signal {self._image.name} is of shape "
-                f"{current_shape}. Failed to resize to new shape "
-                f"{new_shape} as new size is {new_size}."
-            )
-        self._set_shape(image_describe, new_shape)
-        return image_describe
 
 
 class StandardDetector(

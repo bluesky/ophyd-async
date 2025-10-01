@@ -14,12 +14,8 @@ import pytest
 from bluesky.run_engine import RunEngine
 from bluesky.utils import FailedStatus
 
-import ophyd_async.plan_stubs as ops
 from ophyd_async.core import (
-    AsyncStatus,
     DetectorTrigger,
-    StaticFilenameProvider,
-    StaticPathProvider,
     TriggerInfo,
 )
 from ophyd_async.epics import adcore, adsimdetector
@@ -497,57 +493,6 @@ async def test_trigger_logic():
     detector.writer.hdf.num_captured to 1, using set_mock_value
     """
     ...
-
-
-@pytest.mark.parametrize(
-    "driver_name, error_output",
-    [
-        ("", "config signal must be named before it is passed to the detector"),
-        (
-            "some-name",
-            (
-                "config signal some-name-acquire_time must be connected before it is "
-                "passed to the detector"
-            ),
-        ),
-    ],
-)
-def test_detector_with_unnamed_or_disconnected_config_sigs(
-    RE,
-    static_filename_provider: StaticFilenameProvider,
-    tmp_path: Path,
-    driver_name,
-    error_output,
-):
-    dp = StaticPathProvider(static_filename_provider, tmp_path)
-
-    some_other_driver = adsimdetector.SimDriverIO("TEST", name=driver_name)
-
-    det = adsimdetector.SimDetector(
-        "FOO:",
-        dp,
-        name="foo",
-    )
-
-    det._config_sigs = [some_other_driver.acquire_time, det.driver.acquire]
-
-    def my_plan():
-        yield from ops.ensure_connected(det, mock=True)
-        assert det.driver.acquire.name == "foo-driver-acquire"
-        assert some_other_driver.acquire_time.name == (
-            driver_name + "-acquire_time" if driver_name else ""
-        )
-
-        yield from count_sim([det], times=1)
-
-    with pytest.raises(Exception) as exc:
-        RE(my_plan())
-
-    assert isinstance(exc.value.args[0], AsyncStatus)
-    assert str(exc.value.args[0].exception()) == error_output
-
-    # Need to unstage to properly kill tasks
-    RE(bps.unstage(det, wait=True))
 
 
 async def test_ad_sim_controller(test_adsimdetector: adsimdetector.SimDetector):
