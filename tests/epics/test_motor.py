@@ -359,3 +359,8 @@ async def test_locatable(sim_motor: motor.Motor) -> None:
     await move_status
     assert (await sim_motor.locate())["readback"] == 10
     assert (await sim_motor.locate())["setpoint"] == 10
+
+
+def test_core_notconnected_emits_deprecation_warning():
+    with pytest.deprecated_call():
+        from ophyd_async.epics.motor import MotorLimitsException  # noqa: F401
