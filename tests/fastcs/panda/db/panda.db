@@ -130,7 +130,18 @@ record(stringout, "$(IOC_NAME=PANDAQSRV):SEQ1:ENABLE")
     })
 }
 
-
+record(stringout, "$(IOC_NAME=PANDAQSRV):SEQ1:POSA")
+{
+    field(PINI, "YES")
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):SEQ1:PVI": {
+            "value.posa.rw": {
+                "+channel": "NAME",
+                "+type": "plain"
+            }
+        }
+    })
+}
 
 record(waveform, "BOOL:PLEASE")
 {

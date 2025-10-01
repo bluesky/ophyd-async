@@ -45,7 +45,8 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
 
     mock_panda2 = await get_mock_panda()
     check_equal_with_seq_tables(
-        (await mock_panda2.seq[1].table.get_value()), SeqTable()
+        (await mock_panda2.seq[1].table.get_value()),
+        SeqTable(),  # type: ignore
     )
 
     def load_panda():
@@ -117,6 +118,7 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
             "time2": [0],
             "trigger": ["Immediate"],
         },
+        "seq.1.posa": "ZERO",
         "seq.1.repeats": 0,
         "seq.1.prescale": 0.0,
         "seq.1.enable": "ZERO",
@@ -139,6 +141,7 @@ async def test_save_load_panda(tmp_path, RE: RunEngine):
             "time2": [],
             "trigger": [],
         },
+        "seq.2.posa": "ZERO",
         "seq.2.repeats": 0,
         "seq.2.prescale": 0.0,
         "seq.2.enable": "ZERO",
