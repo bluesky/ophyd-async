@@ -20,11 +20,11 @@ jobs:
       - name: Install system packages
         run: sudo apt-get install graphviz
 
-      - name: Install python packages
-        uses: ./.github/actions/install_requirements
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Build docs
-        run: tox -e docs
+        run: uv run --locked tox -e docs
 
       - name: Remove environment.pickle
         run: rm build/html/.doctrees/environment.pickle

@@ -3,6 +3,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
+        args: ["--maxkb=1000"] # uv.lock is more than 500kB
       - id: check-yaml
       - id: check-merge-conflict
       - id: end-of-file-fixer
@@ -22,6 +23,13 @@ repos:
         entry: ruff format --force-exclude
         types: [python]
         require_serial: true
+
+      - id: uv-sync
+        name: update uv.lock and venv
+        pass_filenames: false
+        language: system
+        entry: uv sync
+        files: ^(uv\.lock|pyproject\.toml)$
 
       - id: import-contracts
         name: Ensure import directionality

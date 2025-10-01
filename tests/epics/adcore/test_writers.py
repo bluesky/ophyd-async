@@ -332,14 +332,14 @@ async def test_nd_attributes_plan_stub(RE, detectors):
 
 
 async def test_nd_attributes_plan_stub_gives_correct_error(RE, detectors):
-    invalidObjects = [0.1, "string", 1, True, False]
+    invalid_objects = [0.1, "string", 1, True, False]
     for detector in detectors:
         await detector.connect(mock=True)
         with pytest.raises(ValueError) as e:
-            RE(setup_ndattributes(detector.fileio, invalidObjects))
+            RE(setup_ndattributes(detector.fileio, invalid_objects))
         assert (
             str(e.value)
-            == f"Invalid type for ndattributes: {type(invalidObjects[0])}. "
+            == f"Invalid type for ndattributes: {type(invalid_objects[0])}. "
             + "Expected NDAttributePv or NDAttributeParam."
         )
 

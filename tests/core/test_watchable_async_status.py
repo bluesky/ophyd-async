@@ -17,7 +17,7 @@ from ophyd_async.core import (
 )
 
 
-class SetFailed(Exception):
+class SetFailedError(Exception):
     pass
 
 
@@ -135,7 +135,7 @@ class ASTestDeviceIteratorSet(ASTestDevice):
                 fraction=0,
             )
         else:
-            raise SetFailed
+            raise SetFailedError
         return
 
 
@@ -186,7 +186,7 @@ async def test_watchableasyncstatus_wraps_failing_set_iterator(RE):
         ...
     assert st.done
     assert not st.success
-    assert isinstance(st.exception(), SetFailed)
+    assert isinstance(st.exception(), SetFailedError)
     assert len(updates) == 3
 
 
@@ -201,7 +201,7 @@ async def test_watchableasyncstatus_times_out(RE):
     assert isinstance(st.exception(), asyncio.TimeoutError)
 
 
-async def test_device_name_in_failure_message_WatchableAsyncStatus_wrap(RE):
+async def test_device_name_in_failure_message_watchableasyncstatus_wrap(RE):
     class FailingWatchableMovable(Movable, Device):
         @WatchableAsyncStatus.wrap
         async def set(self, value) -> AsyncIterator:

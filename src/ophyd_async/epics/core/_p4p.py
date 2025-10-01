@@ -18,7 +18,7 @@ from pydantic import BaseModel
 from ophyd_async.core import (
     Array1D,
     Callback,
-    NotConnected,
+    NotConnectedError,
     SignalDatatype,
     SignalDatatypeT,
     SignalMetadata,
@@ -328,7 +328,7 @@ async def pvget_with_timeout(pv: str, timeout: float) -> Any:
         return await asyncio.wait_for(context().get(pv), timeout=timeout)
     except TimeoutError as exc:
         logger.debug(f"signal pva://{pv} timed out", exc_info=True)
-        raise NotConnected(f"pva://{pv}") from exc
+        raise NotConnectedError(f"pva://{pv}") from exc
 
 
 def _pva_request_string(fields: Sequence[str]) -> str:

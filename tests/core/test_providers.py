@@ -3,10 +3,9 @@ import os
 import sys
 import uuid
 from datetime import date
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 import pytest
-from pathlib2 import PureWindowsPath
 
 from ophyd_async.core import (
     AutoIncrementFilenameProvider,

@@ -7,7 +7,7 @@ from bluesky.run_engine import RunEngine, TransitionError
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
-    NotConnected,
+    NotConnectedError,
     init_devices,
 )
 from ophyd_async.epics import motor
@@ -35,7 +35,7 @@ class WorkingDevice(Device):
 
 async def test_init_devices_handles_top_level_errors(caplog):
     caplog.set_level(10)
-    with pytest.raises(NotConnected) as exc:
+    with pytest.raises(NotConnectedError) as exc:
         async with init_devices():
             _ = FailingDevice("somename")
 
@@ -53,7 +53,7 @@ async def test_init_devices_handles_top_level_errors(caplog):
 
 
 def test_sync_init_devices_no_run_engine_raises_error():
-    with pytest.raises(NotConnected) as e:
+    with pytest.raises(NotConnectedError) as e:
         with init_devices():
             working_device = WorkingDevice("somename")
     assert e.value._errors == (

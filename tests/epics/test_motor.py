@@ -70,18 +70,18 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
 
 
 async def test_motor_move_timeout(sim_motor: motor.Motor):
-    class MyTimeout(Exception):
+    class MyError(Exception):
         pass
 
     def do_timeout(value, wait):
         # Raise custom exception to be clear it bubbles up
-        raise MyTimeout()
+        raise MyError()
 
     callback_on_mock_put(sim_motor.user_setpoint, do_timeout)
     s = sim_motor.set(0.3)
     watcher = Mock()
     s.watch(watcher)
-    with pytest.raises(MyTimeout):
+    with pytest.raises(MyError):
         await s
     watcher.assert_called_once_with(
         name="sim_motor",
@@ -164,7 +164,7 @@ async def test_move_outside_motor_limits_causes_error(
     set_mock_value(sim_motor.velocity, 10)
     set_mock_value(sim_motor.low_limit_travel, lower_limit)
     set_mock_value(sim_motor.high_limit_travel, upper_limit)
-    with pytest.raises(motor.MotorLimitsException):
+    with pytest.raises(motor.MotorLimitsError):
         await sim_motor.set(position)
 
 
@@ -199,7 +199,7 @@ async def test_set(sim_motor: motor.Motor, setpoint, velocity, timeout) -> None:
 
 async def test_prepare_velocity_limit_error(sim_motor: motor.Motor):
     set_mock_value(sim_motor.max_velocity, 10)
-    with pytest.raises(motor.MotorLimitsException):
+    with pytest.raises(motor.MotorLimitsError):
         fly_info = FlyMotorInfo(start_position=-10, end_position=0, time_for_move=0.9)
         await sim_motor.prepare(fly_info)
 
@@ -243,7 +243,7 @@ async def test_prepare_motor_limits_error(
         end_position=end_position,
         time_for_move=time_for_move,
     )
-    with pytest.raises(motor.MotorLimitsException):
+    with pytest.raises(motor.MotorLimitsError):
         await sim_motor.prepare(fly_info)
 
 
@@ -359,3 +359,8 @@ async def test_locatable(sim_motor: motor.Motor) -> None:
     await move_status
     assert (await sim_motor.locate())["readback"] == 10
     assert (await sim_motor.locate())["setpoint"] == 10
+
+
+def test_core_notconnected_emits_deprecation_warning():
+    with pytest.deprecated_call():
+        from ophyd_async.epics.motor import MotorLimitsException  # noqa: F401

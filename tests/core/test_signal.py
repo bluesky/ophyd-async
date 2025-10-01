@@ -372,25 +372,23 @@ async def test_wait_for_value_with_function():
     [(soft_signal_r_and_setter, SignalR), (soft_signal_rw, SignalRW)],
 )
 async def test_create_soft_signal(signal_method, signal_class):
-    SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
-    INITIAL_VALUE = "INITIAL"
+    signal_name = "TEST-PREFIX:SIGNAL"
+    initial_value = "INITIAL"
     if signal_method == soft_signal_r_and_setter:
-        signal, _ = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
+        signal, _ = signal_method(str, initial_value, signal_name)
     elif signal_method == soft_signal_rw:
-        signal = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
+        signal = signal_method(str, initial_value, signal_name)
     else:
         raise ValueError(signal_method)
-    assert signal.source == f"soft://{SIGNAL_NAME}"
+    assert signal.source == f"soft://{signal_name}"
     assert isinstance(signal, signal_class)
     await signal.connect()
     assert isinstance(signal._connector.backend, SoftSignalBackend)
-    assert (await signal.get_value()) == INITIAL_VALUE
+    assert (await signal.get_value()) == initial_value
 
 
 def test_signal_r_cached():
-    SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
-    INITIAL_VALUE = "INITIAL"
-    signal = soft_signal_r_and_setter(str, INITIAL_VALUE, SIGNAL_NAME)[0]
+    signal = soft_signal_r_and_setter(str, "INITIAL", "TEST-PREFIX:SIGNAL")[0]
     assert signal._cache is None
     with pytest.raises(RuntimeError, match=r".* not being monitored"):
         signal._backend_or_cache(cached=True)

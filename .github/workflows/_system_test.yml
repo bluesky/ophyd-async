@@ -16,8 +16,8 @@ jobs:
           # Need this to get version number from last tag
           fetch-depth: 0
 
-      - name: Install dev versions of python packages
-        uses: ./.github/actions/install_requirements
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Checkout simulated devices
         uses: actions/checkout@v4
@@ -35,4 +35,4 @@ jobs:
             ca-gateway
 
       - name: Run system tests
-        run: pytest system_tests/epics/adsim
+        run: uv run --locked pytest system_tests/epics/adsim

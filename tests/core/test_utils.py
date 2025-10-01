@@ -7,7 +7,7 @@ from ophyd_async.core import (
     Device,
     init_devices,
     SoftSignalBackend,
-    NotConnected,
+    NotConnectedError,
     SignalRW,
 )
 from ophyd_async.core import soft_signal_rw
@@ -56,10 +56,10 @@ class DummyDeviceOneWorkingOneTimeout(Device):
         super().__init__(name=name)
 
 
-ONE_WORKING_ONE_TIMEOUT_OUTPUT = NotConnected(
+ONE_WORKING_ONE_TIMEOUT_OUTPUT = NotConnectedError(
     {
-        "timeout_child_device": NotConnected(
-            {"timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL")}
+        "timeout_child_device": NotConnectedError(
+            {"timeout_signal": NotConnectedError("ca://A_NON_EXISTENT_SIGNAL")}
         )
     }
 )
@@ -81,20 +81,20 @@ class DummyDeviceTwoWorkingTwoTimeOutTwoValueError(Device):
         super().__init__(name=name)
 
 
-TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT = NotConnected(
+TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT = NotConnectedError(
     {
-        "timeout_child_device_ca": NotConnected(
+        "timeout_child_device_ca": NotConnectedError(
             {
-                "timeout_signal": NotConnected("ca://A_NON_EXISTENT_SIGNAL"),
+                "timeout_signal": NotConnectedError("ca://A_NON_EXISTENT_SIGNAL"),
             }
         ),
-        "timeout_child_device_pva": NotConnected(
-            {"timeout_signal": NotConnected("pva://A_NON_EXISTENT_SIGNAL")}
+        "timeout_child_device_pva": NotConnectedError(
+            {"timeout_signal": NotConnectedError("pva://A_NON_EXISTENT_SIGNAL")}
         ),
-        "value_error_child_device1": NotConnected(
+        "value_error_child_device1": NotConnectedError(
             {"value_error_signal": ValueError("Some ValueError text")}
         ),
-        "value_error_child_device2": NotConnected(
+        "value_error_child_device2": NotConnectedError(
             {
                 "value_error_signal": ValueError(),
             }
@@ -118,7 +118,7 @@ async def test_error_handling_connection_timeout(caplog):
     dummy_device_one_working_one_timeout = DummyDeviceOneWorkingOneTimeout()
 
     # This should work since the error is a connection timeout
-    with pytest.raises(NotConnected) as e:
+    with pytest.raises(NotConnectedError) as e:
         await dummy_device_one_working_one_timeout.connect(timeout=0.01)
 
     assert str(e.value) == str(ONE_WORKING_ONE_TIMEOUT_OUTPUT)
@@ -133,7 +133,7 @@ async def test_error_handling_connection_timeout(caplog):
 
 
 async def test_error_handling_value_errors(caplog):
-    """Checks that NotConnected is aggregated correctly across Devices."""
+    """Checks that NotConnectedError is aggregated correctly across Devices."""
 
     caplog.set_level(10)
 
@@ -142,12 +142,9 @@ async def test_error_handling_value_errors(caplog):
     )
 
     # This should fail since the error is a ValueError
-    with pytest.raises(NotConnected) as e:
-        (
-            await dummy_device_two_working_one_timeout_two_value_error.connect(
-                timeout=0.01
-            ),
-        )
+    with pytest.raises(NotConnectedError) as e:
+        await dummy_device_two_working_one_timeout_two_value_error.connect(timeout=0.01)
+
     assert str(e.value) == str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
 
     logs = caplog.get_records("call")
@@ -180,16 +177,16 @@ class BadDatatypeDevice(Device):
 
 
 async def test_error_handling_init_devices_mock():
-    with pytest.raises(NotConnected) as e:
+    with pytest.raises(NotConnectedError) as e:
         async with init_devices(mock=True):
             device = BadDatatypeDevice()
             device2 = BadDatatypeDevice()
-    expected_output = NotConnected(
+    expected_output = NotConnectedError(
         {
-            "device": NotConnected(
+            "device": NotConnectedError(
                 {"sig": TypeError(f"Can't make converter for {object}")}
             ),
-            "device2": NotConnected(
+            "device2": NotConnectedError(
                 {"sig": TypeError(f"Can't make converter for {object}")}
             ),
         }
@@ -198,16 +195,16 @@ async def test_error_handling_init_devices_mock():
 
 
 def test_introspecting_sub_errors():
-    sub_error1 = NotConnected("bad")
+    sub_error1 = NotConnectedError("bad")
     assert sub_error1.sub_errors == {}
     sub_error2 = ValueError("very bad")
-    error = NotConnected({"child1": sub_error1, "child2": sub_error2})
+    error = NotConnectedError({"child1": sub_error1, "child2": sub_error2})
     assert error.sub_errors == {"child1": sub_error1, "child2": sub_error2}
 
 
 async def test_error_handling_init_devices(caplog):
     caplog.set_level(10)
-    with pytest.raises(NotConnected) as e:
+    with pytest.raises(NotConnectedError) as e:
         # flake8: noqa
         async with init_devices(timeout=0.1):
             dummy_device_two_working_one_timeout_two_value_error = (
@@ -215,7 +212,7 @@ async def test_error_handling_init_devices(caplog):
             )
             dummy_device_one_working_one_timeout = DummyDeviceOneWorkingOneTimeout()
 
-    expected_output = NotConnected(
+    expected_output = NotConnectedError(
         {
             "dummy_device_two_working_one_timeout_two_value_error": (
                 TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT
@@ -249,34 +246,34 @@ async def test_error_handling_init_devices(caplog):
 
 def test_not_connected_error_output():
     assert str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT) == (
-        "\ntimeout_child_device_ca: NotConnected:\n"
-        "    timeout_signal: NotConnected: ca://A_NON_EXISTENT_SIGNAL\n"
-        "timeout_child_device_pva: NotConnected:\n"
-        "    timeout_signal: NotConnected: pva://A_NON_EXISTENT_SIGNAL\n"
-        "value_error_child_device1: NotConnected:\n"
+        "\ntimeout_child_device_ca: NotConnectedError:\n"
+        "    timeout_signal: NotConnectedError: ca://A_NON_EXISTENT_SIGNAL\n"
+        "timeout_child_device_pva: NotConnectedError:\n"
+        "    timeout_signal: NotConnectedError: pva://A_NON_EXISTENT_SIGNAL\n"
+        "value_error_child_device1: NotConnectedError:\n"
         "    value_error_signal: ValueError: Some ValueError text\n"
-        "value_error_child_device2: NotConnected:\n"
+        "value_error_child_device2: NotConnectedError:\n"
         "    value_error_signal: ValueError\n"
     )
 
 
 async def test_combining_top_level_signal_and_child_device():
     dummy_device1 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
-    with pytest.raises(NotConnected) as e:
+    with pytest.raises(NotConnectedError) as e:
         await dummy_device1.connect(timeout=0.01)
     assert str(e.value) == (
-        "\ntimeout_signal: NotConnected: ca://A_NON_EXISTENT_SIGNAL\n"
-        "sub_device: NotConnected:\n"
+        "\ntimeout_signal: NotConnectedError: ca://A_NON_EXISTENT_SIGNAL\n"
+        "sub_device: NotConnectedError:\n"
         "    value_error_signal: ValueError: Some ValueError text\n"
     )
 
-    with pytest.raises(NotConnected) as e:
+    with pytest.raises(NotConnectedError) as e:
         async with init_devices(timeout=0.1):
             dummy_device2 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
     assert str(e.value) == (
-        "\ndummy_device2: NotConnected:\n"
-        "    timeout_signal: NotConnected: ca://A_NON_EXISTENT_SIGNAL\n"
-        "    sub_device: NotConnected:\n"
+        "\ndummy_device2: NotConnectedError:\n"
+        "    timeout_signal: NotConnectedError: ca://A_NON_EXISTENT_SIGNAL\n"
+        "    sub_device: NotConnectedError:\n"
         "        value_error_signal: ValueError: Some ValueError text\n"
     )
 
@@ -286,11 +283,16 @@ async def test_format_error_string_input():
         RuntimeError,
         match=("Unexpected type `<class 'int'>` expected `str` or `dict`"),
     ):
-        not_connected = NotConnected(123)
+        not_connected = NotConnectedError(123)
         str(not_connected)
 
     with pytest.raises(
         RuntimeError, match=("Unexpected type `<class 'int'>`, expected an Exception")
     ):
-        not_connected = NotConnected({"test": 123})
+        not_connected = NotConnectedError({"test": 123})
         str(not_connected)
+
+
+def test_core_notconnected_emits_deprecation_warning():
+    with pytest.deprecated_call():
+        from ophyd_async.core import NotConnected  # noqa: F401
