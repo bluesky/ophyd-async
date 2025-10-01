@@ -1,9 +1,11 @@
 from ._block import (
     CommonPandaBlocks,
     DataBlock,
+    InencBlock,
     PandaBitMux,
     PandaCaptureMode,
     PandaPcompDirection,
+    PandaPosMux,
     PandaTimeUnits,
     PcapBlock,
     PcompBlock,
@@ -20,6 +22,9 @@ from ._table import (
 )
 from ._trigger import (
     PcompInfo,
+    PosOutScaleOffset,
+    ScanSpecInfo,
+    ScanSpecSeqTableTriggerLogic,
     SeqTableInfo,
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
@@ -29,11 +34,13 @@ from ._writer import PandaHDFWriter
 __all__ = [
     "CommonPandaBlocks",
     "DataBlock",
+    "InencBlock",
     "PandaBitMux",
     "PandaCaptureMode",
     "PcapBlock",
     "PcompBlock",
     "PandaPcompDirection",
+    "PandaPosMux",
     "PulseBlock",
     "SeqBlock",
     "PandaTimeUnits",
@@ -48,4 +55,7 @@ __all__ = [
     "SeqTableInfo",
     "StaticPcompTriggerLogic",
     "StaticSeqTableTriggerLogic",
+    "ScanSpecInfo",
+    "ScanSpecSeqTableTriggerLogic",
+    "PosOutScaleOffset",
 ]
