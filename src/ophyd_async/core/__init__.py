@@ -79,7 +79,7 @@ from ._signal_backend import (
 )
 from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
-from ._table import Table
+from ._table import Table, TableSubclass
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -223,4 +223,5 @@ __all__ = [
     "InOut",
     "OnOff",
     "YesNo",
+    "TableSubclass",
 ]
