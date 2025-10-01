@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.panda._block &#8212; ophyd-async 0.13.4.dev3+gf0e7c3350 documentation</title>
+    <title>ophyd_async.fastcs.panda._block &#8212; ophyd-async 0.13.4.dev4+gf4fbb916c documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=58ab4eda"></script>
+    <script src="../../../../_static/documentation_options.js?v=aed0bce3"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.4.dev3+gf0e7c3350 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.4.dev3+gf0e7c3350 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.4.dev4+gf4fbb916c documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.4.dev4+gf4fbb916c documentation - Home"/>
   
   
 </a></div>
@@ -538,6 +538,15 @@ window.addEventListener("load", () => mermaid.run());
 
 
 
+<div class="viewcode-block" id="PandaPosMux">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaPosMux">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PandaPosMux</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pos input in the PandA.&quot;&quot;&quot;</span>
+
+    <span class="n">ZERO</span> <span class="o">=</span> <span class="s2">&quot;ZERO&quot;</span></div>
+
+
+
 <div class="viewcode-block" id="PcompBlock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PcompBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PcompBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
@@ -575,7 +584,8 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">repeats</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
     <span class="n">prescale</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="n">prescale_units</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaTimeUnits</span><span class="p">]</span>
-    <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaBitMux</span><span class="p">]</span></div>
+    <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaBitMux</span><span class="p">]</span>
+    <span class="n">posa</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaPosMux</span><span class="p">]</span></div>
 
 
 
@@ -586,6 +596,16 @@ window.addEventListener("load", () => mermaid.run());
 
     <span class="n">active</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
     <span class="n">arm</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="InencBlock">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.InencBlock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InencBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;In encoder block in the PandA.&quot;&quot;&quot;</span>
+
+    <span class="n">val_scale</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">val_offset</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></div>
 
 
 

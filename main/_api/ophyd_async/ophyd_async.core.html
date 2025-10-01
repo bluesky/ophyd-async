@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.13.4.dev3+gf0e7c3350 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.13.4.dev4+gf4fbb916c documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=58ab4eda"></script>
+    <script src="../../_static/documentation_options.js?v=aed0bce3"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.4.dev3+gf0e7c3350 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.4.dev3+gf0e7c3350 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.4.dev4+gf4fbb916c documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.4.dev4+gf4fbb916c documentation - Home"/>
   
   
 </a></div>
@@ -833,6 +833,9 @@
 <td></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.HintedSignal" title="ophyd_async.core._readable.HintedSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._table.TableSubclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -1744,6 +1747,12 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 <dt class="sig sig-object py" id="ophyd_async.core.Table.model_config">
 <span class="sig-name descname"><span class="pre">model_config</span></span><a class="headerlink" href="#ophyd_async.core.Table.model_config" title="Link to this definition">#</a></dt>
 <dd><p>‘ConfigDict(…)’</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.Table.empty">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._table.TableSubclass"><span class="pre">TableSubclass</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table.empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.empty" title="Link to this definition">#</a></dt>
+<dd><p>Makes an empty table with zero length columns.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3679,6 +3688,12 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 
 </dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="ophyd_async.core.TableSubclass">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">TableSubclass</span></span><a class="headerlink" href="#ophyd_async.core.TableSubclass" title="Link to this definition">#</a></dt>
+<dd><p>‘TypeVar(…)’</p>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -3857,6 +3872,7 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.EnumTypes"><code class="docutils literal notranslate"><span class="pre">EnumTypes</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Table"><code class="docutils literal notranslate"><span class="pre">Table</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Table.model_config"><code class="docutils literal notranslate"><span class="pre">Table.model_config</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Table.empty"><code class="docutils literal notranslate"><span class="pre">Table.empty()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Table.numpy_dtype"><code class="docutils literal notranslate"><span class="pre">Table.numpy_dtype()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.Table.numpy_table"><code class="docutils literal notranslate"><span class="pre">Table.numpy_table()</span></code></a></li>
 </ul>
@@ -4111,6 +4127,7 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.OnOff.OFF"><code class="docutils literal notranslate"><span class="pre">OnOff.OFF</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.TableSubclass"><code class="docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></li>
 </ul>
 </li>
 </ul>

@@ -23,6 +23,10 @@
   - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock
     :summary:
     ```
+* - {py:obj}`InencBlock <ophyd_async.fastcs.panda._block.InencBlock>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.InencBlock
+    :summary:
+    ```
 * - {py:obj}`PandaBitMux <ophyd_async.fastcs.panda._block.PandaBitMux>`
   - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaBitMux
     :summary:
@@ -41,6 +45,10 @@
     ```
 * - {py:obj}`PandaPcompDirection <ophyd_async.fastcs.panda._block.PandaPcompDirection>`
   - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaPcompDirection
+    :summary:
+    ```
+* - {py:obj}`PandaPosMux <ophyd_async.fastcs.panda._block.PandaPosMux>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaPosMux
     :summary:
     ```
 * - {py:obj}`PulseBlock <ophyd_async.fastcs.panda._block.PulseBlock>`
@@ -97,6 +105,18 @@
     ```
 * - {py:obj}`StaticSeqTableTriggerLogic <ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic>`
   - ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic
+    :summary:
+    ```
+* - {py:obj}`ScanSpecInfo <ophyd_async.fastcs.panda._trigger.ScanSpecInfo>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecInfo
+    :summary:
+    ```
+* - {py:obj}`ScanSpecSeqTableTriggerLogic <ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic
+    :summary:
+    ```
+* - {py:obj}`PosOutScaleOffset <ophyd_async.fastcs.panda._trigger.PosOutScaleOffset>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PosOutScaleOffset
     :summary:
     ```
 ````
@@ -282,6 +302,38 @@ Bases: {py:obj}`ophyd_async.core.Device`
    None
 
 ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.DataBlock.datasets
+```
+
+````
+
+`````
+
+`````{py:class} InencBlock(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.fastcs.panda._block.InencBlock
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.InencBlock
+```
+
+````{py:attribute} val_scale
+:canonical: ophyd_async.fastcs.panda._block.InencBlock.val_scale
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.InencBlock.val_scale
+```
+
+````
+
+````{py:attribute} val_offset
+:canonical: ophyd_async.fastcs.panda._block.InencBlock.val_offset
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.InencBlock.val_offset
 ```
 
 ````
@@ -517,6 +569,26 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
 `````
 
+`````{py:class} PandaPosMux()
+:canonical: ophyd_async.fastcs.panda._block.PandaPosMux
+
+Bases: {py:obj}`ophyd_async.core.SubsetEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaPosMux
+```
+
+````{py:attribute} ZERO
+:canonical: ophyd_async.fastcs.panda._block.PandaPosMux.ZERO
+:value: >
+   'ZERO'
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PandaPosMux.ZERO
+```
+
+````
+
+`````
+
 `````{py:class} PulseBlock(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
 :canonical: ophyd_async.fastcs.panda._block.PulseBlock
 
@@ -641,6 +713,17 @@ Bases: {py:obj}`ophyd_async.core.Device`
    None
 
 ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock.enable
+```
+
+````
+
+````{py:attribute} posa
+:canonical: ophyd_async.fastcs.panda._block.SeqBlock.posa
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.panda._block.PandaPosMux]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.SeqBlock.posa
 ```
 
 ````
@@ -1427,6 +1510,134 @@ Bases: {py:obj}`ophyd_async.core.FlyerController`\[{py:obj}`ophyd_async.fastcs.p
 :async:
 
 ```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.StaticSeqTableTriggerLogic.stop
+```
+
+````
+
+`````
+
+`````{py:class} ScanSpecInfo(/, **data: ~typing.Any)
+:canonical: ophyd_async.fastcs.panda._trigger.ScanSpecInfo
+
+Bases: {py:obj}`ophyd_async.core.ConfinedModel`
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecInfo
+```
+
+````{py:attribute} spec
+:canonical: ophyd_async.fastcs.panda._trigger.ScanSpecInfo.spec
+:type: ~scanspec.specs.Spec[~ophyd_async.epics.motor.Motor]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecInfo.spec
+```
+
+````
+
+````{py:attribute} deadtime
+:canonical: ophyd_async.fastcs.panda._trigger.ScanSpecInfo.deadtime
+:type: float
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecInfo.deadtime
+```
+
+````
+
+`````
+
+`````{py:class} ScanSpecSeqTableTriggerLogic(seq: ~ophyd_async.fastcs.panda._block.SeqBlock, motor_pos_outs: dict[~ophyd_async.epics.motor.Motor, ~ophyd_async.fastcs.panda._trigger.PosOutScaleOffset] | None = None)
+:canonical: ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic
+
+Bases: {py:obj}`ophyd_async.core.FlyerController`\[{py:obj}`ophyd_async.fastcs.panda._trigger.ScanSpecInfo`\]
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic
+```
+
+````{py:method} prepare(value: ~ophyd_async.fastcs.panda._trigger.ScanSpecInfo)
+:canonical: ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic.prepare
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic.prepare
+```
+
+````
+
+````{py:method} kickoff() -> None
+:canonical: ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic.kickoff
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic.kickoff
+```
+
+````
+
+````{py:method} complete() -> None
+:canonical: ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic.complete
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic.complete
+```
+
+````
+
+````{py:method} stop()
+:canonical: ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic.stop
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.ScanSpecSeqTableTriggerLogic.stop
+```
+
+````
+
+`````
+
+`````{py:class} PosOutScaleOffset
+:canonical: ophyd_async.fastcs.panda._trigger.PosOutScaleOffset
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PosOutScaleOffset
+```
+
+````{py:attribute} name
+:canonical: ophyd_async.fastcs.panda._trigger.PosOutScaleOffset.name
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PosOutScaleOffset.name
+```
+
+````
+
+````{py:attribute} scale
+:canonical: ophyd_async.fastcs.panda._trigger.PosOutScaleOffset.scale
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PosOutScaleOffset.scale
+```
+
+````
+
+````{py:attribute} offset
+:canonical: ophyd_async.fastcs.panda._trigger.PosOutScaleOffset.offset
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PosOutScaleOffset.offset
+```
+
+````
+
+````{py:method} from_inenc(panda: ~ophyd_async.fastcs.panda._block.CommonPandaBlocks, number: int) -> ~ophyd_async.fastcs.panda._trigger.PosOutScaleOffset
+:canonical: ophyd_async.fastcs.panda._trigger.PosOutScaleOffset.from_inenc
+:classmethod:
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._trigger.PosOutScaleOffset.from_inenc
 ```
 
 ````

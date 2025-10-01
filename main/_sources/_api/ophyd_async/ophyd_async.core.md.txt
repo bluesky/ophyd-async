@@ -419,6 +419,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._readable.HintedSignal
     :summary:
     ```
+* - {py:obj}`TableSubclass <ophyd_async.core._table.TableSubclass>`
+  - ```{autodoc2-docstring} ophyd_async.core._table.TableSubclass
+    :summary:
+    ```
 ````
 
 ### API
@@ -1246,6 +1250,15 @@ Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
    'ConfigDict(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._table.Table.model_config
+```
+
+````
+
+````{py:method} empty() -> ~ophyd_async.core._table.TableSubclass
+:canonical: ophyd_async.core._table.Table.empty
+:classmethod:
+
+```{autodoc2-docstring} ophyd_async.core._table.Table.empty
 ```
 
 ````
@@ -3068,3 +3081,13 @@ Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
 ````
 
 `````
+
+````{py:data} TableSubclass
+:canonical: ophyd_async.core._table.TableSubclass
+:value: >
+   'TypeVar(...)'
+
+```{autodoc2-docstring} ophyd_async.core._table.TableSubclass
+```
+
+````
