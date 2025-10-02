@@ -25,6 +25,8 @@ from bluesky.protocols import (
 from event_model import DataKey
 from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
 
+from ophyd_async.core import StandardReadable
+
 from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
@@ -107,7 +109,7 @@ class DetectorController(ABC):
         """Get state-independent deadtime.
 
         For a given exposure, what is the safest minimum time between exposures that
-        can be determined without reading signals. Used for fly scanning.
+        can be determined without reading signals.
         """
 
     @abstractmethod
@@ -184,147 +186,41 @@ def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo
     return trigger_info
 
 
-class BaseDetector(
-    Device,
-    Stageable,
-    Preparable,
-    AsyncConfigurable,
-    AsyncReadable,
-    Triggerable,
-    Generic[DetectorControllerT],
-):
-    """Provides some basic core logic for other detectors to expand upon."""
+class _ControllerContext(Device, Stageable, Triggerable, Preparable):
+    """Wrap controller trigger_info together with blue."""
 
-    def __init__(
-        self,
-        controller: DetectorControllerT,
-        config_sigs: Sequence[SignalR] = (),
-        name: str = "",
-        connector: DeviceConnector | None = None,
-    ) -> None:
-        self._controller = controller
-        self._config_sigs = list(config_sigs)
-        self._trigger_info: TriggerInfo | None = None
-        super().__init__(name, connector=connector)
+    def __init__(self, controller: DetectorController, name: str = ""):
+        self.controller = controller
+        self.trigger_info: TriggerInfo | None = None
+        super().__init__(name)
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
-        """Make sure the detector is idle and ready to be used."""
-        await self._controller.disarm()
+        await self.controller.disarm()
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
-        """Disarm the detector."""
-        await self._controller.disarm()
-
-    def _default_trigger_info_deadtime(self, trigger_info: TriggerInfo) -> TriggerInfo:
-        """If deadtime not provided by trigger_info, use value from controller."""
-        if (
-            trigger_info.trigger != DetectorTrigger.INTERNAL
-            and not trigger_info.deadtime
-        ):
-            msg = "Deadtime must be supplied when in externally triggered mode"
-            raise ValueError(msg)
-        if not trigger_info.deadtime:
-            trigger_info.deadtime = self._controller.get_deadtime(trigger_info.livetime)
-        return trigger_info
+        await self.controller.disarm()
+        self.trigger_info = None
 
     @AsyncStatus.wrap
     async def prepare(self, value: TriggerInfo) -> None:
-        """Arm detector.
-
-        Prepare the detector with trigger information. This is determined at and passed
-        in from the plan level.
-
-        :param value: TriggerInfo describing how to trigger the detector
-        """
-        self._trigger_info = self._default_trigger_info_deadtime(value)
-        await self._controller.prepare(value)
-        if value.trigger != DetectorTrigger.INTERNAL:
-            await self._controller.arm()
-
-    async def read_configuration(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
-
-    async def describe_configuration(self) -> dict[str, DataKey]:
-        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
-
-    @abstractmethod
-    async def read(self) -> dict[str, Reading]:
-        """Data to be read at every point."""
-
-    @abstractmethod
-    async def describe(self) -> dict[str, DataKey]:
-        """Describe the data read at every point."""
-
-    def _default_trigger_info(self) -> TriggerInfo:
-        """Return the default trigger_info. Can be overwritten by subclasses."""
-        return TriggerInfo(
-            number_of_events=1,
-            trigger=DetectorTrigger.INTERNAL,
-        )
-
-    async def _prepare_default_trigger_info_if_none(
-        self, trigger_info: TriggerInfo | None
-    ) -> TriggerInfo:
-        """Check if trigger_info is none, if so get default and prepare detector."""
-        if trigger_info is None:
-            trigger_info = self._default_trigger_info()
-            await self.prepare(trigger_info)
-        return trigger_info
-
-    def _check_valid_trigger_info(self, trigger_info: TriggerInfo) -> None:
-        """Check trigger_info is valid for a trigger."""
-        if trigger_info.trigger is not DetectorTrigger.INTERNAL:
-            msg = "The trigger method can only be called with INTERNAL triggering"
-            raise ValueError(msg)
-        if trigger_info.number_of_events != 1:
-            raise ValueError(
-                "Triggering is not supported for multiple events, the detector was "
-                f"prepared with number_of_events={trigger_info.number_of_events}."
-            )
+        await self.controller.prepare(value)
+        self.trigger_info = value
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        """Arm the detector and wait for it to finish."""
-        trigger_info = await self._prepare_default_trigger_info_if_none(
-            self._trigger_info
-        )
-        self._check_valid_trigger_info(trigger_info)
-        await self._controller.arm()
-        await self._controller.wait_for_idle()
-
-
-class StepDetector(
-    BaseDetector[DetectorControllerT],
-    Generic[DetectorControllerT],
-):
-    """Step Detector that is given a sequence of AsyncReadables to save."""
-
-    def __init__(
-        self,
-        controller: DetectorControllerT,
-        read_sigs: Sequence[AsyncReadable],
-        config_sigs: Sequence[SignalR] = (),
-        name: str = "",
-        connector: DeviceConnector | None = None,
-    ) -> None:
-        if len(read_sigs) == 0:
-            raise ValueError(
-                "read_configs is of size zero. It must have at least one read signal."
-            )
-        self._read_sigs = read_sigs
-        super().__init__(controller, config_sigs, name, connector)
-
-    async def read(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts(sig.read() for sig in self._read_sigs)
-
-    async def describe(self) -> dict[str, DataKey]:
-        return await merge_gathered_dicts(sig.describe() for sig in self._read_sigs)
+        await self.controller.arm()
+        await self.controller.wait_for_idle()
 
 
 class StandardDetector(
-    BaseDetector[DetectorControllerT],
+    Device,
+    Stageable,
+    AsyncConfigurable,
+    AsyncReadable,
+    Triggerable,
+    Preparable,
     Flyable,
     Collectable,
     WritesStreamAssets,
@@ -348,8 +244,10 @@ class StandardDetector(
         name: str = "",
         connector: DeviceConnector | None = None,
     ) -> None:
+        self._ctxt = _ControllerContext(controller)
         self._writer = writer
         self._describe: dict[str, DataKey] = {}
+        self._config_sigs = list(config_sigs)
         # For kickoff
         self._watchers: list[Callable] = []
         self._fly_status: WatchableAsyncStatus | None = None
@@ -360,18 +258,23 @@ class StandardDetector(
         self._completable_exposures: int = 0
         self._number_of_events_iter: Iterator[int] | None = None
         self._initial_frame: int = 0
-        super().__init__(controller, config_sigs, name, connector=connector)
+        super().__init__(name, connector=connector)
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
-        await asyncio.gather(super().stage(), self._writer.close())
-        self._trigger_info = None
+        await asyncio.gather(self._writer.close(), self._ctxt.stage())
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         """Disarm the detector and stop file writing."""
-        await asyncio.gather(super().unstage(), self._writer.close())
+        await asyncio.gather(self._writer.close(), self._ctxt.unstage())
+
+    async def read_configuration(self) -> dict[str, Reading]:
+        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
+
+    async def describe_configuration(self) -> dict[str, DataKey]:
+        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
 
     async def read(self) -> dict[str, Reading]:
         """There is no data to be placed in events, so this is empty."""
@@ -383,15 +286,22 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        trigger_info = await self._prepare_default_trigger_info_if_none(
-            self._trigger_info
-        )
-        self._check_valid_trigger_info(trigger_info)
+        if self._ctxt.trigger_info is None:
+            await self.prepare(TriggerInfo())
+        trigger_info = _ensure_trigger_info_exists(self._ctxt.trigger_info)
+        if trigger_info.trigger is not DetectorTrigger.INTERNAL:
+            msg = "The trigger method can only be called with INTERNAL triggering"
+            raise ValueError(msg)
+        if trigger_info.number_of_events != 1:
+            raise ValueError(
+                "Triggering is not supported for multiple events, the detector was "
+                f"prepared with number_of_events={trigger_info.number_of_events}."
+            )
+        indices_written = await self._writer.get_indices_written()
 
         # Arm the detector and wait for it to finish.
-        indices_written = await self._writer.get_indices_written()
-        await self._controller.arm()
-        await self._controller.wait_for_idle()
+        await self._ctxt.trigger()
+
         end_observation = indices_written + 1
 
         async for index in self._writer.observe_indices_written(
@@ -409,42 +319,45 @@ class StandardDetector(
 
         :param value: TriggerInfo describing how to trigger the detector
         """
-        self._trigger_info = self._default_trigger_info_deadtime(value)
+        if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
+            msg = "Deadtime must be supplied when in externally triggered mode"
+            raise ValueError(msg)
+        if not value.deadtime:
+            value.deadtime = self._ctxt.controller.get_deadtime(value.livetime)
         self._number_of_events_iter = iter(
             value.number_of_events
             if isinstance(value.number_of_events, list)
             else [value.number_of_events]
         )
 
-        await self._controller.prepare(value)
+        await self._ctxt.controller.prepare(value)
         self._describe = await self._writer.open(self.name, value.exposures_per_event)
 
         self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
-            await self._controller.arm()
-        self._trigger_info = value
+            await self._ctxt.controller.arm()
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        if self._trigger_info is None or self._number_of_events_iter is None:
+        if self._ctxt.trigger_info is None or self._number_of_events_iter is None:
             raise RuntimeError("Prepare must be called before kickoff!")
-        if self._trigger_info.trigger == DetectorTrigger.INTERNAL:
-            await self._controller.arm()
+        if self._ctxt.trigger_info.trigger == DetectorTrigger.INTERNAL:
+            await self._ctxt.controller.arm()
         self._fly_start = time.monotonic()
         try:
             self._events_to_complete = next(self._number_of_events_iter)
             self._completable_exposures += (
-                self._events_to_complete * self._trigger_info.exposures_per_event
+                self._events_to_complete * self._ctxt.trigger_info.exposures_per_event
             )
         except StopIteration as err:
             raise RuntimeError(
                 f"Kickoff called more than the configured number of "
-                f"{self._trigger_info.total_number_of_exposures} iteration(s)!"
+                f"{self._ctxt.trigger_info.total_number_of_exposures} iteration(s)!"
             ) from err
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
-        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
+        trigger_info = _ensure_trigger_info_exists(self._ctxt.trigger_info)
         indices_written = self._writer.observe_indices_written(
             trigger_info.exposure_timeout
             or (
@@ -474,7 +387,7 @@ class StandardDetector(
                 self._completable_exposures = 0
                 self._events_to_complete = 0
                 self._number_of_events_iter = None
-                await self._controller.wait_for_idle()
+                await self._ctxt.controller.wait_for_idle()
 
     async def describe_collect(self) -> dict[str, DataKey]:
         return self._describe
@@ -496,3 +409,34 @@ class StandardDetector(
     @property
     def hints(self) -> Hints:
         return self._writer.get_hints(self.name)
+
+
+class ReadableDetector(StandardReadable, Triggerable):
+    """Simple detector for step scanning.
+
+    :param controller: Logic for arming and disarming the detector
+    :param name: Device name
+    """
+
+    def __init__(
+        self,
+        controller: DetectorController,
+        name: str = "",
+        connector: DeviceConnector | None = None,
+    ):
+        self._ctxt = _ControllerContext(controller)
+        self.add_readables([self._ctxt])
+        super().__init__(name=name, connector=connector)
+
+    @AsyncStatus.wrap
+    async def prepare(self, value: TriggerInfo) -> None:
+        if value.trigger is not DetectorTrigger.INTERNAL:
+            msg = "The trigger method can only be called with INTERNAL triggering"
+            raise ValueError(msg)
+        await self._ctxt.prepare(value)
+
+    @AsyncStatus.wrap
+    async def trigger(self) -> None:
+        if self._ctxt.trigger_info is None:
+            await self.prepare(TriggerInfo())
+        self._ctxt.trigger()
