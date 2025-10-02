@@ -187,7 +187,7 @@ def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo
 
 
 class _ControllerContext(Device, Stageable, Triggerable, Preparable):
-    """Wrap controller trigger_info together with blue."""
+    """Controller and trigger_info as a wrapped device."""
 
     def __init__(self, controller: DetectorController, name: str = ""):
         self.controller = controller
