@@ -53,8 +53,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
 
         if not (isinstance(timeout, float) or timeout is None):
             raise ValueError("Timeout must be a float or None")
-        # For this server, set returns immediately so this status should not be awaited
-        await self.position.set(value, wait=False, timeout=timeout)
+        await self.position.set(value, timeout=timeout)
 
         move_status = AsyncStatus(
             wait_for_value(self.state, DevStateEnum.ON, timeout=timeout)
