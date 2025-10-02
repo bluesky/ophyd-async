@@ -330,7 +330,7 @@ class StandardDetector(
             else [value.number_of_events]
         )
 
-        await self._ctxt.controller.prepare(value)
+        await self._ctxt.prepare(value)
         self._describe = await self._writer.open(self.name, value.exposures_per_event)
 
         self._initial_frame = await self._writer.get_indices_written()
