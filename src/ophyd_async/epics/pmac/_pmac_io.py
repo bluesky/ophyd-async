@@ -4,7 +4,7 @@ import numpy as np
 
 from ophyd_async.core import Array1D, Device, DeviceVector, StandardReadable
 from ophyd_async.epics import motor
-from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_x
 
 CS_LETTERS = "ABCUVWXYZ"
 
@@ -40,11 +40,15 @@ class PmacTrajectoryIO(StandardReadable):
                 for i, letter in enumerate(CS_LETTERS)
             }
         )
+        self.total_points = epics_signal_r(int, f"{prefix}TotalPoints_RBV")
         self.points_to_build = epics_signal_rw(int, prefix + "ProfilePointsToBuild")
-        self.build_profile = epics_signal_rw(bool, prefix + "ProfileBuild")
+        self.build_profile = epics_signal_x(prefix + "ProfileBuild")
+        self.append_profile = epics_signal_x(prefix + "ProfileAppend")
+        # This should be a SignalX, but because it is a Busy record, must
+        # be a SignalRW to be waited on in PmacTrajectoryTriggerLogic.
+        # TODO: Change record type to bo from busy (https://github.com/DiamondLightSource/pmac/issues/154)
         self.execute_profile = epics_signal_rw(bool, prefix + "ProfileExecute")
-        self.scan_percent = epics_signal_r(float, prefix + "TscanPercent_RBV")
-        self.abort_profile = epics_signal_rw(bool, prefix + "ProfileAbort")
+        self.abort_profile = epics_signal_x(prefix + "ProfileAbort")
         self.profile_cs_name = epics_signal_rw(str, prefix + "ProfileCsName")
         self.calculate_velocities = epics_signal_rw(bool, prefix + "ProfileCalcVel")
 
