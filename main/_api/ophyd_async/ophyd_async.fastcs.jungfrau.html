@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.fastcs.jungfrau &#8212; ophyd-async 0.13.4.dev4+gf4fbb916c documentation</title>
+    <title>ophyd_async.fastcs.jungfrau &#8212; ophyd-async 0.13.4.dev5+g99f819054 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=aed0bce3"></script>
+    <script src="../../_static/documentation_options.js?v=1e69641d"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.4.dev4+gf4fbb916c documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.4.dev4+gf4fbb916c documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.4.dev5+g99f819054 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.4.dev5+g99f819054 documentation - Home"/>
   
   
 </a></div>
@@ -575,6 +575,17 @@
 </table>
 </div>
 </section>
+<section id="data">
+<h3>Data<a class="headerlink" href="#data" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.jungfrau.JUNGFRAU_DEADTIME_S" title="ophyd_async.fastcs.jungfrau._controller.JUNGFRAU_DEADTIME_S"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JUNGFRAU_DEADTIME_S</span></code></a></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="api">
 <h3>API<a class="headerlink" href="#api" title="Link to this heading">#</a></h3>
 <dl class="py class">
@@ -639,7 +650,7 @@
 <dd><p>Create safe Jungfrau TriggerInfo for external triggering.</p>
 <p>Uses parameters which more closely-align with Jungfrau terminology
 to create TriggerInfo. This device currently only supports one frame per trigger
-when being externally triggered, but support for this can be added if needed</p>
+when being externally triggered.</p>
 <p>Args:
 total_triggers: Total external triggers expected before ending acquisition.
 exposure_time_s: How long to expose the detector for each of its frames.</p>
@@ -909,6 +920,12 @@ can be determined without reading signals.</p>
 
 </dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.jungfrau.JUNGFRAU_DEADTIME_S">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.jungfrau.</span></span><span class="sig-name descname"><span class="pre">JUNGFRAU_DEADTIME_S</span></span><a class="headerlink" href="#ophyd_async.fastcs.jungfrau.JUNGFRAU_DEADTIME_S" title="Link to this definition">#</a></dt>
+<dd><p>2e-05</p>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -963,6 +980,7 @@ can be determined without reading signals.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data">Data</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.jungfrau.Jungfrau"><code class="docutils literal notranslate"><span class="pre">Jungfrau</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.jungfrau.DetectorStatus"><code class="docutils literal notranslate"><span class="pre">DetectorStatus</span></code></a><ul class="nav section-nav flex-column">
@@ -1026,6 +1044,7 @@ can be determined without reading signals.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.jungfrau.PedestalMode.OFF"><code class="docutils literal notranslate"><span class="pre">PedestalMode.OFF</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.jungfrau.JUNGFRAU_DEADTIME_S"><code class="docutils literal notranslate"><span class="pre">JUNGFRAU_DEADTIME_S</span></code></a></li>
 </ul>
 </li>
 </ul>

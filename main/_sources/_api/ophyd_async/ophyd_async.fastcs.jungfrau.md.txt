@@ -69,6 +69,18 @@
     ```
 ````
 
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`JUNGFRAU_DEADTIME_S <ophyd_async.fastcs.jungfrau._controller.JUNGFRAU_DEADTIME_S>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JUNGFRAU_DEADTIME_S
+    :summary:
+    ```
+````
+
 ### API
 
 ````{py:class} Jungfrau(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix: str, hdf_suffix: str, odin_nodes: int, name='')
@@ -548,3 +560,13 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 ````
 
 `````
+
+````{py:data} JUNGFRAU_DEADTIME_S
+:canonical: ophyd_async.fastcs.jungfrau._controller.JUNGFRAU_DEADTIME_S
+:value: >
+   2e-05
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JUNGFRAU_DEADTIME_S
+```
+
+````
