@@ -113,19 +113,33 @@ class JungfrauController(DetectorController):
                     ]
                 )
             case AcquisitionType.PEDESTAL:
-                coros.extend(
-                    [
-                        self._driver.pedestal_mode_frames.set(
-                            trigger_info.exposures_per_event
-                        ),
-                        self._driver.pedestal_mode_loops.set(
-                            trigger_info.number_of_events
-                        ),
-                        self._driver.pedestal_mode_state.set(PedestalMode.ON),
-                    ]
-                )
+                if trigger_info.number_of_events % 2 == 0:
+                    coros.extend(
+                        [
+                            self._driver.pedestal_mode_frames.set(
+                                trigger_info.exposures_per_event
+                            ),
+                            # No. events is double the pedestal loops,
+                            # since pedestal scan does the entire loop
+                            # twice.
+                            self._driver.pedestal_mode_loops.set(
+                                int(trigger_info.number_of_events / 2)
+                            ),
+                        ]
+                    )
+                else:
+                    raise ValueError(
+                        f"Invalid trigger info for pedestal mode. "
+                        f"{trigger_info.number_of_events=} must be divisible by two. "
+                        f"Was create_jungfrau_pedestal_triggering_info used?"
+                    )
 
         await asyncio.gather(*coros)
+
+        # Setting signals once the detector is in pedestal mode can cause errors,
+        # so do this last
+        if acquisition_type == AcquisitionType.PEDESTAL:
+            await self._driver.pedestal_mode_state.set(PedestalMode.ON)
 
     async def arm(self):
         await self._driver.acquisition_start.trigger()
