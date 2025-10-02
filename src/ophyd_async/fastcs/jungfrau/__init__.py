@@ -1,4 +1,4 @@
-from ._controller import JungfrauController
+from ._controller import JUNGFRAU_DEADTIME_S, JungfrauController
 from ._jungfrau import Jungfrau
 from ._signals import (
     AcquisitionType,
@@ -26,4 +26,5 @@ __all__ = [
     "AcquisitionType",
     "GainMode",
     "PedestalMode",
+    "JUNGFRAU_DEADTIME_S",
 ]
