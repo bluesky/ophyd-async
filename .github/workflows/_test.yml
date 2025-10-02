@@ -103,7 +103,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          name: ${{ inputs.python-version }}/${{ inputs.runs-on }}
+          name: ${{ inputs.python-version }}/${{ inputs.runs-on }}/${{ inputs.tests-path }}
           files: cov.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
