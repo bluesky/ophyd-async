@@ -929,10 +929,10 @@ def test_subscribe_works_under_re_and_fails_outside(
         if mock:
             set_mock_value(s1, 3.141)
         q = asyncio.Queue()
-        s1.subscribe_value(q.put_nowait)
+        s1.subscribe_reading(q.put_nowait)
         try:
             (fut,) = yield from bps.wait_for([q.get])
-            assert fut.result() == 3.141
+            assert fut.result()["s1"]["value"] == 3.141
         finally:
             s1.clear_sub(q.put_nowait)
 
@@ -944,4 +944,4 @@ def test_subscribe_works_under_re_and_fails_outside(
         match="Need a running event loop to subscribe to a signal, "
         "are you trying to run subscribe outside a plan?",
     ):
-        s2.subscribe_value(print)
+        s2.subscribe_reading(print)
