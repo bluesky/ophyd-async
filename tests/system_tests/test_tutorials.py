@@ -18,7 +18,7 @@ SCAN_LINE = re.compile(
 @pytest.fixture
 def expected_scan_output():
     tutorial_text = (
-        Path(__file__).absolute().parent.parent
+        Path(__file__).absolute().parent.parent.parent
         / "docs"
         / "tutorials"
         / "implementing-devices.md"

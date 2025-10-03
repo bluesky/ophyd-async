@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from typing import Any
 from unittest.mock import ANY, patch
@@ -43,7 +44,7 @@ def with_env():
             "EPICS_CA_NAME_SERVERS": "127.0.0.1:9064",
             "EPICS_PVA_NAME_SERVERS": "127.0.0.1:9075",
         },
-        clear=True,
+        clear=False,
     ):
         yield
 
@@ -99,6 +100,10 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
     assert actual_exposure_time == 0.2
 
 
+@pytest.mark.insubprocess
+@pytest.mark.skipif(
+    sys.platform.startswith("win"), reason="Services not set up on Windows"
+)
 @pytest.mark.timeout(TIMEOUT + 15.0)
 def test_software_triggering(RE: RunEngine, adsim: SimDetector) -> None:
     docs = run_plan_and_get_documents(RE, bp.count([adsim], num=2))
