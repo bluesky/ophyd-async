@@ -19,3 +19,8 @@ class EnabledDisabled(StrictEnum):
 class InOut(StrictEnum):
     IN = "In"
     OUT = "Out"
+
+
+class YesNo(StrictEnum):
+    YES = "Yes"
+    NO = "No"
