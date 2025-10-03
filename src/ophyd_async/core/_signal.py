@@ -117,7 +117,7 @@ class _SignalCache(Generic[SignalDatatypeT]):
     def __init__(self, backend: SignalBackend[SignalDatatypeT], signal: Signal) -> None:
         self._signal: Signal[Any] = signal
         self._staged = False
-        self._listeners: dict[Callback, bool] = {}
+        self._listeners: set[Callback] = set()
         self._valid = asyncio.Event()
         self._reading: Reading[SignalDatatypeT] | None = None
         self.backend: SignalBackend[SignalDatatypeT] = backend
@@ -154,29 +154,29 @@ class _SignalCache(Generic[SignalDatatypeT]):
         )
         self._reading = reading
         self._valid.set()
-        items = self._listeners.copy().items()
-        for function, want_value in items:
-            self._notify(function, want_value)
+        # Copy the listeners in case one of the callbacks removes the listener
+        # from the set
+        for callback in list(self._listeners):
+            self._notify(callback)
 
     def _notify(
         self,
-        function: Callback[dict[str, Reading[SignalDatatypeT]] | SignalDatatypeT],
-        want_value: bool,
+        function: Callback[dict[str, Reading[SignalDatatypeT]]],
     ) -> None:
-        function(self._ensure_reading()["value"]) if want_value else function(
-            {self._signal.name: self._ensure_reading()}
-        )
+        function({self._signal.name: self._ensure_reading()})
 
-    def subscribe(self, function: Callback, want_value: bool) -> None:
-        self._listeners[function] = want_value
+    def subscribe(self, function: Callback) -> None:
+        self._listeners.add(function)
         if self._valid.is_set():
-            self._notify(function, want_value)
+            self._notify(function)
 
     def unsubscribe(self, function: Callback) -> bool:
-        _listener = self._listeners.pop(function, None)
-        if not _listener:
+        if function in self._listeners:
+            self._listeners.remove(function)
+        else:
             self._signal.log.warning(
-                f"Unsubscribe failed: subscriber {function} was not found "
+                f"Unsubscribe failed for signal {self._signal.name}:"
+                f" subscriber {function} was not found"
                 f" in listeners list: {list(self._listeners)}"
             )
         return self._staged or bool(self._listeners)
@@ -244,24 +244,19 @@ class SignalR(Signal[SignalDatatypeT], AsyncReadable, AsyncStageable, Subscribab
         self.log.debug(f"get_value() on source {self.source} returned {value}")
         return value
 
-    def subscribe_value(self, function: Callback[SignalDatatypeT]):
-        """Subscribe to updates in value of a device.
-
-        :param function: The callback function to call when the value changes.
-        """
-        self._get_cache().subscribe(function, want_value=True)
-
-    def subscribe(
+    def subscribe_reading(
         self, function: Callback[dict[str, Reading[SignalDatatypeT]]]
     ) -> None:
         """Subscribe to updates in the reading.
 
         :param function: The callback function to call when the reading changes.
         """
-        self._get_cache().subscribe(function, want_value=False)
+        self._get_cache().subscribe(function)
+
+    subscribe = subscribe_reading
 
     def clear_sub(self, function: Callback) -> None:
-        """Remove a subscription passed to `subscribe` or `subscribe_value`.
+        """Remove a subscription passed to `subscribe_reading`.
 
         :param function: The callback function to remove.
         """
@@ -402,7 +397,7 @@ async def observe_value(
     value being yielded, even if it is the same as the previous value.
 
     :param signal:
-        Call subscribe_value on this at the start, and clear_sub on it at the end.
+        Call subscribe_reading on this at the start, and clear_sub on it at the end.
     :param timeout:
         If given, how long to wait for each updated value in seconds. If an
         update is not produced in this time then raise asyncio.TimeoutError.
@@ -454,7 +449,7 @@ async def observe_signals_value(
     value being yielded, even if it is the same as the previous value.
 
     :param signals:
-        Call subscribe_value on all the signals at the start, and clear_sub on
+        Call subscribe_reading on all the signals at the start, and clear_sub on
         it at the end.
     :param timeout:
         If given, how long to wait for ANY updated value from shared queue in seconds.
@@ -486,11 +481,12 @@ async def observe_signals_value(
     # subscribe signal to update queue and fill cbs dict
     for signal in signals:
 
-        def queue_value(value: SignalDatatypeT, signal=signal):
+        def queue_value(reading: dict[str, Reading[SignalDatatypeT]], signal=signal):
+            value = reading[signal.name]["value"]
             q.put_nowait((signal, value))
 
         cbs[signal] = queue_value
-        signal.subscribe_value(queue_value)
+        signal.subscribe_reading(queue_value)
 
     if done_status is not None:
         done_status.add_callback(q.put_nowait)
@@ -558,7 +554,7 @@ async def wait_for_value(
     """Wait for a signal to have a matching value.
 
     :param signal:
-        Call subscribe_value on this at the start, and clear_sub on it at the
+        Call subscribe_reading on this at the start, and clear_sub on it at the
         end.
     :param match:
         If a callable, it should return True if the value matches. If not

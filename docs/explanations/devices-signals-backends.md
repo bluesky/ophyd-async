@@ -62,7 +62,7 @@ SignalBackend <|-- TangoSignalConnector
 ```
 
 If a `Device` with children is like a branch in a tree, a `Signal` is like a leaf. It has no children, but represents a single value or action in the control system. There are 4 types of signal:
-- [](#SignalR) is a signal with a read-only value that supports the [Readable](#bluesky.protocols.Readable) and [Subscribable](#bluesky.protocols.Subscribable) protocols. It also adds the [](#SignalR.get_value) and [](#SignalR.subscribe_value) methods that are used to interact with the Signal in the parent Device.
+- [](#SignalR) is a signal with a read-only value that supports the [Readable](#bluesky.protocols.Readable) and [Subscribable](#bluesky.protocols.Subscribable) protocols. It also adds the [](#SignalR.subscribe_reading) method that is used to interact with the Signal in the parent Device.
 - [](#SignalW) is a signal with a write-only value that supports the [Movable](#bluesky.protocols.Movable) protocol.
 - [](#SignalRW) is a signal with a read-write value that inherits from SignalR and SignalW and adds the [Locatable](#bluesky.protocols.Locatable) protocol
 - [](#SignalX) is a signal that performs an action, and supports the [Triggerable](#bluesky.protocols.Triggerable) protocol
