@@ -111,8 +111,6 @@ timeout = 1
 [tool.coverage.run]
 data_file = "/tmp/ophyd_async.coverage"
 branch = true
-parallel = true
-concurrency = ["multiprocessing"]
 patch = ["subprocess"]
 
 [tool.coverage.paths]
