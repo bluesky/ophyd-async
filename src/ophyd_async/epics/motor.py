@@ -265,6 +265,8 @@ class Motor(
         """Subscribe to reading."""
         self.user_readback.subscribe_reading(function)
 
+    subscribe = subscribe_reading
+
     def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Unsubscribe."""
         self.user_readback.clear_sub(function)

@@ -234,6 +234,8 @@ async def test_derived_update_cached_reading_not_initialized(
         def subscribe_reading(self, function: Callback) -> None:
             pass
 
+        subscribe = subscribe_reading
+
         def clear_sub(self, function: Callback) -> None:
             function("")
 
