@@ -154,7 +154,8 @@ class _SignalCache(Generic[SignalDatatypeT]):
         )
         self._reading = reading
         self._valid.set()
-        # Copy the listeners in case one of the callbacks removes the listener from the set
+        # Copy the listeners in case one of the callbacks removes the listener
+        # from the set
         for callback in list(self._listeners):
             self._notify(callback)
 
