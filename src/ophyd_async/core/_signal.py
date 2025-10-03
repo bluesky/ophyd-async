@@ -154,13 +154,13 @@ class _SignalCache(Generic[SignalDatatypeT]):
         )
         self._reading = reading
         self._valid.set()
-        callbacks = self._listeners.copy()
-        for callback in callbacks:
+        # Copy the listeners in case one of the callbacks removes the listener from the set
+        for callback in list(self._listeners):
             self._notify(callback)
 
     def _notify(
         self,
-        function: Callback[dict[str, Reading[SignalDatatypeT]] | SignalDatatypeT],
+        function: Callback[dict[str, Reading[SignalDatatypeT]]],
     ) -> None:
         function({self._signal.name: self._ensure_reading()})
 
