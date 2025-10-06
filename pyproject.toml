@@ -110,7 +110,7 @@ timeout = 1
 
 [tool.coverage.run]
 data_file = "/tmp/ophyd_async.coverage"
-branch = true
+# branch = true
 patch = ["subprocess"]
 
 [tool.coverage.paths]
