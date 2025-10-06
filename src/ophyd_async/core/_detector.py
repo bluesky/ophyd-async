@@ -25,6 +25,8 @@ from bluesky.protocols import (
 from event_model import DataKey
 from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
 
+from ophyd_async.core import StandardReadable
+
 from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
@@ -184,6 +186,34 @@ def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo
     return trigger_info
 
 
+class _ControllerContext(Device, Stageable, Triggerable, Preparable):
+    """Controller and trigger_info as a wrapped device."""
+
+    def __init__(self, controller: DetectorController, name: str = ""):
+        self.controller = controller
+        self.trigger_info: TriggerInfo | None = None
+        super().__init__(name)
+
+    @AsyncStatus.wrap
+    async def stage(self) -> None:
+        await self.controller.disarm()
+
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
+        await self.controller.disarm()
+        self.trigger_info = None
+
+    @AsyncStatus.wrap
+    async def prepare(self, value: TriggerInfo) -> None:
+        await self.controller.prepare(value)
+        self.trigger_info = value
+
+    @AsyncStatus.wrap
+    async def trigger(self) -> None:
+        await self.controller.arm()
+        await self.controller.wait_for_idle()
+
+
 class StandardDetector(
     Device,
     Stageable,
@@ -214,13 +244,10 @@ class StandardDetector(
         name: str = "",
         connector: DeviceConnector | None = None,
     ) -> None:
-        self._controller = controller
+        self._ctxt = _ControllerContext(controller)
         self._writer = writer
         self._describe: dict[str, DataKey] = {}
         self._config_sigs = list(config_sigs)
-        # For prepare
-        self._arm_status: AsyncStatus | None = None
-        self._trigger_info: TriggerInfo | None = None
         # For kickoff
         self._watchers: list[Callable] = []
         self._fly_status: WatchableAsyncStatus | None = None
@@ -236,29 +263,12 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
-        await self._check_config_sigs()
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
-        self._trigger_info = None
-
-    async def _check_config_sigs(self):
-        """Check configuration signals are named and connected."""
-        for signal in self._config_sigs:
-            if signal.name == "":
-                raise Exception(
-                    "config signal must be named before it is passed to the detector"
-                )
-            try:
-                await signal.get_value()
-            except NotImplementedError as e:
-                raise Exception(
-                    f"config signal {signal.name} must be connected before it is "
-                    + "passed to the detector"
-                ) from e
+        await asyncio.gather(self._writer.close(), self._ctxt.stage())
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         """Disarm the detector and stop file writing."""
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
+        await asyncio.gather(self._writer.close(), self._ctxt.unstage())
 
     async def read_configuration(self) -> dict[str, Reading]:
         return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
@@ -276,14 +286,9 @@ class StandardDetector(
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:
-        if self._trigger_info is None:
-            await self.prepare(
-                TriggerInfo(
-                    number_of_events=1,
-                    trigger=DetectorTrigger.INTERNAL,
-                )
-            )
-        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
+        if self._ctxt.trigger_info is None:
+            await self.prepare(TriggerInfo())
+        trigger_info = _ensure_trigger_info_exists(self._ctxt.trigger_info)
         if trigger_info.trigger is not DetectorTrigger.INTERNAL:
             msg = "The trigger method can only be called with INTERNAL triggering"
             raise ValueError(msg)
@@ -292,11 +297,11 @@ class StandardDetector(
                 "Triggering is not supported for multiple events, the detector was "
                 f"prepared with number_of_events={trigger_info.number_of_events}."
             )
+        indices_written = await self._writer.get_indices_written()
 
         # Arm the detector and wait for it to finish.
-        indices_written = await self._writer.get_indices_written()
-        await self._controller.arm()
-        await self._controller.wait_for_idle()
+        await self._ctxt.trigger()
+
         end_observation = indices_written + 1
 
         async for index in self._writer.observe_indices_written(
@@ -318,43 +323,41 @@ class StandardDetector(
             msg = "Deadtime must be supplied when in externally triggered mode"
             raise ValueError(msg)
         if not value.deadtime:
-            value.deadtime = self._controller.get_deadtime(value.livetime)
-        self._trigger_info = value
+            value.deadtime = self._ctxt.controller.get_deadtime(value.livetime)
         self._number_of_events_iter = iter(
             value.number_of_events
             if isinstance(value.number_of_events, list)
             else [value.number_of_events]
         )
 
-        await self._controller.prepare(value)
+        await self._ctxt.prepare(value)
         self._describe = await self._writer.open(self.name, value.exposures_per_event)
 
         self._initial_frame = await self._writer.get_indices_written()
         if value.trigger != DetectorTrigger.INTERNAL:
-            await self._controller.arm()
-        self._trigger_info = value
+            await self._ctxt.controller.arm()
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        if self._trigger_info is None or self._number_of_events_iter is None:
+        if self._ctxt.trigger_info is None or self._number_of_events_iter is None:
             raise RuntimeError("Prepare must be called before kickoff!")
-        if self._trigger_info.trigger == DetectorTrigger.INTERNAL:
-            await self._controller.arm()
+        if self._ctxt.trigger_info.trigger == DetectorTrigger.INTERNAL:
+            await self._ctxt.controller.arm()
         self._fly_start = time.monotonic()
         try:
             self._events_to_complete = next(self._number_of_events_iter)
             self._completable_exposures += (
-                self._events_to_complete * self._trigger_info.exposures_per_event
+                self._events_to_complete * self._ctxt.trigger_info.exposures_per_event
             )
         except StopIteration as err:
             raise RuntimeError(
                 f"Kickoff called more than the configured number of "
-                f"{self._trigger_info.total_number_of_exposures} iteration(s)!"
+                f"{self._ctxt.trigger_info.total_number_of_exposures} iteration(s)!"
             ) from err
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
-        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
+        trigger_info = _ensure_trigger_info_exists(self._ctxt.trigger_info)
         indices_written = self._writer.observe_indices_written(
             trigger_info.exposure_timeout
             or (
@@ -384,7 +387,7 @@ class StandardDetector(
                 self._completable_exposures = 0
                 self._events_to_complete = 0
                 self._number_of_events_iter = None
-                await self._controller.wait_for_idle()
+                await self._ctxt.controller.wait_for_idle()
 
     async def describe_collect(self) -> dict[str, DataKey]:
         return self._describe
@@ -406,3 +409,34 @@ class StandardDetector(
     @property
     def hints(self) -> Hints:
         return self._writer.get_hints(self.name)
+
+
+class ReadableDetector(StandardReadable, Triggerable):
+    """Simple detector for step scanning.
+
+    :param controller: Logic for arming and disarming the detector
+    :param name: Device name
+    """
+
+    def __init__(
+        self,
+        controller: DetectorController,
+        name: str = "",
+        connector: DeviceConnector | None = None,
+    ):
+        self._ctxt = _ControllerContext(controller)
+        self.add_readables([self._ctxt])
+        super().__init__(name=name, connector=connector)
+
+    @AsyncStatus.wrap
+    async def prepare(self, value: TriggerInfo) -> None:
+        if value.trigger is not DetectorTrigger.INTERNAL:
+            msg = "The trigger method can only be called with INTERNAL triggering"
+            raise ValueError(msg)
+        await self._ctxt.prepare(value)
+
+    @AsyncStatus.wrap
+    async def trigger(self) -> None:
+        if self._ctxt.trigger_info is None:
+            await self.prepare(TriggerInfo())
+        self._ctxt.trigger()
