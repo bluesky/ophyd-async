@@ -23,6 +23,7 @@ dependencies = [
     "stamina>=23.1.0",
     "scanspec>=0.8",
     "velocity-profile",
+    "ruckig"
 ]
 dynamic = ["version"]
 license.file = "LICENSE"
