@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout repository (with submodules)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
           fetch-depth: 0
@@ -73,7 +73,7 @@ jobs:
 
       - if: inputs.needs-services
         name: Checkout simulated devices
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: epics-containers/example-services
           path: example-services
@@ -81,7 +81,7 @@ jobs:
 
       - if: inputs.needs-services && inputs.runs-on != 'windows-latest'
         name: Run docker compose
-        uses: hoverkraft-tech/compose-action@v2.3.0
+        uses: hoverkraft-tech/compose-action@v2.4.0
         with:
           compose-file: "./example-services/compose.yaml"
           services: |
