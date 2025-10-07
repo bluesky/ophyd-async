@@ -30,7 +30,9 @@ from ._protocol import AsyncConfigurable, AsyncReadable
 from ._signal import SignalR
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import DEFAULT_TIMEOUT, ConfinedModel, WatcherUpdate, merge_gathered_dicts
+import logging
 
+logger = logging.getLogger("ophyd_async")
 
 class DetectorTrigger(Enum):
     """Type of mechanism for triggering a detector to take frames."""
@@ -333,12 +335,11 @@ class StandardDetector(
         if value.trigger != DetectorTrigger.INTERNAL:
             await self._controller.arm()
         self._trigger_info = value
-        print("Waiting after setting trigger info see race condition")
-        await asyncio.sleep(1)
+        logger.info("Trigger info is set")
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        print("entered standard controller kickoff")
+        logger.info("entered standard controller kickoff")
         if self._trigger_info is None or self._number_of_events_iter is None:
             raise RuntimeError("Prepare must be called before kickoff!")
         if self._trigger_info.trigger == DetectorTrigger.INTERNAL:
