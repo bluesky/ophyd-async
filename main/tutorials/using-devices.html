@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Using Devices &#8212; ophyd-async 0.13.4.dev6+gb42c37bf9 documentation</title>
+    <title>Using Devices &#8212; ophyd-async 0.13.5.dev1+gac965c1db documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=a0ae2db4"></script>
+    <script src="../_static/documentation_options.js?v=ce488bd4"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.4.dev6+gb42c37bf9 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.4.dev6+gb42c37bf9 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev1+gac965c1db documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev1+gac965c1db documentation - Home"/>
   
   
 </a></div>
@@ -545,7 +545,7 @@ In [1]:
 <span class="n">Out</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="s1">&#39;stage-x&#39;</span>
 </pre></div>
 </div>
-<p>But if we try to call any of the other methods like <code class="docutils literal notranslate"><span class="pre">read()</span></code> we will see that it doesn’t return the value, but a <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#coroutine" title="Python 3.13">coroutine</a>:</p>
+<p>But if we try to call any of the other methods like <code class="docutils literal notranslate"><span class="pre">read()</span></code> we will see that it doesn’t return the value, but a <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#coroutine" title="Python 3.14">coroutine</a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">coroutine</span> <span class="nb">object</span> <span class="n">StandardReadable</span><span class="o">.</span><span class="n">read</span> <span class="n">at</span> <span class="mh">0x7f9c5c105220</span><span class="o">&gt;</span>
 </pre></div>
@@ -581,27 +581,27 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 8     Time: 2025-10-03 16:51:09</span>
-<span class="go">Persistent Unique Scan ID: &#39;4453268f-82a4-4686-bb1e-a116dd308957&#39;</span>
+<span class="go">Transient Scan ID: 8     Time: 2025-10-07 15:24:08</span>
+<span class="go">Persistent Unique Scan ID: &#39;1ab9a77f-617f-468d-9b0f-95140b02e1a4&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y | pdet-channel-1-value | pdet-channel-2-value | pdet-channel-3-value |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">|         1 | 16:51:09.6 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
-<span class="go">|         2 | 16:51:10.7 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
-<span class="go">|         3 | 16:51:11.6 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
-<span class="go">|         4 | 16:51:12.6 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
-<span class="go">|         5 | 16:51:13.5 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
-<span class="go">|         6 | 16:51:14.5 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
-<span class="go">|         7 | 16:51:15.4 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
-<span class="go">|         8 | 16:51:16.3 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
-<span class="go">|         9 | 16:51:17.3 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
+<span class="go">|         1 | 15:24:08.7 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
+<span class="go">|         2 | 15:24:09.8 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
+<span class="go">|         3 | 15:24:10.7 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
+<span class="go">|         4 | 15:24:11.6 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
+<span class="go">|         5 | 15:24:12.6 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
+<span class="go">|         6 | 15:24:13.5 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
+<span class="go">|         7 | 15:24:14.4 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
+<span class="go">|         8 | 15:24:15.3 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
+<span class="go">|         9 | 15:24:16.3 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">generator grid_scan [&#39;4453268f&#39;] (scan num: 8)</span>
+<span class="go">generator grid_scan [&#39;1ab9a77f&#39;] (scan num: 8)</span>
 
 
 
-<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;4453268f-82a4-4686-bb1e-a116dd308957&#39;,), plan_result=&#39;4453268f-82a4-4686-bb1e-a116dd308957&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;1ab9a77f-617f-468d-9b0f-95140b02e1a4&#39;,), plan_result=&#39;1ab9a77f-617f-468d-9b0f-95140b02e1a4&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/sim_grid_scan.png"><img alt="../_images/sim_grid_scan.png" src="../_images/sim_grid_scan.png" style="width: 4in;" />
@@ -611,27 +611,27 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">bdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 9     Time: 2025-10-03 16:51:18</span>
-<span class="go">Persistent Unique Scan ID: &#39;e13b238d-e33f-4c4b-8055-82715c36a747&#39;</span>
+<span class="go">Transient Scan ID: 9     Time: 2025-10-07 15:24:17</span>
+<span class="go">Persistent Unique Scan ID: &#39;12be22b8-1934-4920-8f03-c787505822b9&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">|         1 | 16:51:19.4 |      1.000 |      2.000 |</span>
-<span class="go">|         2 | 16:51:19.5 |      1.000 |      2.500 |</span>
-<span class="go">|         3 | 16:51:19.6 |      1.000 |      3.000 |</span>
-<span class="go">|         4 | 16:51:19.8 |      1.500 |      2.000 |</span>
-<span class="go">|         5 | 16:51:19.9 |      1.500 |      2.500 |</span>
-<span class="go">|         6 | 16:51:20.1 |      1.500 |      3.000 |</span>
-<span class="go">|         7 | 16:51:20.2 |      2.000 |      2.000 |</span>
-<span class="go">|         8 | 16:51:20.4 |      2.000 |      2.500 |</span>
-<span class="go">|         9 | 16:51:20.5 |      2.000 |      3.000 |</span>
+<span class="go">|         1 | 15:24:17.8 |      1.000 |      2.000 |</span>
+<span class="go">|         2 | 15:24:17.9 |      1.000 |      2.500 |</span>
+<span class="go">|         3 | 15:24:18.0 |      1.000 |      3.000 |</span>
+<span class="go">|         4 | 15:24:18.2 |      1.500 |      2.000 |</span>
+<span class="go">|         5 | 15:24:18.3 |      1.500 |      2.500 |</span>
+<span class="go">|         6 | 15:24:18.5 |      1.500 |      3.000 |</span>
+<span class="go">|         7 | 15:24:18.6 |      2.000 |      2.000 |</span>
+<span class="go">|         8 | 15:24:18.8 |      2.000 |      2.500 |</span>
+<span class="go">|         9 | 15:24:18.9 |      2.000 |      3.000 |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">generator grid_scan [&#39;e13b238d&#39;] (scan num: 9)</span>
+<span class="go">generator grid_scan [&#39;12be22b8&#39;] (scan num: 9)</span>
 
 
 
-<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;e13b238d-e33f-4c4b-8055-82715c36a747&#39;,), plan_result=&#39;e13b238d-e33f-4c4b-8055-82715c36a747&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;12be22b8-1934-4920-8f03-c787505822b9&#39;,), plan_result=&#39;12be22b8-1934-4920-8f03-c787505822b9&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
