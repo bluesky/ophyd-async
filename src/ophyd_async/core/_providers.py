@@ -6,7 +6,10 @@ from datetime import date
 from pathlib import PurePath, PureWindowsPath
 from typing import Protocol
 from urllib.parse import urlunparse
-
+import re
+from pathlib import PurePath, PureWindowsPath
+from pathlib import Path, PurePath, PureWindowsPath
+from rich import print
 
 @dataclass
 class PathInfo:
@@ -72,7 +75,80 @@ class StaticFilenameProvider(FilenameProvider):
 
     def __call__(self, device_name: str | None = None) -> str:
         return self._static_filename
+class AutoMaxIncrementingPathProvider(PathProvider):
+    """Numerically increment filename on each call, checking that it is the max of existing files"""
 
+    def __init__(
+        self,
+        base_path: str = "",
+        max_digits: int = 4,
+        starting_value: int = 0,
+        inc_delimeter: str = "_",
+        dated: bool = False,
+    ):
+        self._base_path = Path(base_path)
+        self.filename = "capture"
+        self._max_digits = max_digits
+        self._next_value = starting_value
+        self._inc_delimeter = inc_delimeter
+        self._dated = dated
+
+        # If in dated mode, make sure we are the max ID of any other days
+        # - this helps keep numbering consistent on e.g. a commisioning folder
+        if dated:
+            print("Provider: Doing initial lookup")
+            cands = [self._get_highest_number_from(x) for x in self._base_path.iterdir() if re.match(r"^\d\d\d\d-\d\d-\d\d$", x.name)]
+            if cands:
+                self._next_value = max(max(cands)+1, self._next_value)
+
+    @staticmethod
+    def _get_highest_number_from(path: Path) -> int:
+        highest_number = 0
+        candidates = [
+            x for x in path.iterdir() if x.is_dir() and re.match(r"^\d+_", x.name)
+        ]
+        if candidates:
+            highest_number = max(
+                int(x.name.split("_", maxsplit=1)[0]) for x in candidates
+            )
+        print(f"Found highest existing number: {highest_number} in {path}")
+        return highest_number
+
+    def __call__(self, device_name: str | None = None) -> PathInfo:
+        path = self._base_path
+        if self._dated:
+            path = path / date.today().strftime("%Y-%m-%d")
+
+        # Work out how many folders are here already
+        # Get a list of subfolders here already, so that we ensure we always number higher
+        next_number = self._next_value
+        # print(f"Existing next: {next_number}")
+        if path.exists():
+            # print(f"Checking new max from {path}")
+            # next_number = max(
+            #     next_number, self._get_highest_number_from(path)+1
+            # )
+            next_number = self._get_highest_number_from(path)+1
+            if next_number == 1:
+                next_number = max(next_number, self._get_highest_number_from(path)+1)
+        self._next_value = next_number + 1
+
+        filename = self.filename or "images"
+
+        padded_counter = f"{next_number:0{self._max_digits}}"
+        full_path = (
+            path / f"{padded_counter}_{filename.strip('_')}" / filename.rstrip("_")
+        )
+        print(f"Provider: Resolved: {full_path}")
+        # import traceback
+        # traceback.print_stack()
+        # breakpoint()
+        return PathInfo(
+            directory_path=full_path.parent,
+            directory_uri=None,
+            filename=full_path.name,
+            create_dir_depth=0,
+        )
 
 class UUIDFilenameProvider(FilenameProvider):
     """Files will have a UUID as a filename."""

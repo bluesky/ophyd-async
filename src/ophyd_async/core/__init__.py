@@ -38,6 +38,7 @@ from ._providers import (
     StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
+    AutoMaxIncrementingPathProvider,
 )
 from ._readable import (
     ConfigSignal,
@@ -176,6 +177,7 @@ __all__ = [
     "StaticFilenameProvider",
     "AutoIncrementFilenameProvider",
     "UUIDFilenameProvider",
+    "AutoMaxIncrementingPathProvider",
     # Datatset
     "DatasetDescriber",
     "HDFDatasetDescription",

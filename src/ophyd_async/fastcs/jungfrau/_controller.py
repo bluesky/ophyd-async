@@ -141,6 +141,8 @@ class JungfrauController(DetectorController):
         if acquisition_type == AcquisitionType.PEDESTAL:
             await self._driver.pedestal_mode_state.set(PedestalMode.ON)
 
+        print("finishing JF controller prepare")
+
     async def arm(self):
         await self._driver.acquisition_start.trigger()
 

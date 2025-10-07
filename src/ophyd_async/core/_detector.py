@@ -333,9 +333,12 @@ class StandardDetector(
         if value.trigger != DetectorTrigger.INTERNAL:
             await self._controller.arm()
         self._trigger_info = value
+        print("Waiting after setting trigger info see race condition")
+        await asyncio.sleep(1)
 
     @AsyncStatus.wrap
     async def kickoff(self):
+        print("entered standard controller kickoff")
         if self._trigger_info is None or self._number_of_events_iter is None:
             raise RuntimeError("Prepare must be called before kickoff!")
         if self._trigger_info.trigger == DetectorTrigger.INTERNAL:
