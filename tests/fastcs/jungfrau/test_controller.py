@@ -109,8 +109,12 @@ async def test_wait_for_idle(mock_wait_for_value: AsyncMock, jungfrau: Jungfrau)
 
 async def test_disarm(jungfrau: Jungfrau):
     jungfrau.drv.acquisition_stop.trigger = AsyncMock()
+    jungfrau.drv.pedestal_mode_state.set = AsyncMock()
+    jungfrau.drv.acquisition_type.set = AsyncMock()
     await jungfrau._controller.disarm()
     jungfrau.drv.acquisition_stop.trigger.assert_called_once()
+    jungfrau.drv.pedestal_mode_state.set.assert_awaited_once_with(PedestalMode.OFF)
+    jungfrau.drv.acquisition_type.set.assert_awaited_once_with(AcquisitionType.STANDARD)
 
 
 async def test_signals_set_in_pedestal_mode(jungfrau: Jungfrau):
