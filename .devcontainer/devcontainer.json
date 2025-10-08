@@ -8,8 +8,6 @@
     "remoteEnv": {
         // Allow X11 apps to run inside the container
         "DISPLAY": "${localEnv:DISPLAY}",
-        // We put venv on a different volume to cache so have to copy
-        "UV_LINK_MODE": "copy",
         // Do the equivalent of "activate" the venv so we don't have to "uv run" everything
         "PATH": "/workspaces/${localWorkspaceFolderBasename}/.venv/bin:${containerEnv:PATH}"
     },
