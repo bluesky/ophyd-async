@@ -59,6 +59,7 @@ dev = [
     "pytest-cov",
     "pytest-faulthandler",
     "pytest-forked",
+    "pytest-insubprocess",
     "pytest-rerunfailures",
     "pytest-timeout",
     "ruff",
@@ -97,7 +98,7 @@ addopts = """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
 filterwarnings = "error"
 # Doctest python code in docs, python code in src docstrings, test functions in tests
-testpaths = "docs src tests"
+testpaths = "docs src tests/unit_tests"
 log_format = "%(asctime)s,%(msecs)03d %(levelname)s (%(threadName)s) %(message)s"
 log_date_format = "%H:%M:%S"
 
@@ -108,9 +109,11 @@ markers = [
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 timeout = 1
+
 [tool.coverage.run]
 patch = ["subprocess"]
 data_file = "/tmp/ophyd_async.coverage"
+# branch = true
 
 [tool.coverage.paths]
 # Tests are run from installed location, map back to the src directory

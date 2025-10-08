@@ -1,6 +1,5 @@
 import io
 import logging
-import logging.handlers
 from unittest.mock import MagicMock, patch
 
 import pytest
