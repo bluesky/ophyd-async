@@ -1,5 +1,6 @@
 from collections.abc import Mapping, Sequence
-from typing import Any, TypeVar, get_args, get_origin
+from dataclasses import dataclass, field
+from typing import Any, Generic, TypeVar, get_args, get_origin
 
 import numpy as np
 
@@ -17,6 +18,12 @@ from ophyd_async.core import (
 )
 
 T = TypeVar("T")
+
+
+@dataclass
+class EpicsOptions(Generic[SignalDatatypeT]):
+    wait: bool = True
+    no_wait_when_setting: set[SignalDatatypeT] = field(default_factory=set)
 
 
 def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:

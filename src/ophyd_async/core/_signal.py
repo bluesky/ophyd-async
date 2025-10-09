@@ -285,7 +285,6 @@ class SignalW(Signal[SignalDatatypeT], Movable):
     async def set(
         self,
         value: SignalDatatypeT,
-        wait=True,
         timeout: CalculatableTimeout = CALCULATE_TIMEOUT,
     ) -> None:
         """Set the value and return a status saying when it's done.
@@ -305,9 +304,7 @@ class SignalW(Signal[SignalDatatypeT], Movable):
             wait_jitter=0,
         ):
             with attempt:
-                await _wait_for(
-                    self._connector.backend.put(value, wait=wait), timeout, source
-                )
+                await _wait_for(self._connector.backend.put(value), timeout, source)
         self.log.debug(f"Successfully put value {value} to backend at source {source}")
 
 
