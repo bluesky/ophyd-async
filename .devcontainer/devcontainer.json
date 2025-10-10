@@ -9,16 +9,21 @@
         // Allow X11 apps to run inside the container
         "DISPLAY": "${localEnv:DISPLAY}",
         // Do the equivalent of "activate" the venv so we don't have to "uv run" everything
+        "VIRTUAL_ENV": "/workspaces/${localWorkspaceFolderBasename}/.venv",
         "PATH": "/workspaces/${localWorkspaceFolderBasename}/.venv/bin:${containerEnv:PATH}"
     },
     "customizations": {
         "vscode": {
             // Set *default* container specific settings.json values on container create.
             "settings": {
+                // Use the container's python by default
                 "python.defaultInterpreterPath": "/workspaces/${localWorkspaceFolderBasename}/.venv/bin/python",
+                // Don't activate the venv as it is already in the PATH
                 "python.terminal.activateEnvInCurrentTerminal": false,
                 "python.terminal.activateEnvironment": false,
-                "remote.autoForwardPorts": false,
+                // Workaround to prevent garbled python REPL in the terminal
+                // https://github.com/microsoft/vscode-python/issues/25505
+                "python.terminal.shellIntegration.enabled": false,
                 "python.testing.unittestEnabled": false,
                 "python.testing.pytestEnabled": true,
                 "editor.formatOnSave": true,
@@ -42,6 +47,8 @@
         }
     },
     // Create the config folder for the bash-config feature and uv cache
+    // NOTE: The uv cache can get large, DLS users should read
+    // https://dev-guide.diamond.ac.uk/linux-user-environment/how-tos/disk-quota-troubleshooting
     "initializeCommand": "mkdir -p ${localEnv:HOME}/.config/terminal-config ${localEnv:HOME}/.cache/uv",
     "runArgs": [
         // Allow the container to access the host X11 display and EPICS CA
