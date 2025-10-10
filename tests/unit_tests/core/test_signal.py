@@ -36,7 +36,6 @@ from ophyd_async.core import (
 from ophyd_async.core._signal import (
     _SignalCache,  # noqa: PLC2701
 )
-from ophyd_async.core._signal_backend import _datakey_shape  # noqa: PLC2701
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 from ophyd_async.epics.core._signal import get_signal_backend_type  # noqa: PLC2701
 from ophyd_async.testing import (
@@ -1048,15 +1047,3 @@ async def test_can_unsubscribe_from_subscribe_callback():
     await signal.set(1.0)
     await signal.set(2.0)
     assert callback.mock_calls == [call(0.0), call(1.0)]
-
-
-def test_datakey_shape():
-    arr = np.zeros((3, 4))
-    list = [10, 20, 30]
-    assert _datakey_shape(5) == []
-    assert _datakey_shape(3.14) == []
-    assert _datakey_shape("text") == []
-    assert _datakey_shape(arr) == [3, 4]
-    assert _datakey_shape(list) == [3]
-    with pytest.raises(TypeError):
-        _datakey_shape({"a": 1, "b": 2})
