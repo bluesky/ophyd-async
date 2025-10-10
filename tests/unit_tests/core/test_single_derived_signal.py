@@ -2,10 +2,12 @@ import asyncio
 import re
 from unittest.mock import MagicMock, call, patch
 
+import numpy as np
 import pytest
 from bluesky.protocols import Reading, Subscribable
 
 from ophyd_async.core import (
+    Array1D,
     Callback,
     Signal,
     SignalBackend,
@@ -274,3 +276,16 @@ def test_derived_signal_rw_type_error(movable_beamstop: MovableBeamstop):
             derived_signal_rw(
                 movable_beamstop._get_position, movable_beamstop._set_from_position
             )  # noqa: E501
+
+
+async def test_datakey_shape():
+    def _total(spectrum: Array1D[np.float64]) -> float:
+        return np.sum(spectrum, dtype=np.float64)
+
+    spectrum = soft_signal_rw(Array1D[np.float64])
+    intensity = derived_signal_r(_total, spectrum=spectrum)
+    with pytest.raises(
+        TypeError,
+        match="Can't make shape for 0.0 with SignalDataType: <class 'numpy.float64'>",
+    ):
+        await intensity.describe()
