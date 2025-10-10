@@ -58,7 +58,11 @@
         // Allow the container to access the host X11 display and EPICS CA
         "--net=host",
         // Make sure SELinux does not disable with access to host filesystems like tmp
-        "--security-opt=label=disable"
+        "--security-opt=label=disable",
+        // Mount the user sockets folder
+        "-v${localEnv:XDG_RUNTIME_DIR}:${localEnv:XDG_RUNTIME_DIR}",
+        // add the docker socket environment variable to the container
+        "-e=DOCKER_HOST=${localEnv:DOCKER_HOST}"
     ],
     "mounts": [
         // Mount in the user terminal config folder so it can be edited
