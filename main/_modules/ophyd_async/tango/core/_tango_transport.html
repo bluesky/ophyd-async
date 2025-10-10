@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.13.5.dev2+gde25756a0 documentation</title>
+    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.13.5.dev3+g679340263 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=06758227"></script>
+    <script src="../../../../_static/documentation_options.js?v=854e9e85"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev2+gde25756a0 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev2+gde25756a0 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev3+g679340263 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev3+g679340263 documentation - Home"/>
   
   
 </a></div>
@@ -496,7 +496,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">Callback</span><span class="p">,</span>
-    <span class="n">NotConnected</span><span class="p">,</span>
+    <span class="n">NotConnectedError</span><span class="p">,</span>
     <span class="n">SignalBackend</span><span class="p">,</span>
     <span class="n">SignalDatatypeT</span><span class="p">,</span>
     <span class="n">StrictEnum</span><span class="p">,</span>
@@ -1293,14 +1293,14 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_tango_trl</span><span class="p">(</span><span class="n">trl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">],</span> <span class="n">timeout</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="n">trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="n">trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="c1"># Pyright does not believe that self.proxies[trl] is not None despite</span>
             <span class="c1"># the check above</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trl_configs</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="n">trl</span><span class="p">]</span><span class="o">.</span><span class="n">support_events</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span>  <span class="c1"># type: ignore</span>
         <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">ce</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tango://</span><span class="si">{</span><span class="n">trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ce</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tango://</span><span class="si">{</span><span class="n">trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ce</span>
 
 <div class="viewcode-block" id="TangoSignalBackend.connect">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.connect">[docs]</a>
@@ -1328,7 +1328,7 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.put">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">put_status</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">]</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">put_status</span></div>
@@ -1344,7 +1344,7 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.get_reading">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">reading</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span><span class="o">.</span><span class="n">get_reading</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="n">reading</span></div>
 
@@ -1353,10 +1353,10 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.get_value">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">proxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">proxy</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
 
@@ -1365,10 +1365,10 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.get_setpoint">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_setpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">proxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">write_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">w_value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">proxy</span><span class="o">.</span><span class="n">get_w_value</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">w_value</span><span class="p">)</span></div>
 
@@ -1377,7 +1377,7 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.set_callback">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">proxies</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not connected to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;Cannot set event for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">read_trl</span><span class="si">}</span><span class="s2">. &quot;</span>

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._device &#8212; ophyd-async 0.13.5.dev2+gde25756a0 documentation</title>
+    <title>ophyd_async.core._device &#8212; ophyd-async 0.13.5.dev3+g679340263 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=06758227"></script>
+    <script src="../../../_static/documentation_options.js?v=854e9e85"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev2+gde25756a0 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev2+gde25756a0 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev3+g679340263 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev3+g679340263 documentation - Home"/>
   
   
 </a></div>
@@ -478,7 +478,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">LazyMock</span><span class="p">,</span>
-    <span class="n">NotConnected</span><span class="p">,</span>
+    <span class="n">NotConnectedError</span><span class="p">,</span>
     <span class="n">error_if_none</span><span class="p">,</span>
     <span class="n">wait_for_connection</span><span class="p">,</span>
 <span class="p">)</span>
@@ -526,7 +526,7 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">exceptions</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
         <span class="k">if</span> <span class="n">exceptions</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="o">.</span><span class="n">with_other_exceptions_logged</span><span class="p">(</span><span class="n">exceptions</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="o">.</span><span class="n">with_other_exceptions_logged</span><span class="p">(</span><span class="n">exceptions</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DeviceConnector.connect_real">
@@ -537,7 +537,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        This is called when there is no cached connect done in `mock=False`</span>
 <span class="sd">        mode. It connects the Device and all its children in real mode in parallel.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Connect in parallel, gathering up NotConnected errors</span>
+        <span class="c1"># Connect in parallel, gathering up NotConnectedErrors</span>
         <span class="n">coros</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">name</span><span class="p">:</span> <span class="n">child_device</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">force_reconnect</span><span class="o">=</span><span class="n">force_reconnect</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child_device</span> <span class="ow">in</span> <span class="n">device</span><span class="o">.</span><span class="n">children</span><span class="p">()</span>
@@ -830,7 +830,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">try</span><span class="p">:</span>
             <span class="n">fut</span> <span class="o">=</span> <span class="n">call_in_bluesky_event_loop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_on_exit</span><span class="p">())</span>
         <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">NotConnected</span><span class="p">(</span>
+            <span class="k">raise</span> <span class="n">NotConnectedError</span><span class="p">(</span>
                 <span class="s2">&quot;Could not connect devices. Is the bluesky event loop running? See &quot;</span>
                 <span class="s2">&quot;https://blueskyproject.io/ophyd-async/main/&quot;</span>
                 <span class="s2">&quot;user/explanations/event-loop-choice.html for more info.&quot;</span>
@@ -869,7 +869,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    :param mock: If True, connect Signals in mock mode.</span>
 <span class="sd">    :param timeout: How long to wait for connect before logging an exception.</span>
 <span class="sd">    :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.</span>
-<span class="sd">    :raises NotConnected: If devices could not be connected.</span>
+<span class="sd">    :raises NotConnectedError: If devices could not be connected.</span>
 
 <span class="sd">    For example, to connect and name 2 motors in parallel:</span>
 <span class="sd">    ```python</span>

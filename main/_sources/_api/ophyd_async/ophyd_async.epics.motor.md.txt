@@ -23,12 +23,12 @@
 
 ### API
 
-````{py:exception} MotorLimitsException()
-:canonical: ophyd_async.epics.motor.MotorLimitsException
+````{py:exception} MotorLimitsError()
+:canonical: ophyd_async.epics.motor.MotorLimitsError
 
 Bases: {py:obj}`Exception`
 
-```{autodoc2-docstring} ophyd_async.epics.motor.MotorLimitsException
+```{autodoc2-docstring} ophyd_async.epics.motor.MotorLimitsError
 ```
 
 ````

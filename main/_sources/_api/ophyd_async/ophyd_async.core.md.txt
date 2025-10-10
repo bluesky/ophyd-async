@@ -2755,36 +2755,36 @@ Bases: {py:obj}`pydantic.BaseModel`
 
 `````
 
-`````{py:exception} NotConnected(errors: str | ~collections.abc.Mapping[str, Exception])
-:canonical: ophyd_async.core._utils.NotConnected
+`````{py:exception} NotConnectedError(errors: str | ~collections.abc.Mapping[str, Exception])
+:canonical: ophyd_async.core._utils.NotConnectedError
 
 Bases: {py:obj}`Exception`
 
-```{autodoc2-docstring} ophyd_async.core._utils.NotConnected
+```{autodoc2-docstring} ophyd_async.core._utils.NotConnectedError
 ```
 
 ````{py:property} sub_errors
-:canonical: ophyd_async.core._utils.NotConnected.sub_errors
+:canonical: ophyd_async.core._utils.NotConnectedError.sub_errors
 :type: ~collections.abc.Mapping[str, Exception]
 
-```{autodoc2-docstring} ophyd_async.core._utils.NotConnected.sub_errors
+```{autodoc2-docstring} ophyd_async.core._utils.NotConnectedError.sub_errors
 ```
 
 ````
 
 ````{py:method} format_error_string(indent='') -> str
-:canonical: ophyd_async.core._utils.NotConnected.format_error_string
+:canonical: ophyd_async.core._utils.NotConnectedError.format_error_string
 
-```{autodoc2-docstring} ophyd_async.core._utils.NotConnected.format_error_string
+```{autodoc2-docstring} ophyd_async.core._utils.NotConnectedError.format_error_string
 ```
 
 ````
 
-````{py:method} with_other_exceptions_logged(exceptions: ~collections.abc.Mapping[str, Exception]) -> ~ophyd_async.core._utils.NotConnected
-:canonical: ophyd_async.core._utils.NotConnected.with_other_exceptions_logged
+````{py:method} with_other_exceptions_logged(exceptions: ~collections.abc.Mapping[str, Exception]) -> ~ophyd_async.core._utils.NotConnectedError
+:canonical: ophyd_async.core._utils.NotConnectedError.with_other_exceptions_logged
 :classmethod:
 
-```{autodoc2-docstring} ophyd_async.core._utils.NotConnected.with_other_exceptions_logged
+```{autodoc2-docstring} ophyd_async.core._utils.NotConnectedError.with_other_exceptions_logged
 ```
 
 ````
