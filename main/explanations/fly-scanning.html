@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>What is the difference between step and fly scanning &#8212; ophyd-async 0.13.5.dev1+gac965c1db documentation</title>
+    <title>What is the difference between step and fly scanning &#8212; ophyd-async 0.13.5.dev2+gde25756a0 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=ce488bd4"></script>
+    <script src="../_static/documentation_options.js?v=06758227"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev1+gac965c1db documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev1+gac965c1db documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev2+gde25756a0 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev2+gde25756a0 documentation - Home"/>
   
   
 </a></div>
@@ -503,10 +503,10 @@
 <p>The actuators and detectors in a scan are typically different devices, although many actuators allow the current readback position to be read, so will also be used as a source of data during a scan.</p>
 <p>We can classify these data collections into two broad categories: step scanning, and fly scanning.</p>
 <ul class="simple">
-<li><p>Step scanning: The system performs a sequence of discrete operations: actuate a change, settle, acquire data, repeat. This ensures well-defined data points but may result in longer total acquisition times. Bluesky plans specify this type of measurement through devices’ <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.14.5.dev26+ge3236924c"><span class="xref myst">Movable</span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.14.5.dev26+ge3236924c"><span class="xref myst">Triggerable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="bluesky 1.14.5.dev26+ge3236924c"><span class="xref myst">Readable</span></a> protocols.</p></li>
-<li><p>Fly scanning: Short for “on-the-fly scanning,” this method involves kicking off the actuation and detection processes simultaneously, with some form of synchronization that allows the data to be correlated after the scan. This effectively hands over some degree of control to the hardware, with bluesky supervising the progress it is making without being in the loop. The benefits are typically faster scans and smoother coverage of the scanned domain, but it adds complexity in the supervision and synchronization of concurrent processes. Devices capable of this mode implement the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Preparable" title="bluesky 1.14.5.dev26+ge3236924c"><span class="xref myst">Preparable</span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.14.5.dev26+ge3236924c"><span class="xref myst">Flyable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Collectable" title="bluesky 1.14.5.dev26+ge3236924c"><span class="xref myst">Collectable</span></a> protocols.</p></li>
+<li><p>Step scanning: The system performs a sequence of discrete operations: actuate a change, settle, acquire data, repeat. This ensures well-defined data points but may result in longer total acquisition times. Bluesky plans specify this type of measurement through devices’ <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.14.7.dev2+g8adfe3ab1"><span class="xref myst">Movable</span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Triggerable" title="bluesky 1.14.7.dev2+g8adfe3ab1"><span class="xref myst">Triggerable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="bluesky 1.14.7.dev2+g8adfe3ab1"><span class="xref myst">Readable</span></a> protocols.</p></li>
+<li><p>Fly scanning: Short for “on-the-fly scanning,” this method involves kicking off the actuation and detection processes simultaneously, with some form of synchronization that allows the data to be correlated after the scan. This effectively hands over some degree of control to the hardware, with bluesky supervising the progress it is making without being in the loop. The benefits are typically faster scans and smoother coverage of the scanned domain, but it adds complexity in the supervision and synchronization of concurrent processes. Devices capable of this mode implement the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Preparable" title="bluesky 1.14.7.dev2+g8adfe3ab1"><span class="xref myst">Preparable</span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.14.7.dev2+g8adfe3ab1"><span class="xref myst">Flyable</span></a> and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Collectable" title="bluesky 1.14.7.dev2+g8adfe3ab1"><span class="xref myst">Collectable</span></a> protocols.</p></li>
 </ul>
-<p>Filewriting detectors additionally implement <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.WritesStreamAssets" title="bluesky 1.14.5.dev26+ge3236924c"><span class="xref myst">WritesStreamAssets</span></a> to report the data written to disk during the scan, either at each data point in a step scan, or periodically during a fly scan.</p>
+<p>Filewriting detectors additionally implement <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.WritesStreamAssets" title="bluesky 1.14.7.dev2+g8adfe3ab1"><span class="xref myst">WritesStreamAssets</span></a> to report the data written to disk during the scan, either at each data point in a step scan, or periodically during a fly scan.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="plan-stubs.html"><span class="std std-doc">What plan stubs will do to Devices</span></a> for more information on what plan stubs are available that call these protocols</p>
