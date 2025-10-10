@@ -163,12 +163,12 @@ async def test_soft_signal_backend_with_numpy_typing():
 
 
 async def test_soft_signal_descriptor_fails_for_invalid_class():
-    class myClass:
+    class MyClass:
         def __init__(self) -> None:
             pass
 
     with pytest.raises(TypeError):
-        SoftSignalBackend(myClass)
+        SoftSignalBackend(MyClass)
 
 
 async def test_soft_signal_descriptor_with_metadata():

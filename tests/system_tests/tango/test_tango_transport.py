@@ -19,7 +19,7 @@ from test_base_device import TestDevice
 from test_tango_signals import make_backend
 
 from ophyd_async.core import (
-    NotConnected,
+    NotConnectedError,
     StrictEnum,
 )
 from ophyd_async.tango.core import (
@@ -664,7 +664,7 @@ async def test_tango_transport_put(echo_device):
     source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnected) as exc_info:
+    with pytest.raises(NotConnectedError) as exc_info:
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
@@ -695,7 +695,7 @@ async def test_tango_transport_get_reading(echo_device):
     source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnected) as exc_info:
+    with pytest.raises(NotConnectedError) as exc_info:
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
@@ -711,7 +711,7 @@ async def test_tango_transport_get_value(echo_device):
     source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnected) as exc_info:
+    with pytest.raises(NotConnectedError) as exc_info:
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
@@ -727,7 +727,7 @@ async def test_tango_transport_get_setpoint(echo_device):
     source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnected) as exc_info:
+    with pytest.raises(NotConnectedError) as exc_info:
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
@@ -745,7 +745,7 @@ async def test_set_callback(echo_device):
     source = get_full_attr_trl(echo_device, "float32")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnected) as exc_info:
+    with pytest.raises(NotConnectedError) as exc_info:
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 

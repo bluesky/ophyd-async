@@ -32,13 +32,32 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
-__all__ = ["MotorLimitsException", "Motor"]
+__all__ = ["MotorLimitsError", "Motor"]
 
 
-class MotorLimitsException(Exception):
+class MotorLimitsError(Exception):
     """Exception for invalid motor limits."""
 
     pass
+
+
+# Back compat - delete before 1.0
+def __getattr__(name):
+    import warnings
+
+    renames = {
+        "MotorLimitsException": MotorLimitsError,
+    }
+    rename = renames.get(name)
+    if rename is not None:
+        warnings.warn(
+            DeprecationWarning(
+                f"{name!r} is deprecated, use {rename.__name__!r} instead"
+            ),
+            stacklevel=2,
+        )
+        return rename
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 class OffsetMode(StrictEnum):
@@ -126,7 +145,7 @@ class Motor(
             not motor_upper_limit >= abs_start_pos >= motor_lower_limit
             or not motor_upper_limit >= abs_end_pos >= motor_lower_limit
         ):
-            raise MotorLimitsException(
+            raise MotorLimitsError(
                 f"{self.name} motor trajectory for requested fly/move is from "
                 f"{abs_start_pos}{egu} to "
                 f"{abs_end_pos}{egu} but motor limits are "
@@ -144,7 +163,7 @@ class Motor(
             self.max_velocity.get_value(), self.motor_egu.get_value()
         )
         if abs(value.velocity) > max_speed:
-            raise MotorLimitsException(
+            raise MotorLimitsError(
                 f"Velocity {abs(value.velocity)} {egu}/s was requested for a motor "
                 f" with max speed of {max_speed} {egu}/s"
             )

@@ -11,7 +11,7 @@ from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     LazyMock,
-    NotConnected,
+    NotConnectedError,
     init_devices,
 )
 from ophyd_async.epics import demo
@@ -203,7 +203,7 @@ async def test_zero_velocity(mock_motor: demo.DemoMotor) -> None:
 
 
 async def test_mover_disconnected():
-    with pytest.raises(NotConnected):
+    with pytest.raises(NotConnectedError):
         async with init_devices(timeout=0.1):
             m = demo.DemoMotor("ca://PRE:", name="motor")
     assert m.name == "motor"
@@ -260,25 +260,25 @@ async def test_assembly_renaming() -> None:
 
 
 async def test_point_detector_disconnected():
-    with pytest.raises(NotConnected) as e:
+    with pytest.raises(NotConnectedError) as e:
         async with init_devices(timeout=0.1):
             det = demo.DemoPointDetector("MOCK:DET:")
     expected = """
-det: NotConnected:
-    channel: NotConnected:
-        1: NotConnected:
-            value: NotConnected: ca://MOCK:DET:1:Value
-            mode: NotConnected: ca://MOCK:DET:1:Mode
-        2: NotConnected:
-            value: NotConnected: ca://MOCK:DET:2:Value
-            mode: NotConnected: ca://MOCK:DET:2:Mode
-        3: NotConnected:
-            value: NotConnected: ca://MOCK:DET:3:Value
-            mode: NotConnected: ca://MOCK:DET:3:Mode
-    acquire_time: NotConnected: ca://MOCK:DET:AcquireTime
-    start: NotConnected: ca://MOCK:DET:Start.PROC
-    acquiring: NotConnected: ca://MOCK:DET:Acquiring
-    reset: NotConnected: ca://MOCK:DET:Reset.PROC
+det: NotConnectedError:
+    channel: NotConnectedError:
+        1: NotConnectedError:
+            value: NotConnectedError: ca://MOCK:DET:1:Value
+            mode: NotConnectedError: ca://MOCK:DET:1:Mode
+        2: NotConnectedError:
+            value: NotConnectedError: ca://MOCK:DET:2:Value
+            mode: NotConnectedError: ca://MOCK:DET:2:Mode
+        3: NotConnectedError:
+            value: NotConnectedError: ca://MOCK:DET:3:Value
+            mode: NotConnectedError: ca://MOCK:DET:3:Mode
+    acquire_time: NotConnectedError: ca://MOCK:DET:AcquireTime
+    start: NotConnectedError: ca://MOCK:DET:Start.PROC
+    acquiring: NotConnectedError: ca://MOCK:DET:Acquiring
+    reset: NotConnectedError: ca://MOCK:DET:Reset.PROC
 """
     assert str(e.value) == expected
 
