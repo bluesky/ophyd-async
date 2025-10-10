@@ -1,0 +1,26 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  // Keep uv.lock up to date
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  // Disable github actions that are managed by python-copier-template
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "actions/checkout",
+        "softprops/action-gh-release",
+        "actions/download-artifact",
+        "astral-sh/setup-uv",
+        "github/codeql-action"
+      ],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "enabled": false
+    }
+  ]
+}
