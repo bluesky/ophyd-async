@@ -285,8 +285,13 @@ class AttributeProxy(TangoProxy):
 
     def unsubscribe_callback(self):
         if self._eid:
-            self._proxy.unsubscribe_event(self._eid, green_mode=False)
-            self._eid = None
+            try:
+                self._proxy.unsubscribe_event(self._eid, green_mode=False)
+            except Exception as exc:
+                logger.warning(f"Could not unsubscribe from event: {exc}")
+                pass
+            finally:
+                self._eid = None
         if self._poll_task:
             self._poll_task.cancel()
             self._poll_task = None
