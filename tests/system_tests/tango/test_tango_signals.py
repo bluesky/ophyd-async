@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from test_base_device import TestDevice
 
-from ophyd_async.core import NotConnected, SignalRW, StandardReadable
+from ophyd_async.core import NotConnectedError, SignalRW, StandardReadable
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import (
     DevStateEnum,
@@ -484,7 +484,7 @@ async def test_set_callback(everything_device_trl):
     source = get_full_attr_trl(everything_device_trl, "float32")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnected) as exc_info:
+    with pytest.raises(NotConnectedError) as exc_info:
         await transport.put(1.0)
     assert "Not connected" in str(exc_info.value)
 
