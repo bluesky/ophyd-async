@@ -84,7 +84,7 @@ class ADBaseDatasetDescriber(DatasetDescriber):
                 self._driver.array_size1.get_value(),
                 self._driver.array_size2.get_value(),
             )
-            shape = (dim0, dim1, dim2) if dim2 > 1 else (dim0, dim1)
+            shape = (dim0, dim1, dim2) if dim2 > 0 else (dim0, dim1)
 
         return shape
 
