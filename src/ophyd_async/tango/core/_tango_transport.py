@@ -289,7 +289,6 @@ class AttributeProxy(TangoProxy):
                 self._proxy.unsubscribe_event(self._eid, green_mode=False)
             except Exception as exc:
                 logger.warning(f"Could not unsubscribe from event: {exc}")
-                pass
             finally:
                 self._eid = None
         if self._poll_task:
