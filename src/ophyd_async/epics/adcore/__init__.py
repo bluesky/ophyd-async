@@ -26,6 +26,7 @@ from ._jpeg_writer import ADJPEGWriter
 from ._single_trigger import SingleTriggerDetector
 from ._tiff_writer import ADTIFFWriter
 from ._utils import (
+    ADBaseColorMode,
     ADBaseDataType,
     ADFileWriteMode,
     ADImageMode,
@@ -39,6 +40,7 @@ from ._utils import (
 __all__ = [
     "ADBaseIO",
     "ADCompression",
+    "ADBaseColorMode",
     "ADBaseContAcqController",
     "AreaDetector",
     "ADState",

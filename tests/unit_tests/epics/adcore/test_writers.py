@@ -358,3 +358,23 @@ async def test_hdf_writer_descriptor_shape_contains_none(
         r"are not currently supported by ADHDFWriter.",
     ):
         await hdf_writer.open(DETECTOR_NAME)
+
+
+async def test_rgb_image_shape_described_correctly(ad_standard_det_factory):
+    det = ad_standard_det_factory(
+        advimba.VimbaDetector,
+        adcore.ADHDFWriter,
+        data_type=adcore.ADBaseDataType.UINT8,
+        color_mode=adcore.ADBaseColorMode.RGB1,
+    )
+    shape = await det._writer._dataset_describer.shape()
+    assert shape == (3, 10, 10)
+    cont_acq_det = ad_standard_det_factory(
+        adcore.ContAcqAreaDetector,
+        adcore.ADHDFWriter,
+        number=5,
+        data_type=adcore.ADBaseDataType.UINT8,
+        color_mode=adcore.ADBaseColorMode.RGB1,
+    )
+    shape = await cont_acq_det._writer._dataset_describer.shape()
+    assert shape == (3, 14, 14)

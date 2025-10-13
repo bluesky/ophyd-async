@@ -26,6 +26,18 @@ class ADBaseDataType(SupersetEnum):
     UNDEFINED = ""
 
 
+# Pulled from https://github.com/areaDetector/ADCore/blob/master/ADApp/Db/NDArrayBase.template#L636
+class ADBaseColorMode(SupersetEnum):
+    MONO = "Mono"
+    BAYER = "Bayer"
+    RGB1 = "RGB1"
+    RGB2 = "RGB2"
+    RGB3 = "RGB3"
+    YUV444 = "YUV444"
+    YUV422 = "YUV422"
+    YUV421 = "YUV421"
+
+
 def convert_ad_dtype_to_np(ad_dtype: ADBaseDataType) -> str:
     ad_dtype_to_np_dtype = {
         ADBaseDataType.INT8: "|i1",
