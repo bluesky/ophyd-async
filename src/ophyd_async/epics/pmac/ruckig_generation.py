@@ -1,24 +1,26 @@
 import asyncio
 from copy import copy
+from pathlib import PurePath
 
 import matplotlib.pyplot as plt
 import numpy as np
 from scanspec.core import Path
-from scanspec.specs import Fly, Line, Spiral
+from scanspec.specs import Fly, Line
 
-from ophyd_async.core import init_devices
+from ophyd_async.core import StaticFilenameProvider, StaticPathProvider, init_devices
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_trajectory_generation import (
     Trajectory,
+    UserProgram,
 )
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
 )
+from ophyd_async.fastcs.panda import HDFPanda
 from ophyd_async.testing import set_mock_value
 from ruckig import InputParameter, OutputParameter, Result, Ruckig
-from ruckig import Trajectory as RTrajectory
 
 
 async def sim_motors():
@@ -78,7 +80,7 @@ async def generate():
 
     input.max_velocity = [motor_info.motor_max_velocity[motor] for motor in motors]
     input.max_jerk = [1] * len(motors)
-    input.max_acceleration = [1] * len(motors)
+    input.max_acceleration = [10] * len(motors)
 
     stacked = np.stack([trajectory.positions[m] for m in motors])
 
@@ -107,6 +109,101 @@ async def generate():
     plt.plot(position_2, position)
     plt.show()
 
+    path_provider = StaticPathProvider(
+        StaticFilenameProvider("test"), PurePath("/workspace")
+    )
+
+    panda = HDFPanda(
+        "BL01C-MO-PANDA-01:",
+        path_provider=path_provider,
+        name="panda",
+    )
+
+    await panda.connect()
+
+
+async def executeTrajectory(ctrl_cycle):
+    path_provider = StaticPathProvider(
+        StaticFilenameProvider("test"), PurePath("/workspace")
+    )
+
+    panda = HDFPanda(
+        "BL01C-MO-PANDA-01:",
+        path_provider=path_provider,
+        name="panda",
+    )
+
+    await panda.connect()
+
+    _, sim_x_motor, sim_y_motor = await sim_motors()
+    motor_info = _PmacMotorInfo(
+        "CS1",
+        1,
+        {sim_x_motor: 6, sim_y_motor: 7},
+        {sim_x_motor: 10, sim_y_motor: 10},
+        {sim_x_motor: 50, sim_y_motor: 50},
+    )
+    # spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 9))
+    spec = Fly(1.0 @ (Line(sim_y_motor, 10, 11, 10) * ~Line(sim_x_motor, 1, 5, 10)))
+    # spec = Fly(1.0 @ Spiral(sim_x_motor, sim_y_motor, 0, 0, 5, 5, 100))
+    slice = Path(spec.calculate()).consume()
+    ramp_up_pos, _ = calculate_ramp_position_and_duration(slice, motor_info, True)
+    ramp_down_pos, _ = calculate_ramp_position_and_duration(slice, motor_info, False)
+    trajectory, exit_pvt = Trajectory.from_slice(slice, motor_info, ramp_up_time=2)
+
+    motors = slice.axes()
+    DoF = len(motors)
+
+    stacked_position = np.stack([trajectory.positions[m] for m in motors]).T.tolist()
+    stacked_velocities = np.stack([trajectory.velocities[m] for m in motors]).T.tolist()
+
+    # Create instances: the Ruckig OTG as well as input and output parameters
+    otg = Ruckig(DoF, ctrl_cycle)  # DoFs, control cycle
+    inp = InputParameter(DoF)
+    out = OutputParameter(DoF)
+
+    # Set input parameters
+    inp.current_position = [ramp_up_pos[motor] for motor in motors]
+    inp.current_velocity = [0] * len(motors)
+    inp.current_acceleration = [0] * len(motors)
+
+    inp.max_velocity = [motor_info.motor_max_velocity[motor] for motor in motors]
+
+    inp.max_jerk = [10, 10]  # Incorrect
+
+    out_list = []
+    timeOffset_list = []
+    timeOffset = 0.0
+
+    times = []
+    position, position_2 = [], []
+    for idx in range(1, len(stacked_position)):
+        if trajectory.user_programs[idx] == UserProgram.GAP:
+            continue
+        inp.target_position = stacked_position[idx]
+        inp.target_velocity = stacked_velocities[idx]
+        if trajectory.user_programs[idx] == UserProgram.GAP:
+            inp.target_acceleration = [0] * len(motors)
+
+        # Generate the trajectory within the control loop
+        res = Result.Working
+        while res == Result.Working:
+            res = otg.update(inp, out)
+            if res < 0:
+                raise TypeError(res)
+            time = out.time + timeOffset
+            timeOffset_list.append(timeOffset)
+
+            out_list.append(copy(out))
+            out.pass_to_input(inp)
+            times.append(time)
+            position.append(out.new_position[0])
+            position_2.append(out.new_position[1])
+        timeOffset = timeOffset + out.time
+
+    # plt.plot(position_2, position)
+    # plt.show()
+
 
 if __name__ == "__main__":
-    asyncio.run(generate())
+    asyncio.run(executeTrajectory(0.01))
