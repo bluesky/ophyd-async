@@ -114,7 +114,6 @@ def get_python_type(config: AttributeInfoEx | CommandInfo | TestConfig) -> objec
         tango_type = config.data_type
         tango_format = config.data_format
     else:
-        print("CONFIG TYPE: ", type(config))
         raise TypeError("Unrecognized Tango resource configuration")
     if tango_format not in [
         AttrDataFormat.SCALAR,
