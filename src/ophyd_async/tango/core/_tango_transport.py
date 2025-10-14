@@ -52,7 +52,7 @@ from ophyd_async.core import (
     make_datakey,
     wait_for_connection,
 )
-from ophyd_async.tango.testing._test_config import TestConfig
+from ophyd_async.tango.testing import TestConfig
 
 from ._converters import (
     TangoConverter,
