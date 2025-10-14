@@ -894,7 +894,7 @@ async def test_subscription_logs(caplog):
     mock_signal_rw = epics_signal_rw(int, "pva://mock_signal", name="mock_signal")
     await mock_signal_rw.connect(mock=True)
     cbs = []
-    mock_signal_rw.subscribe(cbs.append)
+    mock_signal_rw.subscribe_reading(cbs.append)
     assert "Making subscription" in caplog.text
     mock_signal_rw.clear_sub(cbs.append)
     assert "Closing subscription on source" in caplog.text
@@ -954,18 +954,11 @@ async def test_get_reading_runtime_error(signal_cache: _SignalCache[Any]) -> Non
         await asyncio.wait_for(signal_cache.get_reading(), timeout=1.0)
 
 
-def test_notify_with_value(signal_cache):
-    mock_function = Mock()
-    signal_cache._reading = {"value": 42}
-    signal_cache._notify(mock_function, want_value=True)
-    mock_function.assert_called_once_with(42)
-
-
-def test_notify_without_value(signal_cache):
+def test_notify_with_reading(signal_cache):
     mock_function = Mock()
     signal_cache._reading = {"value": 42}
     signal_cache._signal.name = "test_signal"
-    signal_cache._notify(mock_function, want_value=False)
+    signal_cache._notify(mock_function)
     mock_function.assert_called_once_with({"test_signal": partial_reading(42)})
 
 
@@ -974,7 +967,7 @@ async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
 
     with pytest.raises(RuntimeError, match="Monitor not working"):
         await asyncio.wait_for(
-            signal_cache._notify(function, want_value=True),  # type: ignore
+            signal_cache._notify(function),
             timeout=1.0,
         )
 
@@ -1040,8 +1033,12 @@ async def test_can_unsubscribe_from_subscribe_callback():
             signal.clear_sub(callback)
 
     callback.side_effect = unsubscribe_if_one
-    signal.subscribe_value(callback)
-    signal.subscribe_value(print)
+    signal.subscribe_reading(callback)
+    signal.subscribe_reading(print)
     await signal.set(1.0)
     await signal.set(2.0)
-    assert callback.mock_calls == [call(0.0), call(1.0)]
+    assert callback.mock_calls == [
+        call({"": {"value": 0.0, "timestamp": ANY, "alarm_severity": 0}}),
+        call({"": {"value": 1.0, "timestamp": ANY, "alarm_severity": 0}}),
+        call({"": {"value": 2.0, "timestamp": ANY, "alarm_severity": 0}}),
+    ]
