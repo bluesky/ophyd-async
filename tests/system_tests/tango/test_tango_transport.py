@@ -33,6 +33,7 @@ from ophyd_async.tango.core import (
     get_tango_trl,
     try_to_cast_as_float,
 )
+from ophyd_async.tango.testing.test_config import TestConfig
 
 
 # --------------------------------------------------------------------
@@ -70,11 +71,6 @@ async def test_ensure_proper_executor():
 
 
 # --------------------------------------------------------------------
-
-class TestConfig:
-    data_type: CmdArgType
-    data_format: AttrDataFormat
-    enum_labels: list[str]
 
 
 @pytest.mark.parametrize(
@@ -149,6 +145,7 @@ def test_get_python_type(tango_type, tango_format, expected):
         assert issubclass(py_type, StrictEnum)
         assert [e.name for e in py_type] == list(DevState.names.keys())
     elif tango_type is not float:
+        print(f"CONFIG: {config.data_type}, {config.data_format}")
         assert get_python_type(config) == expected
     else:
         if tango_format == "bad_format":

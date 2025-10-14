@@ -52,7 +52,7 @@ from ophyd_async.core import (
     make_datakey,
     wait_for_connection,
 )
-from ophyd_async.tango.testing._test_config import TestConfig
+from ophyd_async.tango.testing.test_config import TestConfig
 
 from ._converters import (
     TangoConverter,
@@ -114,6 +114,7 @@ def get_python_type(config: AttributeInfoEx | CommandInfo | TestConfig) -> objec
         tango_type = config.data_type
         tango_format = config.data_format
     else:
+        print("CONFIG TYPE: ", type(config))
         raise TypeError("Unrecognized Tango resource configuration")
     if tango_format not in [
         AttrDataFormat.SCALAR,
