@@ -666,6 +666,7 @@ async def test_tango_transport_get_datakey(tango_test_device):
 
 # --------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_tango_transport_get_datakey_enum(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
@@ -680,6 +681,7 @@ async def test_tango_transport_get_datakey_enum(tango_test_device):
     datakey = await transport.get_datakey(trl)
     assert "choices" in datakey
     assert datakey["choices"] == ["A", "B"]
+
 
 # ---------------------------------------------------------------------
 
