@@ -939,16 +939,18 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 
 ````
 
-````{py:method} subscribe_value(function: ~ophyd_async.core._utils.Callback[~ophyd_async.core._signal_backend.SignalDatatypeT])
-:canonical: ophyd_async.core._signal.SignalR.subscribe_value
+````{py:method} subscribe_reading(function: ~ophyd_async.core._utils.Callback[dict[str, ~bluesky.protocols.Reading[~ophyd_async.core._signal_backend.SignalDatatypeT]]]) -> None
+:canonical: ophyd_async.core._signal.SignalR.subscribe_reading
 
-```{autodoc2-docstring} ophyd_async.core._signal.SignalR.subscribe_value
+```{autodoc2-docstring} ophyd_async.core._signal.SignalR.subscribe_reading
 ```
 
 ````
 
-````{py:method} subscribe(function: ~ophyd_async.core._utils.Callback[dict[str, ~bluesky.protocols.Reading[~ophyd_async.core._signal_backend.SignalDatatypeT]]]) -> None
+````{py:attribute} subscribe
 :canonical: ophyd_async.core._signal.SignalR.subscribe
+:value: >
+   None
 
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalR.subscribe
 ```

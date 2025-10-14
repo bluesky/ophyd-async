@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.13.5.dev7+gda6bd0363 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.13.5.dev8+gd72986d7b documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=cc229762"></script>
+    <script src="../../_static/documentation_options.js?v=3fbe84ae"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev7+gda6bd0363 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev7+gda6bd0363 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev8+gd72986d7b documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev8+gd72986d7b documentation - Home"/>
   
   
 </a></div>
@@ -1464,19 +1464,8 @@ once per run.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.SignalR.subscribe_value">
-<span class="sig-name descname"><span class="pre">subscribe_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Callback" title="ophyd_async.core._utils.Callback"><span class="pre">Callback</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_signal.html#SignalR.subscribe_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalR.subscribe_value" title="Link to this definition">#</a></dt>
-<dd><p>Subscribe to updates in value of a device.</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>function</strong> – The callback function to call when the value changes.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.SignalR.subscribe">
-<span class="sig-name descname"><span class="pre">subscribe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Callback" title="ophyd_async.core._utils.Callback"><span class="pre">Callback</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Reading" title="(in bluesky v1.14.7.dev2+g8adfe3ab1)"><span class="pre">Reading</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_signal.html#SignalR.subscribe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalR.subscribe" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="ophyd_async.core.SignalR.subscribe_reading">
+<span class="sig-name descname"><span class="pre">subscribe_reading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Callback" title="ophyd_async.core._utils.Callback"><span class="pre">Callback</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Reading" title="(in bluesky v1.14.7.dev2+g8adfe3ab1)"><span class="pre">Reading</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_signal.html#SignalR.subscribe_reading"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalR.subscribe_reading" title="Link to this definition">#</a></dt>
 <dd><p>Subscribe to updates in the reading.</p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1485,10 +1474,16 @@ once per run.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.core.SignalR.subscribe">
+<span class="sig-name descname"><span class="pre">subscribe</span></span><a class="headerlink" href="#ophyd_async.core.SignalR.subscribe" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.SignalR.clear_sub">
 <span class="sig-name descname"><span class="pre">clear_sub</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Callback" title="ophyd_async.core._utils.Callback"><span class="pre">Callback</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_signal.html#SignalR.clear_sub"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalR.clear_sub" title="Link to this definition">#</a></dt>
-<dd><p>Remove a subscription passed to <code class="docutils literal notranslate"><span class="pre">subscribe</span></code> or <code class="docutils literal notranslate"><span class="pre">subscribe_value</span></code>.</p>
+<dd><p>Remove a subscription passed to <code class="docutils literal notranslate"><span class="pre">subscribe_reading</span></code>.</p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>function</strong> – The callback function to remove.</p>
@@ -2050,7 +2045,7 @@ value being yielded, even if it is the same as the previous value.</p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal</strong> – Call subscribe_value on this at the start, and clear_sub on it at the end.</p></li>
+<li><p><strong>signal</strong> – Call subscribe_reading on this at the start, and clear_sub on it at the end.</p></li>
 <li><p><strong>timeout</strong> – If given, how long to wait for each updated value in seconds. If an
 update is not produced in this time then raise asyncio.TimeoutError.</p></li>
 <li><p><strong>done_status</strong> – If this status is complete, stop observing and make the iterator return.
@@ -2085,7 +2080,7 @@ value being yielded, even if it is the same as the previous value.</p>
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signals</strong> – Call subscribe_value on all the signals at the start, and clear_sub on
+<li><p><strong>signals</strong> – Call subscribe_reading on all the signals at the start, and clear_sub on
 it at the end.</p></li>
 <li><p><strong>timeout</strong> – If given, how long to wait for ANY updated value from shared queue in seconds.
 If an update is not produced in this time then raise asyncio.TimeoutError.</p></li>
@@ -2116,7 +2111,7 @@ should be used instead of on an <code class="docutils literal notranslate"><span
 <dl class="myst field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>signal</strong> – Call subscribe_value on this at the start, and clear_sub on it at the
+<li><p><strong>signal</strong> – Call subscribe_reading on this at the start, and clear_sub on it at the
 end.</p></li>
 <li><p><strong>match</strong> – If a callable, it should return True if the value matches. If not
 callable then value will be checked for equality with match.</p></li>
@@ -3827,8 +3822,8 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.read"><code class="docutils literal notranslate"><span class="pre">SignalR.read()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.describe"><code class="docutils literal notranslate"><span class="pre">SignalR.describe()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.get_value"><code class="docutils literal notranslate"><span class="pre">SignalR.get_value()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.subscribe_value"><code class="docutils literal notranslate"><span class="pre">SignalR.subscribe_value()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.subscribe"><code class="docutils literal notranslate"><span class="pre">SignalR.subscribe()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.subscribe_reading"><code class="docutils literal notranslate"><span class="pre">SignalR.subscribe_reading()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.subscribe"><code class="docutils literal notranslate"><span class="pre">SignalR.subscribe</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.clear_sub"><code class="docutils literal notranslate"><span class="pre">SignalR.clear_sub()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.stage"><code class="docutils literal notranslate"><span class="pre">SignalR.stage()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.SignalR.unstage"><code class="docutils literal notranslate"><span class="pre">SignalR.unstage()</span></code></a></li>

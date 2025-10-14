@@ -97,8 +97,18 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.S
 
 ````
 
-````{py:method} subscribe(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
+````{py:method} subscribe_reading(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
+:canonical: ophyd_async.sim._motor.SimMotor.subscribe_reading
+
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.subscribe_reading
+```
+
+````
+
+````{py:attribute} subscribe
 :canonical: ophyd_async.sim._motor.SimMotor.subscribe
+:value: >
+   None
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.subscribe
 ```

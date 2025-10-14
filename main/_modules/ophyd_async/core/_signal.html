@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.13.5.dev7+gda6bd0363 documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.13.5.dev8+gd72986d7b documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=cc229762"></script>
+    <script src="../../../_static/documentation_options.js?v=3fbe84ae"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev7+gda6bd0363 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev7+gda6bd0363 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev8+gd72986d7b documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev8+gd72986d7b documentation - Home"/>
   
   
 </a></div>
@@ -594,7 +594,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">signal</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_staged</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Callback</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Callback</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_valid</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span><span class="p">:</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">:</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend</span>
@@ -631,29 +631,29 @@ window.addEventListener("load", () => mermaid.run());
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reading</span> <span class="o">=</span> <span class="n">reading</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_valid</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
-        <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">function</span><span class="p">,</span> <span class="n">want_value</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_notify</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">want_value</span><span class="p">)</span>
+        <span class="c1"># Copy the listeners in case one of the callbacks removes the listener</span>
+        <span class="c1"># from the set</span>
+        <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_notify</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_notify</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]]</span> <span class="o">|</span> <span class="n">SignalDatatypeT</span><span class="p">],</span>
-        <span class="n">want_value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]]],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ensure_reading</span><span class="p">()[</span><span class="s2">&quot;value&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="n">want_value</span> <span class="k">else</span> <span class="n">function</span><span class="p">(</span>
-            <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_reading</span><span class="p">()}</span>
-        <span class="p">)</span>
+        <span class="n">function</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_reading</span><span class="p">()})</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">want_value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">[</span><span class="n">function</span><span class="p">]</span> <span class="o">=</span> <span class="n">want_value</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_notify</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">want_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_notify</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="n">_listener</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">_listener</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">function</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Unsubscribe failed: subscriber </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> was not found &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Unsubscribe failed for signal </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; subscriber </span><span class="si">{</span><span class="n">function</span><span class="si">}</span><span class="s2"> was not found&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot; in listeners list: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_staged</span> <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_listeners</span><span class="p">)</span>
@@ -732,32 +732,24 @@ window.addEventListener("load", () => mermaid.run());
         <span class="k">return</span> <span class="n">value</span></div>
 
 
-<div class="viewcode-block" id="SignalR.subscribe_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_value">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe to updates in value of a device.</span>
-
-<span class="sd">        :param function: The callback function to call when the value changes.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">want_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="SignalR.subscribe">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span>
+<div class="viewcode-block" id="SignalR.subscribe_reading">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_reading">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe_reading</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe to updates in the reading.</span>
 
 <span class="sd">        :param function: The callback function to call when the reading changes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">want_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">function</span><span class="p">)</span></div>
 
+
+    <span class="n">subscribe</span> <span class="o">=</span> <span class="n">subscribe_reading</span>
 
 <div class="viewcode-block" id="SignalR.clear_sub">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.clear_sub">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clear_sub</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a subscription passed to `subscribe` or `subscribe_value`.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a subscription passed to `subscribe_reading`.</span>
 
 <span class="sd">        :param function: The callback function to remove.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -932,7 +924,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    value being yielded, even if it is the same as the previous value.</span>
 
 <span class="sd">    :param signal:</span>
-<span class="sd">        Call subscribe_value on this at the start, and clear_sub on it at the end.</span>
+<span class="sd">        Call subscribe_reading on this at the start, and clear_sub on it at the end.</span>
 <span class="sd">    :param timeout:</span>
 <span class="sd">        If given, how long to wait for each updated value in seconds. If an</span>
 <span class="sd">        update is not produced in this time then raise asyncio.TimeoutError.</span>
@@ -987,7 +979,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    value being yielded, even if it is the same as the previous value.</span>
 
 <span class="sd">    :param signals:</span>
-<span class="sd">        Call subscribe_value on all the signals at the start, and clear_sub on</span>
+<span class="sd">        Call subscribe_reading on all the signals at the start, and clear_sub on</span>
 <span class="sd">        it at the end.</span>
 <span class="sd">    :param timeout:</span>
 <span class="sd">        If given, how long to wait for ANY updated value from shared queue in seconds.</span>
@@ -1019,11 +1011,12 @@ window.addEventListener("load", () => mermaid.run());
     <span class="c1"># subscribe signal to update queue and fill cbs dict</span>
     <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
 
-        <span class="k">def</span><span class="w"> </span><span class="nf">queue_value</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">signal</span><span class="o">=</span><span class="n">signal</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">queue_value</span><span class="p">(</span><span class="n">reading</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]],</span> <span class="n">signal</span><span class="o">=</span><span class="n">signal</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">reading</span><span class="p">[</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
             <span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">((</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
 
         <span class="n">cbs</span><span class="p">[</span><span class="n">signal</span><span class="p">]</span> <span class="o">=</span> <span class="n">queue_value</span>
-        <span class="n">signal</span><span class="o">.</span><span class="n">subscribe_value</span><span class="p">(</span><span class="n">queue_value</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">subscribe_reading</span><span class="p">(</span><span class="n">queue_value</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">done_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">done_status</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">)</span>
@@ -1094,7 +1087,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Wait for a signal to have a matching value.</span>
 
 <span class="sd">    :param signal:</span>
-<span class="sd">        Call subscribe_value on this at the start, and clear_sub on it at the</span>
+<span class="sd">        Call subscribe_reading on this at the start, and clear_sub on it at the</span>
 <span class="sd">        end.</span>
 <span class="sd">    :param match:</span>
 <span class="sd">        If a callable, it should return True if the value matches. If not</span>
