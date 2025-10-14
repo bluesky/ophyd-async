@@ -19,6 +19,7 @@ from tango import (
     DeviceProxy,
     DevState,
     EventType,
+    GreenMode,
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.asyncio_executor import (
@@ -202,49 +203,26 @@ class AttributeProxy(TangoProxy):
     async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
+        if wait is False:
+            raise RuntimeWarning(
+                "wait=False is not supported in Tango."
+                "Simply don't await the status object."
+            )
         # TODO: remove the timeout from this as it is handled at the signal level
         value = self._converter.write_value(value)
-        if wait:
-            try:
+        try:
 
-                async def _write():
-                    return await self._proxy.write_attribute(self._name, value)
+            async def _write():
+                return await self._proxy.write_attribute(self._name, value)
 
-                task = asyncio.create_task(_write())
-                await asyncio.wait_for(task, timeout)
-            except TimeoutError as te:
-                raise TimeoutError(f"{self._name} attr put failed: Timeout") from te
-            except DevFailed as de:
-                raise RuntimeError(
-                    f"{self._name} device failure: {de.args[0].desc}"
-                ) from de
-
-        else:
-            rid = await self._proxy.write_attribute_asynch(self._name, value)
-
-            async def wait_for_reply(rd: int, to: float | None):
-                start_time = time.time()
-                while True:
-                    try:
-                        # I have to typehint proxy as tango.DeviceProxy because
-                        # tango.asyncio.DeviceProxy cannot be used as a typehint.
-                        # This means pyright will not be able to see that
-                        # write_attribute_reply is awaitable.
-                        await self._proxy.write_attribute_reply(rd)  # type: ignore
-                        break
-                    except DevFailed as exc:
-                        if exc.args[0].reason == "API_AsynReplyNotArrived":
-                            await asyncio.sleep(A_BIT)
-                            if to and (time.time() - start_time > to):
-                                raise TimeoutError(
-                                    f"{self._name} attr put failed: Timeout"
-                                ) from exc
-                        else:
-                            raise RuntimeError(
-                                f"{self._name} device failure: {exc.args[0].desc}"
-                            ) from exc
-
-            return AsyncStatus(wait_for_reply(rid, timeout))
+            task = asyncio.create_task(_write())
+            await asyncio.wait_for(task, timeout)
+        except TimeoutError as te:
+            raise TimeoutError(f"{self._name} attr put failed: Timeout") from te
+        except DevFailed as de:
+            raise RuntimeError(
+                f"{self._name} device failure: {de.args[0].desc}"
+            ) from de
 
     @ensure_proper_executor
     async def get_config(self) -> AttributeInfoEx:  # type: ignore
@@ -264,6 +242,17 @@ class AttributeProxy(TangoProxy):
     def has_subscription(self) -> bool:
         return bool(self._callback)
 
+    @ensure_proper_executor
+    async def _subscribe_to_event(self):
+        if not self._eid:
+            self._eid = await self._proxy.subscribe_event(
+                self._name,
+                EventType.CHANGE_EVENT,
+                self._event_processor,
+                stateless=True,
+                green_mode=GreenMode.Asyncio,
+            )
+
     def subscribe_callback(self, callback: Callback | None):
         # If the attribute supports events, then we can subscribe to them
         # If the callback is not a callable, then we raise an error
@@ -272,14 +261,7 @@ class AttributeProxy(TangoProxy):
 
         self._callback = callback
         if self.support_events:
-            """add user callback to CHANGE event subscription"""
-            if not self._eid:
-                self._eid = self._proxy.subscribe_event(
-                    self._name,
-                    EventType.CHANGE_EVENT,
-                    self._event_processor,
-                    green_mode=False,
-                )
+            asyncio.create_task(self._subscribe_to_event())
         elif self._allow_polling:
             """start polling if no events supported"""
             if self._callback is not None:
@@ -303,8 +285,12 @@ class AttributeProxy(TangoProxy):
 
     def unsubscribe_callback(self):
         if self._eid:
-            self._proxy.unsubscribe_event(self._eid, green_mode=False)
-            self._eid = None
+            try:
+                self._proxy.unsubscribe_event(self._eid, green_mode=False)
+            except Exception as exc:
+                logger.warning(f"Could not unsubscribe from event: {exc}")
+            finally:
+                self._eid = None
         if self._poll_task:
             self._poll_task.cancel()
             self._poll_task = None
@@ -316,7 +302,8 @@ class AttributeProxy(TangoProxy):
                     pass
         self._callback = None
 
-    def _event_processor(self, event):
+    @ensure_proper_executor
+    async def _event_processor(self, event):
         if not event.err:
             reading = Reading(
                 value=self._converter.value(event.attr_value.value),
@@ -437,54 +424,30 @@ class CommandProxy(TangoProxy):
     async def put(  # type: ignore
         self, value: object | None, wait: bool = True, timeout: float | None = None
     ) -> AsyncStatus | None:
+        if wait is False:
+            raise RuntimeError(
+                "wait=False is not supported in Tango."
+                " Simply don't await the status object."
+            )
         value = self._converter.write_value(value)
-        if wait:
-            try:
+        try:
 
-                async def _put():
-                    return await self._proxy.command_inout(self._name, value)
+            async def _put():
+                return await self._proxy.command_inout(self._name, value)
 
-                task = asyncio.create_task(_put())
-                val = await asyncio.wait_for(task, timeout)
-                self._last_reading = Reading(
-                    value=self._converter.value(val),
-                    timestamp=time.time(),
-                    alarm_severity=0,
-                )
-            except TimeoutError as te:
-                raise TimeoutError(f"{self._name} command failed: Timeout") from te
-            except DevFailed as de:
-                raise RuntimeError(
-                    f"{self._name} device failure: {de.args[0].desc}"
-                ) from de
-
-        else:
-            rid = self._proxy.command_inout_asynch(self._name, value)
-
-            async def wait_for_reply(rd: int, to: float | None):
-                start_time = time.time()
-                while True:
-                    try:
-                        reply_value = self._converter.value(
-                            self._proxy.command_inout_reply(rd)
-                        )
-                        self._last_reading = Reading(
-                            value=reply_value, timestamp=time.time(), alarm_severity=0
-                        )
-                        break
-                    except DevFailed as de_exc:
-                        if de_exc.args[0].reason == "API_AsynReplyNotArrived":
-                            await asyncio.sleep(A_BIT)
-                            if to and time.time() - start_time > to:
-                                raise TimeoutError(
-                                    "Timeout while waiting for command reply"
-                                ) from de_exc
-                        else:
-                            raise RuntimeError(
-                                f"{self._name} device failure: {de_exc.args[0].desc}"
-                            ) from de_exc
-
-            return AsyncStatus(wait_for_reply(rid, timeout))
+            task = asyncio.create_task(_put())
+            val = await asyncio.wait_for(task, timeout)
+            self._last_reading = Reading(
+                value=self._converter.value(val),
+                timestamp=time.time(),
+                alarm_severity=0,
+            )
+        except TimeoutError as te:
+            raise TimeoutError(f"{self._name} command failed: Timeout") from te
+        except DevFailed as de:
+            raise RuntimeError(
+                f"{self._name} device failure: {de.args[0].desc}"
+            ) from de
 
     @ensure_proper_executor
     async def get_config(self) -> CommandInfo:  # type: ignore
