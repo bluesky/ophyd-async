@@ -33,7 +33,7 @@ from ophyd_async.tango.core import (
     get_tango_trl,
     try_to_cast_as_float,
 )
-from ophyd_async.tango.testing.test_config import TestConfig
+from ophyd_async.tango.testing._test_config import TestConfig
 
 
 # --------------------------------------------------------------------
