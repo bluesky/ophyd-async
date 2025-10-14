@@ -7,8 +7,8 @@
   "lockFileMaintenance": {
     "enabled": true
   },
-  // Disable github actions that are managed by python-copier-template
   "packageRules": [
+    // Disable github actions that are managed by python-copier-template
     {
       "matchPackageNames": [
         "actions/checkout",
@@ -21,6 +21,14 @@
         "github-actions"
       ],
       "enabled": false
+    },
+    // Disable python version as that is managed by python-copier-template
+    {
+      "matchManagers": [
+        "pyenv"
+      ],
+      "enabled": false
     }
+
   ]
 }
