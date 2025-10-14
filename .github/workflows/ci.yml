@@ -2,68 +2,57 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
+    tags:
+      - "*"
   pull_request:
 
 jobs:
-  check:
-    uses: ./.github/workflows/_check.yml
-
   lint:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_tox.yml
     with:
       tox: pre-commit,type-checking
 
   test:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     strategy:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
-        python-version: ["3.10","3.11","3.12"]
-        include:
-          # Include one that runs in the dev environment
-          - runs-on: "ubuntu-latest"
-            python-version: "dev"
+        python-version: ["3.11", "3.12", "3.13"]
+        test-config:
+          - tests-path: "tests/unit_tests"
+            needs-services: false
+          - tests-path: "tests/system_tests"
+            needs-services: true
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
       runs-on: ${{ matrix.runs-on }}
       python-version: ${{ matrix.python-version }}
+      tests-path: ${{ matrix.test-config.tests-path }}
+      needs-services: ${{ matrix.test-config.needs-services }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  import_with_no_extras:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
-    uses: ./.github/workflows/_import_with_no_extras.yml
-
   docs:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_docs.yml
 
   dist:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_dist.yml
 
   pypi:
+    needs: [dist, test]
     if: github.ref_type == 'tag'
-    needs: dist
     uses: ./.github/workflows/_pypi.yml
     permissions:
       id-token: write
 
   codeql:
-    needs: check
-    if: needs.check.outputs.branch-pr == ''
     uses: ./.github/workflows/_codeql.yml
 
   release:
+    needs: [dist, test, docs]
     if: github.ref_type == 'tag'
-    needs: [dist, docs]
     uses: ./.github/workflows/_release.yml
     permissions:
       contents: write

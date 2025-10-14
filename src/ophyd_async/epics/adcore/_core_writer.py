@@ -11,20 +11,23 @@ from event_model import (  # type: ignore
 )
 from pydantic import PositiveInt
 
-from ophyd_async.core._detector import DetectorWriter
-from ophyd_async.core._providers import DatasetDescriber, PathInfo, PathProvider
-from ophyd_async.core._signal import (
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    AsyncStatus,
+    DatasetDescriber,
+    DetectorWriter,
+    EnableDisable,
+    PathInfo,
+    PathProvider,
+    error_if_none,
     observe_value,
     set_and_wait_for_value,
 )
-from ophyd_async.core._status import AsyncStatus
-from ophyd_async.core._utils import DEFAULT_TIMEOUT, error_if_none
 from ophyd_async.epics.core import stop_busy_record
 
 # from ophyd_async.epics.adcore._core_logic import ADBaseDatasetDescriber
 from ._core_io import (
     ADBaseDatasetDescriber,
-    ADCallbacks,
     NDArrayBaseIO,
     NDFileIO,
     NDFilePluginIO,
@@ -89,7 +92,7 @@ class ADWriter(DetectorWriter, Generic[NDFileIOT]):
         )
 
         if isinstance(self.fileio, NDFilePluginIO):
-            await self.fileio.enable_callbacks.set(ADCallbacks.ENABLE)
+            await self.fileio.enable_callbacks.set(EnableDisable.ENABLE)
 
         # Set the directory creation depth first, since dir creation callback happens
         # when directory path PV is processed.

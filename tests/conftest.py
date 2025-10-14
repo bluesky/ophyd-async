@@ -23,33 +23,33 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import adsimdetector
 
-PANDA_RECORD = str(Path(__file__).parent / "fastcs" / "panda" / "db" / "panda.db")
+PANDA_RECORD = str(
+    Path(__file__).parent / "unit_tests" / "fastcs" / "panda" / "db" / "panda.db"
+)
 INCOMPLETE_BLOCK_RECORD = str(
-    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_block_panda.db"
+    Path(__file__).parent
+    / "unit_tests"
+    / "fastcs"
+    / "panda"
+    / "db"
+    / "incomplete_block_panda.db"
 )
 INCOMPLETE_RECORD = str(
-    Path(__file__).parent / "fastcs" / "panda" / "db" / "incomplete_panda.db"
+    Path(__file__).parent
+    / "unit_tests"
+    / "fastcs"
+    / "panda"
+    / "db"
+    / "incomplete_panda.db"
 )
 EXTRA_BLOCKS_RECORD = str(
-    Path(__file__).parent / "fastcs" / "panda" / "db" / "extra_blocks_panda.db"
+    Path(__file__).parent
+    / "unit_tests"
+    / "fastcs"
+    / "panda"
+    / "db"
+    / "extra_blocks_panda.db"
 )
-
-# Prevent pytest from catching exceptions when debugging in vscode so that break on
-# exception works correctly (see: https://github.com/pytest-dev/pytest/issues/7409)
-if os.getenv("PYTEST_RAISE", "0") == "1":
-
-    @pytest.hookimpl(tryfirst=True)
-    def pytest_exception_interact(call: pytest.CallInfo[Any]):
-        if call.excinfo is not None:
-            raise call.excinfo.value
-        else:
-            raise RuntimeError(
-                f"{call} has no exception data, an unknown error has occurred"
-            )
-
-    @pytest.hookimpl(tryfirst=True)
-    def pytest_internalerror(excinfo: pytest.ExceptionInfo[Any]):
-        raise excinfo.value
 
 
 # Autouse fixture that will set all EPICS networking env vars to use lo interface
@@ -114,11 +114,9 @@ def _error_and_kill_pending_tasks(
 
 @pytest.fixture(autouse=True, scope="function")
 async def fail_test_on_unclosed_tasks(request: FixtureRequest):
-    """
-    Used on every test to ensure failure if there are pending tasks
+    """Used on every test to ensure failure if there are pending tasks
     by the end of the test.
     """
-
     try:
         fail_count = request.session.testsfailed
         loop = asyncio.get_running_loop()

@@ -1,15 +1,17 @@
 import asyncio
 from typing import Annotated as A
 
-from ophyd_async.core import DatasetDescriber, SignalR, SignalRW, StrictEnum
+from ophyd_async.core import (
+    DatasetDescriber,
+    DeviceVector,
+    EnableDisable,
+    SignalR,
+    SignalRW,
+    StrictEnum,
+)
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
 from ._utils import ADBaseDataType, ADFileWriteMode, ADImageMode, convert_ad_dtype_to_np
-
-
-class ADCallbacks(StrictEnum):
-    ENABLE = "Enable"
-    DISABLE = "Disable"
 
 
 class NDArrayBaseIO(EpicsDevice):
@@ -53,7 +55,7 @@ class NDPluginBaseIO(NDArrayBaseIO):
     """
 
     nd_array_port: A[SignalRW[str], PvSuffix.rbv("NDArrayPort")]
-    enable_callbacks: A[SignalRW[ADCallbacks], PvSuffix.rbv("EnableCallbacks")]
+    enable_callbacks: A[SignalRW[EnableDisable], PvSuffix.rbv("EnableCallbacks")]
     nd_array_address: A[SignalRW[int], PvSuffix.rbv("NDArrayAddress")]
     array_size0: A[SignalR[int], PvSuffix("ArraySize0_RBV")]
     array_size1: A[SignalR[int], PvSuffix("ArraySize1_RBV")]
@@ -85,6 +87,56 @@ class NDPluginStatsIO(NDPluginBaseIO):
     hist_size: A[SignalRW[int], PvSuffix.rbv("HistSize")]
     hist_min: A[SignalRW[float], PvSuffix.rbv("HistMin")]
     hist_max: A[SignalRW[float], PvSuffix.rbv("HistMax")]
+
+
+class NDROIStatIO(NDPluginBaseIO):
+    """Plugin for calculating basic statistics for multiple ROIs.
+
+    Each ROI is implemented as an instance of NDROIStatNIO,
+    and the collection of ROIs is held as a DeviceVector.
+
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROIStat.html
+    """
+
+    def __init__(self, prefix, num_channels=8, with_pvi=False, name=""):
+        self.channels = DeviceVector(
+            {i: NDROIStatNIO(f"{prefix}{i}:") for i in range(1, num_channels + 1)}
+        )
+        super().__init__(prefix, with_pvi, name)
+
+
+class NDROIStatNIO(EpicsDevice):
+    """Defines the parameters for a single ROI used for statistics calculation.
+
+    Each instance represents a single ROI, with attributes for its position
+    (min_x, min_y) and size (size_x, size_y), as well as a name and use status.
+
+    See definition in ADApp/pluginSrc/NDPluginROIStat.h in https://github.com/areaDetector/ADCore.
+
+    Attributes:
+        name: The name of the ROI.
+        use: Flag indicating whether the ROI is used.
+        min_x: The start X-coordinate of the ROI.
+        min_y: The start Y-coordinate of the ROI.
+        size_x: The width of the ROI.
+        size_y: The height of the ROI.
+        min_value: Minimum count value in the ROI.
+        max_value: Maximum count value in the ROI.
+        mean_value: Mean counts value in the ROI.
+        total: Total counts in the ROI.
+    """
+
+    name_: A[SignalRW[str], PvSuffix("Name")]
+    use: A[SignalRW[bool], PvSuffix.rbv("Use")]
+    min_x: A[SignalRW[int], PvSuffix.rbv("MinX")]
+    min_y: A[SignalRW[int], PvSuffix.rbv("MinY")]
+    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
+    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
+    # stats
+    min_value: A[SignalR[float], PvSuffix("MinValue_RBV")]
+    max_value: A[SignalR[float], PvSuffix("MaxValue_RBV")]
+    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
+    total: A[SignalR[float], PvSuffix("Total_RBV")]
 
 
 class ADState(StrictEnum):
@@ -177,7 +229,7 @@ class NDFileHDFIO(NDFilePluginIO):
     swmr_mode: A[SignalRW[bool], PvSuffix.rbv("SWMRMode")]
     flush_now: A[SignalRW[bool], PvSuffix("FlushNow")]
     xml_file_name: A[SignalRW[str], PvSuffix.rbv("XMLFileName")]
-    num_frames_chunks: A[SignalR[int], PvSuffix("NumFramesChunks_RBV")]
+    num_frames_chunks: A[SignalRW[int], PvSuffix.rbv("NumFramesChunks")]
     chunk_size_auto: A[SignalRW[bool], PvSuffix.rbv("ChunkSizeAuto")]
     lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]
 

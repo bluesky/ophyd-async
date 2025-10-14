@@ -6,7 +6,7 @@ from ._derived_signal import (
     derived_signal_rw,
     derived_signal_w,
 )
-from ._derived_signal_backend import Transform
+from ._derived_signal_backend import Transform, merge_gathered_dicts
 from ._detector import (
     DetectorController,
     DetectorTrigger,
@@ -16,6 +16,12 @@ from ._detector import (
 )
 from ._device import Device, DeviceConnector, DeviceVector, init_devices
 from ._device_filler import DeviceFiller
+from ._enums import (
+    EnabledDisabled,
+    EnableDisable,
+    InOut,
+    OnOff,
+)
 from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
 from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
 from ._log import config_ophyd_async_logging
@@ -72,7 +78,7 @@ from ._signal_backend import (
 )
 from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
-from ._table import Table
+from ._table import Table, TableSubclass
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -81,7 +87,7 @@ from ._utils import (
     ConfinedModel,
     EnumTypes,
     LazyMock,
-    NotConnected,
+    NotConnectedError,
     Reference,
     StrictEnum,
     SubsetEnum,
@@ -96,6 +102,26 @@ from ._utils import (
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
+
+
+# Back compat - delete before 1.0
+def __getattr__(name):
+    import warnings
+
+    renames = {
+        "NotConnected": NotConnectedError,
+    }
+    rename = renames.get(name)
+    if rename is not None:
+        warnings.warn(
+            DeprecationWarning(
+                f"{name!r} is deprecated, use {rename.__name__!r} instead"
+            ),
+            stacklevel=2,
+        )
+        return rename
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     # Device
@@ -189,7 +215,7 @@ __all__ = [
     "DEFAULT_TIMEOUT",
     "Callback",
     "ConfinedModel",
-    "NotConnected",
+    "NotConnectedError",
     "Reference",
     "error_if_none",
     "gather_dict",
@@ -206,7 +232,14 @@ __all__ = [
     "derived_signal_w",
     "Transform",
     "DerivedSignalFactory",
+    "merge_gathered_dicts",
     # Back compat - delete before 1.0
     "ConfigSignal",
     "HintedSignal",
+    # Standard enums
+    "EnabledDisabled",
+    "EnableDisable",
+    "InOut",
+    "OnOff",
+    "TableSubclass",
 ]

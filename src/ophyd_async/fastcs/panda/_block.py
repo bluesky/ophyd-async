@@ -58,6 +58,12 @@ class PandaBitMux(SubsetEnum):
     ONE = "ONE"
 
 
+class PandaPosMux(SubsetEnum):
+    """Pos input in the PandA."""
+
+    ZERO = "ZERO"
+
+
 class PcompBlock(Device):
     """Position compare block in the PandA."""
 
@@ -88,6 +94,7 @@ class SeqBlock(Device):
     prescale: SignalRW[float]
     prescale_units: SignalRW[PandaTimeUnits]
     enable: SignalRW[PandaBitMux]
+    posa: SignalRW[PandaPosMux]
 
 
 class PcapBlock(Device):
@@ -95,6 +102,13 @@ class PcapBlock(Device):
 
     active: SignalR[bool]
     arm: SignalRW[bool]
+
+
+class InencBlock(Device):
+    """In encoder block in the PandA."""
+
+    val_scale: SignalRW[float]
+    val_offset: SignalRW[float]
 
 
 class CommonPandaBlocks(Device):

@@ -6,6 +6,7 @@ from ophyd_async.core import (
     AsyncStatus,
     DetectorController,
     DetectorTrigger,
+    EnableDisable,
     TriggerInfo,
     observe_value,
     set_and_wait_for_value,
@@ -14,7 +15,6 @@ from ophyd_async.epics.core import stop_busy_record
 
 from ._core_io import (
     ADBaseIO,
-    ADCallbacks,
     ADState,
     NDCBFlushOnSoftTrgMode,
     NDPluginCBIO,
@@ -34,9 +34,11 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         self,
         driver: ADBaseIOT,
         good_states: frozenset[ADState] = DEFAULT_GOOD_STATES,
+        image_mode: ADImageMode = ADImageMode.MULTIPLE,
     ) -> None:
         self.driver: ADBaseIOT = driver
         self.good_states = good_states
+        self.image_mode = image_mode
         self.frame_timeout = DEFAULT_TIMEOUT
         self._arm_status: AsyncStatus | None = None
 
@@ -52,7 +54,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
         )
         await asyncio.gather(
             self.driver.num_images.set(trigger_info.total_number_of_exposures),
-            self.driver.image_mode.set(ADImageMode.MULTIPLE),
+            self.driver.image_mode.set(self.image_mode),
         )
 
     async def arm(self):
@@ -130,7 +132,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                 ):
                     if state in self.good_states:
                         return
-            except asyncio.TimeoutError as exc:
+            except TimeoutError as exc:
                 if state is not None:
                     raise ValueError(
                         f"Final detector state {state.value} not in valid end "
@@ -138,7 +140,7 @@ class ADBaseController(DetectorController, Generic[ADBaseIOT]):
                     ) from exc
                 else:
                     # No updates from the detector, something else is wrong
-                    raise asyncio.TimeoutError(
+                    raise TimeoutError(
                         "Could not monitor detector state: "
                         + self.driver.detector_state.source
                     ) from exc
@@ -199,7 +201,7 @@ class ADBaseContAcqController(ADBaseController[ADBaseIO]):
 
         # Configure the CB plugin to collect the correct number of triggers
         await asyncio.gather(
-            self.cb_plugin.enable_callbacks.set(ADCallbacks.ENABLE),
+            self.cb_plugin.enable_callbacks.set(EnableDisable.ENABLE),
             self.cb_plugin.pre_count.set(0),
             self.cb_plugin.post_count.set(trigger_info.total_number_of_exposures),
             self.cb_plugin.preset_trigger_count.set(1),
