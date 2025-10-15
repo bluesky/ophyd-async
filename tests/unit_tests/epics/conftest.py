@@ -25,6 +25,7 @@ def ad_standard_det_factory(
         path_provider: PathProvider | None = None,
         number=1,
         data_type=adcore.ADBaseDataType.UINT16,
+        color_mode=adcore.ADBaseColorMode.MONO,
         assume_file_path_exists: bool = False,
         **kwargs,
     ) -> adcore.AreaDetector:
@@ -68,6 +69,7 @@ def ad_standard_det_factory(
         set_mock_value(test_adstandard_det.driver.acquire_period, float(number))
         set_mock_value(test_adstandard_det.fileio.capture, True)
         set_mock_value(test_adstandard_det.driver.data_type, data_type)
+        set_mock_value(test_adstandard_det.driver.color_mode, color_mode)
 
         # Set image mode to continuous to mimic a real detector setup
         set_mock_value(
@@ -80,9 +82,15 @@ def ad_standard_det_factory(
             set_mock_value(det.driver.acquire, True)
 
             # Also, setup the cb plugin with some reasonable values
-            set_mock_value(det.cb_plugin.array_size_x, (9 + number))
-            set_mock_value(det.cb_plugin.array_size_y, (9 + number))
+            if color_mode == adcore.ADBaseColorMode.MONO:
+                set_mock_value(det.cb_plugin.array_size0, (9 + number))
+                set_mock_value(det.cb_plugin.array_size1, (9 + number))
+            else:
+                set_mock_value(det.cb_plugin.array_size0, 3)
+                set_mock_value(det.cb_plugin.array_size1, (9 + number))
+                set_mock_value(det.cb_plugin.array_size2, (9 + number))
             set_mock_value(det.cb_plugin.data_type, data_type)
+            set_mock_value(det.cb_plugin.color_mode, color_mode)
 
         # Set number of frames per chunk and frame dimensions to something reasonable
         set_mock_value(test_adstandard_det.driver.array_size_x, (9 + number))
