@@ -184,7 +184,9 @@ def _datakey_shape(value: SignalDatatype) -> list[int | None]:
     elif isinstance(value, Sequence | Table):
         return [len(value)]
     else:
-        raise TypeError(f"Can't make shape for {value}")
+        raise TypeError(
+            f"Can't make shape for {value} with SignalDataType: {type(value)}"
+        )
 
 
 def make_datakey(

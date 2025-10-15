@@ -88,7 +88,7 @@ from ._utils import (
     ConfinedModel,
     EnumTypes,
     LazyMock,
-    NotConnected,
+    NotConnectedError,
     Reference,
     StrictEnum,
     SubsetEnum,
@@ -103,6 +103,26 @@ from ._utils import (
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
+
+
+# Back compat - delete before 1.0
+def __getattr__(name):
+    import warnings
+
+    renames = {
+        "NotConnected": NotConnectedError,
+    }
+    rename = renames.get(name)
+    if rename is not None:
+        warnings.warn(
+            DeprecationWarning(
+                f"{name!r} is deprecated, use {rename.__name__!r} instead"
+            ),
+            stacklevel=2,
+        )
+        return rename
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     # Device
@@ -196,7 +216,7 @@ __all__ = [
     "DEFAULT_TIMEOUT",
     "Callback",
     "ConfinedModel",
-    "NotConnected",
+    "NotConnectedError",
     "Reference",
     "error_if_none",
     "gather_dict",
