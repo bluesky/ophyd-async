@@ -16,7 +16,9 @@
         "UV_PROJECT_ENVIRONMENT": "/cache/venv-for${localWorkspaceFolder}",
         // Do the equivalent of "activate" the venv so we don't have to "uv run" everything
         "VIRTUAL_ENV": "/cache/venv-for${localWorkspaceFolder}",
-        "PATH": "/cache/venv-for${localWorkspaceFolder}/bin:${containerEnv:PATH}"
+        "PATH": "/cache/venv-for${localWorkspaceFolder}/bin:${containerEnv:PATH}",
+        // Help external service fixtures match docker compose working directory with the host
+        "EXAMPLE_SERVICES_PATH": "${localWorkspaceFolder}/example-services"
     },
     "customizations": {
         "vscode": {
@@ -76,6 +78,12 @@
             "source": "devcontainer-shared-cache",
             "target": "/cache",
             "type": "volume"
+        },
+        // Match host external services file paths (internal docker starts them on the host)
+        {
+            "source": "${localWorkspaceFolder}/example-services",
+            "target": "${localWorkspaceFolder}/example-services",
+            "type": "bind"
         }
     ],
     // Mount the parent as /workspaces so we can pip install peers as editable
