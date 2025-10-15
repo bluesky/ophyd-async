@@ -299,7 +299,7 @@ def docker_composer(
         # same as above but with additional args passed to docker
         docker_composer(docker_args=["-f", "./compose.yaml"])
         # run and wait for line in STDOUT before yielding
-        docker_composer(ready_log_line="Listening on port ", timeout=10.0)
+        docker_composer(ready_log_line="Listening on port ", start_timeout=10.0)
         # wait a fixed time for the service to become ready
         docker_composer(wait_time=1.0)
         # run specific sercices
@@ -384,6 +384,4 @@ def bl01t_di_cam_01(ca_gateway):
             ["-f", f"{example_services_path}/compose.yaml"],
             docker_services="bl01t-di-cam-01",
             ready_log_line="iocRun: All initialization complete",
-            start_timeout=20.0,
-            stop_timeout=20.0,
         )

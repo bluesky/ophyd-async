@@ -7,7 +7,7 @@ from unittest.mock import ANY, patch
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
 import pytest
-from aioca._catools import purge_channel_caches  # noqa: PLC2701
+from aioca import purge_channel_caches
 from bluesky.run_engine import RunEngine
 from bluesky.utils import MsgGenerator
 from event_model.documents import (
@@ -34,7 +34,7 @@ from ophyd_async.plan_stubs import (
     retrieve_settings,
 )
 
-TIMEOUT = 40.0  # allow extra time for docker compose
+TIMEOUT = 60.0  # allow extra time for docker compose
 
 
 @pytest.fixture(scope="module", autouse=True)
