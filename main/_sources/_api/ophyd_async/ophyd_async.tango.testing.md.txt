@@ -23,6 +23,10 @@
   - ```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice
     :summary:
     ```
+* - {py:obj}`TestConfig <ophyd_async.tango.testing._test_config.TestConfig>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._test_config.TestConfig
+    :summary:
+    ```
 ````
 
 ### API
@@ -165,6 +169,47 @@ Bases: {py:obj}`tango.server.Device`
    'dedent(...)'
 
 ```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.echo_command_code
+```
+
+````
+
+`````
+
+`````{py:class} TestConfig
+:canonical: ophyd_async.tango.testing._test_config.TestConfig
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_config.TestConfig
+```
+
+````{py:attribute} data_type
+:canonical: ophyd_async.tango.testing._test_config.TestConfig.data_type
+:type: ~tango.CmdArgType
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_config.TestConfig.data_type
+```
+
+````
+
+````{py:attribute} data_format
+:canonical: ophyd_async.tango.testing._test_config.TestConfig.data_format
+:type: ~tango.AttrDataFormat
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_config.TestConfig.data_format
+```
+
+````
+
+````{py:attribute} enum_labels
+:canonical: ophyd_async.tango.testing._test_config.TestConfig.enum_labels
+:type: list[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._test_config.TestConfig.enum_labels
 ```
 
 ````

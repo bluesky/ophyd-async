@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.13.5.dev8+gd72986d7b documentation</title>
+    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.13.5.dev9+ge6e018cf6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=3fbe84ae"></script>
+    <script src="../../../../_static/documentation_options.js?v=0bf088d2"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev8+gd72986d7b documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev8+gd72986d7b documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev9+ge6e018cf6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev9+ge6e018cf6 documentation - Home"/>
   
   
 </a></div>
@@ -468,13 +468,11 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">IntEnum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntEnum</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AttrDataFormat</span><span class="p">,</span>
     <span class="n">AttrWriteType</span><span class="p">,</span>
-    <span class="n">CmdArgType</span><span class="p">,</span>
     <span class="n">DeviceProxy</span><span class="p">,</span>
     <span class="n">DevState</span><span class="p">,</span>
 <span class="p">)</span>
@@ -490,7 +488,12 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">SignalX</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._tango_transport</span><span class="w"> </span><span class="kn">import</span> <span class="n">TangoSignalBackend</span><span class="p">,</span> <span class="n">get_python_type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._tango_transport</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CommandProxyReadCharacter</span><span class="p">,</span>
+    <span class="n">TangoSignalBackend</span><span class="p">,</span>
+    <span class="n">get_command_character</span><span class="p">,</span>
+    <span class="n">get_python_type</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_device_trl_and_attr</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ophyd_async&quot;</span><span class="p">)</span>
@@ -630,22 +633,13 @@ window.addEventListener("load", () => mermaid.run());
 
     <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">():</span>
         <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>
-        <span class="n">isarray</span><span class="p">,</span> <span class="n">py_type</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">in_type</span><span class="p">)</span>
+        <span class="n">py_type</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">():</span>
         <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>
-        <span class="n">isarray</span><span class="p">,</span> <span class="n">py_type</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">data_type</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">py_type</span> <span class="ow">is</span> <span class="n">Enum</span><span class="p">:</span>
-            <span class="n">enum_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">enum_labels</span><span class="p">)}</span>
-            <span class="n">py_type</span> <span class="o">=</span> <span class="n">IntEnum</span><span class="p">(</span><span class="s2">&quot;TangoEnum&quot;</span><span class="p">,</span> <span class="n">enum_dict</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">data_format</span> <span class="ow">in</span> <span class="p">[</span><span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">,</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">]:</span>
-            <span class="n">isarray</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">py_type</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find </span><span class="si">{</span><span class="n">tr_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">device_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">py_type</span> <span class="ow">is</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span><span class="p">:</span>
-        <span class="n">py_type</span> <span class="o">=</span> <span class="n">DevState</span>
-
-    <span class="k">return</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">py_type</span><span class="p">]</span> <span class="k">if</span> <span class="n">isarray</span> <span class="k">else</span> <span class="n">py_type</span></div>
+    <span class="k">return</span> <span class="n">py_type</span></div>
 
 
 
@@ -675,13 +669,15 @@ window.addEventListener("load", () => mermaid.run());
 
     <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">():</span>
         <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">in_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVoid</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">SignalX</span>
-        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">in_type</span> <span class="o">!=</span> <span class="n">config</span><span class="o">.</span><span class="n">out_type</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Commands with different in and out dtypes are not supported&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
+        <span class="n">command_character</span> <span class="o">=</span> <span class="n">get_command_character</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">command_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SignalR</span>
+        <span class="k">elif</span> <span class="n">command_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">WRITE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SignalW</span>
+        <span class="k">elif</span> <span class="n">command_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ_WRITE</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">SignalRW</span>
+        <span class="k">elif</span> <span class="n">command_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">EXECUTE</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SignalX</span>
     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to infer signal character for </span><span class="si">{</span><span class="n">trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 </pre></div>
