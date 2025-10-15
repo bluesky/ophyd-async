@@ -10,7 +10,9 @@
         "DISPLAY": "${localEnv:DISPLAY}",
         // Do the equivalent of "activate" the venv so we don't have to "uv run" everything
         "VIRTUAL_ENV": "/workspaces/${localWorkspaceFolderBasename}/.venv",
-        "PATH": "/workspaces/${localWorkspaceFolderBasename}/.venv/bin:${containerEnv:PATH}"
+        "PATH": "/workspaces/${localWorkspaceFolderBasename}/.venv/bin:${containerEnv:PATH}",
+        // Help external service fixtures match docker compose working directory with the host
+        "EXAMPLE_SERVICES_PATH": "${localWorkspaceFolder}/example-services"
     },
     "customizations": {
         "vscode": {
@@ -77,6 +79,12 @@
         {
             "target": "/workspaces/${localWorkspaceFolderBasename}/.venv",
             "type": "volume"
+        },
+        // Match host external services file paths (internal docker starts them on the host)
+        {
+            "source": "${localWorkspaceFolder}/example-services",
+            "target": "${localWorkspaceFolder}/example-services",
+            "type": "bind"
         }
     ],
     // Mount the parent as /workspaces so we can pip install peers as editable
