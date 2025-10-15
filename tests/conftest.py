@@ -368,7 +368,7 @@ def docker_composer(
 @pytest.fixture(scope="module")
 def ca_gateway():
     example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
-    if example_services_path is not None:  # testing on CI unaltered for now
+    if example_services_path is not None:  # user may start services manually
         yield from docker_composer(
             ["-f", f"{example_services_path}/compose.yaml"],
             docker_services="ca-gateway",
@@ -379,7 +379,7 @@ def ca_gateway():
 @pytest.fixture(scope="module")
 def bl01t_di_cam_01(ca_gateway):
     example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
-    if example_services_path is not None:  # testing on CI unaltered for now
+    if example_services_path is not None:  # user may start services manually
         yield from docker_composer(
             ["-f", f"{example_services_path}/compose.yaml"],
             docker_services="bl01t-di-cam-01",
