@@ -385,3 +385,11 @@ def bl01t_di_cam_01(ca_gateway):
             docker_services="bl01t-di-cam-01",
             ready_log_line="iocRun: All initialization complete",
         )
+
+
+@pytest.fixture
+def event_loop():
+    """Create a fresh event loop for each test."""
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
