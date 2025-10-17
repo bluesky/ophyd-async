@@ -1546,7 +1546,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pydantic-numpy" },
     { name = "pyqt6", marker = "extra == 'demo'" },
-    { name = "pytango", marker = "extra == 'tango'", specifier = "==10.0.2" },
+    { name = "pytango", marker = "extra == 'tango'", specifier = ">=10.0.2" },
     { name = "pyyaml" },
     { name = "scanspec", specifier = ">=0.8" },
     { name = "stamina", specifier = ">=23.1.0" },
