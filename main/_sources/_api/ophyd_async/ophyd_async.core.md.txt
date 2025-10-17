@@ -255,6 +255,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._enums.OnOff
     :summary:
     ```
+* - {py:obj}`YesNo <ophyd_async.core._enums.YesNo>`
+  - ```{autodoc2-docstring} ophyd_async.core._enums.YesNo
+    :summary:
+    ```
 ````
 
 ### Functions
@@ -3078,6 +3082,36 @@ Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
    'Off'
 
 ```{autodoc2-docstring} ophyd_async.core._enums.OnOff.OFF
+```
+
+````
+
+`````
+
+`````{py:class} YesNo()
+:canonical: ophyd_async.core._enums.YesNo
+
+Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.core._enums.YesNo
+```
+
+````{py:attribute} YES
+:canonical: ophyd_async.core._enums.YesNo.YES
+:value: >
+   'Yes'
+
+```{autodoc2-docstring} ophyd_async.core._enums.YesNo.YES
+```
+
+````
+
+````{py:attribute} NO
+:canonical: ophyd_async.core._enums.YesNo.NO
+:value: >
+   'No'
+
+```{autodoc2-docstring} ophyd_async.core._enums.YesNo.NO
 ```
 
 ````
