@@ -3,11 +3,19 @@ on:
     inputs:
       python-version:
         type: string
-        description: The version of python to install
-        required: true
+        description: The version of python to install, default is from .python-version file
+        default: ""
       runs-on:
         type: string
         description: The runner to run this job on
+        required: true
+      tests-path:
+        type: string
+        description: The path to look for tests
+        required: true
+      needs-services:
+        type: boolean
+        description: Whether to start external services
         required: true
     secrets:
       CODECOV_TOKEN:
@@ -16,57 +24,52 @@ on:
 env:
   # https://github.com/pytest-dev/pytest/issues/2042
   PY_IGNORE_IMPORTMISMATCH: "1"
+  UV_PYTHON: ${{ inputs.python-version }}
 
 jobs:
   run:
     runs-on: ${{ inputs.runs-on }}
 
+    env:
+      COVERAGE_PROCESS_START: .coveragerc
+
     steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
       - name: Set TEMP to D:/Temp
         if: inputs.runs-on == 'windows-latest'
         run: |
           mkdir "D:\\Temp"
           echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV
-      - name: Checkout
-        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - if: inputs.needs-services && inputs.runs-on != 'windows-latest'
+        name: Run docker compose
+        uses: hoverkraft-tech/compose-action@v2.4.0
         with:
-          # Need this to get version number from last tag
-          fetch-depth: 0
+          compose-file: "./example-services/compose.yaml"
+          services: |
+            bl01t-di-cam-01
+            ca-gateway
 
-      - if: inputs.python-version == 'dev'
-        name: Install dev versions of python packages
-        uses: ./.github/actions/install_requirements
-
-      - if: inputs.python-version == 'dev'
-        name: Write the requirements as an artifact
-        run: pip freeze --exclude-editable > /tmp/dev-requirements.txt
-
-      - if: inputs.python-version == 'dev'
-        name: Upload dev-requirements.txt
-        uses: actions/upload-artifact@v4
-        with:
-          name: dev-requirements
-          path: /tmp/dev-requirements.txt
-
-      - if: inputs.python-version != 'dev'
-        name: Install latest versions of python packages
-        uses: ./.github/actions/install_requirements
-        with:
-          python-version: ${{ inputs.python-version }}
-          pip-install: ".[dev]"
-          
       - name: Run tests win
         if: inputs.runs-on == 'windows-latest'
-        run: tox -e tests -- --timeout=6
+        run: uv run --locked tox -e tests -- --timeout=10 ${{ inputs.tests-path}}
 
       - name: Non win tests
         if: inputs.runs-on != 'windows-latest'
-        run: tox -e tests -- --timeout=2
-      
+        run: uv run --locked tox -e tests -- --timeout=2 ${{ inputs.tests-path}}
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          name: ${{ inputs.python-version }}/${{ inputs.runs-on }}
+          name: ${{ inputs.python-version }}/${{ inputs.runs-on }}/${{ inputs.tests-path }}
           files: cov.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

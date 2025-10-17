@@ -13,7 +13,7 @@ from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 from ._utils import (
     DEFAULT_TIMEOUT,
     LazyMock,
-    NotConnected,
+    NotConnectedError,
     error_if_none,
     wait_for_connection,
 )
@@ -54,7 +54,7 @@ class DeviceConnector:
             except Exception as e:
                 exceptions[name] = e
         if exceptions:
-            raise NotConnected.with_other_exceptions_logged(exceptions)
+            raise NotConnectedError.with_other_exceptions_logged(exceptions)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Use during [](#Device.connect) with `mock=False`.
@@ -62,7 +62,7 @@ class DeviceConnector:
         This is called when there is no cached connect done in `mock=False`
         mode. It connects the Device and all its children in real mode in parallel.
         """
-        # Connect in parallel, gathering up NotConnected errors
+        # Connect in parallel, gathering up NotConnectedErrors
         coros = {
             name: child_device.connect(timeout=timeout, force_reconnect=force_reconnect)
             for name, child_device in device.children()
@@ -335,7 +335,7 @@ class DeviceProcessor:
         try:
             fut = call_in_bluesky_event_loop(self._on_exit())
         except RuntimeError as e:
-            raise NotConnected(
+            raise NotConnectedError(
                 "Could not connect devices. Is the bluesky event loop running? See "
                 "https://blueskyproject.io/ophyd-async/main/"
                 "user/explanations/event-loop-choice.html for more info."
@@ -372,7 +372,7 @@ def init_devices(
     :param mock: If True, connect Signals in mock mode.
     :param timeout: How long to wait for connect before logging an exception.
     :raises RuntimeError: If used inside a plan, use [](#ensure_connected) instead.
-    :raises NotConnected: If devices could not be connected.
+    :raises NotConnectedError: If devices could not be connected.
 
     For example, to connect and name 2 motors in parallel:
     ```python
