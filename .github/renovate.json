@@ -4,8 +4,9 @@
     "config:recommended"
   ],
   "lockFileMaintenance": {
-    "description": "Keep uv.lock up to date",
-    "enabled": true
+    "description": "Keep uv.lock up to date, merging if tests pass",
+    "enabled": true,
+    "automerge": true    
   },
   "packageRules": [
     {
