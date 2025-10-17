@@ -138,3 +138,12 @@ class Sensor(StandardReadable, EpicsDevice):
     value: A[SignalR[float], PvSuffix("Value"), Format.HINTED_SIGNAL]
     mode: A[SignalRW[EnergyMode], PvSuffix("Mode"), Format.CONFIG_SIGNAL]
 ```
+
+Note that to use `Annotated as A` with ruff name checking we recommend adding something like:
+
+```
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+# We often shorten "Annotated" to "A" for brevity
+"typing.Annotated" = "A"
+```
+to your `pyproject.toml`.

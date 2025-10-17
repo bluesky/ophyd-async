@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>9. Procedural vs Declarative Devices &#8212; ophyd-async 0.13.5.dev10+g60dd9dfb5 documentation</title>
+    <title>9. Procedural vs Declarative Devices &#8212; ophyd-async 0.13.5.dev11+g0124437dc documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=ad67f88e"></script>
+    <script src="../../_static/documentation_options.js?v=11dbf775"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev10+g60dd9dfb5 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev10+g60dd9dfb5 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev11+g0124437dc documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev11+g0124437dc documentation - Home"/>
   
   
 </a></div>
@@ -632,6 +632,13 @@
     <span class="n">mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">EnergyMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
 </pre></div>
 </div>
+<p>Note that to use <code class="docutils literal notranslate"><span class="pre">Annotated</span> <span class="pre">as</span> <span class="pre">A</span></code> with ruff name checking we recommend adding something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">tool</span><span class="o">.</span><span class="n">ruff</span><span class="o">.</span><span class="n">lint</span><span class="o">.</span><span class="n">flake8</span><span class="o">-</span><span class="n">import</span><span class="o">-</span><span class="n">conventions</span><span class="o">.</span><span class="n">extend</span><span class="o">-</span><span class="n">aliases</span><span class="p">]</span>
+<span class="c1"># We often shorten &quot;Annotated&quot; to &quot;A&quot; for brevity</span>
+<span class="s2">&quot;typing.Annotated&quot;</span> <span class="o">=</span> <span class="s2">&quot;A&quot;</span>
+</pre></div>
+</div>
+<p>to your <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>.</p>
 </section>
 </section>
 
