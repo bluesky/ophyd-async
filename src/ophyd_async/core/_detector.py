@@ -249,11 +249,11 @@ class StandardDetector(
                 )
             try:
                 await signal.get_value()
-            except NotImplementedError as e:
+            except NotImplementedError as exc:
                 raise Exception(
                     f"config signal {signal.name} must be connected before it is "
                     + "passed to the detector"
-                ) from e
+                ) from exc
 
     @AsyncStatus.wrap
     async def unstage(self) -> None:

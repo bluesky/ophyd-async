@@ -53,10 +53,10 @@ async def test_init_devices_handles_top_level_errors(caplog):
 
 
 def test_sync_init_devices_no_run_engine_raises_error():
-    with pytest.raises(NotConnectedError) as e:
+    with pytest.raises(NotConnectedError) as exc:
         with init_devices():
             working_device = WorkingDevice("somename")
-    assert e.value._errors == (
+    assert exc.value._errors == (
         "Could not connect devices. Is the bluesky event loop running? See "
         "https://blueskyproject.io/ophyd-async/main/"
         "user/explanations/event-loop-choice.html for more info."

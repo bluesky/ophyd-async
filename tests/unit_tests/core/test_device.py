@@ -180,9 +180,9 @@ async def test_wait_for_connection_propagates_error(
 ):
     failing_coros = {"test": normal_coroutine(), "failing": failing_coroutine()}
 
-    with pytest.raises(NotConnectedError) as e:
+    with pytest.raises(NotConnectedError) as exc:
         await wait_for_connection(**failing_coros)
-        assert traceback.extract_tb(e.__traceback__)[-1].name == "failing_coroutine"
+        assert traceback.extract_tb(exc.__traceback__)[-1].name == "failing_coroutine"
 
 
 async def test_device_log_has_correct_name():

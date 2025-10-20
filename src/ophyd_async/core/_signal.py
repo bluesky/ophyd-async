@@ -39,8 +39,8 @@ from ._utils import (
 async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
     try:
         return await asyncio.wait_for(coro, timeout)
-    except TimeoutError as e:
-        raise TimeoutError(source) from e
+    except TimeoutError as exc:
+        raise TimeoutError(source) from exc
 
 
 def _add_timeout(func):
@@ -123,11 +123,11 @@ class _SignalCache(Generic[SignalDatatypeT]):
         self.backend: SignalBackend[SignalDatatypeT] = backend
         try:
             asyncio.get_running_loop()
-        except RuntimeError as e:
+        except RuntimeError as exc:
             raise RuntimeError(
                 "Need a running event loop to subscribe to a signal, "
                 "are you trying to run subscribe outside a plan?"
-            ) from e
+            ) from exc
         signal.log.debug(f"Making subscription on source {signal.source}")
         backend.set_callback(self._callback)
 
@@ -539,11 +539,11 @@ class _ValueChecker(Generic[SignalDatatypeT]):
     ):
         try:
             await asyncio.wait_for(self._wait_for_value(signal), timeout)
-        except TimeoutError as e:
+        except TimeoutError as exc:
             raise TimeoutError(
                 f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
                 f"last value {self._last_value!r}"
-            ) from e
+            ) from exc
 
 
 async def wait_for_value(
@@ -638,11 +638,11 @@ async def set_and_wait_for_other_value(
             await asyncio.wait_for(_wait_for_value(), timeout)
             if wait_for_set_completion:
                 await status
-        except TimeoutError as e:
+        except TimeoutError as exc:
             raise TimeoutError(
                 f"{match_signal.name} value didn't match value from"
                 f" {matcher.__name__}() in {timeout}s"
-            ) from e
+            ) from exc
 
     return status
 

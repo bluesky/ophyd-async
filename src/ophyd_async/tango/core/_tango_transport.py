@@ -396,8 +396,8 @@ class AttributeProxy(TangoProxy):
             # Initial reading
             if self._callback is not None:
                 self._callback(last_reading)
-        except Exception as e:
-            raise RuntimeError(f"Could not poll the attribute: {e}") from e
+        except Exception as exc:
+            raise RuntimeError(f"Could not poll the attribute: {exc}") from exc
 
         try:
             # If the value is a number, we can check for changes
@@ -453,8 +453,8 @@ class AttributeProxy(TangoProxy):
                                 else:
                                     break
                         last_reading = reading.copy()
-        except Exception as e:
-            raise RuntimeError(f"Could not poll the attribute: {e}") from e
+        except Exception as exc:
+            raise RuntimeError(f"Could not poll the attribute: {exc}") from exc
 
     def set_polling(
         self,
@@ -643,12 +643,12 @@ def get_source_metadata(
             if config.format:
                 try:
                     _precision = int(config.format.split(".")[1].split("f")[0])
-                except (ValueError, IndexError) as e:
+                except (ValueError, IndexError) as exc:
                     # If parsing config.format fails, _precision remains None.
                     logger.warning(
                         "Failed to parse precision from config.format: %s. Error: %s",
                         config.format,
-                        e,
+                        exc,
                     )
             no_limits = Limits(
                 control=LimitsRange(high=None, low=None),
@@ -795,11 +795,11 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         try:
             sdt = np.dtype(signal_dtype)
             tdt = np.dtype(tr_dtype_arg)
-        except TypeError as e:
+        except TypeError as exc:
             raise TypeError(
                 f"Could not interpret array dtypes: {signal_dtype!r},"
-                f" {tr_dtype_arg!r} ({e})"
-            ) from e
+                f" {tr_dtype_arg!r} ({exc})"
+            ) from exc
 
         if sdt != tdt:
             raise TypeError(

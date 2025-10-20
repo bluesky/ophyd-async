@@ -130,8 +130,8 @@ async def assert_monitor_then_put(
         test_descriptor = dict(source=source, **descriptor)
         try:
             backend_datakey = await backend.get_datakey(source)
-        except Exception as e:
-            pytest.fail(f"Failed to get datakey for {source}: {e}")
+        except Exception as exc:
+            pytest.fail(f"Failed to get datakey for {source}: {exc}")
         for key, value in test_descriptor.items():
             assert backend_datakey[key] == value, (
                 f"Key {key} mismatch: {value} != {backend_datakey[key]}."
@@ -167,8 +167,8 @@ async def test_backend_get_put_monitor_attr(
             )
     except TimeoutError:
         pytest.fail("Test timed out")
-    except Exception as e:
-        pytest.fail(f"Test failed with exception: {e}")
+    except Exception as exc:
+        pytest.fail(f"Test failed with exception: {exc}")
 
 
 # --------------------------------------------------------------------
@@ -452,9 +452,9 @@ async def test_set_callback(everything_device_trl):
     source = get_full_attr_trl(everything_device_trl, "float32")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnectedError) as exc_info:
+    with pytest.raises(NotConnectedError) as exc:
         await transport.put(1.0)
-    assert "Not connected" in str(exc_info.value)
+    assert "Not connected" in str(exc.value)
 
     await transport.connect(1)
     val = None
@@ -472,7 +472,7 @@ async def test_set_callback(everything_device_trl):
     assert val == new_value
 
     # Try to add second callback
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         transport.set_callback(callback)
     assert "Cannot set a callback when one is already set"
 
@@ -481,15 +481,15 @@ async def test_set_callback(everything_device_trl):
     # Try to add a callback to a non-callable proxy
     transport.allow_events(False)
     transport.set_polling(False)
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         transport.set_callback(callback)
-    assert "Cannot set event" in str(exc_info.value)
+    assert "Cannot set event" in str(exc.value)
 
     # Try to add a non-callable callback
     transport.allow_events(True)
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         transport.set_callback(1)
-    assert "Callback must be a callable" in str(exc_info.value)
+    assert "Callback must be a callable" in str(exc.value)
 
 
 @pytest.mark.asyncio
@@ -535,9 +535,9 @@ async def test_attribute_subscribe_callback(everything_device_trl):
 
     attr_proxy.set_polling(False)
     attr_proxy.support_events = False
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         attr_proxy.subscribe_callback(callback)
-    assert "Cannot set a callback" in str(exc_info.value)
+    assert "Cannot set a callback" in str(exc.value)
 
 
 @pytest.mark.asyncio

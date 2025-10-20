@@ -260,7 +260,7 @@ async def test_assembly_renaming() -> None:
 
 
 async def test_point_detector_disconnected():
-    with pytest.raises(NotConnectedError) as e:
+    with pytest.raises(NotConnectedError) as exc:
         async with init_devices(timeout=0.1):
             det = demo.DemoPointDetector("MOCK:DET:")
     expected = """
@@ -280,7 +280,7 @@ det: NotConnectedError:
     acquiring: NotConnectedError: ca://MOCK:DET:Acquiring
     reset: NotConnectedError: ca://MOCK:DET:Reset.PROC
 """
-    assert str(e.value) == expected
+    assert str(exc.value) == expected
 
     assert det.name == "det"
 
