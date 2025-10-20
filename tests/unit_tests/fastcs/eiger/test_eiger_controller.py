@@ -6,6 +6,7 @@ from ophyd_async.core import (
     TriggerInfo,
     init_devices,
 )
+from ophyd_async.epics.odin import Odin
 from ophyd_async.fastcs.eiger import EigerController, EigerDriverIO
 from ophyd_async.testing import (
     callback_on_mock_put,
@@ -21,13 +22,16 @@ DriverAndController = tuple[EigerDriverIO, EigerController]
 def eiger_driver_and_controller_no_arm(RE) -> DriverAndController:
     with init_devices(mock=True):
         driver = EigerDriverIO("")
-        controller = EigerController(driver)
+        odin = Odin("")
+        controller = EigerController(driver, odin)
 
-    def become_idle_after_arm(*args, **kwargs):
+    def complete_arming(*args, **kwargs):
+        # Mocking that Odin fan is ready
+        set_mock_value(odin.fan_ready, True)
         # Mocking that eiger has armed and finished taking frames.
         set_mock_value(driver.detector.state, "idle")
 
-    callback_on_mock_put(driver.detector.arm, become_idle_after_arm)
+    callback_on_mock_put(driver.detector.arm, complete_arming)
 
     return driver, controller
 
