@@ -51,8 +51,8 @@ class DeviceConnector:
         for name, child_device in device.children():
             try:
                 await child_device.connect(mock=mock.child(name))
-            except Exception as e:
-                exceptions[name] = e
+            except Exception as exc:
+                exceptions[name] = exc
         if exceptions:
             raise NotConnectedError.with_other_exceptions_logged(exceptions)
 
@@ -334,12 +334,12 @@ class DeviceProcessor:
         self._locals_on_exit = self._caller_locals()
         try:
             fut = call_in_bluesky_event_loop(self._on_exit())
-        except RuntimeError as e:
+        except RuntimeError as exc:
             raise NotConnectedError(
                 "Could not connect devices. Is the bluesky event loop running? See "
                 "https://blueskyproject.io/ophyd-async/main/"
                 "user/explanations/event-loop-choice.html for more info."
-            ) from e
+            ) from exc
         return fut
 
     async def _on_exit(self) -> None:

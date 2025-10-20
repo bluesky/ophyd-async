@@ -192,8 +192,8 @@ async def wait_for_connection(**coros: Awaitable[None]):
         name, coro = coros.popitem()
         try:
             await coro
-        except Exception as e:
-            exceptions[name] = e
+        except Exception as exc:
+            exceptions[name] = exc
     else:
         # Use gather to connect in parallel
         results = await asyncio.gather(*coros.values(), return_exceptions=True)
