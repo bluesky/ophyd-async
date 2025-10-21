@@ -1,5 +1,21 @@
 """The building blocks for making devices."""
-
+from ._command import (
+    Command,
+    CommandBackend,
+    CommandConnector,
+    CommandR,
+    CommandRW,
+    CommandW,
+    CommandX,
+    CommandArguments,
+    CommandReturn,
+    MockCommandBackend,
+    SoftCommandBackend,
+    soft_command_r,
+    soft_command_rw,
+    soft_command_w,
+    soft_command_x,
+)
 from ._derived_signal import (
     DerivedSignalFactory,
     derived_signal_r,
@@ -244,4 +260,14 @@ __all__ = [
     "OnOff",
     "YesNo",
     "TableSubclass",
+    # Command
+    "CommandArguments",
+    "CommandReturn",
+    "Command",
+    "CommandBackend",
+    "CommandConnector",
+    "CommandR",
+    "CommandRW",
+    "CommandW",
+    "CommandX",
 ]

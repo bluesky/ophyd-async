@@ -16,11 +16,13 @@ from typing import (
 )
 
 from ._device import Device, DeviceConnector, DeviceVector
-from ._signal import Ignore, Signal, SignalX
+from ._signal import Ignore, Signal, SignalX, SignalR, SignalW, SignalRW
 from ._signal_backend import SignalBackend, SignalDatatype
 from ._utils import get_origin_class
+from ._command import Command, CommandBackend, CommandR, CommandW, CommandRW, CommandX
 
 SignalBackendT = TypeVar("SignalBackendT", bound=SignalBackend)
+CommandBackendT = TypeVar("CommandBackendT", bound=CommandBackend)
 DeviceConnectorT = TypeVar("DeviceConnectorT", bound=DeviceConnector)
 # Unique name possibly with trailing understore, the attribute name on the Device
 UniqueName = NewType("UniqueName", str)
@@ -298,6 +300,50 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             self._raise(
                 name,
                 f"is a {signal_type.__name__} not a {expected_signal_type.__name__}",
+            )
+        return backend
+
+    def fill_child_command(
+            self,
+            name: str,
+            command_type: type[Command],
+            vector_index: int | None = None,
+    ) -> CommandBackendT:
+        """Mark a Command as filled, and return its backend for filling.
+
+        :param name:
+            The name without trailing underscore, the name in the control system
+        :param command_type:
+            One of the types `CommandR`, `CommandW`, `CommandRW` or `CommandX`
+        :param vector_index: If the child is in a `DeviceVector` then what index is it
+        :return: The CommandBackend for the filled Command.
+        """
+        name = cast(LogicalName, name)
+        if name in self._unfilled_backends:
+            # We made it above
+            backend, expected_command_type = self._unfilled_backends.pop(name)
+            self._filled_backends[name] = backend, expected_command_type
+        elif name in self._filled_backends:
+            # We made it and filled it so return for validation
+            backend, expected_command_type = self._filled_backends[name]
+        elif vector_index:
+            # We need to add a new entry to a DeviceVector
+            vector = self._ensure_device_vector(name)
+            backend = self._signal_backend_factory(None)
+            expected_command_type = self._vector_device_type[name] or command_type
+            vector[vector_index] = command_type(backend)
+        elif child := getattr(self._device, name, None):
+            # There is an existing child, so raise
+            self._raise(name, f"Cannot make child as it would shadow {child}")
+        else:
+            # We need to add a new child to the top level Device
+            backend = self._signal_backend_factory(None)
+            expected_command_type = command_type
+            setattr(self._device, name, command_type(backend))
+        if command_type is not expected_command_type:
+            self._raise(
+                name,
+                f"is a {command_type.__name__} not a {expected_command_type.__name__}",
             )
         return backend
 

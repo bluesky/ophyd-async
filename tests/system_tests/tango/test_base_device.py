@@ -27,7 +27,10 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalW,
-    SignalX,
+    CommandX,
+    CommandR,
+    CommandW,
+    CommandRW,
     init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
@@ -495,25 +498,16 @@ async def test_command_autofill(tango_test_device):
     assert hasattr(test_device, "clear")
     clear = test_device.clear
 
-    assert isinstance(echo, SignalRW)
-    assert isinstance(set_msg, SignalW)
-    assert isinstance(get_msg, SignalR)
-    assert isinstance(clear, SignalX)
+    assert isinstance(echo, CommandRW)
+    assert isinstance(set_msg, CommandW)
+    assert isinstance(get_msg, CommandR)
+    assert isinstance(clear, CommandX)
 
-    await echo.set("hello_world")
-    assert await echo.locate() == Location(
-        setpoint="hello_world", readback="hello_world"
-    )
-    assert await echo.get_value() == "hello_world"
+    assert await echo.trigger("hello_world") == "hello_world"
+    assert await get_msg.trigger() == "Hello"
+    await set_msg.trigger("new message")
+    assert await get_msg.trigger() == "new message"
 
-    assert await get_msg.get_value() == "Hello"
-    await set_msg.set("new message")
-    assert await get_msg.get_value() == "new message"
+    await get_msg.trigger("some argument")
 
-    with pytest.raises(AttributeError) as exc:
-        await get_msg.set("new message")
-    assert "object has no attribute 'set'" in str(exc.value)
-
-    with pytest.raises(AttributeError) as exc:
-        await set_msg.get_value()
-    assert "object has no attribute 'get_value" in str(exc.value)
+    await set_msg.trigger(None)
