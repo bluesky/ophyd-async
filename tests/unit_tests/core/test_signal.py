@@ -46,7 +46,6 @@ from ophyd_async.testing import (
     assert_reading,
     assert_value,
     callback_on_mock_put,
-    get_mock_put,
     partial_reading,
     set_mock_put_proceeds,
     set_mock_value,
@@ -168,10 +167,7 @@ async def test_set_and_wait_for_value_same_set_and_read_times_out():
     signal = epics_signal_rw(int, "pva://pv", name="signal")
     await signal.connect(mock=True)
     assert await signal.get_value() == 0
-    set_mock_put_proceeds(signal, False)
-
-    mock_put = get_mock_put(signal)
-    mock_put.side_effect = lambda v: v + 0.01
+    callback_on_mock_put(signal, lambda v, _: v + 2)
 
     with pytest.raises(asyncio.TimeoutError):
         await set_and_wait_for_value(signal, 1, timeout=0.1)
