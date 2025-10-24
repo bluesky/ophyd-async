@@ -406,3 +406,49 @@ async def test_when_put_mock_called_with_typo_then_fails_but_calling_directly_pa
     with pytest.raises(AttributeError):
         mock.asssert_called_once()  # Note typo here is deliberate!
     await mock()
+
+
+async def test_when_callback_on_mock_put_returns_a_value_the_readback_is_set():
+    mock_signal = SignalRW(SoftSignalBackend(int))
+    await mock_signal.connect(mock=True)
+
+    callback_on_mock_put(mock_signal, lambda *_, **__: 2)
+
+    await mock_signal.set(5)
+    assert (await mock_signal.get_value()) == 2
+
+
+async def test_when_callback_on_mock_put_returns_none_then_readback_is_the_setpoint():
+    mock_signal = SignalRW(SoftSignalBackend(int))
+    await mock_signal.connect(mock=True)
+
+    callback_on_mock_put(mock_signal, lambda *_, **__: None)
+
+    await mock_signal.set(5)
+    assert (await mock_signal.get_value()) == 5
+
+
+async def test_when_async_callback_returns_a_value_the_readback_is_set():
+    mock_signal = SignalRW(SoftSignalBackend(int))
+    await mock_signal.connect(mock=True)
+
+    async def async_callback(*_, **__):
+        return 2
+
+    callback_on_mock_put(mock_signal, async_callback)
+
+    await mock_signal.set(5)
+    assert (await mock_signal.get_value()) == 2
+
+
+async def test_when_async_callback_returns_none_then_readback_is_the_setpoint():
+    mock_signal = SignalRW(SoftSignalBackend(int))
+    await mock_signal.connect(mock=True)
+
+    async def async_callback(*_, **__):
+        return None
+
+    callback_on_mock_put(mock_signal, async_callback)
+
+    await mock_signal.set(5)
+    assert (await mock_signal.get_value()) == 5
