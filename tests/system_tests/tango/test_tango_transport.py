@@ -149,14 +149,14 @@ def test_get_python_type(tango_type, tango_format, expected):
         assert get_python_type(config) == expected
     else:
         if tango_format == "bad_format":
-            with pytest.raises(TypeError) as exc_info:
+            with pytest.raises(TypeError) as exc:
                 get_python_type(config)
-            assert str(exc_info.value) == "Unknown TangoFormat"
+            assert str(exc.value) == "Unknown TangoFormat"
             return
         # get_python_type should raise a TypeError
-        with pytest.raises(TypeError) as exc_info:
+        with pytest.raises(TypeError) as exc:
             get_python_type(config)
-        assert str(exc_info.value) == "Unknown TangoType: <class 'float'>"
+        assert str(exc.value) == "Unknown TangoType: <class 'float'>"
 
 
 # --------------------------------------------------------------------
@@ -273,9 +273,9 @@ async def test_attribute_proxy_put(tango_test_device, attr):
 async def test_attribute_proxy_put_force_timeout(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "slow_attribute")
-    with pytest.raises(TimeoutError) as exc_info:
+    with pytest.raises(TimeoutError) as exc:
         await attr_proxy.put(3.0, timeout=0.1)
-    assert "Timeout" in str(exc_info.value)
+    assert "Timeout" in str(exc.value)
 
 
 # --------------------------------------------------------------------
@@ -283,9 +283,9 @@ async def test_attribute_proxy_put_force_timeout(tango_test_device):
 async def test_attribute_proxy_put_exceptions(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     attr_proxy = AttributeProxy(device_proxy, "raise_exception_attr")
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         await attr_proxy.put(3.0)
-    assert "device failure" in str(exc_info.value)
+    assert "device failure" in str(exc.value)
 
 
 # --------------------------------------------------------------------
@@ -469,9 +469,9 @@ async def test_command_proxy_put_wait(tango_test_device):
     # Force timeout
     cmd_proxy = CommandProxy(device_proxy, "slow_command")
     cmd_proxy._last_reading = None
-    with pytest.raises(TimeoutError) as exc_info:
+    with pytest.raises(TimeoutError) as exc:
         await cmd_proxy.put(None, wait=True, timeout=0.1)
-    assert "command failed" in str(exc_info.value)
+    assert "command failed" in str(exc.value)
 
 
 # --------------------------------------------------------------------
@@ -482,9 +482,9 @@ async def test_command_proxy_put_nowait(tango_test_device):
     cmd_proxy = CommandProxy(device_proxy, "slow_command")
 
     # Try to set wait=False
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         await cmd_proxy.put(None, wait=False)
-    assert "is not supported" in str(exc_info.value)
+    assert "is not supported" in str(exc.value)
 
     # Reply before timeout
     cmd_proxy._last_reading = None
@@ -496,9 +496,9 @@ async def test_command_proxy_put_nowait(tango_test_device):
     # Timeout
     cmd_proxy._last_reading = None
     status = cmd_proxy.put(None, timeout=0.1)
-    with pytest.raises(TimeoutError) as exc_info:
+    with pytest.raises(TimeoutError) as exc:
         await status
-    assert "Timeout" in str(exc_info.value)
+    assert "Timeout" in str(exc.value)
 
     # No timeout
     cmd_proxy._last_reading = None
@@ -515,9 +515,9 @@ async def test_command_proxy_put_exceptions(tango_test_device, wait):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "raise_exception_cmd")
     await cmd_proxy.connect()
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         await cmd_proxy.put(None, wait=True)
-    assert "device failure" in str(exc_info.value)
+    assert "device failure" in str(exc.value)
 
 
 # --------------------------------------------------------------------
@@ -601,9 +601,9 @@ async def test_tango_transport_connect(tango_test_device):
     assert backend is not None
     await backend.connect(1)
     backend.read_trl = ""
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         await backend.connect(1)
-    assert "trl not set" in str(exc_info.value)
+    assert "trl not set" in str(exc.value)
 
 
 # --------------------------------------------------------------------
@@ -614,9 +614,9 @@ async def test_tango_transport_connect_and_store_config(tango_test_device):
     await transport._connect_and_store_config(source, 1)
     assert transport.trl_configs[source] is not None
 
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         await transport._connect_and_store_config("", 1)
-    assert "trl not set" in str(exc_info.value)
+    assert "trl not set" in str(exc.value)
 
 
 # --------------------------------------------------------------------
@@ -625,9 +625,9 @@ async def test_tango_transport_put(tango_test_device):
     source = get_full_attr_trl(tango_test_device, "floatvalue")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnectedError) as exc_info:
+    with pytest.raises(NotConnectedError) as exc:
         await transport.put(1.0)
-    assert "Not connected" in str(exc_info.value)
+    assert "Not connected" in str(exc.value)
 
     await transport.connect(1)
     source = transport.source("", True)
@@ -644,9 +644,9 @@ async def test_tango_transport_get_datakey(tango_test_device):
 
     transport = TangoSignalBackend(float, trl, trl, device_proxy)
 
-    with pytest.raises(NotConnectedError) as exc_info:
+    with pytest.raises(NotConnectedError) as exc:
         await transport.get_datakey(transport.read_trl)
-    assert "Not connected" in str(exc_info.value)
+    assert "Not connected" in str(exc.value)
 
     await transport.connect(1)
     datakey = await transport.get_datakey(trl)
@@ -691,9 +691,9 @@ async def test_tango_transport_get_reading(tango_test_device):
     source = get_full_attr_trl(tango_test_device, "floatvalue")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnectedError) as exc_info:
+    with pytest.raises(NotConnectedError) as exc:
         await transport.put(1.0)
-    assert "Not connected" in str(exc_info.value)
+    assert "Not connected" in str(exc.value)
 
     await transport.connect(1)
     reading = await transport.get_reading()
@@ -706,9 +706,9 @@ async def test_tango_transport_get_value(tango_test_device):
     source = get_full_attr_trl(tango_test_device, "floatvalue")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnectedError) as exc_info:
+    with pytest.raises(NotConnectedError) as exc:
         await transport.put(1.0)
-    assert "Not connected" in str(exc_info.value)
+    assert "Not connected" in str(exc.value)
 
     await transport.connect(1)
     value = await transport.get_value()
@@ -721,9 +721,9 @@ async def test_tango_transport_get_setpoint(tango_test_device):
     source = get_full_attr_trl(tango_test_device, "floatvalue")
     transport = await make_backend(float, source, connect=False)
 
-    with pytest.raises(NotConnectedError) as exc_info:
+    with pytest.raises(NotConnectedError) as exc:
         await transport.put(1.0)
-    assert "Not connected" in str(exc_info.value)
+    assert "Not connected" in str(exc.value)
 
     await transport.connect(1)
     new_setpoint = 2.0
@@ -770,9 +770,9 @@ async def test_tango_transport_read_only_trl(tango_test_device):
     # Test with existing proxy
     transport = TangoSignalBackend(int, read_trl, read_trl, device_proxy)
     await transport.connect(1)
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         await transport.put(1)
-    assert "is not writable" in str(exc_info.value)
+    assert "is not writable" in str(exc.value)
 
 
 # --------------------------------------------------------------------
@@ -784,15 +784,15 @@ async def test_tango_transport_nonexistent_trl(tango_test_device):
 
     # Test with existing proxy
     transport = TangoSignalBackend(int, nonexistent_trl, nonexistent_trl, device_proxy)
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         await transport.connect(1)
-    assert "cannot be found" in str(exc_info.value)
+    assert "cannot be found" in str(exc.value)
 
     # Without pre-existing proxy
     transport = TangoSignalBackend(int, nonexistent_trl, nonexistent_trl, None)
-    with pytest.raises(RuntimeError) as exc_info:
+    with pytest.raises(RuntimeError) as exc:
         await transport.connect(1)
-    assert "cannot be found" in str(exc_info.value)
+    assert "cannot be found" in str(exc.value)
 
 
 # ----------------------------------------------------------------------
@@ -803,9 +803,9 @@ async def test_type_mismatch_justvalue(tango_test_device):
     trl = get_full_attr_trl(tango_test_device, "justvalue")
 
     transport = TangoSignalBackend(float, trl, trl, device_proxy)
-    with pytest.raises(TypeError) as exc_info:
+    with pytest.raises(TypeError) as exc:
         await transport.connect(1)
-    val = str(exc_info.value)
+    val = str(exc.value)
     assert "has type" in val
     assert "int" in val
     assert "float" in val
@@ -818,9 +818,9 @@ async def test_type_mismatch_array(tango_test_device):
     trl = get_full_attr_trl(tango_test_device, "array")
 
     transport = TangoSignalBackend(npt.NDArray[int], trl, trl, device_proxy)
-    with pytest.raises(TypeError) as exc_info:
+    with pytest.raises(TypeError) as exc:
         await transport.connect(1)
-    val = str(exc_info.value)
+    val = str(exc.value)
     assert "has type numpy.ndarray" in val
     assert "numpy.dtype" in val
     assert "float" in val
@@ -834,9 +834,9 @@ async def test_type_mismatch_sequence(tango_test_device):
     trl = get_full_attr_trl(tango_test_device, "sequence")
 
     transport = TangoSignalBackend(Sequence[int], trl, trl, device_proxy)
-    with pytest.raises(TypeError) as exc_info:
+    with pytest.raises(TypeError) as exc:
         await transport.connect(1)
-    val = str(exc_info.value)
+    val = str(exc.value)
     assert "has type" in val
     assert "str" in val
     assert "Sequence" in val
@@ -850,9 +850,9 @@ async def test_type_mismatch_longstringarray(tango_test_device):
     trl = get_full_attr_trl(tango_test_device, "get_longstringarray")
 
     transport = TangoSignalBackend(TangoDoubleStringTable, trl, trl, device_proxy)
-    with pytest.raises(TypeError) as exc_info:
+    with pytest.raises(TypeError) as exc:
         await transport.connect(1)
-    val = str(exc_info.value)
+    val = str(exc.value)
     assert "has type" in val
     assert "TangoLongStringTable" in val
     assert "TangoDoubleStringTable" in val

@@ -118,10 +118,10 @@ async def test_error_handling_connection_timeout(caplog):
     dummy_device_one_working_one_timeout = DummyDeviceOneWorkingOneTimeout()
 
     # This should work since the error is a connection timeout
-    with pytest.raises(NotConnectedError) as e:
+    with pytest.raises(NotConnectedError) as exc:
         await dummy_device_one_working_one_timeout.connect(timeout=0.01)
 
-    assert str(e.value) == str(ONE_WORKING_ONE_TIMEOUT_OUTPUT)
+    assert str(exc.value) == str(ONE_WORKING_ONE_TIMEOUT_OUTPUT)
 
     logs = caplog.get_records("call")
 
@@ -142,10 +142,10 @@ async def test_error_handling_value_errors(caplog):
     )
 
     # This should fail since the error is a ValueError
-    with pytest.raises(NotConnectedError) as e:
+    with pytest.raises(NotConnectedError) as exc:
         await dummy_device_two_working_one_timeout_two_value_error.connect(timeout=0.01)
 
-    assert str(e.value) == str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
+    assert str(exc.value) == str(TWO_WORKING_TWO_TIMEOUT_TWO_VALUE_ERROR_OUTPUT)
 
     logs = caplog.get_records("call")
     logs = [
@@ -177,7 +177,7 @@ class BadDatatypeDevice(Device):
 
 
 async def test_error_handling_init_devices_mock():
-    with pytest.raises(NotConnectedError) as e:
+    with pytest.raises(NotConnectedError) as exc:
         async with init_devices(mock=True):
             device = BadDatatypeDevice()
             device2 = BadDatatypeDevice()
@@ -191,7 +191,7 @@ async def test_error_handling_init_devices_mock():
             ),
         }
     )
-    assert str(expected_output) == str(e.value)
+    assert str(expected_output) == str(exc.value)
 
 
 def test_introspecting_sub_errors():
@@ -204,7 +204,7 @@ def test_introspecting_sub_errors():
 
 async def test_error_handling_init_devices(caplog):
     caplog.set_level(10)
-    with pytest.raises(NotConnectedError) as e:
+    with pytest.raises(NotConnectedError) as exc:
         # flake8: noqa
         async with init_devices(timeout=0.1):
             dummy_device_two_working_one_timeout_two_value_error = (
@@ -220,7 +220,7 @@ async def test_error_handling_init_devices(caplog):
             "dummy_device_one_working_one_timeout": ONE_WORKING_ONE_TIMEOUT_OUTPUT,
         }
     )
-    assert str(expected_output) == str(e.value)
+    assert str(expected_output) == str(exc.value)
 
     logs = caplog.get_records("call")
     logs = [
@@ -259,18 +259,18 @@ def test_not_connected_error_output():
 
 async def test_combining_top_level_signal_and_child_device():
     dummy_device1 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
-    with pytest.raises(NotConnectedError) as e:
+    with pytest.raises(NotConnectedError) as exc:
         await dummy_device1.connect(timeout=0.01)
-    assert str(e.value) == (
+    assert str(exc.value) == (
         "\ntimeout_signal: NotConnectedError: ca://A_NON_EXISTENT_SIGNAL\n"
         "sub_device: NotConnectedError:\n"
         "    value_error_signal: ValueError: Some ValueError text\n"
     )
 
-    with pytest.raises(NotConnectedError) as e:
+    with pytest.raises(NotConnectedError) as exc:
         async with init_devices(timeout=0.1):
             dummy_device2 = DummyDeviceCombiningTopLevelSignalAndSubDevice()
-    assert str(e.value) == (
+    assert str(exc.value) == (
         "\ndummy_device2: NotConnectedError:\n"
         "    timeout_signal: NotConnectedError: ca://A_NON_EXISTENT_SIGNAL\n"
         "    sub_device: NotConnectedError:\n"

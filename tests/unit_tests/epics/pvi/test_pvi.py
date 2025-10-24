@@ -168,9 +168,9 @@ class NoSignalTypeInVector(Device):
 
 @pytest.mark.parametrize("cls", [NoSignalType, NoSignalTypeInVector])
 async def test_no_type_annotation_blocks(cls):
-    with pytest.raises(TypeError) as cm:
+    with pytest.raises(TypeError) as exc:
         with_pvi_connector(cls, "PREFIX:")
-    assert str(cm.value) == (
+    assert str(exc.value) == (
         f"{cls.__name__}.a: Expected SignalX or SignalR/W/RW[type], "
         "got <class 'ophyd_async.core._signal.SignalRW'>"
     )
@@ -193,9 +193,9 @@ async def test_correctly_setting_signal_type_from_signal_details(
     connector = PviDeviceConnector("")
     connector.filler = MagicMock()
     if not expected_signal_type:
-        with pytest.raises(TypeError) as e:
+        with pytest.raises(TypeError) as exc:
             connector._fill_child("signal", mock_entry)
-        assert "Can't process entry" in str(e.value)
+        assert "Can't process entry" in str(exc.value)
     else:
         connector._fill_child("signal", mock_entry)
         connector.filler.fill_child_signal.assert_called_once_with(

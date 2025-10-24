@@ -63,8 +63,8 @@ def convert_pv_dtype_to_np(datatype: str) -> str:
     else:
         try:
             np_datatype = convert_ad_dtype_to_np(_pvattribute_to_ad_datatype[datatype])
-        except KeyError as e:
-            raise ValueError(f"Invalid dbr type {datatype}") from e
+        except KeyError as exc:
+            raise ValueError(f"Invalid dbr type {datatype}") from exc
     return np_datatype
 
 
@@ -81,8 +81,8 @@ def convert_param_dtype_to_np(datatype: str) -> str:
             np_datatype = convert_ad_dtype_to_np(
                 _paramattribute_to_ad_datatype[datatype]
             )
-        except KeyError as e:
-            raise ValueError(f"Invalid datatype {datatype}") from e
+        except KeyError as exc:
+            raise ValueError(f"Invalid datatype {datatype}") from exc
     return np_datatype
 
 
