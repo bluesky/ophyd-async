@@ -67,7 +67,9 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
     async def put(self, value: SignalDatatypeT | None, wait: bool):
         new_value = await self.put_mock(value, wait=wait)
-        if new_value is None:
+        # The returned value will be AsyncMock if no callback has been added otherwise
+        # will be the callback's return value
+        if new_value is None or isinstance(new_value, AsyncMock):
             new_value = value
         await self.soft_backend.put(new_value, wait=wait)
         if wait:
