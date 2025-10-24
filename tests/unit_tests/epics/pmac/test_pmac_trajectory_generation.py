@@ -8,12 +8,14 @@ from ophyd_async.epics.pmac import (
     PmacIO,
 )
 from ophyd_async.epics.pmac._pmac_trajectory_generation import (
+    MIN_INTERVAL,  # noqa: PLC2701
     PVT,  # noqa: PLC2701
     Trajectory,  # noqa: PLC2701
 )
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,  # noqa: PLC2701
 )
+from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture
@@ -1162,3 +1164,32 @@ async def test_hardware_triggered_step_scan(
             8,
         ]
     ).all()
+
+
+async def test_small_turnaround_durations_are_quantized(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac, sim_x_motor, sim_y_motor = sim_motors
+
+    # These parameters result in gap point durations < MIN_INTERVAL
+    set_mock_value(sim_y_motor.max_velocity, 100)
+    set_mock_value(sim_y_motor.acceleration_time, 0.25)
+    motor_info = await _PmacMotorInfo.from_motors(pmac, [sim_x_motor, sim_y_motor])
+    spec = Fly(float(1) @ (Line(sim_y_motor, 0, 1, 10) * ~Line(sim_x_motor, 0, 1, 10)))
+    slice = Path(spec.calculate()).consume()
+
+    # Parse the first turnaround profile
+    trajectory, _ = Trajectory.from_gap(
+        motor_info=motor_info,
+        gap=10,
+        motors=[sim_x_motor, sim_y_motor],
+        slice=slice,
+        entry_pvt=PVT(
+            position={sim_x_motor: np.float64(1.055), sim_y_motor: np.float64(0)},
+            velocity={sim_x_motor: np.float64(0.1111), sim_y_motor: np.float64(0)},
+            time=np.float64(0.5),
+        ),
+    )
+
+    # Check that gap durations are snapped up to nearest interval
+    assert min(trajectory.durations) == pytest.approx(MIN_INTERVAL)
