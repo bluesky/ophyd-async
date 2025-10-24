@@ -126,16 +126,17 @@ async def test_pmac_trajectory_kickoff(
             1.0,
             1.0,
             1.0,
-            1.4,
+            1.395,
             3.0,
-            4.6,
+            4.605,
             5.0,
             5.0,
             5.0,
             5.0,
             5.0,
             5.0,
-        ]
+        ],
+        1e-3,
     )
 
     sim_y_motor_velocity_arrays = [
@@ -173,9 +174,9 @@ async def test_pmac_trajectory_kickoff(
             0.0,
             0.0,
             0.0,
-            4.0,
-            8.9442,
-            4.0,
+            3.951,
+            8.888,
+            3.951,
             0.0,
             0.0,
             0.0,
@@ -183,7 +184,7 @@ async def test_pmac_trajectory_kickoff(
             0.0,
             0.0,
         ],
-        1e-5,
+        1e-3,
     )
 
 

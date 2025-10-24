@@ -558,6 +558,9 @@ def _get_velocity_profile(
         # Check if all profiles have converged on min_time
         if np.isclose(new_min_time, min_time):
             for motor in motors:
+                # MIN_INTERVAL should be less than our convergence tolerance
+                # such that motors snap to the same point in the time grid
+                profiles[motor].quantize()
                 time_arrays[motor], velocity_arrays[motor] = profiles[
                     motor
                 ].make_arrays()
