@@ -21,6 +21,7 @@ from ._enums import (
     EnableDisable,
     InOut,
     OnOff,
+    YesNo,
 )
 from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
 from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
@@ -241,5 +242,6 @@ __all__ = [
     "EnableDisable",
     "InOut",
     "OnOff",
+    "YesNo",
     "TableSubclass",
 ]

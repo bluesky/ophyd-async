@@ -575,10 +575,10 @@ async def test_backend_wrong_type_errors(
     ioc_devices: EpicsTestIocAndDevices, typ, suff, errors, protocol: Protocol
 ):
     signal = epics_signal_rw(typ, ioc_devices.get_pv(protocol, suff))
-    with pytest.raises(TypeError) as cm:
+    with pytest.raises(TypeError) as exc:
         await signal.connect()
     for error in errors:
-        assert error in str(cm.value)
+        assert error in str(exc.value)
 
 
 @pytest.mark.timeout(TIMEOUT)

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "lockFileMaintenance": {
+    "description": "Keep uv.lock up to date, merging if tests pass",
+    "enabled": true,
+    "automerge": true    
+  },
+  "packageRules": [
+    {
+      "description": "Disable python version as that is managed by python-copier-template",
+      "matchManagers": [
+        "pyenv"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Disable github actions that are managed by python-copier-template",
+      "matchPackageNames": [
+        "actions/checkout",
+        "actions/download-artifact",
+        "actions/setup-python",
+        "actions/upload-artifact",
+        "astral-sh/setup-uv",
+        "codecov/codecov-action",
+        "docker/build-push-action",
+        "docker/login-action",
+        "docker/metadata-action",
+        "docker/setup-buildx-action",
+        "peaceiris/actions-gh-pages",
+        "pypa/gh-action-pypi-publish",
+        "softprops/action-gh-release"
+      ],
+      "matchManagers": [
+        "github-actions"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Group non-major github action updates",
+      "groupName": "GitHub Actions",
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "matchManagers": [
+        "github-actions"
+      ]
+    }
+  ]
+}
