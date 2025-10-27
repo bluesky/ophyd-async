@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.testing._mock_signal_utils &#8212; ophyd-async 0.13.5.dev20+gbb7c98987 documentation</title>
+    <title>ophyd_async.testing._mock_signal_utils &#8212; ophyd-async 0.13.6.dev1+gc1626aa99 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=ad82b9dc"></script>
+    <script src="../../../_static/documentation_options.js?v=bf227516"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev20+gbb7c98987 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev20+gbb7c98987 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.6.dev1+gc1626aa99 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.6.dev1+gc1626aa99 documentation - Home"/>
   
   
 </a></div>
@@ -595,13 +595,16 @@ window.addEventListener("load", () => mermaid.run());
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.callback_on_mock_put">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">callback_on_mock_put</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
-    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
-    <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span>
+    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For setting a callback when a backend is put to.</span>
 
 <span class="sd">    Can either be used in a context, with the callback being unset on exit, or</span>
 <span class="sd">    as an ordinary function.</span>
+
+<span class="sd">    The value that the callback returns (if not None) will be set to the signal</span>
+<span class="sd">    readback. If None is returned then the readback will be set to the setpoint.</span>
 
 <span class="sd">    :param signal: A signal with a `MockSignalBackend` backend.</span>
 <span class="sd">    :param callback: The callback to call when the backend is put to during the</span>

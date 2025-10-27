@@ -220,7 +220,7 @@
 ```
 ````
 
-````{py:function} callback_on_mock_put(signal: ~ophyd_async.core.Signal[~ophyd_async.core.SignalDatatypeT], callback: ~collections.abc.Callable[[~ophyd_async.core.SignalDatatypeT, bool], None] | ~collections.abc.Callable[[~ophyd_async.core.SignalDatatypeT, bool], ~collections.abc.Awaitable[None]])
+````{py:function} callback_on_mock_put(signal: ~ophyd_async.core.Signal[~ophyd_async.core.SignalDatatypeT], callback: ~collections.abc.Callable[[~ophyd_async.core.SignalDatatypeT, bool], ~ophyd_async.core.SignalDatatypeT | None] | ~collections.abc.Callable[[~ophyd_async.core.SignalDatatypeT, bool], ~collections.abc.Awaitable[~ophyd_async.core.SignalDatatypeT | None]])
 :canonical: ophyd_async.testing._mock_signal_utils.callback_on_mock_put
 
 ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.callback_on_mock_put

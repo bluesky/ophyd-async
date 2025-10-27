@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Using Devices &#8212; ophyd-async 0.13.5.dev20+gbb7c98987 documentation</title>
+    <title>Using Devices &#8212; ophyd-async 0.13.6.dev1+gc1626aa99 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=ad82b9dc"></script>
+    <script src="../_static/documentation_options.js?v=bf227516"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.5.dev20+gbb7c98987 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.5.dev20+gbb7c98987 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.6.dev1+gc1626aa99 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.6.dev1+gc1626aa99 documentation - Home"/>
   
   
 </a></div>
@@ -581,27 +581,27 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [1]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">pdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 8     Time: 2025-10-23 15:54:36</span>
-<span class="go">Persistent Unique Scan ID: &#39;98ca1297-9d4d-4f7c-9289-3175f848d1e0&#39;</span>
+<span class="go">Transient Scan ID: 8     Time: 2025-10-27 17:05:14</span>
+<span class="go">Persistent Unique Scan ID: &#39;6e040568-ac9d-4e40-8893-009b314876c1&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y | pdet-channel-1-value | pdet-channel-2-value | pdet-channel-3-value |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">|         1 | 15:54:36.8 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
-<span class="go">|         2 | 15:54:37.8 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
-<span class="go">|         3 | 15:54:38.7 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
-<span class="go">|         4 | 15:54:39.5 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
-<span class="go">|         5 | 15:54:40.4 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
-<span class="go">|         6 | 15:54:41.3 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
-<span class="go">|         7 | 15:54:42.2 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
-<span class="go">|         8 | 15:54:43.0 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
-<span class="go">|         9 | 15:54:43.9 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
+<span class="go">|         1 | 17:05:14.6 |      1.000 |      2.000 |                  921 |                  887 |                  859 |</span>
+<span class="go">|         2 | 17:05:15.5 |      1.000 |      2.500 |                  959 |                  926 |                  898 |</span>
+<span class="go">|         3 | 17:05:16.4 |      1.000 |      3.000 |                  937 |                  903 |                  875 |</span>
+<span class="go">|         4 | 17:05:17.3 |      1.500 |      2.000 |                  976 |                  975 |                  974 |</span>
+<span class="go">|         5 | 17:05:18.2 |      1.500 |      2.500 |                  843 |                  843 |                  842 |</span>
+<span class="go">|         6 | 17:05:19.1 |      1.500 |      3.000 |                  660 |                  660 |                  659 |</span>
+<span class="go">|         7 | 17:05:20.0 |      2.000 |      2.000 |                  761 |                  740 |                  722 |</span>
+<span class="go">|         8 | 17:05:20.8 |      2.000 |      2.500 |                  537 |                  516 |                  498 |</span>
+<span class="go">|         9 | 17:05:21.7 |      2.000 |      3.000 |                  487 |                  467 |                  448 |</span>
 <span class="go">+-----------+------------+------------+------------+----------------------+----------------------+----------------------+</span>
-<span class="go">generator grid_scan [&#39;98ca1297&#39;] (scan num: 8)</span>
+<span class="go">generator grid_scan [&#39;6e040568&#39;] (scan num: 8)</span>
 
 
 
-<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;98ca1297-9d4d-4f7c-9289-3175f848d1e0&#39;,), plan_result=&#39;98ca1297-9d4d-4f7c-9289-3175f848d1e0&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[1]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;6e040568-ac9d-4e40-8893-009b314876c1&#39;,), plan_result=&#39;6e040568-ac9d-4e40-8893-009b314876c1&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/sim_grid_scan.png"><img alt="../_images/sim_grid_scan.png" src="../_images/sim_grid_scan.png" style="width: 4in;" />
@@ -611,27 +611,27 @@ In [1]:
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="gp">In [2]: </span><span class="n">RE</span><span class="p">(</span><span class="n">bp</span><span class="o">.</span><span class="n">grid_scan</span><span class="p">([</span><span class="n">bdet</span><span class="p">],</span> <span class="n">stage</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stage</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 
-<span class="go">Transient Scan ID: 9     Time: 2025-10-23 15:54:45</span>
-<span class="go">Persistent Unique Scan ID: &#39;f9d901c1-235f-45c5-aa51-564cc3eb324a&#39;</span>
+<span class="go">Transient Scan ID: 9     Time: 2025-10-27 17:05:22</span>
+<span class="go">Persistent Unique Scan ID: &#39;dc154bb5-275f-4be9-95e4-b85ff5c85e9b&#39;</span>
 <span class="go">New stream: &#39;primary&#39;</span>
 <span class="go">+-----------+------------+------------+------------+</span>
 <span class="go">|   seq_num |       time |    stage-x |    stage-y |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">|         1 | 15:54:45.3 |      1.000 |      2.000 |</span>
-<span class="go">|         2 | 15:54:45.5 |      1.000 |      2.500 |</span>
-<span class="go">|         3 | 15:54:45.6 |      1.000 |      3.000 |</span>
-<span class="go">|         4 | 15:54:45.8 |      1.500 |      2.000 |</span>
-<span class="go">|         5 | 15:54:45.9 |      1.500 |      2.500 |</span>
-<span class="go">|         6 | 15:54:46.0 |      1.500 |      3.000 |</span>
-<span class="go">|         7 | 15:54:46.2 |      2.000 |      2.000 |</span>
-<span class="go">|         8 | 15:54:46.3 |      2.000 |      2.500 |</span>
-<span class="go">|         9 | 15:54:46.5 |      2.000 |      3.000 |</span>
+<span class="go">|         1 | 17:05:23.1 |      1.000 |      2.000 |</span>
+<span class="go">|         2 | 17:05:23.2 |      1.000 |      2.500 |</span>
+<span class="go">|         3 | 17:05:23.4 |      1.000 |      3.000 |</span>
+<span class="go">|         4 | 17:05:23.5 |      1.500 |      2.000 |</span>
+<span class="go">|         5 | 17:05:23.7 |      1.500 |      2.500 |</span>
+<span class="go">|         6 | 17:05:23.8 |      1.500 |      3.000 |</span>
+<span class="go">|         7 | 17:05:24.0 |      2.000 |      2.000 |</span>
+<span class="go">|         8 | 17:05:24.1 |      2.000 |      2.500 |</span>
+<span class="go">|         9 | 17:05:24.2 |      2.000 |      3.000 |</span>
 <span class="go">+-----------+------------+------------+------------+</span>
-<span class="go">generator grid_scan [&#39;f9d901c1&#39;] (scan num: 9)</span>
+<span class="go">generator grid_scan [&#39;dc154bb5&#39;] (scan num: 9)</span>
 
 
 
-<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;f9d901c1-235f-45c5-aa51-564cc3eb324a&#39;,), plan_result=&#39;f9d901c1-235f-45c5-aa51-564cc3eb324a&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
+<span class="gh">Out[2]: </span><span class="go">RunEngineResult(run_start_uids=(&#39;dc154bb5-275f-4be9-95e4-b85ff5c85e9b&#39;,), plan_result=&#39;dc154bb5-275f-4be9-95e4-b85ff5c85e9b&#39;, exit_status=&#39;success&#39;, interrupted=False, reason=&#39;&#39;, exception=None)</span>
 </pre></div>
 </div>
 <div class="admonition seealso">
