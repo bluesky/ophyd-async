@@ -34,8 +34,13 @@ jobs:
       COVERAGE_PROCESS_START: .coveragerc
 
     steps:
+<<<<<<< before updating
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4
+=======
+      - name: Checkout
+        uses: actions/checkout@v5
+>>>>>>> after updating
         with:
           submodules: recursive
           fetch-depth: 0
@@ -47,7 +52,7 @@ jobs:
           echo "TEMP=D:\\Temp" >> $env:GITHUB_ENV
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
 
       - if: inputs.needs-services && inputs.runs-on != 'windows-latest'
         name: Run docker compose
