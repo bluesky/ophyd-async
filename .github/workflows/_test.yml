@@ -34,13 +34,8 @@ jobs:
       COVERAGE_PROCESS_START: .coveragerc
 
     steps:
-<<<<<<< before updating
       - name: Checkout repository (with submodules)
-        uses: actions/checkout@v4
-=======
-      - name: Checkout
         uses: actions/checkout@v5
->>>>>>> after updating
         with:
           submodules: recursive
           fetch-depth: 0
