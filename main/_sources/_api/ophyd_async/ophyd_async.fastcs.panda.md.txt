@@ -597,6 +597,17 @@ Bases: {py:obj}`ophyd_async.core.Device`
 ```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PulseBlock
 ```
 
+````{py:attribute} enable
+:canonical: ophyd_async.fastcs.panda._block.PulseBlock.enable
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.panda._block.PandaBitMux]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._block.PulseBlock.enable
+```
+
+````
+
 ````{py:attribute} delay
 :canonical: ophyd_async.fastcs.panda._block.PulseBlock.delay
 :type: ~ophyd_async.core.SignalRW[float]
