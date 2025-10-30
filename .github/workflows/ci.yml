@@ -19,18 +19,13 @@ jobs:
       matrix:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
         python-version: ["3.11", "3.12", "3.13"]
-        test-config:
-          - tests-path: "tests/unit_tests"
-            needs-services: false
-          - tests-path: "tests/system_tests"
-            needs-services: true
+        tests-path: ["tests/unit_tests", "tests/system_tests"]
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
       runs-on: ${{ matrix.runs-on }}
       python-version: ${{ matrix.python-version }}
-      tests-path: ${{ matrix.test-config.tests-path }}
-      needs-services: ${{ matrix.test-config.needs-services }}
+      tests-path: ${{ matrix.tests-path }}
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
