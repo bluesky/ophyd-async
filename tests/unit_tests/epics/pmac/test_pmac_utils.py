@@ -37,6 +37,19 @@ async def test_calculate_ramp_position_and_duration(
     assert ramp_down_time == 0.1
 
 
+async def test_from_motors(sim_motors: tuple[PmacIO, Motor, Motor]):
+    pmac, sim_x_motor, sim_y_motor = sim_motors
+    motor_info = await _PmacMotorInfo.from_motors(pmac, [sim_x_motor, sim_y_motor])
+    expected_motor_info = _PmacMotorInfo(
+        "STEP.CS1",
+        1,
+        {sim_x_motor: 6, sim_y_motor: 7},
+        {sim_x_motor: 10.0, sim_y_motor: 20.0},
+        {sim_x_motor: 5.0, sim_y_motor: 10.0},
+    )
+    assert motor_info == expected_motor_info
+
+
 async def test_motor_info_from_motors(sim_motors: tuple[PmacIO, Motor, Motor]):
     sim_pmac, sim_x_motor, sim_y_motor = sim_motors
     motor_info = await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])

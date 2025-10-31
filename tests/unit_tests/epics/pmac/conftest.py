@@ -31,4 +31,6 @@ async def sim_motors():
     set_mock_value(sim_y_motor.acceleration_time, 0.5)
     set_mock_value(sim_y_motor.velocity, 1)
     set_mock_value(sim_y_motor.max_velocity, 10)
+    set_mock_value(sim_x_motor.output_link, "@asyn(CS1, 6)")
+    set_mock_value(sim_y_motor.output_link, "@asyn(CS1, 7)")
     yield (sim_pmac, sim_x_motor, sim_y_motor)
