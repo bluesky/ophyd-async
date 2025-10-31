@@ -41,7 +41,7 @@ async def test_from_motors(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac, sim_x_motor, sim_y_motor = sim_motors
     motor_info = await _PmacMotorInfo.from_motors(pmac, [sim_x_motor, sim_y_motor])
     expected_motor_info = _PmacMotorInfo(
-        "STEP.CS1",
+        "CS1",
         1,
         {sim_x_motor: 6, sim_y_motor: 7},
         {sim_x_motor: 10.0, sim_y_motor: 20.0},

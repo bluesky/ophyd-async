@@ -50,7 +50,6 @@ class _PmacMotorInfo:
         motor_acceleration_rate = {}
         velocities = {}
         accls = {}
-
         assignments = {
             motor: pmac.assignment[pmac.motor_assignment_index[motor]]
             for motor in motors
@@ -72,6 +71,7 @@ class _PmacMotorInfo:
                     for motor in velocities
                 }
             else:
+                # move assignments hereeee
                 cs_ports, cs_numbers, cs_axes, velocities, accls = await asyncio.gather(
                     gather_dict(
                         {
