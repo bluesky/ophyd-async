@@ -8,12 +8,14 @@ from ophyd_async.epics.pmac import (
     PmacIO,
 )
 from ophyd_async.epics.pmac._pmac_trajectory_generation import (
+    MIN_INTERVAL,  # noqa: PLC2701
     PVT,  # noqa: PLC2701
     Trajectory,  # noqa: PLC2701
 )
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,  # noqa: PLC2701
 )
+from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture
@@ -356,7 +358,8 @@ async def test_snaked_trajectory_with_gaps(
             12.0,
             12.0,
             12.0,
-        ]
+        ],
+        1e-3,
     )
 
     assert trajectory.velocities[sim_y_motor] == pytest.approx(
@@ -372,9 +375,9 @@ async def test_snaked_trajectory_with_gaps(
             0.0,
             0.0,
             0.0,
-            1.0,
-            3.16227766,
-            1.0,
+            0.976,
+            3.125,
+            0.976,
             0.0,
             0.0,
             0.0,
@@ -386,9 +389,9 @@ async def test_snaked_trajectory_with_gaps(
             0.0,
             0.0,
             0.0,
-            1.0,
-            3.16227766,
-            1.0,
+            0.977,
+            3.125,
+            0.977,
             0.0,
             0.0,
             0.0,
@@ -401,7 +404,8 @@ async def test_snaked_trajectory_with_gaps(
             0.0,
             0.0,
             0.0,
-        ]
+        ],
+        1e-3,
     )
 
     assert (
@@ -464,8 +468,8 @@ async def test_snaked_trajectory_with_gaps(
             0.5,
             0.5,
             0.1,
-            0.216227,
-            0.216227,
+            0.22,
+            0.22,
             0.1,
             0.5,
             0.5,
@@ -478,8 +482,8 @@ async def test_snaked_trajectory_with_gaps(
             0.5,
             0.5,
             0.1,
-            0.216227,
-            0.216227,
+            0.22,
+            0.22,
             0.1,
             0.5,
             0.5,
@@ -526,9 +530,9 @@ async def test_grid_trajectory_with_gaps(
             5.0,
             5.5,
             5.5421,
-            4.30,
-            1.70,
-            0.4579,
+            4.3053,
+            1.6947,
+            0.4572,
             0.5,
             1.0,
             1.5,
@@ -541,9 +545,9 @@ async def test_grid_trajectory_with_gaps(
             5.0,
             5.5,
             5.5421,
-            4.30,
-            1.70,
-            0.4579,
+            4.3053,
+            1.6947,
+            0.4572,
             0.5,
             1.0,
             1.5,
@@ -556,7 +560,8 @@ async def test_grid_trajectory_with_gaps(
             5.0,
             5.5,
             6,
-        ]
+        ],
+        1e-3,
     )
 
     assert trajectory.velocities[sim_x_motor] == pytest.approx(
@@ -572,10 +577,10 @@ async def test_grid_trajectory_with_gaps(
             1.0,
             1.0,
             1.0,
-            0.3975,
-            -5.0,
-            -5.0,
-            0.3975,
+            0.3818,
+            -4.9822,
+            -4.9822,
+            0.3818,
             1.0,
             1.0,
             1.0,
@@ -587,10 +592,10 @@ async def test_grid_trajectory_with_gaps(
             1.0,
             1.0,
             1.0,
-            0.3975,
-            -5.0,
-            -5.0,
-            0.3975,
+            0.3818,
+            -4.9822,
+            -4.9822,
+            0.3818,
             1.0,
             1.0,
             1.0,
@@ -603,7 +608,8 @@ async def test_grid_trajectory_with_gaps(
             1.0,
             1.0,
             0.0,
-        ]
+        ],
+        1e-3,
     )
 
     assert trajectory.positions[sim_y_motor] == pytest.approx(
@@ -619,10 +625,10 @@ async def test_grid_trajectory_with_gaps(
             10.0,
             10.0,
             10.0,
-            10.01815,
-            10.34335,
-            10.65665,
-            10.98185,
+            10.01865,
+            10.34235,
+            10.65764,
+            10.98134,
             11.0,
             11.0,
             11.0,
@@ -634,10 +640,10 @@ async def test_grid_trajectory_with_gaps(
             11.0,
             11.0,
             11.0,
-            11.01815,
-            11.34335,
-            11.65665,
-            11.98185,
+            11.01865,
+            11.34235,
+            11.65764,
+            11.98134,
             12.0,
             12.0,
             12.0,
@@ -666,10 +672,10 @@ async def test_grid_trajectory_with_gaps(
             0.0,
             0.0,
             0.0,
-            0.602500390747,
-            0.602500390747,
-            0.602500390747,
-            0.602500390747,
+            0.601684717208,
+            0.601684717208,
+            0.601684717208,
+            0.601684717208,
             0.0,
             0.0,
             0.0,
@@ -681,10 +687,10 @@ async def test_grid_trajectory_with_gaps(
             0.0,
             0.0,
             0.0,
-            0.602500390747,
-            0.602500390747,
-            0.602500390747,
-            0.602500390747,
+            0.601684717208,
+            0.601684717208,
+            0.601684717208,
+            0.601684717208,
             0.0,
             0.0,
             0.0,
@@ -761,11 +767,11 @@ async def test_grid_trajectory_with_gaps(
             0.5,
             0.5,
             0.5,
-            0.060250,
-            0.539749,
-            0.520000,
-            0.539749,
-            0.060250,
+            0.062,
+            0.538,
+            0.524,
+            0.538,
+            0.062,
             0.5,
             0.5,
             0.5,
@@ -776,11 +782,11 @@ async def test_grid_trajectory_with_gaps(
             0.5,
             0.5,
             0.5,
-            0.060250,
-            0.539749,
-            0.520000,
-            0.539749,
-            0.060250,
+            0.062,
+            0.538,
+            0.524,
+            0.538,
+            0.062,
             0.5,
             0.5,
             0.5,
@@ -835,6 +841,7 @@ async def test_from_gap(
             11.0,
             11.0,
         ],
+        1e-3,
     )
 
     assert trajectory.velocities[sim_x_motor] == pytest.approx(
@@ -851,24 +858,24 @@ async def test_from_gap(
     assert trajectory.velocities[sim_y_motor] == pytest.approx(
         [
             0.0,
-            1.0,
-            3.16227766,
-            1.0,
+            0.9765,
+            3.125,
+            0.9765,
             0.0,
             0.0,
         ],
+        1e-3,
     )
 
     assert trajectory.durations == pytest.approx(
         [
             1.0,
             0.1,
-            0.216227,
-            0.216227,
+            0.22,
+            0.22,
             0.1,
             0.5,
-        ],
-        1e-5,
+        ]
     )
 
     assert (trajectory.user_programs == [1, 2, 2, 2, 1, 1]).all()
@@ -976,7 +983,8 @@ async def test_appending_trajectory(
             11.0,
             11.0,
             11.0,
-        ]
+        ],
+        1e-3,
     )
 
     assert overall_trajectory.velocities[sim_x_motor] == pytest.approx(
@@ -1011,9 +1019,9 @@ async def test_appending_trajectory(
             0.0,
             0.0,
             0.0,
-            1.0,
-            3.162277,
-            1.0,
+            0.9765,
+            3.125,
+            0.9765,
             0.0,
             0.0,
             0.0,
@@ -1023,6 +1031,7 @@ async def test_appending_trajectory(
             0.0,
             0.0,
         ],
+        1e-3,
     )
 
     assert overall_trajectory.durations == pytest.approx(
@@ -1035,8 +1044,8 @@ async def test_appending_trajectory(
             0.5,
             0.5,
             0.1,
-            0.216227,
-            0.216227,
+            0.22,
+            0.22,
             0.1,
             0.5,
             0.5,
@@ -1107,11 +1116,11 @@ async def test_hardware_triggered_step_scan(
             0.0,
             0.0,
             0.0,
-            3.1623,
+            3.125,
             0.0,
             0.0,
             0.0,
-            3.1623,
+            3.125,
             0.0,
             0.0,
             0.0,
@@ -1125,12 +1134,12 @@ async def test_hardware_triggered_step_scan(
             2.0,
             0.5,
             0.5,
-            0.31623,
-            0.31623,
+            0.32,
+            0.32,
             0.5,
             0.5,
-            0.31623,
-            0.31623,
+            0.32,
+            0.32,
             0.5,
             0.5,
             2.0,
@@ -1155,3 +1164,32 @@ async def test_hardware_triggered_step_scan(
             8,
         ]
     ).all()
+
+
+async def test_small_turnaround_durations_are_quantized(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac, sim_x_motor, sim_y_motor = sim_motors
+
+    # These parameters result in gap point durations < MIN_INTERVAL
+    set_mock_value(sim_y_motor.max_velocity, 100)
+    set_mock_value(sim_y_motor.acceleration_time, 0.25)
+    motor_info = await _PmacMotorInfo.from_motors(pmac, [sim_x_motor, sim_y_motor])
+    spec = Fly(float(1) @ (Line(sim_y_motor, 0, 1, 10) * ~Line(sim_x_motor, 0, 1, 10)))
+    slice = Path(spec.calculate()).consume()
+
+    # Parse the first turnaround profile
+    trajectory, _ = Trajectory.from_gap(
+        motor_info=motor_info,
+        gap=10,
+        motors=[sim_x_motor, sim_y_motor],
+        slice=slice,
+        entry_pvt=PVT(
+            position={sim_x_motor: np.float64(1.055), sim_y_motor: np.float64(0)},
+            velocity={sim_x_motor: np.float64(0.1111), sim_y_motor: np.float64(0)},
+            time=np.float64(0.5),
+        ),
+    )
+
+    # Check that gap durations are snapped up to nearest interval
+    assert min(trajectory.durations) == pytest.approx(MIN_INTERVAL)
