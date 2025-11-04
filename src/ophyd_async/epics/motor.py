@@ -133,14 +133,17 @@ class Motor(
         Will raise a MotorLimitsException if the given absolute positions will be
         outside the motor soft limits.
         """
-        motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
+        motor_lower_limit, motor_upper_limit, egu, dial_lower_limit, dial_upper_limit = await asyncio.gather(
+            self.low_limit_travel.get_value(),
+            self.high_limit_travel.get_value(),
+            self.motor_egu.get_value(),
             self.dial_low_limit_travel.get_value(),
             self.dial_high_limit_travel.get_value(),
-            self.motor_egu.get_value(),
         )
 
         # EPICS motor record treats limits of 0, 0 as no limit
-        if motor_lower_limit == 0 and motor_upper_limit == 0:
+        # Use DLLM and DHLM to check
+        if dial_lower_limit == 0 and dial_upper_limit == 0:
             return
 
         if (
