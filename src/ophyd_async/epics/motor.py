@@ -133,7 +133,13 @@ class Motor(
         Will raise a MotorLimitsException if the given absolute positions will be
         outside the motor soft limits.
         """
-        motor_lower_limit, motor_upper_limit, egu, dial_lower_limit, dial_upper_limit = await asyncio.gather(
+        (
+            motor_lower_limit,
+            motor_upper_limit,
+            egu,
+            dial_lower_limit,
+            dial_upper_limit,
+        ) = await asyncio.gather(
             self.low_limit_travel.get_value(),
             self.high_limit_travel.get_value(),
             self.motor_egu.get_value(),
