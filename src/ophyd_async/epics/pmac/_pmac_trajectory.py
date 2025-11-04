@@ -131,8 +131,8 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             slice, path_length, motor_info, ramp_up_time
         )
         use_axis = {
-            axis + 1: (axis in motor_info.motor_cs_index.values())
-            for axis in range(len(CS_LETTERS))
+            axis: (axis in motor_info.motor_cs_index.values())
+            for axis in range(1, len(CS_LETTERS) + 1)
         }
 
         coros = [
@@ -177,14 +177,14 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         self, trajectory: Trajectory, motor_info: _PmacMotorInfo
     ):
         coros = []
-        for motor, number in motor_info.motor_cs_index.items():
+        for motor, cs_index in motor_info.motor_cs_index.items():
             coros.append(
-                self.pmac.trajectory.positions[number + 1].set(
+                self.pmac.trajectory.positions[cs_index].set(
                     trajectory.positions[motor]
                 )
             )
             coros.append(
-                self.pmac.trajectory.velocities[number + 1].set(
+                self.pmac.trajectory.velocities[cs_index].set(
                     trajectory.velocities[motor]
                 )
             )
@@ -206,7 +206,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         for motor, position in ramp_up_position.items():
             coros.append(
                 set_and_wait_for_value(
-                    coord.cs_axis_setpoint[motor_info.motor_cs_index[motor] + 1],
+                    coord.cs_axis_setpoint[motor_info.motor_cs_index[motor]],
                     position,
                     set_timeout=10,
                     wait_for_set_completion=False,

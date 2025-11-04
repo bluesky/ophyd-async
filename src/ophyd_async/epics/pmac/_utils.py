@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -20,6 +21,11 @@ from ._pmac_io import CS_LETTERS, PmacIO
 TICK_S = 0.000001
 MIN_TURNAROUND = 0.002
 MIN_INTERVAL = 0.002
+
+# Regex to parse outlink strings of the form "@asyn(PMAC1CS2, 7)"
+# returning PMAC1CS2 and 7
+# https://regex101.com/r/Mu9XpO/1
+OUTLINK_REGEX = re.compile(r"^\@asyn\(([^,]+),\s*(\d+)\)$")
 
 
 @dataclass
@@ -44,20 +50,14 @@ class _PmacMotorInfo:
             dictionaries of motor's to their unique CS index and accelerate rate
 
         """
-        cs_port = ""
-        cs_number = 0
-        motor_cs_index = {}
-        motor_acceleration_rate = {}
-        velocities = {}
-        accls = {}
-
         is_raw_motor = [motor in pmac.motor_assignment_index for motor in motors]
         if all(is_raw_motor):
+            # Get the CS port, number and axis letter from the PVs for the raw motor
             assignments = {
                 motor: pmac.assignment[pmac.motor_assignment_index[motor]]
                 for motor in motors
             }
-            cs_ports, cs_numbers, cs_axes, velocities, accls = await asyncio.gather(
+            cs_ports, cs_numbers, cs_axis_letters = await asyncio.gather(
                 gather_dict(
                     {motor: assignments[motor].cs_port.get_value() for motor in motors}
                 ),
@@ -73,90 +73,92 @@ class _PmacMotorInfo:
                         for motor in motors
                     }
                 ),
-                gather_dict(
-                    {motor: motor.max_velocity.get_value() for motor in motors}
-                ),
-                gather_dict(
-                    {motor: motor.acceleration_time.get_value() for motor in motors}
-                ),
             )
-            # check if the values in cs_port and cs_number are the same
-            cs_ports = set(cs_ports.values())
-
-            if len(cs_ports) != 1:
-                raise RuntimeError(
-                    "Failed to fetch common CS port."
-                    "Motors passed are assigned to multiple CS ports:"
-                    f"{list(cs_ports)}"
-                )
-
-            cs_port = cs_ports.pop()
-
-            cs_numbers = set(cs_numbers.values())
-            if len(cs_numbers) != 1:
-                raise RuntimeError(
-                    "Failed to fetch common CS number."
-                    "Motors passed are assigned to multiple CS numbers:"
-                    f"{list(cs_numbers)}"
-                )
-
-            cs_number = cs_numbers.pop()
-
-            motor_cs_index = {}
-            for motor in cs_axes:
+            # Translate axis letters to cs_index and check for duplicates
+            motor_cs_index: dict[Motor, int] = {}
+            for motor, cs_axis_letter in cs_axis_letters.items():
+                if not cs_axis_letter:
+                    raise ValueError(
+                        f"Motor {motor.name} does not have an axis assignment."
+                    )
                 try:
-                    if not cs_axes[motor]:
-                        raise ValueError
-                    motor_cs_index[motor] = CS_LETTERS.index(cs_axes[motor])
+                    # 1 indexed to match coord
+                    index = CS_LETTERS.index(cs_axis_letter) + 1
                 except ValueError as err:
                     raise ValueError(
-                        "Failed to get motor CS index. "
-                        f"Motor {motor.name} assigned to '{cs_axes[motor]}' "
-                        f"but must be assignmed to '{CS_LETTERS}"
+                        f"Motor {motor.name} assigned to '{cs_axis_letter}' "
+                        f"but must be assignmed to one of '{CS_LETTERS}'"
                     ) from err
-                if len(set(motor_cs_index.values())) != len(motor_cs_index.items()):
-                    raise RuntimeError(
-                        "Failed to fetch distinct CS Axes."
-                        "Motors passed are assigned to the same CS Axis"
-                        f"{list(motor_cs_index)}"
+                if index in motor_cs_index.values():
+                    raise ValueError(
+                        f"Motor {motor.name} assigned to '{cs_axis_letter}' "
+                        "but another motor is already assigned to this axis."
                     )
-
-                motor_acceleration_rate = {
-                    motor: float(velocities[motor]) / float(accls[motor])
-                    for motor in velocities
-                }
-
+                motor_cs_index[motor] = index
         elif not any(is_raw_motor):
-            for motor in motors:
-                output_link = await motor.output_link.get_value()
-                inner = output_link.split("(", 1)[1].rstrip(")")
-                cs_port, cs_axis = [x.strip() for x in inner.split(",")]
-                motor_cs_index[motor] = int(cs_axis)
-                print(motor_cs_index)
-                cs_reverse_lookup = await gather_dict(
+            # Get CS numbers from all the cs ports and output links for the CS motors
+            output_links, cs_lookup = await asyncio.gather(
+                gather_dict({motor: motor.output_link.get_value() for motor in motors}),
+                gather_dict(
                     {
                         cs_number: cs.cs_port.get_value()
                         for cs_number, cs in pmac.coord.items()
                     }
-                )
-                cs_lookup = {
-                    cs_port: cs_number
-                    for cs_number, cs_port in cs_reverse_lookup.items()
-                }
-                for _, cs_number in cs_lookup.items():
-                    cs_number = cs_number
-
-                velocities[motor] = await motor.max_velocity.get_value()
-                accls[motor] = await motor.acceleration_time.get_value()
-                motor_acceleration_rate = {
-                    motor: float(velocities[motor]) / float(accls[motor])
-                    for motor in velocities
-                }
+                ),
+            )
+            # Create a reverse lookup from cs_port to cs_number
+            cs_reverse_lookup = {
+                cs_port: cs_number for cs_number, cs_port in cs_lookup.items()
+            }
+            cs_ports: dict[Motor, str] = {}
+            cs_numbers: dict[Motor, int] = {}
+            motor_cs_index: dict[Motor, int] = {}
+            # Populate the cs_ports, cs_numbers and motor_cs_index dicts from outlinks
+            for motor, output_link in output_links.items():
+                match = OUTLINK_REGEX.match(output_link)
+                if not match:
+                    raise ValueError(
+                        f"Motor {motor.name} has invalid output link '{output_link}'"
+                    )
+                cs_port, cs_index = match.groups()
+                cs_ports[motor] = cs_port
+                cs_numbers[motor] = cs_reverse_lookup[cs_port]
+                motor_cs_index[motor] = int(cs_index)
         else:
             raise ValueError("Unable to use raw motors and CS motors in the same scan")
 
+        # check if the values in cs_port and cs_number are the same
+        cs_ports_set = set(cs_ports.values())
+        if len(cs_ports_set) != 1:
+            raise RuntimeError(
+                "Failed to fetch common CS port."
+                "Motors passed are assigned to multiple CS ports:"
+                f"{list(cs_ports_set)}"
+            )
+        cs_numbers_set = set(cs_numbers.values())
+        if len(cs_numbers_set) != 1:
+            raise RuntimeError(
+                "Failed to fetch common CS number."
+                "Motors passed are assigned to multiple CS numbers:"
+                f"{list(cs_numbers_set)}"
+            )
+
+        # Get the velocities and acceleration rates for each motor
+        max_velocity, acceleration_time = await asyncio.gather(
+            gather_dict({motor: motor.max_velocity.get_value() for motor in motors}),
+            gather_dict(
+                {motor: motor.acceleration_time.get_value() for motor in motors}
+            ),
+        )
+        motor_acceleration_rate = {
+            motor: max_velocity[motor] / acceleration_time[motor] for motor in motors
+        }
         return _PmacMotorInfo(
-            cs_port, cs_number, motor_cs_index, motor_acceleration_rate, velocities
+            cs_port=cs_ports_set.pop(),
+            cs_number=cs_numbers_set.pop(),
+            motor_cs_index=motor_cs_index,
+            motor_acceleration_rate=motor_acceleration_rate,
+            motor_max_velocity=max_velocity,
         )
 
 
