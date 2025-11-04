@@ -162,8 +162,8 @@ async def test_move_outside_motor_limits_causes_error(
     lower_limit,
 ):
     set_mock_value(sim_motor.velocity, 10)
-    set_mock_value(sim_motor.dial_low_limit_travel, lower_limit)
-    set_mock_value(sim_motor.dial_high_limit_travel, upper_limit)
+    set_mock_value(sim_motor.low_limit_travel, lower_limit)
+    set_mock_value(sim_motor.high_limit_travel, upper_limit)
     with pytest.raises(motor.MotorLimitsError):
         await sim_motor.set(position)
 
@@ -172,8 +172,10 @@ async def test_given_limits_of_0_0_then_move_causes_no_error(
     sim_motor: motor.Motor,
 ):
     set_mock_value(sim_motor.velocity, 10)
-    set_mock_value(sim_motor.low_limit_travel, 0)
-    set_mock_value(sim_motor.high_limit_travel, 0)
+    set_mock_value(sim_motor.dial_low_limit_travel, 0)
+    set_mock_value(sim_motor.dial_high_limit_travel, 0)
+    set_mock_value(sim_motor.low_limit_travel, -0.001)
+    set_mock_value(sim_motor.high_limit_travel, 0.001)
     await sim_motor.set(100)
     assert (await sim_motor.user_setpoint.get_value()) == 100
 
