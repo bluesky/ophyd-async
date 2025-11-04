@@ -1,0 +1,126 @@
+# {py:mod}`ophyd_async.epics.pmac`
+
+```{py:module} ophyd_async.epics.pmac
+```
+
+```{autodoc2-docstring} ophyd_async.epics.pmac
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`PmacAxisAssignmentIO <ophyd_async.epics.pmac._pmac_io.PmacAxisAssignmentIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacAxisAssignmentIO
+    :summary:
+    ```
+* - {py:obj}`PmacCoordIO <ophyd_async.epics.pmac._pmac_io.PmacCoordIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacCoordIO
+    :summary:
+    ```
+* - {py:obj}`PmacIO <ophyd_async.epics.pmac._pmac_io.PmacIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacIO
+    :summary:
+    ```
+* - {py:obj}`PmacTrajectoryIO <ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO
+    :summary:
+    ```
+* - {py:obj}`PmacTrajectoryTriggerLogic <ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} PmacAxisAssignmentIO(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.pmac._pmac_io.PmacAxisAssignmentIO
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacAxisAssignmentIO
+```
+
+````
+
+````{py:class} PmacCoordIO(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.pmac._pmac_io.PmacCoordIO
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacCoordIO
+```
+
+````
+
+````{py:class} PmacIO(prefix: str, raw_motors: ~collections.abc.Sequence[~ophyd_async.epics.motor.Motor], coord_nums: ~collections.abc.Sequence[int], name: str = '')
+:canonical: ophyd_async.epics.pmac._pmac_io.PmacIO
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacIO
+```
+
+````
+
+````{py:class} PmacTrajectoryIO(prefix: str, name: str = '')
+:canonical: ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO
+
+Bases: {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_io.PmacTrajectoryIO
+```
+
+````
+
+`````{py:class} PmacTrajectoryTriggerLogic(pmac: ~ophyd_async.epics.pmac.PmacIO)
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic
+
+Bases: {py:obj}`ophyd_async.core.FlyerController`
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic
+```
+
+````{py:method} prepare(value: ~scanspec.specs.Spec[~ophyd_async.epics.motor.Motor])
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.prepare
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.prepare
+```
+
+````
+
+````{py:method} kickoff()
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.kickoff
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.kickoff
+```
+
+````
+
+````{py:method} complete()
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.complete
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.complete
+```
+
+````
+
+````{py:method} stop()
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.stop
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.stop
+```
+
+````
+
+`````

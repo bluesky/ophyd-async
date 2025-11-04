@@ -1,0 +1,572 @@
+# {py:mod}`ophyd_async.fastcs.jungfrau`
+
+```{py:module} ophyd_async.fastcs.jungfrau
+```
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau
+:allowtitles:
+```
+
+## Package Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`Jungfrau <ophyd_async.fastcs.jungfrau._jungfrau.Jungfrau>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._jungfrau.Jungfrau
+    :summary:
+    ```
+* - {py:obj}`DetectorStatus <ophyd_async.fastcs.jungfrau._signals.DetectorStatus>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.DetectorStatus
+    :summary:
+    ```
+* - {py:obj}`JungfrauController <ophyd_async.fastcs.jungfrau._controller.JungfrauController>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JungfrauController
+    :summary:
+    ```
+* - {py:obj}`JungfrauDriverIO <ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO
+    :summary:
+    ```
+* - {py:obj}`JungfrauTriggerMode <ophyd_async.fastcs.jungfrau._signals.JungfrauTriggerMode>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauTriggerMode
+    :summary:
+    ```
+* - {py:obj}`AcquisitionType <ophyd_async.fastcs.jungfrau._signals.AcquisitionType>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.AcquisitionType
+    :summary:
+    ```
+* - {py:obj}`GainMode <ophyd_async.fastcs.jungfrau._signals.GainMode>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.GainMode
+    :summary:
+    ```
+* - {py:obj}`PedestalMode <ophyd_async.fastcs.jungfrau._signals.PedestalMode>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.PedestalMode
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`create_jungfrau_external_triggering_info <ophyd_async.fastcs.jungfrau._utils.create_jungfrau_external_triggering_info>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._utils.create_jungfrau_external_triggering_info
+    :summary:
+    ```
+* - {py:obj}`create_jungfrau_internal_triggering_info <ophyd_async.fastcs.jungfrau._utils.create_jungfrau_internal_triggering_info>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._utils.create_jungfrau_internal_triggering_info
+    :summary:
+    ```
+* - {py:obj}`create_jungfrau_pedestal_triggering_info <ophyd_async.fastcs.jungfrau._utils.create_jungfrau_pedestal_triggering_info>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._utils.create_jungfrau_pedestal_triggering_info
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`JUNGFRAU_DEADTIME_S <ophyd_async.fastcs.jungfrau._controller.JUNGFRAU_DEADTIME_S>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JUNGFRAU_DEADTIME_S
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} Jungfrau(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix: str, hdf_suffix: str, odin_nodes: int, name='')
+:canonical: ophyd_async.fastcs.jungfrau._jungfrau.Jungfrau
+
+Bases: {py:obj}`ophyd_async.core.StandardDetector`\[{py:obj}`ophyd_async.fastcs.jungfrau._controller.JungfrauController`\, {py:obj}`ophyd_async.epics.odin.OdinWriter`\]
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._jungfrau.Jungfrau
+```
+
+````
+
+`````{py:class} DetectorStatus()
+:canonical: ophyd_async.fastcs.jungfrau._signals.DetectorStatus
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.DetectorStatus
+```
+
+````{py:attribute} IDLE
+:canonical: ophyd_async.fastcs.jungfrau._signals.DetectorStatus.IDLE
+:value: >
+   'Idle'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.DetectorStatus.IDLE
+```
+
+````
+
+````{py:attribute} ERROR
+:canonical: ophyd_async.fastcs.jungfrau._signals.DetectorStatus.ERROR
+:value: >
+   'Error'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.DetectorStatus.ERROR
+```
+
+````
+
+````{py:attribute} WAITING
+:canonical: ophyd_async.fastcs.jungfrau._signals.DetectorStatus.WAITING
+:value: >
+   'Waiting'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.DetectorStatus.WAITING
+```
+
+````
+
+````{py:attribute} RUN_FINISHED
+:canonical: ophyd_async.fastcs.jungfrau._signals.DetectorStatus.RUN_FINISHED
+:value: >
+   'RunFinished'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.DetectorStatus.RUN_FINISHED
+```
+
+````
+
+````{py:attribute} TRANSMITTING
+:canonical: ophyd_async.fastcs.jungfrau._signals.DetectorStatus.TRANSMITTING
+:value: >
+   'Transmitting'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.DetectorStatus.TRANSMITTING
+```
+
+````
+
+````{py:attribute} RUNNING
+:canonical: ophyd_async.fastcs.jungfrau._signals.DetectorStatus.RUNNING
+:value: >
+   'Running'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.DetectorStatus.RUNNING
+```
+
+````
+
+````{py:attribute} STOPPED
+:canonical: ophyd_async.fastcs.jungfrau._signals.DetectorStatus.STOPPED
+:value: >
+   'Stopped'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.DetectorStatus.STOPPED
+```
+
+````
+
+`````
+
+````{py:function} create_jungfrau_external_triggering_info(total_triggers: ~pydantic.PositiveInt, exposure_time_s: float) -> ~ophyd_async.core.TriggerInfo
+:canonical: ophyd_async.fastcs.jungfrau._utils.create_jungfrau_external_triggering_info
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._utils.create_jungfrau_external_triggering_info
+```
+````
+
+````{py:function} create_jungfrau_internal_triggering_info(number_of_frames: ~pydantic.PositiveInt, exposure_time_s: float) -> ~ophyd_async.core.TriggerInfo
+:canonical: ophyd_async.fastcs.jungfrau._utils.create_jungfrau_internal_triggering_info
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._utils.create_jungfrau_internal_triggering_info
+```
+````
+
+````{py:function} create_jungfrau_pedestal_triggering_info(exposure_time_s: float, pedestal_frames: ~pydantic.PositiveInt, pedestal_loops: ~pydantic.PositiveInt)
+:canonical: ophyd_async.fastcs.jungfrau._utils.create_jungfrau_pedestal_triggering_info
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._utils.create_jungfrau_pedestal_triggering_info
+```
+````
+
+`````{py:class} JungfrauController(driver: ~ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO)
+:canonical: ophyd_async.fastcs.jungfrau._controller.JungfrauController
+
+Bases: {py:obj}`ophyd_async.core.DetectorController`
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JungfrauController
+```
+
+````{py:method} get_deadtime(exposure: float | None = None) -> float
+:canonical: ophyd_async.fastcs.jungfrau._controller.JungfrauController.get_deadtime
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JungfrauController.get_deadtime
+```
+
+````
+
+````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo) -> None
+:canonical: ophyd_async.fastcs.jungfrau._controller.JungfrauController.prepare
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JungfrauController.prepare
+```
+
+````
+
+````{py:method} arm()
+:canonical: ophyd_async.fastcs.jungfrau._controller.JungfrauController.arm
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JungfrauController.arm
+```
+
+````
+
+````{py:method} wait_for_idle()
+:canonical: ophyd_async.fastcs.jungfrau._controller.JungfrauController.wait_for_idle
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JungfrauController.wait_for_idle
+```
+
+````
+
+````{py:method} disarm()
+:canonical: ophyd_async.fastcs.jungfrau._controller.JungfrauController.disarm
+:async:
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JungfrauController.disarm
+```
+
+````
+
+`````
+
+`````{py:class} JungfrauDriverIO(uri: str, name: str = '')
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO
+
+Bases: {py:obj}`ophyd_async.core.Device`
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO
+```
+
+````{py:attribute} exposure_time
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.exposure_time
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.exposure_time
+```
+
+````
+
+````{py:attribute} period_between_frames
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.period_between_frames
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.period_between_frames
+```
+
+````
+
+````{py:attribute} delay_after_trigger
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.delay_after_trigger
+:type: ~ophyd_async.core.SignalRW[float]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.delay_after_trigger
+```
+
+````
+
+````{py:attribute} frames_per_acq
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.frames_per_acq
+:type: ~ophyd_async.core.SignalRW[~pydantic.NonNegativeInt]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.frames_per_acq
+```
+
+````
+
+````{py:attribute} pedestal_mode_state
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.pedestal_mode_state
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.jungfrau._signals.PedestalMode]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.pedestal_mode_state
+```
+
+````
+
+````{py:attribute} pedestal_mode_frames
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.pedestal_mode_frames
+:type: ~ophyd_async.core.SignalRW[~pydantic.NonNegativeInt]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.pedestal_mode_frames
+```
+
+````
+
+````{py:attribute} pedestal_mode_loops
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.pedestal_mode_loops
+:type: ~ophyd_async.core.SignalRW[~pydantic.NonNegativeInt]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.pedestal_mode_loops
+```
+
+````
+
+````{py:attribute} gain_mode
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.gain_mode
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.jungfrau._signals.GainMode]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.gain_mode
+```
+
+````
+
+````{py:attribute} acquisition_start
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.acquisition_start
+:type: ~ophyd_async.core.SignalX
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.acquisition_start
+```
+
+````
+
+````{py:attribute} acquisition_stop
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.acquisition_stop
+:type: ~ophyd_async.core.SignalX
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.acquisition_stop
+```
+
+````
+
+````{py:attribute} bit_depth
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.bit_depth
+:type: ~ophyd_async.core.SignalR[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.bit_depth
+```
+
+````
+
+````{py:attribute} trigger_mode
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.trigger_mode
+:type: ~ophyd_async.core.SignalRW[~ophyd_async.fastcs.jungfrau._signals.JungfrauTriggerMode]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.trigger_mode
+```
+
+````
+
+````{py:attribute} detector_status
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.detector_status
+:type: ~ophyd_async.core.SignalR[~ophyd_async.fastcs.jungfrau._signals.DetectorStatus]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauDriverIO.detector_status
+```
+
+````
+
+`````
+
+`````{py:class} JungfrauTriggerMode()
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauTriggerMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauTriggerMode
+```
+
+````{py:attribute} INTERNAL
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauTriggerMode.INTERNAL
+:value: >
+   'Internal'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauTriggerMode.INTERNAL
+```
+
+````
+
+````{py:attribute} EXTERNAL
+:canonical: ophyd_async.fastcs.jungfrau._signals.JungfrauTriggerMode.EXTERNAL
+:value: >
+   'External'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.JungfrauTriggerMode.EXTERNAL
+```
+
+````
+
+`````
+
+`````{py:class} AcquisitionType()
+:canonical: ophyd_async.fastcs.jungfrau._signals.AcquisitionType
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.AcquisitionType
+```
+
+````{py:attribute} STANDARD
+:canonical: ophyd_async.fastcs.jungfrau._signals.AcquisitionType.STANDARD
+:value: >
+   'Standard'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.AcquisitionType.STANDARD
+```
+
+````
+
+````{py:attribute} PEDESTAL
+:canonical: ophyd_async.fastcs.jungfrau._signals.AcquisitionType.PEDESTAL
+:value: >
+   'Pedestal'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.AcquisitionType.PEDESTAL
+```
+
+````
+
+`````
+
+`````{py:class} GainMode()
+:canonical: ophyd_async.fastcs.jungfrau._signals.GainMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.GainMode
+```
+
+````{py:attribute} DYNAMIC
+:canonical: ophyd_async.fastcs.jungfrau._signals.GainMode.DYNAMIC
+:value: >
+   'Dynamic'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.GainMode.DYNAMIC
+```
+
+````
+
+````{py:attribute} FORCE_SWITCH_G1
+:canonical: ophyd_async.fastcs.jungfrau._signals.GainMode.FORCE_SWITCH_G1
+:value: >
+   'ForceSwitchG1'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.GainMode.FORCE_SWITCH_G1
+```
+
+````
+
+````{py:attribute} FORCE_SWITCH_G2
+:canonical: ophyd_async.fastcs.jungfrau._signals.GainMode.FORCE_SWITCH_G2
+:value: >
+   'ForceSwitchG2'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.GainMode.FORCE_SWITCH_G2
+```
+
+````
+
+````{py:attribute} FIX_G1
+:canonical: ophyd_async.fastcs.jungfrau._signals.GainMode.FIX_G1
+:value: >
+   'FixG1'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.GainMode.FIX_G1
+```
+
+````
+
+````{py:attribute} FIX_G2
+:canonical: ophyd_async.fastcs.jungfrau._signals.GainMode.FIX_G2
+:value: >
+   'FixG2'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.GainMode.FIX_G2
+```
+
+````
+
+````{py:attribute} FIX_G0
+:canonical: ophyd_async.fastcs.jungfrau._signals.GainMode.FIX_G0
+:value: >
+   'FixG0'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.GainMode.FIX_G0
+```
+
+````
+
+`````
+
+`````{py:class} PedestalMode()
+:canonical: ophyd_async.fastcs.jungfrau._signals.PedestalMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.PedestalMode
+```
+
+````{py:attribute} ON
+:canonical: ophyd_async.fastcs.jungfrau._signals.PedestalMode.ON
+:value: >
+   'On'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.PedestalMode.ON
+```
+
+````
+
+````{py:attribute} OFF
+:canonical: ophyd_async.fastcs.jungfrau._signals.PedestalMode.OFF
+:value: >
+   'Off'
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._signals.PedestalMode.OFF
+```
+
+````
+
+`````
+
+````{py:data} JUNGFRAU_DEADTIME_S
+:canonical: ophyd_async.fastcs.jungfrau._controller.JUNGFRAU_DEADTIME_S
+:value: >
+   2e-05
+
+```{autodoc2-docstring} ophyd_async.fastcs.jungfrau._controller.JUNGFRAU_DEADTIME_S
+```
+
+````
