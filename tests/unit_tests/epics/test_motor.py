@@ -162,6 +162,8 @@ async def test_move_outside_motor_limits_causes_error(
     lower_limit,
 ):
     set_mock_value(sim_motor.velocity, 10)
+    set_mock_value(sim_motor.dial_low_limit_travel, lower_limit)
+    set_mock_value(sim_motor.dial_high_limit_travel, upper_limit)
     set_mock_value(sim_motor.low_limit_travel, lower_limit)
     set_mock_value(sim_motor.high_limit_travel, upper_limit)
     with pytest.raises(motor.MotorLimitsError):
