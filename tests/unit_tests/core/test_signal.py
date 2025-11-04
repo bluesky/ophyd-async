@@ -334,6 +334,23 @@ async def test_callable_match_value_set_and_wait_for_value():
         )
 
 
+async def test_given_callable_has_no_name_then_matcher_still_gives_timeout_error():
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+
+    class NoNameCallable:
+        def __call__(self, val):
+            return val == 20
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_other_value(
+            set_signal, 20, match_signal, NoNameCallable(), timeout=0.01
+        )
+
+
 async def test_wait_for_value_with_value():
     signal = epics_signal_rw(str, read_pv="pva://signal", name="signal")
     await signal.connect(mock=True)
