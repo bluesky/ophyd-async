@@ -98,6 +98,8 @@ class Motor(
         self.motor_done_move = epics_signal_r(int, prefix + ".DMOV")
         self.low_limit_travel = epics_signal_rw(float, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
+        self.dial_low_limit_travel = epics_signal_rw(float, prefix + ".DLLM")
+        self.dial_high_limit_travel = epics_signal_rw(float, prefix + ".DHLM")
         self.offset_freeze_switch = epics_signal_rw(OffsetMode, prefix + ".FOFF")
         self.high_limit_switch = epics_signal_r(int, prefix + ".HLS")
         self.low_limit_switch = epics_signal_r(int, prefix + ".LLS")
@@ -132,8 +134,8 @@ class Motor(
         outside the motor soft limits.
         """
         motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
-            self.low_limit_travel.get_value(),
-            self.high_limit_travel.get_value(),
+            self.dial_low_limit_travel.get_value(),
+            self.dial_high_limit_travel.get_value(),
             self.motor_egu.get_value(),
         )
 
