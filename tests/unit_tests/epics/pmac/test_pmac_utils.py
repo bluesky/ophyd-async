@@ -131,7 +131,7 @@ async def test_unexpected_cs_axis_letter_raises_value_error(
     with pytest.raises(
         ValueError,
         match="Motor sim_x_motor assigned to 'I' "
-        "but must be assignmed to one of 'ABCUVWXYZ'",
+        "but must be assigned to one of 'A,B,C,U,V,W,X,Y,Z'",
     ):
         await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
 

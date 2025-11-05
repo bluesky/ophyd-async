@@ -84,10 +84,10 @@ class _PmacMotorInfo:
                 try:
                     # 1 indexed to match coord
                     index = CS_INDEX[cs_axis_letter]
-                except ValueError as err:
+                except KeyError as err:
                     raise ValueError(
                         f"Motor {motor.name} assigned to '{cs_axis_letter}' "
-                        f"but must be assignmed to one of '{','.join(CS_INDEX)}'"
+                        f"but must be assigned to one of '{','.join(CS_INDEX)}'"
                     ) from err
                 if index in motor_cs_index.values():
                     raise ValueError(
