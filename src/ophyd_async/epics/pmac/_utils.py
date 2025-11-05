@@ -11,7 +11,7 @@ from scanspec.core import Slice
 from ophyd_async.core import gather_dict
 from ophyd_async.epics.motor import Motor
 
-from ._pmac_io import CS_LETTERS, PmacIO
+from ._pmac_io import CS_INDEX, PmacIO
 
 # PMAC durations are in milliseconds
 # We must convert from scanspec durations (seconds) to milliseconds
@@ -83,11 +83,11 @@ class _PmacMotorInfo:
                     )
                 try:
                     # 1 indexed to match coord
-                    index = CS_LETTERS.index(cs_axis_letter) + 1
+                    index = CS_INDEX[cs_axis_letter]
                 except ValueError as err:
                     raise ValueError(
                         f"Motor {motor.name} assigned to '{cs_axis_letter}' "
-                        f"but must be assignmed to one of '{CS_LETTERS}'"
+                        f"but must be assignmed to one of '{','.join(CS_INDEX)}'"
                     ) from err
                 if index in motor_cs_index.values():
                     raise ValueError(

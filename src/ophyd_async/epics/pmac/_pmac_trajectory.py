@@ -15,10 +15,10 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.epics.motor import Motor
-from ophyd_async.epics.pmac import PmacIO
-from ophyd_async.epics.pmac._pmac_io import CS_LETTERS
-from ophyd_async.epics.pmac._pmac_trajectory_generation import PVT, Trajectory
-from ophyd_async.epics.pmac._utils import (
+
+from ._pmac_io import CS_INDEX, PmacIO
+from ._pmac_trajectory_generation import PVT, Trajectory
+from ._utils import (
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
 )
@@ -131,8 +131,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             slice, path_length, motor_info, ramp_up_time
         )
         use_axis = {
-            axis: (axis in motor_info.motor_cs_index.values())
-            for axis in range(1, len(CS_LETTERS) + 1)
+            i: (i in motor_info.motor_cs_index.values()) for i in CS_INDEX.values()
         }
 
         coros = [
