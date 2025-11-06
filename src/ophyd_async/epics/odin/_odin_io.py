@@ -2,7 +2,11 @@ import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
 
 from bluesky.protocols import StreamAsset
-from event_model import DataKey  # type: ignore
+from event_model import (  # type: ignore
+    ComposeStreamResource,
+    DataKey,  # type: ignore
+    StreamRange,
+)
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -14,6 +18,7 @@ from ophyd_async.core import (
     Reference,
     SignalR,
     StrictEnum,
+    error_if_none,
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
@@ -91,16 +96,21 @@ class OdinWriter(DetectorWriter):
         path_provider: PathProvider,
         odin_driver: Odin,
         detector_bit_depth: SignalR[int],
+        mimetype: str = "application/x-hdf5",
     ) -> None:
         self._drv = odin_driver
         self._path_provider = path_provider
         self._detector_bit_depth = Reference(detector_bit_depth)
         self._capture_status: AsyncStatus | None = None
+        self._file_extension = ".h5"
+        self._mimetype = mimetype
         super().__init__()
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
+
+        self._path_info = self._path_provider(device_name=name)
 
         await asyncio.gather(
             self._drv.data_type.set(
@@ -130,10 +140,15 @@ class OdinWriter(DetectorWriter):
 
         return await self._describe()
 
-    async def _describe(self) -> dict[str, DataKey]:
+    async def get_data_shape(self) -> tuple[int, int]:
         data_shape = await asyncio.gather(
             self._drv.image_height.get_value(), self._drv.image_width.get_value()
         )
+
+        return data_shape
+
+    async def _describe(self) -> dict[str, DataKey]:
+        data_shape = await self.get_data_shape()
 
         return {
             "data": DataKey(
@@ -155,11 +170,49 @@ class OdinWriter(DetectorWriter):
     async def get_indices_written(self) -> int:
         return await self._drv.num_captured.get_value() // self._exposures_per_event
 
-    def collect_stream_docs(
+    async def collect_stream_docs(
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
-        # TODO: Correctly return stream https://github.com/bluesky/ophyd-async/issues/530
-        raise NotImplementedError()
+        path_info = error_if_none(
+            self._path_info, "Writer must be opened before collecting stream docs!"
+        )
+
+        if indices_written:
+            if not self._emitted_resource:
+                file_name = await self._drv.file_name.get_value()
+                file_template = file_name + "_{:06d}" + self._file_extension
+
+                data_shape = await self.get_data_shape()
+
+                bundler_composer = ComposeStreamResource()
+
+                self._emitted_resource = bundler_composer(
+                    mimetype=self._mimetype,
+                    uri=str(path_info.directory_uri),
+                    # TODO no reference to detector's name
+                    data_key=name,
+                    parameters={
+                        "chunk_shape": (self._exposures_per_event, *data_shape),
+                        # Include file template for reconstruction in consolidator
+                        "template": file_template,
+                    },
+                    uid=None,
+                    validate=True,
+                )
+
+                yield "stream_resource", self._emitted_resource.stream_resource_doc
+
+            # Indices are relative to resource
+            if indices_written > self._last_emitted:
+                indices: StreamRange = {
+                    "start": self._last_emitted,
+                    "stop": indices_written,
+                }
+                self._last_emitted = indices_written
+                yield (
+                    "stream_datum",
+                    self._emitted_resource.compose_stream_datum(indices),
+                )
 
     async def close(self) -> None:
         await stop_busy_record(self._drv.capture, Writing.DONE, timeout=DEFAULT_TIMEOUT)
