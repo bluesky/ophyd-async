@@ -79,7 +79,7 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ````
 
-`````{py:class} PmacTrajectoryTriggerLogic(pmac: ~ophyd_async.epics.pmac.PmacIO)
+`````{py:class} PmacTrajectoryTriggerLogic(pmac: ~ophyd_async.epics.pmac._pmac_io.PmacIO)
 :canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic
 
 Bases: {py:obj}`ophyd_async.core.FlyerController`

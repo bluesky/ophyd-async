@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.6.dev5+g13f67ee23 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.7.dev1+gd580ffff8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=07fdebf5"></script>
+    <script src="../../../_static/documentation_options.js?v=7585d967"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.6.dev5+g13f67ee23 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.6.dev5+g13f67ee23 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.7.dev1+gd580ffff8 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.7.dev1+gd580ffff8 documentation - Home"/>
   
   
 </a></div>
@@ -571,6 +571,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">offset_freeze_switch</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">OffsetMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.FOFF&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">high_limit_switch</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.HLS&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">low_limit_switch</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.LLS&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_link</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.OUT&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_use_switch</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">UseSetMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.SET&quot;</span><span class="p">)</span>
 
         <span class="c1"># Note:cannot use epics_signal_x here, as the motor record specifies that</span>
