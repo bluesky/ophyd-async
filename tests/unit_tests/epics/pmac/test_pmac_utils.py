@@ -37,13 +37,37 @@ async def test_calculate_ramp_position_and_duration(
     assert ramp_down_time == 0.1
 
 
+async def test_motor_info_from_cs_motors(sim_cs_motors: tuple[PmacIO, Motor, Motor]):
+    pmac, sim_cs_x_motor, sim_cs_y_motor = sim_cs_motors
+    motor_info = await _PmacMotorInfo.from_motors(
+        pmac, [sim_cs_x_motor, sim_cs_y_motor]
+    )
+    expected_motor_info = _PmacMotorInfo(
+        "CS5",
+        5,
+        {sim_cs_x_motor: 7, sim_cs_y_motor: 8},
+        {sim_cs_x_motor: 10.0, sim_cs_y_motor: 20.0},
+        {sim_cs_x_motor: 5.0, sim_cs_y_motor: 10.0},
+    )
+    assert motor_info == expected_motor_info
+
+
+async def test_motor_info_from_both_motors(
+    sim_both_motors: tuple[PmacIO, Motor, Motor, Motor, Motor],
+):
+    sim_pmac, sim_x_motor, sim_y_motor, sim_cs_x_motor, sim_cs_y_motor = sim_both_motors
+
+    with pytest.raises(ValueError, match="raw motors and CS motors"):
+        await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_cs_y_motor])
+
+
 async def test_motor_info_from_motors(sim_motors: tuple[PmacIO, Motor, Motor]):
     sim_pmac, sim_x_motor, sim_y_motor = sim_motors
     motor_info = await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
     expected_motor_info = _PmacMotorInfo(
         "CS1",
         1,
-        {sim_x_motor: 6, sim_y_motor: 7},
+        {sim_x_motor: 7, sim_y_motor: 8},
         {sim_x_motor: 10, sim_y_motor: 20},
         {sim_x_motor: 5, sim_y_motor: 10},
     )
@@ -85,7 +109,11 @@ async def test_duplicate_cs_axis_letter_raises_runtime_error(
         "Y",
     )
 
-    with pytest.raises(RuntimeError, match="same CS Axis"):
+    with pytest.raises(
+        ValueError,
+        match="Motor sim_y_motor assigned to 'Y' "
+        "but another motor is already assigned to this axis.",
+    ):
         await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
 
 
@@ -100,7 +128,11 @@ async def test_unexpected_cs_axis_letter_raises_value_error(
         "I",
     )
 
-    with pytest.raises(ValueError, match="Failed to get motor CS index"):
+    with pytest.raises(
+        ValueError,
+        match="Motor sim_x_motor assigned to 'I' "
+        "but must be assigned to one of 'A,B,C,U,V,W,X,Y,Z'",
+    ):
         await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
 
 
@@ -115,5 +147,8 @@ async def test_blank_cs_axis_letter_raises_value_error(
         "",
     )
 
-    with pytest.raises(ValueError, match="Failed to get motor CS index"):
+    with pytest.raises(
+        ValueError,
+        match="Motor sim_x_motor does not have an axis assignment.",
+    ):
         await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor, sim_y_motor])
