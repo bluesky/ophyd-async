@@ -147,11 +147,12 @@ class Motor(
             self.dial_high_limit_travel.get_value(),
         )
 
-        # EPICS motor record treats limits of 0, 0 as no limit
+        # EPICS motor record treats dial limits of 0, 0 as no limit
         # Use DLLM and DHLM to check
         if dial_lower_limit == 0 and dial_upper_limit == 0:
             return
 
+        # Use real motor limit(i.e. HLM and LLM) to check if the move is permissible
         if (
             not motor_upper_limit >= abs_start_pos >= motor_lower_limit
             or not motor_upper_limit >= abs_end_pos >= motor_lower_limit
