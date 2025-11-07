@@ -33,7 +33,7 @@ from ophyd_async.epics.core import (
     stop_busy_record,
 )
 
-from ophyd_async.epics.adcore import NDFileHDFIO, NDPluginBaseIO
+from ophyd_async.epics.adcore import NDPluginBaseIO
 from ophyd_async.epics.adcore._utils import (
     convert_param_dtype_to_np,
     convert_pv_dtype_to_np,
