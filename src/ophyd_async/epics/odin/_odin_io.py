@@ -6,6 +6,7 @@ from event_model import (  # type: ignore
     ComposeStreamResource,
     DataKey,  # type: ignore
     StreamRange,
+    ComposeStreamResourceBundle
 )
 
 from ophyd_async.core import (
@@ -104,6 +105,9 @@ class OdinWriter(DetectorWriter):
         self._capture_status: AsyncStatus | None = None
         self._file_extension = ".h5"
         self._mimetype = mimetype
+        self._emitted_resource: ComposeStreamResourceBundle | None = None
+        self._last_emitted: int = 0
+
         super().__init__()
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
