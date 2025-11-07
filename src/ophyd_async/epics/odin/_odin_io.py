@@ -153,12 +153,25 @@ class OdinWriter(DetectorWriter):
             wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT),
         )
 
-        description = await self._describe(name)
+        # Add the main data
+        self._datasets = [
+            HDFDatasetDescription(
+                data_key=name,
+                dataset="/entry/data/data",
+                shape=(self._exposures_per_event, *self.data_shape),
+                dtype_numpy="<u2",
+                chunk_shape=(self._exposures_per_event, *self.data_shape),
+            )
+        ]
+
+        await self.append_plugins_to_datasets()
 
         self._composer = HDFDocumentComposer(
             f"{info.directory_uri}{info.filename}.h5",
             self._datasets,
         )
+
+        description = await self._describe(name)
 
         return description
 
@@ -171,8 +184,6 @@ class OdinWriter(DetectorWriter):
     
 
     async def _describe(self, name: str) -> dict[str, DataKey]:
-
-        await self._update_datasets(name)
       
         describe = {
             "data": DataKey(
@@ -189,31 +200,6 @@ class OdinWriter(DetectorWriter):
 
         return describe
 
-
-    async def _update_datasets(self, name: str) -> None:
-        # Add the main data
-        self._datasets = [
-            HDFDatasetDescription(
-                data_key=name,
-                dataset="/entry/data/data",
-                shape=(self._exposures_per_event, *self.data_shape),
-                dtype_numpy="<u2",
-                chunk_shape=(self._exposures_per_event, *self.data_shape),
-            )
-        ]
-
-        await self.append_plugins_to_datasets()
-
-        # Warn user if dataset table is empty in OdinWriter
-        # i.e. no stream resources will be generated
-        if len(self._datasets) == 0:
-
-            logger.warning(f"OdinWriter {name} DATASETS table is empty! "
-                "No stream resource docs will be generated. "
-                "Make sure captured positions have their corresponding "
-                "*:DATASET PV set to a scientifically relevant name.")
-            
-        return
 
     async def append_plugins_to_datasets(self) -> None:
 
