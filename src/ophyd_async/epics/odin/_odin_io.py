@@ -3,14 +3,12 @@ from collections.abc import AsyncGenerator, AsyncIterator
 
 from bluesky.protocols import StreamAsset
 from event_model import (  # type: ignore
-    ComposeStreamResource,
     DataKey,  # type: ignore
-    StreamRange,
-    ComposeStreamResourceBundle
 )
 
 
 from ophyd_async.core._log import logger
+from xml.etree import ElementTree as ET
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -22,7 +20,6 @@ from ophyd_async.core import (
     Reference,
     SignalR,
     StrictEnum,
-    error_if_none,
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
@@ -34,6 +31,12 @@ from ophyd_async.epics.core import (
     epics_signal_rw,
     epics_signal_rw_rbv,
     stop_busy_record,
+)
+
+from ophyd_async.epics.adcore import NDFileHDFIO, NDPluginBaseIO
+from ophyd_async.epics.adcore._utils import (
+    convert_param_dtype_to_np,
+    convert_pv_dtype_to_np,
 )
 
 class Writing(StrictEnum):
@@ -102,13 +105,16 @@ class OdinWriter(DetectorWriter):
         odin_driver: Odin,
         detector_bit_depth: SignalR[int],
         mimetype: str = "application/x-hdf5",
+        plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         self._drv = odin_driver
         self._path_provider = path_provider
         self._detector_bit_depth = Reference(detector_bit_depth)
+        self._plugins = plugins
         self._capture_status: AsyncStatus | None = None
         self._datasets: list[HDFDatasetDescription] = []
         self._composer: HDFDocumentComposer | None = None
+
         super().__init__()
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
@@ -116,6 +122,8 @@ class OdinWriter(DetectorWriter):
 
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
+        self.data_shape = await self.get_data_shape()
+
 
         self._path_info = self._path_provider(device_name=name)
 
@@ -145,6 +153,7 @@ class OdinWriter(DetectorWriter):
             wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT),
         )
 
+
         self._composer = HDFDocumentComposer(
             f"{info.directory_uri}{info.filename}.h5",
             self._datasets,
@@ -158,18 +167,51 @@ class OdinWriter(DetectorWriter):
         )
 
         return data_shape
+    
+    async def append_plugins_to_datasets(self):
+
+        if self._plugins is not None:
+
+            # And all the scalar datasets
+            for plugin in self._plugins.values():
+                maybe_xml = await plugin.nd_attributes_file.get_value()
+                # This is the check that ADCore does to see if it is an XML string
+                # rather than a filename to parse
+                if "<Attributes>" in maybe_xml:
+                    root = ET.fromstring(maybe_xml)
+                    for child in root:
+                        data_key = child.attrib["name"]
+                        if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
+                            np_datatype = convert_pv_dtype_to_np(
+                                child.attrib.get("dbrtype", "DBR_NATIVE")
+                            )
+                        else:
+                            np_datatype = convert_param_dtype_to_np(
+                                child.attrib.get("datatype", "INT")
+                            )
+                        self._datasets.append(
+                            HDFDatasetDescription(
+                                data_key=data_key,
+                                dataset=f"/entry/instrument/NDAttributes/{data_key}",
+                                shape=(self._exposures_per_event,)
+                                if self._exposures_per_event > 1
+                                else (),
+                                dtype_numpy=np_datatype,
+                                # NDAttributes appear to always be configured with
+                                # this chunk size
+                                chunk_shape=(16384,),
+                            )
+                        )
 
     async def _describe(self, name: str) -> dict[str, DataKey]:
+
         await self._update_datasets(name)
-
-        self.data_shape = await self.get_data_shape()
-
       
         describe = {
             "data": DataKey(
                 source=self._drv.file_name.source,
-                shape=[self._exposures_per_event, *self.data_shape],
-                dtype="array" if self._exposures_per_event > 1 or len(self.data_shape) > 1
+                shape=list(ds.shape),
+                dtype="array" if self._exposures_per_event > 1 or len(ds.shape) > 1
                 else "number",
                 # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
                 dtype_numpy="<u2",
@@ -182,23 +224,18 @@ class OdinWriter(DetectorWriter):
 
 
     async def _update_datasets(self, name: str) -> None:
-        # Load data from the datasets PV on the panda, update internal
-        # representation of datasets that the panda will write.
-        capture_table = await self.panda_data_block.datasets.get_value()
+        # Add the main data
         self._datasets = [
-            # TODO: Update chunk size to read signal once available in IOC
-            # Currently PandA IOC sets chunk size to 1024 points per chunk
             HDFDatasetDescription(
-                data_key=dataset_name,
-                dataset="/" + dataset_name,
-                shape=(self._exposures_per_event,)
-                if self._exposures_per_event > 1
-                else (),
-                dtype_numpy="<f8",
-                chunk_shape=(1024,),
+                data_key=name,
+                dataset="/entry/data/data",
+                shape=(self._exposures_per_event, *self.data_shape),
+                dtype_numpy="<u2",
+                chunk_shape=(self._exposures_per_event, *self.data_shape),
             )
-            for dataset_name in capture_table.name
         ]
+
+        await self.append_plugins_to_datasets()
 
         # Warn user if dataset table is empty in OdinWriter
         # i.e. no stream resources will be generated
