@@ -157,7 +157,7 @@ class OdinWriter(DetectorWriter):
         self._datasets = [
             HDFDatasetDescription(
                 data_key=name,
-                dataset=f"/entry/{name}/data",
+                dataset=f"/entry/data",
                 shape=(self._exposures_per_event, *self.data_shape),
                 dtype_numpy="<u2",
                 chunk_shape=(self._exposures_per_event, *self.data_shape),
