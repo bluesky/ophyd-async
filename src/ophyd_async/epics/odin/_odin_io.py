@@ -43,6 +43,8 @@ class Writing(StrictEnum):
     CAPTURE = "Capture"
     DONE = "Done"
 
+from dodal.log import LOGGER
+
 
 class OdinNode(Device):
     def __init__(self, prefix: str, name: str = "") -> None:
@@ -104,7 +106,6 @@ class OdinWriter(DetectorWriter):
         path_provider: PathProvider,
         odin_driver: Odin,
         detector_bit_depth: SignalR[int],
-        mimetype: str = "application/x-hdf5",
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         self._drv = odin_driver
@@ -186,7 +187,7 @@ class OdinWriter(DetectorWriter):
     async def _describe(self, name: str) -> dict[str, DataKey]:
       
         describe = {
-            "data": DataKey(
+            ds.data_key: DataKey(
                 source=self._drv.file_name.source,
                 shape=list(ds.shape),
                 dtype="array" if self._exposures_per_event > 1 or len(ds.shape) > 1
