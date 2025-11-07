@@ -1,14 +1,9 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
+from xml.etree import ElementTree as ET
 
 from bluesky.protocols import StreamAsset
-from event_model import (  # type: ignore
-    DataKey,  # type: ignore
-)
-
-
-from ophyd_async.core._log import logger
-from xml.etree import ElementTree as ET
+from event_model import DataKey  # type: ignore
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -42,8 +37,6 @@ from ophyd_async.epics.adcore._utils import (
 class Writing(StrictEnum):
     CAPTURE = "Capture"
     DONE = "Done"
-
-from dodal.log import LOGGER
 
 
 class OdinNode(Device):
