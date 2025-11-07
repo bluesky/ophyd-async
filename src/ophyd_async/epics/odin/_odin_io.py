@@ -9,6 +9,9 @@ from event_model import (  # type: ignore
     ComposeStreamResourceBundle
 )
 
+
+from ophyd_async.core._log import logger
+
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
@@ -23,6 +26,8 @@ from ophyd_async.core import (
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
+    HDFDatasetDescription,
+    HDFDocumentComposer,
 )
 from ophyd_async.epics.core import (
     epics_signal_r,
@@ -30,7 +35,6 @@ from ophyd_async.epics.core import (
     epics_signal_rw_rbv,
     stop_busy_record,
 )
-
 
 class Writing(StrictEnum):
     CAPTURE = "Capture"
@@ -103,14 +107,13 @@ class OdinWriter(DetectorWriter):
         self._path_provider = path_provider
         self._detector_bit_depth = Reference(detector_bit_depth)
         self._capture_status: AsyncStatus | None = None
-        self._file_extension = ".h5"
-        self._mimetype = mimetype
-        self._emitted_resource: ComposeStreamResourceBundle | None = None
-        self._last_emitted: int = 0
-
+        self._datasets: list[HDFDatasetDescription] = []
+        self._composer: HDFDocumentComposer | None = None
         super().__init__()
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
+        self._composer = None
+
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
 
@@ -142,7 +145,12 @@ class OdinWriter(DetectorWriter):
             wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT),
         )
 
-        return await self._describe()
+        self._composer = HDFDocumentComposer(
+            f"{info.directory_uri}{info.filename}.h5",
+            self._datasets,
+        )
+
+        return await self._describe(name)
 
     async def get_data_shape(self) -> tuple[int, int]:
         data_shape = await asyncio.gather(
@@ -151,19 +159,56 @@ class OdinWriter(DetectorWriter):
 
         return data_shape
 
-    async def _describe(self) -> dict[str, DataKey]:
-        data_shape = await self.get_data_shape()
+    async def _describe(self, name: str) -> dict[str, DataKey]:
+        await self._update_datasets(name)
 
-        return {
+        self.data_shape = await self.get_data_shape()
+
+      
+        describe = {
             "data": DataKey(
                 source=self._drv.file_name.source,
-                shape=[self._exposures_per_event, *data_shape],
-                dtype="array",
+                shape=[self._exposures_per_event, *self.data_shape],
+                dtype="array" if self._exposures_per_event > 1 or len(self.data_shape) > 1
+                else "number",
                 # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
                 dtype_numpy="<u2",
                 external="STREAM:",
             )
+            for ds in self._datasets
         }
+
+        return describe
+
+
+    async def _update_datasets(self, name: str) -> None:
+        # Load data from the datasets PV on the panda, update internal
+        # representation of datasets that the panda will write.
+        capture_table = await self.panda_data_block.datasets.get_value()
+        self._datasets = [
+            # TODO: Update chunk size to read signal once available in IOC
+            # Currently PandA IOC sets chunk size to 1024 points per chunk
+            HDFDatasetDescription(
+                data_key=dataset_name,
+                dataset="/" + dataset_name,
+                shape=(self._exposures_per_event,)
+                if self._exposures_per_event > 1
+                else (),
+                dtype_numpy="<f8",
+                chunk_shape=(1024,),
+            )
+            for dataset_name in capture_table.name
+        ]
+
+        # Warn user if dataset table is empty in OdinWriter
+        # i.e. no stream resources will be generated
+        if len(self._datasets) == 0:
+
+            logger.warning(f"OdinWriter {name} DATASETS table is empty! "
+                "No stream resource docs will be generated. "
+                "Make sure captured positions have their corresponding "
+                "*:DATASET PV set to a scientifically relevant name.")
+
 
     async def observe_indices_written(
         self, timeout: float
@@ -177,46 +222,12 @@ class OdinWriter(DetectorWriter):
     async def collect_stream_docs(
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
-        path_info = error_if_none(
-            self._path_info, "Writer must be opened before collecting stream docs!"
-        )
-
-        if indices_written:
-            if not self._emitted_resource:
-                file_name = await self._drv.file_name.get_value()
-                file_template = file_name + "_{:06d}" + self._file_extension
-
-                data_shape = await self.get_data_shape()
-
-                bundler_composer = ComposeStreamResource()
-
-                self._emitted_resource = bundler_composer(
-                    mimetype=self._mimetype,
-                    uri=str(path_info.directory_uri),
-                    # TODO no reference to detector's name
-                    data_key=name,
-                    parameters={
-                        "chunk_shape": (self._exposures_per_event, *data_shape),
-                        # Include file template for reconstruction in consolidator
-                        "template": file_template,
-                    },
-                    uid=None,
-                    validate=True,
-                )
-
-                yield "stream_resource", self._emitted_resource.stream_resource_doc
-
-            # Indices are relative to resource
-            if indices_written > self._last_emitted:
-                indices: StreamRange = {
-                    "start": self._last_emitted,
-                    "stop": indices_written,
-                }
-                self._last_emitted = indices_written
-                yield (
-                    "stream_datum",
-                    self._emitted_resource.compose_stream_datum(indices),
-                )
+        # TODO: fail if we get dropped frames
+        if self._composer is None:
+            msg = f"open() not called on {self}"
+            raise RuntimeError(msg)
+        for doc in self._composer.make_stream_docs(indices_written):
+            yield doc
 
     async def close(self) -> None:
         await stop_busy_record(self._drv.capture, Writing.DONE, timeout=DEFAULT_TIMEOUT)
