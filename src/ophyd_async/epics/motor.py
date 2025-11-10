@@ -163,6 +163,8 @@ class Motor(
                 f"{abs_start_pos}{egu} to "
                 f"{abs_end_pos}{egu} but motor limits are "
                 f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
+                f"dial limits are "
+                f"{dial_lower_limit}{egu} <= x <= {dial_upper_limit}"
             )
 
     @AsyncStatus.wrap
