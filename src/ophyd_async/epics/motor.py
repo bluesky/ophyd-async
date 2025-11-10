@@ -103,6 +103,7 @@ class Motor(
         self.offset_freeze_switch = epics_signal_rw(OffsetMode, prefix + ".FOFF")
         self.high_limit_switch = epics_signal_r(int, prefix + ".HLS")
         self.low_limit_switch = epics_signal_r(int, prefix + ".LLS")
+        self.output_link = epics_signal_r(str, prefix + ".OUT")
         self.set_use_switch = epics_signal_rw(UseSetMode, prefix + ".SET")
 
         # Note:cannot use epics_signal_x here, as the motor record specifies that
