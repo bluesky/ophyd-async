@@ -94,7 +94,9 @@ def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
 
 @pytest.mark.insubprocess
 @pytest.mark.timeout(TIMEOUT + 3.0)
-@pytest.mark.xfail(reason="https://github.com/bluesky/ophyd-async/issues/998")
+@pytest.mark.xfail(
+    raises=AssertionError, reason="https://github.com/bluesky/ophyd-async/issues/998"
+)
 def test_prepare_is_idempotent_and_sets_exposure_time(
     RE: RunEngine, adsim: SimDetector, bl01t_di_cam_01: None
 ) -> None:
