@@ -16,7 +16,6 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 from ophyd_async.epics import motor
-from ophyd_async.epics.testing import InstantMotorMock  # noqa: F401
 from ophyd_async.testing import (
     StatusWatcher,
     callback_on_mock_put,
@@ -561,3 +560,30 @@ async def test_instant_motor_mock_recursive_in_composite_device():
     await status
     assert status.success
     assert await stage.x.user_readback.get_value() == 200.0
+
+
+async def test_instant_motor_mock_preserves_parent_mock_tracking():
+    """Test that parent mock call tracking works with InstantMotorMock."""
+
+    class XYStage(Device):
+        def __init__(self, prefix: str, name: str = ""):
+            self.x = motor.Motor(prefix + "X")
+            self.y = motor.Motor(prefix + "Y")
+            super().__init__(name=name)
+
+    stage = XYStage("BL01I-MO-STAGE-01:")
+    parent_mock = DeviceMock()
+    await stage.connect(mock=parent_mock)
+
+    # Make some operations on child motors
+    await stage.x.user_setpoint.set(100.0)
+    await stage.y.user_setpoint.set(-50.0)
+
+    # Verify we can track calls on the parent mock
+    parent_mock_obj = parent_mock()
+    assert parent_mock_obj.x.user_setpoint.put.called
+    assert parent_mock_obj.y.user_setpoint.put.called
+
+    # Verify the mock calls include the child operations
+    assert any("x" in str(call) for call in parent_mock_obj.mock_calls)
+    assert any("y" in str(call) for call in parent_mock_obj.mock_calls)

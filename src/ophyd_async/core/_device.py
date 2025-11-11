@@ -321,12 +321,24 @@ class Device(HasName):
                 # If it's a plain DeviceMock explicitly passed by the user (no parent),
                 # use it as-is to respect the user's explicit choice.
                 if type(mock) is DeviceMock and mock.parent is not None:
-                    # Plain DeviceMock created via .child() - look for custom mock
-                    custom_mock = get_default_device_mock(type(self))
-                    # Use custom mock if found, otherwise use the plain one
-                    if type(custom_mock) is not DeviceMock:
-                        self._mock = custom_mock
+                    # Plain DeviceMock created via .child() - look for custom mock class
+                    mock_class = _default_device_mocks.get(type(self))
+                    if not mock_class:
+                        # Check for parent classes (subclass support)
+                        for (
+                            registered_type,
+                            registered_mock_cls,
+                        ) in _default_device_mocks.items():
+                            if issubclass(type(self), registered_type):
+                                mock_class = registered_mock_cls
+                                break
+
+                    if mock_class:
+                        # Create custom mock with same parent and name to preserve
+                        # the parent-child relationship for mock call tracking
+                        self._mock = mock_class(name=mock.name, parent=mock.parent)
                     else:
+                        # No custom mock found, use the plain one
                         self._mock = mock
                 else:
                     # Custom DeviceMock subclass or explicitly passed plain mock
