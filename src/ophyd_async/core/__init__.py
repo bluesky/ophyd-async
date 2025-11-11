@@ -14,7 +14,15 @@ from ._detector import (
     StandardDetector,
     TriggerInfo,
 )
-from ._device import Device, DeviceConnector, DeviceVector, init_devices
+from ._device import (
+    Device,
+    DeviceConnector,
+    DeviceMock,
+    DeviceVector,
+    LazyMock,
+    default_device_mock_for_class,
+    init_devices,
+)
 from ._device_filler import DeviceFiller
 from ._enums import (
     EnabledDisabled,
@@ -86,16 +94,13 @@ from ._utils import (
     CalculatableTimeout,
     Callback,
     ConfinedModel,
-    DeviceMock,
     EnumTypes,
-    LazyMock,
     NotConnectedError,
     Reference,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
     WatcherUpdate,
-    default_device_mock_for_class,
     error_if_none,
     gather_dict,
     get_dtype,

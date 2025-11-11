@@ -5,19 +5,141 @@ import sys
 from collections.abc import Awaitable, Callable, Iterator, Mapping, MutableMapping
 from functools import cached_property
 from logging import LoggerAdapter, getLogger
-from typing import Any, TypeVar
+from typing import Any, Generic, TypeVar, get_args, get_origin
+from unittest.mock import Mock
 
 from bluesky.protocols import HasName
 from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
 from ._utils import (
     DEFAULT_TIMEOUT,
-    DeviceMock,
     NotConnectedError,
     error_if_none,
-    get_default_device_mock,
     wait_for_connection,
 )
+
+DeviceType = TypeVar("DeviceType", bound="Device")
+MockType = TypeVar("MockType", bound="DeviceMock")
+
+
+class DeviceMock(Generic[DeviceType]):
+    """A lazily created Mock to be used when connecting in mock mode.
+
+    Creating Mocks is reasonably expensive when each Device (and Signal)
+    requires its own, and the tree is only used when ``Signal.set()`` is
+    called. This class allows a tree of lazily connected Mocks to be
+    constructed so that when the leaf is created, so are its parents.
+    Any calls to the child are then accessible from the parent mock.
+
+    Subclasses can override the `connect()` method to inject custom logic
+    when mock devices are connected.
+
+    ```python
+    >>> parent = DeviceMock()
+    >>> child = parent.child("child")
+    >>> child_mock = child()
+    >>> child_mock()  # doctest: +ELLIPSIS
+    <Mock name='mock.child()' id='...'>
+    >>> parent_mock = parent()
+    >>> parent_mock.mock_calls
+    [call.child()]
+
+    ```
+    """
+
+    def __init__(self, name: str = "", parent: DeviceMock | None = None) -> None:
+        self.parent = parent
+        self.name = name
+        self._mock: Mock | None = None
+
+    def child(self, name: str) -> DeviceMock:
+        """Return a child of this DeviceMock with the given name."""
+        return type(self)(name, self)
+
+    def __call__(self) -> Mock:
+        if self._mock is None:
+            self._mock = Mock(spec=object)
+            if self.parent is not None:
+                self.parent().attach_mock(self._mock, self.name)
+        return self._mock
+
+    async def connect(self, device: DeviceType) -> None:
+        """Override this method to inject custom logic during mock connection.
+
+        This method is called after the device is connected in mock mode,
+        allowing custom mock behavior to be injected for the device.
+
+        :param device: The device instance being connected in mock mode.
+        """
+        # Default implementation does nothing
+        pass
+
+
+# Keep LazyMock as an alias for backwards compatibility
+LazyMock = DeviceMock
+
+# Registry for default DeviceMock classes
+_default_device_mocks: dict[type[Device], type[DeviceMock]] = {}
+
+
+def default_device_mock_for_class(
+    cls: type[MockType],
+) -> type[MockType]:
+    """Register a DeviceMock subclass as the default mock for a Device class.
+
+    This decorator allows automatic injection of mock logic when devices are
+    connected in mock mode. The decorated DeviceMock class should override
+    the `connect()` method to define custom mock behavior.
+
+    :example:
+    ```python
+    @default_device_mock_for_class
+    class InstantMotorMock(DeviceMock[Motor]):
+        async def connect(self, device: Motor):
+            callback_on_mock_put(
+                device.setpoint,
+                lambda v, _: set_mock_value(device.readback, v)
+            )
+    ```
+
+    :param cls: A DeviceMock subclass to register.
+    :returns: The same class (decorator pattern).
+    """
+    # Get the device type from the Generic parameter
+    # Get the __orig_bases__ to find DeviceMock[DeviceType]
+    for base in getattr(cls, "__orig_bases__", []):
+        origin = get_origin(base)
+        if origin is DeviceMock:
+            args = get_args(base)
+            if args:
+                device_type = args[0]
+                _default_device_mocks[device_type] = cls  # type: ignore
+                break
+
+    return cls
+
+
+def get_default_device_mock(device_type: type[Device]) -> DeviceMock:
+    """Get or create the default DeviceMock for a device type.
+
+    This function looks up a registered DeviceMock for the device type and
+    returns an instance of it. If no specific mock is registered, returns
+    a plain DeviceMock instance.
+
+    :param device_type: The Device class to look up.
+    :returns: An instance of the registered DeviceMock class, or a plain DeviceMock.
+    """
+    # Check exact match first
+    if device_type in _default_device_mocks:
+        return _default_device_mocks[device_type]()
+
+    # Check for parent classes (subclass support)
+    for registered_type, mock_cls in _default_device_mocks.items():
+        if issubclass(device_type, registered_type):
+            return mock_cls()
+
+    # Fall back to plain DeviceMock
+    return DeviceMock()
 
 
 class DeviceConnector:
@@ -197,14 +319,8 @@ class Device(HasName):
                 # Use the provided mock
                 self._mock = mock
             elif not self._mock:
-                # Look up registered default mock for this device type
-                mock_cls = get_default_device_mock(type(self))
-                if mock_cls is not None:
-                    # Use the registered mock class
-                    self._mock = mock_cls()
-                else:
-                    # Fall back to plain DeviceMock
-                    self._mock = DeviceMock()
+                # Get registered mock or fall back to plain DeviceMock
+                self._mock = get_default_device_mock(type(self))
             await connector.connect_mock(self, self._mock)
         else:
             # Try to cache the connect in real mode

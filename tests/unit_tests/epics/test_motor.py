@@ -7,7 +7,10 @@ from bluesky.protocols import Reading
 from ophyd_async.core import (
     CALCULATE_TIMEOUT,
     AsyncStatus,
+    Device,
+    DeviceMock,
     FlyMotorInfo,
+    default_device_mock_for_class,
     init_devices,
     observe_value,
     soft_signal_rw,
@@ -385,9 +388,87 @@ async def test_instant_motor_mock_auto_injection():
     # Verify that setting the setpoint automatically updates the readback
     await test_motor.user_setpoint.set(42.0)
     readback = await test_motor.user_readback.get_value()
-    assert readback == 42.0, "InstantMotorMock should update readback immediately"
+    assert readback == 42.0
 
     # Test with a different value to ensure it continues to work
     await test_motor.user_setpoint.set(100.5)
     readback = await test_motor.user_readback.get_value()
-    assert readback == 100.5, "InstantMotorMock should update readback for all sets"
+    assert readback == 100.5
+
+
+async def test_device_mock_with_registered_subclass():
+    """Test automatic mock with registered subclass using decorator."""
+    # Motor has InstantMotorMock registered via @default_device_mock_for_class
+    async with init_devices(mock=True):
+        test_motor = motor.Motor("TEST:MOTOR")
+
+    # Should use InstantMotorMock automatically
+    await test_motor.user_setpoint.set(50.0)
+    assert await test_motor.user_readback.get_value() == 50.0
+
+
+async def test_device_mock_with_base_device():
+    """Test automatic mock with base Device class (no registered mock)."""
+
+    class CustomDevice(Device):
+        """A device with no registered DeviceMock."""
+
+        pass
+
+    async with init_devices(mock=True):
+        test_device = CustomDevice()
+
+    # Should use plain DeviceMock as fallback
+    assert isinstance(test_device._mock, DeviceMock)
+    assert type(test_device._mock) is DeviceMock
+
+
+async def test_device_mock_explicit_instance():
+    """Test passing an explicit DeviceMock instance."""
+
+    @default_device_mock_for_class
+    class CustomMotorMock(DeviceMock[motor.Motor]):
+        async def connect(self, device: motor.Motor) -> None:
+            # Custom mock that sets readback to 2x setpoint
+            callback_on_mock_put(
+                device.user_setpoint,
+                lambda v, _: set_mock_value(device.user_readback, v * 2),
+            )
+
+    # Use explicit mock instance that overrides the default
+    explicit_mock = DeviceMock()  # Plain mock, not CustomMotorMock
+    test_motor = motor.Motor("TEST:MOTOR")
+    await test_motor.connect(mock=explicit_mock)
+
+    # Should not use CustomMotorMock, so no automatic behavior
+    # Setpoint won't automatically update readback
+    await test_motor.user_setpoint.set(10.0)
+    # Readback should still be at default (0) because explicit mock has no behavior
+    assert await test_motor.user_readback.get_value() == 0.0
+
+
+async def test_device_mock_inheritance():
+    """Test that subclass can inherit parent's registered mock."""
+
+    class BaseTestDevice(Device):
+        """Base device for testing."""
+
+        pass
+
+    @default_device_mock_for_class
+    class BaseTestDeviceMock(DeviceMock[BaseTestDevice]):
+        async def connect(self, device: BaseTestDevice) -> None:
+            device.mock_was_called = True
+
+    class DerivedTestDevice(BaseTestDevice):
+        """Derived device with no explicit mock."""
+
+        pass
+
+    # DerivedTestDevice should inherit BaseTestDevice's mock
+    async with init_devices(mock=True):
+        test_device = DerivedTestDevice()
+
+    # Verify the BaseTestDeviceMock was used
+    assert hasattr(test_device, "mock_was_called")
+    assert test_device.mock_was_called is True
