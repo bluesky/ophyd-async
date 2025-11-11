@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.7.dev1+gd580ffff8 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.7.dev2+gb29c48d2d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=7585d967"></script>
+    <script src="../../../_static/documentation_options.js?v=3ccf1028"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.7.dev1+gd580ffff8 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.7.dev1+gd580ffff8 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.7.dev2+gb29c48d2d documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.7.dev2+gb29c48d2d documentation - Home"/>
   
   
 </a></div>
@@ -568,6 +568,8 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">motor_done_move</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.DMOV&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">low_limit_travel</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.LLM&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">high_limit_travel</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.HLM&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dial_low_limit_travel</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.DLLM&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dial_high_limit_travel</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.DHLM&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">offset_freeze_switch</span> <span class="o">=</span> <span class="n">epics_signal_rw</span><span class="p">(</span><span class="n">OffsetMode</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.FOFF&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">high_limit_switch</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.HLS&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">low_limit_switch</span> <span class="o">=</span> <span class="n">epics_signal_r</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot;.LLS&quot;</span><span class="p">)</span>
@@ -607,16 +609,26 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">        Will raise a MotorLimitsException if the given absolute positions will be</span>
 <span class="sd">        outside the motor soft limits.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">motor_lower_limit</span><span class="p">,</span> <span class="n">motor_upper_limit</span><span class="p">,</span> <span class="n">egu</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">motor_lower_limit</span><span class="p">,</span>
+            <span class="n">motor_upper_limit</span><span class="p">,</span>
+            <span class="n">egu</span><span class="p">,</span>
+            <span class="n">dial_lower_limit</span><span class="p">,</span>
+            <span class="n">dial_upper_limit</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">low_limit_travel</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">high_limit_travel</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">motor_egu</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dial_low_limit_travel</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dial_high_limit_travel</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
         <span class="p">)</span>
 
-        <span class="c1"># EPICS motor record treats limits of 0, 0 as no limit</span>
-        <span class="k">if</span> <span class="n">motor_lower_limit</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">motor_upper_limit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># EPICS motor record treats dial limits of 0, 0 as no limit</span>
+        <span class="c1"># Use DLLM and DHLM to check</span>
+        <span class="k">if</span> <span class="n">dial_lower_limit</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dial_upper_limit</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
 
+        <span class="c1"># Use real motor limit(i.e. HLM and LLM) to check if the move is permissible</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="ow">not</span> <span class="n">motor_upper_limit</span> <span class="o">&gt;=</span> <span class="n">abs_start_pos</span> <span class="o">&gt;=</span> <span class="n">motor_lower_limit</span>
             <span class="ow">or</span> <span class="ow">not</span> <span class="n">motor_upper_limit</span> <span class="o">&gt;=</span> <span class="n">abs_end_pos</span> <span class="o">&gt;=</span> <span class="n">motor_lower_limit</span>
@@ -626,6 +638,8 @@ window.addEventListener("load", () => mermaid.run());
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">abs_start_pos</span><span class="si">}{</span><span class="n">egu</span><span class="si">}</span><span class="s2"> to &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">abs_end_pos</span><span class="si">}{</span><span class="n">egu</span><span class="si">}</span><span class="s2"> but motor limits are &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">motor_lower_limit</span><span class="si">}{</span><span class="n">egu</span><span class="si">}</span><span class="s2"> &lt;= x &lt;= </span><span class="si">{</span><span class="n">motor_upper_limit</span><span class="si">}{</span><span class="n">egu</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;dial limits are &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dial_lower_limit</span><span class="si">}{</span><span class="n">egu</span><span class="si">}</span><span class="s2"> &lt;= x &lt;= </span><span class="si">{</span><span class="n">dial_upper_limit</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span></div>
 
 
