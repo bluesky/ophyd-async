@@ -35,8 +35,12 @@ async def sim_motor():
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
     set_mock_value(sim_motor.velocity, 1)
-    set_mock_value(sim_motor.low_limit_travel, -10.01)
-    set_mock_value(sim_motor.high_limit_travel, 20.01)
+    # Widen limits to accommodate ramp distances in fly scan trajectories
+    # (Previously dial limits were 0,0 which skipped all limit checks)
+    set_mock_value(sim_motor.low_limit_travel, -11)
+    set_mock_value(sim_motor.high_limit_travel, 21)
+    set_mock_value(sim_motor.dial_low_limit_travel, -11)
+    set_mock_value(sim_motor.dial_high_limit_travel, 21)
     yield sim_motor
 
 
@@ -212,8 +216,9 @@ async def test_prepare_velocity_limit_error(sim_motor: motor.Motor):
 
 
 async def test_valid_prepare_velocity(sim_motor: motor.Motor):
-    set_mock_value(sim_motor.low_limit_travel, -10.01)
-    set_mock_value(sim_motor.high_limit_travel, 20.01)
+    # Widen user limits to accommodate ramp distances (trajectory goes to -10.5)
+    set_mock_value(sim_motor.low_limit_travel, -11)
+    set_mock_value(sim_motor.high_limit_travel, 21)
     set_mock_value(sim_motor.max_velocity, 10)
     fly_info = FlyMotorInfo(start_position=-10, end_position=0, time_for_move=1)
     await sim_motor.prepare(fly_info)
@@ -410,6 +415,37 @@ async def test_instant_motor_mock_sets_done_flag():
     assert await test_motor.motor_done_move.get_value() == 1
     # And readback should have updated
     assert await test_motor.user_readback.get_value() == 50.0
+
+
+async def test_motor_set_with_instant_mock():
+    """Integration test: use motor.set() with InstantMotorMock.
+
+    This verifies that InstantMotorMock provides all necessary default values
+    (velocity, limits, etc.) so motor.set() works without errors.
+    """
+    async with init_devices(mock=True):
+        test_motor = motor.Motor("BL01I-MO-TABLE-01:X")
+
+    # Verify sensible defaults are set
+    assert await test_motor.velocity.get_value() == 1.0
+    assert await test_motor.acceleration_time.get_value() == 0.1
+    assert await test_motor.dial_low_limit_travel.get_value() == -10000.0
+    assert await test_motor.dial_high_limit_travel.get_value() == 10000.0
+
+    # Use motor.set() to move the motor - should work without errors
+    status = test_motor.set(100.0)
+    await status
+
+    # Verify the move completed successfully
+    assert status.done
+    assert status.success
+    assert await test_motor.user_readback.get_value() == 100.0
+
+    # Test another move to ensure it continues to work
+    status = test_motor.set(-50.0)
+    await status
+    assert status.success
+    assert await test_motor.user_readback.get_value() == -50.0
 
 
 async def test_device_mock_with_registered_subclass():
