@@ -285,3 +285,21 @@ class Motor(
     def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Unsubscribe."""
         self.user_readback.clear_sub(function)
+
+
+# Register InstantMotorMock for automatic mock behavior
+# Import here (after Motor class definition) to avoid circular imports
+# and satisfy import-contracts (testing can import runtime, not vice versa)
+def _register_instant_motor_mock():
+    """Lazy registration of InstantMotorMock to avoid import at module load."""
+    try:
+        from ophyd_async.epics.testing import (  # noqa: F401
+            InstantMotorMock,
+        )
+    except ImportError:
+        # testing module not available, skip registration
+        pass
+
+
+# Auto-register when motor module is imported
+_register_instant_motor_mock()
