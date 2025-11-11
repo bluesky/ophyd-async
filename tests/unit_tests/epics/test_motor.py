@@ -368,3 +368,26 @@ async def test_locatable(sim_motor: motor.Motor) -> None:
 def test_core_notconnected_emits_deprecation_warning():
     with pytest.deprecated_call():
         from ophyd_async.epics.motor import MotorLimitsException  # noqa: F401
+
+
+async def test_instant_motor_mock_auto_injection():
+    """Test that InstantMotorMock is automatically used for Motor devices.
+
+    This test verifies that the @default_device_mock_for_class decorator
+    works correctly, automatically injecting the InstantMotorMock behavior
+    when a Motor is connected in mock mode.
+    """
+    # Create a motor without manually setting up mock callbacks
+    async with init_devices(mock=True):
+        test_motor = motor.Motor("TEST:MOTOR")
+
+    # The InstantMotorMock should have been automatically applied
+    # Verify that setting the setpoint automatically updates the readback
+    await test_motor.user_setpoint.set(42.0)
+    readback = await test_motor.user_readback.get_value()
+    assert readback == 42.0, "InstantMotorMock should update readback immediately"
+
+    # Test with a different value to ensure it continues to work
+    await test_motor.user_setpoint.set(100.5)
+    readback = await test_motor.user_readback.get_value()
+    assert readback == 100.5, "InstantMotorMock should update readback for all sets"

@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, Mock
 
 from ophyd_async.core import (
     Device,
-    LazyMock,
+    DeviceMock,
     MockSignalBackend,
     Signal,
     SignalConnector,
@@ -19,7 +19,7 @@ def get_mock(device: Device | Signal) -> Mock:
     The device must have been connected in mock mode.
     """
     mock = device._mock  # noqa: SLF001
-    assert isinstance(mock, LazyMock), f"Device {device} not connected in mock mode"
+    assert isinstance(mock, DeviceMock), f"Device {device} not connected in mock mode"
     return mock()
 
 

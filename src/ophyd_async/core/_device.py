@@ -12,9 +12,11 @@ from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 
 from ._utils import (
     DEFAULT_TIMEOUT,
+    DeviceMock,
     LazyMock,
     NotConnectedError,
     error_if_none,
+    get_default_device_mock,
     wait_for_connection,
 )
 
@@ -40,7 +42,7 @@ class DeviceConnector:
         during `__init__`.
         """
 
-    async def connect_mock(self, device: Device, mock: LazyMock):
+    async def connect_mock(self, device: Device, mock: DeviceMock):
         """Use during [](#Device.connect) with `mock=True`.
 
         This is called when there is no cached connect done in `mock=True`
@@ -55,6 +57,9 @@ class DeviceConnector:
                 exceptions[name] = exc
         if exceptions:
             raise NotConnectedError.with_other_exceptions_logged(exceptions)
+
+        # Call the DeviceMock's connect method to inject custom logic
+        await mock.connect(device)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Use during [](#Device.connect) with `mock=False`.
@@ -83,7 +88,7 @@ class Device(HasName):
     # None if connect hasn't started, a Task if it has
     _connect_task: asyncio.Task | None = None
     # The mock if we have connected in mock mode
-    _mock: LazyMock | None = None
+    _mock: DeviceMock | None = None
     # The separator to use when making child names
     _child_name_separator: str = "-"
 
@@ -163,7 +168,7 @@ class Device(HasName):
 
     async def connect(
         self,
-        mock: bool | LazyMock = False,
+        mock: bool | DeviceMock = False,
         timeout: float = DEFAULT_TIMEOUT,
         force_reconnect: bool = False,
     ) -> None:
@@ -175,8 +180,9 @@ class Device(HasName):
 
         :param mock:
             If True then use [](#MockSignalBackend) for all Signals. If passed a
-            [](#LazyMock) then pass this down for use within the Signals,
-            otherwise create one.
+            [](#DeviceMock) then pass this down for use within the Signals,
+            otherwise create one using the registered default mock for this device
+            type, or a plain [](#DeviceMock) if no default is registered.
         :param timeout: Time to wait before failing with a TimeoutError.
         :param force_reconnect:
             If True, force a reconnect even if the last connect succeeded.
@@ -188,12 +194,18 @@ class Device(HasName):
         )
         if mock:
             # Always connect in mock mode serially
-            if isinstance(mock, LazyMock):
+            if isinstance(mock, DeviceMock):
                 # Use the provided mock
                 self._mock = mock
             elif not self._mock:
-                # Make one
-                self._mock = LazyMock()
+                # Look up registered default mock for this device type
+                mock_cls = get_default_device_mock(type(self))
+                if mock_cls is not None:
+                    # Use the registered mock class
+                    self._mock = mock_cls()
+                else:
+                    # Fall back to plain DeviceMock
+                    self._mock = DeviceMock()
             await connector.connect_mock(self, self._mock)
         else:
             # Try to cache the connect in real mode

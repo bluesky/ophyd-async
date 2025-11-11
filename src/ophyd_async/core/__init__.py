@@ -86,6 +86,7 @@ from ._utils import (
     CalculatableTimeout,
     Callback,
     ConfinedModel,
+    DeviceMock,
     EnumTypes,
     LazyMock,
     NotConnectedError,
@@ -94,6 +95,7 @@ from ._utils import (
     SubsetEnum,
     SupersetEnum,
     WatcherUpdate,
+    default_device_mock_for_class,
     error_if_none,
     gather_dict,
     get_dtype,
@@ -166,8 +168,10 @@ __all__ = [
     "soft_signal_r_and_setter",
     "soft_signal_rw",
     # Mock signal
+    "DeviceMock",
     "LazyMock",
     "MockSignalBackend",
+    "default_device_mock_for_class",
     # Signal utilities
     "observe_value",
     "observe_signals_value",
