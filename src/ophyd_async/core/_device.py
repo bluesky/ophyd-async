@@ -316,8 +316,21 @@ class Device(HasName):
         if mock:
             # Always connect in mock mode serially
             if isinstance(mock, DeviceMock):
-                # Use the provided mock
-                self._mock = mock
+                # If it's a plain DeviceMock created recursively via .child(),
+                # check for a registered custom mock for this specific device type.
+                # If it's a plain DeviceMock explicitly passed by the user (no parent),
+                # use it as-is to respect the user's explicit choice.
+                if type(mock) is DeviceMock and mock.parent is not None:
+                    # Plain DeviceMock created via .child() - look for custom mock
+                    custom_mock = get_default_device_mock(type(self))
+                    # Use custom mock if found, otherwise use the plain one
+                    if type(custom_mock) is not DeviceMock:
+                        self._mock = custom_mock
+                    else:
+                        self._mock = mock
+                else:
+                    # Custom DeviceMock subclass or explicitly passed plain mock
+                    self._mock = mock
             elif not self._mock:
                 # Get registered mock or fall back to plain DeviceMock
                 self._mock = get_default_device_mock(type(self))

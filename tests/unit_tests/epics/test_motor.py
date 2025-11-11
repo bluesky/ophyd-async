@@ -477,26 +477,26 @@ async def test_device_mock_with_base_device():
 
 async def test_device_mock_explicit_instance():
     """Test passing an explicit DeviceMock instance."""
+    # Note: This test doesn't actually register a custom mock to avoid
+    # polluting the global registry for other tests. Instead, it just
+    # verifies that an explicitly passed DeviceMock is used.
 
-    @default_device_mock_for_class
-    class CustomMotorMock(DeviceMock[motor.Motor]):
-        async def connect(self, device: motor.Motor) -> None:
-            # Custom mock that sets readback to 2x setpoint
-            callback_on_mock_put(
-                device.user_setpoint,
-                lambda v, _: set_mock_value(device.user_readback, v * 2),
-            )
-
-    # Use explicit mock instance that overrides the default
-    explicit_mock = DeviceMock()  # Plain mock, not CustomMotorMock
+    # Use explicit mock instance (should be used as-is)
+    explicit_mock = DeviceMock()  # Plain mock, no custom behavior
     test_motor = motor.Motor("TEST:MOTOR")
     await test_motor.connect(mock=explicit_mock)
 
-    # Should not use CustomMotorMock, so no automatic behavior
-    # Setpoint won't automatically update readback
+    # Verify the explicit mock was used (not InstantMotorMock)
+    # The explicit mock has no callback, so readback won't update automatically
     await test_motor.user_setpoint.set(10.0)
     # Readback should still be at default (0) because explicit mock has no behavior
     assert await test_motor.user_readback.get_value() == 0.0
+
+    # Verify that InstantMotorMock would have worked if we hadn't passed explicit mock
+    test_motor2 = motor.Motor("TEST:MOTOR2")
+    await test_motor2.connect(mock=True)  # Use default InstantMotorMock
+    await test_motor2.user_setpoint.set(20.0)
+    assert await test_motor2.user_readback.get_value() == 20.0
 
 
 async def test_device_mock_inheritance():
@@ -524,3 +524,39 @@ async def test_device_mock_inheritance():
     # Verify the BaseTestDeviceMock was used
     assert hasattr(test_device, "mock_was_called")
     assert test_device.mock_was_called is True
+
+
+async def test_instant_motor_mock_recursive_in_composite_device():
+    """Test that InstantMotorMock is applied recursively to child motors.
+
+    This addresses DominicOram's feedback that child motors in composite
+    devices should automatically get InstantMotorMock behavior when the
+    parent is connected in mock mode.
+    """
+
+    class XYStage(Device):
+        """A composite device containing two motors."""
+
+        def __init__(self, prefix: str, name: str = ""):
+            self.x = motor.Motor(prefix + "X")
+            self.y = motor.Motor(prefix + "Y")
+            super().__init__(name=name)
+
+    # Connect composite device in mock mode
+    async with init_devices(mock=True):
+        stage = XYStage("BL01I-MO-STAGE-01:")
+
+    # Verify child motors have InstantMotorMock behavior
+    # X motor should instantly update readback when setpoint is written
+    await stage.x.user_setpoint.set(100.0)
+    assert await stage.x.user_readback.get_value() == 100.0
+
+    # Y motor should also have the behavior
+    await stage.y.user_setpoint.set(-50.0)
+    assert await stage.y.user_readback.get_value() == -50.0
+
+    # Verify motor.set() works on child motors
+    status = stage.x.set(200.0)
+    await status
+    assert status.success
+    assert await stage.x.user_readback.get_value() == 200.0
