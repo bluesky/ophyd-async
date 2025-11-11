@@ -396,6 +396,22 @@ async def test_instant_motor_mock_auto_injection():
     assert readback == 100.5
 
 
+async def test_instant_motor_mock_sets_done_flag():
+    """Test that InstantMotorMock sets up motor_done_move flag correctly."""
+    async with init_devices(mock=True):
+        test_motor = motor.Motor("TEST:MOTOR")
+
+    # Verify motor starts in "done" state
+    assert await test_motor.motor_done_move.get_value() == 1
+
+    # Verify motor_done_move toggles during movement (even if instant)
+    await test_motor.user_setpoint.set(50.0)
+    # After instant move, motor should be done again
+    assert await test_motor.motor_done_move.get_value() == 1
+    # And readback should have updated
+    assert await test_motor.user_readback.get_value() == 50.0
+
+
 async def test_device_mock_with_registered_subclass():
     """Test automatic mock with registered subclass using decorator."""
     # Motor has InstantMotorMock registered via @default_device_mock_for_class

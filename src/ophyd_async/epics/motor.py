@@ -305,13 +305,21 @@ class InstantMotorMock(DeviceMock[Motor]):
         """Inject instant movement logic into the motor mock.
 
         This method is called automatically when a Motor is connected in mock mode.
-        It sets up a callback so that when the user_setpoint is written to,
-        the user_readback is immediately updated to match.
+        It sets up the motor_done_move flag and a callback so that when the
+        user_setpoint is written to, the user_readback is immediately updated.
+
+        Note: Limits and velocities should be configured per test using set_mock_value
+        to match the specific test requirements.
         """
         from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
-        # When setpoint is written to, immediately update readback
-        callback_on_mock_put(
-            device.user_setpoint,
-            lambda value, wait: set_mock_value(device.user_readback, value),
-        )
+        # Motor starts in "done" state (not moving)
+        set_mock_value(device.motor_done_move, 1)
+
+        # When setpoint is written to, immediately update readback and done flag
+        def _instant_move(value, wait):
+            set_mock_value(device.motor_done_move, 0)  # Moving
+            set_mock_value(device.user_readback, value)  # Arrive instantly
+            set_mock_value(device.motor_done_move, 1)  # Done
+
+        callback_on_mock_put(device.user_setpoint, _instant_move)
