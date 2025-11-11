@@ -92,7 +92,7 @@ There are a few other things we may wish to do in tests:
 If you find yourself repeatedly using [](#callback_on_mock_put) to set up the same mock behavior for a Device type across many tests, you can define a [](#DeviceMock) subclass to automatically inject that behavior when the Device is connected in mock mode. This is especially useful for defining standard mock behavior alongside your Device definitions, making it easier to switch between hardware and mock modes.
 
 :::{note}
-ophyd-async provides [](#InstantMotorMock) (from `ophyd_async.epics.testing`) as a built-in mock for [](#Motor) that instantly completes movements. Import it in your test module to automatically enable this behavior.
+ophyd-async provides [](#InstantMotorMock) as a built-in mock for [](#Motor) that instantly completes movements. This is automatically registered when you import `Motor` from `ophyd_async.epics.motor`, so no additional imports are needed in your tests.
 :::
 
 For example, if you have a custom device that needs automatic mock behavior, you can define:
