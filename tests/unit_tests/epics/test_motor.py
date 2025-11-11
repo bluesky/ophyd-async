@@ -16,6 +16,7 @@ from ophyd_async.core import (
     soft_signal_rw,
 )
 from ophyd_async.epics import motor
+from ophyd_async.epics.testing import InstantMotorMock  # noqa: F401
 from ophyd_async.testing import (
     StatusWatcher,
     callback_on_mock_put,
