@@ -13,7 +13,6 @@ from bluesky.run_engine import call_in_bluesky_event_loop, in_bluesky_event_loop
 from ._utils import (
     DEFAULT_TIMEOUT,
     DeviceMock,
-    LazyMock,
     NotConnectedError,
     error_if_none,
     get_default_device_mock,

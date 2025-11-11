@@ -404,7 +404,9 @@ class DeviceMock(Generic[DeviceType]):
 _default_device_mocks: dict[type, type[DeviceMock]] = {}
 
 
-def default_device_mock_for_class(cls: type[DeviceMock[DeviceType]]) -> type[DeviceMock[DeviceType]]:
+def default_device_mock_for_class(
+    cls: type[DeviceMock[DeviceType]],
+) -> type[DeviceMock[DeviceType]]:
     """Register a DeviceMock subclass as the default mock for a Device class.
 
     This decorator allows automatic injection of mock logic when devices are
@@ -426,8 +428,6 @@ def default_device_mock_for_class(cls: type[DeviceMock[DeviceType]]) -> type[Dev
     :returns: The same class (decorator pattern).
     """
     # Get the device type from the Generic parameter
-    import typing
-
     # Get the __orig_bases__ to find DeviceMock[DeviceType]
     for base in getattr(cls, "__orig_bases__", []):
         origin = get_origin(base)
