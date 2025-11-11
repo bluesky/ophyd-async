@@ -163,6 +163,16 @@ async def test_set_and_wait_for_value_same_set_as_read():
     assert await signal.get_value() == 1
 
 
+async def test_set_and_wait_for_value_same_set_and_read_times_out():
+    signal = epics_signal_rw(int, "pva://pv", name="signal")
+    await signal.connect(mock=True)
+    assert await signal.get_value() == 0
+    callback_on_mock_put(signal, lambda v, _: v + 2)
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_value(signal, 1, timeout=0.1)
+
+
 async def test_set_and_wait_for_value_different_set_and_read():
     set_signal = epics_signal_rw(int, "pva://set", name="set-signal")
     match_signal = epics_signal_r(str, "pva://read", name="match-signal")

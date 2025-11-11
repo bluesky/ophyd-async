@@ -119,13 +119,16 @@ def _unset_side_effect_cm(put_mock: AsyncMock):
 
 def callback_on_mock_put(
     signal: Signal[SignalDatatypeT],
-    callback: Callable[[SignalDatatypeT, bool], None]
-    | Callable[[SignalDatatypeT, bool], Awaitable[None]],
+    callback: Callable[[SignalDatatypeT, bool], SignalDatatypeT | None]
+    | Callable[[SignalDatatypeT, bool], Awaitable[SignalDatatypeT | None]],
 ):
     """For setting a callback when a backend is put to.
 
     Can either be used in a context, with the callback being unset on exit, or
     as an ordinary function.
+
+    The value that the callback returns (if not None) will be set to the signal
+    readback. If None is returned then the readback will be set to the setpoint.
 
     :param signal: A signal with a `MockSignalBackend` backend.
     :param callback: The callback to call when the backend is put to during the
