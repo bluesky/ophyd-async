@@ -1,11 +1,18 @@
 from typing import Annotated as A
 
-from ophyd_async.core import DEFAULT_TIMEOUT, AsyncStatus, SignalR, SignalRW, SignalX
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    AsyncStatus,
+    SignalR,
+    SignalRW,
+    SignalX,
+    StandardReadable,
+)
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoPolling, TangoReadable
+from ophyd_async.tango.core import TangoDevice, TangoPolling
 
 
-class TangoCounter(TangoReadable):
+class TangoCounter(TangoDevice, StandardReadable):
     """Tango counting device."""
 
     # Enter the name and type of the signals you want to use
