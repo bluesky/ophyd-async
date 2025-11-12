@@ -39,10 +39,6 @@
   - ```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDevice
     :summary:
     ```
-* - {py:obj}`TangoReadable <ophyd_async.tango.core._tango_readable.TangoReadable>`
-  - ```{autodoc2-docstring} ophyd_async.tango.core._tango_readable.TangoReadable
-    :summary:
-    ```
 * - {py:obj}`TangoPolling <ophyd_async.tango.core._base_device.TangoPolling>`
   - ```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoPolling
     :summary:
@@ -770,7 +766,7 @@ Bases: {py:obj}`ophyd_async.core.SignalBackend`\[{py:obj}`ophyd_async.core.Signa
 ```
 ````
 
-`````{py:class} TangoDevice(trl: str | None, support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
+`````{py:class} TangoDevice(trl: str = '', support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
 :canonical: ophyd_async.tango.core._base_device.TangoDevice
 
 Bases: {py:obj}`ophyd_async.core.Device`
@@ -800,16 +796,6 @@ Bases: {py:obj}`ophyd_async.core.Device`
 ````
 
 `````
-
-````{py:class} TangoReadable(trl: str | None = None, name: str = '', auto_fill_signals: bool = True)
-:canonical: ophyd_async.tango.core._tango_readable.TangoReadable
-
-Bases: {py:obj}`ophyd_async.tango.core._base_device.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`
-
-```{autodoc2-docstring} ophyd_async.tango.core._tango_readable.TangoReadable
-```
-
-````
 
 `````{py:class} TangoPolling
 :canonical: ophyd_async.tango.core._base_device.TangoPolling
@@ -861,6 +847,14 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 
 ```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDeviceConnector
 ```
+
+````{py:method} set_trl(trl: str)
+:canonical: ophyd_async.tango.core._base_device.TangoDeviceConnector.set_trl
+
+```{autodoc2-docstring} ophyd_async.tango.core._base_device.TangoDeviceConnector.set_trl
+```
+
+````
 
 ````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device)
 :canonical: ophyd_async.tango.core._base_device.TangoDeviceConnector.create_children_from_annotations

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.tango.core &#8212; ophyd-async 0.13.7.dev2+gb29c48d2d documentation</title>
+    <title>ophyd_async.tango.core &#8212; ophyd-async 0.13.7.dev3+ge86f971db documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=3ccf1028"></script>
+    <script src="../../_static/documentation_options.js?v=824c0270"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.7.dev2+gb29c48d2d documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.7.dev2+gb29c48d2d documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.7.dev3+ge86f971db documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.7.dev3+ge86f971db documentation - Home"/>
   
   
 </a></div>
@@ -548,19 +548,16 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoDevice" title="ophyd_async.tango.core._base_device.TangoDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoDevice</span></code></a></p></td>
 <td><p>General class for TangoDevices.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoReadable" title="ophyd_async.tango.core._tango_readable.TangoReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoReadable</span></code></a></p></td>
-<td><p>General class for TangoDevices.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoPolling" title="ophyd_async.tango.core._base_device.TangoPolling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoPolling</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoPolling" title="ophyd_async.tango.core._base_device.TangoPolling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoPolling</span></code></a></p></td>
 <td><p>Abstract base class for generic types.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoDeviceConnector" title="ophyd_async.tango.core._base_device.TangoDeviceConnector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoDeviceConnector</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoDeviceConnector" title="ophyd_async.tango.core._base_device.TangoDeviceConnector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoDeviceConnector</span></code></a></p></td>
 <td><p>Defines how a <code class="docutils literal notranslate"><span class="pre">Device</span></code> should be connected and type hints processed.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoLongStringTable" title="ophyd_async.tango.core._tango_transport.TangoLongStringTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoLongStringTable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoLongStringTable" title="ophyd_async.tango.core._tango_transport.TangoLongStringTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoLongStringTable</span></code></a></p></td>
 <td><p>An abstraction of a Table where each field is a column.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoDoubleStringTable" title="ophyd_async.tango.core._tango_transport.TangoDoubleStringTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoDoubleStringTable</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.TangoDoubleStringTable" title="ophyd_async.tango.core._tango_transport.TangoDoubleStringTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TangoDoubleStringTable</span></code></a></p></td>
 <td><p>An abstraction of a Table where each field is a column.</p></td>
 </tr>
 </tbody>
@@ -1100,7 +1097,7 @@ The name of the Signal</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.tango.core.TangoDevice">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.core.</span></span><span class="sig-name descname"><span class="pre">TangoDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_fill_signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_base_device.html#TangoDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.TangoDevice" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.core.</span></span><span class="sig-name descname"><span class="pre">TangoDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_fill_signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_base_device.html#TangoDevice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.TangoDevice" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
 <p>General class for TangoDevices.</p>
 <p>Extends Device to provide attributes for Tango devices.</p>
@@ -1122,21 +1119,6 @@ trl and awaited when the device is connected.</p>
 <dd><p>None</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.tango.core.TangoReadable">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.core.</span></span><span class="sig-name descname"><span class="pre">TangoReadable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_fill_signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_tango_readable.html#TangoReadable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.TangoReadable" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#ophyd_async.tango.core.TangoDevice" title="ophyd_async.tango.core._base_device.TangoDevice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.tango.core._base_device.TangoDevice</span></code></a>, <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.StandardReadable</span></code></a></p>
-<p>General class for TangoDevices.</p>
-<p>Extends Device to provide attributes for Tango devices.</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>trl</strong> – Tango resource locator, typically of the device server.
-An asynchronous DeviceProxy object will be created using the
-trl and awaited when the device is connected.</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py class">
@@ -1182,6 +1164,11 @@ return default</p>
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.core.</span></span><span class="sig-name descname"><span class="pre">TangoDeviceConnector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">support_events</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_fill_signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_base_device.html#TangoDeviceConnector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.TangoDeviceConnector" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core.DeviceConnector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.DeviceConnector</span></code></a></p>
 <p>Defines how a <code class="docutils literal notranslate"><span class="pre">Device</span></code> should be connected and type hints processed.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.tango.core.TangoDeviceConnector.set_trl">
+<span class="sig-name descname"><span class="pre">set_trl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_base_device.html#TangoDeviceConnector.set_trl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.TangoDeviceConnector.set_trl" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.tango.core.TangoDeviceConnector.create_children_from_annotations">
 <span class="sig-name descname"><span class="pre">create_children_from_annotations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><span class="pre">Device</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_base_device.html#TangoDeviceConnector.create_children_from_annotations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.TangoDeviceConnector.create_children_from_annotations" title="Link to this definition">#</a></dt>
@@ -1455,7 +1442,6 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDevice.proxy"><code class="docutils literal notranslate"><span class="pre">TangoDevice.proxy</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoReadable"><code class="docutils literal notranslate"><span class="pre">TangoReadable</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoPolling"><code class="docutils literal notranslate"><span class="pre">TangoPolling</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoPolling.ophyd_polling_period"><code class="docutils literal notranslate"><span class="pre">TangoPolling.ophyd_polling_period</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoPolling.abs_change"><code class="docutils literal notranslate"><span class="pre">TangoPolling.abs_change</span></code></a></li>
@@ -1463,6 +1449,7 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDeviceConnector"><code class="docutils literal notranslate"><span class="pre">TangoDeviceConnector</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDeviceConnector.set_trl"><code class="docutils literal notranslate"><span class="pre">TangoDeviceConnector.set_trl()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDeviceConnector.create_children_from_annotations"><code class="docutils literal notranslate"><span class="pre">TangoDeviceConnector.create_children_from_annotations()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDeviceConnector.connect_mock"><code class="docutils literal notranslate"><span class="pre">TangoDeviceConnector.connect_mock()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.TangoDeviceConnector.connect_real"><code class="docutils literal notranslate"><span class="pre">TangoDeviceConnector.connect_real()</span></code></a></li>

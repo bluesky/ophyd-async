@@ -31,10 +31,10 @@
 
 ### API
 
-`````{py:class} TangoCounter(trl: str | None = None, name: str = '', auto_fill_signals: bool = True)
+`````{py:class} TangoCounter(trl: str = '', support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
 :canonical: ophyd_async.tango.demo._counter.TangoCounter
 
-Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
+Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter
 ```
@@ -103,10 +103,10 @@ Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`
 
 `````
 
-`````{py:class} TangoMover(trl: str | None = '', name='')
+`````{py:class} TangoMover(trl: str = '', name='')
 :canonical: ophyd_async.tango.demo._mover.TangoMover
 
-Bases: {py:obj}`ophyd_async.tango.core.TangoReadable`, {py:obj}`bluesky.protocols.Movable`, {py:obj}`bluesky.protocols.Stoppable`
+Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Movable`, {py:obj}`bluesky.protocols.Stoppable`
 
 ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover
 ```
