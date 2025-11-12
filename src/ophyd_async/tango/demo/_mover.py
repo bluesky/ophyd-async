@@ -33,7 +33,7 @@ class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
     # If a tango name clashes with a bluesky verb, add a trailing underscore
     stop_: SignalX
 
-    def __init__(self, trl: str | None = "", name=""):
+    def __init__(self, trl: str = "", name=""):
         super().__init__(trl, name=name)
         self.add_readables([self.position], Format.HINTED_SIGNAL)
         self.add_readables([self.velocity], Format.CONFIG_SIGNAL)
