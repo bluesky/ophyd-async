@@ -29,7 +29,7 @@ class TangoDevice(Device):
 
     def __init__(
         self,
-        trl: str | None,
+        trl: str = "",
         support_events: bool = False,
         name: str = "",
         auto_fill_signals: bool = True,
@@ -79,6 +79,9 @@ class TangoDeviceConnector(DeviceConnector):
         self.trl = trl
         self._support_events = support_events
         self._auto_fill_signals = auto_fill_signals
+
+    def set_trl(self, trl: str):
+        self.trl = trl
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):

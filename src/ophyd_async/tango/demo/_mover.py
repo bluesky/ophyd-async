@@ -11,16 +11,17 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalX,
+    StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import DevStateEnum, TangoPolling, TangoReadable
+from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
 
 
-class TangoMover(TangoReadable, Movable, Stoppable):
+class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
     """Tango moving device."""
 
     # Enter the name and type of the signals you want to use
