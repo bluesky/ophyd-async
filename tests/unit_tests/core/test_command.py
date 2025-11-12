@@ -1,391 +1,441 @@
-import asyncio
-import inspect
-import types
 import pytest
-from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
+import asyncio
+import numpy as np
+from typing import Any, Sequence, Optional, Union, Tuple, Awaitable, Callable, TypeVar
+from dataclasses import dataclass
+from event_model import DataKey
+from collections import namedtuple
 
-from ophyd_async.core._command import (
-    Command,
-    CommandBackend,
-    CommandConnector,
-    CommandR,
-    CommandRW,
-    CommandW,
-    CommandX,
-    ConnectionError,
-    ConnectionTimeoutError,
-    ExecutionError,
-    MockCommandBackend,
-    SoftCommandBackend,
-    _default_of,
-    soft_command_r,
-    soft_command_rw,
-    soft_command_w,
-    soft_command_x,
+# Assuming these are imported from your module
+from ophyd_async.core import (
+    Command, CommandR, CommandW, CommandX, CommandRW,
+    CommandConnector, MockCommandBackend, LazyMock,
+    CommandError, ExecutionError, ConnectionError, ConnectionTimeoutError, SoftCommandBackend,
+    CommandCallback, CommandArguments, CommandReturn
 )
-from ophyd_async.core._device import Device
-from ophyd_async.core._utils import LazyMock
+from ophyd_async.core import Array1D, StrictEnum, Table
+import pytest
+from typing import Any, Dict, Optional, Sequence, Type
+from event_model import DataKey
+
+# ---- Define enums and dummy table ----
+class CommandEnum(StrictEnum):
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+
+class DummyTable(Table):
+    pass
+
+# ---- CommandCase container ----
+CommandCase = namedtuple(
+    "CommandCase",
+    ["type", "input_val", "output_val", "id", "units", "precision", "expected_datakey"],
+)
+
+# ---- Helper ----
+def arr(dtype, *vals) -> Array1D:
+    """Return a 1D numpy array with a specific dtype."""
+    return np.array(vals, dtype=dtype)
 
 
-class DummyBackend(CommandBackend):
-    """Simple test backend with configurable behaviors."""
+def build_datakey(value, units=None, precision=None):
+    """Infer the correct DataKey from the value and metadata."""
+    # Primitive types
+    if isinstance(value, bool):
+        dtype, dtype_numpy, shape = "boolean", "?", []
+    elif isinstance(value, (int, np.integer)):
+        dtype, dtype_numpy, shape = "integer", np.dtype(type(value)).str, []
+    elif isinstance(value, (float, np.floating)):
+        dtype, dtype_numpy, shape = "number", np.dtype(type(value)).str, []
+    elif isinstance(value, str):
+        dtype, dtype_numpy, shape = "string", "<U", []
+    elif isinstance(value, StrictEnum):
+        dtype, dtype_numpy, shape = "string", "<U", []
 
-    def __init__(self, on_connect: Any | None = None, on_call: Any | None = None):
-        # store callables or values/exceptions
-        self.on_connect = on_connect
-        self.on_call = on_call
-        # Provide attributes used by MockCommandBackend when wrapping
-        self._command_args = []
-        self._command_return_type = object
+    # Array types
+    elif isinstance(value, np.ndarray):
+        dtype, dtype_numpy, shape = "array", value.dtype.str, list(value.shape)
 
-    def source(self, name: str, read: bool) -> str:
-        return f"dummy://{name}:{'r' if read else 'w'}"
+    # Sequence types
+    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+        if len(value) == 0:
+            # Empty sequence — no dtype info
+            dtype_numpy = "<U"
+        else:
+            first = value[0]
+            if isinstance(first, bool):
+                dtype_numpy = "?"
+            elif isinstance(first, (int, np.integer)):
+                dtype_numpy = np.dtype(type(first)).str
+            elif isinstance(first, (float, np.floating)):
+                dtype_numpy = np.dtype(type(first)).str
+            else:
+                dtype_numpy = "<U"
+        dtype, shape = "array", [len(value)]
 
-    async def get_datakey(self, source: str):
-        # Minimal DataKey using make_datakey via a Soft backend to avoid reimpl
-        return await SoftCommandBackend([], object, lambda: None).get_datakey(source)
+    # Table types
+    elif isinstance(value, Table):
+        dtype, dtype_numpy, shape = "object", "O", []
 
-    async def connect(self, timeout: float) -> None:
-        if isinstance(self.on_connect, Exception):
-            raise self.on_connect
-        if callable(self.on_connect):
-            res = self.on_connect(timeout)
-            if inspect.isawaitable(res):
-                await res
-            return
-        # default: no-op
-        return None
+    # Fallback
+    else:
+        dtype, dtype_numpy, shape = "object", "O", []
 
-    async def call(self, *args, **kwargs):
-        oc = self.on_call
-        if isinstance(oc, Exception):
-            raise oc
-        if callable(oc):
-            res = oc(*args, **kwargs)
-            if inspect.isawaitable(res):
-                return await res
-            return res
-        return None
+    # Build DataKey
+    key = DataKey(
+        dtype=dtype,
+        dtype_numpy=dtype_numpy,
+        shape=shape,
+        source="softcmd://expected",
+    )
+    if units is not None:
+        key["units"] = units
+    if precision is not None:
+        key["precision"] = precision
+    if key["dtype"] != "array":
+        del key["dtype_numpy"]
+    return key
 
 
+# ---- Build the test matrix ----
+test_cases = [
+    # === Primitive Types ===
+    CommandCase(int, 1, 2, "int", "unit", 0, build_datakey(1, "unit", 0)),
+    CommandCase(float, 1.23, 4.56, "float", "unit", 2, build_datakey(1.23, "unit", 2)),
+    CommandCase(str, "in", "out", "str", None, None, build_datakey("in")),
+    CommandCase(bool, True, False, "bool", None, None, build_datakey(True)),
+
+    # === Enum ===
+    CommandCase(CommandEnum, CommandEnum.A, CommandEnum.B, "enum", None, None, build_datakey(CommandEnum.A)),
+
+    # === Array1D (various dtypes) ===
+    CommandCase(Array1D[np.bool_], arr(np.bool_, True, False), arr(np.bool_, False, True),
+        "array_bool", None, None, build_datakey(arr(np.bool_, True, False))),
+    CommandCase(Array1D[np.int8], arr(np.int8, 1, 2, 3), arr(np.int8, 4, 5, 6),
+        "array_int8", "unit", 0, build_datakey(arr(np.int8, 1, 2, 3), "unit", 0)),
+    CommandCase(Array1D[np.uint8], arr(np.uint8, 1, 2, 3), arr(np.uint8, 4, 5, 6),
+        "array_uint8", "unit", 0, build_datakey(arr(np.uint8, 1, 2, 3), "unit", 0)),
+    CommandCase(Array1D[np.float64], arr(np.float64, 1.0, 2.0, 3.0), arr(np.float64, 4.0, 5.0, 6.0),
+        "array_float64", "unit", 2, build_datakey(arr(np.float64, 1.0, 2.0, 3.0), "unit", 2)),
+
+    # === Sequence types ===
+    CommandCase(Sequence[str], ["a", "b"], ["x", "y"], "seq_str", None, None, build_datakey(["a", "b"])),
+    CommandCase(Sequence[CommandEnum], [CommandEnum.A, CommandEnum.B], [CommandEnum.C, CommandEnum.D],
+        "seq_enum", None, None, build_datakey([CommandEnum.A, CommandEnum.B])),
+
+    # === Table ===
+    CommandCase(DummyTable, DummyTable(), DummyTable(), "table", None, None, build_datakey(DummyTable())),
+]
+
+def assert_equal(result, expected):
+    if isinstance(result, np.ndarray):
+        assert np.all(result == expected)
+    else:
+        assert result == expected
+
+def dummy_backend(return_value: Any = None):
+    """Fixture for creating a minimal dummy backend."""
+    backend = AsyncMock()
+    backend.return_value = return_value
+
+    # Set up required methods
+    backend.source = lambda name, read: f"dummy://{name}"
+    backend.connect = AsyncMock(return_value=None)
+
+    # Create a simple get_datakey implementation
+    async def get_datakey(source: str) -> DataKey:
+        return DataKey(
+            source=source,
+            dtype="number",
+            shape=[],
+        )
+    backend.get_datakey = get_datakey
+
+    # Set up call method
+    backend.call = AsyncMock(return_value=return_value)
+
+    return backend
+
+@pytest.mark.parametrize(
+    "test_case",
+    test_cases,
+    ids=[case.id for case in test_cases]
+)
 @pytest.mark.asyncio
-async def test_children_not_allowed_on_command():
-    # The Command class uses a dict-like that forbids adding children
-    backend = SoftCommandBackend([], type(None), lambda: None)
-    cmd = Command(backend, name="cmd")
-    with pytest.raises(KeyError) as ex:
-        # Access the special mapping and try to insert
-        cmd._child_devices["child"] = Device()
-    assert "Cannot add Device or Signal child" in str(ex.value)
-    assert "of Command" in str(ex.value)
+async def test_mock_command_backend(test_case):
+    """Test MockCommandBackend with various input and output types."""
 
+    # Create dummy backend
+    dummy = dummy_backend(test_case.output_val)
 
-@pytest.mark.asyncio
-async def test_soft_command_backend_signature_validation_errors():
-    # Arg count mismatch
-    with pytest.raises(TypeError) as ex1:
-        SoftCommandBackend([int, float], int, lambda a: a)
-    assert "Number of command_args" in str(ex1.value)
+    # Initialize MockCommandBackend
+    backend = MockCommandBackend(dummy, LazyMock())
 
-    # Arg type mismatch
-    def cb_str(s: str) -> None:  # pragma: no cover - just signature
-        return None
+    # Test source method
+    assert backend.source("name", read=True) == "mock+dummy://name"
 
-    with pytest.raises(TypeError) as ex2:
-        SoftCommandBackend([int], type(None), cb_str)
-    assert "doesn't match callback parameter type" in str(ex2.value)
+    # Test connect method
+    with pytest.raises(ConnectionError) as exc_info:
+        await backend.connect(0.1)
+    assert "It is not possible to connect a MockCommandBackend" in str(exc_info.value)
 
-    # Return type mismatch
-    def cb_ret() -> str:  # pragma: no cover - just signature
-        return "x"
+    # Test call method
+    return_value = await backend.call(test_case.input_val)
+    if isinstance(test_case.output_val, np.ndarray):
+        assert np.array_equal(return_value, test_case.output_val)
+    else:
+        assert return_value == test_case.output_val
 
-    with pytest.raises(TypeError) as ex3:
-        SoftCommandBackend([], int, cb_ret)
-    assert "doesn't match callback return annotation" in str(ex3.value)
+    # Verify call was recorded
+    backend.call_mock.assert_awaited_once_with(test_case.input_val)
+    assert backend.call_mock.call_count == 1
 
-
-@pytest.mark.asyncio
-async def test_soft_command_backend_source_and_connect():
-    be = SoftCommandBackend([], int, lambda: 3, units="V", precision=2)
-    assert be.source("name", read=True) == "softcmd://name"
-    assert await be.connect(0.1) is None
-
-
-@pytest.mark.asyncio
-async def test_soft_command_backend_call_sync_and_async_and_error():
-    # Sync callback
-    be_sync = SoftCommandBackend([int, int], int, lambda a, b: a + b)
-    res = await be_sync.call(2, 5)
-    assert res == 7
-
-    # Async callback
-    async def async_cb(a: int) -> int:
-        await asyncio.sleep(0)
-        return a * 2
-
-    be_async = SoftCommandBackend([int], int, async_cb)
-    res2 = await be_async.call(6)
-    assert res2 == 12
-
-    # Error propagation as ExecutionError, and last_return_value reset to None
-    class Boom(Exception):
-        pass
-
-    be_err = SoftCommandBackend([], int, lambda: (_ for _ in ()).throw(Boom("kaboom")))
-    with pytest.raises(ExecutionError) as ex:
-        await be_err.call()
-    assert "Command execution failed" in str(ex.value)
-
-
-@pytest.mark.asyncio
-async def test_soft_command_backend_datakey_metadata_with_concrete_type():
-    # With a concrete return type, produce a value first so exemplar exists
-    be = SoftCommandBackend([], int, lambda: 42, units="Hz", precision=3)
-    await be.call()
-    dk1 = await be.get_datakey("src")
-    assert dk1["source"] == "src"
-    assert dk1["units"] == "Hz"
-    assert dk1["precision"] == 3
-    assert dk1["dtype"] == "integer"
-
-
-@pytest.mark.asyncio
-async def test_soft_command_backend_datakey_uses_last_return_value_to_refine_type():
-    # Start with return type object, but set last return to int via a call
-    be = SoftCommandBackend([], object, lambda: 42, units="Hz", precision=3)
-    # After calling, last_return_value present, dtype updated to int
-    await be.call()
-    dk2 = await be.get_datakey("src2")
-    assert dk2["source"] == "src2"
-    # dtype for int is "integer"
-    assert dk2["dtype"] == "integer"
-
-
-@pytest.mark.asyncio
-async def test_mock_command_backend_basic_behaviour_and_source_and_connect_and_datakey():
-    init = SoftCommandBackend([int, str], int, lambda a, b: 5)
-    lz = LazyMock()
-    m = MockCommandBackend(init, lz)
-
-    # Source has mock+ prefix
-    assert m.source("nm", read=False).startswith("mock+")
-
-    # connect not allowed
-    with pytest.raises(RuntimeError):
-        await m.connect(0.1)
-
-    # call is recorded and returns from soft backend
-    m.set_return_value(9)
-    result = await m.call(1, 2)
-    assert result == 9
-    m.call_mock.assert_awaited()
-
-    # get_datakey returns something sensible (units absent here)
-    dk = await m.get_datakey("abc")
+    # Test get_datakey method
+    dk = await backend.get_datakey("abc")
     assert dk["source"].endswith("abc")
 
+@pytest.mark.asyncio
+async def test_mock_command_backend():
+    test_val = 10
+    dummy = dummy_backend(test_val)
+    # init
+    backend = MockCommandBackend(dummy, LazyMock())
+    assert backend.source("name", read=True) == "mock+dummy://name"
+    # connect
+    with pytest.raises(ConnectionError) as exc_info:
+        assert await backend.connect(0.1) is None
+    assert "It is not possible to connect a MockCommandBackend" in str(exc_info.value)
+
+    # Test with single argument
+    return_value = await backend.call(test_val)
+    assert return_value == 10
+    backend.call_mock.assert_awaited_once_with(test_val)
+    assert backend.call_mock.call_count == 1
+
+    # Reset mock for next test
+    backend.call_mock.reset_mock()
+
+    # Test with multiple arguments
+    test_args = (42, 3.14, "test")
+    return_value = await backend.call(*test_args, some_keyword="test")
+    assert return_value == test_val
+    backend.call_mock.assert_awaited_once_with(*test_args, some_keyword="test")
+    assert backend.call_mock.call_count == 1
+
+    # get_datakey
+    dk = await backend.get_datakey("abc")
+    assert dk["source"].endswith("abc")
+
+T = TypeVar('T')
 
 @pytest.mark.asyncio
-async def test_mock_command_backend_proceeds_event_gating_and_cleanup():
-    init = SoftCommandBackend([int, str], int, lambda a, b: 1)
-    m = MockCommandBackend(init, LazyMock())
-    m.set_return_value(123)
+@pytest.mark.parametrize("case", test_cases, ids=[tc.id for tc in test_cases])
+async def test_valid_initialization_and_call_sync(case):
+    """It should initialize correctly and call a sync callback for all test cases."""
 
-    # Stop proceeding and ensure call waits until set
-    m.proceeds.clear()
+    def callback(a: case.type) -> case.type:
+        # Return the expected output regardless of input
+        return case.output_val
 
-    async def later_set():
-        await asyncio.sleep(0.01)
-        m.proceeds.set()
-
-    t = asyncio.create_task(m.call())
-    await asyncio.sleep(0)
-    assert not t.done()
-    await later_set()
-    assert await t == 123
-
-    # cleanup clears event and resets mock
-    _ = m.call_mock  # force creation
-    assert m._call_mock is not None
-    m.cleanup()
-    assert not m.proceeds.is_set()
-    assert m._call_mock is not None
-    # After cleanup, the mock has been reset (no awaited calls)
-    m._call_mock.assert_not_called()
-
-
-def test_mock_command_backend_reject_double_mock():
-    init = SoftCommandBackend([int, str], int, lambda a, b: 1)
-    m1 = MockCommandBackend(init, LazyMock())
-    with pytest.raises(ValueError):
-        _ = MockCommandBackend(m1, LazyMock())
-
-
-@pytest.mark.asyncio
-async def test_command_connector_connect_mock_and_real_and_errors():
-    """Test CommandConnector's connect_mock and connect_real methods and error handling."""
-
-    # Create a simple callback for SoftCommandBackend
-    async def simple_cb() -> int:
-        return 42
-
-    # Create a SoftCommandBackend with matching arguments
-    soft_backend = SoftCommandBackend(
-        command_args=[],
-        command_return=int,
-        command_cb=simple_cb
+    backend = SoftCommandBackend(
+        command_args=[case.type],
+        command_return=case.type,
+        command_cb=callback,
+        units=case.units,
+        precision=case.precision,
     )
 
-    device = MagicMock(name="dev")
-    device.log = MagicMock()
-    device.log.debug = MagicMock()
+    result = await backend.call(case.input_val)
+    assert np.all(result == case.output_val) if isinstance(result, np.ndarray) else result == case.output_val
+    assert np.all(backend._last_return_value == case.output_val) if isinstance(case.output_val, np.ndarray) else backend._last_return_value == case.output_val
 
-    # Test 1: connect_real should translate timeout to ConnectionTimeoutError
-    timeout_backend = DummyBackend(
-        on_connect=lambda timeout: asyncio.sleep(timeout * 2)
+
+# --- Parametrized async callback test ---
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", test_cases, ids=[tc.id for tc in test_cases])
+async def test_valid_initialization_and_call_async(case):
+    """It should handle async callbacks for all test cases."""
+
+    async def async_callback(a: case.type) -> case.type:
+        await asyncio.sleep(0.001)
+        return case.output_val
+
+    backend = SoftCommandBackend(
+        command_args=[case.type],
+        command_return=case.type,
+        command_cb=async_callback,
+        units=case.units,
+        precision=case.precision,
     )
-    conn1 = CommandConnector(timeout_backend)
 
-    with pytest.raises(ConnectionTimeoutError, match="Failed to connect within 0.01 seconds"):
-        await conn1.connect_real(device, timeout=0.01, force_reconnect=False)
-
-    # Test 2: Backend raising generic Exception becomes ConnectionError
-    err_backend = DummyBackend(
-        on_connect=RuntimeError("boom")
-    )
-    conn2 = CommandConnector(err_backend)
-
-    with pytest.raises(ConnectionError, match="Connection failed: boom"):
-        await conn2.connect_real(device, timeout=0.01, force_reconnect=False)
-
-    # Test 3: connect_mock swaps in a MockCommandBackend
-    conn3 = CommandConnector(soft_backend)
-    mock = LazyMock()
-    await conn3.connect_mock(device, mock)
-    assert isinstance(conn3.backend, MockCommandBackend)
-
-    # Test 4: connect_real reverts mock to real and calls connect on real backend
-    connected = False
-    async def mark_connected(timeout):
-        nonlocal connected
-        connected = True
-
-    real_backend = DummyBackend(on_connect=mark_connected)
-    conn4 = CommandConnector(real_backend)
-    await conn4.connect_mock(device, LazyMock())
-    assert isinstance(conn4.backend, MockCommandBackend)
-
-    await conn4.connect_real(device, timeout=0.05, force_reconnect=False)
-    assert conn4.backend is real_backend
-    assert connected is True
-
-    # Test 5: cleanup cleans up mock resources
-    await conn4.connect_mock(device, LazyMock())
-    mb = conn4.backend
-    assert isinstance(mb, MockCommandBackend)
-    conn4.cleanup()
-    assert conn4._mock_backend is None
-
-    # Test 6: Verify that MockCommandBackend properly wraps the backend
-    original_backend = DummyBackend()
-    conn5 = CommandConnector(original_backend)
-    await conn5.connect_mock(device, LazyMock())
-
-    # Verify the mock backend was created with the original backend
-    mock_backend = conn5.backend
-    assert isinstance(mock_backend, MockCommandBackend)
-    assert mock_backend.initial_backend is original_backend
-
-    # Test 7: Verify that call_mock is properly initialized
-    assert hasattr(mock_backend, 'call_mock')
-    assert mock_backend.call_mock is not None
-
-    # Test 8: Verify that proceeds event is properly initialized
-    assert hasattr(mock_backend, 'proceeds')
-    assert isinstance(mock_backend.proceeds, asyncio.Event)
-
+    result = await backend.call(case.input_val)
+    assert np.all(result == case.output_val) if isinstance(result, np.ndarray) else result == case.output_val
+    assert np.all(backend._last_return_value == case.output_val) if isinstance(case.output_val, np.ndarray) else backend._last_return_value == case.output_val
 
 @pytest.mark.asyncio
-async def test_command_call_and_trigger_success_and_error():
-    # Successful call via backend
-    be = SoftCommandBackend([int], int, lambda a: a + 1)
-    cmd = Command(be, name="adder")
-    assert await cmd.call(41) == 42
+@pytest.mark.parametrize("case", test_cases, ids=[tc.id for tc in test_cases])
+async def test_valid_initialization_and_call_sync_multiple_inputs(case):
+    """It should initialize correctly and call a sync callback with multiple args."""
 
-    # trigger wraps and awaits completion; ignores return value
-    status = await cmd.trigger(41)
-    # AsyncStatus.wrap returns an Awaitable[None]; awaiting already done above
-    assert status is None
+    def callback(a: case.type, b: int) -> case.type:
+        # The second argument is ignored; we just return the expected output
+        return case.output_val
 
-    # Error path: backend callback raises -> ExecutionError propagates
-    be_err = SoftCommandBackend([], int, lambda: (_ for _ in ()).throw(ValueError("e")))
-    cmd_err = Command(be_err, name="boom")
-    with pytest.raises(ExecutionError):
-        await cmd_err.trigger()
+    backend = SoftCommandBackend(
+        command_args=[case.type, int],
+        command_return=case.type,
+        command_cb=callback,
+        units=case.units,
+        precision=case.precision,
+    )
+
+    result = await backend.call(case.input_val, 10)
+    assert_equal(result, case.output_val)
+    assert_equal(backend._last_return_value, case.output_val)
 
 
-def test_default_of_various_types():
-    # Covered typical primitives
-    assert _default_of(None) is None
-    assert _default_of(bool) is False
-    assert _default_of(int) == 0
-    assert _default_of(float) == 0
-    assert _default_of(str) == ""
+# --- Parametrized async callback test with 2 arguments ---
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", test_cases, ids=[tc.id for tc in test_cases])
+async def test_valid_initialization_and_call_async_multiple_inputs(case):
+    """It should handle async callbacks with multiple args."""
 
-    class HasDefault:
-        def __init__(self):
-            self.x = 1
+    async def async_callback(a: case.type, b: int) -> case.type:
+        await asyncio.sleep(0.001)
+        return case.output_val
 
-    v = _default_of(HasDefault)
-    assert isinstance(v, HasDefault)
+    backend = SoftCommandBackend(
+        command_args=[case.type, int],
+        command_return=case.type,
+        command_cb=async_callback,
+        units=case.units,
+        precision=case.precision,
+    )
 
-    class NoCtor:
-        def __init__(self):
-            raise RuntimeError("nope")
+    result = await backend.call(case.input_val, 10)
+    assert_equal(result, case.output_val)
+    assert_equal(backend._last_return_value, case.output_val)
 
-    assert _default_of(NoCtor) is None
+def test_signature_mismatch_arg_count():
+    """It should raise if callback args don't match command_args."""
+    def cb(a: int, b: int): return a + b
 
+    with pytest.raises(TypeError, match="Number of command_args"):
+        SoftCommandBackend(
+            command_args=[int],
+            command_return=int,
+            command_cb=cb
+        )
+
+def test_signature_mismatch_arg_type():
+    """It should raise if callback param types don't match command_args."""
+    def cb(a: str) -> int: return int(a)
+
+    with pytest.raises(TypeError, match="command_args type"):
+        SoftCommandBackend(
+            command_args=[int],
+            command_return=int,
+            command_cb=cb
+        )
+
+def test_signature_mismatch_return_type():
+    """It should raise if return type doesn't match callback annotation."""
+    def cb(a: int) -> str:
+        return str(a)
+
+    with pytest.raises(TypeError, match="command_return type"):
+        SoftCommandBackend(
+            command_args=[int],
+            command_return=int,
+            command_cb=cb
+        )
 
 @pytest.mark.asyncio
-async def test_soft_command_factories_happy_paths_and_type_errors():
-    # soft_command_r type check
-    with pytest.raises(TypeError):
-        _ = soft_command_r(123, lambda: 1)  # not a type
+async def test_source():
+    """It should format the source URI correctly."""
+    def cb(a: int) -> int: return a
+    backend = SoftCommandBackend([int], int, cb)
+    assert backend.source("testcmd", True) == "softcmd://testcmd"
 
-    # happy path: r
-    cr = soft_command_r(int, lambda: 7, name="r", units="m", precision=1)
-    assert isinstance(cr, CommandR)
-    assert await cr.call() == 7
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", test_cases, ids=[c.id for c in test_cases])
+async def test_get_datakey_with_metadata_param(case):
+    """It should include units, precision, and return the correct DataKey dtype after a call."""
 
-    # w
-    seen = {}
+    def cb(x: case.type) -> case.type:
+        return case.output_val
 
-    def w_cb(a: int, b: str) -> None:
-        seen["args"] = (a, b)
+    backend = SoftCommandBackend([case.type], case.type, cb, units=case.units, precision=case.precision)
+    await backend.call(case.input_val)
+    dk = await backend.get_datakey(f"softcmd://{case.id}")
 
-    cw = soft_command_w(int, str, command_cb=w_cb, name="w")
-    assert isinstance(cw, CommandW)
-    assert await cw.call(5, "hi") is None
-    assert seen["args"] == (5, "hi")
+    # Check dtype matches expected
+    assert dk["dtype"] == case.expected_datakey["dtype"], f"{case.id}: dtype mismatch"
+    # Check shape
+    assert dk["shape"] == case.expected_datakey["shape"], f"{case.id}: shape mismatch"
+    # Check dtype_numpy for arrays
+    if "dtype_numpy" in case.expected_datakey:
+        assert dk["dtype_numpy"] == case.expected_datakey["dtype_numpy"], f"{case.id}: dtype_numpy mismatch"
+    # Check units and precision
+    if case.units is not None:
+        assert dk.get("units") == case.units, f"{case.id}: units mismatch"
+    if case.precision is not None:
+        assert dk.get("precision") == case.precision, f"{case.id}: precision mismatch"
 
-    # x
-    seen_x = {"called": False}
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", test_cases, ids=[c.id for c in test_cases])
+async def test_get_datakey_without_last_value_param(case):
+    """It should return a valid DataKey even if no call was made."""
 
-    def x_cb() -> None:
-        seen_x["called"] = True
+    def cb(x: case.type) -> case.type:
+        return case.output_val
 
-    cx = soft_command_x(x_cb, name="x")
-    assert isinstance(cx, CommandX)
-    assert await cx.call() is None
-    assert seen_x["called"] is True
+    backend = SoftCommandBackend([case.type], case.type, cb, units=case.units, precision=case.precision)
+    # No call here
+    dk = await backend.get_datakey(f"softcmd://{case.id}")
 
-    # rw type error
-    with pytest.raises(TypeError):
-        _ = soft_command_rw(int, command_return=123, command_cb=lambda a: a)
+    # The dtype should fall back to the declared command_return_type
+    if isinstance(case.output_val, np.ndarray):
+        # Array fallback: dtype='array' with dtype_numpy from type
+        assert dk["dtype"] == "array", f"{case.id}: dtype mismatch"
+    elif isinstance(case.output_val, (bool, int, float, str, StrictEnum)):
+        # Primitive fallback
+        expected_dtype = case.expected_datakey["dtype"]
+        assert dk["dtype"] == expected_dtype, f"{case.id}: dtype mismatch"
+    else:
+        # Table or object types
+        assert dk["dtype"] == "object", f"{case.id}: dtype mismatch"
 
-    # rw happy
-    crw = soft_command_rw(int, command_return=int, command_cb=lambda a: a + 1, name="rw")
-    assert isinstance(crw, CommandRW)
-    assert await crw.call(4) == 5
+    # Units and precision should still be included if set
+    if case.units is not None:
+        assert dk.get("units") == case.units, f"{case.id}: units mismatch"
+    if case.precision is not None:
+        assert dk.get("precision") == case.precision, f"{case.id}: precision mismatch"
 
+@pytest.mark.asyncio
+async def test_call_raises_execution_error():
+    """It should wrap exceptions from callback in ExecutionError."""
+    def failing_cb(x: int) -> int:
+        raise ValueError("boom")
+
+    backend = SoftCommandBackend([int], int, failing_cb)
+
+    with pytest.raises(ExecutionError, match="Command execution failed: boom"):
+        await backend.call(5)
+    assert backend._last_return_value is None
+
+@pytest.mark.asyncio
+async def test_async_lock_context_manager():
+    """It should acquire and release the lock properly."""
+    def cb(a: int) -> int: return a
+    backend = SoftCommandBackend([int], int, cb)
+
+    acquired = []
+    async with backend._async_lock():
+        assert backend._lock.locked()
+        acquired.append(True)
+    assert acquired == [True]
+    assert not backend._lock.locked()

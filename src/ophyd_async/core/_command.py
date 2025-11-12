@@ -20,6 +20,7 @@ import time
 import asyncio
 from abc import ABC, abstractmethod
 import inspect
+import numpy as np
 from unittest.mock import AsyncMock
 from functools import cached_property
 from typing import (
@@ -35,6 +36,7 @@ from ._device import Device, DeviceConnector
 from ._status import AsyncStatus
 from ._utils import LazyMock, CalculatableTimeout, CALCULATE_TIMEOUT
 from ._signal import _wait_for
+from ._signal_backend import Array1D
 
 # ParamSpec/TypeVar to capture positional/keyword args and return type
 CommandArguments = ParamSpec("CommandArguments")
@@ -134,19 +136,17 @@ class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
         """Validate that command_args and command_return match the callback signature."""
         sig = inspect.signature(self._command_cb)
 
-        # Count only non-implicit parameters
+        # Collect explicit parameters
         explicit_params = [
-            param for param_name, param in sig.parameters.items()
-            if param_name not in ('self', 'cls') and
-               param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+            param for name, param in sig.parameters.items()
+            if name not in ('self', 'cls')
+               and param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         ]
 
-        cb_param_types = []
-        for param in explicit_params:
-            if param.annotation != inspect.Parameter.empty:
-                cb_param_types.append(param.annotation)
-            else:
-                cb_param_types.append(Any)
+        cb_param_types = [
+            param.annotation if param.annotation != inspect.Parameter.empty else Any
+            for param in explicit_params
+        ]
 
         # Check argument count matches
         if len(self._command_args) != len(cb_param_types):
@@ -157,20 +157,29 @@ class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
 
         # Check argument types match
         for i, (arg_type, cb_type) in enumerate(zip(self._command_args, cb_param_types)):
-            if cb_type is not Any and not issubclass(arg_type, cb_type):
-                raise TypeError(
-                    f"command_args type {arg_type} doesn't match callback parameter type {cb_type} "
-                    f"at position {i}"
-                )
+            if cb_type is Any:
+                continue  # Skip generic Any
+
+            origin = get_origin(cb_type) or cb_type
+
+            # Only check subclass if both are valid classes
+            if inspect.isclass(arg_type) and inspect.isclass(origin):
+                if not issubclass(arg_type, origin):
+                    raise TypeError(
+                        f"command_args type {arg_type} doesn't match callback parameter type {origin} "
+                        f"at position {i}"
+                    )
 
         # Check return type matches
         return_annotation = sig.return_annotation
         if return_annotation is not inspect.Parameter.empty and return_annotation is not Any:
-            if not issubclass(self._command_return_type, return_annotation):
-                raise TypeError(
-                    f"command_return type {self._command_return_type} doesn't match "
-                    f"callback return annotation {return_annotation}"
-                )
+            ret_origin = get_origin(return_annotation) or return_annotation
+            if inspect.isclass(self._command_return_type) and inspect.isclass(ret_origin):
+                if not issubclass(self._command_return_type, ret_origin):
+                    raise TypeError(
+                        f"command_return type {self._command_return_type} doesn't match "
+                        f"callback return annotation {return_annotation}"
+                    )
 
     def source(self, name: str, read: bool) -> str:
         # read flag is irrelevant for commands; retain signature for parity
@@ -223,32 +232,26 @@ class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
         return result
 
     async def get_datakey(self, source: str) -> DataKey:
-        """
-        Get metadata about the command.
-
-        Args:
-            source: The source string for the command
-
-        Returns:
-            A DataKey containing type information and metadata
-        """
-        metadata: Dict[str, Any] = {}
+        metadata: dict[str, any] = {}
         if self._units is not None:
             metadata["units"] = self._units
         if self._precision is not None:
             metadata["precision"] = self._precision
 
-        # Use the return type if we have it
-        dtype = self._command_return_type if self._command_return_type is not None else object
-
-        # Try to get a better exemplar if we have a last return value
+        dtype = self._command_return_type or object
         exemplar = None
+
         if self._last_return_value is not None:
             exemplar = self._last_return_value
-            # Update dtype based on actual return value if it's more specific
-            actual_type = type(self._last_return_value)
-            if issubclass(actual_type, dtype):
-                dtype = actual_type
+            actual_type = type(exemplar)
+            dtype_origin = get_origin(dtype) or dtype
+            if inspect.isclass(actual_type) and inspect.isclass(dtype_origin):
+                if issubclass(actual_type, dtype_origin):
+                    dtype = actual_type
+
+            # For generic sequences (lists/tuples), do not pass the list itself
+            if isinstance(exemplar, Sequence) and not isinstance(exemplar, (str, bytes, np.ndarray)):
+                exemplar = None  # <--- key change
 
         return make_datakey(dtype, exemplar, source, metadata)
 
