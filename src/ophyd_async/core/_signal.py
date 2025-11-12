@@ -639,11 +639,10 @@ async def set_and_wait_for_other_value(
             if wait_for_set_completion:
                 await status
         except TimeoutError as exc:
-            if not hasattr(matcher, "__name__"):
-                matcher.__name__ = "supplied_function"
+            matcher_name = getattr(matcher, "__name__", f"<{type(matcher).__name__}>")
             raise TimeoutError(
                 f"{match_signal.name} value didn't match value from"
-                f" {matcher.__name__}() in {timeout}s"
+                f" {matcher_name}() in {timeout}s"
             ) from exc
 
     return status

@@ -3,6 +3,7 @@ import logging
 import re
 import time
 from asyncio import Event
+from functools import partial
 from typing import Any
 from unittest.mock import ANY, AsyncMock, MagicMock, Mock, call
 
@@ -348,6 +349,19 @@ async def test_given_callable_has_no_name_then_matcher_still_gives_timeout_error
     with pytest.raises(asyncio.TimeoutError):
         await set_and_wait_for_other_value(
             set_signal, 20, match_signal, NoNameCallable(), timeout=0.01
+        )
+
+
+async def test_partial_matcher_still_gives_timeout_error():
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_other_value(
+            set_signal, 20, match_signal, partial(lambda x, y: x == y, 20), timeout=0.01
         )
 
 
