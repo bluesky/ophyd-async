@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._signal &#8212; ophyd-async 0.13.7.dev3+ge86f971db documentation</title>
+    <title>ophyd_async.core._signal &#8212; ophyd-async 0.13.7.dev4+g182780b23 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=824c0270"></script>
+    <script src="../../../_static/documentation_options.js?v=e09efcf4"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.7.dev3+ge86f971db documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.7.dev3+ge86f971db documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.7.dev4+g182780b23 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.7.dev4+g182780b23 documentation - Home"/>
   
   
 </a></div>
@@ -1175,9 +1175,10 @@ window.addEventListener("load", () => mermaid.run());
             <span class="k">if</span> <span class="n">wait_for_set_completion</span><span class="p">:</span>
                 <span class="k">await</span> <span class="n">status</span>
         <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">matcher_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">matcher</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">matcher</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">match_signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> value didn&#39;t match value from&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">matcher</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">() in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">matcher_name</span><span class="si">}</span><span class="s2">() in </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s&quot;</span>
             <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
 
     <span class="k">return</span> <span class="n">status</span></div>
