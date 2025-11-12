@@ -28,10 +28,11 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SignalX,
+    StandardReadable,
     init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
+from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
@@ -259,7 +260,7 @@ class TestDevice(Device):
 
 
 # --------------------------------------------------------------------
-class TestTangoReadable(TangoReadable):
+class TestTangoReadable(TangoDevice, StandardReadable):
     __test__ = False
     justvalue: A[SignalRW[int], Format.HINTED_UNCACHED_SIGNAL]
     array: A[SignalRW[Array1D[np.float64]], Format.HINTED_UNCACHED_SIGNAL]
@@ -394,9 +395,9 @@ async def test_connect(tango_test_device):
 @pytest.mark.asyncio
 async def test_set_trl(tango_test_device):
     values, description = await describe_class(tango_test_device)
-    test_device = TestTangoReadable(name="test_device")
+    test_device = TestTangoReadable(trl="", name="test_device")
 
-    test_device._connector.trl = tango_test_device
+    test_device._connector.set_trl(tango_test_device)
     await test_device.connect()
 
     assert test_device.name == "test_device"

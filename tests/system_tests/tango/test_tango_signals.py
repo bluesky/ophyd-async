@@ -287,6 +287,7 @@ async def test_tango_signal_rw(everything_device_trl: str, everything_signal_inf
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+@pytest.mark.timeout(2.0)
 async def test_tango_signal_x(tango_test_device: str):
     timeout = 0.2
     signal = tango_signal_x(

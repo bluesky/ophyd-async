@@ -11,16 +11,17 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalX,
+    StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import DevStateEnum, TangoPolling, TangoReadable
+from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
 
 
-class TangoMover(TangoReadable, Movable, Stoppable):
+class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
     """Tango moving device."""
 
     # Enter the name and type of the signals you want to use
@@ -32,7 +33,7 @@ class TangoMover(TangoReadable, Movable, Stoppable):
     # If a tango name clashes with a bluesky verb, add a trailing underscore
     stop_: SignalX
 
-    def __init__(self, trl: str | None = "", name=""):
+    def __init__(self, trl: str = "", name=""):
         super().__init__(trl, name=name)
         self.add_readables([self.position], Format.HINTED_SIGNAL)
         self.add_readables([self.velocity], Format.CONFIG_SIGNAL)
