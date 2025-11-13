@@ -11,6 +11,8 @@ from ophyd_async.core import (
     DetectorWriter,
     Device,
     DeviceVector,
+    HDFDatasetDescription,
+    HDFDocumentComposer,
     PathProvider,
     Reference,
     SignalR,
@@ -18,8 +20,11 @@ from ophyd_async.core import (
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
-    HDFDatasetDescription,
-    HDFDocumentComposer,
+)
+from ophyd_async.epics.adcore import NDPluginBaseIO
+from ophyd_async.epics.adcore._utils import (
+    convert_param_dtype_to_np,
+    convert_pv_dtype_to_np,
 )
 from ophyd_async.epics.core import (
     epics_signal_r,
@@ -28,11 +33,6 @@ from ophyd_async.epics.core import (
     stop_busy_record,
 )
 
-from ophyd_async.epics.adcore import NDPluginBaseIO
-from ophyd_async.epics.adcore._utils import (
-    convert_param_dtype_to_np,
-    convert_pv_dtype_to_np,
-)
 
 class Writing(StrictEnum):
     CAPTURE = "Capture"
@@ -118,7 +118,6 @@ class OdinWriter(DetectorWriter):
         self._exposures_per_event = exposures_per_event
         self.data_shape = await self.get_data_shape()
 
-
         self._path_info = self._path_provider(device_name=name)
 
         await asyncio.gather(
@@ -151,7 +150,7 @@ class OdinWriter(DetectorWriter):
         self._datasets = [
             HDFDatasetDescription(
                 data_key=name,
-                dataset=f"/entry/data",
+                dataset="/entry/data/data",
                 shape=(self._exposures_per_event, *self.data_shape),
                 dtype_numpy="<u2",
                 chunk_shape=(self._exposures_per_event, *self.data_shape),
@@ -175,15 +174,14 @@ class OdinWriter(DetectorWriter):
         )
 
         return data_shape
-    
 
     async def _describe(self, name: str) -> dict[str, DataKey]:
-      
         describe = {
             ds.data_key: DataKey(
                 source=self._drv.file_name.source,
                 shape=list(ds.shape),
-                dtype="array" if self._exposures_per_event > 1 or len(ds.shape) > 1
+                dtype="array"
+                if self._exposures_per_event > 1 or len(ds.shape) > 1
                 else "number",
                 # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
                 dtype_numpy="<u2",
@@ -194,11 +192,8 @@ class OdinWriter(DetectorWriter):
 
         return describe
 
-
     async def append_plugins_to_datasets(self) -> None:
-
         if self._plugins is not None:
-
             # And all the scalar datasets
             for plugin in self._plugins.values():
                 maybe_xml = await plugin.nd_attributes_file.get_value()
@@ -230,7 +225,7 @@ class OdinWriter(DetectorWriter):
                             )
                         )
         return
-    
+
     async def observe_indices_written(
         self, timeout: float
     ) -> AsyncGenerator[int, None]:
