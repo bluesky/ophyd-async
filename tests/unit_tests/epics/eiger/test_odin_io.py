@@ -1,11 +1,11 @@
 import asyncio
 from asyncio import Event
 from pathlib import Path
-from unittest.mock import ANY, AsyncMock, MagicMock, Mock
+from unittest.mock import ANY, AsyncMock, MagicMock
 
 import pytest
 
-from ophyd_async.core import HDFDocumentComposer, init_devices
+from ophyd_async.core import HDFDatasetDescription, HDFDocumentComposer, init_devices
 from ophyd_async.epics.adcore import NDPluginBaseIO
 from ophyd_async.epics.odin import Odin, OdinWriter, Writing
 from ophyd_async.testing import (
@@ -28,6 +28,13 @@ def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
         writer = OdinWriter(MagicMock(), driver, eiger_bit_depth)
     writer._path_provider.return_value.filename = "filename.h5"  # type: ignore
     return driver, writer
+
+
+@pytest.fixture()
+def plugin() -> NDPluginBaseIO:
+    with init_devices(mock=True):
+        plugin = NDPluginBaseIO("prefix")
+    return plugin
 
 
 def initialise_signals_to_armed(driver):
@@ -113,16 +120,6 @@ async def test_odin_test_collect_stream_docs_fails_when_composer_is_none(
         [item async for item in writer.collect_stream_docs("ODIN", 1)]
 
 
-async def test_append_plugins_to_datasets(odin_driver_and_writer: OdinDriverAndWriter):
-    _, writer = odin_driver_and_writer
-
-    mock_plugin = Mock(NDPluginBaseIO)
-
-    writer._plugin = {"mock1": mock_plugin, "mock2": mock_plugin}  # type: ignore
-
-    await writer.append_plugins_to_datasets()
-
-
 @pytest.mark.asyncio
 async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writing(
     odin_driver_and_writer,
@@ -161,3 +158,47 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
 
     await asyncio.gather(writer.open(ODIN_DETECTOR_NAME), wait_and_set_signals())
     assert type(writer._composer) is HDFDocumentComposer
+
+
+async def test_append_plugins_to_datasets(
+    odin_driver_and_writer: OdinDriverAndWriter, plugin: NDPluginBaseIO
+):
+    driver, writer = odin_driver_and_writer
+
+    valid_xml = """<?xml version='1.0' encoding='utf-8'?>
+    <Attributes>
+        <Attribute
+            name="odin-sum"
+            type="PARAM"
+            source="TOTAL" addr="0"
+            datatype="DOUBLE"
+            description="Sum of each detector frame" />
+        <Attribute
+            name="odin-Temperature"
+            type="EPICS_PV"
+            source="odin:TEMP"
+            dbrtype="DBR_FLOAT"/>
+    </Attributes>
+    """
+
+    writer._exposures_per_event = 1
+    writer.data_shape = (100, 100)
+    set_mock_value(plugin.nd_attributes_file, valid_xml)
+
+    writer._datasets = [
+        HDFDatasetDescription(
+            data_key=ODIN_DETECTOR_NAME,
+            dataset="/data",
+            shape=(writer._exposures_per_event, *writer.data_shape),
+            dtype_numpy="<u2",
+            chunk_shape=(writer._exposures_per_event, *writer.data_shape),
+        )
+    ]
+
+    assert len(writer._datasets) == 1
+
+    writer._plugins = {"mock1": plugin, "mock2": plugin}
+
+    await writer.append_plugins_to_datasets()
+
+    assert len(writer._datasets) > 1

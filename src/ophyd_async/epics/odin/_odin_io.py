@@ -198,6 +198,7 @@ class OdinWriter(DetectorWriter):
             maybe_xml = await plugin.nd_attributes_file.get_value()
             # This is the check that ADCore does to see if it is an XML string
             # rather than a filename to parse
+            print("maybe", maybe_xml)
             if "<Attributes>" in maybe_xml:
                 root = ET.fromstring(maybe_xml)
                 for child in root:
