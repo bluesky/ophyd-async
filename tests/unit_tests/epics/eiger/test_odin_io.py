@@ -1,11 +1,12 @@
 import asyncio
 from asyncio import Event
 from pathlib import Path
-from unittest.mock import ANY, AsyncMock, MagicMock
+from unittest.mock import ANY, AsyncMock, MagicMock, Mock
 
 import pytest
 
 from ophyd_async.core import HDFDocumentComposer, init_devices
+from ophyd_async.epics.adcore import NDPluginBaseIO
 from ophyd_async.epics.odin import Odin, OdinWriter, Writing
 from ophyd_async.testing import (
     callback_on_mock_put,
@@ -105,56 +106,19 @@ async def test_when_closed_then_data_capture_turned_off(
 async def test_odin_test_collect_stream_docs_fails_when_composer_is_none(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
-    driver, writer = odin_driver_and_writer
+    _, writer = odin_driver_and_writer
     writer._composer = None
 
     with pytest.raises(RuntimeError):
         [item async for item in writer.collect_stream_docs("ODIN", 1)]
 
 
-@pytest.mark.asyncio
-async def test_odin_test_stream_docs(
-    odin_driver_and_writer: OdinDriverAndWriter,
-):
-    driver, writer = odin_driver_and_writer
-
-    file_name_is_set = Event()
-    capture_is_set = Event()
-    callback_on_mock_put(
-        driver.file_name, lambda *args, **kwargs: file_name_is_set.set()
-    )
-    callback_on_mock_put(driver.capture, lambda *args, **kwargs: capture_is_set.set())
-
-    async def set_waited_signals():
-        set_mock_value(driver.meta_active, "Active")
-        set_mock_value(driver.id, "filename.h5")
-        set_mock_value(driver.meta_file_name, "filename.h5")
-
-    async def set_ready_signals():
-        set_mock_value(driver.meta_writing, "Writing")
-        set_mock_value(driver.capture_rbv, "Capturing")
-
-    async def wait_and_set_signals():
-        # Block until filename is set
-        await file_name_is_set.wait()
-        # Allow writer.open to proceed to wait_for_value.
-        await asyncio.sleep(0.1)
-        # writer.open now waits on signals; set these, and unset event
-        await set_waited_signals()
-        # Block until capture sets event
-        await capture_is_set.wait()
-        # Allow writer.open to proceed to wait_for_value.
-        await asyncio.sleep(0.1)
-        # writer.open now waits on signals; set these
-        await set_ready_signals()
-
-    await asyncio.gather(writer.open(ODIN_DETECTOR_NAME, 1), wait_and_set_signals())
-    assert type(writer._composer) is HDFDocumentComposer
-
-
-# @pytest.mark.parametrize("table", [None])
 async def test_append_plugins_to_datasets(odin_driver_and_writer: OdinDriverAndWriter):
     _, writer = odin_driver_and_writer
+
+    mock_plugin = Mock(NDPluginBaseIO)
+
+    writer._plugin = {"mock1": mock_plugin, "mock2": mock_plugin}  # type: ignore
 
     await writer.append_plugins_to_datasets()
 
@@ -196,3 +160,4 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
         await set_ready_signals()
 
     await asyncio.gather(writer.open(ODIN_DETECTOR_NAME), wait_and_set_signals())
+    assert type(writer._composer) is HDFDocumentComposer
