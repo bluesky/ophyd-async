@@ -104,7 +104,7 @@ class OdinWriter(DetectorWriter):
         self._drv = odin_driver
         self._path_provider = path_provider
         self._detector_bit_depth = Reference(detector_bit_depth)
-        self._plugins = plugins
+        self._plugins = plugins or {}
         self._capture_status: AsyncStatus | None = None
         self._datasets: list[HDFDatasetDescription] = []
         self._composer: HDFDocumentComposer | None = None
@@ -150,7 +150,7 @@ class OdinWriter(DetectorWriter):
         self._datasets = [
             HDFDatasetDescription(
                 data_key=name,
-                dataset="/entry/data/data",
+                dataset="/data",
                 shape=(self._exposures_per_event, *self.data_shape),
                 dtype_numpy="<u2",
                 chunk_shape=(self._exposures_per_event, *self.data_shape),
@@ -193,37 +193,36 @@ class OdinWriter(DetectorWriter):
         return describe
 
     async def append_plugins_to_datasets(self) -> None:
-        if self._plugins is not None:
-            # And all the scalar datasets
-            for plugin in self._plugins.values():
-                maybe_xml = await plugin.nd_attributes_file.get_value()
-                # This is the check that ADCore does to see if it is an XML string
-                # rather than a filename to parse
-                if "<Attributes>" in maybe_xml:
-                    root = ET.fromstring(maybe_xml)
-                    for child in root:
-                        data_key = child.attrib["name"]
-                        if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
-                            np_datatype = convert_pv_dtype_to_np(
-                                child.attrib.get("dbrtype", "DBR_NATIVE")
-                            )
-                        else:
-                            np_datatype = convert_param_dtype_to_np(
-                                child.attrib.get("datatype", "INT")
-                            )
-                        self._datasets.append(
-                            HDFDatasetDescription(
-                                data_key=data_key,
-                                dataset=f"/entry/instrument/NDAttributes/{data_key}",
-                                shape=(self._exposures_per_event,)
-                                if self._exposures_per_event > 1
-                                else (),
-                                dtype_numpy=np_datatype,
-                                # NDAttributes appear to always be configured with
-                                # this chunk size
-                                chunk_shape=(16384,),
-                            )
+        # And all the scalar datasets
+        for plugin in self._plugins.values():
+            maybe_xml = await plugin.nd_attributes_file.get_value()
+            # This is the check that ADCore does to see if it is an XML string
+            # rather than a filename to parse
+            if "<Attributes>" in maybe_xml:
+                root = ET.fromstring(maybe_xml)
+                for child in root:
+                    data_key = child.attrib["name"]
+                    if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
+                        np_datatype = convert_pv_dtype_to_np(
+                            child.attrib.get("dbrtype", "DBR_NATIVE")
                         )
+                    else:
+                        np_datatype = convert_param_dtype_to_np(
+                            child.attrib.get("datatype", "INT")
+                        )
+                    self._datasets.append(
+                        HDFDatasetDescription(
+                            data_key=data_key,
+                            dataset=f"/entry/instrument/NDAttributes/{data_key}",
+                            shape=(self._exposures_per_event,)
+                            if self._exposures_per_event > 1
+                            else (),
+                            dtype_numpy=np_datatype,
+                            # NDAttributes appear to always be configured with
+                            # this chunk size
+                            chunk_shape=(16384,),
+                        )
+                    )
         return
 
     async def observe_indices_written(
