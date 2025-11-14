@@ -4,6 +4,7 @@ from ophyd_async.core import (
     StandardDetector,
     TriggerInfo,
 )
+from ophyd_async.epics.adcore import NDPluginBaseIO
 from ophyd_async.epics.odin import Odin, OdinWriter
 
 from ._eiger_controller import EigerController
@@ -23,6 +24,7 @@ class EigerDetector(StandardDetector):
         drv_suffix="-EA-EIGER-01:",
         hdf_suffix="-EA-EIGER-01:OD:",
         odin_nodes: int = 4,
+        plugins: dict[str, NDPluginBaseIO] | None = None,
         name="",
     ):
         self.drv = EigerDriverIO(prefix + drv_suffix)
@@ -34,6 +36,7 @@ class EigerDetector(StandardDetector):
                 path_provider,
                 self.odin,
                 self.drv.detector.bit_depth_image,
+                plugins=plugins,
             ),
             name=name,
         )
