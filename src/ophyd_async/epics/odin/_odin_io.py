@@ -183,8 +183,7 @@ class OdinWriter(DetectorWriter):
                 dtype="array"
                 if self._exposures_per_event > 1 or len(ds.shape) > 1
                 else "number",
-                # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
-                dtype_numpy="<u2",
+                dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
             for ds in self._datasets
