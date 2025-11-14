@@ -220,11 +220,11 @@ async def test_stats_describe_raises_error_with_dbr_native(
 </Attributes>
 """,
     )
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError) as exc:
         with patch("ophyd_async.core._signal.wait_for_value", return_value=None):
             await hdf_writer_with_stats.open(DETECTOR_NAME)
     await hdf_writer_with_stats.close()
-    assert str(e.value) == "Don't support DBR_NATIVE yet"
+    assert str(exc.value) == "Don't support DBR_NATIVE yet"
 
 
 async def test_stats_describe_when_plugin_configured_in_memory(RE, detectors):
@@ -332,14 +332,14 @@ async def test_nd_attributes_plan_stub(RE, detectors):
 
 
 async def test_nd_attributes_plan_stub_gives_correct_error(RE, detectors):
-    invalidObjects = [0.1, "string", 1, True, False]
+    invalid_objects = [0.1, "string", 1, True, False]
     for detector in detectors:
         await detector.connect(mock=True)
-        with pytest.raises(ValueError) as e:
-            RE(setup_ndattributes(detector.fileio, invalidObjects))
+        with pytest.raises(ValueError) as exc:
+            RE(setup_ndattributes(detector.fileio, invalid_objects))
         assert (
-            str(e.value)
-            == f"Invalid type for ndattributes: {type(invalidObjects[0])}. "
+            str(exc.value)
+            == f"Invalid type for ndattributes: {type(invalid_objects[0])}. "
             + "Expected NDAttributePv or NDAttributeParam."
         )
 

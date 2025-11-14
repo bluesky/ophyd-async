@@ -40,9 +40,9 @@ class MyTable(Table):
     ],
 )
 def test_table_wrong_types(kwargs, error_msg):
-    with pytest.raises(ValidationError) as cm:
+    with pytest.raises(ValidationError) as exc:
         MyTable(**kwargs)
-    assert error_msg in str(cm.value)
+    assert error_msg in str(exc.value)
 
 
 @pytest.mark.parametrize(

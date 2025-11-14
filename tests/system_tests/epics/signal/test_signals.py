@@ -20,7 +20,7 @@ from ophyd.signal import EpicsSignal
 
 from ophyd_async.core import (
     Array1D,
-    NotConnected,
+    NotConnectedError,
     Signal,
     SignalDatatypeT,
     SignalR,
@@ -444,7 +444,7 @@ async def test_typing_sequence_str_signal_connects(
 
 @pytest.mark.timeout(TIMEOUT)
 @pytest.mark.parametrize("protocol", get_args(Protocol))
-async def test_error_raised_on_disconnected_PV(
+async def test_error_raised_on_disconnected_pv(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
 ):
     signal = epics_signal_rw(bool, ioc_devices.get_pv(protocol, "bool"))
@@ -575,10 +575,10 @@ async def test_backend_wrong_type_errors(
     ioc_devices: EpicsTestIocAndDevices, typ, suff, errors, protocol: Protocol
 ):
     signal = epics_signal_rw(typ, ioc_devices.get_pv(protocol, suff))
-    with pytest.raises(TypeError) as cm:
+    with pytest.raises(TypeError) as exc:
         await signal.connect()
     for error in errors:
-        assert error in str(cm.value)
+        assert error in str(exc.value)
 
 
 @pytest.mark.timeout(TIMEOUT)
@@ -605,7 +605,7 @@ async def test_non_existent_errors(
     ioc_devices: EpicsTestIocAndDevices, protocol: Protocol
 ):
     signal = epics_signal_rw(str, "non-existent")
-    with pytest.raises(NotConnected):
+    with pytest.raises(NotConnectedError):
         await signal.connect(timeout=0.1)
 
 
@@ -792,7 +792,7 @@ async def default_all_updates(pv: str) -> bool:
     backend = sig._connector.backend
 
     try:
-        sig.subscribe_value(lambda v: ...)
+        sig.subscribe_reading(lambda v: ...)
         assert isinstance(backend.subscription, Subscription)
         assert isinstance(backend.subscription.all_updates, bool)
         return backend.subscription.all_updates
@@ -929,10 +929,10 @@ def test_subscribe_works_under_re_and_fails_outside(
         if mock:
             set_mock_value(s1, 3.141)
         q = asyncio.Queue()
-        s1.subscribe_value(q.put_nowait)
+        s1.subscribe_reading(q.put_nowait)
         try:
             (fut,) = yield from bps.wait_for([q.get])
-            assert fut.result() == 3.141
+            assert fut.result()["s1"]["value"] == 3.141
         finally:
             s1.clear_sub(q.put_nowait)
 
@@ -944,4 +944,4 @@ def test_subscribe_works_under_re_and_fails_outside(
         match="Need a running event loop to subscribe to a signal, "
         "are you trying to run subscribe outside a plan?",
     ):
-        s2.subscribe_value(print)
+        s2.subscribe_reading(print)

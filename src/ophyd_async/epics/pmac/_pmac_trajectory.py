@@ -15,10 +15,10 @@ from ophyd_async.core import (
     wait_for_value,
 )
 from ophyd_async.epics.motor import Motor
-from ophyd_async.epics.pmac import PmacIO
-from ophyd_async.epics.pmac._pmac_io import CS_LETTERS
-from ophyd_async.epics.pmac._pmac_trajectory_generation import PVT, Trajectory
-from ophyd_async.epics.pmac._utils import (
+
+from ._pmac_io import CS_INDEX, PmacIO
+from ._pmac_trajectory_generation import PVT, Trajectory
+from ._utils import (
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
 )
@@ -129,8 +129,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             slice, path_length, motor_info, ramp_up_time
         )
         use_axis = {
-            axis + 1: (axis in motor_info.motor_cs_index.values())
-            for axis in range(len(CS_LETTERS))
+            i: (i in motor_info.motor_cs_index.values()) for i in CS_INDEX.values()
         }
 
         coros = [
@@ -175,14 +174,14 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         self, trajectory: Trajectory, motor_info: _PmacMotorInfo
     ):
         coros = []
-        for motor, number in motor_info.motor_cs_index.items():
+        for motor, cs_index in motor_info.motor_cs_index.items():
             coros.append(
-                self.pmac.trajectory.positions[number + 1].set(
+                self.pmac.trajectory.positions[cs_index].set(
                     trajectory.positions[motor]
                 )
             )
             coros.append(
-                self.pmac.trajectory.velocities[number + 1].set(
+                self.pmac.trajectory.velocities[cs_index].set(
                     trajectory.velocities[motor]
                 )
             )
@@ -204,7 +203,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         for motor, position in ramp_up_position.items():
             coros.append(
                 set_and_wait_for_value(
-                    coord.cs_axis_setpoint[motor_info.motor_cs_index[motor] + 1],
+                    coord.cs_axis_setpoint[motor_info.motor_cs_index[motor]],
                     position,
                     set_timeout=10,
                     wait_for_set_completion=False,

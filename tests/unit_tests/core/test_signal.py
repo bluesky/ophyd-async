@@ -3,6 +3,7 @@ import logging
 import re
 import time
 from asyncio import Event
+from functools import partial
 from typing import Any
 from unittest.mock import ANY, AsyncMock, MagicMock, Mock, call
 
@@ -161,6 +162,16 @@ async def test_set_and_wait_for_value_same_set_as_read():
     assert await signal.get_value() == 0
     await asyncio.gather(wait_and_set_proceeds(), check_set_and_wait())
     assert await signal.get_value() == 1
+
+
+async def test_set_and_wait_for_value_same_set_and_read_times_out():
+    signal = epics_signal_rw(int, "pva://pv", name="signal")
+    await signal.connect(mock=True)
+    assert await signal.get_value() == 0
+    callback_on_mock_put(signal, lambda v, _: v + 2)
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_value(signal, 1, timeout=0.1)
 
 
 async def test_set_and_wait_for_value_different_set_and_read():
@@ -324,6 +335,36 @@ async def test_callable_match_value_set_and_wait_for_value():
         )
 
 
+async def test_given_callable_has_no_name_then_matcher_still_gives_timeout_error():
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+
+    class NoNameCallable:
+        def __call__(self, val):
+            return val == 20
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_other_value(
+            set_signal, 20, match_signal, NoNameCallable(), timeout=0.01
+        )
+
+
+async def test_partial_matcher_still_gives_timeout_error():
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_other_value(
+            set_signal, 20, match_signal, partial(lambda x, y: x == y, 20), timeout=0.01
+        )
+
+
 async def test_wait_for_value_with_value():
     signal = epics_signal_rw(str, read_pv="pva://signal", name="signal")
     await signal.connect(mock=True)
@@ -372,25 +413,23 @@ async def test_wait_for_value_with_function():
     [(soft_signal_r_and_setter, SignalR), (soft_signal_rw, SignalRW)],
 )
 async def test_create_soft_signal(signal_method, signal_class):
-    SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
-    INITIAL_VALUE = "INITIAL"
+    signal_name = "TEST-PREFIX:SIGNAL"
+    initial_value = "INITIAL"
     if signal_method == soft_signal_r_and_setter:
-        signal, _ = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
+        signal, _ = signal_method(str, initial_value, signal_name)
     elif signal_method == soft_signal_rw:
-        signal = signal_method(str, INITIAL_VALUE, SIGNAL_NAME)
+        signal = signal_method(str, initial_value, signal_name)
     else:
         raise ValueError(signal_method)
-    assert signal.source == f"soft://{SIGNAL_NAME}"
+    assert signal.source == f"soft://{signal_name}"
     assert isinstance(signal, signal_class)
     await signal.connect()
     assert isinstance(signal._connector.backend, SoftSignalBackend)
-    assert (await signal.get_value()) == INITIAL_VALUE
+    assert (await signal.get_value()) == initial_value
 
 
 def test_signal_r_cached():
-    SIGNAL_NAME = "TEST-PREFIX:SIGNAL"
-    INITIAL_VALUE = "INITIAL"
-    signal = soft_signal_r_and_setter(str, INITIAL_VALUE, SIGNAL_NAME)[0]
+    signal = soft_signal_r_and_setter(str, "INITIAL", "TEST-PREFIX:SIGNAL")[0]
     assert signal._cache is None
     with pytest.raises(RuntimeError, match=r".* not being monitored"):
         signal._backend_or_cache(cached=True)
@@ -896,7 +935,7 @@ async def test_subscription_logs(caplog):
     mock_signal_rw = epics_signal_rw(int, "pva://mock_signal", name="mock_signal")
     await mock_signal_rw.connect(mock=True)
     cbs = []
-    mock_signal_rw.subscribe(cbs.append)
+    mock_signal_rw.subscribe_reading(cbs.append)
     assert "Making subscription" in caplog.text
     mock_signal_rw.clear_sub(cbs.append)
     assert "Closing subscription on source" in caplog.text
@@ -956,18 +995,11 @@ async def test_get_reading_runtime_error(signal_cache: _SignalCache[Any]) -> Non
         await asyncio.wait_for(signal_cache.get_reading(), timeout=1.0)
 
 
-def test_notify_with_value(signal_cache):
-    mock_function = Mock()
-    signal_cache._reading = {"value": 42}
-    signal_cache._notify(mock_function, want_value=True)
-    mock_function.assert_called_once_with(42)
-
-
-def test_notify_without_value(signal_cache):
+def test_notify_with_reading(signal_cache):
     mock_function = Mock()
     signal_cache._reading = {"value": 42}
     signal_cache._signal.name = "test_signal"
-    signal_cache._notify(mock_function, want_value=False)
+    signal_cache._notify(mock_function)
     mock_function.assert_called_once_with({"test_signal": partial_reading(42)})
 
 
@@ -976,7 +1008,7 @@ async def test_notify_runtime_error(signal_cache: _SignalCache[Any]) -> None:
 
     with pytest.raises(RuntimeError, match="Monitor not working"):
         await asyncio.wait_for(
-            signal_cache._notify(function, want_value=True),  # type: ignore
+            signal_cache._notify(function),
             timeout=1.0,
         )
 
@@ -1042,8 +1074,12 @@ async def test_can_unsubscribe_from_subscribe_callback():
             signal.clear_sub(callback)
 
     callback.side_effect = unsubscribe_if_one
-    signal.subscribe_value(callback)
-    signal.subscribe_value(print)
+    signal.subscribe_reading(callback)
+    signal.subscribe_reading(print)
     await signal.set(1.0)
     await signal.set(2.0)
-    assert callback.mock_calls == [call(0.0), call(1.0)]
+    assert callback.mock_calls == [
+        call({"": {"value": 0.0, "timestamp": ANY, "alarm_severity": 0}}),
+        call({"": {"value": 1.0, "timestamp": ANY, "alarm_severity": 0}}),
+        call({"": {"value": 2.0, "timestamp": ANY, "alarm_severity": 0}}),
+    ]

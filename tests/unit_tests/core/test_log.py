@@ -42,10 +42,10 @@ def test_config_ophyd_async_logging_removes_extra_handlers():
             self.removeHandler = MagicMock()
             self.setLevel = MagicMock()
 
-        def addHandler(self, handler):
+        def addHandler(self, handler):  # noqa: N802
             self.handlers.append(handler)
 
-        def getEffectiveLevel(self):
+        def getEffectiveLevel(self):  # noqa: N802
             return 100000
 
     fake_logger = FakeLogger()

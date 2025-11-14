@@ -9,7 +9,7 @@ import pytest
 from ophyd_async.core import (
     Device,
     DeviceVector,
-    NotConnected,
+    NotConnectedError,
     init_devices,
 )
 from ophyd_async.fastcs.core import fastcs_connector
@@ -121,7 +121,7 @@ async def test_panda_children_connected(mock_panda):
 async def test_panda_unable_to_connect_to_pvi(panda_t):
     panda = panda_t("NON-EXISTENT:")
 
-    with pytest.raises(NotConnected) as exc:
+    with pytest.raises(NotConnectedError) as exc:
         await panda.connect(timeout=0.01)
 
     assert exc.value._errors == "pva://NON-EXISTENT:PVI"

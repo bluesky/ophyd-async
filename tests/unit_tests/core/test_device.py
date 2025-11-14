@@ -9,7 +9,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceVector,
-    NotConnected,
+    NotConnectedError,
     Reference,
     SignalRW,
     init_devices,
@@ -180,9 +180,9 @@ async def test_wait_for_connection_propagates_error(
 ):
     failing_coros = {"test": normal_coroutine(), "failing": failing_coroutine()}
 
-    with pytest.raises(NotConnected) as e:
+    with pytest.raises(NotConnectedError) as exc:
         await wait_for_connection(**failing_coros)
-        assert traceback.extract_tb(e.__traceback__)[-1].name == "failing_coroutine"
+        assert traceback.extract_tb(exc.__traceback__)[-1].name == "failing_coroutine"
 
 
 async def test_device_log_has_correct_name():
@@ -222,16 +222,16 @@ async def test_many_individual_device_connects_not_slow(parallel):
 
 
 async def test_device_with_children_lazily_connects(RE):
-    parentMotor = MotorBundle("parentMotor")
+    parent_motor = MotorBundle("parentMotor")
 
-    for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
-        parentMotor.V.values()
+    for device in [parent_motor, parent_motor.X, parent_motor.Y] + list(
+        parent_motor.V.values()
     ):
         assert device._mock is None
-    RE(ensure_connected(parentMotor, mock=True))
+    RE(ensure_connected(parent_motor, mock=True))
 
-    for device in [parentMotor, parentMotor.X, parentMotor.Y] + list(
-        parentMotor.V.values()
+    for device in [parent_motor, parent_motor.X, parent_motor.Y] + list(
+        parent_motor.V.values()
     ):
         assert device._mock is not None
 

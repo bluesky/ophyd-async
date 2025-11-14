@@ -41,7 +41,9 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
     @cached_property
     def put_mock(self) -> AsyncMock:
         """Return the mock that will track calls to `put()`."""
-        put_mock = AsyncMock(name="put", spec=Callable)
+        put_mock = AsyncMock(
+            name="put", spec=Callable, side_effect=lambda *_, **__: None
+        )
         self.mock().attach_mock(put_mock, "put")
         return put_mock
 
@@ -66,8 +68,10 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         return put_proceeds
 
     async def put(self, value: SignalDatatypeT | None, wait: bool):
-        await self.put_mock(value, wait=wait)
-        await self.soft_backend.put(value, wait=wait)
+        new_value = await self.put_mock(value, wait=wait)
+        if new_value is None:
+            new_value = value
+        await self.soft_backend.put(new_value, wait=wait)
         if wait:
             await self.put_proceeds.wait()
 

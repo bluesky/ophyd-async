@@ -55,8 +55,8 @@ class AsyncStatusBase(Status, Awaitable[None]):
         if self.task.done():
             try:
                 return self.task.exception()
-            except asyncio.CancelledError as e:
-                return e
+            except asyncio.CancelledError as exc:
+                return exc
         return None
 
     @property

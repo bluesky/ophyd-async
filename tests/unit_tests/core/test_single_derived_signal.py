@@ -90,18 +90,28 @@ async def test_get_returns_right_position(
 async def test_monitoring_position(cls: type[ReadOnlyBeamstop | MovableBeamstop]):
     results = asyncio.Queue[BeamstopPosition]()
     inst = cls("inst")
-    inst.position.subscribe_value(results.put_nowait)
-    assert await results.get() == BeamstopPosition.IN_POSITION
+    inst.position.subscribe_reading(results.put_nowait)
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.IN_POSITION
     assert results.empty()
     await inst.x.set(3)
-    assert await results.get() == BeamstopPosition.OUT_OF_POSITION
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.OUT_OF_POSITION
     assert results.empty()
     await inst.y.set(5)
-    assert await results.get() == BeamstopPosition.OUT_OF_POSITION
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.OUT_OF_POSITION
     assert results.empty()
     await asyncio.gather(inst.x.set(0), inst.y.set(0))
-    assert await results.get() == BeamstopPosition.OUT_OF_POSITION
-    assert await results.get() == BeamstopPosition.IN_POSITION
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.OUT_OF_POSITION
+    assert (await results.get())["inst-position"][
+        "value"
+    ] == BeamstopPosition.IN_POSITION
     assert results.empty()
 
 
@@ -220,9 +230,11 @@ async def test_set_derived_not_initialized():
 async def test_derived_update_cached_reading_not_initialized(
     derived_signal_backend: SignalBackend,
 ):
-    class test_cls(Subscribable):
-        def subscribe(self, function: Callback) -> None:
+    class TestCls(Subscribable):
+        def subscribe_reading(self, function: Callback) -> None:
             pass
+
+        subscribe = subscribe_reading
 
         def clear_sub(self, function: Callback) -> None:
             function("")
@@ -234,7 +246,7 @@ async def test_derived_update_cached_reading_not_initialized(
     with patch.object(
         derived_signal_backend.transformer,  # type: ignore
         "raw_and_transform_subscribables",
-        {"raw_device": test_cls()},
+        {"raw_device": TestCls()},
     ):
         with pytest.raises(
             RuntimeError,

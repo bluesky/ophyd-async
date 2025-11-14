@@ -12,7 +12,7 @@ jobs:
         run: sleep 60
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # Need this to get version number from last tag
           fetch-depth: 0
@@ -20,11 +20,11 @@ jobs:
       - name: Install system packages
         run: sudo apt-get install graphviz
 
-      - name: Install python packages
-        uses: ./.github/actions/install_requirements
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
 
       - name: Build docs
-        run: tox -e docs
+        run: uv run --locked tox -e docs
 
       - name: Remove environment.pickle
         run: rm build/html/.doctrees/environment.pickle

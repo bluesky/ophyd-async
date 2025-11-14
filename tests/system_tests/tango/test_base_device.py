@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 import tango
 from bluesky import RunEngine
+from bluesky.protocols import Location
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -20,9 +21,18 @@ from tango import (
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 from tango.server import Device, attribute, command
 
-from ophyd_async.core import Array1D, Ignore, SignalRW, init_devices
+from ophyd_async.core import (
+    Array1D,
+    Ignore,
+    SignalR,
+    SignalRW,
+    SignalW,
+    SignalX,
+    StandardReadable,
+    init_devices,
+)
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoReadable, get_full_attr_trl, get_python_type
+from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoCounter,
     DemoMover,
@@ -67,6 +77,13 @@ class TestDevice(Device):
     _limitedvalue = 3
 
     _ignored_attr = 1.0
+
+    _msg = "Hello"
+
+    _test_enum = TestEnum.A
+    _string_image = [["one", "two", "three"], ["four", "five", "six"]]
+    _long_string_array = ([1, 2, 3], ["one", "two", "three"])
+    _sequence = ["one", "two", "three"]
 
     @attribute(dtype=float, access=AttrWriteType.READ)
     def readback(self):
@@ -126,14 +143,28 @@ class TestDevice(Device):
         self._array = array
 
     @attribute(
-        dtype=float,
+        dtype=CmdArgType.DevString,
         access=AttrWriteType.READ_WRITE,
-        min_value=0,
-        min_alarm=1,
-        min_warning=2,
-        max_warning=4,
-        max_alarm=5,
-        max_value=6,
+        dformat=AttrDataFormat.SPECTRUM,
+        max_dim_x=3,
+    )
+    def sequence(self):
+        return self._sequence
+
+    def write_sequence(self, sequence: list[str]):
+        self._sequence = sequence
+
+    @attribute(
+        access=AttrWriteType.READ_WRITE,
+        min_value=0.0,
+        min_alarm=1.0,
+        min_warning=2.0,
+        max_warning=4.0,
+        max_alarm=5.0,
+        max_value=6.0,
+        unit="cm",
+        delta_val="1",
+        delta_t="1",
     )
     def limitedvalue(self) -> float:
         return self._limitedvalue
@@ -160,10 +191,44 @@ class TestDevice(Device):
     def ignored_attr(self) -> float:
         return self._ignored_attr
 
+    @attribute(
+        dtype=tango.CmdArgType.DevEnum,
+        enum_labels=["A", "B"],
+        access=AttrWriteType.READ,
+    )
+    def test_enum(self) -> TestEnum:
+        return self._test_enum
+
+    # # Attribute for string image
+    # @attribute(
+    #     dtype=tango.CmdArgType.DevString,
+    #     dformat=AttrDataFormat.IMAGE,
+    #     access=AttrWriteType.READ_WRITE,
+    #     max_dim_x=3,
+    #     max_dim_y=2,
+    # )
+    # def stringimage(self) -> List[List[str]]:
+    #     return self._string_image
+    #
+    # def write_stringimage(self, value: List[List[str]]):
+    #     self._string_image = value
+
+    # Attribute for a long string array
+    @command(
+        dtype_out=CmdArgType.DevVarLongStringArray,
+    )
+    def get_longstringarray(self) -> tuple[list[int], list[str]]:
+        return self._long_string_array
+
+    @command(
+        dtype_out=CmdArgType.DevVarDoubleStringArray,
+    )
+    def get_doublestringarray(self) -> tuple[list[float], list[str]]:
+        return self._long_string_array
+
     @command
-    def clear(self) -> str:
-        # self.info_stream("Received clear command")
-        return "Received clear command"
+    def clear(self):
+        pass
 
     @command
     def slow_command(self) -> str:
@@ -175,12 +240,27 @@ class TestDevice(Device):
         return value
 
     @command
+    def get_msg(self) -> str:
+        return self._msg
+
+    @command
+    def set_msg(self, value: str):
+        self._msg = value
+
+    @command
     def raise_exception_cmd(self):
         raise
 
+    @command(
+        dtype_in=CmdArgType.DevEnum,
+        dtype_out=CmdArgType.DevEnum,
+    )
+    def enum_cmd(self, value: TestEnum) -> TestEnum:
+        return value
+
 
 # --------------------------------------------------------------------
-class TestTangoReadable(TangoReadable):
+class TestTangoReadable(TangoDevice, StandardReadable):
     __test__ = False
     justvalue: A[SignalRW[int], Format.HINTED_UNCACHED_SIGNAL]
     array: A[SignalRW[Array1D[np.float64]], Format.HINTED_UNCACHED_SIGNAL]
@@ -195,31 +275,36 @@ async def describe_class(fqtrl):
     dev = await AsyncDeviceProxy(fqtrl)
 
     for name in TESTED_FEATURES:
+        dtype = "none"
         if name in dev.get_attribute_list():
             attr_conf = await dev.get_attribute_config(name)
             attr_value = await dev.read_attribute(name)
             value = attr_value.value
-            _, _, descr = get_python_type(attr_conf.data_type)
+            py_type = get_python_type(attr_conf)
+
+            if py_type is int:
+                dtype = "integer"
+            if py_type is float:
+                dtype = "number"
+            if py_type is str:
+                dtype = "string"
+            if py_type is bool:
+                dtype = "boolean"
+
             max_x = attr_conf.max_dim_x
             max_y = attr_conf.max_dim_y
             if attr_conf.data_format == AttrDataFormat.SCALAR:
-                is_array = False
                 shape = []
             elif attr_conf.data_format == AttrDataFormat.SPECTRUM:
-                is_array = True
+                dtype = "array"
                 shape = [max_x]
             else:
-                is_array = True
+                dtype = "array"
                 shape = [max_y, max_x]
 
         elif name in dev.get_command_list():
             cmd_conf = await dev.get_command_config(name)
-            _, _, descr = get_python_type(
-                cmd_conf.in_type
-                if cmd_conf.in_type != CmdArgType.DevVoid
-                else cmd_conf.out_type
-            )
-            is_array = False
+            _, _, descr = get_python_type(cmd_conf)
             shape = []
             value = getattr(dev, name)()
 
@@ -230,7 +315,7 @@ async def describe_class(fqtrl):
 
         description[f"test_device-{name}"] = {
             "source": get_full_attr_trl(fqtrl, name),
-            "dtype": "array" if is_array else descr,
+            "dtype": dtype,
             "shape": shape,
         }
 
@@ -298,12 +383,11 @@ def sim_test_context_trls(subprocess_helper):
 @pytest.mark.timeout(8.0)
 @pytest.mark.asyncio
 async def test_connect(tango_test_device):
-    values, description = await describe_class(tango_test_device)
+    values, _ = await describe_class(tango_test_device)
     async with init_devices():
         test_device = TestTangoReadable(tango_test_device)
 
     assert test_device.name == "test_device"
-    assert description == await test_device.describe()
     await assert_reading(test_device, values)
 
 
@@ -311,13 +395,18 @@ async def test_connect(tango_test_device):
 @pytest.mark.asyncio
 async def test_set_trl(tango_test_device):
     values, description = await describe_class(tango_test_device)
-    test_device = TestTangoReadable(name="test_device")
+    test_device = TestTangoReadable(trl="", name="test_device")
 
-    test_device._connector.trl = tango_test_device
+    test_device._connector.set_trl(tango_test_device)
     await test_device.connect()
 
     assert test_device.name == "test_device"
-    assert description == await test_device.describe()
+    test_device_descriptor = await test_device.describe()
+    for name, desc in description.items():
+        assert test_device_descriptor[name]["source"] == desc["source"]
+        assert test_device_descriptor[name]["dtype"] == desc["dtype"]
+        assert test_device_descriptor[name]["shape"] == desc["shape"]
+
     await assert_reading(test_device, values)
 
 
@@ -390,3 +479,42 @@ async def test_signal_autofill(tango_test_device, auto_fill_signals):
     else:
         assert not hasattr(test_device, "ignored_attr")
         assert not hasattr(test_device, "readback")
+
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(10.0)
+async def test_command_autofill(tango_test_device):
+    test_device = TestTangoReadable(trl=tango_test_device)
+    await test_device.connect()
+
+    assert hasattr(test_device, "echo")
+    echo = test_device.echo
+    assert hasattr(test_device, "set_msg")
+    set_msg = test_device.set_msg
+    assert hasattr(test_device, "get_msg")
+    get_msg = test_device.get_msg
+    assert hasattr(test_device, "clear")
+    clear = test_device.clear
+
+    assert isinstance(echo, SignalRW)
+    assert isinstance(set_msg, SignalW)
+    assert isinstance(get_msg, SignalR)
+    assert isinstance(clear, SignalX)
+
+    await echo.set("hello_world")
+    assert await echo.locate() == Location(
+        setpoint="hello_world", readback="hello_world"
+    )
+    assert await echo.get_value() == "hello_world"
+
+    assert await get_msg.get_value() == "Hello"
+    await set_msg.set("new message")
+    assert await get_msg.get_value() == "new message"
+
+    with pytest.raises(AttributeError) as exc:
+        await get_msg.set("new message")
+    assert "object has no attribute 'set'" in str(exc.value)
+
+    with pytest.raises(AttributeError) as exc:
+        await set_msg.get_value()
+    assert "object has no attribute 'get_value" in str(exc.value)
