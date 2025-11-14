@@ -195,7 +195,6 @@ class OdinWriter(DetectorWriter):
     async def append_plugins_to_datasets(self) -> None:
         # And all the scalar datasets
         for plugin in self._plugins.values():
-            # print(plugin)
             maybe_xml = await plugin.nd_attributes_file.get_value()
             # This is the check that ADCore does to see if it is an XML string
             # rather than a filename to parse
