@@ -203,7 +203,6 @@ class OdinWriter(DetectorWriter):
             if "<Attributes>" in maybe_xml:
                 root = ET.fromstring(maybe_xml)
                 for child in root:
-                    print(child)
                     data_key = child.attrib["name"]
                     if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
                         np_datatype = convert_pv_dtype_to_np(
