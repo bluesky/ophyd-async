@@ -163,20 +163,20 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
 async def test_append_plugins_to_datasets(
     odin_driver_and_writer: OdinDriverAndWriter, plugin: NDPluginBaseIO
 ):
-    driver, writer = odin_driver_and_writer
+    _, writer = odin_driver_and_writer
 
     valid_xml = """<?xml version='1.0' encoding='utf-8'?>
     <Attributes>
         <Attribute
-            name="odin-sum"
+            name="Attribute 1"
             type="PARAM"
-            source="TOTAL" addr="0"
+            source="odin:1"
             datatype="DOUBLE"
-            description="Sum of each detector frame" />
+            description="Testing _plugin append" />
         <Attribute
-            name="odin-Temperature"
+            name="Attribute 2"
             type="EPICS_PV"
-            source="odin:TEMP"
+            source="odin:2"
             dbrtype="DBR_FLOAT"/>
     </Attributes>
     """
@@ -200,5 +200,4 @@ async def test_append_plugins_to_datasets(
     writer._plugins = {"mock1": plugin, "mock2": plugin}
 
     await writer.append_plugins_to_datasets()
-
-    assert len(writer._datasets) > 1
+    assert len(writer._datasets) == 5
