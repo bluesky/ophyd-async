@@ -169,9 +169,9 @@ async def test_derived_signal_backend_put_wait_fails(
     derived_signal: SignalRW,
 ) -> None:
     with pytest.raises(RuntimeError):
-        await derived_signal.set(value=None, wait=False)
+        await derived_signal.set(value=None)
     with pytest.raises(RuntimeError):
-        await derived_signal.set(value=None, wait=True)
+        await derived_signal.set(value=None)
 
 
 def test_make_rw_signal_type_mismatch():

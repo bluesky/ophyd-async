@@ -29,7 +29,12 @@ from ophyd_async.core import (
     wait_for_connection,
 )
 
-from ._util import EpicsSignalBackend, format_datatype, get_supported_values
+from ._util import (
+    EpicsOptions,
+    EpicsSignalBackend,
+    format_datatype,
+    get_supported_values,
+)
 
 logger = logging.getLogger("ophyd_async")
 
@@ -347,10 +352,12 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
+        options: EpicsOptions | None = None,
     ):
         self.converter: PvaConverter = DisconnectedPvaConverter(float)
         self.initial_values: dict[str, Any] = {}
         self.subscription: Subscription | None = None
+        self.options = options or EpicsOptions()
         super().__init__(datatype, read_pv, write_pv)
 
     def source(self, name: str, read: bool):
@@ -385,6 +392,10 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             write_value = self.initial_values[self.write_pv]["value"]
         else:
             write_value = self.converter.write_value(value)
+        if value in self.options.no_wait_when_setting:
+            wait = False
+        else:
+            wait = self.options.wait
         await context().put(self.write_pv, {"value": write_value}, wait=wait)
 
     async def get_datakey(self, source: str) -> DataKey:

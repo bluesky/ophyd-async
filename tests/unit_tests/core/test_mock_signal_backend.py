@@ -92,7 +92,7 @@ async def test_set_mock_put_proceeds_timeout():
     set_mock_put_proceeds(mock_signal, False)
 
     with pytest.raises(asyncio.TimeoutError):
-        await mock_signal.set("test", wait=True, timeout=0.1)
+        await mock_signal.set("test", timeout=0.1)
 
 
 async def test_put_proceeds_timeout():
@@ -145,7 +145,7 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
 async def test_get_mock_put():
     mock_signal = epics_signal_rw(str, "READ_PV", "WRITE_PV", name="mock_name")
     await mock_signal.connect(mock=True)
-    await mock_signal.set("test_value", wait=True)
+    await mock_signal.set("test_value")
 
     mock = get_mock_put(mock_signal)
     mock.assert_called_once_with("test_value", wait=True)
@@ -173,8 +173,8 @@ async def mock_signals():
         signal1 = epics_signal_rw(str, "READ_PV1", "WRITE_PV1", name="mock_name1")
         signal2 = epics_signal_rw(str, "READ_PV2", "WRITE_PV2", name="mock_name2")
 
-    await signal1.set("first_value", wait=True, timeout=1)
-    await signal2.set("first_value", wait=True, timeout=1)
+    await signal1.set("first_value", timeout=1)
+    await signal2.set("first_value", timeout=1)
     assert await signal1.get_value() == "first_value"
     assert await signal2.get_value() == "first_value"
     return signal1, signal2
@@ -184,8 +184,8 @@ async def test_blocks_during_put(mock_signals):
     signal1, signal2 = mock_signals
 
     with mock_puts_blocked(signal1, signal2):
-        status1 = signal1.set("second_value", wait=True, timeout=None)
-        status2 = signal2.set("second_value", wait=True, timeout=None)
+        status1 = signal1.set("second_value", timeout=None)
+        status2 = signal2.set("second_value", timeout=None)
         await asyncio.sleep(0.1)
         assert await signal1.get_value() == "second_value"
         assert await signal2.get_value() == "second_value"
@@ -205,9 +205,9 @@ async def test_callback_on_mock_put_as_context_manager(mock_signals):
     signal2_callbacks = MagicMock()
     signal1, signal2 = mock_signals
     with callback_on_mock_put(signal1, signal1_callbacks):
-        await signal1.set("second_value", wait=True)
+        await signal1.set("second_value")
     with callback_on_mock_put(signal2, signal2_callbacks):
-        await signal2.set("second_value", wait=True)
+        await signal2.set("second_value")
 
     signal1_callbacks.assert_called_once_with("second_value", wait=True)
     signal2_callbacks.assert_called_once_with("second_value", wait=True)
@@ -234,9 +234,9 @@ async def test_async_callback_on_mock_put(mock_signals):
     signal2_callbacks = AsyncMock()
     signal1, signal2 = mock_signals
     with callback_on_mock_put(signal1, signal1_callbacks):
-        await signal1.set("second_value", wait=True)
+        await signal1.set("second_value")
     with callback_on_mock_put(signal2, signal2_callbacks):
-        await signal2.set("second_value", wait=True)
+        await signal2.set("second_value")
 
     signal1_callbacks.assert_awaited_once_with("second_value", wait=True)
     signal2_callbacks.assert_awaited_once_with("second_value", wait=True)
@@ -311,7 +311,7 @@ async def test_set_mock_values_exhausted_fails(mock_signals):
 
 async def test_reset_mock_put_calls(mock_signals):
     signal1, _ = mock_signals
-    await signal1.set("test_value", wait=True, timeout=1)
+    await signal1.set("test_value", timeout=1)
     get_mock_put(signal1).assert_called_with("test_value", wait=ANY)
     get_mock_put(signal1).reset_mock()
     with pytest.raises(AssertionError) as exc:

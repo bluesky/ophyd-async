@@ -213,7 +213,7 @@ class Motor(
 
         await self.check_motor_limit(old_position, new_position)
 
-        move_status = self.user_setpoint.set(new_position, wait=True, timeout=timeout)
+        move_status = self.user_setpoint.set(new_position, timeout=timeout)
         async for current_position in observe_value(
             self.user_readback, done_status=move_status
         ):
@@ -233,7 +233,7 @@ class Motor(
         self._set_success = success
         # Put with completion will never complete as we are waiting for completion on
         # the move above, so need to pass wait=False
-        await self.motor_stop.set(1, wait=False)
+        await self.motor_stop.set(1)
 
     async def locate(self) -> Location[float]:
         """Return the current setpoint and readback of the motor."""

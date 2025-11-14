@@ -36,7 +36,12 @@ from ophyd_async.core import (
     wait_for_connection,
 )
 
-from ._util import EpicsSignalBackend, format_datatype, get_supported_values
+from ._util import (
+    EpicsOptions,
+    EpicsSignalBackend,
+    format_datatype,
+    get_supported_values,
+)
 
 logger = logging.getLogger("ophyd_async")
 
@@ -255,10 +260,12 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
+        options: EpicsOptions | None = None,
     ):
         self.converter: CaConverter = DisconnectedCaConverter(float, dbr.DBR_DOUBLE)
         self.initial_values: dict[str, AugmentedValue] = {}
         self.subscription: Subscription | None = None
+        self.options = options or EpicsOptions()
         self._all_updates = _all_updates()
         super().__init__(datatype, read_pv, write_pv)
 
@@ -304,6 +311,10 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             write_value = self.initial_values[self.write_pv]
         else:
             write_value = self.converter.write_value(value)
+        if value in self.options.no_wait_when_setting:
+            wait = False
+        else:
+            wait = self.options.wait
         try:
             await caput(
                 self.write_pv,

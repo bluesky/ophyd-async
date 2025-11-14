@@ -105,7 +105,7 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
 
     # Note: needs to explicitly be called with 1, not just processed.
     # See https://epics.anl.gov/bcda/synApps/motor/motorRecord.html#Fields_command
-    get_mock_put(sim_motor.motor_stop).assert_called_once_with(1, wait=False)
+    get_mock_put(sim_motor.motor_stop).assert_called_once_with(1, wait=True)
 
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
     await wait_for_pending_wakeups()

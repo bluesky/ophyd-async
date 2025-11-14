@@ -155,12 +155,12 @@ async def test_observe_signals_value_timeout_message():
 
     async def tick1():
         for i in range(n_updates):
-            sig1.set(i + 10.0, False)
+            sig1.set(i + 10.0)
             await asyncio.sleep(time_delay_sec1)
 
     async def tick2():
         for i in range(n_updates):
-            sig2.set(i + 100.0, False)
+            sig2.set(i + 100.0)
             await asyncio.sleep(time_delay_sec2)
 
     async def watch(timeout, done_timeout):
