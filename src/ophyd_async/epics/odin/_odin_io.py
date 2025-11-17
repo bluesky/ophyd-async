@@ -144,13 +144,15 @@ class OdinWriter(DetectorWriter):
             wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT),
         )
 
+        dtype = await self._drv.data_type.get_value()
+
         # Add the main data
         self._datasets = [
             HDFDatasetDescription(
                 data_key=name,
                 dataset="/data",
                 shape=(self._exposures_per_event, *self.data_shape),
-                dtype_numpy="<u2",
+                dtype_numpy=dtype,
                 chunk_shape=(self._exposures_per_event, *self.data_shape),
             )
         ]
