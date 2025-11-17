@@ -206,7 +206,6 @@ intersphinx_mapping = {
     "bluesky": ("https://blueskyproject.io/bluesky/main", None),
     "scanspec": ("https://blueskyproject.io/scanspec/main", None),
     "numpy": ("https://numpy.org/devdocs/", None),
-    "databroker": ("https://blueskyproject.io/databroker/", None),
     "event-model": ("https://blueskyproject.io/event-model/main", None),
     "pytest": ("https://docs.pytest.org/en/stable/", None),
 }
