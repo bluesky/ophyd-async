@@ -112,8 +112,6 @@ class OdinWriter(DetectorWriter):
         super().__init__()
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
-        self._composer = None
-
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
         self.data_shape = await self._get_data_shape()
