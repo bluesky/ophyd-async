@@ -116,7 +116,7 @@ class OdinWriter(DetectorWriter):
 
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
-        self.data_shape = await self.get_data_shape()
+        self.data_shape = await self._get_data_shape()
 
         self._path_info = self._path_provider(device_name=name)
 
@@ -168,7 +168,7 @@ class OdinWriter(DetectorWriter):
 
         return description
 
-    async def get_data_shape(self) -> tuple[int, int]:
+    async def _get_data_shape(self) -> tuple[int, int]:
         data_shape = await asyncio.gather(
             self._drv.image_height.get_value(), self._drv.image_width.get_value()
         )
@@ -194,11 +194,11 @@ class OdinWriter(DetectorWriter):
     async def append_plugins_to_datasets(self) -> None:
         # And all the scalar datasets
         for plugin in self._plugins.values():
-            maybe_xml = await plugin.nd_attributes_file.get_value()
+            xml_or_filename = await plugin.nd_attributes_file.get_value()
             # This is the check that ADCore does to see if it is an XML string
             # rather than a filename to parse
-            if "<Attributes>" in maybe_xml:
-                root = ET.fromstring(maybe_xml)
+            if "<Attributes>" in xml_or_filename:
+                root = ET.fromstring(xml_or_filename)
                 for child in root:
                     data_key = child.attrib["name"]
                     if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
