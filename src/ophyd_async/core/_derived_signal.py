@@ -209,6 +209,7 @@ def _make_factory(
     raw_devices_and_constants: dict[str, Device | Primitive] | None = None,
 ) -> DerivedSignalFactory:
     if raw_to_derived:
+        _get_first_arg_datatype(raw_to_derived)  # validate first arg type
 
         class DerivedTransform(Transform):
             def raw_to_derived(self, **kwargs) -> dict[str, SignalDatatypeT]:
@@ -278,11 +279,11 @@ def derived_signal_rw(
         The names of these arguments must match the arguments of raw_to_derived.
     """
     raw_to_derived_datatype = _get_return_datatype(raw_to_derived)
-    set_derived_datatype = _get_first_arg_datatype(set_derived)
-    if raw_to_derived_datatype != set_derived_datatype:
+    set_derived_arg_datatype = _get_first_arg_datatype(set_derived)
+    if raw_to_derived_datatype != set_derived_arg_datatype:
         msg = (
             f"{raw_to_derived} has datatype {raw_to_derived_datatype} "
-            f"!= {set_derived_datatype} datatype {set_derived_datatype}"
+            f"!= {set_derived_arg_datatype} datatype {set_derived_arg_datatype}"
         )
         raise TypeError(msg)
 

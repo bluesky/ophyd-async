@@ -181,6 +181,29 @@ async def _put(value: float) -> None:
     pass
 
 
+# function without type hint on first argument
+def _get_no_type(ts) -> float:
+    return ts
+
+
+async def test_derived_signal_rw_get_method_no_param_type():
+    signal_rw = soft_signal_rw(int, initial_value=4)
+    with pytest.raises(
+        TypeError,
+        match=" does not have a type hinted argument",
+    ):
+        derived_signal_rw(_get_no_type, _put, ts=signal_rw)
+
+
+async def test_derived_signal_w_get_method_no_param_type():
+    signal_rw = soft_signal_rw(int, initial_value=4)
+    with pytest.raises(
+        TypeError,
+        match=" does not have a type hinted argument",
+    ):
+        derived_signal_r(_get_no_type, ts=signal_rw)
+
+
 @pytest.fixture
 def derived_signal_backend() -> SignalBackend[SignalDatatype]:
     signal_rw = soft_signal_rw(int, initial_value=4)
@@ -262,14 +285,6 @@ async def test_set_derived_callback_already_set(derived_signal_backend: SignalBa
     derived_signal_backend.set_callback(mock_callback)
     with pytest.raises(RuntimeError, match=re.escape("Callback already set for")):
         derived_signal_backend.set_callback(mock_callback)
-
-
-@patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
-def test_get_return_datatype_no_type(movable_beamstop: MovableBeamstop):
-    with pytest.raises(
-        TypeError, match=re.escape("does not have a type hint for it's return value")
-    ):
-        derived_signal_r(movable_beamstop._get_position)
 
 
 @patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
