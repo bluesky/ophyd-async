@@ -10,7 +10,7 @@ from ophyd_async.core import (
     Device,
     DeviceMock,
     FlyMotorInfo,
-    default_device_mock_for_class,
+    default_mock_class,
     init_devices,
     observe_value,
     soft_signal_rw,
@@ -429,8 +429,6 @@ async def test_motor_set_with_instant_mock():
     # Verify sensible defaults are set
     assert await test_motor.velocity.get_value() == 1.0
     assert await test_motor.acceleration_time.get_value() == 0.1
-    assert await test_motor.dial_low_limit_travel.get_value() == -10000.0
-    assert await test_motor.dial_high_limit_travel.get_value() == 10000.0
 
     # Use motor.set() to move the motor - should work without errors
     status = test_motor.set(100.0)
@@ -507,7 +505,7 @@ async def test_device_mock_inheritance():
 
         pass
 
-    @default_device_mock_for_class
+    @default_mock_class
     class BaseTestDeviceMock(DeviceMock[BaseTestDevice]):
         async def connect(self, device: BaseTestDevice) -> None:
             device.mock_was_called = True

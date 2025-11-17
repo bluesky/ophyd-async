@@ -20,7 +20,7 @@ from ._device import (
     DeviceMock,
     DeviceVector,
     LazyMock,
-    default_device_mock_for_class,
+    default_mock_class,
     init_devices,
 )
 from ._device_filler import DeviceFiller
@@ -176,7 +176,7 @@ __all__ = [
     "DeviceMock",
     "LazyMock",
     "MockSignalBackend",
-    "default_device_mock_for_class",
+    "default_mock_class",
     # Signal utilities
     "observe_value",
     "observe_signals_value",

@@ -8,7 +8,6 @@ from ._example_ioc import (
     EpicsTestSubsetEnum,
     EpicsTestTable,
 )
-from ._motor_mock import InstantMotorMock
 from ._utils import TestingIOC, generate_random_pv_prefix
 
 __all__ = [
@@ -20,7 +19,6 @@ __all__ = [
     "EpicsTestPvaDevice",
     "EpicsTestTable",
     "EpicsTestIocAndDevices",
-    "InstantMotorMock",
     "TestingIOC",
     "generate_random_pv_prefix",
 ]

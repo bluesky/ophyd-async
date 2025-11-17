@@ -3,6 +3,8 @@
 https://github.com/epics-modules/motor
 """
 
+from __future__ import annotations
+
 import asyncio
 
 from bluesky.protocols import (
@@ -21,16 +23,19 @@ from ophyd_async.core import (
     AsyncStatus,
     CalculatableTimeout,
     Callback,
+    DeviceMock,
     FlyMotorInfo,
     StandardReadable,
     StrictEnum,
     WatchableAsyncStatus,
     WatcherUpdate,
+    default_mock_class,
     error_if_none,
     observe_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
+from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
 __all__ = ["MotorLimitsError", "Motor"]
 
@@ -70,6 +75,27 @@ class UseSetMode(StrictEnum):
     SET = "Set"
 
 
+class InstantMotorMock(DeviceMock["Motor"]):
+    """Mock behaviour that instantly moves readback to setpoint."""
+
+    async def connect(self, device: Motor) -> None:
+        # Set sensible defaults to avoid runtime errors
+        set_mock_value(device.velocity, 1.0)  # Prevent ZeroDivisionError
+        set_mock_value(device.acceleration_time, 0.1)
+
+        # Motor starts in "done" state (not moving)
+        set_mock_value(device.motor_done_move, 1)
+
+        # When setpoint is written to, immediately update readback and done flag
+        def _instant_move(value, wait):
+            set_mock_value(device.motor_done_move, 0)  # Moving
+            set_mock_value(device.user_readback, value)  # Arrive instantly
+            set_mock_value(device.motor_done_move, 1)  # Done
+
+        callback_on_mock_put(device.user_setpoint, _instant_move)
+
+
+@default_mock_class(InstantMotorMock)
 class Motor(
     StandardReadable,
     Locatable[float],
@@ -285,21 +311,3 @@ class Motor(
     def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Unsubscribe."""
         self.user_readback.clear_sub(function)
-
-
-# Register InstantMotorMock for automatic mock behavior
-# Import here (after Motor class definition) to avoid circular imports
-# and satisfy import-contracts (testing can import runtime, not vice versa)
-def _register_instant_motor_mock():
-    """Lazy registration of InstantMotorMock to avoid import at module load."""
-    try:
-        from ophyd_async.epics.testing import (  # noqa: F401
-            InstantMotorMock,
-        )
-    except ImportError:
-        # testing module not available, skip registration
-        pass
-
-
-# Auto-register when motor module is imported
-_register_instant_motor_mock()
