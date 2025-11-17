@@ -195,7 +195,7 @@ async def test_derived_signal_rw_get_method_no_param_type():
         derived_signal_rw(_get_no_type, _put, ts=signal_rw)
 
 
-async def test_derived_signal_w_get_method_no_param_type():
+async def test_derived_signal_r_get_method_no_param_type():
     signal_rw = soft_signal_rw(int, initial_value=4)
     with pytest.raises(
         TypeError,
