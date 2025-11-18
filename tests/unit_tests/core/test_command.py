@@ -612,3 +612,25 @@ async def test_soft_command_x():
 
     await cmd.call()
     assert called["ok"]
+
+@pytest.mark.asyncio
+async def test_soft_command_rw_with_different_ordering():
+
+    def callback(a: int, b: float, scale: int = 1, offset: float = 0.0, label: str ="default") -> float:
+        # Simple linear operation so we can easily validate that kwargs were used
+        return a * scale + b + offset
+
+    cmd = soft_command_rw(
+        command_args=[int, float, int, float, str],
+        command_return=float,
+        command_cb=callback,
+        name="ordering",
+        units="arb",
+        precision=2,
+    )
+
+    # Call with both positional and keyword arguments
+    result = await cmd.call(2, 3.0, label="new", offset=5.0, scale=2)
+
+    # Expected: 2 * 10.0 + 3.0 + 5.0 = 28.0
+    assert result == 12.0
