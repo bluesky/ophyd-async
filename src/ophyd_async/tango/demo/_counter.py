@@ -1,11 +1,18 @@
 from typing import Annotated as A
 
-from ophyd_async.core import DEFAULT_TIMEOUT, AsyncStatus, SignalR, SignalRW, CommandX
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    AsyncStatus,
+    SignalR,
+    SignalRW,
+    SignalX,
+    StandardReadable,
+)
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import TangoPolling, TangoReadable
+from ophyd_async.tango.core import TangoDevice, TangoPolling
 
 
-class TangoCounter(TangoReadable):
+class TangoCounter(TangoDevice, StandardReadable):
     """Tango counting device."""
 
     # Enter the name and type of the signals you want to use
@@ -13,9 +20,9 @@ class TangoCounter(TangoReadable):
     # the parameters for ophyd to poll instead
     counts: A[SignalR[int], Format.HINTED_SIGNAL, TangoPolling(1.0, 0.1, 0.1)]
     sample_time: A[SignalRW[float], Format.CONFIG_SIGNAL, TangoPolling(0.1, 0.1, 0.1)]
-    start: CommandX
+    start: SignalX
     # If a tango name clashes with a bluesky verb, add a trailing underscore
-    reset_: CommandX
+    reset_: SignalX
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:

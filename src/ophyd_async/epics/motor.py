@@ -98,6 +98,8 @@ class Motor(
         self.motor_done_move = epics_signal_r(int, prefix + ".DMOV")
         self.low_limit_travel = epics_signal_rw(float, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
+        self.dial_low_limit_travel = epics_signal_rw(float, prefix + ".DLLM")
+        self.dial_high_limit_travel = epics_signal_rw(float, prefix + ".DHLM")
         self.offset_freeze_switch = epics_signal_rw(OffsetMode, prefix + ".FOFF")
         self.high_limit_switch = epics_signal_r(int, prefix + ".HLS")
         self.low_limit_switch = epics_signal_r(int, prefix + ".LLS")
@@ -132,16 +134,26 @@ class Motor(
         Will raise a MotorLimitsException if the given absolute positions will be
         outside the motor soft limits.
         """
-        motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
+        (
+            motor_lower_limit,
+            motor_upper_limit,
+            egu,
+            dial_lower_limit,
+            dial_upper_limit,
+        ) = await asyncio.gather(
             self.low_limit_travel.get_value(),
             self.high_limit_travel.get_value(),
             self.motor_egu.get_value(),
+            self.dial_low_limit_travel.get_value(),
+            self.dial_high_limit_travel.get_value(),
         )
 
-        # EPICS motor record treats limits of 0, 0 as no limit
-        if motor_lower_limit == 0 and motor_upper_limit == 0:
+        # EPICS motor record treats dial limits of 0, 0 as no limit
+        # Use DLLM and DHLM to check
+        if dial_lower_limit == 0 and dial_upper_limit == 0:
             return
 
+        # Use real motor limit(i.e. HLM and LLM) to check if the move is permissible
         if (
             not motor_upper_limit >= abs_start_pos >= motor_lower_limit
             or not motor_upper_limit >= abs_end_pos >= motor_lower_limit
@@ -151,6 +163,8 @@ class Motor(
                 f"{abs_start_pos}{egu} to "
                 f"{abs_end_pos}{egu} but motor limits are "
                 f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
+                f"dial limits are "
+                f"{dial_lower_limit}{egu} <= x <= {dial_upper_limit}"
             )
 
     @AsyncStatus.wrap

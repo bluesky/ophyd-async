@@ -8,7 +8,6 @@ from ._signal import (
     tango_signal_w,
     tango_signal_x,
 )
-from ._tango_readable import TangoReadable
 from ._tango_transport import (
     AttributeProxy,
     CommandProxy,
@@ -62,7 +61,6 @@ __all__ = [
     "tango_command_w",
     "tango_command_x",
     "TangoDevice",
-    "TangoReadable",
     "TangoPolling",
     "TangoDeviceConnector",
     "TangoLongStringTable",
