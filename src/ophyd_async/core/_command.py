@@ -13,6 +13,7 @@ Solution:
 - Provide a connector for Device.connect() integration, including mock mode.
 - Provide a MockCommandBackend for tests and offline use.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -94,7 +95,9 @@ def is_command_datatype(datatype: type | None) -> bool:
         return True
 
     # Enum types
-    if isinstance(datatype, type) and issubclass(datatype, (StrictEnum, SubsetEnum, SupersetEnum)):
+    if isinstance(datatype, type) and issubclass(
+        datatype, (StrictEnum, SubsetEnum, SupersetEnum)
+    ):
         return True
 
     # NumPy arrays
@@ -116,7 +119,9 @@ def is_command_datatype(datatype: type | None) -> bool:
         inner = args[0]
         if inner in (bool, int, float, str):
             return True
-        if isinstance(inner, type) and issubclass(inner, (StrictEnum, SubsetEnum, SupersetEnum)):
+        if isinstance(inner, type) and issubclass(
+            inner, (StrictEnum, SubsetEnum, SupersetEnum)
+        ):
             return True
         return False  # Reject sequences of non-primitives (e.g., list[SomeClass])
 
@@ -130,26 +135,33 @@ def is_command_datatype(datatype: type | None) -> bool:
 @runtime_checkable
 class CommandCallback(Protocol[CommandArguments, CommandReturn]):
     """Protocol for command callbacks that can be sync or async."""
-    async def __call__(self, *args: CommandArguments.args, **kwargs: CommandArguments.kwargs) -> CommandReturn: ...
+
+    async def __call__(
+        self, *args: CommandArguments.args, **kwargs: CommandArguments.kwargs
+    ) -> CommandReturn: ...
 
 
 class CommandError(Exception):
     """Base class for command-related errors."""
+
     pass
 
 
 class ConnectionError(CommandError):
     """Command connection failed."""
+
     pass
 
 
 class ConnectionTimeoutError(ConnectionError):
     """Command connection timed out."""
+
     pass
 
 
 class ExecutionError(CommandError):
     """Command execution failed."""
+
     pass
 
 
@@ -163,11 +175,14 @@ class _ChildrenNotAllowed(dict[str, Device]):
 
 class CommandBackend(Generic[CommandArguments, CommandReturn], ABC):
     """Abstract backend interface for a Command.
+
     Backends implement connection and the actual command invocation.
     """
+
     @abstractmethod
     def source(self, name: str, read: bool) -> str:
         """Return source of signal.
+
         :param name: The name of the signal, which can be used or discarded.
         :param read: True if we want the source for reading, False if writing.
         """
@@ -183,34 +198,13 @@ class CommandBackend(Generic[CommandArguments, CommandReturn], ABC):
         """Invoke the command and return its result (if any)."""
 
 
-def _default_of(datatype: type | None) -> Any:
-    """Return a sensible default value for a given type.
-    - None -> None
-    - bool -> False
-    - int, float, complex -> 0
-    - str -> ""
-    - Sequences or other classes -> instantiate if possible
-    """
-    if datatype is None:
-        return None
-
-    try:
-        if datatype is bool:
-            return False
-        if datatype in (int, float, complex):
-            return 0
-        if datatype is str:
-            return ""
-        return datatype()  # attempt to instantiate
-    except Exception:
-        return None
-
-
 class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
     """A soft/in-memory backend for Commands with a custom callback implementation.
+
     This backend executes the provided callback function when the command is called.
     Units and precision are stored as metadata for describe purposes.
     """
+
     def __init__(
         self,
         command_args: Sequence[type[CommandDatatypeT]] | None,
@@ -249,15 +243,18 @@ class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
         self._lock = Lock()
 
         if self.command_arg_types:
-            self.arg_converters = [make_converter(t) if t is not None else None for t in self.command_arg_types]
+            self.arg_converters = [
+                make_converter(t) if t is not None else None
+                for t in self.command_arg_types
+            ]
         else:
             self.arg_converters = []
 
         # If return type is None, don't create a converter
         if command_return is None:
-            self.return_converter = None
+            self.return_conv = None
         else:
-            self.return_converter = (make_converter(command_return))
+            self.return_conv = make_converter(command_return)
 
         # Metadata should still exist even if return type is None
         self.metadata = make_metadata(command_return or float, units, precision)
@@ -266,14 +263,15 @@ class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
         self._validate_callback_signature()
 
     def _validate_callback_signature(self) -> None:
-        """Validate that command_args and command_return match the callback signature."""
         sig = inspect.signature(self.callback)
 
         # Collect explicit parameters
         explicit_params = [
-            param for name, param in sig.parameters.items()
-            if name not in ('self', 'cls')
-               and param.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+            param
+            for name, param in sig.parameters.items()
+            if name not in ("self", "cls")
+            and param.kind
+            not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         ]
 
         cb_param_types = [
@@ -285,12 +283,15 @@ class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
             # Check argument count matches
             if len(self.command_arg_types) != len(cb_param_types):
                 raise TypeError(
-                    f"Number of command_args ({len(self.command_arg_types)}) doesn't match "
+                    f"Number of command_args "
+                    f"({len(self.command_arg_types)}) doesn't match "
                     f"callback parameters ({len(cb_param_types)})"
                 )
 
             # Check argument types match
-            for i, (arg_type, cb_type) in enumerate(zip(self.command_arg_types, cb_param_types)):
+            for i, (arg_type, cb_type) in enumerate(
+                zip(self.command_arg_types, cb_param_types, strict=False)
+            ):
                 if cb_type is Any:
                     continue  # Skip generic Any
 
@@ -300,18 +301,25 @@ class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
                 if inspect.isclass(arg_type) and inspect.isclass(origin):
                     if not issubclass(arg_type, origin):
                         raise TypeError(
-                            f"command_args type {arg_type} doesn't match callback parameter type {origin} "
+                            f"command_args type {arg_type} doesn't match"
+                            f" callback parameter type {origin} "
                             f"at position {i}"
                         )
 
         # Check return type matches
         return_annotation = sig.return_annotation
-        if return_annotation is not inspect.Parameter.empty and return_annotation is not Any:
+        if (
+            return_annotation is not inspect.Parameter.empty
+            and return_annotation is not Any
+        ):
             ret_origin = get_origin(return_annotation) or return_annotation
-            if inspect.isclass(self.command_return_type) and inspect.isclass(ret_origin):
+            if inspect.isclass(self.command_return_type) and inspect.isclass(
+                ret_origin
+            ):
                 if not issubclass(self.command_return_type, ret_origin):
                     raise TypeError(
-                        f"command_return type {self.command_return_type} doesn't match "
+                        f"command_return type {self.command_return_type}"
+                        f" doesn't match "
                         f"callback return annotation {return_annotation}"
                     )
 
@@ -344,10 +352,11 @@ class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
                 if inspect.isawaitable(result):
                     result = await result
                 # Only convert return if a converter exists
-                if self.return_converter is not None:
-                    self._last_return_value = self.return_converter.write_value(result)
+                if self.return_conv is not None:
+                    self._last_return_value = self.return_conv.write_value(result)
                 else:
-                    # No converter = command has no return type (e.g. soft_command_x / w)
+                    # No converter = command has no return type
+                    # (e.g. soft_command_x / w)
                     self._last_return_value = None
                 return self._last_return_value
 
@@ -375,16 +384,20 @@ class SoftCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
 
 class MockCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
     """Command backend for testing, created by ``Device.connect(mock=True)``.
+
     Tracks calls via an AsyncMock and blocks completion on an Event, while
     returning a configurable value via an internal SoftCommandBackend.
     """
+
     def __init__(
         self,
         initial_backend: CommandBackend[CommandArguments, CommandReturn],
         mock: LazyMock,
     ) -> None:
         if isinstance(initial_backend, MockCommandBackend):
-            raise ValueError("Cannot make a MockCommandBackend for a MockCommandBackend")
+            raise ValueError(
+                "Cannot make a MockCommandBackend for a MockCommandBackend"
+            )
 
         self.initial_backend = initial_backend
         self.mock = mock
@@ -425,6 +438,7 @@ class MockCommandBackend(CommandBackend[CommandArguments, CommandReturn]):
 
 class CommandConnector(DeviceConnector):
     """Used for connecting Command devices with a given backend."""
+
     def __init__(self, backend: CommandBackend):
         self.backend = self._init_backend = backend
         self._mock_backend: MockCommandBackend | None = None
@@ -443,12 +457,15 @@ class CommandConnector(DeviceConnector):
             self.backend = self._init_backend
 
         device.log.debug(
-            f"Connecting Command backend for device '{device.name or type(device).__name__}'"
+            f"Connecting Command backend for device "
+            f"'{device.name or type(device).__name__}'"
         )
         try:
             await asyncio.wait_for(self.backend.connect(timeout), timeout=timeout)
-        except TimeoutError:
-            raise ConnectionTimeoutError(f"Failed to connect within {timeout} seconds")
+        except TimeoutError as e:
+            raise ConnectionTimeoutError(
+                f"Failed to connect within {timeout} seconds"
+            ) from e
         except Exception as e:
             raise ConnectionError(f"Connection failed: {str(e)}") from e
 
@@ -461,9 +478,11 @@ class CommandConnector(DeviceConnector):
 
 class Command(Device, Generic[CommandArguments, CommandReturn]):
     """A Device representing an invokable command.
+
     - Call the command directly with await command.call(...)
-    - Or use trigger(...) to get a Bluesky Status (return value is discarded)
+    - Or use trigger(...) to get a Bluesky Status (return value is discarded).
     """
+
     _connector: CommandConnector
     _child_devices = _ChildrenNotAllowed()  # type: ignore
 
@@ -489,8 +508,10 @@ class Command(Device, Generic[CommandArguments, CommandReturn]):
         **kwargs: CommandArguments.kwargs,
     ) -> None:
         """Invoke the command, returning a Status representing completion.
+
         Note: Any return value from the backend is ignored. Use call() if you
         need the returned value.
+
         """
         # Commands don't have a built-in timeout attribute; if asked to calculate,
         # default to no timeout (let the backend decide or rely on caller's await).
@@ -503,9 +524,7 @@ class Command(Device, Generic[CommandArguments, CommandReturn]):
         try:
             # Forward only the command arguments
             await _wait_for(
-                self._connector.backend.call(*args, **kwargs),
-                timeout,
-                source
+                self._connector.backend.call(*args, **kwargs), timeout, source
             )
             self.log.debug(f"Successfully completed command at source {source}")
         except Exception as e:
@@ -553,7 +572,8 @@ def soft_command_r(
     Example:
         >>> def read_temperature() -> float:
         ...     return 22.5
-        >>> cmd = soft_command_r(float, read_temperature, name="get_temp", units="°C", precision=1)
+        >>> cmd = soft_command_r(float, read_temperature,
+         name="get_temp", units="°C", precision=1)
         >>> result = await cmd.call()
         >>> assert result == 22.5
     """
@@ -562,7 +582,7 @@ def soft_command_r(
         command_return=command_return,
         command_cb=command_cb,
         units=units,
-        precision=precision
+        precision=precision,
     )
     return CommandR(backend, name=name)
 
@@ -590,13 +610,15 @@ def soft_command_w(
         Passing a single type:
             >>> def set_value(x: int) -> None:
             ...     print(f"Value set to {x}")
-            >>> cmd = soft_command_w(int, set_value, name="set_value", units=None)
+            >>> cmd = soft_command_w(int, set_value, name="set_value",
+             units=None)
             >>> await cmd.call(10)  # prints: Value set to 10
 
         Passing multiple argument types:
             >>> def set_coords(x: float, y: float) -> None:
             ...     print(f"Coords set to ({x}, {y})")
-            >>> cmd = soft_command_w([float, float], set_coords, name="set_coords", units="mm")
+            >>> cmd = soft_command_w([float, float], set_coords,
+            name="set_coords", units="mm")
             >>> await cmd.call(1.5, 2.0)
     """
     if isinstance(command_args, type):
@@ -609,7 +631,7 @@ def soft_command_w(
         command_return=None,
         command_cb=command_cb,
         units=units,
-        precision=precision
+        precision=precision,
     )
     return CommandW(backend, name=name)
 
@@ -642,7 +664,7 @@ def soft_command_x(
         command_return=None,
         command_cb=command_cb,
         units=units,
-        precision=precision
+        precision=precision,
     )
     return CommandX(backend, name=name)
 
@@ -672,14 +694,16 @@ def soft_command_rw(
         Passing a single input type:
             >>> def compute_square(x: int) -> int:
             ...     return x * x
-            >>> cmd = soft_command_rw(int, int, compute_square, name="square", units=None)
+            >>> cmd = soft_command_rw(int, int, compute_square,
+            name="square", units=None)
             >>> result = await cmd.call(4)
             >>> assert result == 16
 
         Passing multiple input types:
             >>> def add(x: int, y: float) -> float:
             ...     return x + y
-            >>> cmd = soft_command_rw([int, float], float, add, name="add", units="V", precision=2)
+            >>> cmd = soft_command_rw([int, float], float, add,
+            name="add", units="V", precision=2)
             >>> result = await cmd.call(3, 4.5)
             >>> assert result == 7.5
     """
@@ -693,6 +717,6 @@ def soft_command_rw(
         command_return=command_return,
         command_cb=command_cb,
         units=units,
-        precision=precision
+        precision=precision,
     )
     return CommandRW(backend, name=name)

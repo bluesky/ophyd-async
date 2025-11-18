@@ -21,11 +21,6 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SignalX,
-    Command,
-    CommandR,
-    CommandRW,
-    CommandW,
-    CommandX,
 )
 
 from ._tango_transport import (
@@ -167,12 +162,16 @@ async def infer_python_type(
 
 async def infer_signal_type(
     trl, proxy: DeviceProxy | None = None
-) -> type[Signal] | type[Command] | None:
+) -> type[Signal] | None:
     device_trl, tr_name = get_device_trl_and_attr(trl)
     if proxy is None:
         dev_proxy = await AsyncDeviceProxy(device_trl)
     else:
         dev_proxy = proxy
+
+    if tr_name not in dev_proxy.get_attribute_list():
+        if tr_name not in dev_proxy.get_command_list():
+            raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
 
     if tr_name in dev_proxy.get_attribute_list():
         config = await dev_proxy.get_attribute_config(tr_name)
@@ -183,17 +182,15 @@ async def infer_signal_type(
         else:
             return SignalW
 
-    elif tr_name in dev_proxy.get_command_list():
+    if tr_name in dev_proxy.get_command_list():
         config = await dev_proxy.get_command_config(tr_name)
         command_character = get_command_character(config)
         if command_character == CommandProxyReadCharacter.READ:
-            return CommandR
+            return SignalR
         elif command_character == CommandProxyReadCharacter.WRITE:
-            return CommandW
+            return SignalW
         elif command_character == CommandProxyReadCharacter.READ_WRITE:
-            return CommandRW
+            return SignalRW
         elif command_character == CommandProxyReadCharacter.EXECUTE:
-            return CommandX
-
-    else:
-        raise RuntimeError(f"Cannot find {tr_name} in {device_trl}. Unable to infer signal character for {trl}")
+            return SignalX
+    raise RuntimeError(f"Unable to infer signal character for {trl}")

@@ -22,13 +22,6 @@ from ._tango_transport import (
     get_source_metadata,
     get_tango_trl,
 )
-from ._command_backend import (
-    TangoCommandBackend,
-    tango_command_r,
-    tango_command_rw,
-    tango_command_w,
-    tango_command_x,
-)
 from ._utils import (
     DevStateEnum,
     get_device_trl_and_attr,
@@ -43,7 +36,6 @@ __all__ = [
     "DevStateEnum",
     "ensure_proper_executor",
     "TangoSignalBackend",
-    "TangoCommandBackend",
     "get_command_character",
     "get_python_type",
     "get_dtype_extended",
@@ -56,10 +48,6 @@ __all__ = [
     "tango_signal_rw",
     "tango_signal_w",
     "tango_signal_x",
-    "tango_command_r",
-    "tango_command_rw",
-    "tango_command_w",
-    "tango_command_x",
     "TangoDevice",
     "TangoPolling",
     "TangoDeviceConnector",

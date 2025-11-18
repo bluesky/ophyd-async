@@ -1,4 +1,5 @@
 """The building blocks for making devices."""
+
 from ._command import (
     Command,
     CommandArguments,
