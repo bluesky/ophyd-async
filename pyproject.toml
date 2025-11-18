@@ -255,9 +255,9 @@ exhaustive = true
 exhaustive_ignores = ["testing", "_version", "__main__", "_docs_parser"]
 
 [[tool.importlinter.contracts]]
-name = "Testing and sim modules are not used at runtime"
+name = "Sim modules are not used at runtime"
 type = "forbidden"
-forbidden_modules = ["ophyd_async.testing", "ophyd_async.sim"]
+forbidden_modules = ["ophyd_async.sim"]
 source_modules = [
     "ophyd_async.plan_stubs",
     "ophyd_async.fastcs.*",

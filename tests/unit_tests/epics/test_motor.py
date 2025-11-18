@@ -427,8 +427,7 @@ async def test_motor_set_with_instant_mock():
         test_motor = motor.Motor("BL01I-MO-TABLE-01:X")
 
     # Verify sensible defaults are set
-    assert await test_motor.velocity.get_value() == 1.0
-    assert await test_motor.acceleration_time.get_value() == 0.1
+    assert await test_motor.velocity.get_value() == 1000.0
 
     # Use motor.set() to move the motor - should work without errors
     status = test_motor.set(100.0)
@@ -500,28 +499,23 @@ async def test_device_mock_explicit_instance():
 async def test_device_mock_inheritance():
     """Test that subclass can inherit parent's registered mock."""
 
+    class BaseTestDeviceMock(DeviceMock["BaseTestDevice"]):
+        async def connect(self, device: "BaseTestDevice") -> None:
+            device.mock_was_called = True
+
+    @default_mock_class(BaseTestDeviceMock)
     class BaseTestDevice(Device):
         """Base device for testing."""
 
-        pass
-
-    @default_mock_class
-    class BaseTestDeviceMock(DeviceMock[BaseTestDevice]):
-        async def connect(self, device: BaseTestDevice) -> None:
-            device.mock_was_called = True
-
     class DerivedTestDevice(BaseTestDevice):
         """Derived device with no explicit mock."""
-
-        pass
 
     # DerivedTestDevice should inherit BaseTestDevice's mock
     async with init_devices(mock=True):
         test_device = DerivedTestDevice()
 
     # Verify the BaseTestDeviceMock was used
-    assert hasattr(test_device, "mock_was_called")
-    assert test_device.mock_was_called is True
+    assert getattr(test_device, "mock_was_called", False)
 
 
 async def test_instant_motor_mock_recursive_in_composite_device():

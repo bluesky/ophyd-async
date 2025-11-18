@@ -37,7 +37,7 @@ from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
-__all__ = ["MotorLimitsError", "Motor"]
+__all__ = ["MotorLimitsError", "Motor", "InstantMotorMock", "OffsetMode", "UseSetMode"]
 
 
 class MotorLimitsError(Exception):
@@ -66,22 +66,31 @@ def __getattr__(name):
 
 
 class OffsetMode(StrictEnum):
+    """In Set mode, determine what to do when the motor setpoint is written."""
+
     VARIABLE = "Variable"
+    """Change the offset so the readback matches the setpoint."""
     FROZEN = "Frozen"
+    """Tell the controller to change the readback without changing the offset."""
 
 
 class UseSetMode(StrictEnum):
+    """Determine what to do when the motor setpoint is written."""
+
     USE = "Use"
+    """Tell the controller to move to the setpoint."""
     SET = "Set"
+    """Change offset (in record or in controller) when setpoint is written."""
 
 
 class InstantMotorMock(DeviceMock["Motor"]):
     """Mock behaviour that instantly moves readback to setpoint."""
 
     async def connect(self, device: Motor) -> None:
+        """Mock signals to do an instant move on setpoint write."""
         # Set sensible defaults to avoid runtime errors
-        set_mock_value(device.velocity, 1.0)  # Prevent ZeroDivisionError
-        set_mock_value(device.acceleration_time, 0.1)
+        set_mock_value(device.velocity, 1000)  # Prevent ZeroDivisionError
+        set_mock_value(device.max_velocity, 1000)  # Prevent ZeroDivisionError
 
         # Motor starts in "done" state (not moving)
         set_mock_value(device.motor_done_move, 1)

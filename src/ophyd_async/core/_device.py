@@ -18,6 +18,58 @@ from ._utils import (
     wait_for_connection,
 )
 
+DeviceT = TypeVar("DeviceT", bound="Device")
+
+
+class DeviceMock(Generic[DeviceT]):
+    """A lazily created Mock to be used when connecting in mock mode.
+
+    Creating Mocks is reasonably expensive when each Device (and Signal)
+    requires its own, and the tree is only used when ``Signal.set()`` is
+    called. This class allows a tree of lazily connected Mocks to be
+    constructed so that when the leaf is created, so are its parents.
+    Any calls to the child are then accessible from the parent mock.
+
+    Subclasses can override the `connect()` method to inject custom logic
+    when mock devices are connected.
+
+    ```python
+    >>> parent = DeviceMock()
+    >>> child = parent.child("child", Device())
+    >>> child_mock = child()
+    >>> child_mock()  # doctest: +ELLIPSIS
+    <Mock name='mock.child()' id='...'>
+    >>> parent_mock = parent()
+    >>> parent_mock.mock_calls
+    [call.child()]
+
+    ```
+    """
+
+    def __init__(self, name: str = "", parent: DeviceMock | None = None) -> None:
+        self.name = name
+        self.parent = parent
+        self._mock: Mock | None = None
+
+    def __call__(self) -> Mock:
+        if self._mock is None:
+            self._mock = Mock(spec=object)
+            if self.parent is not None:
+                self.parent().attach_mock(self._mock, self.name)
+        return self._mock
+
+    async def connect(self, device: DeviceT) -> None:
+        """Will be called when the device is connected in mock mode.
+
+        This allows mock values to be set and callbacks to be added
+        to the mock device so it behaves more like the real device.
+        """
+
+
+# Keep LazyMock as an alias for backwards compatibility
+# Remove for ophyd-async 1.0
+LazyMock = DeviceMock
+
 
 class DeviceConnector:
     """Defines how a `Device` should be connected and type hints processed."""
@@ -50,7 +102,8 @@ class DeviceConnector:
         exceptions: dict[str, Exception] = {}
         for name, child_device in device.children():
             try:
-                await child_device.connect(mock=mock.child(name, child_device))
+                child_mock_class = child_device._mock_class  # noqa: SLF001
+                await child_device.connect(mock=child_mock_class(name, mock))
             except Exception as exc:
                 exceptions[name] = exc
         if exceptions:
@@ -85,6 +138,8 @@ class Device(HasName):
     _name: str = ""
     # None if connect hasn't started, a Task if it has
     _connect_task: asyncio.Task | None = None
+    # The mock class to be used if we connect in mock mode
+    _mock_class: type[DeviceMock] = DeviceMock
     # The mock if we have connected in mock mode
     _mock: DeviceMock | None = None
     # The separator to use when making child names
@@ -196,8 +251,8 @@ class Device(HasName):
                 # Use the user supplied mock
                 self._mock = mock
             elif not self._mock:
-                # Get registered mock or fall back to plain DeviceMock
-                self._mock = get_default_mock_class(type(self))()
+                # Make a new mock of the registered type
+                self._mock = self._mock_class()
             await connector.connect_mock(self, self._mock)
         else:
             # Try to cache the connect in real mode
@@ -225,9 +280,6 @@ _not_device_attrs = {
     "_mock",
     "_connect_task",
 }
-
-
-DeviceT = TypeVar("DeviceT", bound=Device)
 
 
 class DeviceVector(MutableMapping[int, DeviceT], Device):
@@ -402,64 +454,6 @@ def init_devices(
     return DeviceProcessor(process_devices)
 
 
-class DeviceMock(Generic[DeviceT]):
-    """A lazily created Mock to be used when connecting in mock mode.
-
-    Creating Mocks is reasonably expensive when each Device (and Signal)
-    requires its own, and the tree is only used when ``Signal.set()`` is
-    called. This class allows a tree of lazily connected Mocks to be
-    constructed so that when the leaf is created, so are its parents.
-    Any calls to the child are then accessible from the parent mock.
-
-    Subclasses can override the `connect()` method to inject custom logic
-    when mock devices are connected.
-
-    ```python
-    >>> parent = DeviceMock()
-    >>> child = parent.child("child", Device())
-    >>> child_mock = child()
-    >>> child_mock()  # doctest: +ELLIPSIS
-    <Mock name='mock.child()' id='...'>
-    >>> parent_mock = parent()
-    >>> parent_mock.mock_calls
-    [call.child()]
-
-    ```
-    """
-
-    def __init__(self, name: str = "", parent: DeviceMock | None = None) -> None:
-        self.parent = parent
-        self.name = name
-        self._mock: Mock | None = None
-
-    def child(self, name: str, child_device: Device) -> DeviceMock:
-        """Return a child of this DeviceMock with the given name."""
-        mock_type = get_default_mock_class(type(child_device))
-        return mock_type(name, self)
-
-    def __call__(self) -> Mock:
-        if self._mock is None:
-            self._mock = Mock(spec=object)
-            if self.parent is not None:
-                self.parent().attach_mock(self._mock, self.name)
-        return self._mock
-
-    async def connect(self, device: DeviceT) -> None:
-        """Will be called when the device is connected in mock mode.
-
-        This allows mock values to be set and callbacks to be added
-        to the mock device so it behaves more like the real device.
-        """
-
-
-# Keep LazyMock as an alias for backwards compatibility
-# Remove for ophyd-async 1.0
-LazyMock = DeviceMock
-
-# Registry for default DeviceMock classes
-_default_mock_class: dict[type[Device], type[DeviceMock]] = {}
-
-
 def default_mock_class(
     mock_cls: type[DeviceMock],
 ) -> Callable[[type[DeviceT]], type[DeviceT]]:
@@ -469,21 +463,12 @@ def default_mock_class(
     connected in mock mode. The decorated DeviceMock class should override
     the `connect()` method to define custom mock behavior.
 
-    :param cls: A DeviceMock subclass to register.
-    :returns:
+    :param mock_cls: A DeviceMock subclass to register.
+    :returns: A decorator that registers the mock class for a Device subclass.
     """
 
     def wrapper(device_cls: type[DeviceT]) -> type[DeviceT]:
-        _default_mock_class[device_cls] = mock_cls
+        device_cls._mock_class = mock_cls  # noqa: SLF001
         return device_cls
 
     return wrapper
-
-
-def get_default_mock_class(device_type: type[Device]) -> type[DeviceMock]:
-    """Get or create the default DeviceMock for a device type.
-
-    :param device_type: The Device class to look up.
-    :returns: An instance of the registered DeviceMock class, or a plain DeviceMock.
-    """
-    return _default_mock_class.get(device_type, DeviceMock)
