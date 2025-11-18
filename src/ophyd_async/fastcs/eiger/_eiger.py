@@ -41,7 +41,7 @@ class EigerDetector(StandardDetector):
         # TODO: https://github.com/bluesky/ophyd-async/issues/1137
 
         self.drv = EigerDriverIO(prefix + drv_suffix)
-        self.odin = Odin(prefix + hdf_suffix, num_nodes=odin_nodes)
+        self.odin = Odin(prefix + hdf_suffix, nodes=odin_nodes)
 
         super().__init__(
             EigerController(self.drv),

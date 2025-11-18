@@ -56,14 +56,12 @@ class OdinNode(Device):
 
 
 class Odin(Device):
-    def __init__(self, prefix: str, name: str = "", num_nodes: int = 4) -> None:
+    def __init__(self, prefix: str, name: str = "", nodes: int = 4) -> None:
         # default nodes is set to 4, MX 16M Eiger detectors - nodes = 4.
         # B21 4M Eiger detector - nodes = 1
 
-        self.num_nodes = num_nodes
-
         self.nodes = DeviceVector(
-            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(self.num_nodes)}
+            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(nodes)}
         )
 
         self.capture = epics_signal_rw(Writing, f"{prefix}Capture")
@@ -263,7 +261,7 @@ class OdinWriter(DetectorWriter):
 
     def _odin_filename_suffix_creator(self) -> str:
         if self._exposures_per_event > self.max_frames:
-            odin_file_number = self._odin_writer_number + self._drv.num_nodes
+            odin_file_number = self._odin_writer_number + len(self._drv.nodes)
         else:
             odin_file_number = self._odin_writer_number
 
