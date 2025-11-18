@@ -35,7 +35,7 @@ class DeviceMock(Generic[DeviceT]):
 
     ```python
     >>> parent = DeviceMock()
-    >>> child = parent.child("child", Device())
+    >>> child = DeviceMock("child", parent)
     >>> child_mock = child()
     >>> child_mock()  # doctest: +ELLIPSIS
     <Mock name='mock.child()' id='...'>
