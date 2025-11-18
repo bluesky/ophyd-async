@@ -25,11 +25,23 @@ class EigerDetector(StandardDetector):
         hdf_suffix="-EA-EIGER-01:OD:",
         odin_nodes: int = 4,
         plugins: dict[str, NDPluginBaseIO] | None = None,
-        filename_suffix: str = "_000001",
+        odin_writer_number: int = 1,
         name="",
     ):
+        # NOTE: filename_suffix is  _000001 for the first node,
+        # and when you have not rolled over the maximum number
+        # of frames allowed for that node. This is an assumption
+        # which is valid for b21's eigers, which only have 1 node and
+        # never do more than max number of frames.
+
+        # In cases where this assumption is no longer valid the filename_suffix
+        # will need to be determined by the number of the OdinNode for each OdinNode.
+        # This means that there needs to be 1 OdinWriter per OdinNode
+        # see _odin_io: _odin_filename_suffix_creator
+        # TODO: https://github.com/bluesky/ophyd-async/issues/1137
+
         self.drv = EigerDriverIO(prefix + drv_suffix)
-        self.odin = Odin(prefix + hdf_suffix, nodes=odin_nodes)
+        self.odin = Odin(prefix + hdf_suffix, num_nodes=odin_nodes)
 
         super().__init__(
             EigerController(self.drv),
@@ -38,7 +50,7 @@ class EigerDetector(StandardDetector):
                 self.odin,
                 self.drv.detector.bit_depth_image,
                 plugins=plugins,
-                filename_suffix=filename_suffix,  # not shown in pv but added by odin
+                odin_writer_number=odin_writer_number,  # see TODO
             ),
             name=name,
         )

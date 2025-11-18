@@ -23,9 +23,9 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.adcore import NDPluginBaseIO
 from ophyd_async.epics.adcore._utils import (
+    convert_ad_dtype_to_np,
     convert_param_dtype_to_np,
     convert_pv_dtype_to_np,
-    convert_ad_dtype_to_np,
 )
 from ophyd_async.epics.core import (
     epics_signal_r,
@@ -56,11 +56,14 @@ class OdinNode(Device):
 
 
 class Odin(Device):
-    def __init__(self, prefix: str, name: str = "", nodes: int = 4) -> None:
+    def __init__(self, prefix: str, name: str = "", num_nodes: int = 4) -> None:
         # default nodes is set to 4, MX 16M Eiger detectors - nodes = 4.
         # B21 4M Eiger detector - nodes = 1
+
+        self.num_nodes = num_nodes
+
         self.nodes = DeviceVector(
-            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(nodes)}
+            {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(self.num_nodes)}
         )
 
         self.capture = epics_signal_rw(Writing, f"{prefix}Capture")
@@ -100,7 +103,7 @@ class OdinWriter(DetectorWriter):
         path_provider: PathProvider,
         odin_driver: Odin,
         detector_bit_depth: SignalR[int],
-        filename_suffix: str = "",
+        odin_writer_number: int = 1,
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         self._drv = odin_driver
@@ -110,7 +113,10 @@ class OdinWriter(DetectorWriter):
         self._capture_status: AsyncStatus | None = None
         self._datasets: list[HDFDatasetDescription] = []
         self._composer: HDFDocumentComposer | None = None
-        self._filename_suffix = filename_suffix
+
+        # TODO: https://github.com/bluesky/ophyd-async/issues/1137
+        self._odin_writer_number = odin_writer_number
+        self.max_frames = 1000
 
         super().__init__()
 
@@ -147,7 +153,7 @@ class OdinWriter(DetectorWriter):
             wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT),
         )
 
-        np_dataype = convert_ad_dtype_to_np(await self._drv.data_type.get_value())  # type: ignore
+        self._np_dataype = convert_ad_dtype_to_np(await self._drv.data_type.get_value())  # type: ignore
 
         # Add the main data
         self._datasets = [
@@ -155,12 +161,14 @@ class OdinWriter(DetectorWriter):
                 data_key=name,
                 dataset="/data",
                 shape=(self._exposures_per_event, *self.data_shape),
-                dtype_numpy=np_dataype,  # "<u2"
+                dtype_numpy=self._np_dataype,
                 chunk_shape=(self._exposures_per_event, *self.data_shape),
             )
         ]
 
         await self.append_plugins_to_datasets()
+
+        self._filename_suffix = self._odin_filename_suffix_creator()
 
         self._composer = HDFDocumentComposer(
             f"{info.directory_uri}{info.filename}{self._filename_suffix}.h5",
@@ -252,3 +260,13 @@ class OdinWriter(DetectorWriter):
         if self._capture_status and not self._capture_status.done:
             await self._capture_status
         self._capture_status = None
+
+    def _odin_filename_suffix_creator(self) -> str:
+        if self._exposures_per_event > self.max_frames:
+            odin_file_number = self._odin_writer_number + self._drv.num_nodes
+        else:
+            odin_file_number = self._odin_writer_number
+
+        filename_suffix = f"{odin_file_number:06d}"
+
+        return filename_suffix
