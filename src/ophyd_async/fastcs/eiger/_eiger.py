@@ -25,6 +25,7 @@ class EigerDetector(StandardDetector):
         hdf_suffix="-EA-EIGER-01:OD:",
         odin_nodes: int = 4,
         plugins: dict[str, NDPluginBaseIO] | None = None,
+        filename_suffix: str = "_000001",
         name="",
     ):
         self.drv = EigerDriverIO(prefix + drv_suffix)
@@ -37,6 +38,7 @@ class EigerDetector(StandardDetector):
                 self.odin,
                 self.drv.detector.bit_depth_image,
                 plugins=plugins,
+                filename_suffix=filename_suffix,  # not shown in pv but added by odin
             ),
             name=name,
         )

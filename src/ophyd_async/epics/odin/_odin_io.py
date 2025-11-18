@@ -25,6 +25,7 @@ from ophyd_async.epics.adcore import NDPluginBaseIO
 from ophyd_async.epics.adcore._utils import (
     convert_param_dtype_to_np,
     convert_pv_dtype_to_np,
+    convert_ad_dtype_to_np,
 )
 from ophyd_async.epics.core import (
     epics_signal_r,
@@ -99,6 +100,7 @@ class OdinWriter(DetectorWriter):
         path_provider: PathProvider,
         odin_driver: Odin,
         detector_bit_depth: SignalR[int],
+        filename_suffix: str = "",
         plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         self._drv = odin_driver
@@ -108,6 +110,7 @@ class OdinWriter(DetectorWriter):
         self._capture_status: AsyncStatus | None = None
         self._datasets: list[HDFDatasetDescription] = []
         self._composer: HDFDocumentComposer | None = None
+        self._filename_suffix = filename_suffix
 
         super().__init__()
 
@@ -144,7 +147,7 @@ class OdinWriter(DetectorWriter):
             wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT),
         )
 
-        dtype = await self._drv.data_type.get_value()
+        np_dataype = convert_ad_dtype_to_np(await self._drv.data_type.get_value())  # type: ignore
 
         # Add the main data
         self._datasets = [
@@ -152,7 +155,7 @@ class OdinWriter(DetectorWriter):
                 data_key=name,
                 dataset="/data",
                 shape=(self._exposures_per_event, *self.data_shape),
-                dtype_numpy=dtype,
+                dtype_numpy=np_dataype,  # "<u2"
                 chunk_shape=(self._exposures_per_event, *self.data_shape),
             )
         ]
@@ -160,7 +163,7 @@ class OdinWriter(DetectorWriter):
         await self.append_plugins_to_datasets()
 
         self._composer = HDFDocumentComposer(
-            f"{info.directory_uri}{info.filename}.h5",
+            f"{info.directory_uri}{info.filename}{self._filename_suffix}.h5",
             self._datasets,
         )
 
