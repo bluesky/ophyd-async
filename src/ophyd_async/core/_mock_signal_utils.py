@@ -2,15 +2,10 @@ from collections.abc import Awaitable, Callable, Iterable, Iterator
 from contextlib import contextmanager
 from unittest.mock import AsyncMock, Mock
 
-from ophyd_async.core import (
-    Device,
-    DeviceMock,
-    MockSignalBackend,
-    Signal,
-    SignalConnector,
-    SignalDatatypeT,
-    SignalR,
-)
+from ._device import Device, DeviceMock
+from ._mock_signal_backend import MockSignalBackend
+from ._signal import Signal, SignalConnector, SignalR
+from ._signal_backend import SignalDatatypeT
 
 
 def get_mock(device: Device | Signal) -> Mock:
@@ -19,16 +14,18 @@ def get_mock(device: Device | Signal) -> Mock:
     The device must have been connected in mock mode.
     """
     mock = device._mock  # noqa: SLF001
-    assert isinstance(mock, DeviceMock), f"Device {device} not connected in mock mode"
+    if not isinstance(mock, DeviceMock):
+        msg = f"Device {device} not connected in mock mode"
+        raise RuntimeError(msg)
     return mock()
 
 
 def _get_mock_signal_backend(signal: Signal) -> MockSignalBackend:
     connector = signal._connector  # noqa: SLF001
-    assert isinstance(connector, SignalConnector), f"Expected Signal, got {signal}"
-    assert isinstance(connector.backend, MockSignalBackend), (
-        f"Signal {signal} not connected in mock mode"
-    )
+    if not isinstance(connector, SignalConnector):
+        raise TypeError(f"Expected Signal, got {signal}")
+    if not isinstance(connector.backend, MockSignalBackend):
+        raise RuntimeError(f"Signal {signal} not connected in mock mode")
     return connector.backend
 
 

@@ -96,7 +96,7 @@ addopts = """
     --ignore=docs/examples --ignore=src/ophyd_async/epics/signal.py
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
-filterwarnings = "error"
+filterwarnings = ["error", 'default::PendingDeprecationWarning']
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests/unit_tests"
 log_format = "%(asctime)s,%(msecs)03d %(levelname)s (%(threadName)s) %(message)s"
@@ -255,9 +255,9 @@ exhaustive = true
 exhaustive_ignores = ["testing", "_version", "__main__", "_docs_parser"]
 
 [[tool.importlinter.contracts]]
-name = "Sim modules are not used at runtime"
+name = "Testing and sim modules are not used at runtime"
 type = "forbidden"
-forbidden_modules = ["ophyd_async.sim"]
+forbidden_modules = ["ophyd_async.testing", "ophyd_async.sim"]
 source_modules = [
     "ophyd_async.plan_stubs",
     "ophyd_async.fastcs.*",

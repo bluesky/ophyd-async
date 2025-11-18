@@ -29,13 +29,14 @@ from ophyd_async.core import (
     StrictEnum,
     WatchableAsyncStatus,
     WatcherUpdate,
+    callback_on_mock_put,
     default_mock_class,
     error_if_none,
     observe_value,
+    set_mock_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
-from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
 __all__ = ["MotorLimitsError", "Motor", "InstantMotorMock", "OffsetMode", "UseSetMode"]
 

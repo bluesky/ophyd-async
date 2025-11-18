@@ -10,19 +10,19 @@ from ophyd_async.core import (
     Device,
     DeviceMock,
     FlyMotorInfo,
+    callback_on_mock_put,
     default_mock_class,
+    get_mock_put,
     init_devices,
+    mock_puts_blocked,
     observe_value,
+    set_mock_put_proceeds,
+    set_mock_value,
     soft_signal_rw,
 )
 from ophyd_async.epics import motor
 from ophyd_async.testing import (
     StatusWatcher,
-    callback_on_mock_put,
-    get_mock_put,
-    mock_puts_blocked,
-    set_mock_put_proceeds,
-    set_mock_value,
     wait_for_pending_wakeups,
 )
 
