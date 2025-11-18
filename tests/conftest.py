@@ -1,6 +1,7 @@
 import asyncio
 import os
 import pprint
+import signal
 import subprocess
 import sys
 import time
@@ -50,6 +51,25 @@ EXTRA_BLOCKS_RECORD = str(
     / "db"
     / "extra_blocks_panda.db"
 )
+
+
+def fixture_is_used(fixture_name, session):
+    """
+    Helper function to check if a fixture is used in a pytest session
+    """
+    for item in session.items:
+        for f in item.fixturenames:
+            if f == fixture_name:
+                return True
+    return False
+
+
+def pytest_collection_modifyitems(session, config, items):
+    # Raise a runtime error if docker cannot communicate to the host
+    # This is needed when we want to run docker fixtures in subprocesses
+    # as pytest-insubprocess doesn't report fixture errors
+    if fixture_is_used("docker_composer", session):
+        check_docker_sock()
 
 
 # Autouse fixture that will set all EPICS networking env vars to use lo interface
@@ -276,3 +296,143 @@ async def sim_detector(request: FixtureRequest):
     det._config_sigs = [det.driver.acquire_time, det.driver.acquire]
 
     return det
+
+
+def check_docker_sock():
+    """
+    Check if the Docker (or compatible container engine) socket is accessible.
+
+    This function attempts to run `docker info` to verify that the current user
+    can communicate with the container engine. If the command fails, it raises
+    a RuntimeError with guidance on how to fix common connection issues.
+    """
+    try:
+        subprocess.run(
+            ["docker", "info"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except subprocess.CalledProcessError as err:
+        message = """
+            Cannot communicate with the container engine on the host.
+            Please make sure $DOCKER_HOST points to the correct socket on the host.
+            NOTE:
+                If you are using podman, please enable the socket by running
+                systemctl --user enable podman --now"""
+        raise RuntimeError(message) from err
+
+
+@pytest.fixture(scope="module")
+def docker_composer():
+    def inner_docker_composer(
+        docker_args: list[str] | None = None,
+        docker_services: list[str] | str | None = None,
+        ready_log_line: str | None = None,
+        start_timeout: float | None = None,
+        stop_timeout: float | None = None,
+        wait_time: float | None = None,
+    ):
+        """
+        Run a docker compose based service, optionally do the following:
+        - wait a fixed time for the service to become ready
+        - wait for the service to become ready by monitoring the STDOUT
+        - run specific service(s)
+        - raise for timeout
+        E.g.:
+            # run docker compose up and tear down after yielding
+            docker_composer()
+            # same as above but with additional args passed to docker
+            docker_composer(docker_args=["-f", "./compose.yaml"])
+            # run and wait for line in STDOUT before yielding
+            docker_composer(ready_log_line="Listening on port ", start_timeout=10.0)
+            # wait a fixed time for the service to become ready
+            docker_composer(wait_time=1.0)
+            # run specific sercices
+            docker_composer(docker_services=["svc1","svc2"])
+        """
+
+        if docker_args is None:
+            docker_args = []
+
+        if docker_services is None:
+            docker_services = []
+        elif type(docker_services) is str:
+            docker_services = [docker_services]
+
+        # start docker compose as a background process
+        process = subprocess.Popen(
+            ["docker", "compose", *docker_args, "up", *docker_services],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+            preexec_fn=os.setsid,  # To kill the whole group later
+        )
+
+        start_time = time.time()
+        if ready_log_line is not None:
+            try:
+                assert process.stdout is not None
+                for line in process.stdout:
+                    print(line, end="")
+                    if ready_log_line in line:
+                        break
+                    if (
+                        start_timeout is not None
+                        and time.time() - start_time > start_timeout
+                    ):
+                        raise TimeoutError(
+                            f"docker compose with args {docker_args} timed out"
+                        )
+            except Exception:
+                process.terminate()
+                raise
+
+        if wait_time is not None:
+            time.sleep(wait_time)
+
+        yield  # at this point service is expected to have started
+
+        try:
+            subprocess.run(
+                ["docker", "compose", *docker_args, "down", *docker_services]
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to bring down docker services: {e}")
+
+        # Terminate background process group
+        try:
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+        except ProcessLookupError:
+            pass  # Already exited
+
+        # Close stdout to avoid ResourceWarning
+        if process.stdout:
+            process.stdout.close()
+
+        # Ensure process has exited
+        process.wait(timeout=stop_timeout)
+
+    yield inner_docker_composer
+
+
+@pytest.fixture(scope="module")
+def ca_gateway(docker_composer):
+    example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
+    if example_services_path is not None:  # user may start services manually
+        yield from docker_composer(
+            ["-f", f"{example_services_path}/compose.yaml"],
+            docker_services="ca-gateway",
+            ready_log_line="Running as user ",
+        )
+
+
+@pytest.fixture(scope="module")
+def bl01t_di_cam_01(ca_gateway, docker_composer):
+    example_services_path = os.environ.get("EXAMPLE_SERVICES_PATH", None)
+    if example_services_path is not None:  # user may start services manually
+        yield from docker_composer(
+            ["-f", f"{example_services_path}/compose.yaml"],
+            docker_services="bl01t-di-cam-01",
+            ready_log_line="iocRun: All initialization complete",
+        )
