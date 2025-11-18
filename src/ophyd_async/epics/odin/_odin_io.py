@@ -265,6 +265,6 @@ class OdinWriter(DetectorWriter):
         else:
             odin_file_number = self._odin_writer_number
 
-        filename_suffix = f"{odin_file_number:06d}"
+        filename_suffix = f"_{odin_file_number:06d}"
 
         return filename_suffix
