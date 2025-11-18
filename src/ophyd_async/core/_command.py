@@ -138,7 +138,8 @@ class CommandCallback(Protocol[CommandArguments, CommandReturn]):
 
     async def __call__(
         self, *args: CommandArguments.args, **kwargs: CommandArguments.kwargs
-    ) -> CommandReturn: ...
+    ) -> CommandReturn:
+        pass
 
 
 class CommandError(Exception):
