@@ -613,10 +613,12 @@ async def test_soft_command_x():
     await cmd.call()
     assert called["ok"]
 
+
 @pytest.mark.asyncio
 async def test_soft_command_rw_with_different_ordering():
-
-    def callback(a: int, b: float, scale: int = 1, offset: float = 0.0, label: str ="default") -> float:
+    def callback(
+        a: int, b: float, scale: int = 1, offset: float = 0.0, label: str = "default"
+    ) -> float:
         # Simple linear operation so we can easily validate that kwargs were used
         return a * scale + b + offset
 
