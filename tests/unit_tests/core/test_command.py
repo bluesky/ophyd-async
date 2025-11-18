@@ -1,140 +1,187 @@
-import pytest
-from unittest.mock import AsyncMock, MagicMock
 import asyncio
-import numpy as np
-from typing import Any, Sequence, Optional, Union, Tuple, Awaitable, Callable, TypeVar
-from dataclasses import dataclass
-from event_model import DataKey
 from collections import namedtuple
+from collections.abc import Sequence
+from typing import (
+    Any,
+    TypeVar,
+)
+from unittest.mock import AsyncMock
+
+import numpy as np
+import pytest
 
 # Assuming these are imported from your module
 from ophyd_async.core import (
-    Command, CommandR, CommandW, CommandX, CommandRW,
-    CommandConnector, MockCommandBackend, LazyMock,
-    CommandError, ExecutionError, ConnectionError, ConnectionTimeoutError, SoftCommandBackend,
-    CommandCallback, CommandArguments, CommandReturn
+    Array1D,
+    ConnectionError,
+    ExecutionError,
+    LazyMock,
+    MockCommandBackend,
+    SoftCommandBackend,
+    StrictEnum,
+    Table,
+    soft_command_r,
+    soft_command_rw,
+    soft_command_w,
+    soft_command_x,
 )
-from ophyd_async.core import Array1D, StrictEnum, Table
-import pytest
-from typing import Any, Dict, Optional, Sequence, Type
-from event_model import DataKey
+from ophyd_async.core._utils import StrictEnum, SubsetEnum, SupersetEnum
+
 
 # ---- Define enums and dummy table ----
-class CommandEnum(StrictEnum):
+class CommandStrictEnum(StrictEnum):
     A = "A"
     B = "B"
     C = "C"
     D = "D"
 
+
+class CommandSubsetEnum(SubsetEnum):
+    A = "A"
+    B = "B"
+
+
+class CommandSupersetEnum(SupersetEnum):
+    A = "A"
+
+
 class DummyTable(Table):
-    pass
+    a: Array1D[np.int32]
+    b: Sequence[str]
+
+    def __init__(self, a=None, b=None):
+        super().__init__(
+            a=np.array([] if a is None else a, dtype=np.int32),
+            b=[] if b is None else b
+        )
+
 
 # ---- CommandCase container ----
 CommandCase = namedtuple(
     "CommandCase",
-    ["type", "input_val", "output_val", "id", "units", "precision", "expected_datakey"],
+    ["input_types", "output_type", "input_val", "output_val", "id", "units", "precision"],
 )
-
-# ---- Helper ----
-def arr(dtype, *vals) -> Array1D:
-    """Return a 1D numpy array with a specific dtype."""
-    return np.array(vals, dtype=dtype)
-
-
-def build_datakey(value, units=None, precision=None):
-    """Infer the correct DataKey from the value and metadata."""
-    # Primitive types
-    if isinstance(value, bool):
-        dtype, dtype_numpy, shape = "boolean", "?", []
-    elif isinstance(value, (int, np.integer)):
-        dtype, dtype_numpy, shape = "integer", np.dtype(type(value)).str, []
-    elif isinstance(value, (float, np.floating)):
-        dtype, dtype_numpy, shape = "number", np.dtype(type(value)).str, []
-    elif isinstance(value, str):
-        dtype, dtype_numpy, shape = "string", "<U", []
-    elif isinstance(value, StrictEnum):
-        dtype, dtype_numpy, shape = "string", "<U", []
-
-    # Array types
-    elif isinstance(value, np.ndarray):
-        dtype, dtype_numpy, shape = "array", value.dtype.str, list(value.shape)
-
-    # Sequence types
-    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
-        if len(value) == 0:
-            # Empty sequence — no dtype info
-            dtype_numpy = "<U"
-        else:
-            first = value[0]
-            if isinstance(first, bool):
-                dtype_numpy = "?"
-            elif isinstance(first, (int, np.integer)):
-                dtype_numpy = np.dtype(type(first)).str
-            elif isinstance(first, (float, np.floating)):
-                dtype_numpy = np.dtype(type(first)).str
-            else:
-                dtype_numpy = "<U"
-        dtype, shape = "array", [len(value)]
-
-    # Table types
-    elif isinstance(value, Table):
-        dtype, dtype_numpy, shape = "object", "O", []
-
-    # Fallback
-    else:
-        dtype, dtype_numpy, shape = "object", "O", []
-
-    # Build DataKey
-    key = DataKey(
-        dtype=dtype,
-        dtype_numpy=dtype_numpy,
-        shape=shape,
-        source="softcmd://expected",
-    )
-    if units is not None:
-        key["units"] = units
-    if precision is not None:
-        key["precision"] = precision
-    if key["dtype"] != "array":
-        del key["dtype_numpy"]
-    return key
-
 
 # ---- Build the test matrix ----
 test_cases = [
     # === Primitive Types ===
-    CommandCase(int, 1, 2, "int", "unit", 0, build_datakey(1, "unit", 0)),
-    CommandCase(float, 1.23, 4.56, "float", "unit", 2, build_datakey(1.23, "unit", 2)),
-    CommandCase(str, "in", "out", "str", None, None, build_datakey("in")),
-    CommandCase(bool, True, False, "bool", None, None, build_datakey(True)),
+    CommandCase([int], int, 0, 1, "int", "keV", 0),
+    CommandCase([float], float, 0.0, 1.0, "float", "keV", 2),
+    CommandCase([str], str, "in", "out", "str", None, None),
+    CommandCase([bool], bool, True, False, "bool", None, None),
 
-    # === Enum ===
-    CommandCase(CommandEnum, CommandEnum.A, CommandEnum.B, "enum", None, None, build_datakey(CommandEnum.A)),
+    # === Enum Types ===
+    CommandCase([CommandStrictEnum], CommandStrictEnum, CommandStrictEnum.A, CommandStrictEnum.B,
+                "strict_enum", None, None),
+    CommandCase([CommandSubsetEnum], CommandSubsetEnum, CommandSubsetEnum.A, CommandSubsetEnum.B,
+                "subset_enum", None, None),
+    CommandCase([CommandSupersetEnum], CommandSupersetEnum, CommandSupersetEnum.A, CommandSupersetEnum.A,
+                "superset_enum", None, None),
 
     # === Array1D (various dtypes) ===
-    CommandCase(Array1D[np.bool_], arr(np.bool_, True, False), arr(np.bool_, False, True),
-        "array_bool", None, None, build_datakey(arr(np.bool_, True, False))),
-    CommandCase(Array1D[np.int8], arr(np.int8, 1, 2, 3), arr(np.int8, 4, 5, 6),
-        "array_int8", "unit", 0, build_datakey(arr(np.int8, 1, 2, 3), "unit", 0)),
-    CommandCase(Array1D[np.uint8], arr(np.uint8, 1, 2, 3), arr(np.uint8, 4, 5, 6),
-        "array_uint8", "unit", 0, build_datakey(arr(np.uint8, 1, 2, 3), "unit", 0)),
-    CommandCase(Array1D[np.float64], arr(np.float64, 1.0, 2.0, 3.0), arr(np.float64, 4.0, 5.0, 6.0),
-        "array_float64", "unit", 2, build_datakey(arr(np.float64, 1.0, 2.0, 3.0), "unit", 2)),
+    CommandCase(
+        [Array1D[np.bool_]], Array1D[np.bool_],
+        np.array([True, False], dtype=bool),
+        np.array([False, True], dtype=bool),
+        "array_bool", None, None,
+    ),
+    CommandCase(
+        [Array1D[np.int8]], Array1D[np.int8],
+        np.array([1, 2, 3], dtype=np.int8),
+        np.array([4, 5, 6], dtype=np.int8),
+        "array_int8", "keV", 0,
+    ),
+    CommandCase(
+        [Array1D[np.uint8]], Array1D[np.uint8],
+        np.array([1, 2, 3], dtype=np.uint8),
+        np.array([4, 5, 6], dtype=np.uint8),
+        "array_uint8", "keV", 0,
+    ),
+    CommandCase(
+        [Array1D[np.int16]], Array1D[np.int16],
+        np.array([1, 2, 3], dtype=np.int16),
+        np.array([4, 5, 6], dtype=np.int16),
+        "array_int16", "keV", 0,
+    ),
+    CommandCase(
+        [Array1D[np.uint16]], Array1D[np.uint16],
+        np.array([1, 2, 3], dtype=np.uint16),
+        np.array([4, 5, 6], dtype=np.uint16),
+        "array_uint16", "keV", 0,
+    ),
+    CommandCase(
+        [Array1D[np.int32]], Array1D[np.int32],
+        np.array([1, 2, 3], dtype=np.int32),
+        np.array([4, 5, 6], dtype=np.int32),
+        "array_int32", "keV", 0,
+    ),
+    CommandCase(
+        [Array1D[np.uint32]], Array1D[np.uint32],
+        np.array([1, 2, 3], dtype=np.uint32),
+        np.array([4, 5, 6], dtype=np.uint32),
+        "array_uint32", "keV", 0,
+    ),
+    CommandCase(
+        [Array1D[np.int64]], Array1D[np.int64],
+        np.array([1, 2, 3], dtype=np.int64),
+        np.array([4, 5, 6], dtype=np.int64),
+        "array_int64", "keV", 0,
+    ),
+    CommandCase(
+        [Array1D[np.uint64]], Array1D[np.uint64],
+        np.array([1, 2, 3], dtype=np.uint64),
+        np.array([4, 5, 6], dtype=np.uint64),
+        "array_uint64", "keV", 0,
+    ),
+    CommandCase(
+        [Array1D[np.float32]], Array1D[np.float32],
+        np.array([1.0, 2.0, 3.0], dtype=np.float32),
+        np.array([4.0, 5.0, 6.0], dtype=np.float32),
+        "array_float32", "keV", 0,
+    ),
+    CommandCase(
+        [Array1D[np.float64]], Array1D[np.float64],
+        np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        np.array([4.0, 5.0, 6.0], dtype=np.float64),
+        "array_float64", "keV", 0,
+    ),
+    CommandCase(
+        [np.ndarray], np.ndarray,
+        np.array([1.0, 2.0, 3.0]),
+        np.array([4.0, 5.0, 6.0]),
+        "array_float64", "keV", 0,
+    ),
 
     # === Sequence types ===
-    CommandCase(Sequence[str], ["a", "b"], ["x", "y"], "seq_str", None, None, build_datakey(["a", "b"])),
-    CommandCase(Sequence[CommandEnum], [CommandEnum.A, CommandEnum.B], [CommandEnum.C, CommandEnum.D],
-        "seq_enum", None, None, build_datakey([CommandEnum.A, CommandEnum.B])),
+    CommandCase([Sequence[str]], Sequence[str], ["a", "b"], ["x", "y"], "seq_str", None, None),
+    CommandCase([Sequence[CommandStrictEnum]], Sequence[CommandStrictEnum], [CommandStrictEnum.A], [CommandStrictEnum.B],
+                "seq_enum", None, None),
+    CommandCase([Sequence[CommandSubsetEnum]], Sequence[CommandSubsetEnum], [CommandSubsetEnum.A], [CommandSubsetEnum.B],
+                "seq_enum", None, None),
+    CommandCase([Sequence[CommandSupersetEnum]], Sequence[CommandSupersetEnum], [CommandSupersetEnum.A], [CommandSupersetEnum.A],
+                "seq_enum", None, None),
 
     # === Table ===
-    CommandCase(DummyTable, DummyTable(), DummyTable(), "table", None, None, build_datakey(DummyTable())),
+    CommandCase([DummyTable], DummyTable, DummyTable(), DummyTable(), "table", None, None),
+
+    # === Multiple Input Types ===
+    CommandCase([int, str, Array1D[np.float32]], float, [0, "a", np.array([1, 2, 3], dtype=np.int8)], 10.0, "multi_input", "keV", 1),
+
+    # === Read-only ===
+    CommandCase(None, float, None, 10.0, "read_only", "keV", 1),
+    # === Write-only ===
+    CommandCase([int], None, 1, None, "write-only", None, None),
+    # === Execute ===
+    CommandCase(None, None, None, None, "execute", None, None),
 ]
+
 
 def assert_equal(result, expected):
     if isinstance(result, np.ndarray):
         assert np.all(result == expected)
     else:
         assert result == expected
+
 
 def dummy_backend(return_value: Any = None):
     """Fixture for creating a minimal dummy backend."""
@@ -145,19 +192,11 @@ def dummy_backend(return_value: Any = None):
     backend.source = lambda name, read: f"dummy://{name}"
     backend.connect = AsyncMock(return_value=None)
 
-    # Create a simple get_datakey implementation
-    async def get_datakey(source: str) -> DataKey:
-        return DataKey(
-            source=source,
-            dtype="number",
-            shape=[],
-        )
-    backend.get_datakey = get_datakey
-
     # Set up call method
     backend.call = AsyncMock(return_value=return_value)
 
     return backend
+
 
 @pytest.mark.parametrize(
     "test_case",
@@ -193,9 +232,6 @@ async def test_mock_command_backend(test_case):
     backend.call_mock.assert_awaited_once_with(test_case.input_val)
     assert backend.call_mock.call_count == 1
 
-    # Test get_datakey method
-    dk = await backend.get_datakey("abc")
-    assert dk["source"].endswith("abc")
 
 @pytest.mark.asyncio
 async def test_mock_command_backend():
@@ -225,32 +261,48 @@ async def test_mock_command_backend():
     backend.call_mock.assert_awaited_once_with(*test_args, some_keyword="test")
     assert backend.call_mock.call_count == 1
 
-    # get_datakey
-    dk = await backend.get_datakey("abc")
-    assert dk["source"].endswith("abc")
 
 T = TypeVar('T')
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("case", test_cases, ids=[tc.id for tc in test_cases])
 async def test_valid_initialization_and_call_sync(case):
     """It should initialize correctly and call a sync callback for all test cases."""
-
-    def callback(a: case.type) -> case.type:
-        # Return the expected output regardless of input
-        return case.output_val
+    if case.id == "multi_input":
+        def callback(a: int, b: str, c: Array1D[np.float32]) -> case.output_type:
+            return case.output_val
+    elif case.id == "read_only":
+        def callback() -> float:
+            return case.output_val
+    elif case.id == "execute":
+        def callback() -> None:
+            return case.output_val
+    else:
+        def callback(a: case.input_types[0]) -> case.output_type:
+            # Return the expected output regardless of input
+            return case.output_val
 
     backend = SoftCommandBackend(
-        command_args=[case.type],
-        command_return=case.type,
+        command_args=case.input_types,
+        command_return=case.output_type,
         command_cb=callback,
         units=case.units,
         precision=case.precision,
     )
 
-    result = await backend.call(case.input_val)
-    assert np.all(result == case.output_val) if isinstance(result, np.ndarray) else result == case.output_val
-    assert np.all(backend._last_return_value == case.output_val) if isinstance(case.output_val, np.ndarray) else backend._last_return_value == case.output_val
+    if case.id == "multi_input":
+        result = await backend.call(case.input_val[0], case.input_val[1], case.input_val[2])
+    elif case.id == "read_only":
+        result = await backend.call()
+    elif case.id == "execute":
+        result = await backend.call()
+    else:
+        result = await backend.call(case.input_val)
+    try:
+        assert result == case.output_val
+    except ValueError:
+        assert np.array_equal(result, case.output_val)
 
 
 # --- Parametrized async callback test ---
@@ -258,66 +310,44 @@ async def test_valid_initialization_and_call_sync(case):
 @pytest.mark.parametrize("case", test_cases, ids=[tc.id for tc in test_cases])
 async def test_valid_initialization_and_call_async(case):
     """It should handle async callbacks for all test cases."""
-
-    async def async_callback(a: case.type) -> case.type:
-        await asyncio.sleep(0.001)
-        return case.output_val
+    if case.id == "multi_input":
+        async def async_callback(a: int, b: str, c: Array1D[np.float32]) -> case.output_type:
+            await asyncio.sleep(0.001)
+            return case.output_val
+    elif case.id == "read_only":
+        async def async_callback() -> case.output_type:
+            await asyncio.sleep(0.001)
+            return case.output_val
+    elif case.id == "execute":
+        async def async_callback() -> case.output_type:
+            await asyncio.sleep(0.001)
+            return case.output_val
+    else:
+        async def async_callback(a: case.input_types[0]) -> case.output_type:
+            await asyncio.sleep(0.001)
+            return case.output_val
 
     backend = SoftCommandBackend(
-        command_args=[case.type],
-        command_return=case.type,
+        command_args=case.input_types,
+        command_return=case.output_type,
         command_cb=async_callback,
         units=case.units,
         precision=case.precision,
     )
 
-    result = await backend.call(case.input_val)
-    assert np.all(result == case.output_val) if isinstance(result, np.ndarray) else result == case.output_val
-    assert np.all(backend._last_return_value == case.output_val) if isinstance(case.output_val, np.ndarray) else backend._last_return_value == case.output_val
+    if case.id == "multi_input":
+        result = await backend.call(case.input_val[0], case.input_val[1], case.input_val[2])
+    elif case.id == "read_only":
+        result = await backend.call()
+    elif case.id == "execute":
+        result = await backend.call()
+    else:
+        result = await backend.call(case.input_val)
+    try:
+        assert result == case.output_val
+    except ValueError:
+        assert np.array_equal(result, case.output_val)
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize("case", test_cases, ids=[tc.id for tc in test_cases])
-async def test_valid_initialization_and_call_sync_multiple_inputs(case):
-    """It should initialize correctly and call a sync callback with multiple args."""
-
-    def callback(a: case.type, b: int) -> case.type:
-        # The second argument is ignored; we just return the expected output
-        return case.output_val
-
-    backend = SoftCommandBackend(
-        command_args=[case.type, int],
-        command_return=case.type,
-        command_cb=callback,
-        units=case.units,
-        precision=case.precision,
-    )
-
-    result = await backend.call(case.input_val, 10)
-    assert_equal(result, case.output_val)
-    assert_equal(backend._last_return_value, case.output_val)
-
-
-# --- Parametrized async callback test with 2 arguments ---
-@pytest.mark.asyncio
-@pytest.mark.parametrize("case", test_cases, ids=[tc.id for tc in test_cases])
-async def test_valid_initialization_and_call_async_multiple_inputs(case):
-    """It should handle async callbacks with multiple args."""
-
-    async def async_callback(a: case.type, b: int) -> case.type:
-        await asyncio.sleep(0.001)
-        return case.output_val
-
-    backend = SoftCommandBackend(
-        command_args=[case.type, int],
-        command_return=case.type,
-        command_cb=async_callback,
-        units=case.units,
-        precision=case.precision,
-    )
-
-    result = await backend.call(case.input_val, 10)
-    assert_equal(result, case.output_val)
-    assert_equal(backend._last_return_value, case.output_val)
 
 def test_signature_mismatch_arg_count():
     """It should raise if callback args don't match command_args."""
@@ -330,6 +360,7 @@ def test_signature_mismatch_arg_count():
             command_cb=cb
         )
 
+
 def test_signature_mismatch_arg_type():
     """It should raise if callback param types don't match command_args."""
     def cb(a: str) -> int: return int(a)
@@ -340,6 +371,7 @@ def test_signature_mismatch_arg_type():
             command_return=int,
             command_cb=cb
         )
+
 
 def test_signature_mismatch_return_type():
     """It should raise if return type doesn't match callback annotation."""
@@ -353,6 +385,7 @@ def test_signature_mismatch_return_type():
             command_cb=cb
         )
 
+
 @pytest.mark.asyncio
 async def test_source():
     """It should format the source URI correctly."""
@@ -360,60 +393,6 @@ async def test_source():
     backend = SoftCommandBackend([int], int, cb)
     assert backend.source("testcmd", True) == "softcmd://testcmd"
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize("case", test_cases, ids=[c.id for c in test_cases])
-async def test_get_datakey_with_metadata_param(case):
-    """It should include units, precision, and return the correct DataKey dtype after a call."""
-
-    def cb(x: case.type) -> case.type:
-        return case.output_val
-
-    backend = SoftCommandBackend([case.type], case.type, cb, units=case.units, precision=case.precision)
-    await backend.call(case.input_val)
-    dk = await backend.get_datakey(f"softcmd://{case.id}")
-
-    # Check dtype matches expected
-    assert dk["dtype"] == case.expected_datakey["dtype"], f"{case.id}: dtype mismatch"
-    # Check shape
-    assert dk["shape"] == case.expected_datakey["shape"], f"{case.id}: shape mismatch"
-    # Check dtype_numpy for arrays
-    if "dtype_numpy" in case.expected_datakey:
-        assert dk["dtype_numpy"] == case.expected_datakey["dtype_numpy"], f"{case.id}: dtype_numpy mismatch"
-    # Check units and precision
-    if case.units is not None:
-        assert dk.get("units") == case.units, f"{case.id}: units mismatch"
-    if case.precision is not None:
-        assert dk.get("precision") == case.precision, f"{case.id}: precision mismatch"
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("case", test_cases, ids=[c.id for c in test_cases])
-async def test_get_datakey_without_last_value_param(case):
-    """It should return a valid DataKey even if no call was made."""
-
-    def cb(x: case.type) -> case.type:
-        return case.output_val
-
-    backend = SoftCommandBackend([case.type], case.type, cb, units=case.units, precision=case.precision)
-    # No call here
-    dk = await backend.get_datakey(f"softcmd://{case.id}")
-
-    # The dtype should fall back to the declared command_return_type
-    if isinstance(case.output_val, np.ndarray):
-        # Array fallback: dtype='array' with dtype_numpy from type
-        assert dk["dtype"] == "array", f"{case.id}: dtype mismatch"
-    elif isinstance(case.output_val, (bool, int, float, str, StrictEnum)):
-        # Primitive fallback
-        expected_dtype = case.expected_datakey["dtype"]
-        assert dk["dtype"] == expected_dtype, f"{case.id}: dtype mismatch"
-    else:
-        # Table or object types
-        assert dk["dtype"] == "object", f"{case.id}: dtype mismatch"
-
-    # Units and precision should still be included if set
-    if case.units is not None:
-        assert dk.get("units") == case.units, f"{case.id}: units mismatch"
-    if case.precision is not None:
-        assert dk.get("precision") == case.precision, f"{case.id}: precision mismatch"
 
 @pytest.mark.asyncio
 async def test_call_raises_execution_error():
@@ -427,6 +406,7 @@ async def test_call_raises_execution_error():
         await backend.call(5)
     assert backend._last_return_value is None
 
+
 @pytest.mark.asyncio
 async def test_async_lock_context_manager():
     """It should acquire and release the lock properly."""
@@ -439,3 +419,120 @@ async def test_async_lock_context_manager():
         acquired.append(True)
     assert acquired == [True]
     assert not backend._lock.locked()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", test_cases, ids=[c.id for c in test_cases])
+async def test_soft_command_r(case: CommandCase):
+    """Test soft_command_r (read-only) command factory."""
+    if case.id in ("write-only", "exec"):
+        pytest.skip("write-only commands don't have a read-only counterpart")
+    cmd = soft_command_r(
+        command_return=case.output_type,
+        command_cb=lambda: case.output_val,
+        units=case.units,
+        precision=case.precision,
+        name=case.id,
+    )
+
+    result = await cmd.call()
+    if isinstance(result, np.ndarray):
+        assert np.array_equal(result, case.output_val)
+    else:
+        assert result == case.output_val
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", test_cases, ids=[c.id for c in test_cases])
+async def test_soft_command_w(case: CommandCase):
+    """Test soft_command_w (write-only) command factory."""
+    if case.id in ("read-only", "exec"):
+        pytest.skip("read-only commands don't have a write-only counterpart")
+    elif case.id == "multi_input":
+        def callback(a: int, b: str, c: Array1D[np.float32]) -> None:
+            return None
+    elif case.id == "read_only":
+        pytest.skip("read-only commands don't have a write-only counterpart")
+    elif case.id == "execute":
+        pytest.skip("execute commands don't have a write-only counterpart")
+    else:
+        def callback(a: case.input_types[0]) -> None:
+            # Return the expected output regardless of input
+            return None
+
+    cmd = soft_command_w(
+        command_args=case.input_types,
+        command_cb=callback,
+        units=case.units,
+        precision=case.precision,
+        name=case.id,
+    )
+
+    if case.id == "multi_input":
+        result = await cmd.call(case.input_val[0], case.input_val[1], case.input_val[2])
+    else:
+        result = await cmd.call(case.input_val)
+    try:
+        assert result is None
+    except ValueError:
+        assert np.array_equal(result, case.output_val)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", test_cases, ids=[c.id for c in test_cases])
+async def test_soft_command_rw(case: CommandCase):
+    """Test soft_command_rw (read-write) command factory."""
+    if case.id == "multi_input":
+        def callback(a: int, b: str, c: Array1D[np.float32]) -> case.output_type:
+            return case.output_val
+    elif case.id == "read_only":
+        def callback() -> float:
+            return case.output_val
+    elif case.id == "execute":
+        def callback() -> None:
+            return case.output_val
+    else:
+        def callback(a: case.input_types[0]) -> case.output_type:
+            # Return the expected output regardless of input
+            return case.output_val
+
+    cmd = soft_command_rw(
+        command_args=case.input_types,
+        command_return=case.output_type,
+        command_cb=callback,
+        units=case.units,
+        precision=case.precision,
+        name=case.id,
+    )
+
+    if case.id == "multi_input":
+        result = await cmd.call(case.input_val[0], case.input_val[1], case.input_val[2])
+    elif case.id == "read_only":
+        result = await cmd.call()
+    elif case.id == "execute":
+        result = await cmd.call()
+    else:
+        result = await cmd.call(case.input_val)
+    try:
+        assert result == case.output_val
+    except ValueError:
+        assert np.array_equal(result, case.output_val)
+
+
+@pytest.mark.asyncio
+async def test_soft_command_x():
+    """Test soft_command_x (executable, no input/output) command factory."""
+    called = {"ok": False}
+
+    def cb():
+        called["ok"] = True
+
+    cmd = soft_command_x(
+        command_cb=cb,
+        units='kev',
+        precision=1,
+        name="execute",
+    )
+
+    await cmd.call()
+    assert called["ok"]
