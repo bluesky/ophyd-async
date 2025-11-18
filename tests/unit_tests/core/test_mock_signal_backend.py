@@ -110,24 +110,24 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
     signal = SignalRW(SoftSignalBackend(int))
 
     exc_msgs = []
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         set_mock_value(signal, 10)
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         get_mock_put(signal).assert_called_once_with(10)
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         with mock_puts_blocked(signal):
             ...
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         with callback_on_mock_put(signal, lambda x: _):
             ...
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         set_mock_put_proceeds(signal, False)
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         for _ in set_mock_values(signal, [10]):
             ...
     exc_msgs.append(str(exc.value))

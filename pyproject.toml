@@ -96,7 +96,7 @@ addopts = """
     --ignore=docs/examples --ignore=src/ophyd_async/epics/signal.py
     """
 # https://iscinumpy.gitlab.io/post/bound-version-constraints/#watch-for-warnings
-filterwarnings = ["error", 'default::PendingDeprecationWarning']
+filterwarnings = ["error"]
 # Doctest python code in docs, python code in src docstrings, test functions in tests
 testpaths = "docs src tests/unit_tests"
 log_format = "%(asctime)s,%(msecs)03d %(levelname)s (%(threadName)s) %(message)s"
