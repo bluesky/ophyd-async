@@ -102,7 +102,7 @@ Then decorate the original class with [](#default_mock_class) so it is automatic
 
 ```{literalinclude} ../../src/ophyd_async/epics/motor.py
 :language: python
-:start-at: default_mock_class
+:start-at: default_mock_class(
 :end-at: class Motor
 ```
 
