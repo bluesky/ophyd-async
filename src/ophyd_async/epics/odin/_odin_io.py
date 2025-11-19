@@ -270,8 +270,6 @@ class OdinWriter(DetectorWriter):
         if self._exposures_per_event > self.max_frames:
             rollover_int = math.floor(self._exposures_per_event / self.max_frames)
 
-            print(rollover_int)
-
             odin_file_number = self._odin_writer_number + (
                 len(self._drv.nodes) * rollover_int
             )
