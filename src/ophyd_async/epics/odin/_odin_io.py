@@ -1,4 +1,5 @@
 import asyncio
+import math
 from collections.abc import AsyncGenerator, AsyncIterator
 from xml.etree import ElementTree as ET
 
@@ -259,8 +260,19 @@ class OdinWriter(DetectorWriter):
         self._capture_status = None
 
     def _odin_filename_suffix_creator(self) -> str:
+        """Create the filename suffix for the Odin HDF5 file."""
+        """
+        Should result in _000001 for the first file created by this OdinWriter,
+        If odin creates more frames than max number of frames it "rollsover"
+        If there are 4 nodes, the next file should be _000005, etc.
+        """
+
         if self._exposures_per_event > self.max_frames:
-            odin_file_number = self._odin_writer_number + len(self._drv.nodes)
+            rollover_int = math.floor(self._exposures_per_event / self.max_frames)
+
+            odin_file_number = self._odin_writer_number + (
+                len(self._drv.nodes) * rollover_int
+            )
         else:
             odin_file_number = self._odin_writer_number
 
