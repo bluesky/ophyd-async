@@ -115,7 +115,7 @@ class OdinWriter(DetectorWriter):
 
         # TODO: https://github.com/bluesky/ophyd-async/issues/1137
         self._odin_writer_number = odin_writer_number
-        self.max_frames = 1000
+        self.max_frames = 10000
 
         super().__init__()
 
