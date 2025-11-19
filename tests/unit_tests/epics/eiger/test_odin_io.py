@@ -218,7 +218,6 @@ async def test_get_odin_filename_suffix(
     writer._exposures_per_event = 10
     assert writer._get_odin_filename_suffix() == "_000003"
 
-
     writer._odin_writer_number = 1
     writer._exposures_per_event = 1500
     assert writer._get_odin_filename_suffix() == "_000005"
