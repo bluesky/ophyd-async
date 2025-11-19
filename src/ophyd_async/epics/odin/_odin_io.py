@@ -122,7 +122,7 @@ class OdinWriter(DetectorWriter):
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
-        self._total_number_of_frames = sum(self.number_of_events) if isinstance(self.number_of_events, list) else self.number_of_events) * self.exposures_per_event
+        
         self.data_shape = await self._get_data_shape()
 
         self._path_info = self._path_provider(device_name=name)
