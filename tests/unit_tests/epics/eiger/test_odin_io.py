@@ -211,17 +211,17 @@ async def test_get_odin_filename_suffix(
     writer.max_frames = 1000
 
     writer._odin_writer_number = 1
-    writer._exposures_per_event = 10
+    writer._total_number_of_frames = 10
     assert writer._get_odin_filename_suffix() == "_000001"
 
     writer._odin_writer_number = 3
-    writer._exposures_per_event = 10
+    writer._total_number_of_frames = 10
     assert writer._get_odin_filename_suffix() == "_000003"
 
     writer._odin_writer_number = 1
-    writer._exposures_per_event = 1500
+    writer._total_number_of_frames = 1500
     assert writer._get_odin_filename_suffix() == "_000005"
 
     writer._odin_writer_number = 2
-    writer._exposures_per_event = 1500
+    writer._total_number_of_frames = 1500
     assert writer._get_odin_filename_suffix() == "_000006"

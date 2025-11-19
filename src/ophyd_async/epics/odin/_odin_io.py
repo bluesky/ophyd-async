@@ -123,6 +123,9 @@ class OdinWriter(DetectorWriter):
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
 
+        # TODO: https://github.com/bluesky/ophyd-async/issues/1137
+        self._total_number_of_frames = self._exposures_per_event
+
         self.data_shape = await self._get_data_shape()
 
         self._path_info = self._path_provider(device_name=name)
@@ -266,8 +269,8 @@ class OdinWriter(DetectorWriter):
         If odin creates more frames than max number of frames it "rollsover"
         If there are 4 nodes, the next file should be _000005, etc.
         """
-        if self._exposures_per_event > self.max_frames:
-            rollover_int = math.floor(self._exposures_per_event / self.max_frames)
+        if self._total_number_of_frames > self.max_frames:
+            rollover_int = math.floor(self._total_number_of_frames / self.max_frames)
 
             odin_file_number = self._odin_writer_number + (
                 len(self._drv.nodes) * rollover_int
