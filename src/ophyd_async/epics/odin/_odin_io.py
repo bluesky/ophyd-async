@@ -124,11 +124,10 @@ class OdinWriter(DetectorWriter):
         self.data_shape = await self._get_data_shape()
 
         self._path_info = self._path_provider(device_name=name)
+        self._dtype = f"UInt{await self._detector_bit_depth().get_value()}"
 
         await asyncio.gather(
-            self._drv.data_type.set(
-                f"UInt{await self._detector_bit_depth().get_value()}"
-            ),
+            self._drv.data_type.set(self._dtype),
             self._drv.num_to_capture.set(0),
             self._drv.file_path.set(str(info.directory_path)),
             self._drv.file_name.set(info.filename),
@@ -151,7 +150,7 @@ class OdinWriter(DetectorWriter):
             wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT),
         )
 
-        self._np_dataype = convert_ad_dtype_to_np(await self._drv.data_type.get_value())  # type: ignore
+        self._np_dataype = convert_ad_dtype_to_np(self._dtype)  # type: ignore
 
         # Add the main data
         self._datasets = [
