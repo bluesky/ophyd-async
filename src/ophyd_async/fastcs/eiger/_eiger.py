@@ -37,7 +37,7 @@ class EigerDetector(StandardDetector):
         # In cases where this assumption is no longer valid the filename_suffix
         # will need to be determined by the number of the OdinNode for each OdinNode.
         # This means that there needs to be 1 OdinWriter per OdinNode
-        # see _odin_io: _odin_filename_suffix_creator
+        # see _odin_io: _get_odin_filename_suffix
         # TODO: https://github.com/bluesky/ophyd-async/issues/1137
 
         self.drv = EigerDriverIO(prefix + drv_suffix)

@@ -203,7 +203,7 @@ async def test_append_plugins_to_datasets(
     assert len(writer._datasets) == 5
 
 
-async def test_odin_filename_suffix_creator_give_correct(
+async def test_get_odin_filename_suffix(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
     driver, writer = odin_driver_and_writer
