@@ -201,3 +201,38 @@ async def test_append_plugins_to_datasets(
 
     await writer.append_plugins_to_datasets()
     assert len(writer._datasets) == 5
+
+
+async def test_odin_filename_suffix_creator_give_correct(
+    odin_driver_and_writer: OdinDriverAndWriter,
+):
+    driver, writer = odin_driver_and_writer
+
+    writer.max_frames = 1000
+
+    writer._odin_writer_number = 1
+    writer._exposures_per_event = 10
+
+    suffix = writer._odin_filename_suffix_creator()
+
+    assert suffix == "_000001"
+
+    writer._odin_writer_number = 3
+    writer._exposures_per_event = 10
+
+    suffix3 = writer._odin_filename_suffix_creator()
+
+    assert suffix3 == "_000003"
+
+    writer._odin_writer_number = 1
+    writer._exposures_per_event = 1500
+
+    suffix_rollover = writer._odin_filename_suffix_creator()
+
+    assert suffix_rollover == "_000005"
+
+    writer._odin_writer_number = 2
+    writer._exposures_per_event = 1500
+
+    suffix_rollover2 = writer._odin_filename_suffix_creator()
+    assert suffix_rollover2 == "_000006"
