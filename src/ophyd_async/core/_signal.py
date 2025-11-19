@@ -500,6 +500,9 @@ async def observe_signals_value(
                     f"timeout {done_timeout}s"
                 )
             iteration_timeout = _get_iteration_timeout(timeout, overall_deadline)
+            # yield here in case something else is filling the queue
+            # like in test_observe_value_times_out_with_no_external_task()
+            await asyncio.sleep(0)
             try:
                 item = await asyncio.wait_for(q.get(), iteration_timeout)
             except TimeoutError as exc:
