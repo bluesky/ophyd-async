@@ -261,7 +261,6 @@ class OdinWriter(DetectorWriter):
         self._capture_status = None
 
     def _get_odin_filename_suffix(self) -> str:
-        """Create the filename suffix for the Odin HDF5 file."""
         """
         Should result in _000001 for the first file created by this OdinWriter,
         If odin creates more frames than max number of frames it "rollsover"
