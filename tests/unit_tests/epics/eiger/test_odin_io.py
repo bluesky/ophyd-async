@@ -225,4 +225,4 @@ async def test_odin_filename_suffix_creator_give_correct(
 
     writer._odin_writer_number = 2
     writer._exposures_per_event = 1500
-    assert writer._odin_filename_suffix_creator() "_000006"
+    assert writer._odin_filename_suffix_creator() == "_000006"
