@@ -122,7 +122,7 @@ class OdinWriter(DetectorWriter):
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
-        
+
         self.data_shape = await self._get_data_shape()
 
         self._path_info = self._path_provider(device_name=name)
@@ -261,12 +261,11 @@ class OdinWriter(DetectorWriter):
         self._capture_status = None
 
     def _get_odin_filename_suffix(self) -> str:
-        """
-        Should result in _000001 for the first file created by this OdinWriter,
+        """Should result in _000001 for the first file created by this OdinWriter.
+
         If odin creates more frames than max number of frames it "rollsover"
         If there are 4 nodes, the next file should be _000005, etc.
         """
-
         if self._exposures_per_event > self.max_frames:
             rollover_int = math.floor(self._exposures_per_event / self.max_frames)
 
@@ -279,5 +278,3 @@ class OdinWriter(DetectorWriter):
         filename_suffix = f"_{odin_file_number:06d}"
 
         return filename_suffix
-
-
