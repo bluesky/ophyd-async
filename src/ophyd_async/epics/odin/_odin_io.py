@@ -166,7 +166,7 @@ class OdinWriter(DetectorWriter):
 
         await self.append_plugins_to_datasets()
 
-        self._filename_suffix = self._odin_filename_suffix_creator()
+        self._filename_suffix = self._get_odin_filename_suffix()
 
         self._composer = HDFDocumentComposer(
             f"{info.directory_uri}{info.filename}{self._filename_suffix}.h5",
@@ -259,7 +259,7 @@ class OdinWriter(DetectorWriter):
             await self._capture_status
         self._capture_status = None
 
-    def _odin_filename_suffix_creator(self) -> str:
+    def _get_odin_filename_suffix(self) -> str:
         """Create the filename suffix for the Odin HDF5 file."""
         """
         Should result in _000001 for the first file created by this OdinWriter,

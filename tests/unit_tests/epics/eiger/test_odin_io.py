@@ -212,17 +212,17 @@ async def test_odin_filename_suffix_creator_give_correct(
 
     writer._odin_writer_number = 1
     writer._exposures_per_event = 10
-    assert writer._odin_filename_suffix_creator() == "_000001"
+    assert writer._get_odin_filename_suffix() == "_000001"
 
     writer._odin_writer_number = 3
     writer._exposures_per_event = 10
-    assert writer._odin_filename_suffix_creator() == "_000003"
+    assert writer._get_odin_filename_suffix() == "_000003"
 
 
     writer._odin_writer_number = 1
     writer._exposures_per_event = 1500
-    assert writer._odin_filename_suffix_creator() == "_000005"
+    assert writer._get_odin_filename_suffix() == "_000005"
 
     writer._odin_writer_number = 2
     writer._exposures_per_event = 1500
-    assert writer._odin_filename_suffix_creator() == "_000006"
+    assert writer._get_odin_filename_suffix() == "_000006"
