@@ -122,7 +122,6 @@ class OdinWriter(DetectorWriter):
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
-
         self._total_number_of_frames = await self._drv.num_to_capture.get_value()
 
         self.data_shape = await self._get_data_shape()
