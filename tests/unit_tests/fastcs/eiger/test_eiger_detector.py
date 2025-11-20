@@ -2,9 +2,15 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from ophyd_async.core import DetectorTrigger, TriggerInfo, init_devices
+from ophyd_async.core import (
+    DetectorTrigger,
+    TriggerInfo,
+    callback_on_mock_put,
+    get_mock_put,
+    init_devices,
+    set_mock_value,
+)
 from ophyd_async.fastcs.eiger import EigerDetector
-from ophyd_async.testing import callback_on_mock_put, get_mock_put, set_mock_value
 
 
 @pytest.fixture
