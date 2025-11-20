@@ -266,6 +266,8 @@ class OdinWriter(DetectorWriter):
 
         If odin creates more frames than max number of frames it "rollsover"
         If there are 4 nodes, the next file should be _000005, etc.
+        Currently every  OdinWriter is 1.
+        # TODO: https://github.com/bluesky/ophyd-async/issues/1137
         """
         if self._total_number_of_frames > self.max_frames:
             rollover_int = math.floor(self._total_number_of_frames / self.max_frames)
