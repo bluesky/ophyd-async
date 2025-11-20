@@ -124,6 +124,8 @@ class OdinWriter(DetectorWriter):
         self._exposures_per_event = exposures_per_event
 
         # TODO: https://github.com/bluesky/ophyd-async/issues/1137
+        # not sure if these are the same. _exposures_per_event in TriggerInfo
+        # seems to be different from total frames
         self._total_number_of_frames = self._exposures_per_event
 
         self.data_shape = await self._get_data_shape()
