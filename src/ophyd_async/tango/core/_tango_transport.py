@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import logging
+import re
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine, Sequence
@@ -640,16 +641,12 @@ def get_source_metadata(
                 _choices = list(DevState.names.keys())
 
             _precision = None
-            if config.format:
-                try:
-                    _precision = int(config.format.split(".")[1].split("f")[0])
-                except (ValueError, IndexError) as exc:
-                    # If parsing config.format fails, _precision remains None.
-                    logger.warning(
-                        "Failed to parse precision from config.format: %s. Error: %s",
-                        config.format,
-                        exc,
-                    )
+
+            precision_pattern = re.compile(r"%\d*\.(\d+)f")
+
+            if config.format and (matches := precision_pattern.findall(config.format)):
+                _precision = int(matches[0])
+
             no_limits = Limits(
                 control=LimitsRange(high=None, low=None),
                 warning=LimitsRange(high=None, low=None),
