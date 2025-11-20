@@ -206,9 +206,10 @@ async def test_append_plugins_to_datasets(
 async def test_get_odin_filename_suffix(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
-    driver, writer = odin_driver_and_writer
+    _, writer = odin_driver_and_writer
 
     writer.max_frames = 1000
+    writer._drv.nodes = [1,2,3,4] # type: ignore For mock len(nodes)
 
     writer._odin_writer_number = 1
     writer._total_number_of_frames = 10
