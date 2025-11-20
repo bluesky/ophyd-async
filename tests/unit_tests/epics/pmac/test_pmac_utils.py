@@ -2,6 +2,7 @@ import pytest
 from scanspec.core import Path
 from scanspec.specs import Fly, Line
 
+from ophyd_async.core import set_mock_value
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import (
     PmacIO,
@@ -10,7 +11,6 @@ from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,  # noqa: PLC2701
     calculate_ramp_position_and_duration,  # noqa: PLC2701
 )
-from ophyd_async.testing import set_mock_value
 
 
 async def test_calculate_ramp_position_and_duration(

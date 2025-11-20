@@ -9,9 +9,9 @@ from ophyd_async.core import (
     Device,
     NotConnectedError,
     init_devices,
+    set_mock_value,
 )
 from ophyd_async.epics import motor
-from ophyd_async.testing import set_mock_value
 
 
 class FailingDevice(Device):

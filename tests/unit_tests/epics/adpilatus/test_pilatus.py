@@ -8,6 +8,7 @@ import pytest
 from ophyd_async.core import (
     DetectorTrigger,
     TriggerInfo,
+    set_mock_value,
 )
 from ophyd_async.epics import adcore
 from ophyd_async.epics.adpilatus import (
@@ -16,7 +17,6 @@ from ophyd_async.epics.adpilatus import (
     PilatusReadoutTime,
     PilatusTriggerMode,
 )
-from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture

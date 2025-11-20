@@ -30,6 +30,7 @@ from ophyd_async.core import (
     Table,
     YamlSettingsProvider,
     observe_value,
+    set_mock_value,
     soft_signal_r_and_setter,
 )
 from ophyd_async.epics.core import (
@@ -54,7 +55,7 @@ from ophyd_async.plan_stubs import (
     retrieve_settings,
     store_settings,
 )
-from ophyd_async.testing import MonitorQueue, assert_describe_signal, set_mock_value
+from ophyd_async.testing import MonitorQueue, assert_describe_signal
 
 T = TypeVar("T")
 Protocol = Literal["ca", "pva"]

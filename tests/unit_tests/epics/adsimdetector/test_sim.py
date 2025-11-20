@@ -21,9 +21,10 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
+    set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
-from ophyd_async.testing import assert_emitted, set_mock_value
+from ophyd_async.testing import assert_emitted
 
 
 @pytest.fixture
