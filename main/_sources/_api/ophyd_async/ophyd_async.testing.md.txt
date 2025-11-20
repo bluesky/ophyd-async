@@ -95,34 +95,6 @@
   - ```{autodoc2-docstring} ophyd_async.testing._assert.partial_reading
     :summary:
     ```
-* - {py:obj}`get_mock <ophyd_async.testing._mock_signal_utils.get_mock>`
-  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock
-    :summary:
-    ```
-* - {py:obj}`set_mock_value <ophyd_async.testing._mock_signal_utils.set_mock_value>`
-  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_value
-    :summary:
-    ```
-* - {py:obj}`set_mock_values <ophyd_async.testing._mock_signal_utils.set_mock_values>`
-  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_values
-    :summary:
-    ```
-* - {py:obj}`get_mock_put <ophyd_async.testing._mock_signal_utils.get_mock_put>`
-  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock_put
-    :summary:
-    ```
-* - {py:obj}`callback_on_mock_put <ophyd_async.testing._mock_signal_utils.callback_on_mock_put>`
-  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.callback_on_mock_put
-    :summary:
-    ```
-* - {py:obj}`mock_puts_blocked <ophyd_async.testing._mock_signal_utils.mock_puts_blocked>`
-  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.mock_puts_blocked
-    :summary:
-    ```
-* - {py:obj}`set_mock_put_proceeds <ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds>`
-  - ```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds
-    :summary:
-    ```
 * - {py:obj}`wait_for_pending_wakeups <ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups>`
   - ```{autodoc2-docstring} ophyd_async.testing._wait_for_pending.wait_for_pending_wakeups
     :summary:
@@ -189,55 +161,6 @@
 :canonical: ophyd_async.testing._assert.partial_reading
 
 ```{autodoc2-docstring} ophyd_async.testing._assert.partial_reading
-```
-````
-
-````{py:function} get_mock(device: ~ophyd_async.core.Device | ~ophyd_async.core.Signal) -> ~unittest.mock.Mock
-:canonical: ophyd_async.testing._mock_signal_utils.get_mock
-
-```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock
-```
-````
-
-````{py:function} set_mock_value(signal: ~ophyd_async.core.Signal[~ophyd_async.core.SignalDatatypeT], value: ~ophyd_async.core.SignalDatatypeT)
-:canonical: ophyd_async.testing._mock_signal_utils.set_mock_value
-
-```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_value
-```
-````
-
-````{py:function} set_mock_values(signal: ~ophyd_async.core.SignalR[~ophyd_async.core.SignalDatatypeT], values: ~collections.abc.Iterable[~ophyd_async.core.SignalDatatypeT], require_all_consumed: bool = False) -> ~collections.abc.Iterator[~ophyd_async.core.SignalDatatypeT]
-:canonical: ophyd_async.testing._mock_signal_utils.set_mock_values
-
-```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_values
-```
-````
-
-````{py:function} get_mock_put(signal: ~ophyd_async.core.Signal) -> ~unittest.mock.AsyncMock
-:canonical: ophyd_async.testing._mock_signal_utils.get_mock_put
-
-```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.get_mock_put
-```
-````
-
-````{py:function} callback_on_mock_put(signal: ~ophyd_async.core.Signal[~ophyd_async.core.SignalDatatypeT], callback: ~collections.abc.Callable[[~ophyd_async.core.SignalDatatypeT, bool], ~ophyd_async.core.SignalDatatypeT | None] | ~collections.abc.Callable[[~ophyd_async.core.SignalDatatypeT, bool], ~collections.abc.Awaitable[~ophyd_async.core.SignalDatatypeT | None]])
-:canonical: ophyd_async.testing._mock_signal_utils.callback_on_mock_put
-
-```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.callback_on_mock_put
-```
-````
-
-````{py:function} mock_puts_blocked(*signals: ~ophyd_async.core.Signal)
-:canonical: ophyd_async.testing._mock_signal_utils.mock_puts_blocked
-
-```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.mock_puts_blocked
-```
-````
-
-````{py:function} set_mock_put_proceeds(signal: ~ophyd_async.core.Signal, proceeds: bool)
-:canonical: ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds
-
-```{autodoc2-docstring} ophyd_async.testing._mock_signal_utils.set_mock_put_proceeds
 ```
 ````
 

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.13.7.dev5+g80ae4488a documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.13.8.dev1+g194c57188 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=e9f02dd9"></script>
+    <script src="../../_static/documentation_options.js?v=15d909b3"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.7.dev5+g80ae4488a documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.7.dev5+g80ae4488a documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.8.dev1+g194c57188 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.8.dev1+g194c57188 documentation - Home"/>
   
   
 </a></div>
@@ -600,7 +600,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SoftSignalBackend" title="ophyd_async.core._soft_signal_backend.SoftSignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code></a></p></td>
 <td><p>An backend to a soft Signal, for test signals see <a class="reference internal" href="#ophyd_async.core.MockSignalBackend" title="ophyd_async.core.MockSignalBackend"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">MockSignalBackend</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LazyMock</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DeviceMock" title="ophyd_async.core._device.DeviceMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DeviceMock</span></code></a></p></td>
 <td><p>A lazily created Mock to be used when connecting in mock mode.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.MockSignalBackend" title="ophyd_async.core._mock_signal_backend.MockSignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MockSignalBackend</span></code></a></p></td>
@@ -731,6 +731,30 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.soft_signal_rw" title="ophyd_async.core._signal.soft_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">soft_signal_rw</span></code></a></p></td>
 <td><p>Create a read-writable Signal with a <a class="reference internal" href="#ophyd_async.core.SoftSignalBackend" title="ophyd_async.core.SoftSignalBackend"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SoftSignalBackend</span></code></a>.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.default_mock_class" title="ophyd_async.core._device.default_mock_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_mock_class</span></code></a></p></td>
+<td><p>Register a DeviceMock subclass as the default mock for a Device class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.get_mock" title="ophyd_async.core._mock_signal_utils.get_mock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mock</span></code></a></p></td>
+<td><p>Return the mock (which may have child mocks attached) for a Device.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.set_mock_value" title="ophyd_async.core._mock_signal_utils.set_mock_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mock_value</span></code></a></p></td>
+<td><p>Set the value of a signal that is in mock mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.set_mock_values" title="ophyd_async.core._mock_signal_utils.set_mock_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mock_values</span></code></a></p></td>
+<td><p>Set a signal to a sequence of values, optionally repeating.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.get_mock_put" title="ophyd_async.core._mock_signal_utils.get_mock_put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mock_put</span></code></a></p></td>
+<td><p>Get the mock associated with the put call on the signal.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core._mock_signal_utils.callback_on_mock_put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a></p></td>
+<td><p>For setting a callback when a backend is put to.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.mock_puts_blocked" title="ophyd_async.core._mock_signal_utils.mock_puts_blocked"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mock_puts_blocked</span></code></a></p></td>
+<td><p>Context manager to block puts at the start and unblock at the end.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.set_mock_put_proceeds" title="ophyd_async.core._mock_signal_utils.set_mock_put_proceeds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mock_put_proceeds</span></code></a></p></td>
+<td><p>Allow or block a put with wait=True from proceeding.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.observe_value" title="ophyd_async.core._signal.observe_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">observe_value</span></code></a></p></td>
 <td><p>Subscribe to the value of a signal so it can be iterated from.</p></td>
 </tr>
@@ -820,25 +844,28 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Primitive" title="ophyd_async.core._signal_backend.Primitive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Primitive</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.CALCULATE_TIMEOUT" title="ophyd_async.core._utils.CALCULATE_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CALCULATE_TIMEOUT</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._device.LazyMock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LazyMock</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.CALCULATE_TIMEOUT" title="ophyd_async.core._utils.CALCULATE_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CALCULATE_TIMEOUT</span></code></a></p></td>
 <td><p>Sentinel used to implement <code class="docutils literal notranslate"><span class="pre">myfunc(timeout=CalculateTimeout)</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.CalculatableTimeout" title="ophyd_async.core._utils.CalculatableTimeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CalculatableTimeout</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.CalculatableTimeout" title="ophyd_async.core._utils.CalculatableTimeout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CalculatableTimeout</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DEFAULT_TIMEOUT" title="ophyd_async.core._utils.DEFAULT_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_TIMEOUT</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DEFAULT_TIMEOUT" title="ophyd_async.core._utils.DEFAULT_TIMEOUT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_TIMEOUT</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Callback" title="ophyd_async.core._utils.Callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Callback</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Callback" title="ophyd_async.core._utils.Callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Callback</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.ConfigSignal" title="ophyd_async.core._readable.ConfigSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigSignal</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.ConfigSignal" title="ophyd_async.core._readable.ConfigSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfigSignal</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.HintedSignal" title="ophyd_async.core._readable.HintedSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.HintedSignal" title="ophyd_async.core._readable.HintedSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._table.TableSubclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._table.TableSubclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -907,7 +934,7 @@ same names as the equivalent ophyd sync device.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.Device.connect">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_device.html#Device.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Device.connect" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.DeviceMock" title="ophyd_async.core._device.DeviceMock"><span class="pre">DeviceMock</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_device.html#Device.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Device.connect" title="Link to this definition">#</a></dt>
 <dd><p>Connect the device and all child devices.</p>
 <p>Successful connects will be cached so subsequent calls will return
 immediately. Contains a timeout that gets propagated to child.connect
@@ -916,8 +943,9 @@ methods.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mock</strong> – If True then use <a class="reference internal" href="#ophyd_async.core.MockSignalBackend" title="ophyd_async.core.MockSignalBackend"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">MockSignalBackend</span></code></a> for all Signals. If passed a
-<a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">LazyMock</span></code></a> then pass this down for use within the Signals,
-otherwise create one.</p></li>
+<a class="reference internal" href="#ophyd_async.core.DeviceMock" title="ophyd_async.core.DeviceMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceMock</span></code></a> then pass this down for use within the Signals,
+otherwise create one using the registered default mock for this device
+type, or a plain <a class="reference internal" href="#ophyd_async.core.DeviceMock" title="ophyd_async.core.DeviceMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceMock</span></code></a> if no default is registered.</p></li>
 <li><p><strong>timeout</strong> – Time to wait before failing with a TimeoutError.</p></li>
 <li><p><strong>force_reconnect</strong> – If True, force a reconnect even if the last connect succeeded.</p></li>
 </ul>
@@ -951,7 +979,7 @@ during <code class="docutils literal notranslate"><span class="pre">__init__</sp
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.DeviceConnector.connect_mock">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect_mock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_device.html#DeviceConnector.connect_mock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceConnector.connect_mock" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect_mock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.DeviceMock" title="ophyd_async.core._device.DeviceMock"><span class="pre">DeviceMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_device.html#DeviceConnector.connect_mock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceConnector.connect_mock" title="Link to this definition">#</a></dt>
 <dd><p>Use during <a class="reference internal" href="#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> with <code class="docutils literal notranslate"><span class="pre">mock=True</span></code>.</p>
 <p>This is called when there is no cached connect done in <code class="docutils literal notranslate"><span class="pre">mock=True</span></code>
 mode. It connects the Device and all its children in mock mode.</p>
@@ -1634,7 +1662,7 @@ once per run.</p>
 <p>Used for connecting signals with a given backend.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.SignalConnector.connect_mock">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect_mock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_signal.html#SignalConnector.connect_mock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalConnector.connect_mock" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect_mock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._device.LazyMock"><span class="pre">LazyMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_signal.html#SignalConnector.connect_mock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.SignalConnector.connect_mock" title="Link to this definition">#</a></dt>
 <dd><p>Use during <a class="reference internal" href="#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> with <code class="docutils literal notranslate"><span class="pre">mock=True</span></code>.</p>
 <p>This is called when there is no cached connect done in <code class="docutils literal notranslate"><span class="pre">mock=True</span></code>
 mode. It connects the Device and all its children in mock mode.</p>
@@ -1929,16 +1957,19 @@ Use soft_signal_rw if you want a device that is externally modifiable.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="ophyd_async.core.LazyMock">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">LazyMock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#LazyMock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.LazyMock" title="Link to this definition">#</a></dt>
-<dd><p>A lazily created Mock to be used when connecting in mock mode.</p>
+<dt class="sig sig-object py" id="ophyd_async.core.DeviceMock">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">DeviceMock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.DeviceMock" title="ophyd_async.core._device.DeviceMock"><span class="pre">DeviceMock</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_device.html#DeviceMock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceMock" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">typing.Generic</span></code></a>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._device.DeviceT</span></code>]</p>
+<p>A lazily created Mock to be used when connecting in mock mode.</p>
 <p>Creating Mocks is reasonably expensive when each Device (and Signal)
 requires its own, and the tree is only used when <code class="docutils literal notranslate"><span class="pre">Signal.set()</span></code> is
 called. This class allows a tree of lazily connected Mocks to be
 constructed so that when the leaf is created, so are its parents.
 Any calls to the child are then accessible from the parent mock.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parent</span> <span class="o">=</span> <span class="n">LazyMock</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">child</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="s2">&quot;child&quot;</span><span class="p">)</span>
+<p>Subclasses can override the <code class="docutils literal notranslate"><span class="pre">connect()</span></code> method to inject custom logic
+when mock devices are connected.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parent</span> <span class="o">=</span> <span class="n">DeviceMock</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">child</span> <span class="o">=</span> <span class="n">DeviceMock</span><span class="p">(</span><span class="s2">&quot;child&quot;</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">child_mock</span> <span class="o">=</span> <span class="n">child</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">child_mock</span><span class="p">()</span>
 <span class="go">&lt;Mock name=&#39;mock.child()&#39; id=&#39;...&#39;&gt;</span>
@@ -1949,16 +1980,24 @@ Any calls to the child are then accessible from the parent mock.</p>
 </pre></div>
 </div>
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.core.LazyMock.child">
-<span class="sig-name descname"><span class="pre">child</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#LazyMock.child"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.LazyMock.child" title="Link to this definition">#</a></dt>
-<dd><p>Return a child of this LazyMock with the given name.</p>
+<dt class="sig sig-object py" id="ophyd_async.core.DeviceMock.connect">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DeviceT</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_device.html#DeviceMock.connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DeviceMock.connect" title="Link to this definition">#</a></dt>
+<dd><p>Will be called when the device is connected in mock mode.</p>
+<p>This allows mock values to be set and callbacks to be added
+to the mock device so it behaves more like the real device.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ophyd_async.core.LazyMock">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">LazyMock</span></span><a class="headerlink" href="#ophyd_async.core.LazyMock" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.MockSignalBackend">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">MockSignalBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core._signal_backend.SignalBackend"><span class="pre">SignalBackend</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._utils.LazyMock"><span class="pre">LazyMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_backend.html#MockSignalBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockSignalBackend" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">MockSignalBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">initial_backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core._signal_backend.SignalBackend"><span class="pre">SignalBackend</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.LazyMock" title="ophyd_async.core._device.LazyMock"><span class="pre">LazyMock</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_backend.html#MockSignalBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockSignalBackend" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core._signal_backend.SignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._signal_backend.SignalBackend</span></code></a>[<a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._signal_backend.SignalDatatypeT</span></code></a>]</p>
 <p>Signal backend for testing, created by <code class="docutils literal notranslate"><span class="pre">Device.connect(mock=True)</span></code>.</p>
 <dl class="py method">
@@ -2036,6 +2075,99 @@ Any calls to the child are then accessible from the parent mock.</p>
 <dd><p>Observe changes to the current value, timestamp and severity.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.default_mock_class">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">default_mock_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mock_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.DeviceMock" title="ophyd_async.core._device.DeviceMock"><span class="pre">DeviceMock</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">DeviceT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">DeviceT</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_device.html#default_mock_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.default_mock_class" title="Link to this definition">#</a></dt>
+<dd><p>Register a DeviceMock subclass as the default mock for a Device class.</p>
+<p>This decorator allows automatic injection of mock logic when devices are
+connected in mock mode. The decorated DeviceMock class should override
+the <code class="docutils literal notranslate"><span class="pre">connect()</span></code> method to define custom mock behavior.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>mock_cls</strong> – A DeviceMock subclass to register.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A decorator that registers the mock class for a Device subclass.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.get_mock">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_mock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Device" title="ophyd_async.core._device.Device"><span class="pre">Device</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><span class="pre">Signal</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock" title="(in Python v3.14)"><span class="pre">Mock</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#get_mock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_mock" title="Link to this definition">#</a></dt>
+<dd><p>Return the mock (which may have child mocks attached) for a Device.</p>
+<p>The device must have been connected in mock mode.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.set_mock_value">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_mock_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><span class="pre">Signal</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#set_mock_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_mock_value" title="Link to this definition">#</a></dt>
+<dd><p>Set the value of a signal that is in mock mode.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.set_mock_values">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_mock_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.SignalR" title="ophyd_async.core._signal.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.14)"><span class="pre">Iterable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">require_all_consumed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.14)"><span class="pre">Iterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#set_mock_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_mock_values" title="Link to this definition">#</a></dt>
+<dd><p>Set a signal to a sequence of values, optionally repeating.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> – A signal connected in mock mode.</p></li>
+<li><p><strong>values</strong> – An iterable of the values to set the signal to, on each iteration the
+next value will be set.</p></li>
+<li><p><strong>require_all_consumed</strong> – If True, an AssertionError will be raised if the iterator is deleted
+before all values have been consumed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">value_set</span> <span class="ow">in</span> <span class="n">set_mock_values</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)):</span>
+    <span class="c1"># do something</span>
+
+<span class="n">cm</span> <span class="o">=</span> <span class="n">set_mock_values</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="n">require_all_consumed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="nb">next</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span> <span class="c1"># do something</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.get_mock_put">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_mock_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><span class="pre">Signal</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock" title="(in Python v3.14)"><span class="pre">AsyncMock</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#get_mock_put"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_mock_put" title="Link to this definition">#</a></dt>
+<dd><p>Get the mock associated with the put call on the signal.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.callback_on_mock_put">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">callback_on_mock_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><span class="pre">Signal</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable" title="(in Python v3.14)"><span class="pre">Awaitable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#callback_on_mock_put"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.callback_on_mock_put" title="Link to this definition">#</a></dt>
+<dd><p>For setting a callback when a backend is put to.</p>
+<p>Can either be used in a context, with the callback being unset on exit, or
+as an ordinary function.</p>
+<p>The value that the callback returns (if not None) will be set to the signal
+readback. If None is returned then the readback will be set to the setpoint.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal</strong> – A signal with a <code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code> backend.</p></li>
+<li><p><strong>callback</strong> – The callback to call when the backend is put to during the
+context.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.mock_puts_blocked">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">mock_puts_blocked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">signals</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><span class="pre">Signal</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#mock_puts_blocked"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.mock_puts_blocked" title="Link to this definition">#</a></dt>
+<dd><p>Context manager to block puts at the start and unblock at the end.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.core.set_mock_put_proceeds">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">set_mock_put_proceeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><span class="pre">Signal</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">proceeds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#set_mock_put_proceeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.set_mock_put_proceeds" title="Link to this definition">#</a></dt>
+<dd><p>Allow or block a put with wait=True from proceeding.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -3916,10 +4048,11 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.soft_signal_r_and_setter"><code class="docutils literal notranslate"><span class="pre">soft_signal_r_and_setter()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.soft_signal_rw"><code class="docutils literal notranslate"><span class="pre">soft_signal_rw()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.LazyMock"><code class="docutils literal notranslate"><span class="pre">LazyMock</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.LazyMock.child"><code class="docutils literal notranslate"><span class="pre">LazyMock.child()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceMock"><code class="docutils literal notranslate"><span class="pre">DeviceMock</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DeviceMock.connect"><code class="docutils literal notranslate"><span class="pre">DeviceMock.connect()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.LazyMock"><code class="docutils literal notranslate"><span class="pre">LazyMock</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.put_mock"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.put_mock()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.set_value"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.set_value()</span></code></a></li>
@@ -3934,6 +4067,14 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.set_callback"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.set_callback()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.default_mock_class"><code class="docutils literal notranslate"><span class="pre">default_mock_class()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_mock"><code class="docutils literal notranslate"><span class="pre">get_mock()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_mock_value"><code class="docutils literal notranslate"><span class="pre">set_mock_value()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_mock_values"><code class="docutils literal notranslate"><span class="pre">set_mock_values()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.get_mock_put"><code class="docutils literal notranslate"><span class="pre">get_mock_put()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.callback_on_mock_put"><code class="docutils literal notranslate"><span class="pre">callback_on_mock_put()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.mock_puts_blocked"><code class="docutils literal notranslate"><span class="pre">mock_puts_blocked()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.set_mock_put_proceeds"><code class="docutils literal notranslate"><span class="pre">set_mock_put_proceeds()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.observe_value"><code class="docutils literal notranslate"><span class="pre">observe_value()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.observe_signals_value"><code class="docutils literal notranslate"><span class="pre">observe_signals_value()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.wait_for_value"><code class="docutils literal notranslate"><span class="pre">wait_for_value()</span></code></a></li>

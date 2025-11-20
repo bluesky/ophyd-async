@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.8.1.dev13+g3f97acaf documentation</title>
+    <title>ophyd_async.core._mock_signal_utils &#8212; ophyd-async 0.13.8.dev1+g194c57188 documentation</title>
   
   
   
@@ -15,8 +15,8 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!-- 
-    this give us a css class that will be invisible only if js is disabled 
+  <!--
+    this give us a css class that will be invisible only if js is disabled
   -->
   <noscript>
     <style>
@@ -26,24 +26,23 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/autodoc_pydantic.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=3fefa004" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=6327a9b6"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/documentation_options.js?v=15d909b3"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../../_static/copybutton.js?v=30646c52"></script>
@@ -58,10 +57,11 @@ window.addEventListener("load", () => mermaid.run());
 </script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/core/_mock_signal_utils';</script>
     <script>
-        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
-        DOCUMENTATION_OPTIONS.show_version_warning_banner = false;
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
         </script>
     <link rel="icon" href="../../../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.8.1.dev13+g3f97acaf documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.8.1.dev13+g3f97acaf documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.8.dev1+g194c57188 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.8.dev1+g194c57188 documentation - Home"/>
   
   
 </a></div>
@@ -409,9 +409,14 @@ window.addEventListener("load", () => mermaid.run());
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -458,82 +463,55 @@ window.addEventListener("load", () => mermaid.run());
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.core._mock_signal_utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
-<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
-<span class="kn">from</span> <span class="nn">unittest.mock</span> <span class="kn">import</span> <span class="n">AsyncMock</span><span class="p">,</span> <span class="n">Mock</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">unittest.mock</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncMock</span><span class="p">,</span> <span class="n">Mock</span>
 
-<span class="kn">from</span> <span class="nn">._device</span> <span class="kn">import</span> <span class="n">Device</span>
-<span class="kn">from</span> <span class="nn">._mock_signal_backend</span> <span class="kn">import</span> <span class="n">MockSignalBackend</span>
-<span class="kn">from</span> <span class="nn">._signal</span> <span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">SignalConnector</span><span class="p">,</span> <span class="n">SignalR</span>
-<span class="kn">from</span> <span class="nn">._soft_signal_backend</span> <span class="kn">import</span> <span class="n">SignalDatatypeT</span>
-<span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">LazyMock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceMock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._mock_signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">MockSignalBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">SignalConnector</span><span class="p">,</span> <span class="n">SignalR</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalDatatypeT</span>
 
 
-<span class="k">def</span> <span class="nf">get_mock</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="n">Signal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mock</span><span class="p">:</span>
+<div class="viewcode-block" id="get_mock">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_mock</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="n">Signal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mock</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the mock (which may have child mocks attached) for a Device.</span>
+
+<span class="sd">    The device must have been connected in mock mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mock</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">_mock</span>  <span class="c1"># noqa: SLF001</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mock</span><span class="p">,</span> <span class="n">LazyMock</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Device </span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> not connected in mock mode&quot;</span>
-    <span class="k">return</span> <span class="n">mock</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mock</span><span class="p">,</span> <span class="n">DeviceMock</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Device </span><span class="si">{</span><span class="n">device</span><span class="si">}</span><span class="s2"> not connected in mock mode&quot;</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mock</span><span class="p">()</span></div>
 
 
-<span class="k">def</span> <span class="nf">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MockSignalBackend</span><span class="p">:</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MockSignalBackend</span><span class="p">:</span>
     <span class="n">connector</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">_connector</span>  <span class="c1"># noqa: SLF001</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">connector</span><span class="p">,</span> <span class="n">SignalConnector</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected Signal, got </span><span class="si">{</span><span class="n">signal</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
-        <span class="n">connector</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">MockSignalBackend</span>
-    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Signal </span><span class="si">{</span><span class="n">signal</span><span class="si">}</span><span class="s2"> not connected in mock mode&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">connector</span><span class="p">,</span> <span class="n">SignalConnector</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected Signal, got </span><span class="si">{</span><span class="n">signal</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">connector</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">MockSignalBackend</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Signal </span><span class="si">{</span><span class="n">signal</span><span class="si">}</span><span class="s2"> not connected in mock mode&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">connector</span><span class="o">.</span><span class="n">backend</span>
 
 
 <div class="viewcode-block" id="set_mock_value">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_mock_value">[docs]</a>
-<span class="k">def</span> <span class="nf">set_mock_value</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_value">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_mock_value</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set the value of a signal that is in mock mode.&quot;&quot;&quot;</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
     <span class="n">backend</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 
 
 
-<div class="viewcode-block" id="set_mock_put_proceeds">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_mock_put_proceeds">[docs]</a>
-<span class="k">def</span> <span class="nf">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">proceeds</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Allow or block a put with wait=True from proceeding&quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">proceeds</span><span class="p">:</span>
-        <span class="n">backend</span><span class="o">.</span><span class="n">put_proceeds</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">backend</span><span class="o">.</span><span class="n">put_proceeds</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
-
-
-
-<span class="nd">@contextmanager</span>
-<span class="k">def</span> <span class="nf">mock_puts_blocked</span><span class="p">(</span><span class="o">*</span><span class="n">signals</span><span class="p">:</span> <span class="n">Signal</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
-        <span class="n">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-    <span class="k">yield</span>
-    <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
-        <span class="n">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="get_mock_put">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.get_mock_put">[docs]</a>
-<span class="k">def</span> <span class="nf">get_mock_put</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncMock</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the mock associated with the put call on the signal.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span><span class="o">.</span><span class="n">put_mock</span></div>
-
-
-
-<span class="k">def</span> <span class="nf">reset_mock_put_calls</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">):</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
-    <span class="n">backend</span><span class="o">.</span><span class="n">put_mock</span><span class="o">.</span><span class="n">reset_mock</span><span class="p">()</span>
-
-
-<span class="k">class</span> <span class="nc">_SetValuesIterator</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_SetValuesIterator</span><span class="p">(</span><span class="n">Iterator</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
     <span class="c1"># Garbage collected by the time __del__ is called unless we put it as a</span>
     <span class="c1"># global attrbute here.</span>
     <span class="n">require_all_consumed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
         <span class="n">values</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
@@ -543,19 +521,15 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">require_all_consumed</span> <span class="o">=</span> <span class="n">require_all_consumed</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">iterator</span> <span class="o">=</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDatatypeT</span><span class="p">:</span>
         <span class="c1"># Will propogate StopIteration</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">next_value</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterator</span><span class="p">)</span>
         <span class="n">set_mock_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="p">,</span> <span class="n">next_value</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">next_value</span>
 
-    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">require_all_consumed</span><span class="p">:</span>
             <span class="c1"># Values is cast to a list here because the user has supplied</span>
             <span class="c1"># require_all_consumed=True, we can therefore assume they</span>
@@ -575,38 +549,31 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <div class="viewcode-block" id="set_mock_values">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.set_mock_values">[docs]</a>
-<span class="k">def</span> <span class="nf">set_mock_values</span><span class="p">(</span>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_values">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_mock_values</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">values</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
     <span class="n">require_all_consumed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SetValuesIterator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Iterator to set a signal to a sequence of values, optionally repeating the</span>
-<span class="sd">    sequence.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a signal to a sequence of values, optionally repeating.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    signal:</span>
-<span class="sd">        A signal with a `MockSignalBackend` backend.</span>
-<span class="sd">    values:</span>
-<span class="sd">        An iterable of the values to set the signal to, on each iteration</span>
-<span class="sd">        the value will be set.</span>
-<span class="sd">    require_all_consumed:</span>
-<span class="sd">        If True, an AssertionError will be raised if the iterator is deleted before</span>
-<span class="sd">        all values have been consumed.</span>
+<span class="sd">    :param signal: A signal connected in mock mode.</span>
+<span class="sd">    :param values:</span>
+<span class="sd">        An iterable of the values to set the signal to, on each iteration the</span>
+<span class="sd">        next value will be set.</span>
+<span class="sd">    :param require_all_consumed:</span>
+<span class="sd">        If True, an AssertionError will be raised if the iterator is deleted</span>
+<span class="sd">        before all values have been consumed.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Example usage::</span>
+<span class="sd">    :example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">    for value_set in set_mock_values(signal, range(3)):</span>
+<span class="sd">        # do something</span>
 
-<span class="sd">           for value_set in set_mock_values(signal, [1, 2, 3]):</span>
-<span class="sd">                # do something</span>
-
-<span class="sd">            cm = set_mock_values(signal, 1, 2, 3, require_all_consumed=True):</span>
-<span class="sd">            next(cm)</span>
-<span class="sd">            # do something</span>
+<span class="sd">    cm = set_mock_values(signal, [1, 3, 8], require_all_consumed=True):</span>
+<span class="sd">    next(cm) # do something</span>
+<span class="sd">    ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">return</span> <span class="n">_SetValuesIterator</span><span class="p">(</span>
         <span class="n">signal</span><span class="p">,</span>
         <span class="n">values</span><span class="p">,</span>
@@ -616,33 +583,67 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <span class="nd">@contextmanager</span>
-<span class="k">def</span> <span class="nf">_unset_side_effect_cm</span><span class="p">(</span><span class="n">put_mock</span><span class="p">:</span> <span class="n">AsyncMock</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_unset_side_effect_cm</span><span class="p">(</span><span class="n">put_mock</span><span class="p">:</span> <span class="n">AsyncMock</span><span class="p">):</span>
     <span class="k">yield</span>
     <span class="n">put_mock</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="callback_on_mock_put">
-<a class="viewcode-back" href="../../../_api/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put">[docs]</a>
-<span class="k">def</span> <span class="nf">callback_on_mock_put</span><span class="p">(</span>
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">callback_on_mock_put</span><span class="p">(</span>
     <span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
-    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
-    <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]],</span>
+    <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="nb">bool</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For setting a callback when a backend is put to.</span>
 
-<span class="sd">    Can either be used in a context, with the callback being</span>
-<span class="sd">    unset on exit, or as an ordinary function.</span>
+<span class="sd">    Can either be used in a context, with the callback being unset on exit, or</span>
+<span class="sd">    as an ordinary function.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    signal:</span>
-<span class="sd">        A signal with a `MockSignalBackend` backend.</span>
-<span class="sd">    callback:</span>
-<span class="sd">        The callback to call when the backend is put to during the context.</span>
+<span class="sd">    The value that the callback returns (if not None) will be set to the signal</span>
+<span class="sd">    readback. If None is returned then the readback will be set to the setpoint.</span>
+
+<span class="sd">    :param signal: A signal with a `MockSignalBackend` backend.</span>
+<span class="sd">    :param callback: The callback to call when the backend is put to during the</span>
+<span class="sd">        context.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
     <span class="n">backend</span><span class="o">.</span><span class="n">put_mock</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="n">callback</span>
     <span class="k">return</span> <span class="n">_unset_side_effect_cm</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">put_mock</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="set_mock_put_proceeds">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_put_proceeds">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">proceeds</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Allow or block a put with wait=True from proceeding.&quot;&quot;&quot;</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">proceeds</span><span class="p">:</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">put_proceeds</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">put_proceeds</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="mock_puts_blocked">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.mock_puts_blocked">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mock_puts_blocked</span><span class="p">(</span><span class="o">*</span><span class="n">signals</span><span class="p">:</span> <span class="n">Signal</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Context manager to block puts at the start and unblock at the end.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
+        <span class="n">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">signals</span><span class="p">:</span>
+        <span class="n">set_mock_put_proceeds</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_mock_put">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_mock_put">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_mock_put</span><span class="p">(</span><span class="n">signal</span><span class="p">:</span> <span class="n">Signal</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncMock</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the mock associated with the put call on the signal.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_get_mock_signal_backend</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span><span class="o">.</span><span class="n">put_mock</span></div>
 
 </pre></div>
 
@@ -673,8 +674,8 @@ window.addEventListener("load", () => mermaid.run());
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -685,7 +686,8 @@ window.addEventListener("load", () => mermaid.run());
       
         <div class="footer-item">
 <p class="theme-version">
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
 </p></div>
       
     </div>

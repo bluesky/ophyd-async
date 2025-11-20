@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.7.dev5+g80ae4488a documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.13.8.dev1+g194c57188 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=e9f02dd9"></script>
+    <script src="../../../_static/documentation_options.js?v=15d909b3"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.7.dev5+g80ae4488a documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.7.dev5+g80ae4488a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.8.dev1+g194c57188 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.8.dev1+g194c57188 documentation - Home"/>
   
   
 </a></div>
@@ -468,6 +468,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">https://github.com/epics-modules/motor</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -486,18 +488,22 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">AsyncStatus</span><span class="p">,</span>
     <span class="n">CalculatableTimeout</span><span class="p">,</span>
     <span class="n">Callback</span><span class="p">,</span>
+    <span class="n">DeviceMock</span><span class="p">,</span>
     <span class="n">FlyMotorInfo</span><span class="p">,</span>
     <span class="n">StandardReadable</span><span class="p">,</span>
     <span class="n">StrictEnum</span><span class="p">,</span>
     <span class="n">WatchableAsyncStatus</span><span class="p">,</span>
     <span class="n">WatcherUpdate</span><span class="p">,</span>
+    <span class="n">callback_on_mock_put</span><span class="p">,</span>
+    <span class="n">default_mock_class</span><span class="p">,</span>
     <span class="n">error_if_none</span><span class="p">,</span>
     <span class="n">observe_value</span><span class="p">,</span>
+    <span class="n">set_mock_value</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">epics_signal_r</span><span class="p">,</span> <span class="n">epics_signal_rw</span><span class="p">,</span> <span class="n">epics_signal_w</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;MotorLimitsError&quot;</span><span class="p">,</span> <span class="s2">&quot;Motor&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;MotorLimitsError&quot;</span><span class="p">,</span> <span class="s2">&quot;Motor&quot;</span><span class="p">,</span> <span class="s2">&quot;InstantMotorMock&quot;</span><span class="p">,</span> <span class="s2">&quot;OffsetMode&quot;</span><span class="p">,</span> <span class="s2">&quot;UseSetMode&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="MotorLimitsError">
@@ -528,18 +534,60 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;module </span><span class="si">{</span><span class="vm">__name__</span><span class="si">!r}</span><span class="s2"> has no attribute </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="OffsetMode">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.OffsetMode">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OffsetMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;In Set mode, determine what to do when the motor setpoint is written.&quot;&quot;&quot;</span>
+
     <span class="n">VARIABLE</span> <span class="o">=</span> <span class="s2">&quot;Variable&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Change the offset so the readback matches the setpoint.&quot;&quot;&quot;</span>
     <span class="n">FROZEN</span> <span class="o">=</span> <span class="s2">&quot;Frozen&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tell the controller to change the readback without changing the offset.&quot;&quot;&quot;</span></div>
 
 
+
+<div class="viewcode-block" id="UseSetMode">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.UseSetMode">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">UseSetMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine what to do when the motor setpoint is written.&quot;&quot;&quot;</span>
+
     <span class="n">USE</span> <span class="o">=</span> <span class="s2">&quot;Use&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tell the controller to move to the setpoint.&quot;&quot;&quot;</span>
     <span class="n">SET</span> <span class="o">=</span> <span class="s2">&quot;Set&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Change offset (in record or in controller) when setpoint is written.&quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="InstantMotorMock">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.InstantMotorMock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InstantMotorMock</span><span class="p">(</span><span class="n">DeviceMock</span><span class="p">[</span><span class="s2">&quot;Motor&quot;</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mock behaviour that instantly moves readback to setpoint.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InstantMotorMock.connect">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.InstantMotorMock.connect">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Motor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mock signals to do an instant move on setpoint write.&quot;&quot;&quot;</span>
+        <span class="c1"># Set sensible defaults to avoid runtime errors</span>
+        <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Prevent ZeroDivisionError</span>
+        <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Prevent ZeroDivisionError</span>
+
+        <span class="c1"># Motor starts in &quot;done&quot; state (not moving)</span>
+        <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># When setpoint is written to, immediately update readback and done flag</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_instant_move</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">wait</span><span class="p">):</span>
+            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># Moving</span>
+            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>  <span class="c1"># Arrive instantly</span>
+            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Done</span>
+
+        <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_setpoint</span><span class="p">,</span> <span class="n">_instant_move</span><span class="p">)</span></div>
+</div>
+
 
 
 <div class="viewcode-block" id="Motor">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor">[docs]</a>
+<span class="nd">@default_mock_class</span><span class="p">(</span><span class="n">InstantMotorMock</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span>
     <span class="n">StandardReadable</span><span class="p">,</span>
     <span class="n">Locatable</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>

@@ -111,8 +111,8 @@
   - ```{autodoc2-docstring} ophyd_async.core._soft_signal_backend.SoftSignalBackend
     :summary:
     ```
-* - {py:obj}`LazyMock <ophyd_async.core._utils.LazyMock>`
-  - ```{autodoc2-docstring} ophyd_async.core._utils.LazyMock
+* - {py:obj}`DeviceMock <ophyd_async.core._device.DeviceMock>`
+  - ```{autodoc2-docstring} ophyd_async.core._device.DeviceMock
     :summary:
     ```
 * - {py:obj}`MockSignalBackend <ophyd_async.core._mock_signal_backend.MockSignalBackend>`
@@ -283,6 +283,38 @@
   - ```{autodoc2-docstring} ophyd_async.core._signal.soft_signal_rw
     :summary:
     ```
+* - {py:obj}`default_mock_class <ophyd_async.core._device.default_mock_class>`
+  - ```{autodoc2-docstring} ophyd_async.core._device.default_mock_class
+    :summary:
+    ```
+* - {py:obj}`get_mock <ophyd_async.core._mock_signal_utils.get_mock>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.get_mock
+    :summary:
+    ```
+* - {py:obj}`set_mock_value <ophyd_async.core._mock_signal_utils.set_mock_value>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_value
+    :summary:
+    ```
+* - {py:obj}`set_mock_values <ophyd_async.core._mock_signal_utils.set_mock_values>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_values
+    :summary:
+    ```
+* - {py:obj}`get_mock_put <ophyd_async.core._mock_signal_utils.get_mock_put>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.get_mock_put
+    :summary:
+    ```
+* - {py:obj}`callback_on_mock_put <ophyd_async.core._mock_signal_utils.callback_on_mock_put>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.callback_on_mock_put
+    :summary:
+    ```
+* - {py:obj}`mock_puts_blocked <ophyd_async.core._mock_signal_utils.mock_puts_blocked>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.mock_puts_blocked
+    :summary:
+    ```
+* - {py:obj}`set_mock_put_proceeds <ophyd_async.core._mock_signal_utils.set_mock_put_proceeds>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_put_proceeds
+    :summary:
+    ```
 * - {py:obj}`observe_value <ophyd_async.core._signal.observe_value>`
   - ```{autodoc2-docstring} ophyd_async.core._signal.observe_value
     :summary:
@@ -399,6 +431,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.Primitive
     :summary:
     ```
+* - {py:obj}`LazyMock <ophyd_async.core._device.LazyMock>`
+  - ```{autodoc2-docstring} ophyd_async.core._device.LazyMock
+    :summary:
+    ```
 * - {py:obj}`CALCULATE_TIMEOUT <ophyd_async.core._utils.CALCULATE_TIMEOUT>`
   - ```{autodoc2-docstring} ophyd_async.core._utils.CALCULATE_TIMEOUT
     :summary:
@@ -483,7 +519,7 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 
 ````
 
-````{py:method} connect(mock: bool | ~ophyd_async.core._utils.LazyMock = False, timeout: float = DEFAULT_TIMEOUT, force_reconnect: bool = False) -> None
+````{py:method} connect(mock: bool | ~ophyd_async.core._device.DeviceMock = False, timeout: float = DEFAULT_TIMEOUT, force_reconnect: bool = False) -> None
 :canonical: ophyd_async.core._device.Device.connect
 :async:
 
@@ -508,7 +544,7 @@ Bases: {py:obj}`bluesky.protocols.HasName`
 
 ````
 
-````{py:method} connect_mock(device: ~ophyd_async.core._device.Device, mock: ~ophyd_async.core._utils.LazyMock)
+````{py:method} connect_mock(device: ~ophyd_async.core._device.Device, mock: ~ophyd_async.core._device.DeviceMock)
 :canonical: ophyd_async.core._device.DeviceConnector.connect_mock
 :async:
 
@@ -1142,7 +1178,7 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalConnector
 ```
 
-````{py:method} connect_mock(device: ~ophyd_async.core._device.Device, mock: ~ophyd_async.core._utils.LazyMock)
+````{py:method} connect_mock(device: ~ophyd_async.core._device.Device, mock: ~ophyd_async.core._device.LazyMock)
 :canonical: ophyd_async.core._signal.SignalConnector.connect_mock
 :async:
 
@@ -1453,23 +1489,36 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ```
 ````
 
-`````{py:class} LazyMock(name: str = '', parent: ~ophyd_async.core._utils.LazyMock | None = None)
-:canonical: ophyd_async.core._utils.LazyMock
+`````{py:class} DeviceMock(name: str = '', parent: ~ophyd_async.core._device.DeviceMock | None = None)
+:canonical: ophyd_async.core._device.DeviceMock
 
-```{autodoc2-docstring} ophyd_async.core._utils.LazyMock
+Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device.DeviceT`\]
+
+```{autodoc2-docstring} ophyd_async.core._device.DeviceMock
 ```
 
-````{py:method} child(name: str) -> ~ophyd_async.core._utils.LazyMock
-:canonical: ophyd_async.core._utils.LazyMock.child
+````{py:method} connect(device: ~ophyd_async.core._device.DeviceT) -> None
+:canonical: ophyd_async.core._device.DeviceMock.connect
+:async:
 
-```{autodoc2-docstring} ophyd_async.core._utils.LazyMock.child
+```{autodoc2-docstring} ophyd_async.core._device.DeviceMock.connect
 ```
 
 ````
 
 `````
 
-`````{py:class} MockSignalBackend(initial_backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], mock: ~ophyd_async.core._utils.LazyMock)
+````{py:data} LazyMock
+:canonical: ophyd_async.core._device.LazyMock
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.core._device.LazyMock
+```
+
+````
+
+`````{py:class} MockSignalBackend(initial_backend: ~ophyd_async.core._signal_backend.SignalBackend[~ophyd_async.core._signal_backend.SignalDatatypeT], mock: ~ophyd_async.core._device.LazyMock)
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend
 
 Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\]
@@ -1572,6 +1621,62 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ````
 
 `````
+
+````{py:function} default_mock_class(mock_cls: type[~ophyd_async.core._device.DeviceMock]) -> ~collections.abc.Callable[[type[~ophyd_async.core._device.DeviceT]], type[~ophyd_async.core._device.DeviceT]]
+:canonical: ophyd_async.core._device.default_mock_class
+
+```{autodoc2-docstring} ophyd_async.core._device.default_mock_class
+```
+````
+
+````{py:function} get_mock(device: ~ophyd_async.core._device.Device | ~ophyd_async.core._signal.Signal) -> ~unittest.mock.Mock
+:canonical: ophyd_async.core._mock_signal_utils.get_mock
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.get_mock
+```
+````
+
+````{py:function} set_mock_value(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], value: ~ophyd_async.core._signal_backend.SignalDatatypeT)
+:canonical: ophyd_async.core._mock_signal_utils.set_mock_value
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_value
+```
+````
+
+````{py:function} set_mock_values(signal: ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT], values: ~collections.abc.Iterable[~ophyd_async.core._signal_backend.SignalDatatypeT], require_all_consumed: bool = False) -> ~collections.abc.Iterator[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._mock_signal_utils.set_mock_values
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_values
+```
+````
+
+````{py:function} get_mock_put(signal: ~ophyd_async.core._signal.Signal) -> ~unittest.mock.AsyncMock
+:canonical: ophyd_async.core._mock_signal_utils.get_mock_put
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.get_mock_put
+```
+````
+
+````{py:function} callback_on_mock_put(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], callback: ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT, bool], ~ophyd_async.core._signal_backend.SignalDatatypeT | None] | ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT, bool], ~collections.abc.Awaitable[~ophyd_async.core._signal_backend.SignalDatatypeT | None]])
+:canonical: ophyd_async.core._mock_signal_utils.callback_on_mock_put
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.callback_on_mock_put
+```
+````
+
+````{py:function} mock_puts_blocked(*signals: ~ophyd_async.core._signal.Signal)
+:canonical: ophyd_async.core._mock_signal_utils.mock_puts_blocked
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.mock_puts_blocked
+```
+````
+
+````{py:function} set_mock_put_proceeds(signal: ~ophyd_async.core._signal.Signal, proceeds: bool)
+:canonical: ophyd_async.core._mock_signal_utils.set_mock_put_proceeds
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_put_proceeds
+```
+````
 
 ````{py:function} observe_value(signal: ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT], timeout: float | None = None, done_status: ~bluesky.protocols.Status | None = None, done_timeout: float | None = None) -> ~collections.abc.AsyncGenerator[~ophyd_async.core._signal_backend.SignalDatatypeT, None]
 :canonical: ophyd_async.core._signal.observe_value
