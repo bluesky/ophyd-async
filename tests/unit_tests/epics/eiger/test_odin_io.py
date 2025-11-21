@@ -29,6 +29,8 @@ def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
         driver = Odin("")
         writer = OdinWriter(MagicMock(), driver, eiger_bit_depth)
     writer._path_provider.return_value.filename = "filename.h5"  # type: ignore
+    set_mock_value(writer._drv.block_size, 1000)
+    set_mock_value(writer._drv.blocks_per_file, 0)
     return driver, writer
 
 
@@ -205,26 +207,49 @@ async def test_append_plugins_to_datasets(
     assert len(writer._datasets) == 5
 
 
-async def test_get_odin_filename_suffix(
+async def test_get_odin_filename_suffix_with_4_nodes(
     odin_driver_and_writer: OdinDriverAndWriter,
 ):
     _, writer = odin_driver_and_writer
 
-    writer.max_frames = 1000
+    set_mock_value(writer._drv.block_size, 1000)
+    set_mock_value(writer._drv.blocks_per_file, 1)
     writer._drv.nodes = [1, 2, 3, 4]  # type: ignore For mock len(nodes)
+    writer._odin_writer_number = 1
+
+    with pytest.raises(NotImplementedError):
+        writer._total_number_of_frames = 10
+        assert await writer._get_odin_filename_suffix() == "_000001"
+        # Until this has been completed:
+        # "https://github.com/bluesky/ophyd-async/issues/1137"
+
+
+async def test_get_odin_filename_suffix_with_blocks_per_file_off(
+    odin_driver_and_writer: OdinDriverAndWriter,
+):
+    _, writer = odin_driver_and_writer
+
+    writer._total_number_of_frames = 1000
+    set_mock_value(writer._drv.block_size, 1000)
+    set_mock_value(writer._drv.blocks_per_file, 0)
+    writer._drv.nodes = [1]  # type: ignore For mock len(nodes)
 
     writer._odin_writer_number = 1
     writer._total_number_of_frames = 10
-    assert writer._get_odin_filename_suffix() == "_000001"
+    assert await writer._get_odin_filename_suffix() == "_000001"
 
-    writer._odin_writer_number = 3
-    writer._total_number_of_frames = 10
-    assert writer._get_odin_filename_suffix() == "_000003"
-
-    writer._odin_writer_number = 1
     writer._total_number_of_frames = 1500
-    assert writer._get_odin_filename_suffix() == "_000005"
+    assert await writer._get_odin_filename_suffix() == "_000001"
 
-    writer._odin_writer_number = 2
+
+async def test_get_odin_filename_suffix_wraps_for_1_node(
+    odin_driver_and_writer: OdinDriverAndWriter,
+):
+    _, writer = odin_driver_and_writer
+    writer._total_number_of_frames = 1000
+    set_mock_value(writer._drv.block_size, 1000)
+    set_mock_value(writer._drv.blocks_per_file, 1000)
+    writer._drv.nodes = [1]  # type: ignore For mock len(nodes)
+
     writer._total_number_of_frames = 1500
-    assert writer._get_odin_filename_suffix() == "_000006"
+    assert await writer._get_odin_filename_suffix() == "_000001"

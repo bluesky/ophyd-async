@@ -1,5 +1,4 @@
 import asyncio
-import math
 from collections.abc import AsyncGenerator, AsyncIterator
 from xml.etree import ElementTree as ET
 
@@ -93,6 +92,9 @@ class Odin(Device):
 
         self.data_type = epics_signal_rw_rbv(str, f"{prefix}DataType")
 
+        self.blocks_per_file = epics_signal_rw_rbv(int, f"{prefix}BlocksPerFile")
+        self.block_size = epics_signal_rw_rbv(int, f"{prefix}BlockSize")
+
         super().__init__(name)
 
 
@@ -113,9 +115,7 @@ class OdinWriter(DetectorWriter):
         self._datasets: list[HDFDatasetDescription] = []
         self._composer: HDFDocumentComposer | None = None
 
-        # TODO: https://github.com/bluesky/ophyd-async/issues/1137
         self._odin_writer_number = odin_writer_number
-        self.max_frames = 10000
 
         super().__init__()
 
@@ -168,7 +168,7 @@ class OdinWriter(DetectorWriter):
 
         await self.append_plugins_to_datasets()
 
-        self._filename_suffix = self._get_odin_filename_suffix()
+        self._filename_suffix = await self._get_odin_filename_suffix()
 
         self._composer = HDFDocumentComposer(
             f"{info.directory_uri}{info.filename}{self._filename_suffix}.h5",
@@ -261,22 +261,30 @@ class OdinWriter(DetectorWriter):
             await self._capture_status
         self._capture_status = None
 
-    def _get_odin_filename_suffix(self) -> str:
-        """Should result in _000001 for the first file created by this OdinWriter.
+    async def _get_odin_filename_suffix(self) -> str:
+        """This method determines the filename suffix for the Odin HDF5 files.
 
-        If odin creates more frames than max number of frames it "rollsover"
-        If there are 4 nodes, the next file should be _000005, etc.
-        Currently every  OdinWriter is 1.
+        This works for b21's eigers where blocks_per_file is 0 (off),
+        for MX this will probably need some work:
         # TODO: https://github.com/bluesky/ophyd-async/issues/1137
         """
-        if self._total_number_of_frames > self.max_frames:
-            rollover_int = math.floor(self._total_number_of_frames / self.max_frames)
+        blocks_per_file = await self._drv.blocks_per_file.get_value()
+        block_size = await self._drv.block_size.get_value()  # eg total frames per block
 
-            odin_file_number = self._odin_writer_number + (
-                len(self._drv.nodes) * rollover_int
-            )
-        else:
+        if blocks_per_file == 0:  # blocks per file is off
             odin_file_number = self._odin_writer_number
+
+        elif (blocks_per_file != 0) and (
+            len(self._drv.nodes) == 1
+        ):  # this logic might hold for multiple nodes, but needs testing so raise error
+            rollover = self._total_number_of_frames // block_size
+            odin_file_number = (
+                rollover % len(self._drv.nodes)
+            ) + self._odin_writer_number
+        else:
+            raise NotImplementedError(
+                "https://github.com/bluesky/ophyd-async/issues/1137"
+            )
 
         filename_suffix = f"_{odin_file_number:06d}"
 

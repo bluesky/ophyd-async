@@ -28,15 +28,9 @@ class EigerDetector(StandardDetector):
         odin_writer_number: int = 1,
         name="",
     ):
-        # NOTE: filename_suffix is  _000001 for the first node,
-        # and when you have not rolled over the maximum number
-        # of frames allowed for that node. This is an assumption
-        # which is valid for b21's eigers, which only have 1 node and
-        # never do more than max number of frames.
-
-        # In cases where this assumption is no longer valid the filename_suffix
-        # will need to be determined by the number of the OdinNode for each OdinNode.
-        # This means that there needs to be 1 OdinWriter per OdinNode
+        # NOTE: filename_suffix is  _000001 if BlocksPerFile is 0 (off) or
+        # until you collect more frames than the BlockSize,
+        # at which point it rolls over to _000002, etc. Upto the number of nodes.
         # see _odin_io: _get_odin_filename_suffix
         # TODO: https://github.com/bluesky/ophyd-async/issues/1137
 
