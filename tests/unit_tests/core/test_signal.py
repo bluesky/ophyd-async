@@ -22,9 +22,12 @@ from ophyd_async.core import (
     SoftSignalBackend,
     StandardReadable,
     StrictEnum,
+    callback_on_mock_put,
     init_devices,
     set_and_wait_for_other_value,
     set_and_wait_for_value,
+    set_mock_put_proceeds,
+    set_mock_value,
     soft_signal_r_and_setter,
     soft_signal_rw,
     wait_for_value,
@@ -46,10 +49,7 @@ from ophyd_async.testing import (
     assert_configuration,
     assert_reading,
     assert_value,
-    callback_on_mock_put,
     partial_reading,
-    set_mock_put_proceeds,
-    set_mock_value,
 )
 
 _array_vals = {

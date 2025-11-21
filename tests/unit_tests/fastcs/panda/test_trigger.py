@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 from scanspec.specs import Fly, Line
 
-from ophyd_async.core import DeviceVector, init_devices
+from ophyd_async.core import DeviceVector, init_devices, set_mock_value
 from ophyd_async.epics.motor import Motor
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
@@ -22,7 +22,6 @@ from ophyd_async.fastcs.panda import (
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
-from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture
