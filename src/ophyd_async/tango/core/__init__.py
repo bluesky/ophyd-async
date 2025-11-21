@@ -23,7 +23,7 @@ from ._tango_transport import (
     get_python_type,
     get_source_metadata,
     get_tango_trl,
-    parse_precision
+    parse_precision,
 )
 from ._utils import (
     DevStateEnum,

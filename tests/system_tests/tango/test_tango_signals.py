@@ -11,16 +11,16 @@ from test_base_device import TestDevice
 from ophyd_async.core import NotConnectedError, SignalRW, StandardReadable, StrictEnum
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import (
+    CommandInfo,
     DevStateEnum,
     TangoDevice,
     TangoSignalBackend,
     get_full_attr_trl,
+    parse_precision,
     tango_signal_r,
     tango_signal_rw,
     tango_signal_w,
     tango_signal_x,
-    parse_precision,
-    CommandInfo
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
@@ -547,6 +547,7 @@ async def test_attribute_unsubscribe_callback(everything_device_trl):
     assert not attr_proxy.has_subscription()
     await asyncio.sleep(0.1)
 
+
 @pytest.mark.asyncio
 @pytest.mark.timeout(3.0)
 async def test_parse_precision(everything_device_trl):
@@ -556,11 +557,18 @@ async def test_parse_precision(everything_device_trl):
         name = child[0]
         signal = child[1]
         backend = signal._connector.backend
-        for src, config in backend.trl_configs.items():
+        for _, config in backend.trl_configs.items():
             if isinstance(config, CommandInfo):
                 continue
             precision = parse_precision(config)
-            if name in ['float32', 'float32_image', 'float32_spectrum', 'float64', 'float64_image', 'float64_spectrum']:
+            if name in [
+                "float32",
+                "float32_image",
+                "float32_spectrum",
+                "float64",
+                "float64_image",
+                "float64_spectrum",
+            ]:
                 assert precision == 2
             else:
                 assert precision is None
