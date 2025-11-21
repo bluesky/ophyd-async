@@ -582,6 +582,13 @@ class CommandProxy(TangoProxy):
     ):
         pass
 
+def parse_precision(config: AttributeInfoEx):
+    precision_pattern = re.compile(r"%\d*\.(\d+)f")
+    if config.format and (matches := precision_pattern.findall(config.format)):
+        return int(matches[0])
+    else:
+        return None
+
 
 def get_dtype_extended(datatype) -> object | None:
     """For converting tango types to numpy datatype formats."""
@@ -640,12 +647,7 @@ def get_source_metadata(
             if tr_dtype == CmdArgType.DevState:
                 _choices = list(DevState.names.keys())
 
-            _precision = None
-
-            precision_pattern = re.compile(r"%\d*\.(\d+)f")
-
-            if config.format and (matches := precision_pattern.findall(config.format)):
-                _precision = int(matches[0])
+            _precision = parse_precision(config)
 
             no_limits = Limits(
                 control=LimitsRange(high=None, low=None),

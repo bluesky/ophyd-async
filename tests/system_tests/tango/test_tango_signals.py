@@ -19,6 +19,8 @@ from ophyd_async.tango.core import (
     tango_signal_rw,
     tango_signal_w,
     tango_signal_x,
+    parse_precision,
+    CommandInfo
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
@@ -417,11 +419,7 @@ async def test_assert_val_reading_everything_tango(
         everything_device.my_state_spectrum, esi["my_state_spectrum"].initial
     )
 
-    # await assert_val_reading(everything_device.str_image, esi["str_image"].initial)
     await assert_val_reading(everything_device.bool_image, esi["bool_image"].initial)
-    # await assert_val_reading(
-    #     everything_device.strenum_image, esi["strenum_image"].initial
-    # )
     await assert_val_reading(everything_device.int8_image, esi["int8_image"].initial)
     await assert_val_reading(everything_device.uint8_image, esi["uint8_image"].initial)
     await assert_val_reading(everything_device.int16_image, esi["int16_image"].initial)
@@ -442,14 +440,10 @@ async def test_assert_val_reading_everything_tango(
     await assert_val_reading(
         everything_device.float64_image, esi["float64_image"].initial
     )
-    # await assert_val_reading(
-    #     everything_device.my_state_image, esi["my_state_image"].initial
-    # )
 
 
 @pytest.mark.asyncio
 async def test_set_callback(everything_device_trl):
-    # await prepare_device(everything_device_trl, "float32", 1.0)
     source = get_full_attr_trl(everything_device_trl, "float32")
     transport = await make_backend(float, source, connect=False)
 
@@ -496,7 +490,6 @@ async def test_set_callback(everything_device_trl):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("allow", [True, False])
 async def test_tango_transport_allow_events(everything_device_trl, allow):
-    # await prepare_device(echo_device, "float32", 1.0)
     source = get_full_attr_trl(everything_device_trl, "float32")
     transport = await make_backend(float, source, connect=False)
     transport.allow_events(allow)
@@ -505,7 +498,6 @@ async def test_tango_transport_allow_events(everything_device_trl, allow):
 
 @pytest.mark.asyncio
 async def test_tango_transport_set_polling(everything_device_trl):
-    # await prepare_device(echo_device, "float32", 1.0)
     source = get_full_attr_trl(everything_device_trl, "float32")
     transport = await make_backend(float, source, connect=False)
     transport.set_polling(True, 0.1, 1, 0.1)
@@ -515,7 +507,6 @@ async def test_tango_transport_set_polling(everything_device_trl):
 @pytest.mark.asyncio
 @pytest.mark.timeout(12.0)
 async def test_attribute_subscribe_callback(everything_device_trl):
-    # await prepare_device(echo_device, "float32", 1.0)
     source = get_full_attr_trl(everything_device_trl, "int64")
     backend = await make_backend(int, source)
     attr_proxy = backend.proxies[source]
@@ -543,7 +534,6 @@ async def test_attribute_subscribe_callback(everything_device_trl):
 
 @pytest.mark.asyncio
 async def test_attribute_unsubscribe_callback(everything_device_trl):
-    # await prepare_device(echo_device, "float32", 1.0)
     source = get_full_attr_trl(everything_device_trl, "float32")
     backend = await make_backend(float, source)
     attr_proxy = backend.proxies[source]
@@ -556,3 +546,21 @@ async def test_attribute_unsubscribe_callback(everything_device_trl):
     attr_proxy.unsubscribe_callback()
     assert not attr_proxy.has_subscription()
     await asyncio.sleep(0.1)
+
+@pytest.mark.asyncio
+@pytest.mark.timeout(3.0)
+async def test_parse_precision(everything_device_trl):
+    everything_device = TangoDevice(everything_device_trl)
+    await everything_device.connect()
+    for child in everything_device.children():
+        name = child[0]
+        signal = child[1]
+        backend = signal._connector.backend
+        for src, config in backend.trl_configs.items():
+            if isinstance(config, CommandInfo):
+                continue
+            precision = parse_precision(config)
+            if name in ['float32', 'float32_image', 'float32_spectrum', 'float64', 'float64_image', 'float64_spectrum']:
+                assert precision == 2
+            else:
+                assert precision is None
