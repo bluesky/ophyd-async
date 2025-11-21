@@ -274,7 +274,7 @@ class OdinWriter(DetectorWriter):
         if blocks_per_file == 0:  # blocks per file is off
             odin_file_number = self._odin_writer_number
 
-        elif (blocks_per_file != 0) and (
+        elif (blocks_per_file == 1) and (
             len(self._drv.nodes) == 1
         ):  # this logic might hold for multiple nodes, but needs testing so raise error
             rollover = self._total_number_of_frames // block_size
