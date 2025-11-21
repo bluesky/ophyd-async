@@ -3,11 +3,8 @@ from unittest.mock import patch
 
 import pytest
 
-from ophyd_async.core import (
-    init_devices,
-)
+from ophyd_async.core import get_mock_put, init_devices, set_mock_value
 from ophyd_async.epics import adcore, adsimdetector
-from ophyd_async.testing import get_mock_put, set_mock_value
 
 TEST_DEADTIME = 0.1
 

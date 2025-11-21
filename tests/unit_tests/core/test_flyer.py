@@ -1,4 +1,3 @@
-import asyncio
 import time
 from collections import defaultdict
 from collections.abc import AsyncGenerator, AsyncIterator, Sequence
@@ -6,7 +5,9 @@ from typing import Any
 from unittest.mock import Mock
 
 import bluesky.plan_stubs as bps
+import bluesky.preprocessors as bpp
 import pytest
+from bluesky import FailedStatus
 from bluesky.protocols import StreamAsset
 from bluesky.run_engine import RunEngine
 from event_model import (  # type: ignore
@@ -261,6 +262,8 @@ async def test_hardware_triggered_flyable(
         ]
 
 
+# https://github.com/bluesky/ophyd-async/issues/1140
+@pytest.mark.skip(reason="Causes teardown issues, needs investigation")
 @pytest.mark.timeout(3.0)
 @pytest.mark.parametrize(
     "number_of_triggers,invoke_extra_kickoff_before_complete",
@@ -286,8 +289,9 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
         livetime=2,
     )
 
+    @bpp.stage_decorator([*detectors, flyer])
+    @bpp.run_decorator()
     def flying_plan():
-        yield from bps.stage_all(*detectors, flyer)
         assert flyer._trigger_logic.state == TriggerState.STOPPING
 
         # move the flyer to the correct place, before fly scanning.
@@ -302,7 +306,6 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
                 wait=True,
             )
 
-        yield from bps.open_run()
         yield from bps.declare_stream(*detectors, name="main_stream", collect=True)
 
         yield from bps.kickoff(flyer)
@@ -344,20 +347,14 @@ async def test_hardware_triggered_flyable_too_many_kickoffs(
             # Ensuring stop iteration is called if kickoff is invoked after complete
             if not invoke_extra_kickoff_before_complete:
                 yield from bps.kickoff(detector)
-        yield from bps.close_run()
-
-        yield from bps.unstage_all(flyer, *detectors)
 
     # fly scan
     if invoke_extra_kickoff_before_complete:
         match_msg = "Kickoff called more than the configured number"
     else:
         match_msg = "Prepare must be called before kickoff!"
-    with pytest.raises(Exception, match=match_msg):
+    with pytest.raises(FailedStatus, match=match_msg):
         RE(flying_plan())
-
-    # Try explicitly letting event loop clean up tasks...?
-    await asyncio.sleep(1.0)
 
 
 @pytest.mark.parametrize(

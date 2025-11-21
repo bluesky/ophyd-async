@@ -14,7 +14,6 @@ from typing import (
     get_args,
     get_origin,
 )
-from unittest.mock import Mock
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict
@@ -340,45 +339,6 @@ class Reference(Generic[T]):
 
     def __call__(self) -> T:
         return self._obj
-
-
-class LazyMock:
-    """A lazily created Mock to be used when connecting in mock mode.
-
-    Creating Mocks is reasonably expensive when each Device (and Signal)
-    requires its own, and the tree is only used when ``Signal.set()`` is
-    called. This class allows a tree of lazily connected Mocks to be
-    constructed so that when the leaf is created, so are its parents.
-    Any calls to the child are then accessible from the parent mock.
-
-    ```python
-    >>> parent = LazyMock()
-    >>> child = parent.child("child")
-    >>> child_mock = child()
-    >>> child_mock()  # doctest: +ELLIPSIS
-    <Mock name='mock.child()' id='...'>
-    >>> parent_mock = parent()
-    >>> parent_mock.mock_calls
-    [call.child()]
-
-    ```
-    """
-
-    def __init__(self, name: str = "", parent: LazyMock | None = None) -> None:
-        self.parent = parent
-        self.name = name
-        self._mock: Mock | None = None
-
-    def child(self, name: str) -> LazyMock:
-        """Return a child of this LazyMock with the given name."""
-        return LazyMock(name, self)
-
-    def __call__(self) -> Mock:
-        if self._mock is None:
-            self._mock = Mock(spec=object)
-            if self.parent is not None:
-                self.parent().attach_mock(self._mock, self.name)
-        return self._mock
 
 
 class ConfinedModel(BaseModel):

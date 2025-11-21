@@ -13,15 +13,6 @@ from ._assert import (
     assert_value,
     partial_reading,
 )
-from ._mock_signal_utils import (
-    callback_on_mock_put,
-    get_mock,
-    get_mock_put,
-    mock_puts_blocked,
-    set_mock_put_proceeds,
-    set_mock_value,
-    set_mock_values,
-)
 from ._one_of_everything import (
     ExampleEnum,
     ExampleTable,
@@ -38,6 +29,33 @@ from ._single_derived import (
 )
 from ._wait_for_pending import wait_for_pending_wakeups
 
+
+# Back compat - delete before 1.0
+def __getattr__(name):
+    import warnings
+
+    import ophyd_async.core
+
+    moved_to_core = {
+        "callback_on_mock_put",
+        "get_mock",
+        "get_mock_put",
+        "mock_puts_blocked",
+        "set_mock_put_proceeds",
+        "set_mock_value",
+        "set_mock_values",
+    }
+    if name in moved_to_core:
+        warnings.warn(
+            DeprecationWarning(
+                f"ophyd_async.testing.{name} has moved to ophyd_async.core"
+            ),
+            stacklevel=2,
+        )
+        return getattr(ophyd_async.core, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 # The order of this list determines the order of the documentation,
 # so does not match the alphabetical order of the imports
 __all__ = [
@@ -49,14 +67,6 @@ __all__ = [
     "assert_describe_signal",
     "assert_emitted",
     "partial_reading",
-    # Mocking utilities
-    "get_mock",
-    "set_mock_value",
-    "set_mock_values",
-    "get_mock_put",
-    "callback_on_mock_put",
-    "mock_puts_blocked",
-    "set_mock_put_proceeds",
     # Wait for pending wakeups
     "wait_for_pending_wakeups",
     "ExampleEnum",
