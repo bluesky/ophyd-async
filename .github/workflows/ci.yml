@@ -31,6 +31,8 @@ jobs:
 
   docs:
     uses: ./.github/workflows/_docs.yml
+    permissions:
+      contents: write
 
   dist:
     uses: ./.github/workflows/_dist.yml
