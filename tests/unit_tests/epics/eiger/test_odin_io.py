@@ -248,7 +248,7 @@ async def test_get_odin_filename_suffix_wraps_for_1_node(
     _, writer = odin_driver_and_writer
     writer._total_number_of_frames = 1000
     set_mock_value(writer._drv.block_size, 1000)
-    set_mock_value(writer._drv.blocks_per_file, 1000)
+    set_mock_value(writer._drv.blocks_per_file, 1)
     writer._drv.nodes = [1]  # type: ignore For mock len(nodes)
 
     writer._total_number_of_frames = 1500
