@@ -31,11 +31,8 @@ jobs:
 
   docs:
     uses: ./.github/workflows/_docs.yml
-<<<<<<< before updating
-=======
     permissions:
       contents: write
->>>>>>> after updating
 
   dist:
     uses: ./.github/workflows/_dist.yml
