@@ -6,12 +6,12 @@ from typing import TypeVar, get_origin
 
 import numpy as np
 import pytest
+from tango.asyncio import DeviceProxy
 from test_base_device import TestDevice
 
 from ophyd_async.core import NotConnectedError, SignalRW, StandardReadable, StrictEnum
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import (
-    CommandInfo,
     DevStateEnum,
     TangoDevice,
     TangoSignalBackend,
@@ -551,24 +551,18 @@ async def test_attribute_unsubscribe_callback(everything_device_trl):
 @pytest.mark.asyncio
 @pytest.mark.timeout(3.0)
 async def test_parse_precision(everything_device_trl):
-    everything_device = TangoDevice(everything_device_trl)
-    await everything_device.connect()
-    for child in everything_device.children():
-        name = child[0]
-        signal = child[1]
-        backend = signal._connector.backend
-        for _, config in backend.trl_configs.items():
-            if isinstance(config, CommandInfo):
-                continue
-            precision = parse_precision(config)
-            if name in [
-                "float32",
-                "float32_image",
-                "float32_spectrum",
-                "float64",
-                "float64_image",
-                "float64_spectrum",
-            ]:
-                assert precision == 2
-            else:
-                assert precision is None
+    proxy = await DeviceProxy(everything_device_trl)
+    for attr in proxy.get_attribute_list():
+        config = await proxy.get_attribute_config(attr)
+        precision = parse_precision(config)
+        if attr in [
+            "float32",
+            "float32_image",
+            "float32_spectrum",
+            "float64",
+            "float64_image",
+            "float64_spectrum",
+        ]:
+            assert precision == 2
+        else:
+            assert precision is None
