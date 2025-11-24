@@ -583,12 +583,10 @@ class CommandProxy(TangoProxy):
         pass
 
 
+PRECISION_PATTERN = re.compile(r"%\d*\.(\d+)f")
 def parse_precision(config: AttributeInfoEx):
-    precision_pattern = re.compile(r"%\d*\.(\d+)f")
-    if config.format and (matches := precision_pattern.findall(config.format)):
+    if config.format and (matches := PRECISION_PATTERN.findall(config.format)):
         return int(matches[0])
-    else:
-        return None
 
 
 def get_dtype_extended(datatype) -> object | None:
