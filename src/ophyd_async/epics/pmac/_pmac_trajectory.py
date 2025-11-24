@@ -93,9 +93,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
 
     @AsyncStatus.wrap
     async def _execute_trajectory(self, path: Path, motor_info: _PmacMotorInfo):
-        execute_status = self.pmac.trajectory.execute_profile.set(
-            True, wait=True, timeout=None
-        )
+        execute_status = self.pmac.trajectory.execute_profile.set(True, timeout=None)
         # We consume SLICE_SIZE from self.path and parse a trajectory
         # containing at least 2 * SLICE_SIZE, as a gapless trajectory
         # will contain 2 points per slice frame. If gaps are present,
