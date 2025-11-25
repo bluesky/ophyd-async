@@ -19,7 +19,7 @@ from bluesky.protocols import (
 from event_model import DataKey
 from stamina import retry_context
 
-from ._device import Device, DeviceConnector
+from ._device import Device, DeviceConnector, LazyMock
 from ._mock_signal_backend import MockSignalBackend
 from ._protocol import AsyncReadable, AsyncStageable
 from ._signal_backend import SignalBackend, SignalDatatypeT, SignalDatatypeV
@@ -30,7 +30,6 @@ from ._utils import (
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
     Callback,
-    LazyMock,
     T,
     error_if_none,
 )
@@ -639,9 +638,10 @@ async def set_and_wait_for_other_value(
             if wait_for_set_completion:
                 await status
         except TimeoutError as exc:
+            matcher_name = getattr(matcher, "__name__", f"<{type(matcher).__name__}>")
             raise TimeoutError(
                 f"{match_signal.name} value didn't match value from"
-                f" {matcher.__name__}() in {timeout}s"
+                f" {matcher_name}() in {timeout}s"
             ) from exc
 
     return status

@@ -12,7 +12,10 @@ from bluesky.run_engine import RunEngine
 from ophyd_async.core import (
     LazyMock,
     NotConnectedError,
+    get_mock,
+    get_mock_put,
     init_devices,
+    set_mock_value,
 )
 from ophyd_async.epics import demo
 from ophyd_async.testing import (
@@ -21,9 +24,6 @@ from ophyd_async.testing import (
     assert_emitted,
     assert_reading,
     assert_value,
-    get_mock,
-    get_mock_put,
-    set_mock_value,
     wait_for_pending_wakeups,
 )
 

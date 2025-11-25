@@ -1,8 +1,7 @@
 import pytest
 
-from ophyd_async.core import DetectorTrigger, TriggerInfo, init_devices
+from ophyd_async.core import DetectorTrigger, TriggerInfo, init_devices, set_mock_value
 from ophyd_async.epics import adcore
-from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture

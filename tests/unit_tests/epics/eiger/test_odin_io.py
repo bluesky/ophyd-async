@@ -5,13 +5,13 @@ from unittest.mock import ANY, AsyncMock, MagicMock
 
 import pytest
 
-from ophyd_async.core import init_devices
-from ophyd_async.epics.odin import Odin, OdinWriter, Writing
-from ophyd_async.testing import (
+from ophyd_async.core import (
     callback_on_mock_put,
     get_mock_put,
+    init_devices,
     set_mock_value,
 )
+from ophyd_async.epics.odin import Odin, OdinWriter, Writing
 
 ODIN_DETECTOR_NAME = "odin_detector"
 EIGER_BIT_DEPTH = 16

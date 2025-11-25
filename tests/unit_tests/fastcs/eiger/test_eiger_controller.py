@@ -4,15 +4,13 @@ from pytest import fixture
 
 from ophyd_async.core import (
     TriggerInfo,
-    init_devices,
-)
-from ophyd_async.fastcs.eiger import EigerController, EigerDriverIO
-from ophyd_async.testing import (
     callback_on_mock_put,
     get_mock,
     get_mock_put,
+    init_devices,
     set_mock_value,
 )
+from ophyd_async.fastcs.eiger import EigerController, EigerDriverIO
 
 DriverAndController = tuple[EigerDriverIO, EigerController]
 
