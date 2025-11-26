@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.tango.core &#8212; ophyd-async 0.13.8.dev3+g3da44d6fb documentation</title>
+    <title>ophyd_async.tango.core &#8212; ophyd-async 0.14.1.dev1+gaa93a7668 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=fea6cbcc"></script>
+    <script src="../../_static/documentation_options.js?v=32671f1c"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.13.8.dev3+g3da44d6fb documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.13.8.dev3+g3da44d6fb documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.1.dev1+gaa93a7668 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.1.dev1+gaa93a7668 documentation - Home"/>
   
   
 </a></div>
@@ -595,25 +595,28 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.make_backend" title="ophyd_async.tango.core._signal.make_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_backend</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.tango_signal_r" title="ophyd_async.tango.core._signal.tango_signal_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_r</span></code></a></p></td>
-<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalR</span></code> backed by 1 Tango Attribute/Command.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.tango_signal_rw" title="ophyd_async.tango.core._signal.tango_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_rw</span></code></a></p></td>
-<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalRW</span></code> backed by 1 or 2 Tango Attribute/Command.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.tango_signal_w" title="ophyd_async.tango.core._signal.tango_signal_w"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_w</span></code></a></p></td>
-<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalW</span></code> backed by 1 Tango Attribute/Command.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.tango_signal_x" title="ophyd_async.tango.core._signal.tango_signal_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_x</span></code></a></p></td>
-<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalX</span></code> backed by 1 Tango Attribute/Command.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.try_to_cast_as_float" title="ophyd_async.tango.core._utils.try_to_cast_as_float"><code class="xref py py-obj docutils literal notranslate"><span class="pre">try_to_cast_as_float</span></code></a></p></td>
-<td><p>Attempt to cast a value to float, returning None on failure.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.get_device_trl_and_attr" title="ophyd_async.tango.core._utils.get_device_trl_and_attr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_device_trl_and_attr</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.parse_precision" title="ophyd_async.tango.core._tango_transport.parse_precision"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_precision</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.get_full_attr_trl" title="ophyd_async.tango.core._utils.get_full_attr_trl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_full_attr_trl</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.tango_signal_r" title="ophyd_async.tango.core._signal.tango_signal_r"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_r</span></code></a></p></td>
+<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalR</span></code> backed by 1 Tango Attribute/Command.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.tango_signal_rw" title="ophyd_async.tango.core._signal.tango_signal_rw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_rw</span></code></a></p></td>
+<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalRW</span></code> backed by 1 or 2 Tango Attribute/Command.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.tango_signal_w" title="ophyd_async.tango.core._signal.tango_signal_w"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_w</span></code></a></p></td>
+<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalW</span></code> backed by 1 Tango Attribute/Command.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.tango_signal_x" title="ophyd_async.tango.core._signal.tango_signal_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tango_signal_x</span></code></a></p></td>
+<td><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalX</span></code> backed by 1 Tango Attribute/Command.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.try_to_cast_as_float" title="ophyd_async.tango.core._utils.try_to_cast_as_float"><code class="xref py py-obj docutils literal notranslate"><span class="pre">try_to_cast_as_float</span></code></a></p></td>
+<td><p>Attempt to cast a value to float, returning None on failure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.tango.core.get_device_trl_and_attr" title="ophyd_async.tango.core._utils.get_device_trl_and_attr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_device_trl_and_attr</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.tango.core.get_full_attr_trl" title="ophyd_async.tango.core._utils.get_full_attr_trl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_full_attr_trl</span></code></a></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -1036,6 +1039,11 @@ events is cached or a callback is passed to it.</p>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.tango.core.parse_precision">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.core.</span></span><span class="sig-name descname"><span class="pre">parse_precision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AttributeInfoEx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_tango_transport.html#parse_precision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.parse_precision" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.tango.core.tango_signal_r">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.tango.core.</span></span><span class="sig-name descname"><span class="pre">tango_signal_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_trl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/tango/core/_signal.html#tango_signal_r"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.tango.core.tango_signal_r" title="Link to this definition">#</a></dt>
 <dd><p>Create a <code class="docutils literal notranslate"><span class="pre">SignalR</span></code> backed by 1 Tango Attribute/Command.</p>
@@ -1433,6 +1441,7 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.infer_python_type"><code class="docutils literal notranslate"><span class="pre">infer_python_type()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.infer_signal_type"><code class="docutils literal notranslate"><span class="pre">infer_signal_type()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.make_backend"><code class="docutils literal notranslate"><span class="pre">make_backend()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.parse_precision"><code class="docutils literal notranslate"><span class="pre">parse_precision()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.tango_signal_r"><code class="docutils literal notranslate"><span class="pre">tango_signal_r()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.tango_signal_rw"><code class="docutils literal notranslate"><span class="pre">tango_signal_rw()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.tango.core.tango_signal_w"><code class="docutils literal notranslate"><span class="pre">tango_signal_w()</span></code></a></li>
