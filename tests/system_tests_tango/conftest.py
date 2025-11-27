@@ -1,5 +1,4 @@
 import asyncio
-import os
 import pickle
 import socket
 import subprocess
@@ -31,7 +30,7 @@ def reset_tango_asyncio():
 
 
 def pytest_collection_modifyitems(config, items):
-    tango_dir = os.path.join("system_tests", "tango")
+    tango_dir = "system_tests_tango"
     for item in items:
         if tango_dir in str(item.fspath):
             if sys.version_info >= (3, 12):
