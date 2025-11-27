@@ -1,9 +1,10 @@
+import re
 import uuid
 from abc import abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
-from pathlib import PurePath, PureWindowsPath
+from pathlib import Path, PurePath, PureWindowsPath
 from typing import Protocol
 from urllib.parse import urlunparse
 
@@ -154,6 +155,96 @@ class StaticPathProvider(PathProvider):
             directory_uri=self._directory_uri,
             filename=filename,
             create_dir_depth=self._create_dir_depth,
+        )
+
+
+class AutoMaxIncrementingPathProvider(PathProvider):
+    """Increment directory name on each call by checking existing directories.
+
+    Looks through directories in specified base_path to increment directory name.
+    PathInfo gives path like base_path/0001_dirname/dirname, or
+    base_path/yyyy-mm-dd/0001_dirname/dirname if dated is true. Here,
+    the '0001' is the value which gets incremented if the file exists already.
+
+    Args:
+    base_path: Path to create directories inside of.
+    filename: Name of the file's parent directory, and filename.
+    max_digits: Number of digits to pad onto the parent directory.
+    starting_value: Number to start incrementing from.
+    dated: Whether to create an extra directory to specify the day.
+
+    """
+
+    def __init__(
+        self,
+        base_path: str = "",
+        filename: str = "capture",
+        max_digits: int = 4,
+        starting_value: int = 0,
+        dated: bool = False,
+    ):
+        self._base_path = Path(base_path)
+        self.filename = filename
+        self._max_digits = max_digits
+        self._next_value = starting_value
+        self._dated = dated
+
+        if dated:
+            # Make sure we are the max ID of any other days to keep numbering
+            # consistent.
+            cands = [
+                self._get_highest_number_from(x)
+                for x in self._base_path.iterdir()
+                if re.match(r"^\d\d\d\d-\d\d-\d\d$", x.name)
+            ]
+            if cands:
+                self._next_value = max(max(cands) + 1, self._next_value)
+
+    def _get_highest_number_from(self, path: Path) -> int:
+        # Look through directories in path which end in "_{number} and get highest
+        # number"
+        highest_number = 0
+        candidates = [
+            x for x in path.iterdir() if x.is_dir() and re.match(r"^\d+_", x.name)
+        ]
+        if candidates:
+            highest_number = max(
+                int(x.name.split("_", maxsplit=1)[0]) for x in candidates
+            )
+        else:
+            highest_number = self._next_value
+        return highest_number
+
+    def __call__(self, device_name: str | None = None) -> PathInfo:
+        path = self._base_path
+        if self._dated:
+            path = path / date.today().strftime("%Y-%m-%d")
+
+        val_to_use = self._next_value
+
+        # Get the highest number using files in path, or use
+        # stored next value if no files are found.
+        if path.exists():
+            highest_number = self._get_highest_number_from(path)
+            val_to_use = (
+                highest_number + 1
+                if not highest_number == self._next_value
+                else highest_number
+            )
+
+        self._next_value = val_to_use + 1
+
+        filename = self.filename
+
+        padded_counter = f"{val_to_use:0{self._max_digits}}"
+        full_path = (
+            path / f"{padded_counter}_{filename.strip('_')}" / filename.rstrip("_")
+        )
+        return PathInfo(
+            directory_path=full_path.parent,
+            directory_uri=None,
+            filename=full_path.name,
+            create_dir_depth=0,
         )
 
 
