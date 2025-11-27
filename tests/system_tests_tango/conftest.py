@@ -1,3 +1,4 @@
+import asyncio
 import os
 import pickle
 import socket
@@ -222,3 +223,11 @@ def everything_signal_info():
     )
 
     return signal_info
+
+
+@pytest.fixture
+def event_loop():
+    """Create a fresh event loop for each test."""
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
