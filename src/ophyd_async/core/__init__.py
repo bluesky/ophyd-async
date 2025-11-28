@@ -48,6 +48,7 @@ from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable, Watcher
 from ._providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
+    AutoMaxIncrementingPathProvider,
     DatasetDescriber,
     FilenameProvider,
     PathInfo,
@@ -222,6 +223,7 @@ __all__ = [
     "FilenameProvider",
     "StaticFilenameProvider",
     "AutoIncrementFilenameProvider",
+    "AutoMaxIncrementingPathProvider",
     "UUIDFilenameProvider",
     # Datatset
     "DatasetDescriber",
