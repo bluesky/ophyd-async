@@ -5,13 +5,14 @@ import pytest
 from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
+    callback_on_mock_put,
+    set_mock_value,
 )
 from ophyd_async.fastcs.panda import (
     DatasetTable,
     HDFPanda,
     PandaHdf5DatasetType,
 )
-from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
 
 @pytest.fixture

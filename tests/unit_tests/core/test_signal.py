@@ -3,6 +3,7 @@ import logging
 import re
 import time
 from asyncio import Event
+from functools import partial
 from typing import Any
 from unittest.mock import ANY, AsyncMock, MagicMock, Mock, call
 
@@ -21,9 +22,12 @@ from ophyd_async.core import (
     SoftSignalBackend,
     StandardReadable,
     StrictEnum,
+    callback_on_mock_put,
     init_devices,
     set_and_wait_for_other_value,
     set_and_wait_for_value,
+    set_mock_put_proceeds,
+    set_mock_value,
     soft_signal_r_and_setter,
     soft_signal_rw,
     wait_for_value,
@@ -45,10 +49,7 @@ from ophyd_async.testing import (
     assert_configuration,
     assert_reading,
     assert_value,
-    callback_on_mock_put,
     partial_reading,
-    set_mock_put_proceeds,
-    set_mock_value,
 )
 
 _array_vals = {
@@ -331,6 +332,36 @@ async def test_callable_match_value_set_and_wait_for_value():
     with pytest.raises(asyncio.TimeoutError):
         status = await set_and_wait_for_other_value(
             set_signal, 30, match_signal, lambda val: _equals_x(val, -1), timeout=0.5
+        )
+
+
+async def test_given_callable_has_no_name_then_matcher_still_gives_timeout_error():
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+
+    class NoNameCallable:
+        def __call__(self, val):
+            return val == 20
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_other_value(
+            set_signal, 20, match_signal, NoNameCallable(), timeout=0.01
+        )
+
+
+async def test_partial_matcher_still_gives_timeout_error():
+    set_signal = epics_signal_rw(int, "pva://signal")
+    match_signal = epics_signal_rw(int, "pva://match_signal")
+
+    await set_signal.connect(mock=True)
+    await match_signal.connect(mock=True)
+
+    with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_other_value(
+            set_signal, 20, match_signal, partial(lambda x, y: x == y, 20), timeout=0.01
         )
 
 

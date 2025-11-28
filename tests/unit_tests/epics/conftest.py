@@ -5,10 +5,9 @@ from typing import cast
 import pytest
 from bluesky.run_engine import RunEngine
 
-from ophyd_async.core import init_devices
+from ophyd_async.core import callback_on_mock_put, init_devices, set_mock_value
 from ophyd_async.core._providers import PathProvider
 from ophyd_async.epics import adcore
-from ophyd_async.testing import callback_on_mock_put, set_mock_value
 
 
 @pytest.fixture
