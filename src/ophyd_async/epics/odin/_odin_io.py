@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import AsyncGenerator, AsyncIterator
+from xml.etree import ElementTree as ET
 
 from bluesky.protocols import StreamAsset
 from event_model import DataKey  # type: ignore
@@ -10,6 +11,8 @@ from ophyd_async.core import (
     DetectorWriter,
     Device,
     DeviceVector,
+    HDFDatasetDescription,
+    HDFDocumentComposer,
     PathProvider,
     Reference,
     SignalR,
@@ -17,6 +20,12 @@ from ophyd_async.core import (
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
+)
+from ophyd_async.epics.adcore import NDPluginBaseIO
+from ophyd_async.epics.adcore._utils import (
+    convert_ad_dtype_to_np,
+    convert_param_dtype_to_np,
+    convert_pv_dtype_to_np,
 )
 from ophyd_async.epics.core import (
     epics_signal_r,
@@ -50,6 +59,7 @@ class Odin(Device):
     def __init__(self, prefix: str, name: str = "", nodes: int = 4) -> None:
         # default nodes is set to 4, MX 16M Eiger detectors - nodes = 4.
         # B21 4M Eiger detector - nodes = 1
+
         self.nodes = DeviceVector(
             {i: OdinNode(f"{prefix[:-1]}{i + 1}:") for i in range(nodes)}
         )
@@ -82,6 +92,9 @@ class Odin(Device):
 
         self.data_type = epics_signal_rw_rbv(str, f"{prefix}DataType")
 
+        self.blocks_per_file = epics_signal_rw_rbv(int, f"{prefix}BlocksPerFile")
+        self.block_size = epics_signal_rw_rbv(int, f"{prefix}BlockSize")
+
         super().__init__(name)
 
 
@@ -91,21 +104,33 @@ class OdinWriter(DetectorWriter):
         path_provider: PathProvider,
         odin_driver: Odin,
         detector_bit_depth: SignalR[int],
+        odin_writer_number: int = 1,
+        plugins: dict[str, NDPluginBaseIO] | None = None,
     ) -> None:
         self._drv = odin_driver
         self._path_provider = path_provider
         self._detector_bit_depth = Reference(detector_bit_depth)
+        self._plugins = plugins or {}
         self._capture_status: AsyncStatus | None = None
+        self._datasets: list[HDFDatasetDescription] = []
+        self._composer: HDFDocumentComposer | None = None
+
+        self._odin_writer_number = odin_writer_number
+
         super().__init__()
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
         info = self._path_provider(device_name=name)
         self._exposures_per_event = exposures_per_event
+        self._total_number_of_frames = await self._drv.num_to_capture.get_value()
+
+        self.data_shape = await self._get_data_shape()
+
+        self._path_info = self._path_provider(device_name=name)
+        self._dtype = f"UInt{await self._detector_bit_depth().get_value()}"
 
         await asyncio.gather(
-            self._drv.data_type.set(
-                f"UInt{await self._detector_bit_depth().get_value()}"
-            ),
+            self._drv.data_type.set(self._dtype),
             self._drv.num_to_capture.set(0),
             self._drv.file_path.set(str(info.directory_path)),
             self._drv.file_name.set(info.filename),
@@ -128,23 +153,87 @@ class OdinWriter(DetectorWriter):
             wait_for_value(self._drv.meta_writing, "Writing", timeout=DEFAULT_TIMEOUT),
         )
 
-        return await self._describe()
+        self._np_dataype = convert_ad_dtype_to_np(self._dtype)  # type: ignore
 
-    async def _describe(self) -> dict[str, DataKey]:
+        # Add the main data
+        self._datasets = [
+            HDFDatasetDescription(
+                data_key=name,
+                dataset="/data",
+                shape=(self._exposures_per_event, *self.data_shape),
+                dtype_numpy=self._np_dataype,
+                chunk_shape=(self._exposures_per_event, *self.data_shape),
+            )
+        ]
+
+        await self.append_plugins_to_datasets()
+
+        self._filename_suffix = await self._get_odin_filename_suffix()
+
+        self._composer = HDFDocumentComposer(
+            f"{info.directory_uri}{info.filename}{self._filename_suffix}.h5",
+            self._datasets,
+        )
+
+        description = await self._describe(name)
+
+        return description
+
+    async def _get_data_shape(self) -> tuple[int, int]:
         data_shape = await asyncio.gather(
             self._drv.image_height.get_value(), self._drv.image_width.get_value()
         )
 
-        return {
-            "data": DataKey(
+        return data_shape
+
+    async def _describe(self, name: str) -> dict[str, DataKey]:
+        describe = {
+            ds.data_key: DataKey(
                 source=self._drv.file_name.source,
-                shape=[self._exposures_per_event, *data_shape],
-                dtype="array",
-                # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
-                dtype_numpy="<u2",
+                shape=list(ds.shape),
+                dtype="array"
+                if self._exposures_per_event > 1 or len(ds.shape) > 1
+                else "number",
+                dtype_numpy=ds.dtype_numpy,
                 external="STREAM:",
             )
+            for ds in self._datasets
         }
+
+        return describe
+
+    async def append_plugins_to_datasets(self) -> None:
+        # And all the scalar datasets
+        for plugin in self._plugins.values():
+            xml_or_filename = await plugin.nd_attributes_file.get_value()
+            # This is the check that ADCore does to see if it is an XML string
+            # rather than a filename to parse
+            if "<Attributes>" in xml_or_filename:
+                root = ET.fromstring(xml_or_filename)
+                for child in root:
+                    data_key = child.attrib["name"]
+                    if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
+                        np_datatype = convert_pv_dtype_to_np(
+                            child.attrib.get("dbrtype", "DBR_NATIVE")
+                        )
+                    else:
+                        np_datatype = convert_param_dtype_to_np(
+                            child.attrib.get("datatype", "INT")
+                        )
+                    self._datasets.append(
+                        HDFDatasetDescription(
+                            data_key=data_key,
+                            dataset=f"/entry/instrument/NDAttributes/{data_key}",
+                            shape=(self._exposures_per_event,)
+                            if self._exposures_per_event > 1
+                            else (),
+                            dtype_numpy=np_datatype,
+                            # NDAttributes appear to always be configured with
+                            # this chunk size
+                            chunk_shape=(16384,),
+                        )
+                    )
+        return
 
     async def observe_indices_written(
         self, timeout: float
@@ -155,11 +244,15 @@ class OdinWriter(DetectorWriter):
     async def get_indices_written(self) -> int:
         return await self._drv.num_captured.get_value() // self._exposures_per_event
 
-    def collect_stream_docs(
+    async def collect_stream_docs(
         self, name: str, indices_written: int
     ) -> AsyncIterator[StreamAsset]:
-        # TODO: Correctly return stream https://github.com/bluesky/ophyd-async/issues/530
-        raise NotImplementedError()
+        # TODO: fail if we get dropped frames
+        if self._composer is None:
+            msg = f"open() not called on {self}"
+            raise RuntimeError(msg)
+        for doc in self._composer.make_stream_docs(indices_written):
+            yield doc
 
     async def close(self) -> None:
         await stop_busy_record(self._drv.capture, Writing.DONE, timeout=DEFAULT_TIMEOUT)
@@ -167,3 +260,32 @@ class OdinWriter(DetectorWriter):
         if self._capture_status and not self._capture_status.done:
             await self._capture_status
         self._capture_status = None
+
+    async def _get_odin_filename_suffix(self) -> str:
+        """This method determines the filename suffix for the Odin HDF5 files.
+
+        This works for b21's eigers where blocks_per_file is 0 (off),
+        for MX this will probably need some work:
+        # TODO: https://github.com/bluesky/ophyd-async/issues/1137
+        """
+        blocks_per_file = await self._drv.blocks_per_file.get_value()
+        block_size = await self._drv.block_size.get_value()  # eg total frames per block
+
+        if blocks_per_file == 0:  # blocks per file is off
+            odin_file_number = self._odin_writer_number
+
+        elif (blocks_per_file == 1) and (
+            len(self._drv.nodes) == 1
+        ):  # this logic might hold for multiple nodes, but needs testing so raise error
+            rollover = self._total_number_of_frames // block_size
+            odin_file_number = (
+                rollover % len(self._drv.nodes)
+            ) + self._odin_writer_number
+        else:
+            raise NotImplementedError(
+                "https://github.com/bluesky/ophyd-async/issues/1137"
+            )
+
+        filename_suffix = f"_{odin_file_number:06d}"
+
+        return filename_suffix

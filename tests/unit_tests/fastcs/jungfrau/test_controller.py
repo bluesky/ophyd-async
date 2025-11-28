@@ -21,7 +21,14 @@ from ophyd_async.fastcs.jungfrau._signals import (
 @pytest.fixture
 def jungfrau(RE: RunEngine):
     with init_devices(mock=True):
-        detector = Jungfrau("prefix", MagicMock(), "", "", 4, "jungfrau")
+        detector = Jungfrau(
+            prefix="prefix",
+            path_provider=MagicMock(),
+            drv_suffix="",
+            hdf_suffix="",
+            odin_nodes=4,
+            name="jungfrau",
+        )
 
     def set_meta_filename_and_id(value, *args, **kwargs):
         set_mock_value(detector.odin.meta_file_name, value)
@@ -34,6 +41,11 @@ def jungfrau(RE: RunEngine):
     set_mock_value(detector.odin.meta_active, "Active")
     set_mock_value(detector.odin.capture_rbv, "Capturing")
     set_mock_value(detector.odin.meta_writing, "Writing")
+
+    detector.drv.bit_depth.get_value = AsyncMock(
+        return_value=16
+    )  # required for OdinWriter dtype_numpy
+
     return detector
 
 
