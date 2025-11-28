@@ -20,6 +20,10 @@ jobs:
         runs-on: ["ubuntu-latest", "windows-latest"] # can add macos-latest
         python-version: ["3.11", "3.12", "3.13"]
         tests-path: ["", "tests/system_tests"]
+        include:
+          - runs-on: "ubuntu-latest"
+            python-version: "3.11"
+            tests-path: "tests/system_tests_tango"
       fail-fast: false
     uses: ./.github/workflows/_test.yml
     with:
