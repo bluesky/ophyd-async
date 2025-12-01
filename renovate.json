@@ -6,7 +6,7 @@
   "lockFileMaintenance": {
     "description": "Keep uv.lock up to date, merging if tests pass",
     "enabled": true,
-    "automerge": true    
+    "automerge": true
   },
   "packageRules": [
     {
@@ -20,34 +20,18 @@
       "description": "Disable github actions that are managed by python-copier-template",
       "matchPackageNames": [
         "actions/checkout",
-        "actions/download-artifact",
-        "actions/setup-python",
-        "actions/upload-artifact",
         "astral-sh/setup-uv",
+        "actions/upload-artifact",
+        "actions/download-artifact",
+        "softprops/action-gh-release",
         "codecov/codecov-action",
-        "docker/build-push-action",
-        "docker/login-action",
-        "docker/metadata-action",
-        "docker/setup-buildx-action",
-        "peaceiris/actions-gh-pages",
         "pypa/gh-action-pypi-publish",
-        "softprops/action-gh-release"
+        "peaceiris/actions-gh-pages"
       ],
       "matchManagers": [
         "github-actions"
       ],
       "enabled": false
-    },
-    {
-      "description": "Group non-major github action updates",
-      "groupName": "GitHub Actions",
-      "matchUpdateTypes": [
-        "patch",
-        "minor"
-      ],
-      "matchManagers": [
-        "github-actions"
-      ]
     }
   ]
 }
