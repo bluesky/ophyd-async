@@ -163,7 +163,7 @@ class OdinWriter(DetectorWriter):
 
     async def close(self) -> None:
         await stop_busy_record(self._drv.capture, Writing.DONE, timeout=DEFAULT_TIMEOUT)
-        await self._drv.meta_stop.set(True, wait=True)
+        await self._drv.meta_stop.set(True)
         if self._capture_status and not self._capture_status.done:
             await self._capture_status
         self._capture_status = None
