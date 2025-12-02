@@ -3,6 +3,7 @@ import pytest
 from scanspec.core import Path
 from scanspec.specs import Fly, Line, Spiral
 
+from ophyd_async.core import set_mock_value
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import (
     PmacIO,
@@ -15,7 +16,6 @@ from ophyd_async.epics.pmac._pmac_trajectory_generation import (
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,  # noqa: PLC2701
 )
-from ophyd_async.testing import set_mock_value
 
 
 @pytest.fixture

@@ -10,19 +10,17 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SoftSignalBackend,
-    init_devices,
-    soft_signal_r_and_setter,
-    soft_signal_rw,
-)
-from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
-from ophyd_async.testing import (
     callback_on_mock_put,
     get_mock_put,
+    init_devices,
     mock_puts_blocked,
     set_mock_put_proceeds,
     set_mock_value,
     set_mock_values,
+    soft_signal_r_and_setter,
+    soft_signal_rw,
 )
+from ophyd_async.epics.core import epics_signal_r, epics_signal_rw
 
 
 async def test_mock_signal_backend():
@@ -112,24 +110,24 @@ async def test_mock_utils_throw_error_if_backend_isnt_mock_signal_backend():
     signal = SignalRW(SoftSignalBackend(int))
 
     exc_msgs = []
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         set_mock_value(signal, 10)
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         get_mock_put(signal).assert_called_once_with(10)
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         with mock_puts_blocked(signal):
             ...
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         with callback_on_mock_put(signal, lambda x: _):
             ...
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         set_mock_put_proceeds(signal, False)
     exc_msgs.append(str(exc.value))
-    with pytest.raises(AssertionError) as exc:
+    with pytest.raises(RuntimeError) as exc:
         for _ in set_mock_values(signal, [10]):
             ...
     exc_msgs.append(str(exc.value))

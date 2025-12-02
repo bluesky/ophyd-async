@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import yaml
 
-from ophyd_async.core import Settings, YamlSettingsProvider
+from ophyd_async.core import Settings, YamlSettingsProvider, get_mock
 from ophyd_async.plan_stubs import (
     apply_settings,
     apply_settings_if_different,
@@ -18,7 +18,6 @@ from ophyd_async.testing import (
     ExampleTable,
     OneOfEverythingDevice,
     ParentOfEverythingDevice,
-    get_mock,
 )
 
 TEST_DATA = Path(__file__).absolute().parent.parent / "test_data"
