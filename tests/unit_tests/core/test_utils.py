@@ -302,7 +302,7 @@ async def test_format_error_string_input():
 
 def test_core_notconnected_emits_deprecation_warning():
     with pytest.deprecated_call():
-        from ophyd_async.core import NotConnectedError  # noqa: F401
+        from ophyd_async.core import NotConnected  # noqa: F401
 
 
 # Cancellation propagation is broken in asyncio.gather on Python 3.10, so the exception
