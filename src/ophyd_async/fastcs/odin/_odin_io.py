@@ -1,0 +1,137 @@
+import asyncio
+from collections.abc import AsyncGenerator, AsyncIterator
+
+from bluesky.protocols import StreamAsset
+from event_model import DataKey
+
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    DetectorWriter,
+    Device,
+    PathProvider,
+    Reference,
+    SignalR,
+    SignalRW,
+    SignalX,
+    StrictEnum,
+    observe_value,
+    wait_for_value,
+)
+from ophyd_async.fastcs.core import fastcs_connector
+
+
+class OdinWriting(StrictEnum):
+    CAPTURE = "Capture"
+    DONE = "Done"
+
+
+class MedaWriterIO(Device):
+    stop: SignalX
+    file_prefix: SignalRW[str]
+    acquisition_id: SignalRW[str]
+    writing: SignalR[str]
+
+
+class FrameProcessorIO(Device):
+    start_writing: SignalX
+    stop_writing: SignalX
+    writing: SignalR[str]
+    frames_written: SignalR[int]
+    frames: SignalRW[int]
+    data_dims_0: SignalRW[int]
+    data_dims_1: SignalRW[int]
+    data_chunks_0: SignalRW[int]
+    data_chunks_1: SignalRW[int]
+    data_chunks_2: SignalRW[int]
+    file_path: SignalRW[str]
+    file_prefix: SignalRW[str]
+    data_datatype: SignalRW[str]
+
+
+class OdinHdfIO(Device):
+    fp: FrameProcessorIO
+    mw: MedaWriterIO
+
+    def __init__(self, uri: str, name: str = ""):
+        super().__init__(name=name, connector=fastcs_connector(self, uri))
+
+
+class OdinWriter(DetectorWriter):
+    def __init__(
+        self,
+        path_provider: PathProvider,
+        odin_driver: OdinHdfIO,
+        detector_bit_depth: SignalR[int],
+    ) -> None:
+        self._drv = odin_driver
+        self._path_provider = path_provider
+        self._detector_bit_depth = Reference(detector_bit_depth)
+        super().__init__()
+
+    async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
+        info = self._path_provider(device_name=name)
+        self._exposures_per_event = exposures_per_event
+
+        await asyncio.gather(
+            self._drv.fp.data_datatype.set(
+                f"UInt{await self._detector_bit_depth().get_value()}"
+            ),
+            self._drv.fp.frames.set(0),
+            self._drv.fp.file_path.set(str(info.directory_path)),
+            self._drv.fp.file_prefix.set(info.filename),
+        )
+
+        await asyncio.gather(
+            wait_for_value(
+                self._drv.mw.file_prefix, info.filename, timeout=DEFAULT_TIMEOUT
+            ),
+            wait_for_value(
+                self._drv.mw.acquisition_id, info.filename, timeout=DEFAULT_TIMEOUT
+            ),
+        )  # Must wait for meta_active TODO: add meta_active signal
+
+        await self._drv.fp.start_writing.trigger(wait=True)
+
+        await asyncio.gather(
+            wait_for_value(self._drv.fp.writing, "Capturing", timeout=DEFAULT_TIMEOUT),
+            wait_for_value(self._drv.mw.writing, "Writing", timeout=DEFAULT_TIMEOUT),
+        )
+
+        return await self._describe()
+
+    async def _describe(self) -> dict[str, DataKey]:
+        data_shape = await asyncio.gather(
+            self._drv.fp.data_dims_0.get_value(), self._drv.fp.data_dims_1.get_value()
+        )
+
+        return {
+            "data": DataKey(
+                source=self._drv.fp.file_prefix.source,
+                shape=[self._exposures_per_event, *data_shape],
+                dtype="array",
+                # TODO: Use correct type based on eiger https://github.com/bluesky/ophyd-async/issues/529
+                dtype_numpy="<u2",
+                external="STREAM:",
+            )
+        }
+
+    async def observe_indices_written(
+        self, timeout: float
+    ) -> AsyncGenerator[int, None]:
+        async for num_captured in observe_value(self._drv.fp.frames_written, timeout):
+            yield num_captured // self._exposures_per_event
+
+    async def get_indices_written(self) -> int:
+        return (
+            await self._drv.fp.frames_written.get_value() // self._exposures_per_event
+        )
+
+    def collect_stream_docs(
+        self, name: str, indices_written: int
+    ) -> AsyncIterator[StreamAsset]:
+        # TODO: Correctly return stream https://github.com/bluesky/ophyd-async/issues/530
+        raise NotImplementedError()
+
+    async def close(self) -> None:
+        await self._drv.fp.stop_writing.trigger(wait=True)
+        await self._drv.mw.stop.trigger(wait=True)
