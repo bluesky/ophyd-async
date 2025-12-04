@@ -14,18 +14,36 @@ from ._detector import (
     StandardDetector,
     TriggerInfo,
 )
-from ._device import Device, DeviceConnector, DeviceVector, init_devices
+from ._device import (
+    Device,
+    DeviceConnector,
+    DeviceMock,
+    DeviceVector,
+    LazyMock,
+    default_mock_class,
+    init_devices,
+)
 from ._device_filler import DeviceFiller
 from ._enums import (
     EnabledDisabled,
     EnableDisable,
     InOut,
     OnOff,
+    YesNo,
 )
 from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
 from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
+from ._mock_signal_utils import (
+    callback_on_mock_put,
+    get_mock,
+    get_mock_put,
+    mock_puts_blocked,
+    set_mock_put_proceeds,
+    set_mock_value,
+    set_mock_values,
+)
 from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable, Watcher
 from ._providers import (
     AutoIncrementFilenameProvider,
@@ -78,7 +96,7 @@ from ._signal_backend import (
 )
 from ._soft_signal_backend import SoftSignalBackend
 from ._status import AsyncStatus, WatchableAsyncStatus, completed_status
-from ._table import Table
+from ._table import Table, TableSubclass
 from ._utils import (
     CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
@@ -86,8 +104,7 @@ from ._utils import (
     Callback,
     ConfinedModel,
     EnumTypes,
-    LazyMock,
-    NotConnected,
+    NotConnectedError,
     Reference,
     StrictEnum,
     SubsetEnum,
@@ -102,6 +119,26 @@ from ._utils import (
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
+
+
+# Back compat - delete before 1.0
+def __getattr__(name):
+    import warnings
+
+    renames = {
+        "NotConnected": NotConnectedError,
+    }
+    rename = renames.get(name)
+    if rename is not None:
+        warnings.warn(
+            DeprecationWarning(
+                f"{name!r} is deprecated, use {rename.__name__!r} instead"
+            ),
+            stacklevel=2,
+        )
+        return rename
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     # Device
@@ -145,8 +182,18 @@ __all__ = [
     "soft_signal_r_and_setter",
     "soft_signal_rw",
     # Mock signal
+    "DeviceMock",
     "LazyMock",
     "MockSignalBackend",
+    "default_mock_class",
+    # Mocking utilities
+    "get_mock",
+    "set_mock_value",
+    "set_mock_values",
+    "get_mock_put",
+    "callback_on_mock_put",
+    "mock_puts_blocked",
+    "set_mock_put_proceeds",
     # Signal utilities
     "observe_value",
     "observe_signals_value",
@@ -195,7 +242,7 @@ __all__ = [
     "DEFAULT_TIMEOUT",
     "Callback",
     "ConfinedModel",
-    "NotConnected",
+    "NotConnectedError",
     "Reference",
     "error_if_none",
     "gather_dict",
@@ -221,4 +268,6 @@ __all__ = [
     "EnableDisable",
     "InOut",
     "OnOff",
+    "YesNo",
+    "TableSubclass",
 ]

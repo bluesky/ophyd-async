@@ -21,7 +21,7 @@ If we need to add a feature to a particular Device, or fix a bug, and it only af
 
 We will be writing a test using the pytest framework which encourages fixtures to setup and teardown the Devices we wish to test. In this case we will create the `DemoMotor` from the previous tutorial:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: mock_motor
 ```
 
@@ -49,7 +49,7 @@ asyncio_mode = "auto"
 
 Let's test some verbs. We want to check that we can `read()` and `read_configuration()` on a `DemoMotor` while staged, and that we can still call them when unstaged:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_read_motor
 ```
 
@@ -63,7 +63,7 @@ Some of our tests produce timestamps, instead of checking their values we use []
 
 Now let's call some verbs and check that they do the right thing. We want to check that `stop()` triggers the [](#SignalX) `stop_`, waiting for it to complete:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_motor_stopped
 ```
 
@@ -73,7 +73,7 @@ This time we use [](#get_mock_put) to get a [](#unittest.mock.Mock) that will be
 
 Now let's pretend to be a progress bar and check that we get the right outputs. We want to check that `set()` will call any progress watchers with appropriate updates, and also terminate when the readback value reaches the correct value:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_motor_moving_well
 ```
 
@@ -86,6 +86,47 @@ There are a few other things we may wish to do in tests:
 - [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal
 - [](#set_mock_put_proceeds) to block or unblock `Signal.set(..., wait=True)` from completing
 - [](#mock_puts_blocked) a context manager that blocks put proceeds at the start, and unblocks at the end
+
+### Automatic mock behavior injection
+
+If you find yourself repeatedly using [](#callback_on_mock_put) to set up the same mock behavior for a Device type across many tests, you can define a [](#DeviceMock) subclass to automatically inject that behavior when the Device is connected in mock mode. This is especially useful for defining standard mock behavior alongside your Device definitions, making it easier to switch between hardware and mock modes.
+
+For example, if you have a device that needs automatic mock behavior, you can define:
+
+```{literalinclude} ../../src/ophyd_async/epics/motor.py
+:language: python
+:pyobject: InstantMotorMock
+```
+
+Then decorate the original class with [](#default_mock_class) so it is automatically used when connected in mock mode:
+
+```{literalinclude} ../../src/ophyd_async/epics/motor.py
+:language: python
+:start-at: default_mock_class(
+:end-at: class Motor
+```
+
+Now whenever a Motor is connected in mock mode using [](#init_devices)`(mock=True)`, it will automatically use `InstantMotorMock` and have this behavior:
+
+```python
+async with init_devices(mock=True):
+    motor = Motor("BLxxI-MO-TABLE-01:X")
+
+# No manual callback setup needed - the mock behavior is already active
+await motor.user_setpoint.set(50.0)
+assert await motor.user_readback.get_value() == 50.0
+```
+
+You can still override the automatic mock for specific tests by passing an explicit [](#DeviceMock) instance:
+
+```python
+# Use a plain DeviceMock without the automatic behavior
+custom_mock = DeviceMock()
+motor = Motor("TEST:MOTOR")
+await motor.connect(mock=custom_mock)
+```
+
+This approach keeps your mock logic close to your Device definition, reduces duplication across tests, and makes it easier to maintain consistent mock behavior.
 
 ## Tests that execute a bluesky plan
 
@@ -109,11 +150,11 @@ def RE():
 
 Now you can run a plan, and check that it produces the correct bluesky documents. Let's go back to the demo and test the `DemoPointDetector` in a `bp.count` plan:
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: mock_point_detector
 ```
 
-```{literalinclude} ../../tests/epics/demo/test_epics_demo.py
+```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_point_detector_in_plan
 ```
 

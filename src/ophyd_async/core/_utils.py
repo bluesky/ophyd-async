@@ -14,7 +14,6 @@ from typing import (
     get_args,
     get_origin,
 )
-from unittest.mock import Mock
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict
@@ -38,7 +37,7 @@ class UppercaseNameEnumMeta(EnumMeta):
 
 
 class AnyStringUppercaseNameEnumMeta(UppercaseNameEnumMeta):
-    def __call__(self, value, *args, **kwargs):  # type: ignore
+    def __call__(cls, value, *args, **kwargs):  # type: ignore
         """Return given value if it is a string and not a member of the enum.
 
         If the value is not a string or is an enum member, default enum behavior
@@ -54,7 +53,7 @@ class AnyStringUppercaseNameEnumMeta(UppercaseNameEnumMeta):
             member.
 
         """
-        if isinstance(value, str) and not isinstance(value, self):
+        if isinstance(value, str) and not isinstance(value, cls):
             return value
         return super().__call__(value, *args, **kwargs)
 
@@ -85,11 +84,11 @@ timeout itself
 CalculatableTimeout = float | None | Literal["CALCULATE_TIMEOUT"]
 
 
-class NotConnected(Exception):
+class NotConnectedError(Exception):
     """Exception to be raised if a `Device.connect` is cancelled.
 
     :param errors:
-        Mapping of device name to Exception or another NotConnected.
+        Mapping of device name to Exception or another NotConnectedError.
         Alternatively a string with the signal error text.
     """
 
@@ -106,7 +105,7 @@ class NotConnected(Exception):
             return {}
 
     def _format_sub_errors(self, name: str, error: Exception, indent="") -> str:
-        if isinstance(error, NotConnected):
+        if isinstance(error, NotConnectedError):
             error_txt = ":" + error.format_error_string(indent + self._indent_width)
         elif isinstance(error, Exception):
             error_txt = ": " + err_str + "\n" if (err_str := str(error)) else "\n"
@@ -138,15 +137,15 @@ class NotConnected(Exception):
     @classmethod
     def with_other_exceptions_logged(
         cls, exceptions: Mapping[str, Exception]
-    ) -> NotConnected:
+    ) -> NotConnectedError:
         for name, exception in exceptions.items():
-            if not isinstance(exception, NotConnected):
+            if not isinstance(exception, NotConnectedError):
                 logger.exception(
                     f"device `{name}` raised unexpected exception "
                     f"{type(exception).__name__}",
                     exc_info=exception,
                 )
-        return NotConnected(exceptions)
+        return NotConnectedError(exceptions)
 
 
 @dataclass(frozen=True)
@@ -192,8 +191,8 @@ async def wait_for_connection(**coros: Awaitable[None]):
         name, coro = coros.popitem()
         try:
             await coro
-        except Exception as e:
-            exceptions[name] = e
+        except Exception as exc:
+            exceptions[name] = exc
     else:
         # Use gather to connect in parallel
         results = await asyncio.gather(*coros.values(), return_exceptions=True)
@@ -202,7 +201,7 @@ async def wait_for_connection(**coros: Awaitable[None]):
                 exceptions[name] = result
 
     if exceptions:
-        raise NotConnected.with_other_exceptions_logged(exceptions)
+        raise NotConnectedError.with_other_exceptions_logged(exceptions)
 
 
 def get_dtype(datatype: type) -> np.dtype:
@@ -340,45 +339,6 @@ class Reference(Generic[T]):
 
     def __call__(self) -> T:
         return self._obj
-
-
-class LazyMock:
-    """A lazily created Mock to be used when connecting in mock mode.
-
-    Creating Mocks is reasonably expensive when each Device (and Signal)
-    requires its own, and the tree is only used when ``Signal.set()`` is
-    called. This class allows a tree of lazily connected Mocks to be
-    constructed so that when the leaf is created, so are its parents.
-    Any calls to the child are then accessible from the parent mock.
-
-    ```python
-    >>> parent = LazyMock()
-    >>> child = parent.child("child")
-    >>> child_mock = child()
-    >>> child_mock()  # doctest: +ELLIPSIS
-    <Mock name='mock.child()' id='...'>
-    >>> parent_mock = parent()
-    >>> parent_mock.mock_calls
-    [call.child()]
-
-    ```
-    """
-
-    def __init__(self, name: str = "", parent: LazyMock | None = None) -> None:
-        self.parent = parent
-        self.name = name
-        self._mock: Mock | None = None
-
-    def child(self, name: str) -> LazyMock:
-        """Return a child of this LazyMock with the given name."""
-        return LazyMock(name, self)
-
-    def __call__(self) -> Mock:
-        if self._mock is None:
-            self._mock = Mock(spec=object)
-            if self.parent is not None:
-                self.parent().attach_mock(self._mock, self.name)
-        return self._mock
 
 
 class ConfinedModel(BaseModel):

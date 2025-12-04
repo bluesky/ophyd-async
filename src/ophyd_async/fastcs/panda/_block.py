@@ -34,15 +34,6 @@ class DataBlock(Device):
     datasets: SignalR[DatasetTable]
 
 
-class PulseBlock(Device):
-    """Used for configuring pulses in the PandA."""
-
-    delay: SignalRW[float]
-    pulses: SignalRW[int]
-    step: SignalRW[float]
-    width: SignalRW[float]
-
-
 class PandaPcompDirection(StrictEnum):
     """Direction options for position compare in the PandA."""
 
@@ -56,6 +47,22 @@ class PandaBitMux(SubsetEnum):
 
     ZERO = "ZERO"
     ONE = "ONE"
+
+
+class PandaPosMux(SubsetEnum):
+    """Pos input in the PandA."""
+
+    ZERO = "ZERO"
+
+
+class PulseBlock(Device):
+    """Used for configuring pulses in the PandA."""
+
+    enable: SignalRW[PandaBitMux]
+    delay: SignalRW[float]
+    pulses: SignalRW[int]
+    step: SignalRW[float]
+    width: SignalRW[float]
 
 
 class PcompBlock(Device):
@@ -88,6 +95,7 @@ class SeqBlock(Device):
     prescale: SignalRW[float]
     prescale_units: SignalRW[PandaTimeUnits]
     enable: SignalRW[PandaBitMux]
+    posa: SignalRW[PandaPosMux]
 
 
 class PcapBlock(Device):
@@ -95,6 +103,13 @@ class PcapBlock(Device):
 
     active: SignalR[bool]
     arm: SignalRW[bool]
+
+
+class InencBlock(Device):
+    """In encoder block in the PandA."""
+
+    val_scale: SignalRW[float]
+    val_offset: SignalRW[float]
 
 
 class CommonPandaBlocks(Device):
