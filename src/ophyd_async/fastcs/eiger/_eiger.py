@@ -25,10 +25,7 @@ class EigerDetector(StandardDetector):
 
         super().__init__(
             EigerController(self.drv),
-            OdinWriter(
-                path_provider,
-                self.odin,
-            ),
+            OdinWriter(path_provider, self.odin, self.drv.detector.bit_depth_image),
             name=name,
         )
 
