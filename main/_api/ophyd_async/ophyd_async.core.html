@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.14.1.dev2+geac6baa19 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.14.1.dev3+ge7ba17401 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=4ce3fb26"></script>
+    <script src="../../_static/documentation_options.js?v=326f8976"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.1.dev2+geac6baa19 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.1.dev2+geac6baa19 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.1.dev3+ge7ba17401 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.1.dev3+ge7ba17401 documentation - Home"/>
   
   
 </a></div>
@@ -833,7 +833,7 @@
 <td><p>A typevar for a <a class="reference internal" href="#ophyd_async.core.SignalDatatype" title="ophyd_async.core.SignalDatatype"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">SignalDatatype</span></code></a>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DTypeScalar_co" title="ophyd_async.core._signal_backend.DTypeScalar_co"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DTypeScalar_co</span></code></a></p></td>
-<td><p>A numpy dtype like <a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.float64" title="NumPy 2.4.dev0"><code class="iref myst docutils literal notranslate"><span class="pre">numpy.float64</span></code></a>.</p></td>
+<td><p>A numpy dtype like <a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.float64" title="NumPy 2.5.dev0"><code class="iref myst docutils literal notranslate"><span class="pre">numpy.float64</span></code></a>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Array1D" title="ophyd_async.core._signal_backend.Array1D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array1D</span></code></a></p></td>
 <td><p>A type alias for a 1D numpy array with a specific scalar data type.</p></td>
@@ -1687,7 +1687,7 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 <li><p>A python primitive <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">bool</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">str</span></code></a></p></li>
 <li><p>An <a class="reference internal" href="#ophyd_async.core.EnumTypes" title="ophyd_async.core.EnumTypes"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">EnumTypes</span></code></a> subclass</p></li>
 <li><p>A fixed datatype <a class="reference internal" href="#ophyd_async.core.Array1D" title="ophyd_async.core.Array1D"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">Array1D</span></code></a> of numpy bool, signed and unsigned integers or float</p></li>
-<li><p>A <a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.ndarray.html#numpy.ndarray" title="NumPy 2.4.dev0"><code class="iref myst docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> which can change dimensions and datatype at runtime</p></li>
+<li><p>A <a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.ndarray.html#numpy.ndarray" title="NumPy 2.5.dev0"><code class="iref myst docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> which can change dimensions and datatype at runtime</p></li>
 <li><p>A sequence of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="Python 3.14"><code class="iref myst docutils literal notranslate"><span class="pre">str</span></code></a></p></li>
 <li><p>A sequence of <a class="reference internal" href="#ophyd_async.core.EnumTypes" title="ophyd_async.core.EnumTypes"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">EnumTypes</span></code></a> subclasses</p></li>
 <li><p>A <a class="reference internal" href="#ophyd_async.core.Table" title="ophyd_async.core.Table"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Table</span></code></a> subclass</p></li>
@@ -1705,7 +1705,7 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 <dt class="sig sig-object py" id="ophyd_async.core.DTypeScalar_co">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">DTypeScalar_co</span></span><a class="headerlink" href="#ophyd_async.core.DTypeScalar_co" title="Link to this definition">#</a></dt>
 <dd><p>‘TypeVar(…)’</p>
-<p>A numpy dtype like <a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.float64" title="NumPy 2.4.dev0"><code class="iref myst docutils literal notranslate"><span class="pre">numpy.float64</span></code></a>.</p>
+<p>A numpy dtype like <a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.float64" title="NumPy 2.5.dev0"><code class="iref myst docutils literal notranslate"><span class="pre">numpy.float64</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -1783,13 +1783,13 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.Table.numpy_dtype">
-<span class="sig-name descname"><span class="pre">numpy_dtype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4.dev0)"><span class="pre">dtype</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table.numpy_dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.numpy_dtype" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">numpy_dtype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5.dev0)"><span class="pre">dtype</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table.numpy_dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.numpy_dtype" title="Link to this definition">#</a></dt>
 <dd><p>Return a numpy dtype for a single row.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.Table.numpy_table">
-<span class="sig-name descname"><span class="pre">numpy_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.14)"><span class="pre">slice</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4.dev0)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table.numpy_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.numpy_table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">numpy_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.14)"><span class="pre">slice</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5.dev0)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table.numpy_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.numpy_table" title="Link to this definition">#</a></dt>
 <dd><p>Return a numpy array of the whole table.</p>
 </dd></dl>
 
@@ -3477,7 +3477,7 @@ changed by a method, then used in a later method.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.core.get_dtype">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_dtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4.dev0)"><span class="pre">dtype</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#get_dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_dtype" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">get_dtype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">datatype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5.dev0)"><span class="pre">dtype</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_utils.html#get_dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.get_dtype" title="Link to this definition">#</a></dt>
 <dd><p>Get the runtime dtype from a numpy ndarray type annotation.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Array1D</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
