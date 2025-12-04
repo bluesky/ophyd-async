@@ -9,16 +9,10 @@ on:
         type: string
         description: The runner to run this job on
         required: true
-<<<<<<< before updating
       tests-path:
         type: string
         description: The path to look for tests
         required: true
-    secrets:
-      CODECOV_TOKEN:
-        required: true
-=======
->>>>>>> after updating
 
 env:
   # https://github.com/pytest-dev/pytest/issues/2042
