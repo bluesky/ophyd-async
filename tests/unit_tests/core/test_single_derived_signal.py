@@ -88,7 +88,7 @@ async def test_get_returns_right_position(
 
 @pytest.mark.parametrize("cls", [ReadOnlyBeamstop, MovableBeamstop])
 async def test_monitoring_position(cls: type[ReadOnlyBeamstop | MovableBeamstop]):
-    results = asyncio.Queue[BeamstopPosition]()
+    results: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
     inst = cls("inst")
     inst.position.subscribe_reading(results.put_nowait)
     assert (await results.get())["inst-position"][
