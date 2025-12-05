@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import logging
+import re
 import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine, Sequence
@@ -582,6 +583,15 @@ class CommandProxy(TangoProxy):
         pass
 
 
+PRECISION_PATTERN = re.compile(r"%\d*\.(\d+)f")
+
+
+def parse_precision(config: AttributeInfoEx):
+    if config.format and (matches := PRECISION_PATTERN.findall(config.format)):
+        return int(matches[0])
+    return None
+
+
 def get_dtype_extended(datatype) -> object | None:
     """For converting tango types to numpy datatype formats."""
     # DevState tango type does not have numpy equivalents
@@ -639,17 +649,8 @@ def get_source_metadata(
             if tr_dtype == CmdArgType.DevState:
                 _choices = list(DevState.names.keys())
 
-            _precision = None
-            if config.format:
-                try:
-                    _precision = int(config.format.split(".")[1].split("f")[0])
-                except (ValueError, IndexError) as exc:
-                    # If parsing config.format fails, _precision remains None.
-                    logger.warning(
-                        "Failed to parse precision from config.format: %s. Error: %s",
-                        config.format,
-                        exc,
-                    )
+            _precision = parse_precision(config)
+
             no_limits = Limits(
                 control=LimitsRange(high=None, low=None),
                 warning=LimitsRange(high=None, low=None),

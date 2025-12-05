@@ -4,6 +4,10 @@ import numpy as np
 import pytest
 from scanspec.specs import Fly, Line
 
+from ophyd_async.core import (
+    get_mock,
+    set_mock_value,
+)
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_trajectory import (
@@ -11,10 +15,6 @@ from ophyd_async.epics.pmac._pmac_trajectory import (
 )
 from ophyd_async.epics.pmac._utils import (
     _PmacMotorInfo,  # noqa: PLC2701
-)
-from ophyd_async.testing import (
-    get_mock,
-    set_mock_value,
 )
 
 

@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 from collections.abc import Callable
 from functools import cached_property
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
 
 from bluesky.protocols import Reading
@@ -9,7 +12,10 @@ from event_model import DataKey
 from ._derived_signal_backend import DerivedSignalBackend
 from ._signal_backend import SignalBackend, SignalDatatypeT
 from ._soft_signal_backend import SoftSignalBackend
-from ._utils import Callback, LazyMock
+from ._utils import Callback
+
+if TYPE_CHECKING:
+    from ._device import LazyMock
 
 
 class MockSignalBackend(SignalBackend[SignalDatatypeT]):

@@ -15,6 +15,7 @@ from ophyd_async.core import (
     derived_signal_r,
     derived_signal_rw,
     derived_signal_w,
+    get_mock,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
@@ -26,7 +27,6 @@ from ophyd_async.testing import (
     assert_describe_signal,
     assert_reading,
     assert_value,
-    get_mock,
     partial_reading,
 )
 

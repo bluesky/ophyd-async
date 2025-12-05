@@ -11,6 +11,8 @@ from ophyd_async.core import (
     SignalRW,
     Table,
     derived_signal_rw,
+    get_mock,
+    set_mock_value,
     soft_signal_rw,
 )
 from ophyd_async.sim import (
@@ -24,8 +26,6 @@ from ophyd_async.testing import (
     assert_describe_signal,
     assert_reading,
     assert_value,
-    get_mock,
-    set_mock_value,
 )
 
 
