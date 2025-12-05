@@ -161,14 +161,16 @@ class StaticPathProvider(PathProvider):
 class AutoMaxIncrementingPathProvider(PathProvider):
     """Increment directory name on each call by checking existing directories.
 
-    Looks through directories in specified base_path to increment directory name.
+    Looks through directories in a specified base path to increment directory name.
     PathInfo gives path like base_path/0001_dirname/dirname, or
     base_path/yyyy-mm-dd/0001_dirname/dirname if dated is true. Here,
     the '0001' is the value which gets incremented if the file exists already.
 
+    It's recommended for the base path provider to be non-incrementing.
+
     Args:
-    base_path: Path to create directories inside of.
-    filename: Name of the file's parent directory, and filename.
+    base_path_provider: Path to create directories inside of. Note that the filename of
+    this provider is used as the top level directory and the filename
     max_digits: Number of digits to pad onto the parent directory.
     starting_value: Number to start incrementing from.
     dated: Whether to create an extra directory to specify the day.
@@ -177,28 +179,15 @@ class AutoMaxIncrementingPathProvider(PathProvider):
 
     def __init__(
         self,
-        base_path: str = "",
-        filename: str = "capture",
+        base_path_provider: PathProvider,
         max_digits: int = 4,
         starting_value: int = 0,
         dated: bool = False,
     ):
-        self._base_path = Path(base_path)
-        self.filename = filename
+        self._base_path_provider = base_path_provider
         self._max_digits = max_digits
         self._next_value = starting_value
         self._dated = dated
-
-        if dated:
-            # Make sure we are the max ID of any other days to keep numbering
-            # consistent.
-            cands = [
-                self._get_highest_number_from(x)
-                for x in self._base_path.iterdir()
-                if re.match(r"^\d\d\d\d-\d\d-\d\d$", x.name)
-            ]
-            if cands:
-                self._next_value = max(max(cands) + 1, self._next_value)
 
     def _get_highest_number_from(self, path: Path) -> int:
         # Look through directories in path which end in "_{number} and get highest
@@ -216,9 +205,22 @@ class AutoMaxIncrementingPathProvider(PathProvider):
         return highest_number
 
     def __call__(self, device_name: str | None = None) -> PathInfo:
-        path = self._base_path
+        base_path_info = self._base_path_provider.__call__()
+        base_path_dir = Path(base_path_info.directory_path)
         if self._dated:
-            path = path / date.today().strftime("%Y-%m-%d")
+            # Make sure we are the max ID of any other days to keep numbering
+            # consistent.
+            cands = [
+                self._get_highest_number_from(x)
+                for x in base_path_dir.iterdir()
+                if re.match(r"^\d\d\d\d-\d\d-\d\d$", x.name)
+            ]
+            if cands:
+                self._next_value = max(max(cands) + 1, self._next_value)
+
+            path = base_path_dir / date.today().strftime("%Y-%m-%d")
+        else:
+            path = base_path_dir
 
         val_to_use = self._next_value
 
@@ -234,7 +236,7 @@ class AutoMaxIncrementingPathProvider(PathProvider):
 
         self._next_value = val_to_use + 1
 
-        filename = self.filename
+        filename = base_path_info.filename
 
         padded_counter = f"{val_to_use:0{self._max_digits}}"
         full_path = (

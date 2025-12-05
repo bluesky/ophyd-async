@@ -13,6 +13,7 @@ from ophyd_async.core import (
     AutoIncrementingPathProvider,
     AutoMaxIncrementingPathProvider,
     PathInfo,
+    StaticFilenameProvider,
     StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
@@ -84,38 +85,41 @@ def test_auto_max_increment_path_provider(tmp_path: Path):
         with open(f"{info.directory_path}/{info.filename}", "w"):
             ...
 
+    filename = "capture"
+    base_provider = StaticPathProvider(StaticFilenameProvider("capture"), tmp_path)
+
     try:
         # Test multiple increments
-        path_provider = AutoMaxIncrementingPathProvider(str(tmp_path), max_digits=3)
+        path_provider = AutoMaxIncrementingPathProvider(base_provider, max_digits=3)
         info = path_provider()
         write_file(info)
-        expected_path = tmp_path / "000_capture"
+        expected_path = tmp_path / f"000_{filename}"
         assert info.directory_path == expected_path
         info = path_provider()
         write_file(info)
-        expected_path = tmp_path / "001_capture"
+        expected_path = tmp_path / f"001_{filename}"
         assert info.directory_path == expected_path
 
         # Test fresh path provider continues incrementing
-        path_provider = AutoMaxIncrementingPathProvider(str(tmp_path))
+        path_provider = AutoMaxIncrementingPathProvider(base_provider)
         info = path_provider()
         write_file(info)
-        expected_path = tmp_path / "0002_capture"
+        expected_path = tmp_path / f"0002_{filename}"
         assert info.directory_path == expected_path
 
         # Test path provider in dated mode
-        path_provider = AutoMaxIncrementingPathProvider(str(tmp_path), dated=True)
+        path_provider = AutoMaxIncrementingPathProvider(base_provider, dated=True)
         info = path_provider()
         write_file(info)
         assert (
             info.directory_path
-            == tmp_path / date.today().strftime("%Y-%m-%d") / "0000_capture"
+            == tmp_path / date.today().strftime("%Y-%m-%d") / f"0000_{filename}"
         )
         info = path_provider()
         write_file(info)
         assert (
             info.directory_path
-            == tmp_path / date.today().strftime("%Y-%m-%d") / "0001_capture"
+            == tmp_path / date.today().strftime("%Y-%m-%d") / f"0001_{filename}"
         )
 
     finally:
