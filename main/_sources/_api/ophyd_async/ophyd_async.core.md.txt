@@ -179,6 +179,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._providers.AutoIncrementFilenameProvider
     :summary:
     ```
+* - {py:obj}`AutoMaxIncrementingPathProvider <ophyd_async.core._providers.AutoMaxIncrementingPathProvider>`
+  - ```{autodoc2-docstring} ophyd_async.core._providers.AutoMaxIncrementingPathProvider
+    :summary:
+    ```
 * - {py:obj}`UUIDFilenameProvider <ophyd_async.core._providers.UUIDFilenameProvider>`
   - ```{autodoc2-docstring} ophyd_async.core._providers.UUIDFilenameProvider
     :summary:
@@ -2409,6 +2413,16 @@ Bases: {py:obj}`ophyd_async.core._providers.FilenameProvider`
 Bases: {py:obj}`ophyd_async.core._providers.FilenameProvider`
 
 ```{autodoc2-docstring} ophyd_async.core._providers.AutoIncrementFilenameProvider
+```
+
+````
+
+````{py:class} AutoMaxIncrementingPathProvider(base_path_provider: ~ophyd_async.core._providers.PathProvider, max_digits: int = 4, starting_value: int = 0, dated: bool = False)
+:canonical: ophyd_async.core._providers.AutoMaxIncrementingPathProvider
+
+Bases: {py:obj}`ophyd_async.core._providers.PathProvider`
+
+```{autodoc2-docstring} ophyd_async.core._providers.AutoMaxIncrementingPathProvider
 ```
 
 ````

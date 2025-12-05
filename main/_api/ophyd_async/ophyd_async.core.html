@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.14.1.dev4+g26e34354d documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.14.1.dev5+g6c7a20025 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=8f8071d2"></script>
+    <script src="../../_static/documentation_options.js?v=3fc7b195"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.1.dev4+g26e34354d documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.1.dev4+g26e34354d documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.1.dev5+g6c7a20025 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.1.dev5+g6c7a20025 documentation - Home"/>
   
   
 </a></div>
@@ -651,64 +651,67 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.AutoIncrementFilenameProvider" title="ophyd_async.core._providers.AutoIncrementFilenameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AutoIncrementFilenameProvider</span></code></a></p></td>
 <td><p>Provides a new numerically incremented filename on each call.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.UUIDFilenameProvider" title="ophyd_async.core._providers.UUIDFilenameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UUIDFilenameProvider</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.AutoMaxIncrementingPathProvider" title="ophyd_async.core._providers.AutoMaxIncrementingPathProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AutoMaxIncrementingPathProvider</span></code></a></p></td>
+<td><p>Increment directory name on each call by checking existing directories.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.UUIDFilenameProvider" title="ophyd_async.core._providers.UUIDFilenameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UUIDFilenameProvider</span></code></a></p></td>
 <td><p>Files will have a UUID as a filename.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DatasetDescriber" title="ophyd_async.core._providers.DatasetDescriber"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatasetDescriber</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DatasetDescriber" title="ophyd_async.core._providers.DatasetDescriber"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatasetDescriber</span></code></a></p></td>
 <td><p>For describing datasets in file writing.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.HDFDatasetDescription" title="ophyd_async.core._hdf_dataset.HDFDatasetDescription"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HDFDatasetDescription</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.HDFDatasetDescription" title="ophyd_async.core._hdf_dataset.HDFDatasetDescription"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HDFDatasetDescription</span></code></a></p></td>
 <td><p>A description of the type and shape of a dataset in an HDF file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.HDFDocumentComposer" title="ophyd_async.core._hdf_dataset.HDFDocumentComposer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HDFDocumentComposer</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.HDFDocumentComposer" title="ophyd_async.core._hdf_dataset.HDFDocumentComposer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HDFDocumentComposer</span></code></a></p></td>
 <td><p>A helper class to make stream resource and datums for HDF datasets.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.StandardFlyer" title="ophyd_async.core._flyer.StandardFlyer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StandardFlyer</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.StandardFlyer" title="ophyd_async.core._flyer.StandardFlyer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StandardFlyer</span></code></a></p></td>
 <td><p>Base class for ‘flyable’ devices.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.FlyMotorInfo" title="ophyd_async.core._flyer.FlyMotorInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FlyMotorInfo</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.FlyMotorInfo" title="ophyd_async.core._flyer.FlyMotorInfo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FlyMotorInfo</span></code></a></p></td>
 <td><p>Minimal set of information required to fly a motor.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.FlyerController" title="ophyd_async.core._flyer.FlyerController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FlyerController</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.FlyerController" title="ophyd_async.core._flyer.FlyerController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FlyerController</span></code></a></p></td>
 <td><p>Base class for controlling ‘flyable’ devices.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Settings" title="ophyd_async.core._settings.Settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Settings</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Settings" title="ophyd_async.core._settings.Settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Settings</span></code></a></p></td>
 <td><p>Used for supplying settings to signals.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SettingsProvider" title="ophyd_async.core._settings.SettingsProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SettingsProvider</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SettingsProvider" title="ophyd_async.core._settings.SettingsProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SettingsProvider</span></code></a></p></td>
 <td><p>Base class for providing settings.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.YamlSettingsProvider" title="ophyd_async.core._yaml_settings.YamlSettingsProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">YamlSettingsProvider</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.YamlSettingsProvider" title="ophyd_async.core._yaml_settings.YamlSettingsProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">YamlSettingsProvider</span></code></a></p></td>
 <td><p>For providing settings from yaml to signals.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.ConfinedModel" title="ophyd_async.core._utils.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfinedModel</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.ConfinedModel" title="ophyd_async.core._utils.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConfinedModel</span></code></a></p></td>
 <td><p>A base class confined to explicitly defined fields in the model schema.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core._utils.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Reference" title="ophyd_async.core._utils.Reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reference</span></code></a></p></td>
 <td><p>Hide an object behind a reference.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Ignore" title="ophyd_async.core._signal.Ignore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ignore</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Ignore" title="ophyd_async.core._signal.Ignore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ignore</span></code></a></p></td>
 <td><p>Annotation to ignore a signal when connecting a device.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.Transform" title="ophyd_async.core._derived_signal_backend.Transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Transform</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Transform" title="ophyd_async.core._derived_signal_backend.Transform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Transform</span></code></a></p></td>
 <td><p>Baseclass for bidirectional transforms for Derived Signals.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.DerivedSignalFactory" title="ophyd_async.core._derived_signal.DerivedSignalFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DerivedSignalFactory</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DerivedSignalFactory" title="ophyd_async.core._derived_signal.DerivedSignalFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DerivedSignalFactory</span></code></a></p></td>
 <td><p>A factory that makes Derived Signals using a many-many Transform.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.EnabledDisabled" title="ophyd_async.core._enums.EnabledDisabled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnabledDisabled</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.EnabledDisabled" title="ophyd_async.core._enums.EnabledDisabled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnabledDisabled</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.EnableDisable" title="ophyd_async.core._enums.EnableDisable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnableDisable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.EnableDisable" title="ophyd_async.core._enums.EnableDisable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnableDisable</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.InOut" title="ophyd_async.core._enums.InOut"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InOut</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.InOut" title="ophyd_async.core._enums.InOut"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InOut</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.OnOff" title="ophyd_async.core._enums.OnOff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OnOff</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.OnOff" title="ophyd_async.core._enums.OnOff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OnOff</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.YesNo" title="ophyd_async.core._enums.YesNo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">YesNo</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.YesNo" title="ophyd_async.core._enums.YesNo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">YesNo</span></code></a></p></td>
 <td><p>All members should exist in the Backend, and there will be no extras.</p></td>
 </tr>
 </tbody>
@@ -2979,6 +2982,24 @@ it will be generated from the directory path.</p></li>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.core.AutoMaxIncrementingPathProvider">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">AutoMaxIncrementingPathProvider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_path_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.PathProvider" title="ophyd_async.core._providers.PathProvider"><span class="pre">PathProvider</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_digits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_providers.html#AutoMaxIncrementingPathProvider"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.AutoMaxIncrementingPathProvider" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.PathProvider" title="ophyd_async.core._providers.PathProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._providers.PathProvider</span></code></a></p>
+<p>Increment directory name on each call by checking existing directories.</p>
+<p>Looks through directories in a specified base path to increment directory name.
+PathInfo gives path like base_path/0001_dirname/dirname, or
+base_path/yyyy-mm-dd/0001_dirname/dirname if dated is true. Here,
+the ‘0001’ is the value which gets incremented if the file exists already.</p>
+<p>It’s recommended for the base path provider to be non-incrementing.</p>
+<p>Args:
+base_path_provider: Path to create directories inside of. Note that the filename of
+this provider is used as the top level directory and the filename
+max_digits: Number of digits to pad onto the parent directory.
+starting_value: Number to start incrementing from.
+dated: Whether to create an extra directory to specify the day.</p>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.UUIDFilenameProvider">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">UUIDFilenameProvider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uuid_call_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">uuid.uuid4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uuid_call_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_providers.html#UUIDFilenameProvider"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.UUIDFilenameProvider" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.FilenameProvider" title="ophyd_async.core._providers.FilenameProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._providers.FilenameProvider</span></code></a></p>
@@ -4169,6 +4190,7 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.FilenameProvider"><code class="docutils literal notranslate"><span class="pre">FilenameProvider</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.StaticFilenameProvider"><code class="docutils literal notranslate"><span class="pre">StaticFilenameProvider</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.AutoIncrementFilenameProvider"><code class="docutils literal notranslate"><span class="pre">AutoIncrementFilenameProvider</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.AutoMaxIncrementingPathProvider"><code class="docutils literal notranslate"><span class="pre">AutoMaxIncrementingPathProvider</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.UUIDFilenameProvider"><code class="docutils literal notranslate"><span class="pre">UUIDFilenameProvider</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DatasetDescriber"><code class="docutils literal notranslate"><span class="pre">DatasetDescriber</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DatasetDescriber.np_datatype"><code class="docutils literal notranslate"><span class="pre">DatasetDescriber.np_datatype()</span></code></a></li>
