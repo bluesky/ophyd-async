@@ -241,8 +241,6 @@ def _make_factory(
         # Update the signature for raw_to_derived to match what we are passed as this
         # will be checked in DerivedSignalFactory
         DerivedTransform.raw_to_derived.__annotations__ = get_type_hints(raw_to_derived)
-        # print(f"Type_hints {DerivedTransform.raw_to_derived.__annotations__}")
-        # raise ValueError
         return DerivedSignalFactory(
             DerivedTransform,
             set_derived=set_derived,
