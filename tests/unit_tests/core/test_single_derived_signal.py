@@ -190,7 +190,7 @@ async def test_derived_signal_rw_get_method_no_param_type():
     signal_rw = soft_signal_rw(int, initial_value=4)
     with pytest.raises(
         TypeError,
-        match=" does not have a type hinted argument",
+        match=re.escape(" is missing a type hint for arguments: ['ts']"),
     ):
         derived_signal_rw(_get_no_type, _put, ts=signal_rw)
 
@@ -199,7 +199,7 @@ async def test_derived_signal_r_get_method_no_param_type():
     signal_rw = soft_signal_rw(int, initial_value=4)
     with pytest.raises(
         TypeError,
-        match=" does not have a type hinted argument",
+        match=re.escape(" is missing a type hint for arguments: ['ts']"),
     ):
         derived_signal_r(_get_no_type, ts=signal_rw)
 

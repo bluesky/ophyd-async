@@ -1,5 +1,13 @@
-from collections.abc import Awaitable, Callable
-from typing import Any, Generic, get_args, get_origin, get_type_hints, is_typeddict
+from collections.abc import Awaitable, Callable, Mapping
+from inspect import Parameter, signature
+from typing import (
+    Any,
+    Generic,
+    get_args,
+    get_origin,
+    get_type_hints,
+    is_typeddict,
+)
 
 from bluesky.protocols import Locatable
 
@@ -51,6 +59,7 @@ class DerivedSignalFactory(Generic[TransformT]):
         # Check the raw and transform devices match the input arguments of the Transform
         if transform_cls is not Transform:
             # Populate expected parameters and types
+
             expected = {
                 **{k: f.annotation for k, f in transform_cls.model_fields.items()},
                 **{
@@ -203,13 +212,27 @@ def _get_first_arg_datatype(
     return list(args.values())[0]
 
 
+def _get_params_types_dict(inspected_function: Callable) -> Mapping[str, Any]:
+    return {
+        p: s.annotation for p, s in signature(inspected_function).parameters.items()
+    }
+
+
 def _make_factory(
     raw_to_derived: Callable[..., SignalDatatypeT] | None = None,
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]] | None = None,
     raw_devices_and_constants: dict[str, Device | Primitive] | None = None,
 ) -> DerivedSignalFactory:
     if raw_to_derived:
-        _get_first_arg_datatype(raw_to_derived)  # validate first arg type
+        # check for function arguments without type hints
+        if keys := [
+            k
+            for k, v in _get_params_types_dict(raw_to_derived).items()
+            if v == Parameter.empty
+        ]:
+            raise TypeError(
+                f"{raw_to_derived} is missing a type hint for arguments: {keys}"
+            )
 
         class DerivedTransform(Transform):
             def raw_to_derived(self, **kwargs) -> dict[str, SignalDatatypeT]:
@@ -218,7 +241,8 @@ def _make_factory(
         # Update the signature for raw_to_derived to match what we are passed as this
         # will be checked in DerivedSignalFactory
         DerivedTransform.raw_to_derived.__annotations__ = get_type_hints(raw_to_derived)
-
+        # print(f"Type_hints {DerivedTransform.raw_to_derived.__annotations__}")
+        # raise ValueError
         return DerivedSignalFactory(
             DerivedTransform,
             set_derived=set_derived,
