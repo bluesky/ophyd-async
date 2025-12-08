@@ -220,11 +220,14 @@ def panda_pva():
 
 
 @pytest.fixture
-async def normal_coroutine() -> Callable[[], Any]:
+async def normal_coroutine() -> tuple[Callable[[], Any], asyncio.Event]:
+    is_running = asyncio.Event()
+
     async def inner_coroutine():
+        is_running.set()
         await asyncio.sleep(0.01)
 
-    return inner_coroutine
+    return inner_coroutine, is_running
 
 
 @pytest.fixture
