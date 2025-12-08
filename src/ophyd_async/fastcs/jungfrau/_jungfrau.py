@@ -2,9 +2,9 @@ from ophyd_async.core import (
     PathProvider,
     StandardDetector,
 )
-from ophyd_async.epics.odin import Odin, OdinWriter
 from ophyd_async.fastcs.jungfrau._controller import JungfrauController
 from ophyd_async.fastcs.jungfrau._signals import JungfrauDriverIO
+from ophyd_async.fastcs.odin import OdinHdfIO, OdinWriter
 
 
 class Jungfrau(StandardDetector[JungfrauController, OdinWriter]):
@@ -16,11 +16,10 @@ class Jungfrau(StandardDetector[JungfrauController, OdinWriter]):
         path_provider: PathProvider,
         drv_suffix: str,
         hdf_suffix: str,
-        odin_nodes: int,
         name="",
     ):
         self.drv = JungfrauDriverIO(prefix + drv_suffix)
-        self.odin = Odin(prefix + hdf_suffix, nodes=odin_nodes)
+        self.odin = OdinHdfIO(prefix + hdf_suffix)
         writer = OdinWriter(
             path_provider,
             self.odin,
