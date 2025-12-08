@@ -123,5 +123,7 @@ class OdinWriter(DetectorWriter):
         raise NotImplementedError()
 
     async def close(self) -> None:
-        await self._drv.fp.stop_writing.trigger(wait=True)
-        await self._drv.mw.stop.trigger(wait=True)
+        await asyncio.gather(
+            self._drv.fp.stop_writing.trigger(wait=True),
+            self._drv.mw.stop.trigger(wait=True),
+        )
