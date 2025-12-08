@@ -28,14 +28,15 @@ class OdinWriting(StrictEnum):
 class MedaWriterIO(Device):
     stop: SignalX
     file_prefix: SignalRW[str]
+    directory: SignalRW[str]
     acquisition_id: SignalRW[str]
-    writing: SignalR[str]
+    writing: SignalR[bool]
 
 
 class FrameProcessorIO(Device):
     start_writing: SignalX
     stop_writing: SignalX
-    writing: SignalR[str]
+    writing: SignalR[bool]
     frames_written: SignalR[int]
     frames: SignalRW[int]
     data_dims_0: SignalRW[int]
@@ -46,6 +47,7 @@ class FrameProcessorIO(Device):
     file_path: SignalRW[str]
     file_prefix: SignalRW[str]
     data_datatype: SignalRW[str]
+    data_compression: SignalRW[str]
 
 
 class OdinHdfIO(Device):
@@ -74,27 +76,21 @@ class OdinWriter(DetectorWriter):
 
         await asyncio.gather(
             self._drv.fp.data_datatype.set(
-                f"UInt{await self._detector_bit_depth().get_value()}"
+                f"uint{await self._detector_bit_depth().get_value()}"
             ),
-            self._drv.fp.frames.set(0),
+            self._drv.fp.data_compression.set("BSLZ4"),
+            self._drv.fp.frames.set(exposures_per_event),
             self._drv.fp.file_path.set(str(info.directory_path)),
+            self._drv.mw.directory.set(str(info.directory_path)),
             self._drv.fp.file_prefix.set(info.filename),
+            self._drv.mw.file_prefix.set(info.filename),
+            self._drv.mw.acquisition_id.set(info.filename),
         )
-
-        await asyncio.gather(
-            wait_for_value(
-                self._drv.mw.file_prefix, info.filename, timeout=DEFAULT_TIMEOUT
-            ),
-            wait_for_value(
-                self._drv.mw.acquisition_id, info.filename, timeout=DEFAULT_TIMEOUT
-            ),
-        )  # Must wait for meta_active TODO: add meta_active signal
 
         await self._drv.fp.start_writing.trigger(wait=True)
 
         await asyncio.gather(
-            wait_for_value(self._drv.fp.writing, "Capturing", timeout=DEFAULT_TIMEOUT),
-            wait_for_value(self._drv.mw.writing, "Writing", timeout=DEFAULT_TIMEOUT),
+            wait_for_value(self._drv.fp.writing, True, timeout=DEFAULT_TIMEOUT),
         )
 
         return await self._describe()

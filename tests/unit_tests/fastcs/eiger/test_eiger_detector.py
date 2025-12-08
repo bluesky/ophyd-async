@@ -26,8 +26,7 @@ def detector(RE):
 
     detector._writer._path_provider.return_value.filename = "filename.h5"  # type: ignore
 
-    set_mock_value(detector.odin.fp.writing, "Capturing")
-    set_mock_value(detector.odin.mw.writing, "Writing")
+    set_mock_value(detector.odin.fp.writing, True)
     return detector
 
 
@@ -46,5 +45,5 @@ async def test_when_prepared_eiger_bit_depth_is_passed_and_set_in_odin(detector)
 
     # Assert that odin datatype is set to the eiger bit depth during detector prepare
     get_mock_put(detector.odin.fp.data_datatype).assert_called_once_with(
-        f"UInt{expected_datatype}", wait=True
+        f"uint{expected_datatype}", wait=True
     )
