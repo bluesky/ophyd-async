@@ -13,16 +13,10 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalX,
-    StrictEnum,
     observe_value,
     wait_for_value,
 )
 from ophyd_async.fastcs.core import fastcs_connector
-
-
-class OdinWriting(StrictEnum):
-    CAPTURE = "Capture"
-    DONE = "Done"
 
 
 class MedaWriterIO(Device):
