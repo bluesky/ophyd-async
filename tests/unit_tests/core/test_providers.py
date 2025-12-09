@@ -1,5 +1,6 @@
 import itertools
 import os
+import shutil
 import sys
 import uuid
 from datetime import date
@@ -10,6 +11,9 @@ import pytest
 from ophyd_async.core import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
+    AutoMaxIncrementingPathProvider,
+    PathInfo,
+    StaticFilenameProvider,
     StaticPathProvider,
     UUIDFilenameProvider,
     YMDPathProvider,
@@ -73,6 +77,59 @@ def test_auto_increment_path_provider(static_filename_provider, tmp_path):
         assert os.path.basename(info.directory_path) == "00000"
     info = auto_inc_path_provider()
     assert os.path.basename(info.directory_path) == "00002"
+
+
+def test_auto_max_increment_path_provider(tmp_path: Path):
+    def write_file(info: PathInfo):
+        os.makedirs(info.directory_path)
+        with open(f"{info.directory_path}/{info.filename}", "w"):
+            ...
+
+    filename = "capture"
+    base_provider = StaticPathProvider(StaticFilenameProvider("capture"), tmp_path)
+
+    try:
+        # Test multiple increments
+        path_provider = AutoMaxIncrementingPathProvider(base_provider, max_digits=3)
+        info = path_provider()
+        write_file(info)
+        expected_path = tmp_path / f"000_{filename}"
+        assert info.directory_path == expected_path
+        info = path_provider()
+        write_file(info)
+        expected_path = tmp_path / f"001_{filename}"
+        assert info.directory_path == expected_path
+
+        # Test fresh path provider continues incrementing
+        path_provider = AutoMaxIncrementingPathProvider(base_provider)
+        info = path_provider()
+        write_file(info)
+        expected_path = tmp_path / f"0002_{filename}"
+        assert info.directory_path == expected_path
+
+        # Test path provider in dated mode
+        path_provider = AutoMaxIncrementingPathProvider(base_provider, dated=True)
+        info = path_provider()
+        write_file(info)
+        assert (
+            info.directory_path
+            == tmp_path / date.today().strftime("%Y-%m-%d") / f"0000_{filename}"
+        )
+        info = path_provider()
+        write_file(info)
+        assert (
+            info.directory_path
+            == tmp_path / date.today().strftime("%Y-%m-%d") / f"0001_{filename}"
+        )
+
+    finally:
+        # Tidy up directory - although they should have been
+        # created in a temporary location
+        for file in tmp_path.iterdir():
+            if file.is_file():
+                file.unlink()
+            elif file.is_dir():
+                shutil.rmtree(file)
 
 
 def test_ymd_path_provider(static_filename_provider, tmp_path):

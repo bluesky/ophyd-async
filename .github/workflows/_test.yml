@@ -13,9 +13,6 @@ on:
         type: string
         description: The path to look for tests
         required: true
-    secrets:
-      CODECOV_TOKEN:
-        required: true
 
 env:
   # https://github.com/pytest-dev/pytest/issues/2042
@@ -59,5 +56,3 @@ jobs:
         with:
           name: ${{ inputs.python-version }}/${{ inputs.runs-on }}/${{ inputs.tests-path }}
           files: cov.xml
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
