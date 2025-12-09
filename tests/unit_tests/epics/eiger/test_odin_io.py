@@ -11,6 +11,7 @@ from ophyd_async.core import (
     init_devices,
     set_mock_value,
 )
+from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.odin import OdinHdfIO, OdinWriter
 
 ODIN_DETECTOR_NAME = "odin_detector"
@@ -22,8 +23,13 @@ OdinDriverAndWriter = tuple[OdinHdfIO, OdinWriter]
 @pytest.fixture
 def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
     eiger_bit_depth = AsyncMock(get_value=AsyncMock(return_value=EIGER_BIT_DEPTH))
+
+    class MockOdinHDFIO(OdinHdfIO):
+        def __init__(self, uri: str, name: str = ""):
+            super().__init__(name=name, connector=fastcs_connector(self, uri))
+
     with init_devices(mock=True):
-        driver = OdinHdfIO("")
+        driver = MockOdinHDFIO("")
         writer = OdinWriter(MagicMock(), driver, eiger_bit_depth)
     writer._path_provider.return_value.filename = "filename.h5"  # type: ignore
     return driver, writer

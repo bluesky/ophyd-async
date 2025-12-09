@@ -16,10 +16,11 @@ from ophyd_async.core import (
     observe_value,
     wait_for_value,
 )
-from ophyd_async.fastcs.core import fastcs_connector
 
 
-class MedaWriterIO(Device):
+class MetaWriterIO(Device):
+    """Ophyd-async implementation of a MetaWriter Odin Subdevice."""
+
     stop: SignalX
     file_prefix: SignalRW[str]
     directory: SignalRW[str]
@@ -28,6 +29,8 @@ class MedaWriterIO(Device):
 
 
 class FrameProcessorIO(Device):
+    """Ophyd-async implementation of a FrameProcessor Odin Subdevice."""
+
     start_writing: SignalX
     stop_writing: SignalX
     writing: SignalR[bool]
@@ -46,10 +49,7 @@ class FrameProcessorIO(Device):
 
 class OdinHdfIO(Device):
     fp: FrameProcessorIO
-    mw: MedaWriterIO
-
-    def __init__(self, uri: str, name: str = ""):
-        super().__init__(name=name, connector=fastcs_connector(self, uri))
+    mw: MetaWriterIO
 
 
 class OdinWriter(DetectorWriter):
