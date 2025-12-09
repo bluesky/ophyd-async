@@ -3,6 +3,7 @@ from ophyd_async.core import (
     DeviceVector,
     SignalR,
     SignalRW,
+    SignalW,
     StrictEnum,
     SubsetEnum,
 )
@@ -86,6 +87,26 @@ class PandaTimeUnits(StrictEnum):
     US = "us"
 
 
+class PandaSeqWrite(StrictEnum):
+    """Options for what the next write command will do to the table."""
+
+    REPLACE = "Replace"
+    APPEND = "Append"
+    LAST = "Append Last"
+
+
+class PandaSeqClear(StrictEnum):
+    """Option to send an empty command to the sequencer table."""
+
+    CLEAR = "CLEAR"
+
+
+class PandaSeqQueued(StrictEnum):
+    """Option to get the number of lines queued but not yet processed."""
+
+    QUEUED = "QUEUED_LINES"
+
+
 class SeqBlock(Device):
     """Sequencer block in the PandA."""
 
@@ -96,6 +117,9 @@ class SeqBlock(Device):
     prescale_units: SignalRW[PandaTimeUnits]
     enable: SignalRW[PandaBitMux]
     posa: SignalRW[PandaPosMux]
+    clear_table: SignalW[PandaSeqClear] | None
+    seq_write: SignalW[PandaSeqWrite] | None
+    queued_lines: SignalR[PandaSeqQueued] | None
 
 
 class PcapBlock(Device):
