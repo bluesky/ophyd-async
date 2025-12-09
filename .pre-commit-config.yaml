@@ -3,7 +3,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
-        args: ["--maxkb=1000"] # uv.lock is more than 500kB
+        exclude: ^uv.lock
       - id: check-yaml
       - id: check-merge-conflict
       - id: end-of-file-fixer
