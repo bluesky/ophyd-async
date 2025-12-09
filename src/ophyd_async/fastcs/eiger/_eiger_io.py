@@ -28,6 +28,7 @@ class EigerDetectorIO(Device):
     count_time: SignalRW[float]
     frame_time: SignalRW[float]
     nimages: SignalRW[int]
+    nexpi: Optional[SignalRW[int]]
     ntrigger: SignalRW[int]
     trigger_mode: SignalRW[str]
     roi_mode: SignalRW[str]
