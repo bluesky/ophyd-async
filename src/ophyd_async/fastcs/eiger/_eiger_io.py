@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ophyd_async.core import (
     Device,
     SignalR,
@@ -28,8 +30,8 @@ class EigerDetectorIO(Device):
     count_time: SignalRW[float]
     frame_time: SignalRW[float]
     nimages: SignalRW[int]
-    nexpi: Optional[SignalRW[int]]
     ntrigger: SignalRW[int]
+    nexpi: Optional[SignalRW[int]]
     trigger_mode: SignalRW[str]
     roi_mode: SignalRW[str]
     photon_energy: SignalRW[float]
