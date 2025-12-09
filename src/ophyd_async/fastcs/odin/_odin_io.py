@@ -9,7 +9,6 @@ from ophyd_async.core import (
     DetectorWriter,
     Device,
     PathProvider,
-    Reference,
     SignalR,
     SignalRW,
     SignalX,
@@ -61,7 +60,7 @@ class OdinWriter(DetectorWriter):
     ) -> None:
         self._drv = odin_driver
         self._path_provider = path_provider
-        self._detector_bit_depth = Reference(detector_bit_depth)
+        self._detector_bit_depth = detector_bit_depth
         super().__init__()
 
     async def open(self, name: str, exposures_per_event: int = 1) -> dict[str, DataKey]:
@@ -70,7 +69,7 @@ class OdinWriter(DetectorWriter):
 
         await asyncio.gather(
             self._drv.fp.data_datatype.set(
-                f"uint{await self._detector_bit_depth().get_value()}"
+                f"uint{await self._detector_bit_depth.get_value()}"
             ),
             self._drv.fp.data_compression.set("BSLZ4"),
             self._drv.fp.frames.set(exposures_per_event),
@@ -81,7 +80,7 @@ class OdinWriter(DetectorWriter):
             self._drv.mw.acquisition_id.set(info.filename),
         )
 
-        await self._drv.fp.start_writing.trigger(wait=True)
+        await self._drv.fp.start_writing.trigger()
 
         await asyncio.gather(
             wait_for_value(self._drv.fp.writing, True, timeout=DEFAULT_TIMEOUT),
@@ -124,6 +123,6 @@ class OdinWriter(DetectorWriter):
 
     async def close(self) -> None:
         await asyncio.gather(
-            self._drv.fp.stop_writing.trigger(wait=True),
-            self._drv.mw.stop.trigger(wait=True),
+            self._drv.fp.stop_writing.trigger(),
+            self._drv.mw.stop.trigger(),
         )
