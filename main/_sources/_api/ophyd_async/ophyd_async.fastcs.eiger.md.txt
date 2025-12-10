@@ -255,7 +255,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ````{py:attribute} nexpi
 :canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.nexpi
-:type: ~ophyd_async.core.SignalRW[int]
+:type: ~ophyd_async.core.SignalRW[int] | None
 :value: >
    None
 
