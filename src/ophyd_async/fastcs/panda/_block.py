@@ -4,6 +4,7 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalW,
+    SignalX,
     StrictEnum,
     SubsetEnum,
 )
@@ -92,7 +93,7 @@ class PandaSeqWrite(StrictEnum):
 
     REPLACE = "Replace"
     APPEND = "Append"
-    LAST = "Append Last"
+    APPEND_LAST = "Append Last"
 
 
 class PandaSeqClear(StrictEnum):
@@ -117,9 +118,9 @@ class SeqBlock(Device):
     prescale_units: SignalRW[PandaTimeUnits]
     enable: SignalRW[PandaBitMux]
     posa: SignalRW[PandaPosMux]
-    clear_table: SignalW[PandaSeqClear] | None
-    seq_write: SignalW[PandaSeqWrite] | None
-    queued_lines: SignalR[PandaSeqQueued] | None
+    table_clear: SignalX | None
+    table_next_write: SignalW[PandaSeqWrite] | None
+    table_queued_lines: SignalR[PandaSeqQueued] | None
 
 
 class PcapBlock(Device):
