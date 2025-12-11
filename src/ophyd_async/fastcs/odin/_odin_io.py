@@ -44,6 +44,7 @@ class FrameProcessorIO(Device):
     file_prefix: SignalRW[str]
     data_datatype: SignalRW[str]
     data_compression: SignalRW[str]
+    process_frames_per_block: SignalRW[int]
 
 
 class OdinHdfIO(Device):
@@ -72,7 +73,8 @@ class OdinWriter(DetectorWriter):
                 f"uint{await self._detector_bit_depth.get_value()}"
             ),
             self._drv.fp.data_compression.set("BSLZ4"),
-            self._drv.fp.frames.set(exposures_per_event),
+            self._drv.fp.frames.set(0),
+            self._drv.fp.process_frames_per_block.set(1000),
             self._drv.fp.file_path.set(str(info.directory_path)),
             self._drv.mw.directory.set(str(info.directory_path)),
             self._drv.fp.file_prefix.set(info.filename),
