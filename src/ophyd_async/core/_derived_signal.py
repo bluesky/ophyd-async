@@ -1,3 +1,4 @@
+import functools
 from collections.abc import Awaitable, Callable, Mapping
 from inspect import Parameter, signature
 from typing import (
@@ -58,6 +59,15 @@ class DerivedSignalFactory(Generic[TransformT]):
 
         # Check the raw and transform devices match the input arguments of the Transform
         if transform_cls is not Transform:
+            # check for function arguments without type hints
+            if keys := [
+                k
+                for k, v in _get_params_types_dict(transform_cls.raw_to_derived).items()
+                if v == Parameter.empty
+            ]:
+                raise TypeError(
+                    f"{transform_cls.raw_to_derived} is missing a type hint for arguments: {keys}"  # noqa: E501
+                )
             # Populate expected parameters and types
 
             expected = {
@@ -219,28 +229,15 @@ def _get_params_types_dict(inspected_function: Callable) -> Mapping[str, Any]:
 
 
 def _make_factory(
-    raw_to_derived: Callable[..., SignalDatatypeT] | None = None,
+    raw_to_derived_func: Callable[..., SignalDatatypeT] | None = None,
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]] | None = None,
     raw_devices_and_constants: dict[str, Device | Primitive] | None = None,
 ) -> DerivedSignalFactory:
-    if raw_to_derived:
-        # check for function arguments without type hints
-        if keys := [
-            k
-            for k, v in _get_params_types_dict(raw_to_derived).items()
-            if v == Parameter.empty
-        ]:
-            raise TypeError(
-                f"{raw_to_derived} is missing a type hint for arguments: {keys}"
-            )
+    if raw_to_derived_func:
 
         class DerivedTransform(Transform):
-            def raw_to_derived(self, **kwargs) -> dict[str, SignalDatatypeT]:
-                return {"value": raw_to_derived(**kwargs)}
+            raw_to_derived = dict_wrapper(raw_to_derived_func)
 
-        # Update the signature for raw_to_derived to match what we are passed as this
-        # will be checked in DerivedSignalFactory
-        DerivedTransform.raw_to_derived.__annotations__ = get_type_hints(raw_to_derived)
         return DerivedSignalFactory(
             DerivedTransform,
             set_derived=set_derived,
@@ -248,6 +245,14 @@ def _make_factory(
         )
     else:
         return DerivedSignalFactory(Transform, set_derived=set_derived)
+
+
+def dict_wrapper(fn):
+    @functools.wraps(fn)
+    def wrapped(self, **kwargs):
+        return {"value": fn(**kwargs)}
+
+    return wrapped
 
 
 def derived_signal_r(
@@ -268,7 +273,7 @@ def derived_signal_r(
         The names of these arguments must match the arguments of raw_to_derived.
     """
     factory = _make_factory(
-        raw_to_derived=raw_to_derived,
+        raw_to_derived_func=raw_to_derived,
         raw_devices_and_constants=raw_devices_and_constants,
     )
     return factory.derived_signal_r(
@@ -310,7 +315,7 @@ def derived_signal_rw(
         raise TypeError(msg)
 
     factory = _make_factory(
-        raw_to_derived=raw_to_derived,
+        raw_to_derived_func=raw_to_derived,
         set_derived=set_derived,
         raw_devices_and_constants=raw_devices_and_constants,
     )
