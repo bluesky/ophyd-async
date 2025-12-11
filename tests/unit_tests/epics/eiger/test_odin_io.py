@@ -72,7 +72,7 @@ async def test_when_open_called_then_all_expected_signals_set(
     await writer.open(ODIN_DETECTOR_NAME)
 
     get_mock_put(driver.fp.data_datatype).assert_called_once_with("uint16", wait=ANY)
-    get_mock_put(driver.fp.frames).assert_called_once_with(1, wait=ANY)
+    get_mock_put(driver.fp.frames).assert_called_once_with(0, wait=ANY)
 
     get_mock_put(driver.fp.start_writing).assert_called_once_with(None, wait=ANY)
 
