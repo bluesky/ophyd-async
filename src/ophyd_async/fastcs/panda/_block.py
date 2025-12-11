@@ -96,18 +96,6 @@ class PandaSeqWrite(StrictEnum):
     APPEND_LAST = "Append Last"
 
 
-class PandaSeqClear(StrictEnum):
-    """Option to send an empty command to the sequencer table."""
-
-    CLEAR = "CLEAR"
-
-
-class PandaSeqQueued(StrictEnum):
-    """Option to get the number of lines queued but not yet processed."""
-
-    QUEUED = "QUEUED_LINES"
-
-
 class SeqBlock(Device):
     """Sequencer block in the PandA."""
 
@@ -120,7 +108,7 @@ class SeqBlock(Device):
     posa: SignalRW[PandaPosMux]
     table_clear: SignalX | None
     table_next_write: SignalW[PandaSeqWrite] | None
-    table_queued_lines: SignalR[PandaSeqQueued] | None
+    table_queued_lines: SignalR[int] | None
 
 
 class PcapBlock(Device):
