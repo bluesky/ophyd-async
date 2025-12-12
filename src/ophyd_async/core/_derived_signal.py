@@ -63,7 +63,7 @@ class DerivedSignalFactory(Generic[TransformT]):
             if keys := [
                 k
                 for k, v in _get_params_types_dict(transform_cls.raw_to_derived).items()
-                if v == Parameter.empty
+                if (v == Parameter.empty and k not in {"self"})
             ]:
                 raise TypeError(
                     f"{transform_cls.raw_to_derived} is missing a type hint for arguments: {keys}"  # noqa: E501
