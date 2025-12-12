@@ -151,3 +151,7 @@ class JungfrauController(DetectorController):
 
     async def disarm(self):
         await self._driver.acquisition_stop.trigger()
+        await asyncio.gather(
+            self._driver.pedestal_mode_state.set(PedestalMode.OFF),
+            self._driver.acquisition_type.set(AcquisitionType.STANDARD),
+        )

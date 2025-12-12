@@ -3,6 +3,8 @@
 https://github.com/epics-modules/motor
 """
 
+from __future__ import annotations
+
 import asyncio
 
 from bluesky.protocols import (
@@ -21,36 +23,89 @@ from ophyd_async.core import (
     AsyncStatus,
     CalculatableTimeout,
     Callback,
+    DeviceMock,
     FlyMotorInfo,
     StandardReadable,
     StrictEnum,
     WatchableAsyncStatus,
     WatcherUpdate,
+    callback_on_mock_put,
+    default_mock_class,
     error_if_none,
     observe_value,
+    set_mock_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_w
 
-__all__ = ["MotorLimitsException", "Motor"]
+__all__ = ["MotorLimitsError", "Motor", "InstantMotorMock", "OffsetMode", "UseSetMode"]
 
 
-class MotorLimitsException(Exception):
+class MotorLimitsError(Exception):
     """Exception for invalid motor limits."""
 
     pass
 
 
+# Back compat - delete before 1.0
+def __getattr__(name):
+    import warnings
+
+    renames = {
+        "MotorLimitsException": MotorLimitsError,
+    }
+    rename = renames.get(name)
+    if rename is not None:
+        warnings.warn(
+            DeprecationWarning(
+                f"{name!r} is deprecated, use {rename.__name__!r} instead"
+            ),
+            stacklevel=2,
+        )
+        return rename
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 class OffsetMode(StrictEnum):
+    """In Set mode, determine what to do when the motor setpoint is written."""
+
     VARIABLE = "Variable"
+    """Change the offset so the readback matches the setpoint."""
     FROZEN = "Frozen"
+    """Tell the controller to change the readback without changing the offset."""
 
 
 class UseSetMode(StrictEnum):
+    """Determine what to do when the motor setpoint is written."""
+
     USE = "Use"
+    """Tell the controller to move to the setpoint."""
     SET = "Set"
+    """Change offset (in record or in controller) when setpoint is written."""
 
 
+class InstantMotorMock(DeviceMock["Motor"]):
+    """Mock behaviour that instantly moves readback to setpoint."""
+
+    async def connect(self, device: Motor) -> None:
+        """Mock signals to do an instant move on setpoint write."""
+        # Set sensible defaults to avoid runtime errors
+        set_mock_value(device.velocity, 1000)  # Prevent ZeroDivisionError
+        set_mock_value(device.max_velocity, 1000)  # Prevent ZeroDivisionError
+
+        # Motor starts in "done" state (not moving)
+        set_mock_value(device.motor_done_move, 1)
+
+        # When setpoint is written to, immediately update readback and done flag
+        def _instant_move(value, wait):
+            set_mock_value(device.motor_done_move, 0)  # Moving
+            set_mock_value(device.user_readback, value)  # Arrive instantly
+            set_mock_value(device.motor_done_move, 1)  # Done
+
+        callback_on_mock_put(device.user_setpoint, _instant_move)
+
+
+@default_mock_class(InstantMotorMock)
 class Motor(
     StandardReadable,
     Locatable[float],
@@ -79,9 +134,12 @@ class Motor(
         self.motor_done_move = epics_signal_r(int, prefix + ".DMOV")
         self.low_limit_travel = epics_signal_rw(float, prefix + ".LLM")
         self.high_limit_travel = epics_signal_rw(float, prefix + ".HLM")
+        self.dial_low_limit_travel = epics_signal_rw(float, prefix + ".DLLM")
+        self.dial_high_limit_travel = epics_signal_rw(float, prefix + ".DHLM")
         self.offset_freeze_switch = epics_signal_rw(OffsetMode, prefix + ".FOFF")
         self.high_limit_switch = epics_signal_r(int, prefix + ".HLS")
         self.low_limit_switch = epics_signal_r(int, prefix + ".LLS")
+        self.output_link = epics_signal_r(str, prefix + ".OUT")
         self.set_use_switch = epics_signal_rw(UseSetMode, prefix + ".SET")
 
         # Note:cannot use epics_signal_x here, as the motor record specifies that
@@ -112,25 +170,37 @@ class Motor(
         Will raise a MotorLimitsException if the given absolute positions will be
         outside the motor soft limits.
         """
-        motor_lower_limit, motor_upper_limit, egu = await asyncio.gather(
+        (
+            motor_lower_limit,
+            motor_upper_limit,
+            egu,
+            dial_lower_limit,
+            dial_upper_limit,
+        ) = await asyncio.gather(
             self.low_limit_travel.get_value(),
             self.high_limit_travel.get_value(),
             self.motor_egu.get_value(),
+            self.dial_low_limit_travel.get_value(),
+            self.dial_high_limit_travel.get_value(),
         )
 
-        # EPICS motor record treats limits of 0, 0 as no limit
-        if motor_lower_limit == 0 and motor_upper_limit == 0:
+        # EPICS motor record treats dial limits of 0, 0 as no limit
+        # Use DLLM and DHLM to check
+        if dial_lower_limit == 0 and dial_upper_limit == 0:
             return
 
+        # Use real motor limit(i.e. HLM and LLM) to check if the move is permissible
         if (
             not motor_upper_limit >= abs_start_pos >= motor_lower_limit
             or not motor_upper_limit >= abs_end_pos >= motor_lower_limit
         ):
-            raise MotorLimitsException(
+            raise MotorLimitsError(
                 f"{self.name} motor trajectory for requested fly/move is from "
                 f"{abs_start_pos}{egu} to "
                 f"{abs_end_pos}{egu} but motor limits are "
                 f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
+                f"dial limits are "
+                f"{dial_lower_limit}{egu} <= x <= {dial_upper_limit}"
             )
 
     @AsyncStatus.wrap
@@ -144,7 +214,7 @@ class Motor(
             self.max_velocity.get_value(), self.motor_egu.get_value()
         )
         if abs(value.velocity) > max_speed:
-            raise MotorLimitsException(
+            raise MotorLimitsError(
                 f"Velocity {abs(value.velocity)} {egu}/s was requested for a motor "
                 f" with max speed of {max_speed} {egu}/s"
             )
@@ -242,9 +312,11 @@ class Motor(
         )
         return Location(setpoint=setpoint, readback=readback)
 
-    def subscribe(self, function: Callback[dict[str, Reading[float]]]) -> None:
-        """Subscribe."""
-        self.user_readback.subscribe(function)
+    def subscribe_reading(self, function: Callback[dict[str, Reading[float]]]) -> None:
+        """Subscribe to reading."""
+        self.user_readback.subscribe_reading(function)
+
+    subscribe = subscribe_reading
 
     def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
         """Unsubscribe."""

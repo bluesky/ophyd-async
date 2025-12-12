@@ -26,7 +26,7 @@ from event_model import DataKey, Limits, LimitsRange
 from ophyd_async.core import (
     Array1D,
     Callback,
-    NotConnected,
+    NotConnectedError,
     SignalDatatype,
     SignalDatatypeT,
     SignalMetadata,
@@ -272,7 +272,7 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             )
         except CANothing as exc:
             logger.debug(f"signal ca://{pv} timed out")
-            raise NotConnected(f"ca://{pv}") from exc
+            raise NotConnectedError(f"ca://{pv}") from exc
 
     async def connect(self, timeout: float):
         _use_pyepics_context_if_imported()
