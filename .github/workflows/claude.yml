@@ -1,4 +1,6 @@
 name: Claude PR Comment Review
+# https://github.com/anthropics/claude-code-action/blob/main/docs/solutions.md#automatic-pr-code-review
+# https://skywork.ai/blog/how-to-use-claude-code-for-prs-code-reviews-guide/#step-3-add-a-comment-triggered-workflow-copy-pasteable
 
 on:
   issue_comment:
@@ -6,9 +8,6 @@ on:
   pull_request_review_comment:
     types: [created]
 
-permissions:
-  contents: read
-  pull-requests: write
 
 jobs:
   review:
@@ -18,19 +17,36 @@ jobs:
            && (github.event.issue.pull_request != null || github.event.pull_request != null) }
       }
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
 
-      - name: Run Claude Code Action (comment-triggered)
-        uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true # ✨ Enables tracking comments
           prompt: |
-            You are reviewing a GitHub pull request. Focus on security, correctness, and clarity.
-            - Only comment on files that changed in this PR.
-            - Prioritize actionable fixes and cite specific lines.
-            - Check consistency with existing code style.
-            - Skip style issues already handled by linters.
-            - Search the codebase for code that could be reused in this PR.
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Please review this pull request checked out in the current working directory with a focus on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Security implications
+            - Performance considerations
+
+            Make sure to:
+            - Use `gh pr comment` for top-level feedback.
+            - Use `mcp__github_inline_comment__create_inline_comment` to highlight specific code issues.
+            - Check consistency with existing code style
+            - Search the repository for code that could be reused in this PR
+            - Skip style issues already handled by linters.            
             - Respond in concise bullet point form; avoid restating code.
+           
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
