@@ -5,7 +5,6 @@ from ophyd_async.core import (
     SignalX,
     StrictEnum,
 )
-from ophyd_async.fastcs.core import fastcs_connector
 
 
 class EigerTriggerMode(StrictEnum):
@@ -41,15 +40,3 @@ class EigerDetectorIO(Device):
     arm: SignalX
     disarm: SignalX
     trigger: SignalX
-
-
-class EigerDriverIO(Device):
-    """Contains signals for handling IO on the Eiger detector."""
-
-    stale_parameters: SignalR[bool]
-    monitor: EigerMonitorIO
-    stream: EigerStreamIO
-    detector: EigerDetectorIO
-
-    def __init__(self, uri: str, name: str = ""):
-        super().__init__(name=name, connector=fastcs_connector(self, uri))
