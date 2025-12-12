@@ -59,25 +59,21 @@ class DerivedSignalFactory(Generic[TransformT]):
 
         # Check the raw and transform devices match the input arguments of the Transform
         if transform_cls is not Transform:
-            # check for function arguments without type hints
-            if keys := [
-                k
-                for k, v in _get_params_types_dict(transform_cls.raw_to_derived).items()
-                if (v == Parameter.empty and k not in {"self"})
-            ]:
-                raise TypeError(
-                    f"{transform_cls.raw_to_derived} is missing a type hint for arguments: {keys}"  # noqa: E501
-                )
             # Populate expected parameters and types
-
             expected = {
                 **{k: f.annotation for k, f in transform_cls.model_fields.items()},
                 **{
                     k: v
-                    for k, v in get_type_hints(transform_cls.raw_to_derived).items()
-                    if k not in {"self", "return"}
+                    for k, v in _get_params_types_dict(
+                        transform_cls.raw_to_derived
+                    ).items()
+                    if k not in {"self"}  # noqa: E501
                 },
             }
+            if empty_keys := [k for k, v in expected.items() if v == Parameter.empty]:
+                raise TypeError(
+                    f"{transform_cls.raw_to_derived} is missing a type hint for arguments: {empty_keys}"  # noqa: E501
+                )
 
             # Populate received parameters and types
             # Use Primitive's type, Signal's datatype,
@@ -223,9 +219,13 @@ def _get_first_arg_datatype(
 
 
 def _get_params_types_dict(inspected_function: Callable) -> Mapping[str, Any]:
-    return {
-        p: s.annotation for p, s in signature(inspected_function).parameters.items()
-    }
+    hints = get_type_hints(inspected_function)
+    sig = signature(inspected_function)
+    normalized = {}
+    # convert string annotations to class
+    for name, param in sig.parameters.items():
+        normalized[name] = hints.get(name, param.annotation)
+    return normalized
 
 
 def _make_factory(
