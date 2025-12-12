@@ -88,7 +88,7 @@ async def test_get_returns_right_position(
 
 @pytest.mark.parametrize("cls", [ReadOnlyBeamstop, MovableBeamstop])
 async def test_monitoring_position(cls: type[ReadOnlyBeamstop | MovableBeamstop]):
-    results = asyncio.Queue[BeamstopPosition]()
+    results: asyncio.Queue[dict[str, Reading]] = asyncio.Queue()
     inst = cls("inst")
     inst.position.subscribe_reading(results.put_nowait)
     assert (await results.get())["inst-position"][
@@ -179,6 +179,29 @@ def _get(ts: int) -> float:
 
 async def _put(value: float) -> None:
     pass
+
+
+# function without type hint on first argument
+def _get_no_type(ts) -> float:
+    return ts
+
+
+async def test_derived_signal_rw_get_method_no_param_type():
+    signal_rw = soft_signal_rw(int, initial_value=4)
+    with pytest.raises(
+        TypeError,
+        match=re.escape(" is missing a type hint for arguments: ['ts']"),
+    ):
+        derived_signal_rw(_get_no_type, _put, ts=signal_rw)
+
+
+async def test_derived_signal_r_get_method_no_param_type():
+    signal_rw = soft_signal_rw(int, initial_value=4)
+    with pytest.raises(
+        TypeError,
+        match=re.escape(" is missing a type hint for arguments: ['ts']"),
+    ):
+        derived_signal_r(_get_no_type, ts=signal_rw)
 
 
 @pytest.fixture

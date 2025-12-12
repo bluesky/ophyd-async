@@ -1,5 +1,14 @@
-from collections.abc import Awaitable, Callable
-from typing import Any, Generic, get_args, get_origin, get_type_hints, is_typeddict
+import functools
+from collections.abc import Awaitable, Callable, Mapping
+from inspect import Parameter, signature
+from typing import (
+    Any,
+    Generic,
+    get_args,
+    get_origin,
+    get_type_hints,
+    is_typeddict,
+)
 
 from bluesky.protocols import Locatable
 
@@ -55,10 +64,16 @@ class DerivedSignalFactory(Generic[TransformT]):
                 **{k: f.annotation for k, f in transform_cls.model_fields.items()},
                 **{
                     k: v
-                    for k, v in get_type_hints(transform_cls.raw_to_derived).items()
-                    if k not in {"self", "return"}
+                    for k, v in _get_params_types_dict(
+                        transform_cls.raw_to_derived
+                    ).items()
+                    if k not in {"self"}  # noqa: E501
                 },
             }
+            if empty_keys := [k for k, v in expected.items() if v == Parameter.empty]:
+                raise TypeError(
+                    f"{transform_cls.raw_to_derived} is missing a type hint for arguments: {empty_keys}"  # noqa: E501
+                )
 
             # Populate received parameters and types
             # Use Primitive's type, Signal's datatype,
@@ -195,28 +210,33 @@ def _get_return_datatype(func: Callable[..., SignalDatatypeT]) -> type[SignalDat
 def _get_first_arg_datatype(
     func: Callable[[SignalDatatypeT], Any],
 ) -> type[SignalDatatypeT]:
-    args = get_type_hints(func)
-    args.pop("return", None)
+    args = _get_params_types_dict(func)
     if not args:
         msg = f"{func} does not have a type hinted argument"
         raise TypeError(msg)
     return list(args.values())[0]
 
 
+def _get_params_types_dict(inspected_function: Callable) -> Mapping[str, Any]:
+    hints = get_type_hints(inspected_function)
+    sig = signature(inspected_function)
+    normalized = {}
+    # convert string annotations to class
+    for name, param in sig.parameters.items():
+        if name not in ["self", "args", "kwargs"]:
+            normalized[name] = hints.get(name, param.annotation)
+    return normalized
+
+
 def _make_factory(
-    raw_to_derived: Callable[..., SignalDatatypeT] | None = None,
+    raw_to_derived_func: Callable[..., SignalDatatypeT] | None = None,
     set_derived: Callable[[SignalDatatypeT], Awaitable[None]] | None = None,
     raw_devices_and_constants: dict[str, Device | Primitive] | None = None,
 ) -> DerivedSignalFactory:
-    if raw_to_derived:
+    if raw_to_derived_func:
 
         class DerivedTransform(Transform):
-            def raw_to_derived(self, **kwargs) -> dict[str, SignalDatatypeT]:
-                return {"value": raw_to_derived(**kwargs)}
-
-        # Update the signature for raw_to_derived to match what we are passed as this
-        # will be checked in DerivedSignalFactory
-        DerivedTransform.raw_to_derived.__annotations__ = get_type_hints(raw_to_derived)
+            raw_to_derived = dict_wrapper(raw_to_derived_func)
 
         return DerivedSignalFactory(
             DerivedTransform,
@@ -225,6 +245,14 @@ def _make_factory(
         )
     else:
         return DerivedSignalFactory(Transform, set_derived=set_derived)
+
+
+def dict_wrapper(fn):
+    @functools.wraps(fn)
+    def wrapped(self, **kwargs):
+        return {"value": fn(**kwargs)}
+
+    return wrapped
 
 
 def derived_signal_r(
@@ -245,7 +273,7 @@ def derived_signal_r(
         The names of these arguments must match the arguments of raw_to_derived.
     """
     factory = _make_factory(
-        raw_to_derived=raw_to_derived,
+        raw_to_derived_func=raw_to_derived,
         raw_devices_and_constants=raw_devices_and_constants,
     )
     return factory.derived_signal_r(
@@ -278,16 +306,16 @@ def derived_signal_rw(
         The names of these arguments must match the arguments of raw_to_derived.
     """
     raw_to_derived_datatype = _get_return_datatype(raw_to_derived)
-    set_derived_datatype = _get_first_arg_datatype(set_derived)
-    if raw_to_derived_datatype != set_derived_datatype:
+    set_derived_arg_datatype = _get_first_arg_datatype(set_derived)
+    if raw_to_derived_datatype != set_derived_arg_datatype:
         msg = (
             f"{raw_to_derived} has datatype {raw_to_derived_datatype} "
-            f"!= {set_derived_datatype} datatype {set_derived_datatype}"
+            f"!= {set_derived_arg_datatype} datatype {set_derived_arg_datatype}"
         )
         raise TypeError(msg)
 
     factory = _make_factory(
-        raw_to_derived=raw_to_derived,
+        raw_to_derived_func=raw_to_derived,
         set_derived=set_derived,
         raw_devices_and_constants=raw_devices_and_constants,
     )
