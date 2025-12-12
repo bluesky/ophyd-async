@@ -210,8 +210,7 @@ def _get_return_datatype(func: Callable[..., SignalDatatypeT]) -> type[SignalDat
 def _get_first_arg_datatype(
     func: Callable[[SignalDatatypeT], Any],
 ) -> type[SignalDatatypeT]:
-    args = get_type_hints(func)
-    args.pop("return", None)
+    args = _get_params_types_dict(func)
     if not args:
         msg = f"{func} does not have a type hinted argument"
         raise TypeError(msg)
@@ -224,7 +223,8 @@ def _get_params_types_dict(inspected_function: Callable) -> Mapping[str, Any]:
     normalized = {}
     # convert string annotations to class
     for name, param in sig.parameters.items():
-        normalized[name] = hints.get(name, param.annotation)
+        if name not in ["self", "args", "kwargs"]:
+            normalized[name] = hints.get(name, param.annotation)
     return normalized
 
 
