@@ -195,9 +195,6 @@ def test_missing_type_hint_in_raw_to_derived_transform():
         def raw_to_derived(self, x) -> float:
             return x
 
-        def derived_to_raw(self, y: float) -> float:
-            return y
-
     with pytest.raises(
         TypeError,
         match=re.escape(" is missing a type hint for arguments: ['x']"),
@@ -206,5 +203,4 @@ def test_missing_type_hint_in_raw_to_derived_transform():
             UnTypedTransform,
             set_derived=None,
             x=soft_signal_rw(float),
-            y=soft_signal_rw(float),
         )
