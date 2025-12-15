@@ -10,6 +10,7 @@ from ophyd_async.core import (
     DerivedSignalFactory,
     SignalRW,
     Table,
+    Transform,
     derived_signal_rw,
     get_mock,
     set_mock_value,
@@ -187,3 +188,23 @@ def test_make_rw_signal_type_mismatch():
         match=re.escape("Must define a set_derived method to support derived"),
     ):
         factory.derived_signal_rw(datatype=Table, name="")
+
+
+def test_missing_type_hint_in_raw_to_derived_transform():
+    class UnTypedTransform(Transform):
+        def raw_to_derived(self, x) -> float:
+            return x
+
+        def derived_to_raw(self, y: float) -> float:
+            return y
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape(" is missing a type hint for arguments: ['x']"),
+    ):
+        DerivedSignalFactory(
+            UnTypedTransform,
+            set_derived=None,
+            x=soft_signal_rw(float),
+            y=soft_signal_rw(float),
+        )
