@@ -236,7 +236,7 @@ def _make_factory(
     if raw_to_derived_func:
 
         class DerivedTransform(Transform):
-            raw_to_derived = dict_wrapper(raw_to_derived_func)
+            raw_to_derived = _dict_wrapper(raw_to_derived_func)
 
         return DerivedSignalFactory(
             DerivedTransform,
@@ -245,14 +245,6 @@ def _make_factory(
         )
     else:
         return DerivedSignalFactory(Transform, set_derived=set_derived)
-
-
-def dict_wrapper(fn):
-    @functools.wraps(fn)
-    def wrapped(self, **kwargs):
-        return {"value": fn(**kwargs)}
-
-    return wrapped
 
 
 def derived_signal_r(
@@ -371,3 +363,11 @@ def _partition_by_keys(data: dict, keys: set) -> tuple[dict, dict]:
         else:
             group_excluded[k] = v
     return group_excluded, group_included
+
+
+def _dict_wrapper(fn):
+    @functools.wraps(fn)
+    def wrapped(self, **kwargs):
+        return {"value": fn(**kwargs)}
+
+    return wrapped
