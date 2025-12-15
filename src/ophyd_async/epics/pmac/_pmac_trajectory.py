@@ -202,12 +202,20 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         coord = self.pmac.coord[motor_info.cs_number]
         coros = []
         await coord.defer_moves.set(True)
+
+        move_times = []
+        for motor, position in ramp_up_position.items():
+            distance = abs(position - await motor.user_readback.get_value())
+            move_times.append(distance / motor_info.motor_max_velocity[motor])
+
+        longest_time = max(move_times)
+
         for motor, position in ramp_up_position.items():
             coros.append(
                 set_and_wait_for_value(
                     coord.cs_axis_setpoint[motor_info.motor_cs_index[motor]],
                     position,
-                    set_timeout=10,
+                    set_timeout=longest_time + DEFAULT_TIMEOUT,
                     wait_for_set_completion=False,
                 )
             )
