@@ -365,7 +365,9 @@ def _partition_by_keys(data: dict, keys: set) -> tuple[dict, dict]:
     return group_excluded, group_included
 
 
-def _dict_wrapper(fn):
+def _dict_wrapper(
+    fn: Callable[..., SignalDatatypeT],
+) -> Callable[..., dict[str, SignalDatatypeT]]:  # noqa: E501
     @functools.wraps(fn)
     def wrapped(self, **kwargs):
         return {"value": fn(**kwargs)}
