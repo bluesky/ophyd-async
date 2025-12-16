@@ -10,6 +10,7 @@ from ophyd_async.core import (
     AsyncStatus,
     FlyerController,
     error_if_none,
+    gather_dict,
     observe_value,
     set_and_wait_for_value,
     wait_for_value,
@@ -203,10 +204,15 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         coros = []
         await coord.defer_moves.set(True)
 
-        move_times = []
-        for motor, position in ramp_up_position.items():
-            distance = abs(position - await motor.user_readback.get_value())
-            move_times.append(distance / motor_info.motor_max_velocity[motor])
+        motor_readbacks = await gather_dict(
+            {motor: motor.user_readback.get_value() for motor in ramp_up_position}
+        )
+
+        move_times = [
+            abs(position - motor_readbacks[motor])
+            / motor_info.motor_max_velocity[motor]
+            for motor, position in ramp_up_position.items()
+        ]
 
         longest_time = max(move_times)
 
