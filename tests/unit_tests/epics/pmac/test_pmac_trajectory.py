@@ -5,7 +5,9 @@ import pytest
 from scanspec.specs import Fly, Line
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     get_mock,
+    set_and_wait_for_value,
     set_mock_value,
 )
 from ophyd_async.epics.motor import Motor
@@ -54,22 +56,39 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
     ramp_up_position = {sim_x_motor: np.float64(-1.2), sim_y_motor: np.float64(-0.6)}
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
 
-    await pmac_trajectory._move_to_start(motor_info, ramp_up_position)
+    # Wrap set_and_wait_for_value to check passed arguments
+    with patch(
+        "ophyd_async.epics.pmac._pmac_trajectory.set_and_wait_for_value",
+        wraps=set_and_wait_for_value,
+    ) as spy_set_and_wait_for_value:
+        await pmac_trajectory._move_to_start(motor_info, ramp_up_position)
 
-    coord_mock_calls = get_mock(coord).mock_calls
+        coord_mock_calls = get_mock(coord).mock_calls
 
-    assert coord_mock_calls[0] == call.defer_moves.put(True, wait=True)
-    assert coord_mock_calls[1] == (
-        "cs_axis_setpoint.7.put",
-        (np.float64(-1.2)),
-        {"wait": True},
-    )
-    assert coord_mock_calls[2] == (
-        "cs_axis_setpoint.8.put",
-        (np.float64(-0.6)),
-        {"wait": True},
-    )
-    assert coord_mock_calls[3] == call.defer_moves.put(False, wait=True)
+        assert coord_mock_calls[0] == call.defer_moves.put(True, wait=True)
+        assert coord_mock_calls[1] == (
+            "cs_axis_setpoint.7.put",
+            (np.float64(-1.2)),
+            {"wait": True},
+        )
+        assert coord_mock_calls[2] == (
+            "cs_axis_setpoint.8.put",
+            (np.float64(-0.6)),
+            {"wait": True},
+        )
+        assert coord_mock_calls[3] == call.defer_moves.put(False, wait=True)
+
+        # Longest move time should be sim_motor_x, so calculate this
+        expected_timeout = DEFAULT_TIMEOUT + (
+            abs(ramp_up_position[sim_x_motor])
+            / motor_info.motor_max_velocity[sim_x_motor]
+        )
+
+        # All motors should have the same move timeout
+        assert all(
+            call_.kwargs["set_timeout"] == expected_timeout
+            for call_ in spy_set_and_wait_for_value.mock_calls
+        )
 
 
 async def test_pmac_trajectory_kickoff(
