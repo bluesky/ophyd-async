@@ -1,0 +1,52 @@
+name: Claude PR Comment Review
+# https://github.com/anthropics/claude-code-action/blob/main/docs/solutions.md#automatic-pr-code-review
+# https://skywork.ai/blog/how-to-use-claude-code-for-prs-code-reviews-guide/#step-3-add-a-comment-triggered-workflow-copy-pasteable
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  review:
+    if: ${{ contains(github.event.comment.body, '@claude') && github.event.issue.pull_request != null }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - run: find
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true # ✨ Enables tracking comments
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.issue.number }}
+
+            Please review this pull request with a focus on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Security implications
+            - Performance considerations
+
+            Note: The PR branch is already checked out in the current working directory.
+
+            Make sure to:
+            - Use `gh pr comment` for concise top-level feedback
+            - Use `mcp__github_inline_comment__create_inline_comment` to highlight specific code issues
+            - Put all detailed feedback and recommendations in inline comments and do not duplicate in the main PR comment
+            - Anywhere you have a line number reference, use an inline comment
+            - Check structure is consist with existing code style
+            - Skip style issues already handled by linters
+            - Check for duplication of code already in the repository; aim for re-use where sensible
+            - Favour composition over inheritence
+            - Respond in concise bullet point form; avoid restating code
+
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
