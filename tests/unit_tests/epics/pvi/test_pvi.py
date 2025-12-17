@@ -146,7 +146,7 @@ async def test_device_create_children_from_annotations_filler():
 
     await device.connect(mock=True)
 
-    # After connecting if the signal is not present it's set to None
+    # After connecting if the optional signal is not filled it's set to None
     assert device.signal_rw is None
 
 
