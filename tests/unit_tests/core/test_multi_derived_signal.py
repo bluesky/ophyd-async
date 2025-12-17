@@ -221,7 +221,11 @@ def test_sub_type_hint_in_raw_to_derived_transform():
 
     with pytest.raises(
         TypeError,
-        match=re.escape(" is missing a type hint for arguments: ['x']"),
+        match=re.escape(
+            "Expected the following to be passed as keyword arguments "
+            "{'x': <enum 'StrictEnum'>}, "
+            "got {'x': <class 'float'>}"
+        ),
     ):
         DerivedSignalFactory(
             SubTypedTransform,
