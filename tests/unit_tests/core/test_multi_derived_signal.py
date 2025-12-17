@@ -1,6 +1,7 @@
 import asyncio
 import math
 import re
+from typing import TypeVar
 from unittest.mock import ANY, call
 
 import pytest
@@ -9,6 +10,7 @@ from bluesky.protocols import Reading
 from ophyd_async.core import (
     DerivedSignalFactory,
     EnableDisable,
+    EnumTypes,
     SignalRW,
     StrictEnum,
     Table,
@@ -232,3 +234,18 @@ def test_sub_type_hint_in_raw_to_derived_transform():
             set_derived=None,
             x=soft_signal_rw(float),
         )
+
+
+EnumTypesT = TypeVar("EnumTypesT", bound=EnumTypes)
+
+
+def test_protocol_type_hint_in_raw_to_derived_transform():
+    class SubTypedTransform(Transform):
+        def raw_to_derived(self, x: EnumTypesT) -> EnumTypesT:
+            return x
+
+    DerivedSignalFactory(
+        SubTypedTransform,
+        set_derived=None,
+        x=soft_signal_rw(EnableDisable),
+    )

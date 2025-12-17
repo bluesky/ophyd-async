@@ -4,6 +4,7 @@ from inspect import Parameter, signature
 from typing import (
     Any,
     Generic,
+    TypeVar,
     get_args,
     get_origin,
     get_type_hints,
@@ -87,23 +88,21 @@ class DerivedSignalFactory(Generic[TransformT]):
             }
 
             if expected != received:
+                msg = (
+                    f"Expected the following to be passed as keyword arguments "
+                    f"{expected}, got {received}"
+                )
                 if set(expected.keys()) - set(received.keys()):
-                    msg = (
-                        f"Expected the following to be passed as keyword arguments "
-                        f"{expected}, got {received}"
-                    )
                     raise TypeError(msg)
 
-                if {
-                    k
-                    for k in set(expected.keys())
-                    if not issubclass(received.get(k), expected.get(k))  # noqa: E501
-                }:
-                    msg = (
-                        f"Expected the following to be passed as keyword arguments "
-                        f"{expected}, got {received}"
-                    )
-                    raise TypeError(msg)
+                for k in set(expected.keys()):
+                    if isinstance(expected[k], type):
+                        if not issubclass(received[k], expected[k]):
+                            raise TypeError(msg)
+                    elif isinstance(expected[k], TypeVar):
+                        bound = expected[k].__bound__
+                        if bound and not issubclass(received[k], bound):
+                            raise TypeError(msg)
         self._set_derived_takes_dict = (
             is_typeddict(_get_first_arg_datatype(set_derived)) if set_derived else False
         )
