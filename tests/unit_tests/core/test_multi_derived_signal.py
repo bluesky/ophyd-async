@@ -8,7 +8,9 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
+    EnableDisable,
     SignalRW,
+    StrictEnum,
     Table,
     Transform,
     derived_signal_rw,
@@ -201,6 +203,28 @@ def test_missing_type_hint_in_raw_to_derived_transform():
     ):
         DerivedSignalFactory(
             UnTypedTransform,
+            set_derived=None,
+            x=soft_signal_rw(float),
+        )
+
+
+def test_sub_type_hint_in_raw_to_derived_transform():
+    class SubTypedTransform(Transform):
+        def raw_to_derived(self, x: StrictEnum) -> StrictEnum:
+            return x
+
+    DerivedSignalFactory(
+        SubTypedTransform,
+        set_derived=None,
+        x=soft_signal_rw(EnableDisable),
+    )
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape(" is missing a type hint for arguments: ['x']"),
+    ):
+        DerivedSignalFactory(
+            SubTypedTransform,
             set_derived=None,
             x=soft_signal_rw(float),
         )

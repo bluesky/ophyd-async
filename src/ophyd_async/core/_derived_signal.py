@@ -85,13 +85,28 @@ class DerivedSignalFactory(Generic[TransformT]):
                 },
                 **{k: type(v) for k, v in _raw_and_transform_constants.items()},
             }
-
-            if expected != received:
+            if diff_keys := set(expected.keys()) - set(received.keys()):  # noqa: F841
                 msg = (
                     f"Expected the following to be passed as keyword arguments "
                     f"{expected}, got {received}"
                 )
                 raise TypeError(msg)
+
+            if diff_values := {
+                k: (expected.get(k), received.get(k))
+                for k in set(expected.keys())
+                if expected != received
+            }:  # noqa: E501
+                if [
+                    k
+                    for k, (exp, rec) in diff_values.items()
+                    if not issubclass(rec, exp)
+                ]:  # type: ignore # noqa: E501
+                    msg = (
+                        f"Expected the following to be passed as keyword arguments "
+                        f"{expected}, got {received}"
+                    )
+                    raise TypeError(msg)
         self._set_derived_takes_dict = (
             is_typeddict(_get_first_arg_datatype(set_derived)) if set_derived else False
         )
