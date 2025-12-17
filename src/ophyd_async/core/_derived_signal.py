@@ -101,7 +101,9 @@ class DerivedSignalFactory(Generic[TransformT]):
                             raise TypeError(msg)
                     elif isinstance(expected[k], TypeVar):
                         bound = expected[k].__bound__
-                        if bound and not issubclass(received[k], bound):
+                        if isinstance(bound, type) and not issubclass(
+                            received[k], bound
+                        ):  # noqa: E501
                             raise TypeError(msg)
         self._set_derived_takes_dict = (
             is_typeddict(_get_first_arg_datatype(set_derived)) if set_derived else False
