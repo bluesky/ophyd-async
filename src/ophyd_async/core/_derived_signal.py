@@ -237,7 +237,7 @@ def _get_params_types_dict(inspected_function: Callable) -> Mapping[str, Any]:
     normalized = {}
     # convert string annotations to class
     for name, param in sig.parameters.items():
-        if name not in ["self", "args", "kwargs"]:
+        if name not in ["self", "args", "kwargs", "cls"]:
             normalized[name] = hints.get(name, param.annotation)
     return normalized
 
