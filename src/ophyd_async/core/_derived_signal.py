@@ -68,12 +68,13 @@ class DerivedSignalFactory(Generic[TransformT]):
                     for k, v in _get_params_types_dict(
                         transform_cls.raw_to_derived
                     ).items()
-                    if k not in {"self"}  # noqa: E501
+                    if k not in {"self"}
                 },
             }
             if empty_keys := [k for k, v in expected.items() if v == Parameter.empty]:
                 raise TypeError(
-                    f"{transform_cls.raw_to_derived} is missing a type hint for arguments: {empty_keys}"  # noqa: E501
+                    f"{transform_cls.raw_to_derived} is missing a type "
+                    f"hint for arguments: {empty_keys}"
                 )
 
             # Populate received parameters and types
@@ -103,7 +104,7 @@ class DerivedSignalFactory(Generic[TransformT]):
                         bound = expected[k].__bound__
                         if isinstance(bound, type) and not issubclass(
                             received[k], bound
-                        ):  # noqa: E501
+                        ):
                             raise TypeError(msg)
         self._set_derived_takes_dict = (
             is_typeddict(_get_first_arg_datatype(set_derived)) if set_derived else False
