@@ -232,14 +232,9 @@ def _get_first_arg_datatype(
 
 
 def _get_params_types_dict(inspected_function: Callable) -> Mapping[str, Any]:
-    hints = get_type_hints(inspected_function)
-    sig = signature(inspected_function)
-    normalized = {}
-    # convert string annotations to class
-    for name, param in sig.parameters.items():
-        if name not in ["self", "args", "kwargs", "cls"]:
-            normalized[name] = hints.get(name, param.annotation)
-    return normalized
+    sig = signature(inspected_function, eval_str=True)
+    exclude_keys = ["self", "args", "kwargs", "cls"]
+    return {k: v.annotation for k, v in sig.parameters.items() if k not in exclude_keys}
 
 
 def _make_factory(
