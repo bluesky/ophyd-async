@@ -121,11 +121,11 @@ async def test_observe_value_times_out_with_no_external_task():
             setter(val + 1)
 
     with pytest.raises(asyncio.TimeoutError):
-        await watch(done_timeout=0.1)
+        await watch(done_timeout=0.07)
     # On a dev machine we can do >200 iterations in 0.1s, but CI is slower
     assert len(recv) > 10
     elapsed = time.monotonic() - start
-    assert elapsed == pytest.approx(0.1, abs=0.05), (
+    assert elapsed == pytest.approx(0.07, abs=0.05), (
         f"Elapsed: {elapsed} Received: {recv}"
     )
 
