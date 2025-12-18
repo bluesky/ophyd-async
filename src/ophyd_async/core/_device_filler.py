@@ -265,11 +265,11 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         for name in unfilled_optional:
             setattr(self._device, name, None)
 
-        unfilled_mandatory = sorted(unfilled.difference(unfilled_optional))
+        required = sorted(unfilled.difference(unfilled_optional))
 
-        if unfilled_mandatory:
+        if required:
             raise RuntimeError(
-                f"{self._device.name}: cannot provision {unfilled} from {source}"
+                f"{self._device.name}: cannot provision {required} from {source}"
             )
 
     def _ensure_device_vector(self, name: LogicalName) -> DeviceVector:
