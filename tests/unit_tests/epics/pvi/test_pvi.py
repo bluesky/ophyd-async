@@ -137,7 +137,7 @@ async def test_device_create_children_from_annotations():
     assert device.signal_device is top_block_1_device
 
 
-async def test_device_create_children_from_annotations_filler():
+async def test_device_create_device_with_optional_signals():
     device = with_pvi_connector(Block5, "PREFIX:")
 
     # Makes sure before connecting we create a signal and it exists in the device
@@ -147,7 +147,7 @@ async def test_device_create_children_from_annotations_filler():
     await device.connect(mock=True)
 
     # After connecting if the optional signal is not filled it's set to None
-    assert device.signal_rw is None
+    assert isinstance(device.signal_rw, SignalRW)
 
 
 async def test_device_create_children_from_annotations_with_device_vectors():

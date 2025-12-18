@@ -296,6 +296,9 @@ def test_device_filler_check_filled_with_optional_signals():
     # Create signals from annotations (unfilled)
     list(filler.create_signals_from_annotations(filled=False))
 
+    assert hasattr(device, "optional_signal")
+    assert isinstance(device.optional_signal, SignalRW)
+
     # Test failure path: check_filled should fail when mandatory signal is unfilled
     with pytest.raises(RuntimeError, match="cannot provision.*mandatory_signal"):
         filler.check_filled("test_source")
@@ -309,4 +312,5 @@ def test_device_filler_check_filled_with_optional_signals():
     # Verify mandatory signal exists and optional signal is None
     assert hasattr(device, "mandatory_signal")
     assert isinstance(device.mandatory_signal, SignalRW)
+    assert hasattr(device, "optional_signal")
     assert device.optional_signal is None
