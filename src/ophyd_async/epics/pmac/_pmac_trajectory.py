@@ -93,6 +93,10 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         await self.pmac.trajectory.abort_profile.trigger()
 
         # Run an empty fly scan to reset EQU on Panda Brick
+
+        for _, use_axis in self.pmac.trajectory.use_axis.items():
+            await use_axis.set(False)
+
         await asyncio.gather(
             self.pmac.trajectory.time_array.set(np.array(0)),
             self.pmac.trajectory.user_array.set(np.array(UserProgram.END)),
