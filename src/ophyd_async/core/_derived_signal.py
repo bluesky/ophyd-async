@@ -63,13 +63,7 @@ class DerivedSignalFactory(Generic[TransformT]):
             # Populate expected parameters and types
             expected = {
                 **{k: f.annotation for k, f in transform_cls.model_fields.items()},
-                **{
-                    k: v
-                    for k, v in _get_params_types_dict(
-                        transform_cls.raw_to_derived
-                    ).items()
-                    if k not in {"self"}
-                },
+                **_get_params_types_dict(transform_cls.raw_to_derived),
             }
             if empty_keys := [k for k, v in expected.items() if v == Parameter.empty]:
                 raise TypeError(
@@ -233,7 +227,7 @@ def _get_first_arg_datatype(
 
 def _get_params_types_dict(inspected_function: Callable) -> Mapping[str, Any]:
     sig = signature(inspected_function, eval_str=True)
-    exclude_keys = ["self", "args", "kwargs", "cls"]
+    exclude_keys = {"self", "args", "kwargs", "cls"}
     return {k: v.annotation for k, v in sig.parameters.items() if k not in exclude_keys}
 
 
@@ -376,7 +370,7 @@ def _partition_by_keys(data: dict, keys: set) -> tuple[dict, dict]:
 
 def _dict_wrapper(
     fn: Callable[..., SignalDatatypeT],
-) -> Callable[..., dict[str, SignalDatatypeT]]:  # noqa: E501
+) -> Callable[..., dict[str, SignalDatatypeT]]:
     @functools.wraps(fn)
     def wrapped(self, **kwargs):
         return {"value": fn(**kwargs)}
