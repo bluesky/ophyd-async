@@ -51,12 +51,13 @@ class PmacTrajectoryTriggerLogic(
     Preparable,
     Flyable,
 ):
-    def __init__(self, pmac: PmacIO) -> None:
+    def __init__(self, pmac: PmacIO, name: str = "") -> None:
         self.pmac = pmac
         self._next_pvt: PVT | None
         self._loaded: int = 0
         self._trajectory_status: AsyncStatus | None = None
         self._prepare_context: PmacPrepareContext | None = None
+        super().__init__(name=name)
 
     @AsyncStatus.wrap
     async def prepare(self, value: Spec[Motor]):
