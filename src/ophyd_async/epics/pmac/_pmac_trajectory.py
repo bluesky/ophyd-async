@@ -2,13 +2,18 @@ import asyncio
 from dataclasses import dataclass
 
 import numpy as np
+from bluesky.protocols import (
+    Flyable,
+    Preparable,
+    Stageable,
+)
 from scanspec.core import Path, Slice
 from scanspec.specs import Spec
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    FlyerController,
+    Device,
     error_if_none,
     gather_dict,
     observe_value,
@@ -40,7 +45,12 @@ class PmacPrepareContext:
     ramp_up_time: float
 
 
-class PmacTrajectoryTriggerLogic(FlyerController):
+class PmacTrajectoryTriggerLogic(
+    Device,
+    Stageable,
+    Preparable,
+    Flyable,
+):
     def __init__(self, pmac: PmacIO) -> None:
         self.pmac = pmac
         self._next_pvt: PVT | None
@@ -48,6 +58,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         self._trajectory_status: AsyncStatus | None = None
         self._prepare_context: PmacPrepareContext | None = None
 
+    @AsyncStatus.wrap
     async def prepare(self, value: Spec[Motor]):
         path = Path(value.calculate())
         slice = path.consume(SLICE_SIZE)
@@ -65,6 +76,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             self._move_to_start(motor_info, ramp_up_pos),
         )
 
+    @AsyncStatus.wrap
     async def kickoff(self):
         prepare_context = error_if_none(
             self._prepare_context, "Cannot kickoff. Must call prepare first."
@@ -80,6 +92,7 @@ class PmacTrajectoryTriggerLogic(FlyerController):
             prepare_context.ramp_up_time + DEFAULT_TIMEOUT,
         )
 
+    @AsyncStatus.wrap
     async def complete(self):
         trajectory_status = error_if_none(
             self._trajectory_status, "Cannot complete. Must call kickoff first."
@@ -89,8 +102,9 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         self._trajectory_status = None
         self._loaded = 0
 
-    async def stop(self):
-        await self.pmac.trajectory.abort_profile.trigger()
+    @AsyncStatus.wrap
+    async def stage(self) -> None:
+        await self._stop_if_running()
 
         # Run an empty fly scan to reset EQU on Panda Brick
         for use_axis in self.pmac.trajectory.use_axis.values():
@@ -103,6 +117,15 @@ class PmacTrajectoryTriggerLogic(FlyerController):
         )
         await self.pmac.trajectory.build_profile.trigger()
         await self.pmac.trajectory.execute_profile.set(True)
+
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
+        await self._stop_if_running()
+
+    async def _stop_if_running(self):
+        # Abort current trajectory, if one is running
+        if self._trajectory_status:
+            await self.pmac.trajectory.abort_profile.trigger()
 
     @AsyncStatus.wrap
     async def _execute_trajectory(self, path: Path, motor_info: _PmacMotorInfo):
