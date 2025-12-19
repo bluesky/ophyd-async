@@ -18,7 +18,7 @@ from ophyd_async.core import (
 from ophyd_async.epics.motor import Motor
 
 from ._pmac_io import CS_INDEX, PmacIO
-from ._pmac_trajectory_generation import PVT, Trajectory
+from ._pmac_trajectory_generation import PVT, Trajectory, UserProgram
 from ._utils import (
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
@@ -91,6 +91,15 @@ class PmacTrajectoryTriggerLogic(FlyerController):
 
     async def stop(self):
         await self.pmac.trajectory.abort_profile.trigger()
+
+        # Run an empty fly scan to reset EQU on Panda Brick
+        await asyncio.gather(
+            self.pmac.trajectory.time_array.set(np.array(0)),
+            self.pmac.trajectory.user_array.set(np.array(UserProgram.END)),
+            self.pmac.trajectory.points_to_build.set(1),
+        )
+        await self.pmac.trajectory.build_profile.trigger()
+        await self.pmac.trajectory.execute_profile.set(True)
 
     @AsyncStatus.wrap
     async def _execute_trajectory(self, path: Path, motor_info: _PmacMotorInfo):
