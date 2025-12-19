@@ -226,6 +226,25 @@ async def test_pmac_trajectory_complete(sim_motors: tuple[PmacIO, Motor, Motor])
 async def test_pmac_trajectory_stop(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    abort_profile = get_mock(pmac_trajectory.pmac.trajectory.abort_profile)
+    mock_pmac_trajectory = get_mock(pmac_trajectory.pmac.trajectory)
     await pmac_trajectory.stop()
-    abort_profile.put.assert_called_once()
+
+    # Check that current trajectory is aborted
+    assert mock_pmac_trajectory.mock_calls[0] == call.abort_profile.put(None, wait=True)
+
+    # Check that all axes are then set not be used
+    assert all(
+        get_mock(axis).put.assert_called_once_with(False, wait=True) is None
+        for axis in pmac_trajectory.pmac.trajectory.use_axis.values()
+    )
+
+    # Check that an empty trajectory is then executed
+    assert mock_pmac_trajectory.mock_calls[
+        len(pmac_trajectory.pmac.trajectory.use_axis) + 1 :
+    ] == [
+        call.time_array.put(np.array(0), wait=True),
+        call.user_array.put(np.array(8), wait=True),
+        call.points_to_build.put(1, wait=True),
+        call.build_profile.put(None, wait=True),
+        call.execute_profile.put(True, wait=True),
+    ]
