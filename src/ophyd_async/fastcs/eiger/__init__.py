@@ -1,11 +1,10 @@
-from ._eiger import EigerDetector
-from ._eiger_controller import EigerController
-from ._eiger_io import EigerDetectorIO, EigerMonitorIO, EigerStreamIO
+from ._detector import EigerDetector
+from ._io import EigerDetectorIO, EigerMonitorIO, EigerStreamIO, EigerTriggerMode
 
 __all__ = [
     "EigerDetector",
-    "EigerController",
     "EigerDetectorIO",
     "EigerMonitorIO",
     "EigerStreamIO",
+    "EigerTriggerMode",
 ]

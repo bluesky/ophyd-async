@@ -220,6 +220,7 @@ lint.select = [
 lint.ignore = [
     "B901", # Return in a generator is needed for plans
     "D107", # We squash __init__ docstrings into the class docstring
+    "D102", # We don't need to override docstrings that are inherited from abstract methods
     "D104", # TODO: remove this after https://github.com/bluesky/ophyd-async/issues/754
 ]
 lint.preview = true # so that preview mode PLC2701 is enabled

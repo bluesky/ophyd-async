@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import bluesky.plan_stubs as bps
 import bluesky.plans as bp
+import ophyd_async.epics.areadetector._io
 import pytest
 from bluesky.run_engine import RunEngine
 
@@ -55,7 +56,7 @@ class DummyController(DetectorController):
 @pytest.fixture
 def controller(RE) -> adsimdetector.SimController:
     with init_devices(mock=True):
-        drv = adcore.ADBaseIO("DRV")
+        drv = ophyd_async.epics.areadetector._io.ADBaseIO("DRV")
 
     return adsimdetector.SimController(drv)
 
@@ -63,7 +64,7 @@ def controller(RE) -> adsimdetector.SimController:
 @pytest.fixture
 def writer(RE, static_path_provider, tmp_path: Path) -> adcore.ADHDFWriter:
     with init_devices(mock=True):
-        hdf = adcore.NDFileHDFIO("HDF")
+        hdf = ophyd_async.epics.areadetector._io.NDFileHDFIO("HDF")
 
     return adcore.ADHDFWriter(
         hdf,

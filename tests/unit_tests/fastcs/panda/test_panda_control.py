@@ -7,7 +7,7 @@ import pytest
 from ophyd_async.core import DetectorTrigger, Device, TriggerInfo, init_devices
 from ophyd_async.epics.core import epics_signal_rw
 from ophyd_async.fastcs.core import fastcs_connector
-from ophyd_async.fastcs.panda import CommonPandaBlocks, PandaPcapController
+from ophyd_async.fastcs.panda import CommonPandaBlocks
 
 
 @pytest.fixture

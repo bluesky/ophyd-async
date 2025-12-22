@@ -1,0 +1,285 @@
+from typing import Annotated as A
+from typing import TypeVar
+
+from ophyd_async.core import (
+    DeviceVector,
+    EnableDisable,
+    SignalR,
+    SignalRW,
+    StrictEnum,
+    SubsetEnum,
+    SupersetEnum,
+)
+from ophyd_async.epics.core import EpicsDevice, PvSuffix
+
+# Common classes for drivers and plugins
+
+
+class ADBaseDataType(SupersetEnum):
+    INT8 = "Int8"
+    UINT8 = "UInt8"
+    INT16 = "Int16"
+    UINT16 = "UInt16"
+    INT32 = "Int32"
+    UINT32 = "UInt32"
+    INT64 = "Int64"
+    UINT64 = "UInt64"
+    FLOAT32 = "Float32"
+    FLOAT64 = "Float64"
+    # Driver database override will blank the enum string if it doesn't
+    # support a datatype
+    UNDEFINED = ""
+
+
+class NDArrayBaseIO(EpicsDevice):
+    """Class responsible for passing detector data from drivers to pluglins.
+
+    This mirrors the interface provided by ADCore/db/NDArrayBase.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDArray.html
+    """
+
+    port_name: A[SignalR[str], PvSuffix("PortName_RBV")]
+    unique_id: A[SignalR[int], PvSuffix("UniqueId_RBV")]
+    nd_attributes_file: A[SignalRW[str], PvSuffix("NDAttributesFile")]
+    acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire")]
+    array_size_x: A[SignalR[int], PvSuffix("ArraySizeX_RBV")]
+    array_size_y: A[SignalR[int], PvSuffix("ArraySizeY_RBV")]
+    data_type: A[SignalR[ADBaseDataType], PvSuffix("DataType_RBV")]
+    array_counter: A[SignalRW[int], PvSuffix.rbv("ArrayCounter")]
+    # There is no _RBV for this one
+    wait_for_plugins: A[SignalRW[bool], PvSuffix("WaitForPlugins")]
+
+
+# Classes for drivers
+
+
+class ADImageMode(SubsetEnum):
+    SINGLE = "Single"
+    MULTIPLE = "Multiple"
+    CONTINUOUS = "Continuous"
+
+
+class ADState(StrictEnum):
+    """Default set of states of an AreaDetector driver.
+
+    See definition in ADApp/ADSrc/ADDriver.h in https://github.com/areaDetector/ADCore.
+    """
+
+    IDLE = "Idle"
+    ACQUIRE = "Acquire"
+    READOUT = "Readout"
+    CORRECT = "Correct"
+    SAVING = "Saving"
+    ABORTING = "Aborting"
+    ERROR = "Error"
+    WAITING = "Waiting"
+    INITIALIZING = "Initializing"
+    DISCONNECTED = "Disconnected"
+    ABORTED = "Aborted"
+
+
+class ADBaseIO(NDArrayBaseIO):
+    """Base class from which areaDetector drivers are derived.
+
+    This mirrors the interface provided by ADCore/db/ADBase.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/ADDriver.html
+    """
+
+    model: A[SignalRW[str], PvSuffix("Model_RBV")]
+    acquire_time: A[SignalRW[float], PvSuffix.rbv("AcquireTime")]
+    acquire_period: A[SignalRW[float], PvSuffix.rbv("AcquirePeriod")]
+    num_images: A[SignalRW[int], PvSuffix.rbv("NumImages")]
+    image_mode: A[SignalRW[ADImageMode], PvSuffix.rbv("ImageMode")]
+    detector_state: A[SignalR[ADState], PvSuffix("DetectorState_RBV")]
+
+
+# Classes for plugins
+
+NDPluginBaseIOT = TypeVar("NDPluginBaseIOT", bound="NDPluginBaseIO")
+
+
+class NDPluginBaseIO(NDArrayBaseIO):
+    """Base class from which plugins are derived.
+
+    This mirrors the interface provided by ADCore/db/NDPluginBase.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginDriver.html
+    """
+
+    nd_array_port: A[SignalRW[str], PvSuffix.rbv("NDArrayPort")]
+    enable_callbacks: A[SignalRW[EnableDisable], PvSuffix.rbv("EnableCallbacks")]
+    nd_array_address: A[SignalRW[int], PvSuffix.rbv("NDArrayAddress")]
+    array_size0: A[SignalR[int], PvSuffix("ArraySize0_RBV")]
+    array_size1: A[SignalR[int], PvSuffix("ArraySize1_RBV")]
+    queue_size: A[SignalRW[int], PvSuffix.rbv("QueueSize")]
+
+
+class NDStatsIO(NDPluginBaseIO):
+    """Plugin for computing statistics from an image or ROI within an image.
+
+    This mirrors the interface provided by ADCore/db/NDStats.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginStats.html
+    """
+
+    # Basic statistics
+    compute_statistics: A[SignalRW[bool], PvSuffix.rbv("ComputeStatistics")]
+    bgd_width: A[SignalRW[int], PvSuffix.rbv("BgdWidth")]
+    total: A[SignalR[float], PvSuffix.rbv("Total")]
+    # Centroid statistics
+    compute_centroid: A[SignalRW[bool], PvSuffix.rbv("ComputeCentroid")]
+    centroid_threshold: A[SignalRW[float], PvSuffix.rbv("CentroidThreshold")]
+    # X and Y Profiles
+    compute_profiles: A[SignalRW[bool], PvSuffix.rbv("ComputeProfiles")]
+    profile_size_x: A[SignalR[int], PvSuffix.rbv("ProfileSizeX")]
+    profile_size_y: A[SignalR[int], PvSuffix.rbv("ProfileSizeY")]
+    cursor_x: A[SignalRW[int], PvSuffix.rbv("CursorX")]
+    cursor_y: A[SignalRW[int], PvSuffix.rbv("CursorY")]
+    # Array Histogram
+    compute_histogram: A[SignalRW[bool], PvSuffix.rbv("ComputeHistogram")]
+    hist_size: A[SignalRW[int], PvSuffix.rbv("HistSize")]
+    hist_min: A[SignalRW[float], PvSuffix.rbv("HistMin")]
+    hist_max: A[SignalRW[float], PvSuffix.rbv("HistMax")]
+
+
+class NDROIStatNIO(EpicsDevice):
+    """Defines the parameters for a single ROI used for statistics calculation.
+
+    Each instance represents a single ROI, with attributes for its position
+    (min_x, min_y) and size (size_x, size_y), as well as a name and use status.
+
+    See definition in ADApp/pluginSrc/NDPluginROIStat.h in https://github.com/areaDetector/ADCore.
+
+    Attributes:
+        name: The name of the ROI.
+        use: Flag indicating whether the ROI is used.
+        min_x: The start X-coordinate of the ROI.
+        min_y: The start Y-coordinate of the ROI.
+        size_x: The width of the ROI.
+        size_y: The height of the ROI.
+        min_value: Minimum count value in the ROI.
+        max_value: Maximum count value in the ROI.
+        mean_value: Mean counts value in the ROI.
+        total: Total counts in the ROI.
+    """
+
+    name_: A[SignalRW[str], PvSuffix("Name")]
+    use: A[SignalRW[bool], PvSuffix.rbv("Use")]
+    min_x: A[SignalRW[int], PvSuffix.rbv("MinX")]
+    min_y: A[SignalRW[int], PvSuffix.rbv("MinY")]
+    size_x: A[SignalRW[int], PvSuffix.rbv("SizeX")]
+    size_y: A[SignalRW[int], PvSuffix.rbv("SizeY")]
+    # stats
+    min_value: A[SignalR[float], PvSuffix("MinValue_RBV")]
+    max_value: A[SignalR[float], PvSuffix("MaxValue_RBV")]
+    mean_value: A[SignalR[float], PvSuffix("MeanValue_RBV")]
+    total: A[SignalR[float], PvSuffix("Total_RBV")]
+
+
+class NDROIStatIO(NDPluginBaseIO):
+    """Plugin for calculating basic statistics for multiple ROIs.
+
+    Each ROI is implemented as an instance of NDROIStatNIO,
+    and the collection of ROIs is held as a DeviceVector.
+
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROIStat.html
+    """
+
+    def __init__(self, prefix, num_channels=8, with_pvi=False, name=""):
+        self.channels = DeviceVector(
+            {i: NDROIStatNIO(f"{prefix}{i}:") for i in range(1, num_channels + 1)}
+        )
+        super().__init__(prefix, with_pvi, name)
+
+
+class NDCBFlushOnSoftTrgMode(StrictEnum):
+    ON_NEW_IMAGE = "OnNewImage"
+    IMMEDIATELY = "Immediately"
+
+
+class NDPluginCBIO(NDPluginBaseIO):
+    """Plugin for flow control of arrays based on NDAttributes.
+
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html
+    """
+
+    pre_count: A[SignalRW[int], PvSuffix.rbv("PreCount")]
+    post_count: A[SignalRW[int], PvSuffix.rbv("PostCount")]
+    preset_trigger_count: A[SignalRW[int], PvSuffix.rbv("PresetTriggerCount")]
+    trigger: A[SignalRW[bool], PvSuffix.rbv("Trigger")]
+    capture: A[SignalRW[bool], PvSuffix.rbv("Capture")]
+    flush_on_soft_trg: A[
+        SignalRW[NDCBFlushOnSoftTrgMode], PvSuffix.rbv("FlushOnSoftTrg")
+    ]
+
+
+# Classes for filewriters
+
+
+class ADFileWriteMode(StrictEnum):
+    SINGLE = "Single"
+    CAPTURE = "Capture"
+    STREAM = "Stream"
+
+
+class NDFileIO(NDArrayBaseIO):
+    """Base class from which file writing drivers are derived.
+
+    This mirrors the interface provided by ADCore/ADApp/Db/NDFile.template.
+    It does not include any plugin-related fields, for that see NDFilePluginIO.
+    """
+
+    file_path: A[SignalRW[str], PvSuffix.rbv("FilePath")]
+    file_name: A[SignalRW[str], PvSuffix.rbv("FileName")]
+    file_path_exists: A[SignalR[bool], PvSuffix("FilePathExists_RBV")]
+    file_template: A[SignalRW[str], PvSuffix.rbv("FileTemplate")]
+    full_file_name: A[SignalR[str], PvSuffix("FullFileName_RBV")]
+    file_number: A[SignalRW[int], PvSuffix("FileNumber")]
+    auto_increment: A[SignalRW[bool], PvSuffix("AutoIncrement")]
+    file_write_mode: A[SignalRW[ADFileWriteMode], PvSuffix.rbv("FileWriteMode")]
+    num_capture: A[SignalRW[int], PvSuffix.rbv("NumCapture")]
+    num_captured: A[SignalR[int], PvSuffix("NumCaptured_RBV")]
+    capture: A[SignalRW[bool], PvSuffix.rbv("Capture")]
+    array_size0: A[SignalR[int], PvSuffix("ArraySize0")]
+    array_size1: A[SignalR[int], PvSuffix("ArraySize1")]
+    create_directory: A[SignalRW[int], PvSuffix("CreateDirectory")]
+
+
+NDFilePluginIOT = TypeVar("NDFilePluginIOT", bound="NDFilePluginIO")
+
+
+class NDFilePluginIO(NDPluginBaseIO, NDFileIO):
+    """Base class from which file plugins are derived.
+
+    This mirrors the interface provided by ADCore/db/NDFilePlugin.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginFile.html
+    """
+
+    ...
+
+
+class ADCompression(StrictEnum):
+    NONE = "None"
+    NBIT = "N-bit"
+    SZIP = "szip"
+    ZLIB = "zlib"
+    BLOSC = "Blosc"
+    BSLZ4 = "BSLZ4"
+    LZ4 = "LZ4"
+    JPEG = "JPEG"
+
+
+class NDFileHDFIO(NDFilePluginIO):
+    """Plugin for storing data in HDF5 file format.
+
+    This mirrors the interface provided by ADCore/db/NDFileHDF5.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDFileHDF5.html
+    """
+
+    position_mode: A[SignalRW[bool], PvSuffix.rbv("PositionMode")]
+    compression: A[SignalRW[ADCompression], PvSuffix.rbv("Compression")]
+    num_extra_dims: A[SignalRW[int], PvSuffix.rbv("NumExtraDims")]
+    swmr_mode: A[SignalRW[bool], PvSuffix.rbv("SWMRMode")]
+    flush_now: A[SignalRW[bool], PvSuffix("FlushNow")]
+    xml_file_name: A[SignalRW[str], PvSuffix.rbv("XMLFileName")]
+    num_frames_chunks: A[SignalRW[int], PvSuffix.rbv("NumFramesChunks")]
+    chunk_size_auto: A[SignalRW[bool], PvSuffix.rbv("ChunkSizeAuto")]
+    lazy_open: A[SignalRW[bool], PvSuffix.rbv("LazyOpen")]

@@ -2,11 +2,12 @@ import os
 from collections.abc import Callable
 from typing import cast
 
+import ophyd_async.epics.areadetector._io
 import pytest
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import callback_on_mock_put, init_devices, set_mock_value
-from ophyd_async.core._providers import PathProvider
+from ophyd_async.core._path_providers import PathProvider
 from ophyd_async.epics import adcore
 
 
@@ -23,7 +24,7 @@ def ad_standard_det_factory(
         writer_cls: type[adcore.ADWriter] = adcore.ADHDFWriter,
         path_provider: PathProvider | None = None,
         number=1,
-        data_type=adcore.ADBaseDataType.UINT16,
+        data_type=ophyd_async.epics.areadetector._io.ADBaseDataType.UINT16,
         assume_file_path_exists: bool = False,
         **kwargs,
     ) -> adcore.AreaDetector:
@@ -70,7 +71,8 @@ def ad_standard_det_factory(
 
         # Set image mode to continuous to mimic a real detector setup
         set_mock_value(
-            test_adstandard_det.driver.image_mode, adcore.ADImageMode.CONTINUOUS
+            test_adstandard_det.driver.image_mode,
+            ophyd_async.epics.areadetector._io.ADImageMode.CONTINUOUS,
         )
 
         if detector_cls == adcore.ContAcqAreaDetector:

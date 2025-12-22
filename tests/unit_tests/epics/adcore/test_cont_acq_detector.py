@@ -1,3 +1,4 @@
+import ophyd_async.epics.areadetector._io
 import pytest
 
 from ophyd_async.core import DetectorTrigger, TriggerInfo, init_devices, set_mock_value
@@ -7,10 +8,13 @@ from ophyd_async.epics import adcore
 @pytest.fixture
 def cont_acq_controller(RE):
     with init_devices(mock=True):
-        drv = adcore.ADBaseIO("DRV")
-        cb_plugin = adcore.NDPluginCBIO("CB1")
+        drv = ophyd_async.epics.areadetector._io.ADBaseIO("DRV")
+        cb_plugin = ophyd_async.epics.areadetector._io.NDPluginCBIO("CB1")
 
-    set_mock_value(drv.image_mode, adcore.ADImageMode.CONTINUOUS)
+    set_mock_value(
+        drv.image_mode,
+        ophyd_async.epics.areadetector._io.ADImageMode.CONTINUOUS,
+    )
     set_mock_value(drv.acquire_time, 0.8)
     set_mock_value(drv.acquire_period, 1.0)
     set_mock_value(drv.acquire, True)
@@ -57,7 +61,10 @@ async def test_cont_acq_controller_invalid_exp_time(
 async def test_cont_acq_controller_not_in_continuous_mode(
     cont_acq_controller: adcore.ADBaseContAcqController,
 ):
-    set_mock_value(cont_acq_controller.driver.image_mode, adcore.ADImageMode.SINGLE)
+    set_mock_value(
+        cont_acq_controller.driver.image_mode,
+        ophyd_async.epics.areadetector._io.ADImageMode.SINGLE,
+    )
 
     with pytest.raises(RuntimeError) as exc:
         await cont_acq_controller.prepare(generate_one_shot_trigger_info())

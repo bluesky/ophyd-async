@@ -12,15 +12,8 @@ from ._block import (
     PulseBlock,
     SeqBlock,
 )
-from ._control import PandaPcapController
-from ._hdf_panda import HDFPanda
-from ._table import (
-    DatasetTable,
-    PandaHdf5DatasetType,
-    SeqTable,
-    SeqTrigger,
-)
-from ._trigger import (
+from ._detector import HDFPanda
+from ._fly_logic import (
     PcompInfo,
     PosOutScaleOffset,
     ScanSpecInfo,
@@ -29,7 +22,12 @@ from ._trigger import (
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
-from ._writer import PandaHDFWriter
+from ._table import (
+    DatasetTable,
+    PandaHdf5DatasetType,
+    SeqTable,
+    SeqTrigger,
+)
 
 __all__ = [
     "CommonPandaBlocks",
@@ -45,8 +43,6 @@ __all__ = [
     "SeqBlock",
     "PandaTimeUnits",
     "HDFPanda",
-    "PandaHDFWriter",
-    "PandaPcapController",
     "DatasetTable",
     "PandaHdf5DatasetType",
     "SeqTable",

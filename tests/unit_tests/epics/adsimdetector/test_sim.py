@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import bluesky.plan_stubs as bps
 import bluesky.preprocessors as bpp
+import ophyd_async.epics.areadetector._io
 import pytest
 from bluesky.run_engine import RunEngine
 from bluesky.utils import FailedStatus
@@ -336,13 +337,15 @@ async def test_two_detectors_step(
 
         drv = controller_a.driver
         assert False is (yield from bps.rd(drv.acquire))
-        assert adcore.ADImageMode.MULTIPLE == (yield from bps.rd(drv.image_mode))
+        assert ophyd_async.epics.areadetector._io.ADImageMode.MULTIPLE == (
+            yield from bps.rd(drv.image_mode)
+        )
 
-        hdfb = cast(adcore.NDFileHDFIO, writer_b.fileio)
+        hdfb = cast(ophyd_async.epics.areadetector._io.NDFileHDFIO, writer_b.fileio)
         assert True is (yield from bps.rd(hdfb.lazy_open))
         assert True is (yield from bps.rd(hdfb.swmr_mode))
         assert 0 == (yield from bps.rd(hdfb.num_capture))
-        assert adcore.ADFileWriteMode.STREAM == (
+        assert ophyd_async.epics.areadetector._io.ADFileWriteMode.STREAM == (
             yield from bps.rd(hdfb.file_write_mode)
         )
 
@@ -562,7 +565,10 @@ async def test_ad_sim_controller(test_adsimdetector: adsimdetector.SimDetector):
 
     driver = ad.driver
     assert await driver.num_images.get_value() == 1
-    assert await driver.image_mode.get_value() == adcore.ADImageMode.MULTIPLE
+    assert (
+        await driver.image_mode.get_value()
+        == ophyd_async.epics.areadetector._io.ADImageMode.MULTIPLE
+    )
     assert await driver.acquire.get_value() is True
 
     await ad.disarm()

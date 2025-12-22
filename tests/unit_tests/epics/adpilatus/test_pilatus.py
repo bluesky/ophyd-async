@@ -12,16 +12,16 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics import adcore
 from ophyd_async.epics.adpilatus import (
-    PilatusDetector,
     PilatusDriverIO,
     PilatusReadoutTime,
     PilatusTriggerMode,
+    pilatus_detector,
 )
 
 
 @pytest.fixture
-def test_adpilatus(ad_standard_det_factory) -> PilatusDetector:
-    return ad_standard_det_factory(PilatusDetector)
+def test_adpilatus(ad_standard_det_factory) -> adcore.AreaDetector:
+    return ad_standard_det_factory(pilatus_detector)
 
 
 @pytest.mark.parametrize(
@@ -31,14 +31,14 @@ def test_adpilatus(ad_standard_det_factory) -> PilatusDetector:
 async def test_given_a_different_readout_time_then_deadtime_is_changed(
     ad_standard_det_factory, readout_time: float
 ):
-    detector: PilatusDetector = ad_standard_det_factory(
-        PilatusDetector, readout_time=readout_time
+    detector: adcore.AreaDetector = ad_standard_det_factory(
+        pilatus_detector, readout_time=readout_time
     )
     assert detector._controller.get_deadtime(None) == readout_time
 
 
 async def test_deadtime_invariant(
-    test_adpilatus: PilatusDetector,
+    test_adpilatus: adcore.AreaDetector,
 ):
     pilatus_controller = test_adpilatus._controller
     # deadtime invariant with exposure time
@@ -56,7 +56,7 @@ async def test_deadtime_invariant(
     ],
 )
 async def test_trigger_mode_set(
-    test_adpilatus: PilatusDetector,
+    test_adpilatus: pilatus_detector,
     detector_trigger: DetectorTrigger,
     expected_trigger_mode: PilatusTriggerMode,
 ):
@@ -72,7 +72,7 @@ async def test_trigger_mode_set(
 
 
 async def test_trigger_mode_set_without_armed_pv(
-    test_adpilatus: PilatusDetector,
+    test_adpilatus: pilatus_detector,
 ):
     async def trigger_and_complete():
         await test_adpilatus._controller.prepare(
@@ -94,7 +94,7 @@ async def test_trigger_mode_set_without_armed_pv(
 
 
 async def _trigger(
-    test_adpilatus: PilatusDetector,
+    test_adpilatus: pilatus_detector,
     expected_trigger_mode: PilatusTriggerMode,
     trigger_and_complete: Callable[[], Awaitable],
 ):
@@ -109,7 +109,7 @@ async def _trigger(
 
 
 async def test_exposure_time_and_acquire_period_set(
-    test_adpilatus: PilatusDetector,
+    test_adpilatus: pilatus_detector,
 ):
     async def dummy_open(name: str, exposures_per_event: int = 1):
         test_adpilatus._writer._exposures_per_event = exposures_per_event
@@ -129,7 +129,7 @@ async def test_exposure_time_and_acquire_period_set(
     assert (await test_adpilatus.driver.acquire_period.get_value()) == 1.0 + 950e-6
 
 
-async def test_pilatus_controller(test_adpilatus: PilatusDetector):
+async def test_pilatus_controller(test_adpilatus: pilatus_detector):
     pilatus = test_adpilatus._controller
     pilatus_driver = cast(PilatusDriverIO, test_adpilatus.driver)
     set_mock_value(pilatus_driver.armed, True)

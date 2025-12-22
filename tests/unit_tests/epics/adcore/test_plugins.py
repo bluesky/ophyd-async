@@ -1,4 +1,4 @@
-from ophyd_async.epics.adcore._core_io import NDROIStatIO, NDROIStatNIO  # noqa: PLC2701
+from ophyd_async.epics.adcore import NDROIStatIO, NDROIStatNIO
 
 
 def test_roi_stats_channels_initialisation():

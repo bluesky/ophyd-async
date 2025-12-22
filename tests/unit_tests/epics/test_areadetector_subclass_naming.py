@@ -25,7 +25,7 @@ def get_rec_subclasses(cls: type):
 
 
 @pytest.mark.parametrize("cls", list(get_rec_subclasses(adcore.NDArrayBaseIO)))
-async def test_regularly_named_attributes(cls: Device):
+async def test_regularly_named_attributes(cls: adcore.NDArrayBaseIO):
     io = cls("")
     for name, device in io.children():
         check_name(name, device)
