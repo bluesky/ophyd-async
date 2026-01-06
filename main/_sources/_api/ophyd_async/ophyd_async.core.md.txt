@@ -39,6 +39,18 @@
   - ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncConfigurable
     :summary:
     ```
+* - {py:obj}`AsyncLocatable <ophyd_async.core._protocol.AsyncLocatable>`
+  - ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncLocatable
+    :summary:
+    ```
+* - {py:obj}`AsyncMovable <ophyd_async.core._protocol.AsyncMovable>`
+  - ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncMovable
+    :summary:
+    ```
+* - {py:obj}`AsyncPausable <ophyd_async.core._protocol.AsyncPausable>`
+  - ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncPausable
+    :summary:
+    ```
 * - {py:obj}`AsyncStageable <ophyd_async.core._protocol.AsyncStageable>`
   - ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncStageable
     :summary:
@@ -713,6 +725,75 @@ Bases: {py:obj}`bluesky.protocols.HasName`, {py:obj}`typing.Protocol`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncConfigurable.describe_configuration
+```
+
+````
+
+`````
+
+`````{py:class} AsyncLocatable
+:canonical: ophyd_async.core._protocol.AsyncLocatable
+
+Bases: {py:obj}`ophyd_async.core._protocol.AsyncMovable`\[{py:obj}`ophyd_async.core._utils.T`\], {py:obj}`typing.Protocol`
+
+```{autodoc2-docstring} ophyd_async.core._protocol.AsyncLocatable
+```
+
+````{py:method} locate() -> ~bluesky.protocols.Location[~ophyd_async.core._utils.T]
+:canonical: ophyd_async.core._protocol.AsyncLocatable.locate
+:abstractmethod:
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._protocol.AsyncLocatable.locate
+```
+
+````
+
+`````
+
+`````{py:class} AsyncMovable
+:canonical: ophyd_async.core._protocol.AsyncMovable
+
+Bases: {py:obj}`typing.Protocol`\[{py:obj}`bluesky.protocols.T_co`\]
+
+```{autodoc2-docstring} ophyd_async.core._protocol.AsyncMovable
+```
+
+````{py:method} set(value: ~bluesky.protocols.T_co) -> ~ophyd_async.core._status.AsyncStatus
+:canonical: ophyd_async.core._protocol.AsyncMovable.set
+:abstractmethod:
+
+```{autodoc2-docstring} ophyd_async.core._protocol.AsyncMovable.set
+```
+
+````
+
+`````
+
+`````{py:class} AsyncPausable
+:canonical: ophyd_async.core._protocol.AsyncPausable
+
+Bases: {py:obj}`typing.Protocol`
+
+```{autodoc2-docstring} ophyd_async.core._protocol.AsyncPausable
+```
+
+````{py:method} pause() -> None
+:canonical: ophyd_async.core._protocol.AsyncPausable.pause
+:abstractmethod:
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._protocol.AsyncPausable.pause
+```
+
+````
+
+````{py:method} resume() -> None
+:canonical: ophyd_async.core._protocol.AsyncPausable.resume
+:abstractmethod:
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._protocol.AsyncPausable.resume
 ```
 
 ````
