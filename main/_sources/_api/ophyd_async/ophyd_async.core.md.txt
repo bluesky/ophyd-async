@@ -3014,7 +3014,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 ```
 ````
 
-````{py:function} gather_dict(coros: ~collections.abc.Mapping[~ophyd_async.core._utils.T, ~collections.abc.Awaitable[~ophyd_async.core._utils.V]]) -> dict[~ophyd_async.core._utils.T, ~ophyd_async.core._utils.V]
+````{py:function} gather_dict(coros: dict[~ophyd_async.core._utils.T | ~collections.abc.Awaitable[~ophyd_async.core._utils.T], ~ophyd_async.core._utils.V | ~collections.abc.Awaitable[~ophyd_async.core._utils.V]]) -> dict[~ophyd_async.core._utils.T, ~ophyd_async.core._utils.V]
 :canonical: ophyd_async.core._utils.gather_dict
 :async:
 

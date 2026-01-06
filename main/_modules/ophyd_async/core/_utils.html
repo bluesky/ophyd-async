@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._utils &#8212; ophyd-async 0.14.3.dev2+gbabd006fd documentation</title>
+    <title>ophyd_async.core._utils &#8212; ophyd-async 0.14.3.dev3+gf96a9fa09 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=7dec5953"></script>
+    <script src="../../../_static/documentation_options.js?v=7f119b1d"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev2+gbabd006fd documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev2+gbabd006fd documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev3+gf96a9fa09 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev3+gf96a9fa09 documentation - Home"/>
   
   
 </a></div>
@@ -470,6 +470,7 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">EnumMeta</span><span class="p">,</span> <span class="n">StrEnum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">inspect</span><span class="w"> </span><span class="kn">import</span> <span class="n">isawaitable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Generic</span><span class="p">,</span>
@@ -790,12 +791,38 @@ window.addEventListener("load", () => mermaid.run());
     <span class="k">return</span> <span class="n">ret</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_partition_awaitable</span><span class="p">(</span>
+    <span class="n">maybe_awaitables</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">T</span><span class="p">]]:</span>
+    <span class="n">awaitable</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">not_awaitable</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">maybe_awaitables</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">isawaitable</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">awaitable</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">not_awaitable</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="k">return</span> <span class="n">awaitable</span><span class="p">,</span> <span class="n">not_awaitable</span>
+
+
 <div class="viewcode-block" id="gather_dict">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.gather_dict">[docs]</a>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gather_dict</span><span class="p">(</span><span class="n">coros</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">V</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Take named coros and return a dict of their name to their return value.&quot;&quot;&quot;</span>
-    <span class="n">values</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">coros</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">gather_dict</span><span class="p">(</span><span class="n">coros</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">V</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">V</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">V</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Await any coros in the keys or values of a dictionary.&quot;&quot;&quot;</span>
+    <span class="n">k_awaitable</span><span class="p">,</span> <span class="n">k_not_awaitable</span> <span class="o">=</span> <span class="n">_partition_awaitable</span><span class="p">(</span><span class="n">coros</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">v_awaitable</span><span class="p">,</span> <span class="n">v_not_awaitable</span> <span class="o">=</span> <span class="n">_partition_awaitable</span><span class="p">(</span><span class="n">coros</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="c1"># Await all awaitables in parallel</span>
+    <span class="n">k_results</span><span class="p">,</span> <span class="n">v_results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">k_awaitable</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">v_awaitable</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Combine awaited and non-awaited values by index</span>
+    <span class="n">k_map</span> <span class="o">=</span> <span class="n">k_not_awaitable</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">k_awaitable</span><span class="p">,</span> <span class="n">k_results</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">v_map</span> <span class="o">=</span> <span class="n">v_not_awaitable</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">v_awaitable</span><span class="p">,</span> <span class="n">v_results</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+    <span class="c1"># Reconstruct dict in original index order</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">k_map</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span> <span class="n">v_map</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coros</span><span class="p">))}</span></div>
 
 
 
