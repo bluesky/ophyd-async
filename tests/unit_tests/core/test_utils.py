@@ -299,22 +299,40 @@ def test_core_notconnected_emits_deprecation_warning():
         from ophyd_async.core import NotConnected  # noqa: F401
 
 
+async def _async_value(val):
+    """Helper function to create an awaitable that returns a value."""
+    return val
+
+
+async def test_gather_dict_empty():
+    """Test gather_dict with an empty dictionary."""
+    result = await gather_dict({})
+    assert result == {}
+
+
+async def test_gather_dict_duplicate_resolved_keys():
+    """Test gather_dict when different awaitable keys resolve to the same value."""
+    # Two coroutine objects that resolve to the same key - second should win
+    result = await gather_dict(
+        {
+            _async_value("key"): "first",
+            _async_value("key"): "second",
+        }
+    )
+    assert result == {"key": "second"}
+
+
 @pytest.mark.parametrize("keys_awaitable", ("", "b", "abc"))
 @pytest.mark.parametrize("values_awaitable", ([], [2], [1, 2, 3]))
 async def test_gather_dict(keys_awaitable, values_awaitable):
     """Test gather_dict with plain values, awaitable keys, and awaitable values."""
-
-    async def async_value(val):
-        """Simple async function to return a value."""
-        return val
-
-    # Build input_dict and expected based on parameters
     expected = {"a": 1, "b": 2, "c": 3}
 
     input_dict = {}
     for k, v in expected.items():
-        key = async_value(k) if k in keys_awaitable else k
-        value = async_value(v) if v in values_awaitable else v
+        key = _async_value(k) if k in keys_awaitable else k
+        value = _async_value(v) if v in values_awaitable else v
         input_dict[key] = value
     result = await gather_dict(input_dict)
     assert result == expected
+    assert list(result.keys()) == list(expected.keys())

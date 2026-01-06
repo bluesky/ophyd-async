@@ -293,7 +293,7 @@ async def merge_gathered_dicts(
     return ret
 
 
-def _partition_awaitiable(
+def _partition_awaitable(
     maybe_awaitables: Iterable[T | Awaitable[T]],
 ) -> tuple[dict[int, Awaitable[T]], dict[int, T]]:
     awaitable: dict[int, Awaitable[T]] = {}
@@ -306,10 +306,10 @@ def _partition_awaitiable(
     return awaitable, not_awaitable
 
 
-async def gather_dict(coros: Mapping[T | Awaitable[T], V | Awaitable[V]]) -> dict[T, V]:
+async def gather_dict(coros: dict[T | Awaitable[T], V | Awaitable[V]]) -> dict[T, V]:
     """Await any coros in the keys or values of a dictionary."""
-    k_awaitable, k_not_awaitable = _partition_awaitiable(coros.keys())
-    v_awaitable, v_not_awaitable = _partition_awaitiable(coros.values())
+    k_awaitable, k_not_awaitable = _partition_awaitable(coros.keys())
+    v_awaitable, v_not_awaitable = _partition_awaitable(coros.values())
 
     # Await all awaitables in parallel
     k_results, v_results = await asyncio.gather(
@@ -321,7 +321,7 @@ async def gather_dict(coros: Mapping[T | Awaitable[T], V | Awaitable[V]]) -> dic
     k_map = k_not_awaitable | dict(zip(k_awaitable, k_results, strict=True))
     v_map = v_not_awaitable | dict(zip(v_awaitable, v_results, strict=True))
 
-    # Reconstruct dict in original order
+    # Reconstruct dict in original index order
     return {k_map[i]: v_map[i] for i in range(len(coros))}
 
 
