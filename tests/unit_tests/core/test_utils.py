@@ -5,6 +5,7 @@ import pytest
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
+    gather_dict,
     init_devices,
     SoftSignalBackend,
     NotConnectedError,
@@ -296,3 +297,24 @@ async def test_format_error_string_input():
 def test_core_notconnected_emits_deprecation_warning():
     with pytest.deprecated_call():
         from ophyd_async.core import NotConnected  # noqa: F401
+
+
+@pytest.mark.parametrize("keys_awaitable", ("", "b", "abc"))
+@pytest.mark.parametrize("values_awaitable", ([], [2], [1, 2, 3]))
+async def test_gather_dict(keys_awaitable, values_awaitable):
+    """Test gather_dict with plain values, awaitable keys, and awaitable values."""
+
+    async def async_value(val):
+        """Simple async function to return a value."""
+        return val
+
+    # Build input_dict and expected based on parameters
+    expected = {"a": 1, "b": 2, "c": 3}
+
+    input_dict = {}
+    for k, v in expected.items():
+        key = async_value(k) if k in keys_awaitable else k
+        value = async_value(v) if v in values_awaitable else v
+        input_dict[key] = value
+    result = await gather_dict(input_dict)
+    assert result == expected
