@@ -79,6 +79,7 @@ class Odin(Device):
         self.meta_stop = epics_signal_rw(bool, f"{prefix}META:Stop")
 
         self.fan_ready = epics_signal_rw(float, f"{prefix}FAN:StateReady_RBV")
+        self.fan_dev_shm_enable = epics_signal_rw(bool, f"{prefix}FAN:DevShmCache")
 
         self.data_type = epics_signal_rw_rbv(str, f"{prefix}DataType")
 
