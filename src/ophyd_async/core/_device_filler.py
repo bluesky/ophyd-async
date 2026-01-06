@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import types
 from abc import abstractmethod
 from collections.abc import Callable, Iterator, Sequence
 from typing import (
@@ -9,8 +10,10 @@ from typing import (
     NoReturn,
     Protocol,
     TypeVar,
+    Union,
     cast,
     get_args,
+    get_origin,
     get_type_hints,
     runtime_checkable,
 )
@@ -76,6 +79,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
         self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
+        self._optional_devices: set[str] = set()
         self.ignored_signals: set[str] = set()
         # Backends and Connectors stored ready for the connection phase
         self._unfilled_backends: dict[
@@ -121,6 +125,20 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 self.ignored_signals.add(attr_name)
             name = UniqueName(attr_name)
             origin = get_origin_class(annotation)
+            args = get_args(annotation)
+
+            if (
+                get_origin(annotation) is Union
+                and types.NoneType in args
+                and len(args) == 2
+            ):
+                # Annotation is an Union with two arguments, one of which is None
+                # Make this signal an optional parameter and set origin to T
+                # so the device is added to unfilled_connectors
+                self._optional_devices.add(name)
+                (annotation,) = [x for x in args if x is not types.NoneType]
+                origin = get_origin_class(annotation)
+
             if (
                 name == "parent"
                 or name.startswith("_")
@@ -241,10 +259,17 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         :param source: The source of the data that should have done the filling, for
                        reporting as an error message
         """
-        unfilled = sorted(set(self._unfilled_connectors).union(self._unfilled_backends))
-        if unfilled:
+        unfilled = set(self._unfilled_connectors).union(self._unfilled_backends)
+        unfilled_optional = sorted(unfilled.intersection(self._optional_devices))
+
+        for name in unfilled_optional:
+            setattr(self._device, name, None)
+
+        required = sorted(unfilled.difference(unfilled_optional))
+
+        if required:
             raise RuntimeError(
-                f"{self._device.name}: cannot provision {unfilled} from {source}"
+                f"{self._device.name}: cannot provision {required} from {source}"
             )
 
     def _ensure_device_vector(self, name: LogicalName) -> DeviceVector:
