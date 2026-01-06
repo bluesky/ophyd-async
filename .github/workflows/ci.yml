@@ -30,8 +30,6 @@ jobs:
       runs-on: ${{ matrix.runs-on }}
       python-version: ${{ matrix.python-version }}
       tests-path: ${{ matrix.tests-path }}
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   docs:
     uses: ./.github/workflows/_docs.yml

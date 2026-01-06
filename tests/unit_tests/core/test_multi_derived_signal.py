@@ -1,6 +1,7 @@
 import asyncio
 import math
 import re
+from typing import TypeVar
 from unittest.mock import ANY, call
 
 import pytest
@@ -8,8 +9,12 @@ from bluesky.protocols import Reading
 
 from ophyd_async.core import (
     DerivedSignalFactory,
+    EnableDisable,
+    EnumTypes,
     SignalRW,
+    StrictEnum,
     Table,
+    Transform,
     derived_signal_rw,
     get_mock,
     set_mock_value,
@@ -187,3 +192,60 @@ def test_make_rw_signal_type_mismatch():
         match=re.escape("Must define a set_derived method to support derived"),
     ):
         factory.derived_signal_rw(datatype=Table, name="")
+
+
+def test_missing_type_hint_in_raw_to_derived_transform():
+    class UnTypedTransform(Transform):
+        def raw_to_derived(self, x) -> float:
+            return x
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape(" is missing a type hint for arguments: ['x']"),
+    ):
+        DerivedSignalFactory(
+            UnTypedTransform,
+            set_derived=None,
+            x=soft_signal_rw(float),
+        )
+
+
+def test_sub_type_hint_in_raw_to_derived_transform():
+    class SubTypedTransform(Transform):
+        def raw_to_derived(self, x: StrictEnum) -> StrictEnum:
+            return x
+
+    DerivedSignalFactory(
+        SubTypedTransform,
+        set_derived=None,
+        x=soft_signal_rw(EnableDisable),
+    )
+
+    with pytest.raises(
+        TypeError,
+        match=re.escape(
+            "Expected the following to be passed as keyword arguments "
+            "{'x': <enum 'StrictEnum'>}, "
+            "got {'x': <class 'float'>}"
+        ),
+    ):
+        DerivedSignalFactory(
+            SubTypedTransform,
+            set_derived=None,
+            x=soft_signal_rw(float),
+        )
+
+
+EnumTypesT = TypeVar("EnumTypesT", bound=EnumTypes)
+
+
+def test_protocol_type_hint_in_raw_to_derived_transform():
+    class SubTypedTransform(Transform):
+        def raw_to_derived(self, x: EnumTypesT) -> EnumTypesT:
+            return x
+
+    DerivedSignalFactory(
+        SubTypedTransform,
+        set_derived=None,
+        x=soft_signal_rw(EnableDisable),
+    )
