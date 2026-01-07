@@ -56,7 +56,7 @@ class DemoMotor(EpicsDevice, StandardReadable, Movable, Stoppable):
         if timeout == CALCULATE_TIMEOUT:
             timeout = abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
         # Wait for the value to set, but don't wait for put completion callback
-        await self.setpoint.set(new_position, wait=False)
+        await self.setpoint.set(new_position)
         # Observe the readback Signal, and on each new position...
         async for current_position in observe_value(
             self.readback, done_timeout=timeout
