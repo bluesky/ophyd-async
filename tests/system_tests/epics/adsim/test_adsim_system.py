@@ -26,7 +26,8 @@ from ophyd_async.core import (
     YamlSettingsProvider,
     init_devices,
 )
-from ophyd_async.epics.adsimdetector import SimDetector
+from ophyd_async.epics.adcore import AreaDetector
+from ophyd_async.epics.adsimdetector import sim_detector
 from ophyd_async.plan_stubs import (
     apply_settings,
     apply_settings_if_different,
@@ -61,15 +62,15 @@ def _aioca_cleanup(event_loop):
 
 
 @pytest.fixture
-def adsim(RE: RunEngine) -> SimDetector:
+def adsim(RE: RunEngine) -> AreaDetector:
     prefix = "BL01T"
     provider = StaticPathProvider(lambda _: "adsim", Path("/tmp"))
     with init_devices():
-        adsim = SimDetector(
+        adsim = sim_detector(
             f"{prefix}-DI-CAM-01:",
             path_provider=provider,
-            drv_suffix="DET:",
-            fileio_suffix="HDF5:",
+            driver_suffix="DET:",
+            writer_suffix="HDF5:",
         )
 
     RE(apply_baseline_settings(adsim))
@@ -77,7 +78,7 @@ def adsim(RE: RunEngine) -> SimDetector:
     return adsim
 
 
-def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
+def apply_baseline_settings(adsim: AreaDetector) -> MsgGenerator[None]:
     current_settings = yield from get_current_settings(adsim)
     provider = YamlSettingsProvider(Path(__file__).parent)
     baseline_settings = yield from retrieve_settings(
@@ -98,7 +99,7 @@ def apply_baseline_settings(adsim: SimDetector) -> MsgGenerator[None]:
     raises=AssertionError, reason="https://github.com/bluesky/ophyd-async/issues/998"
 )
 def test_prepare_is_idempotent_and_sets_exposure_time(
-    RE: RunEngine, adsim: SimDetector, bl01t_di_cam_01: None
+    RE: RunEngine, adsim: AreaDetector, bl01t_di_cam_01: None
 ) -> None:
     def prepare_then_count() -> MsgGenerator[None]:
         yield from bps.prepare(
@@ -120,7 +121,7 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
 )
 @pytest.mark.timeout(TIMEOUT + 15.0)
 def test_software_triggering(
-    RE: RunEngine, adsim: SimDetector, bl01t_di_cam_01: None
+    RE: RunEngine, adsim: AreaDetector, bl01t_di_cam_01: None
 ) -> None:
     docs = run_plan_and_get_documents(RE, bp.count([adsim], num=2))
     assert docs == [

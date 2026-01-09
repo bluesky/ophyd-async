@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from unittest.mock import patch
 
+import ophyd_async.epics.areadetector._io
 import pytest
 
 from ophyd_async.core import (
@@ -33,7 +34,7 @@ async def hdf_writer(
     RE, static_path_provider: StaticPathProvider
 ) -> adcore.ADHDFWriter:
     async with init_devices(mock=True):
-        hdf = adcore.NDFileHDFIO("HDF:")
+        hdf = ophyd_async.epics.areadetector._io.NDFileHDFIO("HDF:")
 
     writer = adcore.ADHDFWriter(
         hdf,
@@ -60,7 +61,7 @@ async def tiff_writer(
     RE, static_path_provider: StaticPathProvider
 ) -> adcore.ADTIFFWriter:
     async with init_devices(mock=True):
-        tiff = adcore.NDFilePluginIO("TIFF:")
+        tiff = ophyd_async.epics.areadetector._io.NDFilePluginIO("TIFF:")
 
     writer = adcore.ADTIFFWriter(
         tiff, static_path_provider, DummyDatasetDescriber(), {}
@@ -84,8 +85,8 @@ async def hdf_writer_with_stats(
     RE, static_path_provider: StaticPathProvider
 ) -> adcore.ADHDFWriter:
     async with init_devices(mock=True):
-        hdf = adcore.NDFileHDFIO("HDF:")
-        stats = adcore.NDPluginStatsIO("FOO:")
+        hdf = ophyd_async.epics.areadetector._io.NDFileHDFIO("HDF:")
+        stats = ophyd_async.epics.areadetector._io.NDStatsIO("FOO:")
 
     # Set number of frames per chunk to something reasonable
     set_mock_value(hdf.num_frames_chunks, 2)
@@ -300,14 +301,14 @@ async def test_nd_attributes_plan_stub(RE, detectors):
         param = adcore.NDAttributeParam(
             name=f"{detector.name}-sum",
             param="sum",
-            datatype=adcore.NDAttributeDataType.DOUBLE,
+            datatype=ophyd_async.epics.areadetector._io.NDAttributeDataType.DOUBLE,
             description=f"Sum of {detector.name} frame",
         )
         pv = adcore.NDAttributePv(
             name="Temperature",
             signal=epics_signal_r(str, "LINKAM:TEMP"),
             description="The sample temperature",
-            dbrtype=adcore.NDAttributePvDbrType.DBR_FLOAT,
+            dbrtype=ophyd_async.epics.areadetector._io.NDAttributePvDbrType.DBR_FLOAT,
         )
         RE(setup_ndattributes(detector.fileio, [pv, param]))
         text = await detector.fileio.nd_attributes_file.get_value()

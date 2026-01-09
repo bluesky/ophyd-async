@@ -3,17 +3,17 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from collections.abc import AsyncGenerator, AsyncIterator, Callable, Iterator, Sequence
+from collections.abc import AsyncIterator, Sequence
+from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
-from typing import (
-    Generic,
-    TypeVar,
-)
+from typing import cast
 
 from bluesky.protocols import (
     Collectable,
+    EventPageCollectable,
     Flyable,
+    HasHints,
     Hints,
     Preparable,
     Reading,
@@ -22,166 +22,219 @@ from bluesky.protocols import (
     Triggerable,
     WritesStreamAssets,
 )
-from event_model import DataKey
+from event_model import DataKey, PartialEventPage
 from pydantic import Field, NonNegativeInt, PositiveInt, computed_field
+
+from ophyd_async.core._data_providers import StreamableDataProvider
+from ophyd_async.core._settings import Settings
 
 from ._device import Device, DeviceConnector
 from ._protocol import AsyncConfigurable, AsyncReadable
-from ._signal import SignalR
+from ._signal import SignalDict, SignalR, SignalRW, observe_value, soft_signal_rw
 from ._status import AsyncStatus, WatchableAsyncStatus
-from ._utils import DEFAULT_TIMEOUT, ConfinedModel, WatcherUpdate, merge_gathered_dicts
+from ._utils import (
+    DEFAULT_TIMEOUT,
+    ConfinedModel,
+    WatcherUpdate,
+    error_if_none,
+    merge_gathered_dicts,
+)
 
 
 class DetectorTrigger(Enum):
-    """Type of mechanism for triggering a detector to take frames."""
+    """Type of mechanism for triggering a detector to take exposures."""
 
     INTERNAL = "INTERNAL"
-    """Detector generates internal trigger for given rate"""
+    """On arm generate internally timed exposures"""
 
-    EDGE_TRIGGER = "EDGE_TRIGGER"
-    """Expect a series of arbitrary length trigger signals"""
+    EXTERNAL_EDGE = "EXTERNAL_EDGE"
+    """On every (normally rising) edge of an external input generate an internally
+    timed exposure"""
 
-    CONSTANT_GATE = "CONSTANT_GATE"
-    """Expect a series of constant width external gate signals"""
-
-    VARIABLE_GATE = "VARIABLE_GATE"
-    """Expect a series of variable width external gate signals"""
+    EXTERNAL_LEVEL = "EXTERNAL_LEVEL"
+    """On a rising edge of an external input start an exposure, ending on the falling
+    edge"""
 
 
 class TriggerInfo(ConfinedModel):
-    """Minimal set of information required to setup triggering on a detector."""
-
-    number_of_events: NonNegativeInt | list[NonNegativeInt] = Field(default=1)
-    """Number of events that will be processed, (0 means infinite).
-
-    Can be:
-    - A single integer or
-    - A list of integers for multiple events
-
-    Example for tomography: ``TriggerInfo(number_of_events=[2,3,100,3])``.
-    This would process:
-
-    - 2 events for dark field images
-    - 3 events for initial flat field images
-    - 100 events for projections
-    - 3 events for final flat field images
-    """
+    """Information required to setup `trigger` or `kickoff` on a `StandardDetector`."""
 
     trigger: DetectorTrigger = Field(default=DetectorTrigger.INTERNAL)
-    """Sort of triggers that will be sent"""
+    """What sort of triggering should the detector be set for."""
 
-    deadtime: float = Field(default=0.0, ge=0)
-    """What is the minimum deadtime between exposures"""
+    livetime: float = Field(default=0.0, ge=0.0)
+    """For INTERNAL or EXTERNAL_EDGE triggering, how long should each exposure be.
+    0 means whatever is currently set."""
 
-    livetime: float | None = Field(default=None, ge=0)
-    """What is the maximum high time of the exposures"""
+    deadtime: float = Field(default=0.0, ge=0.0)
+    """For INTERNAL triggering, how long should be left between each exposure.
+    0 means use the minimum the detector supports."""
 
-    exposure_timeout: float | None = Field(default=None, gt=0)
-    """What is the maximum timeout on waiting for an exposure"""
+    exposures_per_collection: PositiveInt = Field(default=1)
+    """An exposure corresponds to a single trigger sent to the detector.
+    If many exposures are averaged together on the detector or in a processing
+    chain to make a single collection that is exposed to bluesky as data then
+    this number should be set to the number of exposures to be processed into a
+    single collection."""
 
-    exposures_per_event: PositiveInt = 1
-    """The number of exposures that are grouped into a single StreamDatum index.
-    A exposures_per_event > 1 can be useful to have exposures from a faster detector
-    able to be zipped with a single exposure from a slower detector. E.g. if
-    number_of_events=10 and exposures_per_event=5 then the detector will take
-    50 exposures, but publish 10 StreamDatum indices, and describe() will show a
-    shape of (5, h, w) for each.
-    Default is 1.
+    collections_per_event: PositiveInt = Field(default=1)
+    """A collection is exposed to bluesky as data, but different detectors can
+    be set to have a different number of collections per event so that multiple
+    collections from a faster detector can be zipped with a single collection
+    from a slower detector. E.g. if number_of_events=10 and
+    collections_per_event=5 then the detector will take 50 exposures, but
+    publish 10 StreamDatum indices, and describe() will show a shape of (5, h,
+    w) for each.
     """
+
+    number_of_events: NonNegativeInt = Field(default=1)
+    """Number of bluesky events that will be emitted, (0 means infinite)."""
+
+    exposure_timeout: float = Field(
+        default_factory=lambda d: d["livetime"] + d["deadtime"] + DEFAULT_TIMEOUT,
+        gt=0,
+    )
+    """What is the maximum timeout on waiting for an exposure"""
 
     @computed_field
     @cached_property
-    def total_number_of_exposures(self) -> int:
-        return (
-            sum(self.number_of_events)
-            if isinstance(self.number_of_events, list)
-            else self.number_of_events
-        ) * self.exposures_per_event
+    def number_of_collections(self) -> int:
+        return self.number_of_events * self.collections_per_event
+
+    @computed_field
+    @cached_property
+    def number_of_exposures(self) -> int:
+        return self.number_of_collections * self.exposures_per_collection
 
 
-class DetectorController(ABC):
-    """Detector logic for arming and disarming the detector."""
+class DetectorTriggerLogic:
+    def config_sigs(self) -> set[SignalR]:
+        """Return the signals that should appear in read_configuration."""
+        return set()
 
-    @abstractmethod
-    def get_deadtime(self, exposure: float | None) -> float:
-        """Get state-independent deadtime.
+    def get_deadtime(self, config_values: SignalDict) -> float:
+        """Return the deadtime in seconds for the detector.
 
-        For a given exposure, what is the safest minimum time between exposures that
-        can be determined without reading signals.
+        :param config_values: the value of each signal in `config_sigs`
         """
+        raise NotImplementedError(self)
 
-    @abstractmethod
-    async def prepare(self, trigger_info: TriggerInfo) -> None:
-        """Do all necessary steps to prepare the detector for triggers.
+    async def prepare_internal(self, num: int, livetime: float, deadtime: float):
+        """Prepare the detector to take internally triggered exposures.
 
-        :param trigger_info: The sort of triggers to expect.
+        :param num: the number of exposures to take
+        :param livetime: how long the exposure should be, 0 means what is currently set
+        :param deadtime: how long between exposures, 0 means the shortest possible
         """
+        raise NotImplementedError(self)
 
+    async def prepare_edge(self, num: int, livetime: float):
+        """Prepare the detector to take external edge triggered exposures.
+
+        :param num: the number of exposures to take
+        :param livetime: how long the exposure should be, 0 means what is currently set
+        """
+        raise NotImplementedError(self)
+
+    async def prepare_level(self, num: int):
+        """Prepare the detector to take external level triggered exposures.
+
+        :param num: the number of exposures to take
+        """
+        raise NotImplementedError(self)
+
+    async def prepare_exposures_per_collection(self, exposures_per_collection: int):
+        """Prepare processing of multiple exposures into a single collection.
+
+        :param exposures_per_collection:
+            number of exposures to process into each collection
+        """
+        raise NotImplementedError(self)
+
+
+def _trigger_logic_supported(method) -> bool:
+    return method.__func__ is not getattr(DetectorTriggerLogic, method.__name__)
+
+
+class DetectorArmLogic(ABC):
     @abstractmethod
-    async def arm(self) -> None:
-        """Arm the detector."""
+    async def arm(self):
+        """Arm the detector, waiting until it is armed."""
 
     @abstractmethod
     async def wait_for_idle(self):
-        """Wait on the internal _arm_status and wait for it to get disarmed/idle."""
+        """Wait for the detector to be disarmed or idle."""
 
     @abstractmethod
     async def disarm(self):
         """Disarm the detector, return detector to an idle state."""
 
 
-class DetectorWriter(ABC):
-    """Logic for making detector write data to somewhere persistent (e.g. HDF5 file)."""
-
+class ReadableDataProvider:
     @abstractmethod
-    async def open(
-        self, name: str, exposures_per_event: PositiveInt = 1
-    ) -> dict[str, DataKey]:
-        """Open writer and wait for it to be ready for data.
+    async def make_datakeys(self, collections_per_event: int) -> dict[str, DataKey]:
+        """Return a DataKey for each Signal that produces a Reading.
 
-        :param exposures_per_event:
-            Each StreamDatum index corresponds to this many written exposures
-        :return: Output for ``describe()``
+        Called before the first exposure is taken.
+
+        :param collections_per_event: this should appear in the shape of each DataKey
         """
 
-    def get_hints(self, name: str) -> Hints:
-        """The hints to be used for the detector."""
+    @abstractmethod
+    async def make_readings(self) -> dict[str, Reading]:
+        """Read the Signals and return their values."""
+
+
+async def _get_collections_written(
+    data_provider: ReadableDataProvider | StreamableDataProvider,
+) -> int:
+    if isinstance(data_provider, StreamableDataProvider):
+        return await data_provider.collections_written_signal.get_value()
+    else:
+        return 0
+
+
+class DetectorDataLogic:
+    async def prepare_single(self, device_name: str) -> ReadableDataProvider:
+        """Provider can only work for a single event, but can be reused."""
+        raise NotImplementedError(self)
+
+    async def prepare_multiple(
+        self, device_name: str, number_of_collections: int
+    ) -> StreamableDataProvider:
+        """Provider can work for a known number of collections but cannot be reused."""
+        raise NotImplementedError(self)
+
+    async def prepare_unbounded(self, device_name: str) -> StreamableDataProvider:
+        """Provider can work for an unbounded number of collections, can be reused."""
+        raise NotImplementedError(self)
+
+    def get_hints(self, device_name: str) -> Hints:
+        """Return the hinted streams."""
         return {}
 
-    @abstractmethod
-    async def get_indices_written(self) -> int:
-        """Get the number of indices written."""
-
-    # Note: this method is really async, but if we make it async here then we
-    # need to give it a body with a redundant yield statement, which is a bit
-    # awkward. So we just leave it as a regular method and let the user
-    # implement it as async.
-    @abstractmethod
-    def observe_indices_written(self, timeout: float) -> AsyncGenerator[int, None]:
-        """Yield the index of each frame (or equivalent data point) as it is written."""
-
-    @abstractmethod
-    def collect_stream_docs(
-        self, name: str, indices_written: int
-    ) -> AsyncIterator[StreamAsset]:
-        """Create Stream docs up to given number written."""
-
-    @abstractmethod
-    async def close(self) -> None:
-        """Close writer, blocks until I/O is complete."""
+    async def stop(self) -> None: ...
 
 
-# Add type var for controller so we can define
-# StandardDetector[KinetixController, ADWriter] for example
-DetectorControllerT = TypeVar("DetectorControllerT", bound=DetectorController)
-DetectorWriterT = TypeVar("DetectorWriterT", bound=DetectorWriter)
+def _data_logic_supported(method) -> bool:
+    return method.__func__ is not getattr(DetectorDataLogic, method.__name__)
 
 
-def _ensure_trigger_info_exists(trigger_info: TriggerInfo | None) -> TriggerInfo:
-    # make absolute sure we realy have a valid TriggerInfo ... mostly for pylance
-    if trigger_info is None:
-        raise RuntimeError("Trigger info must be set before calling this method.")
-    return trigger_info
+@dataclass
+class _PrepareCtx:
+    trigger_info: TriggerInfo
+    data_provider: ReadableDataProvider | StreamableDataProvider
+    can_reuse_provider: bool
+    collections_written: int
+
+
+@dataclass
+class _KickoffCtx:
+    trigger_info: TriggerInfo
+    data_provider: StreamableDataProvider
+    collections_written: int
+    collections_requested: int
+    wait_for_idle: bool
 
 
 class StandardDetector(
@@ -192,202 +245,343 @@ class StandardDetector(
     Triggerable,
     Preparable,
     Flyable,
+    EventPageCollectable,
     Collectable,
     WritesStreamAssets,
-    Generic[DetectorControllerT, DetectorWriterT],
+    HasHints,
 ):
     """Detector base class for step and fly scanning detectors.
 
-    Aggregates controller and writer logic together.
+    Aggregates trigger, arm, reading or stream logic together.
 
-    :param controller: Logic for arming and disarming the detector
-    :param writer: Logic for making the detector write persistent data
+    :param trigger_logic: Logic for triggering the detector
+    :param data_logic: Logic for reading out or exposing the stream from the detector
+    :param arm_logic: Logic for arming and disarming the detector
     :param config_sigs: Signals to read when describe and read configuration are called
     :param name: Device name
     """
 
     def __init__(
         self,
-        controller: DetectorControllerT,
-        writer: DetectorWriterT,
+        trigger_logic: DetectorTriggerLogic,
+        arm_logic: DetectorArmLogic,
+        data_logic: DetectorDataLogic,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
         connector: DeviceConnector | None = None,
     ) -> None:
-        self._controller = controller
-        self._writer = writer
-        self._describe: dict[str, DataKey] = {}
-        self._config_sigs = list(config_sigs)
-        # For prepare
-        self._arm_status: AsyncStatus | None = None
-        self._trigger_info: TriggerInfo | None = None
-        # For kickoff
-        self._watchers: list[Callable] = []
-        self._fly_status: WatchableAsyncStatus | None = None
-        self._fly_start: float | None = None
-        self._events_to_complete: int = 0
-        # Represents the total number of exposures that will have been completed at the
-        # end of the next `complete`.
-        self._completable_exposures: int = 0
-        self._number_of_events_iter: Iterator[int] | None = None
-        self._initial_frame: int = 0
+        self._trigger_logic = trigger_logic
+        self._arm_logic = arm_logic
+        self._data_logic = data_logic
+        self._config_sigs = list(config_sigs) + list(self._trigger_logic.config_sigs())
+        # Context produced by prepare, used by trigger and kickoff
+        self._prepare_ctx: _PrepareCtx | None = None
+        # Context produced by kickoff, used by complete
+        self._kickoff_ctx: _KickoffCtx | None = None
+        # Report the number of events for the next kickoff
+        # TODO: only allow this to be revised down when trigger_info.number_of_events >1
+        # and we have a reusable data provider
+        # requries https://github.com/bluesky/ophyd-async/issues/1119
+        self.events_to_kickoff = soft_signal_rw(int)
+        # Store the triggers that are supported
+        self._supported_triggers = set[DetectorTrigger]()
+        if _trigger_logic_supported(self._trigger_logic.prepare_internal):
+            self._supported_triggers.add(DetectorTrigger.INTERNAL)
+        if _trigger_logic_supported(self._trigger_logic.prepare_edge):
+            self._supported_triggers.add(DetectorTrigger.EXTERNAL_EDGE)
+        if _trigger_logic_supported(self._trigger_logic.prepare_level):
+            self._supported_triggers.add(DetectorTrigger.EXTERNAL_LEVEL)
         super().__init__(name, connector=connector)
+
+    async def _disarm_and_stop(self):
+        await asyncio.gather(self._arm_logic.disarm(), self._data_logic.stop())
+
+    async def get_trigger_deadtime(
+        self, settings: Settings | None = None
+    ) -> tuple[set[DetectorTrigger], float | None]:
+        """Get supported trigger types and deadtime for the detector.
+
+        :param settings: Optional settings to use when getting configuration values
+        :return: Tuple of supported trigger types and deadtime in seconds
+        """
+        config_values = SignalDict()
+        for sig in self._trigger_logic.config_sigs():
+            if settings and sig in settings:
+                # Use value from settings if it is in there
+                # cast to a SignalRW because settings can only contain those
+                config_values[sig] = settings[cast(SignalRW, sig)]
+            else:
+                # Get the value live
+                config_values[sig] = await sig.get_value()
+        if _trigger_logic_supported(self._trigger_logic.get_deadtime):
+            deadtime = self._trigger_logic.get_deadtime(config_values)
+        else:
+            deadtime = None
+        return self._supported_triggers, deadtime
 
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
-        await self._check_config_sigs()
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
-        self._trigger_info = None
+        await self._disarm_and_stop()
+        self._prepare_ctx = None
+        self._kickoff_ctx = None
+        await self.events_to_kickoff.set(0)
 
-    async def _check_config_sigs(self):
-        """Check configuration signals are named and connected."""
-        for signal in self._config_sigs:
-            if signal.name == "":
-                raise Exception(
-                    "config signal must be named before it is passed to the detector"
-                )
-            try:
-                await signal.get_value()
-            except NotImplementedError as exc:
-                raise Exception(
-                    f"config signal {signal.name} must be connected before it is "
-                    + "passed to the detector"
-                ) from exc
-
-    @AsyncStatus.wrap
-    async def unstage(self) -> None:
-        """Disarm the detector and stop file writing."""
-        await asyncio.gather(self._writer.close(), self._controller.disarm())
-
-    async def read_configuration(self) -> dict[str, Reading]:
-        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
-
-    async def describe_configuration(self) -> dict[str, DataKey]:
-        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
-
-    async def read(self) -> dict[str, Reading]:
-        """There is no data to be placed in events, so this is empty."""
-        # All data is in StreamResources, not Events, so nothing to output here
-        return {}
-
-    async def describe(self) -> dict[str, DataKey]:
-        return self._describe
-
-    @AsyncStatus.wrap
-    async def trigger(self) -> None:
-        if self._trigger_info is None:
-            await self.prepare(
-                TriggerInfo(
-                    number_of_events=1,
-                    trigger=DetectorTrigger.INTERNAL,
-                )
-            )
-        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
-        if trigger_info.trigger is not DetectorTrigger.INTERNAL:
-            msg = "The trigger method can only be called with INTERNAL triggering"
-            raise ValueError(msg)
-        if trigger_info.number_of_events != 1:
-            raise ValueError(
-                "Triggering is not supported for multiple events, the detector was "
-                f"prepared with number_of_events={trigger_info.number_of_events}."
-            )
-
-        # Arm the detector and wait for it to finish.
-        indices_written = await self._writer.get_indices_written()
-        await self._controller.arm()
-        await self._controller.wait_for_idle()
-        end_observation = indices_written + 1
-
-        async for index in self._writer.observe_indices_written(
-            DEFAULT_TIMEOUT + (trigger_info.livetime or 0) + trigger_info.deadtime
+    async def _update_prepare_context(self, trigger_info: TriggerInfo) -> None:
+        # If we can reuse the data provider then do so
+        if (
+            self._prepare_ctx
+            and self._prepare_ctx.can_reuse_provider
+            and self._prepare_ctx.trigger_info.collections_per_event
+            == trigger_info.collections_per_event
         ):
-            if index >= end_observation:
+            # Reuse the existing data provider
+            data_provider = self._prepare_ctx.data_provider
+            can_reuse_provider = self._prepare_ctx.can_reuse_provider
+        else:
+            # Stop the existing provider if there was one and make a new one
+            if self._prepare_ctx:
+                await self._data_logic.stop()
+            # Setup the data logic for the right number of collections
+            if _data_logic_supported(self._data_logic.prepare_unbounded):
+                data_provider = await self._data_logic.prepare_unbounded(self.name)
+                can_reuse_provider = True
+            elif _data_logic_supported(self._data_logic.prepare_multiple):
+                data_provider = await self._data_logic.prepare_multiple(
+                    self.name, trigger_info.number_of_collections
+                )
+                can_reuse_provider = False
+            elif _data_logic_supported(self._data_logic.prepare_single):
+                if trigger_info.number_of_collections > 1:
+                    raise RuntimeError(f"Multiple collections not supported by {self}")
+                data_provider = await self._data_logic.prepare_single(self.name)
+                can_reuse_provider = True
+            else:
+                msg = (
+                    "DataLogic hasn't overridden any prepare_* methods "
+                    f"{self._data_logic}"
+                )
+                raise RuntimeError(msg)
+        # Stash the prepare context so we can use it in trigger/kickoff
+        self._prepare_ctx = _PrepareCtx(
+            trigger_info=trigger_info,
+            data_provider=data_provider,
+            can_reuse_provider=can_reuse_provider,
+            collections_written=await _get_collections_written(data_provider),
+        )
+
+    async def _wait_for_index(
+        self,
+        data_provider: StreamableDataProvider,
+        trigger_info: TriggerInfo,
+        initial_collections_written: int,
+        collections_requested: int,
+        done_status: AsyncStatus | None,
+    ) -> AsyncIterator[WatcherUpdate]:
+        start_time = time.monotonic()
+        target_collections_written = initial_collections_written + collections_requested
+        async for collections_written in observe_value(
+            signal=data_provider.collections_written_signal,
+            done_status=done_status,
+            timeout=trigger_info.exposure_timeout,
+        ):
+            yield WatcherUpdate(
+                name=self.name,
+                current=collections_written // trigger_info.collections_per_event,
+                initial=initial_collections_written
+                // trigger_info.collections_per_event,
+                target=target_collections_written // trigger_info.collections_per_event,
+                unit="",
+                precision=0,
+                time_elapsed=time.monotonic() - start_time,
+            )
+            if collections_written >= target_collections_written:
                 break
 
     @AsyncStatus.wrap
     async def prepare(self, value: TriggerInfo) -> None:
-        """Arm detector.
-
-        Prepare the detector with trigger information. This is determined at and passed
-        in from the plan level.
+        """Prepare the detector for a number of triggers.
 
         :param value: TriggerInfo describing how to trigger the detector
         """
-        if value.trigger != DetectorTrigger.INTERNAL and not value.deadtime:
-            msg = "Deadtime must be supplied when in externally triggered mode"
-            raise ValueError(msg)
-        if not value.deadtime:
-            value.deadtime = self._controller.get_deadtime(value.livetime)
-        self._trigger_info = value
-        self._number_of_events_iter = iter(
-            value.number_of_events
-            if isinstance(value.number_of_events, list)
-            else [value.number_of_events]
-        )
-
-        await self._controller.prepare(value)
-        self._describe = await self._writer.open(self.name, value.exposures_per_event)
-
-        self._initial_frame = await self._writer.get_indices_written()
+        if _trigger_logic_supported(
+            self._trigger_logic.prepare_exposures_per_collection
+        ):
+            # If we can do multiple exposures per collection then set it up
+            # even if there was only 1 requested to clear previous settings
+            await self._trigger_logic.prepare_exposures_per_collection(
+                value.exposures_per_collection
+            )
+        elif value.exposures_per_collection != 1:
+            raise RuntimeError(
+                f"Multiple exposures per collection not supported by {self}"
+            )
+        # Setup the trigger logic for the right number of exposures
+        if value.trigger not in self._supported_triggers:
+            raise RuntimeError(
+                f"Trigger type {value.trigger} not supported by {self}, "
+                f"supported types are: {self._supported_triggers}"
+            )
+        match value.trigger:
+            case DetectorTrigger.INTERNAL:
+                await self._trigger_logic.prepare_internal(
+                    num=value.number_of_exposures,
+                    livetime=value.livetime,
+                    deadtime=value.deadtime,
+                )
+            case DetectorTrigger.EXTERNAL_EDGE:
+                await self._trigger_logic.prepare_edge(
+                    num=value.number_of_exposures,
+                    livetime=value.livetime,
+                )
+            case DetectorTrigger.EXTERNAL_LEVEL:
+                await self._trigger_logic.prepare_level(
+                    num=value.number_of_exposures,
+                )
+            case _:
+                raise ValueError(f"Unknown trigger type: {value.trigger}")
+        # NOTE: this section must come after preparing the trigger logic as we may
+        # use parameters from it to determine datatype for the streams
+        await self._update_prepare_context(value)
+        # Tell people how many collections we will acquire for
+        await self.events_to_kickoff.set(value.number_of_events)
+        # External triggering can arm now
         if value.trigger != DetectorTrigger.INTERNAL:
-            await self._controller.arm()
-        self._trigger_info = value
+            await self._arm_logic.arm()
+
+    @WatchableAsyncStatus.wrap
+    async def trigger(self) -> AsyncIterator[WatcherUpdate[int]]:
+        if self._prepare_ctx is None:
+            # If a prepare has not been done since stage, do an implicit one here
+            await self.prepare(TriggerInfo())
+        else:
+            # Check the one that was provided is suitable for triggering
+            trigger_info = self._prepare_ctx.trigger_info
+            if trigger_info.number_of_events != 1:
+                msg = (
+                    "trigger() is not supported for multiple events, the detector was "
+                    f"prepared with number_of_events={trigger_info.number_of_events}."
+                )
+                raise ValueError(msg)
+            if trigger_info.trigger is not DetectorTrigger.INTERNAL:
+                msg = "The trigger method can only be called with INTERNAL triggering"
+                raise ValueError(msg)
+            # Ensure the data provider is still usable
+            await self._update_prepare_context(trigger_info)
+        ctx = error_if_none(self._prepare_ctx, "This should not happen")
+        # Arm the detector and wait for it to finish.
+        await self._arm_logic.arm()
+        wait_for_idle_status = AsyncStatus(self._arm_logic.wait_for_idle())
+        if isinstance(ctx.data_provider, StreamableDataProvider):
+            async for update in self._wait_for_index(
+                data_provider=ctx.data_provider,
+                trigger_info=ctx.trigger_info,
+                initial_collections_written=ctx.collections_written,
+                collections_requested=1,
+                done_status=wait_for_idle_status,
+            ):
+                yield update
+        await wait_for_idle_status
 
     @AsyncStatus.wrap
     async def kickoff(self):
-        if self._trigger_info is None or self._number_of_events_iter is None:
-            raise RuntimeError("Prepare must be called before kickoff!")
-        if self._trigger_info.trigger == DetectorTrigger.INTERNAL:
-            await self._controller.arm()
-        self._fly_start = time.monotonic()
-        try:
-            self._events_to_complete = next(self._number_of_events_iter)
-            self._completable_exposures += (
-                self._events_to_complete * self._trigger_info.exposures_per_event
+        ctx = error_if_none(self._prepare_ctx, "Prepare not called")
+        if not isinstance(ctx.data_provider, StreamableDataProvider):
+            raise ValueError(f"Detector {self} is not streamable, so cannot kickoff")
+        # External trigering has been armed already, internal should arm now
+        if ctx.trigger_info.trigger == DetectorTrigger.INTERNAL:
+            await self._arm_logic.arm()
+        collections_written = await _get_collections_written(ctx.data_provider)
+        events_to_kickoff = await self.events_to_kickoff.get_value()
+        collections_requested = (
+            events_to_kickoff * ctx.trigger_info.collections_per_event
+        )
+        last_requested_collection = collections_written + collections_requested
+        last_expected_collection = (
+            ctx.collections_written + ctx.trigger_info.number_of_collections
+        )
+        if last_requested_collection > last_expected_collection:
+            msg = (
+                f"Kickoff requested {collections_written}:{last_requested_collection}, "
+                f"but detector was only prepared up to {last_expected_collection}"
             )
-        except StopIteration as err:
-            raise RuntimeError(
-                f"Kickoff called more than the configured number of "
-                f"{self._trigger_info.total_number_of_exposures} iteration(s)!"
-            ) from err
+            raise RuntimeError(msg)
+        self._kickoff_ctx = _KickoffCtx(
+            trigger_info=ctx.trigger_info,
+            data_provider=ctx.data_provider,
+            collections_written=collections_written,
+            collections_requested=collections_requested,
+            wait_for_idle=last_requested_collection == last_expected_collection,
+        )
 
     @WatchableAsyncStatus.wrap
     async def complete(self):
-        trigger_info = _ensure_trigger_info_exists(self._trigger_info)
-        indices_written = self._writer.observe_indices_written(
-            trigger_info.exposure_timeout
-            or (
-                DEFAULT_TIMEOUT
-                + (trigger_info.livetime or 0)
-                + (trigger_info.deadtime or 0)
-            )
-        )
-        try:
-            async for index in indices_written:
-                yield WatcherUpdate(
-                    name=self.name,
-                    current=index,
-                    initial=self._initial_frame,
-                    target=self._events_to_complete,
-                    unit="",
-                    precision=0,
-                    time_elapsed=time.monotonic() - self._fly_start
-                    if self._fly_start
-                    else None,
-                )
-                if index >= self._events_to_complete:
-                    break
-        finally:
-            await indices_written.aclose()
-            if self._completable_exposures >= trigger_info.total_number_of_exposures:
-                self._completable_exposures = 0
-                self._events_to_complete = 0
-                self._number_of_events_iter = None
-                await self._controller.wait_for_idle()
+        ctx = error_if_none(self._kickoff_ctx, "Kickoff not called")
+        if ctx.wait_for_idle:
+            wait_for_idle_status = AsyncStatus(self._arm_logic.wait_for_idle())
+        else:
+            wait_for_idle_status = None
+        async for update in self._wait_for_index(
+            data_provider=ctx.data_provider,
+            trigger_info=ctx.trigger_info,
+            initial_collections_written=ctx.collections_written,
+            collections_requested=ctx.collections_requested,
+            done_status=wait_for_idle_status,
+        ):
+            yield update
+        if wait_for_idle_status:
+            await wait_for_idle_status
 
-    async def describe_collect(self) -> dict[str, DataKey]:
-        return self._describe
+    async def describe_configuration(self) -> dict[str, DataKey]:
+        return await merge_gathered_dicts(sig.describe() for sig in self._config_sigs)
+
+    async def read_configuration(self) -> dict[str, Reading]:
+        return await merge_gathered_dicts(sig.read() for sig in self._config_sigs)
+
+    async def describe(self) -> dict[str, DataKey]:
+        ctx = error_if_none(self._prepare_ctx, "Prepare not run")
+        return await ctx.data_provider.make_datakeys(
+            ctx.trigger_info.collections_per_event
+        )
+
+    describe_collect = describe
+
+    @property
+    def hints(self) -> Hints:
+        return self._data_logic.get_hints(self.name)
+
+    async def read(self) -> dict[str, Reading]:
+        ctx = error_if_none(self._prepare_ctx, "Prepare not run")
+        if isinstance(ctx.data_provider, ReadableDataProvider):
+            return await ctx.data_provider.make_readings()
+        else:
+            collections_written = await _get_collections_written(ctx.data_provider)
+            async for event_page in ctx.data_provider.make_event_pages(
+                collections_written=collections_written,
+                collections_per_event=ctx.trigger_info.collections_per_event,
+            ):
+                num_events = len(event_page["data"])
+                if num_events != 1:
+                    msg = f"{self} produced {num_events} events in page, not 1"
+                    raise RuntimeError(msg)
+                readings = {
+                    name: Reading(
+                        value=event_page["data"][name][0],
+                        timestamp=event_page["timestamps"][name][0],
+                    )
+                    for name in event_page["data"]
+                }
+                return readings
+            return {}
+
+    async def collect_pages(self) -> AsyncIterator[PartialEventPage]:
+        ctx = error_if_none(self._kickoff_ctx, "Kickoff not called")
+        collections_written = await _get_collections_written(ctx.data_provider)
+        async for event_page in ctx.data_provider.make_event_pages(
+            collections_written=collections_written,
+            collections_per_event=ctx.trigger_info.collections_per_event,
+        ):
+            yield event_page
 
     async def collect_asset_docs(
         self, index: int | None = None
@@ -395,14 +589,24 @@ class StandardDetector(
         # Collect stream datum documents for all indices written.
         # The index is optional, and provided for fly scans, however this needs to be
         # retrieved for step scans.
+        ctx = error_if_none(self._prepare_ctx, "Prepare not called")
         if index is None:
-            index = await self._writer.get_indices_written()
-        async for doc in self._writer.collect_stream_docs(self.name, index):
-            yield doc
+            collections_written = await _get_collections_written(ctx.data_provider)
+        else:
+            collections_written = index * ctx.trigger_info.collections_per_event
+        if isinstance(ctx.data_provider, StreamableDataProvider):
+            async for doc in ctx.data_provider.make_stream_docs(
+                collections_written=collections_written,
+                collections_per_event=ctx.trigger_info.collections_per_event,
+            ):
+                yield doc
 
     async def get_index(self) -> int:
-        return await self._writer.get_indices_written()
+        ctx = error_if_none(self._prepare_ctx, "Prepare not called")
+        collections_written = await _get_collections_written(ctx.data_provider)
+        return collections_written // ctx.trigger_info.collections_per_event
 
-    @property
-    def hints(self) -> Hints:
-        return self._writer.get_hints(self.name)
+    @AsyncStatus.wrap
+    async def unstage(self) -> None:
+        """Disarm the detector and stop file writing."""
+        await self._disarm_and_stop()

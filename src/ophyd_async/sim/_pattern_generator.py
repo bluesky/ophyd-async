@@ -7,6 +7,8 @@ from pathlib import PurePath
 import h5py
 import numpy as np
 
+from ophyd_async.core import soft_signal_r_and_setter
+
 # raw data path
 DATA_PATH = "/entry/data/data"
 
@@ -45,7 +47,7 @@ class PatternFile:
             shape=(0, height, width),
             dtype=np.uint8,
             maxshape=(None, height, width),
-            chunks=(1024, height, width),
+            chunks=(1, height, width),
         )
         self.sum = self.file.create_dataset(
             name=SUM_PATH,
@@ -58,7 +60,6 @@ class PatternFile:
         self.file.swmr_mode = True
         self.blob = generate_gaussian_blob(height, width) * np.iinfo(np.uint8).max
         self.image_counter = 0
-        self.e = asyncio.Event()
 
     def write_image_to_file(self, intensity: float):
         data = np.floor(self.blob * intensity)
@@ -67,8 +68,6 @@ class PatternFile:
             dset[self.image_counter] = value
             dset.flush()
         self.image_counter += 1
-        self.e.set()
-        self.e.clear()
 
     def close(self):
         self.file.close()
@@ -81,7 +80,11 @@ class PatternGenerator:
         self._x = 0.0
         self._y = 0.0
         self._file: PatternFile | None = None
+        self._exposure: float = 0.1
+        self._period: float = 0.2
+        self._number_of_frames: int = 10
         self.sleep = sleep
+        self.images_written, self._update_images_written = soft_signal_r_and_setter(int)
 
     def set_x(self, x: float):
         self._x = x
@@ -96,29 +99,30 @@ class PatternGenerator:
 
     def open_file(self, path: PurePath, width: int, height: int):
         self._file = PatternFile(path, width, height)
+        self._update_images_written(0)
 
     def _get_file(self) -> PatternFile:
         if not self._file:
             raise RuntimeError("open_file not run")
         return self._file
 
-    async def write_images_to_file(
+    def setup_acquisition_parameters(
         self, exposure: float, period: float, number_of_frames: int
     ):
+        self._exposure = exposure
+        self._period = period
+        self._number_of_frames = number_of_frames
+
+    async def write_images_to_file(self):
         file = self._get_file()
         start = time.monotonic()
-        for i in range(1, number_of_frames + 1):
-            deadline = start + i * period
+        for i in range(1, self._number_of_frames + 1):
+            deadline = start + i * self._period
             timeout = deadline - time.monotonic()
             await self.sleep(timeout)
-            intensity = self.generate_point() * exposure
+            intensity = self.generate_point() * self._exposure
             file.write_image_to_file(intensity)
-
-    async def wait_for_next_index(self, timeout: float):
-        await asyncio.wait_for(self._get_file().e.wait(), timeout)
-
-    def get_last_index(self) -> int:
-        return self._get_file().image_counter
+            self._update_images_written(file.image_counter)
 
     def close_file(self):
         if self._file:

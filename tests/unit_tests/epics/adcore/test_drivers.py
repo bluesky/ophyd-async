@@ -1,23 +1,26 @@
 import asyncio
 from unittest.mock import patch
 
+import ophyd_async.epics.areadetector._io
 import pytest
 
 from ophyd_async.core import get_mock_put, init_devices, set_mock_value
-from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.epics import adsimdetector
 
 TEST_DEADTIME = 0.1
 
 
 @pytest.fixture
-def driver(RE) -> adcore.ADBaseIO:
+def driver(RE) -> ophyd_async.epics.areadetector._io.ADBaseIO:
     with init_devices(mock=True):
-        driver = adcore.ADBaseIO("DRV:", name="drv")
+        driver = ophyd_async.epics.areadetector._io.ADBaseIO("DRV:", name="drv")
     return driver
 
 
 @pytest.fixture
-async def controller(RE, driver: adcore.ADBaseIO) -> adsimdetector.SimController:
+async def controller(
+    RE, driver: ophyd_async.epics.areadetector._io.ADBaseIO
+) -> adsimdetector.SimController:
     controller = adsimdetector.SimController(driver)
     controller.get_deadtime = lambda exposure: TEST_DEADTIME
     return controller
@@ -25,7 +28,7 @@ async def controller(RE, driver: adcore.ADBaseIO) -> adsimdetector.SimController
 
 async def test_set_exposure_time_and_acquire_period_if_supplied_is_a_noop_if_no_exposure_supplied(  # noqa: E501
     controller: adsimdetector.SimController,
-    driver: adcore.ADBaseIO,
+    driver: ophyd_async.epics.areadetector._io.ADBaseIO,
 ):
     put_exposure = get_mock_put(driver.acquire_time)
     put_acquire_period = get_mock_put(driver.acquire_period)
@@ -60,7 +63,10 @@ async def test_set_exposure_time_and_acquire_period_if_supplied_uses_deadtime(
 async def test_start_acquiring_driver_and_ensure_status_flags_immediate_failure(
     controller: adsimdetector.SimController,
 ):
-    set_mock_value(controller.driver.detector_state, adcore.ADState.ERROR)
+    set_mock_value(
+        controller.driver.detector_state,
+        ophyd_async.epics.areadetector._io.ADState.ERROR,
+    )
     acquiring = await controller.start_acquiring_driver_and_ensure_status()
     with pytest.raises(ValueError):
         await acquiring
@@ -74,11 +80,17 @@ async def test_start_acquiring_driver_and_ensure_status_fails_after_some_time(
     Real world application; it takes some time to start acquiring, and during that time
     the detector gets itself into a bad state.
     """
-    set_mock_value(controller.driver.detector_state, adcore.ADState.IDLE)
+    set_mock_value(
+        controller.driver.detector_state,
+        ophyd_async.epics.areadetector._io.ADState.IDLE,
+    )
 
     async def wait_then_fail():
         await asyncio.sleep(0)
-        set_mock_value(controller.driver.detector_state, adcore.ADState.DISCONNECTED)
+        set_mock_value(
+            controller.driver.detector_state,
+            ophyd_async.epics.areadetector._io.ADState.DISCONNECTED,
+        )
 
     await wait_then_fail()
 
@@ -104,7 +116,10 @@ async def test_start_acquiring_driver_and_ensure_status_timing(
     returned to a known good state before the status check.
 
     """
-    set_mock_value(controller.driver.detector_state, adcore.ADState.ACQUIRE)
+    set_mock_value(
+        controller.driver.detector_state,
+        ophyd_async.epics.areadetector._io.ADState.ACQUIRE,
+    )
 
     acquiring = await controller.start_acquiring_driver_and_ensure_status(
         start_timeout=0.2, state_timeout=0.2
@@ -113,7 +128,10 @@ async def test_start_acquiring_driver_and_ensure_status_timing(
     async def complete_acquire():
         """Return to idle state, but pretend the detector is slow."""
         await asyncio.sleep(0.05)
-        set_mock_value(controller.driver.detector_state, adcore.ADState.IDLE)
+        set_mock_value(
+            controller.driver.detector_state,
+            ophyd_async.epics.areadetector._io.ADState.IDLE,
+        )
 
     await asyncio.gather(acquiring, complete_acquire())
 

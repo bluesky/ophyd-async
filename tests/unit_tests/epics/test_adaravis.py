@@ -1,0 +1,80 @@
+from pathlib import Path
+from unittest.mock import call
+
+import pytest
+
+from ophyd_async.core import (
+    DetectorTrigger,
+    OnOff,
+    StaticFilenameProvider,
+    StaticPathProvider,
+    TriggerInfo,
+    get_mock,
+    init_devices,
+    set_mock_value,
+)
+from ophyd_async.epics import adaravis, adcore
+
+
+@pytest.fixture
+async def test_adaravis() -> adcore.AreaDetector[adaravis.AravisDriverIO]:
+    path_provider = StaticPathProvider(StaticFilenameProvider("data"), Path("/tmp"))
+    async with init_devices(mock=True):
+        detector = adaravis.aravis_detector("PREFIX:", path_provider)
+    writer = detector.get_plugin("writer", adcore.NDFilePluginIO)
+    set_mock_value(writer.file_path_exists, True)
+    return detector
+
+
+def test_pvs_correct(test_adaravis: adcore.AreaDetector[adaravis.AravisDriverIO]):
+    assert test_adaravis.driver.acquire.source == "mock+ca://PREFIX:cam1:Acquire_RBV"
+    assert (
+        test_adaravis.driver.trigger_mode.source
+        == "mock+ca://PREFIX:cam1:TriggerMode_RBV"
+    )
+
+
+@pytest.mark.parametrize(
+    "model,deadtime", [("Mako G-125", 70e-6), ("Mako G-507", 554e-6)]
+)
+async def test_deadtime(
+    test_adaravis: adcore.AreaDetector[adaravis.AravisDriverIO],
+    model: str,
+    deadtime: float,
+):
+    # Set a default model for tests that need deadtime
+    set_mock_value(test_adaravis.driver.model, model)
+    trigger_modes, actual_deadtime = await test_adaravis.get_trigger_deadtime()
+    assert trigger_modes == {DetectorTrigger.INTERNAL, DetectorTrigger.EXTERNAL_EDGE}
+    assert deadtime == actual_deadtime
+
+
+async def test_prepare_external_edge(
+    test_adaravis: adcore.AreaDetector[adaravis.AravisDriverIO],
+):
+    await test_adaravis.prepare(
+        TriggerInfo(
+            trigger=DetectorTrigger.EXTERNAL_EDGE,
+            number_of_events=5,
+            livetime=0.5,
+        )
+    )
+    assert list(get_mock(test_adaravis.driver).mock_calls) == [
+        call.trigger_mode.put(OnOff.ON, wait=True),
+        call.trigger_source.put(adaravis.AravisTriggerSource.LINE1, wait=True),
+        call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
+        call.num_images.put(5, wait=True),
+        call.acquire_time.put(0.5, wait=True),
+        call.acquire.put(True, wait=True),
+    ]
+
+
+async def test_prepare_internal(
+    test_adaravis: adcore.AreaDetector[adaravis.AravisDriverIO],
+):
+    await test_adaravis.prepare(TriggerInfo(number_of_events=11))
+    assert list(get_mock(test_adaravis.driver).mock_calls) == [
+        call.trigger_mode.put(OnOff.OFF, wait=True),
+        call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
+        call.num_images.put(11, wait=True),
+    ]
