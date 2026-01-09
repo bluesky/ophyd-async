@@ -8,17 +8,17 @@ from ._io import ADBaseIO, ADImageMode, NDCBFlushOnSoftTrgMode, NDPluginCBIO
 async def prepare_exposures(
     driver: ADBaseIO,
     num: int,
-    livetime: float | None = None,
-    deadtime: float | None = None,
+    livetime: float = 0.0,
+    deadtime: float = 0.0,
 ):
     image_mode = ADImageMode.CONTINUOUS if num == 0 else ADImageMode.MULTIPLE
     coros = [
         driver.image_mode.set(image_mode),
         driver.num_images.set(num),
     ]
-    if livetime is not None:
+    if livetime:
         coros.append(driver.acquire_time.set(livetime))
-        if deadtime is not None:
+        if deadtime:
             coros.append(driver.acquire_period.set(livetime + deadtime))
     await asyncio.gather(*coros)
 

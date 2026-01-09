@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-
-from ophyd_async.core import PathProvider, SignalR, StandardDetector
+from ophyd_async.core import PathProvider, StandardDetector
 from ophyd_async.fastcs.core import fastcs_connector
 
 from ._arm_logic import PandaArmLogic

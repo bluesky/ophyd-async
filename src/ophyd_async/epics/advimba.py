@@ -16,7 +16,9 @@ from ophyd_async.core import (
     SignalRW,
     StrictEnum,
 )
-from ophyd_async.epics.adcore import (
+from ophyd_async.epics.core import PvSuffix
+
+from .adcore import (
     ADArmLogic,
     ADBaseIO,
     ADWriterType,
@@ -24,7 +26,7 @@ from ophyd_async.epics.adcore import (
     NDPluginBaseIO,
     prepare_exposures,
 )
-from ophyd_async.epics.core import PvSuffix
+from .adgenicam import camera_deadtimes
 
 
 class VimbaConvertFormat(StrictEnum):
@@ -67,12 +69,12 @@ class VimbaDriverIO(ADBaseIO):
     """Mirrors the interface provided by ADVimba/db/vimba.template."""
 
     convert_pixel_format: A[
-        SignalRW[VimbaConvertFormat], PvSuffix("ConvertPixelFormat")
+        SignalRW[VimbaConvertFormat], PvSuffix.rbv("ConvertPixelFormat")
     ]
-    trigger_source: A[SignalRW[VimbaTriggerSource], PvSuffix("TriggerSource")]
-    trigger_mode: A[SignalRW[OnOff], PvSuffix("TriggerMode")]
-    trigger_overlap: A[SignalRW[VimbaOverlap], PvSuffix("TriggerOverlap")]
-    exposure_mode: A[SignalRW[VimbaExposeOutMode], PvSuffix("ExposureMode")]
+    trigger_source: A[SignalRW[VimbaTriggerSource], PvSuffix.rbv("TriggerSource")]
+    trigger_mode: A[SignalRW[OnOff], PvSuffix.rbv("TriggerMode")]
+    trigger_overlap: A[SignalRW[VimbaOverlap], PvSuffix.rbv("TriggerOverlap")]
+    exposure_mode: A[SignalRW[VimbaExposeOutMode], PvSuffix.rbv("ExposureMode")]
 
 
 class VimbaTriggerLogic(DetectorTriggerLogic):
@@ -81,9 +83,11 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
     def __init__(self, driver: VimbaDriverIO):
         self.driver = driver
 
+    def config_sigs(self) -> set[SignalR]:
+        return {self.driver.model}
+
     def get_deadtime(self, config_values: SignalDict) -> float:
-        # TODO: this doesn't seem right as ADAravis looks it up from the model number
-        return 0.001
+        return camera_deadtimes[config_values[self.driver.model]]
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         await asyncio.gather(
@@ -119,7 +123,7 @@ def vimba_detector(
     plugins: dict[str, NDPluginBaseIO] | None = None,
     config_sigs: Sequence[SignalR] = (),
     name: str = "",
-) -> AreaDetector:
+) -> AreaDetector[VimbaDriverIO]:
     """Create an ADVimba AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector

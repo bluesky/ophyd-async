@@ -9,6 +9,7 @@ from ophyd_async.core import Device, Signal
 # If we forget then the full test suite will find the subclasses, but
 # running just this test will only get the ones at the top of this file
 from ophyd_async.epics import (
+    adandor,  # noqa
     adaravis,  # noqa
     adcore,
     adkinetix,  # noqa

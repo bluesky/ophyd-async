@@ -15,7 +15,6 @@ from ophyd_async.core import (
     SignalRW,
     SubsetEnum,
 )
-from ophyd_async.epics.core import PvSuffix
 
 from .adcore import (
     ADArmLogic,
@@ -26,6 +25,7 @@ from .adcore import (
     prepare_exposures,
 )
 from .adgenicam import camera_deadtimes
+from .core import PvSuffix
 
 
 class AravisTriggerSource(SubsetEnum):
@@ -68,7 +68,7 @@ class AravisTriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num, livetime)
 
 
-def adaravis_detector(
+def aravis_detector(
     prefix: str,
     path_provider: PathProvider,
     driver_suffix="cam1:",
@@ -77,7 +77,7 @@ def adaravis_detector(
     plugins: dict[str, NDPluginBaseIO] | None = None,
     config_sigs: Sequence[SignalR] = (),
     name: str = "",
-) -> AreaDetector:
+) -> AreaDetector[AravisDriverIO]:
     """Create an ADAravis AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector

@@ -78,6 +78,9 @@ class ADState(StrictEnum):
     ABORTED = "Aborted"
 
 
+ADBaseIOT = TypeVar("ADBaseIOT", bound="ADBaseIO")
+
+
 class ADBaseIO(NDArrayBaseIO):
     """Base class from which areaDetector drivers are derived.
 

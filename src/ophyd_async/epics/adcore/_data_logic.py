@@ -286,7 +286,7 @@ class ADWriterType(Enum):
             trigger_logic=trigger_logic,
             data_logic=data_logic,
             arm_logic=arm_logic,
-            plugins=plugins,
+            plugins=dict(writer=writer, **plugins),
             config_sigs=config_sigs,
             name=name,
         )

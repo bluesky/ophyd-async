@@ -1,4 +1,5 @@
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
     AsyncStatus,
     DetectorArmLogic,
     SignalR,
@@ -25,6 +26,7 @@ class ADArmLogic(DetectorArmLogic):
             match_signal=self.driver_armed_signal,
             match_value=True,
             wait_for_set_completion=False,
+            timeout=DEFAULT_TIMEOUT,
         )
 
     async def wait_for_idle(self):
@@ -49,6 +51,7 @@ class ADContAcqArmLogic(DetectorArmLogic):
             self.cb_plugin.capture,
             True,
             wait_for_set_completion=False,
+            timeout=DEFAULT_TIMEOUT,
         )
 
     async def wait_for_idle(self):

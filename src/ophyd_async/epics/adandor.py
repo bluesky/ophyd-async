@@ -71,7 +71,7 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime)
 
 
-def adandor_detector(
+def andor_detector(
     prefix: str,
     path_provider: PathProvider,
     driver_suffix="cam1:",
@@ -80,7 +80,7 @@ def adandor_detector(
     plugins: dict[str, NDPluginBaseIO] | None = None,
     config_sigs: Sequence[SignalR] = (),
     name: str = "",
-) -> AreaDetector:
+) -> AreaDetector[Andor2DriverIO]:
     """Create an ADAndor AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector

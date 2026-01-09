@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from typing import Generic
 
 from ophyd_async.core import (
     DetectorArmLogic,
@@ -8,13 +9,13 @@ from ophyd_async.core import (
     StandardDetector,
 )
 
-from ._io import ADBaseIO, NDPluginBaseIO, NDPluginBaseIOT
+from ._io import ADBaseIOT, NDPluginBaseIO, NDPluginBaseIOT
 
 
-class AreaDetector(StandardDetector):
+class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
     def __init__(
         self,
-        driver: ADBaseIO,
+        driver: ADBaseIOT,
         trigger_logic: DetectorTriggerLogic,
         data_logic: DetectorDataLogic,
         arm_logic: DetectorArmLogic,

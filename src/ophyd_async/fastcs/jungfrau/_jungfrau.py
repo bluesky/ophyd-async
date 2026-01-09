@@ -3,7 +3,7 @@ from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.jungfrau._controller import JungfrauController
 from ophyd_async.fastcs.jungfrau._signals import JungfrauDriverIO
 from ophyd_async.fastcs.odin import OdinWriter
-from ophyd_async.fastcs.odin._odin_io import FrameProcessorIO, MetaWriterIO
+from ophyd_async.fastcs.odin._io import FrameProcessorIO, MetaWriterIO
 
 
 # TODO: Delete this duplicate device, once FastCS Jungfrau

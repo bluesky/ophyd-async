@@ -10,7 +10,8 @@ from ophyd_async.core import (
     PathProvider,
     SignalR,
 )
-from ophyd_async.epics.adcore import (
+
+from .adcore import (
     ADArmLogic,
     ADBaseIO,
     ADWriterType,
@@ -39,7 +40,7 @@ def sim_detector(
     plugins: dict[str, NDPluginBaseIO] | None = None,
     config_sigs: Sequence[SignalR] = (),
     name: str = "",
-) -> AreaDetector:
+) -> AreaDetector[ADBaseIO]:
     """Create an ADSimDetector AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector

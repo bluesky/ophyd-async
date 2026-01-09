@@ -14,7 +14,8 @@ from ophyd_async.core import (
     SignalRW,
     StrictEnum,
 )
-from ophyd_async.epics.adcore import (
+
+from .adcore import (
     ADArmLogic,
     ADBaseIO,
     ADWriterType,
@@ -22,7 +23,7 @@ from ophyd_async.epics.adcore import (
     NDPluginBaseIO,
     prepare_exposures,
 )
-from ophyd_async.epics.core import PvSuffix
+from .core import PvSuffix
 
 
 class KinetixTriggerMode(StrictEnum):
@@ -80,7 +81,7 @@ def kinetix_detector(
     plugins: dict[str, NDPluginBaseIO] | None = None,
     config_sigs: Sequence[SignalR] = (),
     name: str = "",
-) -> AreaDetector:
+) -> AreaDetector[KinetixDriverIO]:
     """Create an ADKinetix AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector
