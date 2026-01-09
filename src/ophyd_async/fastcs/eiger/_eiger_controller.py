@@ -8,7 +8,7 @@ from ophyd_async.core import (
     wait_for_value,
 )
 
-from ._eiger_io import EigerDriverIO, EigerTriggerMode
+from ._eiger_io import EigerDetectorIO, EigerTriggerMode
 
 EIGER_TRIGGER_MODE_MAP = {
     DetectorTrigger.INTERNAL: EigerTriggerMode.INTERNAL,
@@ -21,7 +21,7 @@ EIGER_TRIGGER_MODE_MAP = {
 class EigerController(DetectorController):
     def __init__(
         self,
-        driver: EigerDriverIO,
+        driver: EigerDetectorIO,
     ) -> None:
         self._drv = driver
 
@@ -34,22 +34,22 @@ class EigerController(DetectorController):
         """Changing photon energy takes some time so only do so if the current energy is
         outside the tolerance."""
 
-        current_energy = await self._drv.detector.photon_energy.get_value()
+        current_energy = await self._drv.photon_energy.get_value()
         if abs(current_energy - energy) > tolerance:
-            await self._drv.detector.photon_energy.set(energy)
+            await self._drv.photon_energy.set(energy)
 
     async def prepare(self, trigger_info: TriggerInfo):
         coros = [
-            self._drv.detector.trigger_mode.set(
+            self._drv.trigger_mode.set(
                 EIGER_TRIGGER_MODE_MAP[trigger_info.trigger].value
             ),
-            self._drv.detector.nimages.set(trigger_info.total_number_of_exposures),
+            self._drv.nimages.set(trigger_info.total_number_of_exposures),
         ]
         if trigger_info.livetime is not None:
             coros.extend(
                 [
-                    self._drv.detector.count_time.set(trigger_info.livetime),
-                    self._drv.detector.frame_time.set(trigger_info.livetime),
+                    self._drv.count_time.set(trigger_info.livetime),
+                    self._drv.frame_time.set(trigger_info.livetime),
                 ]
             )
 
@@ -59,10 +59,10 @@ class EigerController(DetectorController):
         # NOTE: This will return immedietly on FastCS 0.8.0,
         # but will return after the Eiger has completed arming in 0.9.0.
         # https://github.com/DiamondLightSource/FastCS/pull/141
-        await self._drv.detector.arm.trigger(timeout=DEFAULT_TIMEOUT)
+        await self._drv.arm.trigger(timeout=DEFAULT_TIMEOUT)
 
     async def wait_for_idle(self):
-        await wait_for_value(self._drv.detector.state, "idle", timeout=DEFAULT_TIMEOUT)
+        await wait_for_value(self._drv.state, "idle", timeout=DEFAULT_TIMEOUT)
 
     async def disarm(self):
-        await self._drv.detector.disarm.trigger()
+        await self._drv.disarm.trigger()
