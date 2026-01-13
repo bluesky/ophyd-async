@@ -1,11 +1,9 @@
-from pathlib import Path
 from unittest.mock import call
 
 import pytest
 
 from ophyd_async.core import (
     DetectorTrigger,
-    StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
     get_mock,
@@ -16,10 +14,11 @@ from ophyd_async.epics import adcore, adkinetix
 
 
 @pytest.fixture
-async def test_adkinetix() -> adcore.AreaDetector[adkinetix.KinetixDriverIO]:
-    path_provider = StaticPathProvider(StaticFilenameProvider("data"), Path("/tmp"))
+async def test_adkinetix(
+    static_path_provider: StaticPathProvider,
+) -> adcore.AreaDetector[adkinetix.KinetixDriverIO]:
     async with init_devices(mock=True):
-        detector = adkinetix.kinetix_detector("PREFIX:", path_provider)
+        detector = adkinetix.kinetix_detector("PREFIX:", static_path_provider)
     writer = detector.get_plugin("writer", adcore.NDFilePluginIO)
     set_mock_value(writer.file_path_exists, True)
     return detector

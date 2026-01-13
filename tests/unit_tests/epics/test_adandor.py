@@ -1,11 +1,9 @@
-from pathlib import Path
 from unittest.mock import call
 
 import pytest
 
 from ophyd_async.core import (
     DetectorTrigger,
-    StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
     get_mock,
@@ -16,10 +14,11 @@ from ophyd_async.epics import adandor, adcore
 
 
 @pytest.fixture
-async def test_adandor() -> adcore.AreaDetector[adandor.Andor2DriverIO]:
-    path_provider = StaticPathProvider(StaticFilenameProvider("data"), Path("/tmp"))
+async def test_adandor(
+    static_path_provider: StaticPathProvider,
+) -> adcore.AreaDetector[adandor.Andor2DriverIO]:
     async with init_devices(mock=True):
-        detector = adandor.andor_detector("PREFIX:", path_provider)
+        detector = adandor.andor_detector("PREFIX:", static_path_provider)
     writer = detector.get_plugin("writer", adcore.NDFilePluginIO)
     set_mock_value(writer.file_path_exists, True)
     return detector

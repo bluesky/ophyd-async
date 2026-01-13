@@ -16,10 +16,11 @@ from ophyd_async.epics import adcore, adpilatus
 
 
 @pytest.fixture
-async def test_adpilatus() -> adcore.AreaDetector[adpilatus.PilatusDriverIO]:
-    path_provider = StaticPathProvider(StaticFilenameProvider("data"), Path("/tmp"))
+async def test_adpilatus(
+    static_path_provider: StaticPathProvider,
+) -> adcore.AreaDetector[adpilatus.PilatusDriverIO]:
     async with init_devices(mock=True):
-        detector = adpilatus.pilatus_detector("PREFIX:", path_provider)
+        detector = adpilatus.pilatus_detector("PREFIX:", static_path_provider)
     set_mock_value(detector.driver.armed, True)
     writer = detector.get_plugin("writer", adcore.NDFilePluginIO)
     set_mock_value(writer.file_path_exists, True)

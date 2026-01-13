@@ -24,7 +24,7 @@ from .adcore import (
     NDPluginBaseIO,
     prepare_exposures,
 )
-from .adgenicam import camera_deadtimes
+from .adgenicam import get_camera_deadtime
 from .core import PvSuffix
 
 
@@ -47,14 +47,18 @@ class AravisDriverIO(ADBaseIO):
 class AravisTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Aravis GigE and USB3 cameras."""
 
-    def __init__(self, driver: AravisDriverIO):
+    def __init__(self, driver: AravisDriverIO, override_deadtime: float | None = None):
         self.driver = driver
+        self.override_deadtime = override_deadtime
 
     def config_sigs(self) -> set[SignalR]:
         return {self.driver.model}
 
     def get_deadtime(self, config_values: SignalDict) -> float:
-        return camera_deadtimes[config_values[self.driver.model]]
+        return get_camera_deadtime(
+            model=config_values[self.driver.model],
+            override_deadtime=self.override_deadtime,
+        )
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         await self.driver.trigger_mode.set(OnOff.OFF)
@@ -72,6 +76,7 @@ def aravis_detector(
     prefix: str,
     path_provider: PathProvider,
     driver_suffix="cam1:",
+    override_deadtime: float | None = None,
     writer_type: ADWriterType = ADWriterType.HDF,
     writer_suffix: str | None = None,
     plugins: dict[str, NDPluginBaseIO] | None = None,
@@ -83,6 +88,9 @@ def aravis_detector(
     :param prefix: EPICS PV prefix for the detector
     :param path_provider: Provider for file paths during acquisition
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
+    :param override_deadtime:
+        If provided, this value is used for deadtime instead of looking up
+        based on camera model.
     :param writer_type: Type of file writer (HDF or TIFF)
     :param writer_suffix: Suffix for the writer PV
     :param plugins: Additional areaDetector plugins to include
@@ -96,7 +104,7 @@ def aravis_detector(
         path_provider=path_provider,
         writer_suffix=writer_suffix,
         driver=driver,
-        trigger_logic=AravisTriggerLogic(driver),
+        trigger_logic=AravisTriggerLogic(driver, override_deadtime),
         arm_logic=ADArmLogic(driver),
         plugins=plugins,
         config_sigs=config_sigs,

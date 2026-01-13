@@ -1,4 +1,3 @@
-from pathlib import Path
 from unittest.mock import call
 
 import pytest
@@ -6,7 +5,6 @@ import pytest
 from ophyd_async.core import (
     DetectorTrigger,
     OnOff,
-    StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
     get_mock,
@@ -17,10 +15,11 @@ from ophyd_async.epics import adcore, advimba
 
 
 @pytest.fixture
-async def test_advimba() -> adcore.AreaDetector[advimba.VimbaDriverIO]:
-    path_provider = StaticPathProvider(StaticFilenameProvider("data"), Path("/tmp"))
+async def test_advimba(
+    static_path_provider: StaticPathProvider,
+) -> adcore.AreaDetector[advimba.VimbaDriverIO]:
     async with init_devices(mock=True):
-        detector = advimba.vimba_detector("PREFIX:", path_provider)
+        detector = advimba.vimba_detector("PREFIX:", static_path_provider)
     writer = detector.get_plugin("writer", adcore.NDFilePluginIO)
     set_mock_value(writer.file_path_exists, True)
     return detector

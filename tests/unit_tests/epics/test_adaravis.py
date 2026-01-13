@@ -1,4 +1,3 @@
-from pathlib import Path
 from unittest.mock import call
 
 import pytest
@@ -6,7 +5,6 @@ import pytest
 from ophyd_async.core import (
     DetectorTrigger,
     OnOff,
-    StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
     get_mock,
@@ -17,10 +15,11 @@ from ophyd_async.epics import adaravis, adcore
 
 
 @pytest.fixture
-async def test_adaravis() -> adcore.AreaDetector[adaravis.AravisDriverIO]:
-    path_provider = StaticPathProvider(StaticFilenameProvider("data"), Path("/tmp"))
+async def test_adaravis(
+    static_path_provider: StaticPathProvider,
+) -> adcore.AreaDetector[adaravis.AravisDriverIO]:
     async with init_devices(mock=True):
-        detector = adaravis.aravis_detector("PREFIX:", path_provider)
+        detector = adaravis.aravis_detector("PREFIX:", static_path_provider)
     writer = detector.get_plugin("writer", adcore.NDFilePluginIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
