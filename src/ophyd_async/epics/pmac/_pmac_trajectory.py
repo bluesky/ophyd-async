@@ -22,7 +22,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.motor import Motor
 
-from ._pmac_io import CS_INDEX, PmacIO
+from ._pmac_io import CS_INDEX, PmacExecuteState, PmacIO
 from ._pmac_trajectory_generation import PVT, Trajectory, UserProgram
 from ._utils import (
     _PmacMotorInfo,
@@ -125,7 +125,10 @@ class PmacTrajectoryTriggerLogic(
 
     async def _stop_if_running(self):
         # Abort current trajectory, if one is running
-        if self._trajectory_status:
+        if (
+            await self.pmac.trajectory.execute_state.get_value()
+            == PmacExecuteState.EXECUTING
+        ):
             await self.pmac.trajectory.abort_profile.trigger()
 
     @AsyncStatus.wrap
