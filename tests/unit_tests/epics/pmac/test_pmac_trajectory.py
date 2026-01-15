@@ -13,6 +13,7 @@ from ophyd_async.core import (
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_trajectory import (
+    PmacExecuteState,  # noqa: PLC2701
     PmacTrajectoryTriggerLogic,  # noqa: PLC2701
 )
 from ophyd_async.epics.pmac._utils import (
@@ -265,8 +266,10 @@ async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor
     await pmac_trajectory._stop_if_running()
     mock_abort_profile.put.assert_not_called()
 
-    # Mocking that trajectory status is not None
-    pmac_trajectory._trajectory_status = AsyncMock()
+    # Mocking that trajectory is executing
+    set_mock_value(
+        pmac_trajectory.pmac.trajectory.execute_state, PmacExecuteState.EXECUTING
+    )
 
     # Method called as there is now a running trajectory
     await pmac_trajectory._stop_if_running()
