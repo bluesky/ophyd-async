@@ -51,7 +51,7 @@ class PmacTrajectoryIO(StandardReadable):
         # TODO: Change record type to bo from busy (https://github.com/DiamondLightSource/pmac/issues/154)
         self.execute_profile = epics_signal_rw(bool, prefix + "ProfileExecute")
         self.execute_state = epics_signal_r(
-            PmacExecuteState, prefix + "ProfileExecuteState"
+            PmacExecuteState, prefix + "ProfileExecuteState_RBV"
         )
         self.abort_profile = epics_signal_x(prefix + "ProfileAbort")
         self.profile_cs_name = epics_signal_rw(str, prefix + "ProfileCsName")
