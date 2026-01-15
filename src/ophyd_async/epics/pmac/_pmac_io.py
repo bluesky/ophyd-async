@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from ophyd_async.core import Array1D, Device, DeviceVector, StandardReadable, StrictEnum
+from ophyd_async.core import Array1D, Device, DeviceVector, StandardReadable, SubsetEnum
 from ophyd_async.epics import motor
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_x
 
@@ -10,7 +10,7 @@ from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal
 CS_INDEX = {letter: index + 1 for index, letter in enumerate("ABCUVWXYZ")}
 
 
-class PmacExecuteState(StrictEnum):
+class PmacExecuteState(SubsetEnum):
     DONE = "Done"
     EXECUTING = "Executing"
 
