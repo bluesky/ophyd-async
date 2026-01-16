@@ -19,7 +19,7 @@ def mock_controller() -> MagicMock:
 @pytest.fixture
 def mock_writer() -> MagicMock:
     writer = MagicMock()
-    writer.open = AsyncMock(return_value={})
+    writer.open = AsyncMock(return_value={"name": "test_detector"})
     writer.get_indices_written = AsyncMock(return_value=0)
     return writer
 
@@ -107,3 +107,31 @@ def test_ensure_trigger_info_exists_raises() -> None:
             _ensure_trigger_info_exists(trigger_info=None),
             TriggerInfo,
         )
+
+
+async def test_prepare_twice_keeps_writer_open(
+    standard_detector: StandardDetector,
+) -> None:
+    trigger_info = TriggerInfo(
+        number_of_events=1,
+        trigger=DetectorTrigger.EDGE_TRIGGER,
+        deadtime=1.0,
+        livetime=None,
+        exposure_timeout=None,
+    )
+    await standard_detector.prepare(trigger_info)
+    standard_detector._writer.open.assert_called_once_with(
+        standard_detector.name, trigger_info.exposures_per_event or 1
+    )  # type: ignore
+
+    trigger_info = TriggerInfo(
+        number_of_events=1,
+        trigger=DetectorTrigger.EDGE_TRIGGER,
+        deadtime=1.0,
+        livetime=None,
+        exposure_timeout=None,
+    )
+    await standard_detector.prepare(trigger_info)
+    standard_detector._writer.open.assert_called_once_with(
+        standard_detector.name, trigger_info.exposures_per_event or 1
+    )  # type: ignore
