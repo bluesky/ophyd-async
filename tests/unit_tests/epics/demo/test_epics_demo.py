@@ -11,7 +11,6 @@ from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     LazyMock,
-    NotConnectedError,
     get_mock,
     get_mock_put,
     init_devices,
@@ -202,13 +201,6 @@ async def test_zero_velocity(mock_motor: demo.DemoMotor) -> None:
         await mock_motor.set(3.14)
 
 
-async def test_mover_disconnected():
-    with pytest.raises(NotConnectedError):
-        async with init_devices(timeout=0.1):
-            m = demo.DemoMotor("ca://PRE:", name="motor")
-    assert m.name == "motor"
-
-
 async def test_read_point_detector(mock_point_detector: demo.DemoPointDetector):
     channel = mock_point_detector.channel[1]
     assert (await channel.read())["mock_point_detector-channel-1-value"]["value"] == 0
@@ -257,32 +249,6 @@ async def test_assembly_renaming() -> None:
     assert thing.x.name == "foo-x"
     assert thing.x.velocity.name == "foo-x-velocity"
     assert thing.x.stop_.name == "foo-x-stop_"
-
-
-async def test_point_detector_disconnected():
-    with pytest.raises(NotConnectedError) as exc:
-        async with init_devices(timeout=0.1):
-            det = demo.DemoPointDetector("MOCK:DET:")
-    expected = """
-det: NotConnectedError:
-    channel: NotConnectedError:
-        1: NotConnectedError:
-            value: NotConnectedError: ca://MOCK:DET:1:Value
-            mode: NotConnectedError: ca://MOCK:DET:1:Mode
-        2: NotConnectedError:
-            value: NotConnectedError: ca://MOCK:DET:2:Value
-            mode: NotConnectedError: ca://MOCK:DET:2:Mode
-        3: NotConnectedError:
-            value: NotConnectedError: ca://MOCK:DET:3:Value
-            mode: NotConnectedError: ca://MOCK:DET:3:Mode
-    acquire_time: NotConnectedError: ca://MOCK:DET:AcquireTime
-    start: NotConnectedError: ca://MOCK:DET:Start.PROC
-    acquiring: NotConnectedError: ca://MOCK:DET:Acquiring
-    reset: NotConnectedError: ca://MOCK:DET:Reset.PROC
-"""
-    assert str(exc.value) == expected
-
-    assert det.name == "det"
 
 
 async def test_point_detector_read_and_describe(

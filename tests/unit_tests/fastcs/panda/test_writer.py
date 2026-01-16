@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import os
@@ -8,7 +10,6 @@ import pytest
 
 from ophyd_async.core import (
     Device,
-    HDFDocumentComposer,
     SignalR,
     StaticFilenameProvider,
     StaticPathProvider,
@@ -21,7 +22,6 @@ from ophyd_async.fastcs.panda import (
     CommonPandaBlocks,
     DatasetTable,
     PandaHdf5DatasetType,
-    PandaHDFWriter,
 )
 
 PANDA_DETECTOR_NAME = "mock_panda"
@@ -92,7 +92,7 @@ async def mock_panda(panda_t):
 
 
 @pytest.fixture
-async def mock_writer(tmp_path, mock_panda) -> PandaHDFWriter:
+async def mock_writer(tmp_path, mock_panda):
     fp = StaticFilenameProvider("data")
     dp = StaticPathProvider(fp, tmp_path / mock_panda.name, create_dir_depth=-1)
     async with init_devices(mock=True):

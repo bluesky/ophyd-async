@@ -2,8 +2,9 @@ from collections.abc import Sequence
 
 from ophyd_async.core import PathProvider, SignalR, StandardDetector
 
-from ._blob_detector_controller import BlobDetectorController
-from ._blob_detector_writer import BlobDetectorWriter
+from ._blob_arm_logic import BlobArmLogic
+from ._blob_data_logic import BlobDataLogic
+from ._blob_trigger_logic import BlobTriggerLogic
 from ._pattern_generator import PatternGenerator
 
 
@@ -18,15 +19,12 @@ class SimBlobDetector(StandardDetector):
         name: str = "",
     ) -> None:
         self.pattern_generator = pattern_generator or PatternGenerator()
-
-        super().__init__(
-            controller=BlobDetectorController(
-                pattern_generator=self.pattern_generator,
+        self.add_logics(
+            BlobTriggerLogic(pattern_generator=self.pattern_generator),
+            BlobArmLogic(pattern_generator=self.pattern_generator),
+            BlobDataLogic(
+                path_provider=path_provider, pattern_generator=self.pattern_generator
             ),
-            writer=BlobDetectorWriter(
-                pattern_generator=self.pattern_generator,
-                path_provider=path_provider,
-            ),
-            config_sigs=config_sigs,
-            name=name,
         )
+        self.add_config_signals(*config_sigs)
+        super().__init__(name=name)
