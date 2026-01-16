@@ -111,9 +111,10 @@ async def prepare_file_paths(
     # Set the directory creation depth first, since dir creation callback happens
     # when directory path PV is processed.
     await writer.create_directory.set(path_info.create_dir_depth)
-    # Need to ensure that trailing separator is added to the directory path.
-    # When setting the path for windows based AD IOCs, a '/' is added rather than
-    # a '\\', which will cause the readback to never register the same value.
+    # When setting the path for windows based AD IOCs, areaDetector adds a '/'
+    # rather than a '\\', which will cause the readback to never register the
+    # same value.
+    # Ensure that trailing separator is added to the directory path to avoid this.
     if isinstance(path_info.directory_path, PureWindowsPath):
         directory_path = f"{path_info.directory_path}\\"
     else:

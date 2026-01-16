@@ -222,7 +222,9 @@ class DetectorDataLogic:
         """Return the hinted streams."""
         return []
 
-    async def stop(self) -> None: ...
+    async def stop(self) -> None:
+        """Stop taking data."""
+        pass
 
 
 def _data_logic_supported(method) -> bool:
@@ -368,7 +370,9 @@ class StandardDetector(
         await self.events_to_kickoff.set(0)
 
     async def _update_prepare_context(self, trigger_info: TriggerInfo) -> None:
-        # If we can reuse the data provider then do so
+        # The only thing that would stop us being able to reuse a provider is
+        # if the collections_per_event changes, as that would change the
+        # StreamResource shape, so if that is the same we can reuse it.
         if (
             self._prepare_ctx
             and self._prepare_ctx.trigger_info.collections_per_event
@@ -492,8 +496,6 @@ class StandardDetector(
                     await self._trigger_logic.prepare_level(
                         num=value.number_of_exposures,
                     )
-                case _:
-                    raise ValueError(f"Unknown trigger type: {value.trigger}")
         elif value.trigger != DetectorTrigger.INTERNAL:
             raise ValueError(
                 f"Detector {self} has no trigger logic, so can only do INTERNAL "
@@ -532,7 +534,7 @@ class StandardDetector(
                 raise ValueError(msg)
             # Ensure the data provider is still usable
             await self._update_prepare_context(trigger_info)
-        ctx = error_if_none(self._prepare_ctx, "This should not happen")
+        ctx = error_if_none(self._prepare_ctx, "Prepare should have been run")
         # Arm the detector and wait for it to finish.
         if self._arm_logic:
             await self._arm_logic.arm()

@@ -16,7 +16,10 @@ class ADArmLogic(DetectorArmLogic):
         self, driver: ADBaseIO, driver_armed_signal: SignalR[bool] | None = None
     ):
         self.driver = driver
-        self.driver_armed_signal = driver_armed_signal or driver.acquire
+        if driver_armed_signal is not None:
+            self.driver_armed_signal = driver_armed_signal
+        else:
+            self.driver_armed_signal = driver.acquire
         self.acquire_status: AsyncStatus | None = None
 
     async def arm(self):

@@ -66,7 +66,8 @@ class AravisTriggerLogic(DetectorTriggerLogic):
 
     async def prepare_edge(self, num: int, livetime: float):
         # Trigger on the rising edge of Line1
-        # trigger mode must be set first and on it's own!
+        # trigger mode must be set first and on its own!
+        # https://github.com/AravisProject/aravis/issues/1045
         await self.driver.trigger_mode.set(OnOff.ON)
         await self.driver.trigger_source.set(AravisTriggerSource.LINE1)
         await prepare_exposures(self.driver, num, livetime)
