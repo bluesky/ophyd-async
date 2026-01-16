@@ -299,29 +299,28 @@ class StandardDetector(
         :param logic: The logic to add
         """
         for logic in logics:
-            match logic:
-                case DetectorTriggerLogic():
-                    if self._trigger_logic is not None:
-                        raise RuntimeError("Detector already has trigger logic")
-                    self._trigger_logic = logic
-                    # Store the triggers that are supported
-                    self._supported_triggers = set()
-                    if _trigger_logic_supported(self._trigger_logic.prepare_internal):
-                        self._supported_triggers.add(DetectorTrigger.INTERNAL)
-                    if _trigger_logic_supported(self._trigger_logic.prepare_edge):
-                        self._supported_triggers.add(DetectorTrigger.EXTERNAL_EDGE)
-                    if _trigger_logic_supported(self._trigger_logic.prepare_level):
-                        self._supported_triggers.add(DetectorTrigger.EXTERNAL_LEVEL)
-                    # Add the config signals it needs
-                    self.add_config_signals(*logic.config_sigs())
-                case DetectorArmLogic():
-                    if self._arm_logic is not None:
-                        raise RuntimeError("Detector already has arm logic")
-                    self._arm_logic = logic
-                case DetectorDataLogic():
-                    self._data_logics = (*self._data_logics, logic)
-                case _:
-                    raise TypeError(f"Unknown logic type: {type(logic)}")
+            if isinstance(logic, DetectorTriggerLogic):
+                if self._trigger_logic is not None:
+                    raise RuntimeError("Detector already has trigger logic")
+                self._trigger_logic = logic
+                # Store the triggers that are supported
+                self._supported_triggers = set()
+                if _trigger_logic_supported(self._trigger_logic.prepare_internal):
+                    self._supported_triggers.add(DetectorTrigger.INTERNAL)
+                if _trigger_logic_supported(self._trigger_logic.prepare_edge):
+                    self._supported_triggers.add(DetectorTrigger.EXTERNAL_EDGE)
+                if _trigger_logic_supported(self._trigger_logic.prepare_level):
+                    self._supported_triggers.add(DetectorTrigger.EXTERNAL_LEVEL)
+                # Add the config signals it needs
+                self.add_config_signals(*logic.config_sigs())
+            elif isinstance(logic, DetectorArmLogic):
+                if self._arm_logic is not None:
+                    raise RuntimeError("Detector already has arm logic")
+                self._arm_logic = logic
+            elif isinstance(logic, DetectorDataLogic):
+                self._data_logics = (*self._data_logics, logic)
+            else:
+                raise TypeError(f"Unknown logic type: {type(logic)}")
 
     def add_config_signals(self, *signals: SignalR) -> None:
         """Add a signal to read_configuration().
