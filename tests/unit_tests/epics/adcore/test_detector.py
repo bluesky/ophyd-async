@@ -8,7 +8,9 @@ def test_get_plugin_type_checking():
     plugins = {
         "stats": adcore.NDStatsIO("PREFIX:STAT:"),
     }
-    det = adcore.AreaDetector(driver=driver, plugins=plugins, name="det")
+    det = adcore.AreaDetector(
+        driver=driver, writer_type=None, plugins=plugins, name="det"
+    )
 
     # Correct type
     stats_plugin = det.get_plugin("stats", adcore.NDStatsIO)

@@ -18,16 +18,16 @@ from ophyd_async.epics import adcore, adpilatus
 @pytest.fixture
 async def test_adpilatus(
     static_path_provider: StaticPathProvider,
-) -> adcore.AreaDetector[adpilatus.PilatusDriverIO]:
+) -> adpilatus.PilatusDetector:
     async with init_devices(mock=True):
-        detector = adpilatus.pilatus_detector("PREFIX:", static_path_provider)
+        detector = adpilatus.PilatusDetector("PREFIX:", static_path_provider)
     set_mock_value(detector.driver.armed, True)
     writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 
 
-def test_pvs_correct(test_adpilatus: adcore.AreaDetector[adpilatus.PilatusDriverIO]):
+def test_pvs_correct(test_adpilatus: adpilatus.PilatusDetector):
     assert test_adpilatus.driver.acquire.source == "mock+ca://PREFIX:cam1:Acquire_RBV"
     assert test_adpilatus.driver.armed.source == "mock+ca://PREFIX:cam1:Armed"
 
@@ -38,7 +38,7 @@ def test_pvs_correct(test_adpilatus: adcore.AreaDetector[adpilatus.PilatusDriver
 )
 async def test_deadtime(readout_time: adpilatus.PilatusReadoutTime):
     path_provider = StaticPathProvider(StaticFilenameProvider("data"), Path("/tmp"))
-    pilatus = adpilatus.pilatus_detector("PREFIX:", path_provider, readout_time)
+    pilatus = adpilatus.PilatusDetector("PREFIX:", path_provider, readout_time)
     trigger_modes, deadtime = await pilatus.get_trigger_deadtime()
     assert trigger_modes == {
         DetectorTrigger.INTERNAL,
@@ -49,7 +49,7 @@ async def test_deadtime(readout_time: adpilatus.PilatusReadoutTime):
 
 
 async def test_times_out_if_not_armed(
-    test_adpilatus: adcore.AreaDetector[adpilatus.PilatusDriverIO],
+    test_adpilatus: adpilatus.PilatusDetector,
 ):
     set_mock_value(test_adpilatus.driver.armed, False)
     with patch(
@@ -63,7 +63,7 @@ async def test_times_out_if_not_armed(
 
 
 async def test_prepare_external_edge(
-    test_adpilatus: adcore.AreaDetector[adpilatus.PilatusDriverIO],
+    test_adpilatus: adpilatus.PilatusDetector,
 ):
     await test_adpilatus.prepare(
         TriggerInfo(
@@ -82,7 +82,7 @@ async def test_prepare_external_edge(
 
 
 async def test_prepare_external_level(
-    test_adpilatus: adcore.AreaDetector[adpilatus.PilatusDriverIO],
+    test_adpilatus: adpilatus.PilatusDetector,
 ):
     await test_adpilatus.prepare(
         TriggerInfo(
@@ -99,7 +99,7 @@ async def test_prepare_external_level(
 
 
 async def test_prepare_forever(
-    test_adpilatus: adcore.AreaDetector[adpilatus.PilatusDriverIO],
+    test_adpilatus: adpilatus.PilatusDetector,
 ):
     await test_adpilatus.prepare(TriggerInfo(number_of_events=0))
     assert list(get_mock(test_adpilatus.driver).mock_calls) == [

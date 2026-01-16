@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import PureWindowsPath
@@ -291,7 +291,7 @@ def make_writer_data_logic(
     writer_suffix: str | None,
     driver: ADBaseIO,
     writer_type: ADWriterType,
-    plugins: dict[str, NDPluginBaseIO] | None = None,
+    plugins: Mapping[str, NDPluginBaseIO] | None = None,
 ) -> tuple[NDPluginFileIO, DetectorDataLogic]:
     plugins = plugins or {}
     shape_signals = [driver.array_size_y, driver.array_size_x]

@@ -20,7 +20,7 @@ async def hdf_det(
     static_path_provider: StaticPathProvider,
 ) -> adcore.AreaDetector[adcore.ADBaseIO]:
     async with init_devices(mock=True):
-        detector = adsimdetector.sim_detector(
+        detector = adsimdetector.SimDetector(
             "PREFIX:",
             static_path_provider,
             plugins={"stats": adcore.NDStatsIO("PREFIX:STATS:")},
@@ -82,7 +82,7 @@ async def test_can_specify_different_uri_and_path(
     path_info = path_provider()
 
     async with init_devices(mock=True):
-        det = adsimdetector.sim_detector(
+        det = adsimdetector.SimDetector(
             "PREFIX:", path_provider, writer_type=writer_type
         )
     writer = det.get_plugin("writer", adcore.NDPluginFileIO)
@@ -133,7 +133,7 @@ async def test_can_override_uri_with_different_path_semantics(
     path_info = path_provider()
 
     async with init_devices(mock=True):
-        det = adsimdetector.sim_detector(
+        det = adsimdetector.SimDetector(
             "PREFIX:", path_provider, writer_type=writer_type
         )
     writer = det.get_plugin("writer", adcore.NDPluginFileIO)

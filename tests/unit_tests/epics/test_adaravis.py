@@ -17,15 +17,15 @@ from ophyd_async.epics import adaravis, adcore
 @pytest.fixture
 async def test_adaravis(
     static_path_provider: StaticPathProvider,
-) -> adcore.AreaDetector[adaravis.AravisDriverIO]:
+) -> adaravis.AravisDetector:
     async with init_devices(mock=True):
-        detector = adaravis.aravis_detector("PREFIX:", static_path_provider)
+        detector = adaravis.AravisDetector("PREFIX:", static_path_provider)
     writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 
 
-def test_pvs_correct(test_adaravis: adcore.AreaDetector[adaravis.AravisDriverIO]):
+def test_pvs_correct(test_adaravis: adaravis.AravisDetector):
     assert test_adaravis.driver.acquire.source == "mock+ca://PREFIX:cam1:Acquire_RBV"
     assert (
         test_adaravis.driver.trigger_mode.source
@@ -37,7 +37,7 @@ def test_pvs_correct(test_adaravis: adcore.AreaDetector[adaravis.AravisDriverIO]
     "model,deadtime", [("Mako G-125", 70e-6), ("Mako G-507", 554e-6)]
 )
 async def test_deadtime(
-    test_adaravis: adcore.AreaDetector[adaravis.AravisDriverIO],
+    test_adaravis: adaravis.AravisDetector,
     model: str,
     deadtime: float,
 ):
@@ -49,7 +49,7 @@ async def test_deadtime(
 
 
 async def test_prepare_external_edge(
-    test_adaravis: adcore.AreaDetector[adaravis.AravisDriverIO],
+    test_adaravis: adaravis.AravisDetector,
 ):
     await test_adaravis.prepare(
         TriggerInfo(
@@ -69,7 +69,7 @@ async def test_prepare_external_edge(
 
 
 async def test_prepare_internal(
-    test_adaravis: adcore.AreaDetector[adaravis.AravisDriverIO],
+    test_adaravis: adaravis.AravisDetector,
 ):
     await test_adaravis.prepare(TriggerInfo(number_of_events=11))
     assert list(get_mock(test_adaravis.driver).mock_calls) == [

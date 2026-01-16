@@ -16,15 +16,15 @@ from ophyd_async.epics import adcore, adkinetix
 @pytest.fixture
 async def test_adkinetix(
     static_path_provider: StaticPathProvider,
-) -> adcore.AreaDetector[adkinetix.KinetixDriverIO]:
+) -> adkinetix.KinetixDetector:
     async with init_devices(mock=True):
-        detector = adkinetix.kinetix_detector("PREFIX:", static_path_provider)
+        detector = adkinetix.KinetixDetector("PREFIX:", static_path_provider)
     writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 
 
-def test_pvs_correct(test_adkinetix: adcore.AreaDetector[adkinetix.KinetixDriverIO]):
+def test_pvs_correct(test_adkinetix: adkinetix.KinetixDetector):
     assert test_adkinetix.driver.acquire.source == "mock+ca://PREFIX:cam1:Acquire_RBV"
     assert (
         test_adkinetix.driver.readout_port_idx.source
@@ -33,7 +33,7 @@ def test_pvs_correct(test_adkinetix: adcore.AreaDetector[adkinetix.KinetixDriver
 
 
 async def test_deadtime(
-    test_adkinetix: adcore.AreaDetector[adkinetix.KinetixDriverIO],
+    test_adkinetix: adkinetix.KinetixDetector,
 ):
     trigger_modes, deadtime = await test_adkinetix.get_trigger_deadtime()
     assert trigger_modes == {
@@ -45,7 +45,7 @@ async def test_deadtime(
 
 
 async def test_prepare_external_edge(
-    test_adkinetix: adcore.AreaDetector[adkinetix.KinetixDriverIO],
+    test_adkinetix: adkinetix.KinetixDetector,
 ):
     await test_adkinetix.prepare(
         TriggerInfo(
@@ -64,7 +64,7 @@ async def test_prepare_external_edge(
 
 
 async def test_prepare_external_level(
-    test_adkinetix: adcore.AreaDetector[adkinetix.KinetixDriverIO],
+    test_adkinetix: adkinetix.KinetixDetector,
 ):
     await test_adkinetix.prepare(
         TriggerInfo(
@@ -81,7 +81,7 @@ async def test_prepare_external_level(
 
 
 async def test_prepare_internal(
-    test_adkinetix: adcore.AreaDetector[adkinetix.KinetixDriverIO],
+    test_adkinetix: adkinetix.KinetixDetector,
 ):
     await test_adkinetix.prepare(TriggerInfo(number_of_events=2, livetime=0.3))
     assert list(get_mock(test_adkinetix.driver).mock_calls) == [

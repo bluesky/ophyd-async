@@ -16,15 +16,15 @@ from ophyd_async.epics import adandor, adcore
 @pytest.fixture
 async def test_adandor(
     static_path_provider: StaticPathProvider,
-) -> adcore.AreaDetector[adandor.Andor2DriverIO]:
+) -> adandor.AndorDetector:
     async with init_devices(mock=True):
-        detector = adandor.andor_detector("PREFIX:", static_path_provider)
+        detector = adandor.AndorDetector("PREFIX:", static_path_provider)
     writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 
 
-def test_pvs_correct(test_adandor: adcore.AreaDetector[adandor.Andor2DriverIO]):
+def test_pvs_correct(test_adandor: adandor.AndorDetector):
     assert test_adandor.driver.acquire.source == "mock+ca://PREFIX:cam1:Acquire_RBV"
     assert (
         test_adandor.driver.andor_accumulate_period.source
@@ -33,7 +33,7 @@ def test_pvs_correct(test_adandor: adcore.AreaDetector[adandor.Andor2DriverIO]):
 
 
 async def test_deadtime(
-    test_adandor: adcore.AreaDetector[adandor.Andor2DriverIO],
+    test_adandor: adandor.AndorDetector,
 ):
     trigger_modes, deadtime = await test_adandor.get_trigger_deadtime()
     assert trigger_modes == {DetectorTrigger.INTERNAL, DetectorTrigger.EXTERNAL_EDGE}
@@ -41,7 +41,7 @@ async def test_deadtime(
 
 
 async def test_prepare_external_edge(
-    test_adandor: adcore.AreaDetector[adandor.Andor2DriverIO],
+    test_adandor: adandor.AndorDetector,
 ):
     await test_adandor.prepare(
         TriggerInfo(
@@ -60,7 +60,7 @@ async def test_prepare_external_edge(
 
 
 async def test_prepare_forever(
-    test_adandor: adcore.AreaDetector[adandor.Andor2DriverIO],
+    test_adandor: adandor.AndorDetector,
 ):
     await test_adandor.prepare(TriggerInfo(number_of_events=0))
     assert list(get_mock(test_adandor.driver).mock_calls) == [

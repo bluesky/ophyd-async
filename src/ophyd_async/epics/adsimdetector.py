@@ -31,16 +31,7 @@ class SimDetectorTriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num, livetime, deadtime)
 
 
-def sim_detector(
-    prefix: str,
-    path_provider: PathProvider,
-    driver_suffix="cam1:",
-    writer_type: ADWriterType = ADWriterType.HDF,
-    writer_suffix: str | None = None,
-    plugins: dict[str, NDPluginBaseIO] | None = None,
-    config_sigs: Sequence[SignalR] = (),
-    name: str = "",
-) -> AreaDetector[ADBaseIO]:
+class SimDetector(AreaDetector[ADBaseIO]):
     """Create an ADSimDetector AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector
@@ -51,17 +42,29 @@ def sim_detector(
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
-    :return: Configured AreaDetector instance
     """
-    driver = ADBaseIO(prefix + driver_suffix)
-    return writer_type.make_detector(
-        prefix=prefix,
-        path_provider=path_provider,
-        writer_suffix=writer_suffix,
-        driver=driver,
-        trigger_logic=SimDetectorTriggerLogic(driver),
-        arm_logic=ADArmLogic(driver),
-        plugins=plugins,
-        config_sigs=config_sigs,
-        name=name,
-    )
+
+    def __init__(
+        self,
+        prefix: str,
+        path_provider: PathProvider | None = None,
+        driver_suffix="cam1:",
+        writer_type: ADWriterType | None = ADWriterType.HDF,
+        writer_suffix: str | None = None,
+        plugins: dict[str, NDPluginBaseIO] | None = None,
+        config_sigs: Sequence[SignalR] = (),
+        name: str = "",
+    ) -> None:
+        driver = ADBaseIO(prefix + driver_suffix)
+        super().__init__(
+            prefix=prefix,
+            driver=driver,
+            arm_logic=ADArmLogic(driver),
+            trigger_logic=SimDetectorTriggerLogic(driver),
+            path_provider=path_provider,
+            writer_type=writer_type,
+            writer_suffix=writer_suffix,
+            plugins=plugins,
+            config_sigs=config_sigs,
+            name=name,
+        )

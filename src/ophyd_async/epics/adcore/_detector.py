@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import Generic
 
 from ophyd_async.core import (
@@ -16,14 +16,14 @@ from ._io import ADBaseIOT, NDPluginBaseIO, NDPluginBaseIOT
 class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
     def __init__(
         self,
-        prefix: str,
         driver: ADBaseIOT,
         arm_logic: DetectorArmLogic | None = None,
         trigger_logic: DetectorTriggerLogic | None = None,
         path_provider: PathProvider | None = None,
         writer_type: ADWriterType | None = ADWriterType.HDF,
+        prefix: str = "",
         writer_suffix: str | None = None,
-        plugins: dict[str, NDPluginBaseIO] | None = None,
+        plugins: Mapping[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:

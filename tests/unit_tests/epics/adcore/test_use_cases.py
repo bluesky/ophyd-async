@@ -4,7 +4,6 @@ from unittest.mock import ANY
 import pytest
 
 from ophyd_async.core import (
-    DetectorArmLogic,
     DetectorDataLogic,
     StaticPathProvider,
     TriggerInfo,
@@ -22,7 +21,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
 ):
     stat = adcore.NDStatsIO("PREFIX:STATS:")
     async with init_devices(mock=True):
-        det = adsimdetector.sim_detector(
+        det = adsimdetector.SimDetector(
             "PREFIX:", static_path_provider, plugins={"stats": stat}
         )
         temp = epics_signal_r(float, "SAMP:TEMP:RBV")
@@ -200,7 +199,7 @@ async def test_step_scan_tiff_detector(
     static_path_provider: StaticPathProvider,
 ):
     async with init_devices(mock=True):
-        det = adsimdetector.sim_detector(
+        det = adsimdetector.SimDetector(
             "PREFIX:", static_path_provider, writer_type=adcore.ADWriterType.TIFF
         )
 
@@ -266,7 +265,7 @@ async def test_step_scan_tiff_detector(
 
 async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider):
     async with init_devices(mock=True):
-        det = adaravis.aravis_detector("PREFIX:", static_path_provider)
+        det = adaravis.AravisDetector("PREFIX:", static_path_provider)
 
     writer = det.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(det.driver.model, "A funny model")
@@ -407,7 +406,7 @@ async def test_2_rois_with_hdf():
     driver = adcore.ADBaseIO("PREFIX:DRV:")
     rois: list[adcore.NDROIIO] = []
     hdfs: list[adcore.NDFileHDF5IO] = []
-    logics: list[DetectorArmLogic | DetectorDataLogic] = [adcore.ADArmLogic(driver)]
+    logics: list[DetectorDataLogic] = []
     for i in range(1, 3):
         roi = adcore.NDROIIO(f"PREFIX:ROI{i}")
         hdf = adcore.NDFileHDF5IO(f"PREFIX:HDF{i}")
@@ -426,6 +425,8 @@ async def test_2_rois_with_hdf():
     async with init_devices(mock=True):
         det = adcore.AreaDetector(
             driver,
+            arm_logic=adcore.ADArmLogic(driver),
+            writer_type=None,
             plugins={
                 "hdf1": hdfs[0],
                 "hdf2": hdfs[1],
@@ -528,18 +529,17 @@ async def test_2_rois_with_hdf():
 
 
 async def test_simdetector_with_stats_signal():
-    driver = adcore.ADBaseIO("PREFIX:DRV:")
     stat = adcore.NDStatsIO("PREFIX:STAT:")
     async with init_devices(mock=True):
-        det = adcore.AreaDetector(driver, plugins={"stats": stat})
-        det.add_logics(adcore.ADArmLogic(driver))
-        det.add_logics(adsimdetector.SimDetectorTriggerLogic(driver))
-        det.add_logics(adcore.PluginSignalDataLogic(driver, stat.total))
+        det = adsimdetector.SimDetector(
+            "PREFIX:", writer_type=None, plugins={"stats": stat}
+        )
+        det.add_logics(adcore.PluginSignalDataLogic(det.driver, stat.total))
     set_mock_value(stat.total, 1.8)
     await det.stage()
-    assert await driver.wait_for_plugins.get_value() is False
+    assert await det.driver.wait_for_plugins.get_value() is False
     await det.trigger()
-    assert await driver.wait_for_plugins.get_value() is True
+    assert await det.driver.wait_for_plugins.get_value() is True
     description = await det.describe()
     assert description == {
         "det-stats-total": {

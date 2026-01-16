@@ -71,16 +71,7 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime)
 
 
-def andor_detector(
-    prefix: str,
-    path_provider: PathProvider,
-    driver_suffix="cam1:",
-    writer_type: ADWriterType = ADWriterType.HDF,
-    writer_suffix: str | None = None,
-    plugins: dict[str, NDPluginBaseIO] | None = None,
-    config_sigs: Sequence[SignalR] = (),
-    name: str = "",
-) -> AreaDetector[Andor2DriverIO]:
+class AndorDetector(AreaDetector[Andor2DriverIO]):
     """Create an ADAndor AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector
@@ -91,17 +82,29 @@ def andor_detector(
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
-    :return: Configured AreaDetector instance
     """
-    driver = Andor2DriverIO(prefix + driver_suffix)
-    return writer_type.make_detector(
-        prefix=prefix,
-        path_provider=path_provider,
-        writer_suffix=writer_suffix,
-        driver=driver,
-        trigger_logic=Andor2TriggerLogic(driver),
-        arm_logic=ADArmLogic(driver),
-        plugins=plugins,
-        config_sigs=config_sigs,
-        name=name,
-    )
+
+    def __init__(
+        self,
+        prefix: str,
+        path_provider: PathProvider | None = None,
+        driver_suffix="cam1:",
+        writer_type: ADWriterType | None = ADWriterType.HDF,
+        writer_suffix: str | None = None,
+        plugins: dict[str, NDPluginBaseIO] | None = None,
+        config_sigs: Sequence[SignalR] = (),
+        name: str = "",
+    ) -> None:
+        driver = Andor2DriverIO(prefix + driver_suffix)
+        super().__init__(
+            prefix=prefix,
+            driver=driver,
+            arm_logic=ADArmLogic(driver),
+            trigger_logic=Andor2TriggerLogic(driver),
+            path_provider=path_provider,
+            writer_type=writer_type,
+            writer_suffix=writer_suffix,
+            plugins=plugins,
+            config_sigs=config_sigs,
+            name=name,
+        )

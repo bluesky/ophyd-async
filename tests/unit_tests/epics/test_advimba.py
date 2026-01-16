@@ -17,15 +17,15 @@ from ophyd_async.epics import adcore, advimba
 @pytest.fixture
 async def test_advimba(
     static_path_provider: StaticPathProvider,
-) -> adcore.AreaDetector[advimba.VimbaDriverIO]:
+) -> advimba.VimbaDetector:
     async with init_devices(mock=True):
-        detector = advimba.vimba_detector("PREFIX:", static_path_provider)
+        detector = advimba.VimbaDetector("PREFIX:", static_path_provider)
     writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 
 
-def test_pvs_correct(test_advimba: adcore.AreaDetector[advimba.VimbaDriverIO]):
+def test_pvs_correct(test_advimba: advimba.VimbaDetector):
     assert test_advimba.driver.acquire.source == "mock+ca://PREFIX:cam1:Acquire_RBV"
     assert (
         test_advimba.driver.trigger_mode.source
@@ -37,7 +37,7 @@ def test_pvs_correct(test_advimba: adcore.AreaDetector[advimba.VimbaDriverIO]):
     "model,deadtime", [("Mako G-125", 70e-6), ("Mako G-507", 554e-6)]
 )
 async def test_deadtime(
-    test_advimba: adcore.AreaDetector[advimba.VimbaDriverIO],
+    test_advimba: advimba.VimbaDetector,
     model: str,
     deadtime: float,
 ):
@@ -53,7 +53,7 @@ async def test_deadtime(
 
 
 async def test_prepare_external_level(
-    test_advimba: adcore.AreaDetector[advimba.VimbaDriverIO],
+    test_advimba: advimba.VimbaDetector,
 ):
     await test_advimba.prepare(
         TriggerInfo(
@@ -72,7 +72,7 @@ async def test_prepare_external_level(
 
 
 async def test_prepare_external_edge(
-    test_advimba: adcore.AreaDetector[advimba.VimbaDriverIO],
+    test_advimba: advimba.VimbaDetector,
 ):
     await test_advimba.prepare(
         TriggerInfo(
@@ -93,7 +93,7 @@ async def test_prepare_external_edge(
 
 
 async def test_prepare_internal(
-    test_advimba: adcore.AreaDetector[advimba.VimbaDriverIO],
+    test_advimba: advimba.VimbaDetector,
 ):
     await test_advimba.prepare(TriggerInfo(number_of_events=11))
     assert list(get_mock(test_advimba.driver).mock_calls) == [

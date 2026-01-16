@@ -10,7 +10,7 @@ from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
 
 def test_setup_ndstats_raises_type_error(RE, static_path_provider: StaticPathProvider):
     with init_devices(mock=True):
-        det = adsimdetector.sim_detector("PREFIX:", static_path_provider)
+        det = adsimdetector.SimDetector("PREFIX:", static_path_provider)
     with pytest.raises(
         AttributeError,
         match="det has no plugin named 'stats'",
