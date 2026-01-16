@@ -19,7 +19,7 @@ async def test_adsimdetector(
 ) -> adcore.AreaDetector[adcore.ADBaseIO]:
     async with init_devices(mock=True):
         detector = adsimdetector.sim_detector("PREFIX:", static_path_provider)
-    writer = detector.get_plugin("writer", adcore.NDFilePluginIO)
+    writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 

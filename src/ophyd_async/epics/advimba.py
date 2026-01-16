@@ -26,7 +26,7 @@ from .adcore import (
     NDPluginBaseIO,
     prepare_exposures,
 )
-from .adgenicam import camera_deadtimes
+from .adgenicam import get_camera_deadtime
 
 
 class VimbaConvertFormat(StrictEnum):
@@ -80,14 +80,18 @@ class VimbaDriverIO(ADBaseIO):
 class VimbaTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADVimba detectors."""
 
-    def __init__(self, driver: VimbaDriverIO):
+    def __init__(self, driver: VimbaDriverIO, override_deadtime: float | None = None):
         self.driver = driver
+        self.override_deadtime = override_deadtime
 
     def config_sigs(self) -> set[SignalR]:
         return {self.driver.model}
 
     def get_deadtime(self, config_values: SignalDict) -> float:
-        return camera_deadtimes[config_values[self.driver.model]]
+        return get_camera_deadtime(
+            model=config_values[self.driver.model],
+            override_deadtime=self.override_deadtime,
+        )
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         await asyncio.gather(

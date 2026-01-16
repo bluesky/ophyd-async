@@ -109,8 +109,8 @@ class PatternGenerator:
     def setup_acquisition_parameters(
         self, exposure: float, period: float, number_of_frames: int
     ):
-        self._exposure = exposure
-        self._period = period
+        self._exposure = exposure or self._exposure
+        self._period = period or self._period
         self._number_of_frames = number_of_frames
 
     async def write_images_to_file(self):

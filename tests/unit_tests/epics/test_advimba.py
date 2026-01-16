@@ -20,7 +20,7 @@ async def test_advimba(
 ) -> adcore.AreaDetector[advimba.VimbaDriverIO]:
     async with init_devices(mock=True):
         detector = advimba.vimba_detector("PREFIX:", static_path_provider)
-    writer = detector.get_plugin("writer", adcore.NDFilePluginIO)
+    writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 

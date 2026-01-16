@@ -116,6 +116,18 @@ class NDPluginBaseIO(NDArrayBaseIO):
     queue_size: A[SignalRW[int], PvSuffix.rbv("QueueSize")]
 
 
+class NDROIIO(NDPluginBaseIO):
+    """Plugin for taking a region of an NDArray.
+
+    This mirrors the interface provided by ADCore/db/NDROI.template.
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROI.html
+    """
+
+    size_x: A[SignalR[int], PvSuffix.rbv("SizeX")]
+    size_y: A[SignalR[int], PvSuffix.rbv("SizeY")]
+    size_z: A[SignalR[int], PvSuffix.rbv("SizeZ")]
+
+
 class NDStatsIO(NDPluginBaseIO):
     """Plugin for computing statistics from an image or ROI within an image.
 
@@ -149,6 +161,7 @@ class NDROIStatNIO(EpicsDevice):
     Each instance represents a single ROI, with attributes for its position
     (min_x, min_y) and size (size_x, size_y), as well as a name and use status.
 
+    This mirrors the interface provided by ADCore/db/NDROIStatN.template.
     See definition in ADApp/pluginSrc/NDPluginROIStat.h in https://github.com/areaDetector/ADCore.
 
     Attributes:
@@ -183,6 +196,7 @@ class NDROIStatIO(NDPluginBaseIO):
     Each ROI is implemented as an instance of NDROIStatNIO,
     and the collection of ROIs is held as a DeviceVector.
 
+    This mirrors the interface provided by ADCore/db/NDROIStat.template.
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginROIStat.html
     """
 
@@ -198,9 +212,10 @@ class NDCBFlushOnSoftTrgMode(StrictEnum):
     IMMEDIATELY = "Immediately"
 
 
-class NDPluginCBIO(NDPluginBaseIO):
+class NDCircularBuffIO(NDPluginBaseIO):
     """Plugin for flow control of arrays based on NDAttributes.
 
+    This mirrors the interface provided by ADCore/db/NDCircularBuff.template.
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html
     """
 
@@ -246,13 +261,14 @@ class NDFileIO(NDArrayBaseIO):
     create_directory: A[SignalRW[int], PvSuffix("CreateDirectory")]
 
 
-NDFilePluginIOT = TypeVar("NDFilePluginIOT", bound="NDFilePluginIO")
+NDPluginFileIOT = TypeVar("NDPluginFileIOT", bound="NDPluginFileIO")
 
 
-class NDFilePluginIO(NDPluginBaseIO, NDFileIO):
+class NDPluginFileIO(NDPluginBaseIO, NDFileIO):
     """Base class from which file plugins are derived.
 
-    This mirrors the interface provided by ADCore/db/NDFilePlugin.template.
+    This mirrors the interface provided by ADCore/db/NDFile.template when added to
+    NDPluginBase.template
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginFile.html
     """
 
@@ -270,7 +286,7 @@ class ADCompression(StrictEnum):
     JPEG = "JPEG"
 
 
-class NDFileHDFIO(NDFilePluginIO):
+class NDFileHDF5IO(NDPluginFileIO):
     """Plugin for storing data in HDF5 file format.
 
     This mirrors the interface provided by ADCore/db/NDFileHDF5.template.

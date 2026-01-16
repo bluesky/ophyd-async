@@ -4,9 +4,15 @@ https://github.com/areaDetector/ADCore
 """
 
 from ._arm_logic import ADArmLogic, ADContAcqArmLogic
-from ._data_logic import ADHDFDataLogic, ADMultipartDataLogic, ADWriterType
+from ._data_logic import (
+    ADHDFDataLogic,
+    ADMultipartDataLogic,
+    ADWriterType,
+    PluginSignalDataLogic,
+)
 from ._detector import AreaDetector
 from ._io import (
+    NDROIIO,
     ADBaseDataType,
     ADBaseIO,
     ADCompression,
@@ -15,11 +21,11 @@ from ._io import (
     ADState,
     NDArrayBaseIO,
     NDCBFlushOnSoftTrgMode,
-    NDFileHDFIO,
+    NDCircularBuffIO,
+    NDFileHDF5IO,
     NDFileIO,
-    NDFilePluginIO,
     NDPluginBaseIO,
-    NDPluginCBIO,
+    NDPluginFileIO,
     NDROIStatIO,
     NDROIStatNIO,
     NDStatsIO,
@@ -41,16 +47,17 @@ __all__ = [
     "ADState",
     "ADBaseIO",
     "NDPluginBaseIO",
+    "NDROIIO",
     "NDStatsIO",
     "NDROIStatNIO",
     "NDROIStatIO",
     "NDCBFlushOnSoftTrgMode",
-    "NDPluginCBIO",
+    "NDCircularBuffIO",
     "ADFileWriteMode",
     "NDFileIO",
-    "NDFilePluginIO",
+    "NDPluginFileIO",
     "ADCompression",
-    "NDFileHDFIO",
+    "NDFileHDF5IO",
     # TriggerLogic
     "prepare_exposures",
     "ADContAcqTriggerLogic",
@@ -58,6 +65,7 @@ __all__ = [
     "ADArmLogic",
     "ADContAcqArmLogic",
     # DataLogic
+    "PluginSignalDataLogic",
     "ADHDFDataLogic",
     "ADMultipartDataLogic",
     "ADWriterType",

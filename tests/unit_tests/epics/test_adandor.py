@@ -19,7 +19,7 @@ async def test_adandor(
 ) -> adcore.AreaDetector[adandor.Andor2DriverIO]:
     async with init_devices(mock=True):
         detector = adandor.andor_detector("PREFIX:", static_path_provider)
-    writer = detector.get_plugin("writer", adcore.NDFilePluginIO)
+    writer = detector.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     return detector
 

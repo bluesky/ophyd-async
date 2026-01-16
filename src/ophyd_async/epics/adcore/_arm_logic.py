@@ -8,7 +8,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.core import stop_busy_record, wait_for_good_state
 
-from ._io import ADBaseIO, ADState, NDPluginCBIO
+from ._io import ADBaseIO, ADState, NDCircularBuffIO
 
 
 class ADArmLogic(DetectorArmLogic):
@@ -33,7 +33,9 @@ class ADArmLogic(DetectorArmLogic):
         if self.acquire_status:
             await self.acquire_status
         await wait_for_good_state(
-            self.driver.detector_state, {ADState.IDLE, ADState.ABORTED}
+            self.driver.detector_state,
+            {ADState.IDLE, ADState.ABORTED},
+            timeout=DEFAULT_TIMEOUT,
         )
 
     async def disarm(self):
@@ -41,7 +43,7 @@ class ADArmLogic(DetectorArmLogic):
 
 
 class ADContAcqArmLogic(DetectorArmLogic):
-    def __init__(self, driver: ADBaseIO, cb_plugin: NDPluginCBIO):
+    def __init__(self, driver: ADBaseIO, cb_plugin: NDCircularBuffIO):
         self.driver = driver
         self.cb_plugin = cb_plugin
         self.acquire_status: AsyncStatus | None = None

@@ -2,7 +2,7 @@ import asyncio
 
 from ophyd_async.core import DetectorTriggerLogic, EnableDisable
 
-from ._io import ADBaseIO, ADImageMode, NDCBFlushOnSoftTrgMode, NDPluginCBIO
+from ._io import ADBaseIO, ADImageMode, NDCBFlushOnSoftTrgMode, NDCircularBuffIO
 
 
 async def prepare_exposures(
@@ -24,13 +24,13 @@ async def prepare_exposures(
 
 
 class ADContAcqTriggerLogic(DetectorTriggerLogic):
-    def __init__(self, driver: ADBaseIO, cb_plugin: NDPluginCBIO):
+    def __init__(self, driver: ADBaseIO, cb_plugin: NDCircularBuffIO):
         self.driver = driver
         self.cb_plugin = cb_plugin
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         # Check the current state of the system
-        image_mode, acquiring, acquire_time = asyncio.gather(
+        image_mode, acquiring, acquire_time = await asyncio.gather(
             self.driver.image_mode.get_value(),
             self.driver.acquire.get_value(),
             self.driver.acquire_time.get_value(),

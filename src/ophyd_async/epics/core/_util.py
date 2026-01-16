@@ -96,7 +96,7 @@ async def wait_for_good_state(
     good_states: set[SignalDatatypeT],
     message_signal: SignalR[str] | None = None,
     timeout: float = DEFAULT_TIMEOUT,
-):
+) -> None:
     """Wait for state_signal to be one of good_states within timeout."""
     state: SignalDatatypeT | None = None
     try:

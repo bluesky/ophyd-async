@@ -1,5 +1,6 @@
+from collections.abc import Sequence
+
 import numpy as np
-from bluesky.protocols import Hints
 
 from ophyd_async.core import (
     DetectorDataLogic,
@@ -24,29 +25,29 @@ class BlobDataLogic(DetectorDataLogic):
         self.path_provider = path_provider
         self.pattern_generator = pattern_generator
 
-    async def prepare_unbounded(self, device_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(device_name)
+        path_info = self.path_provider(detector_name)
         # Open the file
         write_path = path_info.directory_path / f"{path_info.filename}.h5"
         self.pattern_generator.open_file(write_path, WIDTH, HEIGHT)
         # Return a provider that reflects what we have made
         data_resource = StreamResourceInfo(
-            data_key=device_name,
+            data_key=detector_name,
             shape=(HEIGHT, WIDTH),
-            dtype_numpy=np.dtype(np.uint8).str,
             # NDAttributes appear to always be configured with
             # this chunk size
             chunk_shape=(1, HEIGHT, WIDTH),
+            dtype_numpy=np.dtype(np.uint8).str,
             parameters={"dataset": DATA_PATH},
         )
         sum_resource = StreamResourceInfo(
-            data_key=f"{device_name}-sum",
+            data_key=f"{detector_name}-sum",
             shape=(),
-            dtype_numpy=np.dtype(np.int64).str,
             # NDAttributes appear to always be configured with
             # this chunk size
             chunk_shape=(1024,),
+            dtype_numpy=np.dtype(np.int64).str,
             parameters={"dataset": SUM_PATH},
         )
         return StreamResourceDataProvider(
@@ -59,6 +60,6 @@ class BlobDataLogic(DetectorDataLogic):
     async def stop(self) -> None:
         self.pattern_generator.close_file()
 
-    def get_hints(self, device_name: str) -> Hints:
+    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
         # The main dataset is always hinted
-        return {"fields": [device_name]}
+        return [detector_name]

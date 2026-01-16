@@ -146,9 +146,9 @@ description = "Run pyright"
 commands = [
     [
         "pyright",
-        "--pythonpath",
-        ".venv/bin/python",
         "src",
+        "-v",
+        "{env:VIRTUAL_ENV}",
         { replace = "posargs", default = [
         ], extend = true },
     ],

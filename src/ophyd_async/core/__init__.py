@@ -1,6 +1,8 @@
 """The building blocks for making devices."""
 
 from ._data_providers import (
+    ReadableDataProvider,
+    SignalDataProvider,
     StreamableDataProvider,
     StreamResourceDataProvider,
     StreamResourceInfo,
@@ -17,7 +19,6 @@ from ._detector import (
     DetectorDataLogic,
     DetectorTrigger,
     DetectorTriggerLogic,
-    ReadableDataProvider,
     StandardDetector,
     TriggerInfo,
 )
@@ -231,7 +232,6 @@ __all__ = [
     "TriggerInfo",
     "DetectorTriggerLogic",
     "DetectorArmLogic",
-    "ReadableDataProvider",
     "DetectorDataLogic",
     "StandardDetector",
     # Path
@@ -246,7 +246,9 @@ __all__ = [
     "AutoMaxIncrementingPathProvider",
     "UUIDFilenameProvider",
     # Data Providers
+    "ReadableDataProvider",
     "StreamableDataProvider",
+    "SignalDataProvider",
     "StreamResourceInfo",
     "StreamResourceDataProvider",
     # Flyer

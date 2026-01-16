@@ -1,12 +1,12 @@
 import asyncio
 from collections.abc import Sequence
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import PureWindowsPath
 from typing import Any
 from xml.etree import ElementTree as ET
 
 import numpy as np
-from bluesky.protocols import Hints
 
 from ophyd_async.core import (
     DetectorArmLogic,
@@ -14,6 +14,7 @@ from ophyd_async.core import (
     DetectorTriggerLogic,
     PathInfo,
     PathProvider,
+    SignalDataProvider,
     SignalR,
     StreamableDataProvider,
     StreamResourceDataProvider,
@@ -26,44 +27,65 @@ from ._detector import AreaDetector
 from ._io import (
     ADBaseDataType,
     ADBaseIO,
+    ADBaseIOT,
     ADFileWriteMode,
     NDArrayBaseIO,
-    NDFileHDFIO,
-    NDFilePluginIO,
+    NDFileHDF5IO,
     NDPluginBaseIO,
+    NDPluginFileIO,
 )
 from ._ndattribute import NDAttributeDataType, NDAttributePvDbrType
 
 
+@dataclass
+class PluginSignalDataLogic(DetectorDataLogic):
+    driver: ADBaseIO
+    signal: SignalR
+    hinted: bool = True
+
+    async def prepare_single(self, detector_name: str) -> SignalDataProvider:
+        # Need to wait for all the plugins to have finished before we can read
+        # the plugin signal
+        await self.driver.wait_for_plugins.set(True)
+        return SignalDataProvider(self.signal)
+
+    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
+        if self.hinted:
+            return [self.signal.name]
+        else:
+            return []
+
+
 async def get_ndarray_resource_info(
-    driver: ADBaseIO,
+    shape_signals: Sequence[SignalR[int]],
+    data_type_signal: SignalR[ADBaseDataType],
     data_key: str,
     parameters: dict[str, Any],
     frames_per_chunk: int = 1,
 ) -> StreamResourceInfo:
-    # Create the chain of driver and plugins and get driver params
-    size_x, size_y, datatype = await asyncio.gather(
-        driver.array_size_x.get_value(),
-        driver.array_size_y.get_value(),
-        driver.data_type.get_value(),
+    # Grab the dimensions and datatype of the NDArray
+    shape, datatype = await asyncio.gather(
+        asyncio.gather(*[sig.get_value() for sig in shape_signals]),
+        data_type_signal.get_value(),
     )
     if datatype is ADBaseDataType.UNDEFINED:
-        raise ValueError(f"{driver.data_type.source} is blank, this is not supported")
-    shape = (size_y, size_x)
+        raise ValueError(f"{data_type_signal.source} is blank, this is not supported")
     return StreamResourceInfo(
         data_key=data_key,
-        shape=shape,
-        dtype_numpy=np.dtype(datatype.value.lower()).str,
+        shape=tuple(shape),
         chunk_shape=(frames_per_chunk, *shape),
+        dtype_numpy=np.dtype(datatype.value.lower()).str,
         parameters=parameters,
     )
 
 
-async def get_ndattribute_dtypes(elements: Sequence[NDArrayBaseIO]) -> dict[str, str]:
+async def get_ndattribute_dtype_source(
+    elements: Sequence[NDArrayBaseIO],
+) -> dict[str, tuple[str, str]]:
     nd_attribute_xmls = await asyncio.gather(
         *[x.nd_attributes_file.get_value() for x in elements]
     )
-    ndattribute_dtypes: dict[str, str] = {}
+    ndattribute_dtypes: dict[str, tuple[str, str]] = {}
     for maybe_xml in nd_attribute_xmls:
         # This is the check that ADCore does to see if it is an XML string
         # rather than a filename to parse
@@ -72,16 +94,23 @@ async def get_ndattribute_dtypes(elements: Sequence[NDArrayBaseIO]) -> dict[str,
             for child in root:
                 if child.attrib.get("type", "EPICS_PV") == "EPICS_PV":
                     dbrtype = child.attrib.get("dbrtype", "DBR_NATIVE")
-                    dtype_numpy = NDAttributePvDbrType(dbrtype).value
+                    if dbrtype == "DBR_NATIVE":
+                        raise RuntimeError(
+                            f"NDAttribute {child.attrib['name']} has dbrtype "
+                            "DBR_NATIVE, which is not supported"
+                        )
+                    dtype_numpy = NDAttributePvDbrType[dbrtype].value
+                    source = "ca://" + child.attrib["source"]
                 else:
                     datatype = child.attrib.get("datatype", "INT")
-                    dtype_numpy = NDAttributeDataType(datatype).value
-                ndattribute_dtypes[child.attrib["name"]] = dtype_numpy
+                    dtype_numpy = NDAttributeDataType[datatype].value
+                    source = ""
+                ndattribute_dtypes[child.attrib["name"]] = (dtype_numpy, source)
     return ndattribute_dtypes
 
 
 async def prepare_file_paths(
-    path_info: PathInfo, file_template: str, writer: NDFilePluginIO
+    path_info: PathInfo, file_template: str, writer: NDPluginFileIO
 ):
     # Set the directory creation depth first, since dir creation callback happens
     # when directory path PV is processed.
@@ -109,22 +138,30 @@ async def prepare_file_paths(
     await writer.num_capture.set(0)
 
 
+@dataclass
 class ADHDFDataLogic(DetectorDataLogic):
-    def __init__(
-        self,
-        path_provider: PathProvider,
-        driver: ADBaseIO,
-        writer: NDFileHDFIO,
-        plugins: Sequence[NDPluginBaseIO],
-    ):
-        self.path_provider = path_provider
-        self.driver = driver
-        self.writer = writer
-        self.plugins = plugins
+    """Data logic for AreaDetector HDF5 writer plugin.
 
-    async def prepare_unbounded(self, device_name: str) -> StreamableDataProvider:
+    :param shape_signals: Signals that provide the shape of the NDArray.
+    :param data_type_signal: Signal that provides the data type of the NDArray.
+    :param path_provider: Callable that provides path information for file writing.
+    :param driver: The AreaDetector driver instance.
+    :param writer: The NDFileHDFIO plugin instance.
+    :param plugins: Additional NDPluginBaseIO instances to extract NDAttributes from.
+    :param datakey_suffix: Suffix to append to the data key for the main dataset
+    """
+
+    shape_signals: Sequence[SignalR[int]]
+    data_type_signal: SignalR[ADBaseDataType]
+    path_provider: PathProvider
+    driver: ADBaseIO
+    writer: NDFileHDF5IO
+    plugins: Sequence[NDPluginBaseIO] = ()
+    datakey_suffix: str = ""
+
+    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(device_name)
+        path_info = self.path_provider(self.writer.name)
         # Determine number of frames that will be saved per HDF chunk.
         # On a fresh IOC startup, this is set to zero until the first capture,
         # so if it is zero, set it to 1.
@@ -149,23 +186,27 @@ class ADHDFDataLogic(DetectorDataLogic):
         )
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
-            driver=self.driver,
-            data_key=device_name,
+            shape_signals=self.shape_signals,
+            data_type_signal=self.data_type_signal,
+            data_key=detector_name + self.datakey_suffix,
             parameters={"dataset": "/entry/data/data"},
             frames_per_chunk=frames_per_chunk,
         )
-        ndattribute_dtypes = await get_ndattribute_dtypes((self.driver, *self.plugins))
+        ndattribute_dtype_sources = await get_ndattribute_dtype_source(
+            (self.driver, *self.plugins)
+        )
         ndattribute_datasets = [
             StreamResourceInfo(
                 data_key=name,
                 shape=(),
-                dtype_numpy=dtype_numpy,
                 # NDAttributes appear to always be configured with
                 # this chunk size
                 chunk_shape=(16384,),
+                dtype_numpy=dtype_numpy,
+                source=source,
                 parameters={"dataset": f"/entry/instrument/NDAttributes/{name}"},
             )
-            for name, dtype_numpy in ndattribute_dtypes.items()
+            for name, (dtype_numpy, source) in ndattribute_dtype_sources.items()
         ]
         return StreamResourceDataProvider(
             uri=f"{path_info.directory_uri}{path_info.filename}.h5",
@@ -178,29 +219,36 @@ class ADHDFDataLogic(DetectorDataLogic):
     async def stop(self) -> None:
         await stop_busy_record(self.writer.capture)
 
-    def get_hints(self, device_name: str) -> Hints:
+    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
         # The main NDArray dataset is always hinted
-        return {"fields": [device_name]}
+        return [detector_name + self.datakey_suffix]
 
 
+@dataclass
 class ADMultipartDataLogic(DetectorDataLogic):
-    def __init__(
-        self,
-        path_provider: PathProvider,
-        driver: ADBaseIO,
-        writer: NDFilePluginIO,
-        extension: str,
-        mimetype: str,
-    ):
-        self.path_provider = path_provider
-        self.driver = driver
-        self.writer = writer
-        self.extension = extension
-        self.mimetype = mimetype
+    """Data logic for multipart AreaDetector file writers (e.g. JPEG, TIFF).
 
-    async def prepare_unbounded(self, device_name: str) -> StreamableDataProvider:
+    :param shape_signals: Signals that provide the shape of the NDArray.
+    :param data_type_signal: Signal that provides the data type of the NDArray.
+    :param path_provider: Callable that provides path information for file writing.
+    :param writer: The NDFilePluginIO instance.
+    :param extension: File extension for the written files (e.g. ".jpg", ".tiff").
+    :param mimetype:
+        Mimetype for the written files (e.g. "multipart/related;type=image/jpeg").
+    :param datakey_suffix: Suffix to append to the data key for the main dataset
+    """
+
+    shape_signals: Sequence[SignalR[int]]
+    data_type_signal: SignalR[ADBaseDataType]
+    path_provider: PathProvider
+    writer: NDPluginFileIO
+    extension: str
+    mimetype: str
+    datakey_suffix: str = ""
+
+    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(device_name)
+        path_info = self.path_provider(self.writer.name)
         # Setup the file writer
         await prepare_file_paths(
             path_info=path_info,
@@ -213,8 +261,9 @@ class ADMultipartDataLogic(DetectorDataLogic):
         )
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
-            driver=self.driver,
-            data_key=device_name,
+            shape_signals=self.shape_signals,
+            data_type_signal=self.data_type_signal,
+            data_key=detector_name + self.datakey_suffix,
             parameters={
                 "file_template": path_info.filename + "_{:06d}" + self.extension
             },
@@ -229,9 +278,9 @@ class ADMultipartDataLogic(DetectorDataLogic):
     async def stop(self) -> None:
         await stop_busy_record(self.writer.capture)
 
-    def get_hints(self, device_name: str) -> Hints:
+    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
         # The main NDArray dataset is always hinted
-        return {"fields": [device_name]}
+        return [detector_name + self.datakey_suffix]
 
 
 class ADWriterType(Enum):
@@ -244,49 +293,54 @@ class ADWriterType(Enum):
         prefix: str,
         path_provider: PathProvider,
         writer_suffix: str | None,
-        driver: ADBaseIO,
+        driver: ADBaseIOT,
         trigger_logic: DetectorTriggerLogic,
         arm_logic: DetectorArmLogic,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
-    ) -> AreaDetector:
+    ) -> AreaDetector[ADBaseIOT]:
         plugins = plugins or {}
+        shape_signals = [driver.array_size_y, driver.array_size_x]
+        data_type_signal = driver.data_type
         match self:
             case ADWriterType.HDF:
-                writer = NDFileHDFIO(f"{prefix}{writer_suffix or 'HDF1:'}")
+                writer = NDFileHDF5IO(f"{prefix}{writer_suffix or 'HDF1:'}")
                 data_logic = ADHDFDataLogic(
+                    shape_signals=shape_signals,
+                    data_type_signal=data_type_signal,
+                    path_provider=path_provider,
                     driver=driver,
                     writer=writer,
                     plugins=list(plugins.values()),
-                    path_provider=path_provider,
                 )
             case ADWriterType.JPEG:
-                writer = NDFilePluginIO(f"{prefix}{writer_suffix or 'JPEG1:'}")
+                writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'JPEG1:'}")
                 data_logic = ADMultipartDataLogic(
-                    driver=driver,
-                    writer=writer,
+                    shape_signals=shape_signals,
+                    data_type_signal=data_type_signal,
                     path_provider=path_provider,
+                    writer=writer,
                     extension=".jpg",
                     mimetype="multipart/related;type=image/jpeg",
                 )
             case ADWriterType.TIFF:
-                writer = NDFilePluginIO(f"{prefix}{writer_suffix or 'TIFF1:'}")
+                writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'TIFF1:'}")
                 data_logic = ADMultipartDataLogic(
-                    driver=driver,
-                    writer=writer,
+                    shape_signals=shape_signals,
+                    data_type_signal=data_type_signal,
                     path_provider=path_provider,
+                    writer=writer,
                     extension=".tiff",
                     mimetype="multipart/related;type=image/tiff",
                 )
             case _:
                 raise RuntimeError("Not implemented")
-        return AreaDetector(
+        detector = AreaDetector(
             driver=driver,
-            trigger_logic=trigger_logic,
-            data_logic=data_logic,
-            arm_logic=arm_logic,
             plugins=dict(writer=writer, **plugins),
-            config_sigs=config_sigs,
             name=name,
         )
+        detector.add_logics(trigger_logic, arm_logic, data_logic)
+        detector.add_config_signals(*config_sigs)
+        return detector

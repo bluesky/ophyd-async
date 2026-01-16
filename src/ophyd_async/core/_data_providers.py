@@ -1,12 +1,37 @@
 from abc import abstractmethod
 from collections.abc import AsyncIterator, Sequence
+from dataclasses import dataclass
 from typing import Any
 
-from bluesky.protocols import StreamAsset
-from event_model import ComposeStreamResource, DataKey, PartialEventPage, StreamRange
+from bluesky.protocols import Reading, StreamAsset
+from event_model import ComposeStreamResource, DataKey, StreamRange
 
 from ._signal import SignalR, SignalW
 from ._utils import ConfinedModel
+
+
+class ReadableDataProvider:
+    @abstractmethod
+    async def make_datakeys(self) -> dict[str, DataKey]:
+        """Return a DataKey for each Signal that produces a Reading.
+
+        Called before the first exposure is taken.
+        """
+
+    @abstractmethod
+    async def make_readings(self) -> dict[str, Reading]:
+        """Read the Signals and return their values."""
+
+
+@dataclass
+class SignalDataProvider(ReadableDataProvider):
+    signal: SignalR
+
+    async def make_datakeys(self) -> dict[str, DataKey]:
+        return await self.signal.describe()
+
+    async def make_readings(self) -> dict[str, Reading]:
+        return await self.signal.read(cached=False)
 
 
 class StreamableDataProvider:
@@ -20,13 +45,6 @@ class StreamableDataProvider:
 
         :param collections_per_event: this should appear in the shape of each DataKey
         """
-
-    async def make_event_pages(
-        self, collections_written: int, collections_per_event: int
-    ) -> AsyncIterator[PartialEventPage]:
-        """Make EventPages up to the given index."""
-        while False:
-            yield
 
     async def make_stream_docs(
         self, collections_written: int, collections_per_event: int
@@ -55,6 +73,12 @@ class StreamResourceInfo(ConfinedModel):
     e.g. <i2 or <f8"""
 
     parameters: dict[str, Any]
+    """Any other parameters that should be included in the StreamResource,
+    e.g. dataset path"""
+
+    source: str = ""
+    """The source string that should appear in the event descriptor, blank means use uri
+    e.g. ca://HDF:FullFileName_RBV"""
 
 
 class StreamResourceDataProvider(StreamableDataProvider):
@@ -81,7 +105,7 @@ class StreamResourceDataProvider(StreamableDataProvider):
         self.bundles = [
             bundler_composer(
                 mimetype=mimetype,
-                uri=self.uri,
+                uri=uri,
                 data_key=resource.data_key,
                 parameters={
                     "chunk_shape": resource.chunk_shape,
@@ -96,7 +120,7 @@ class StreamResourceDataProvider(StreamableDataProvider):
     async def make_datakeys(self, collections_per_event: int) -> dict[str, DataKey]:
         describe = {
             resource.data_key: DataKey(
-                source=self.uri,
+                source=resource.source or self.uri,
                 shape=[collections_per_event, *resource.shape],
                 dtype="array"
                 if collections_per_event > 1 or len(resource.shape) > 1

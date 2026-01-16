@@ -59,7 +59,7 @@ def ndattributes_to_xml(
                 type="PARAM",
                 source=ndattribute.param,
                 addr=str(ndattribute.addr),
-                datatype=ndattribute.datatype.value,
+                datatype=ndattribute.datatype.name,
                 description=ndattribute.description,
             )
         elif isinstance(ndattribute, NDAttributePv):
@@ -68,8 +68,8 @@ def ndattributes_to_xml(
                 "Attribute",
                 name=ndattribute.name,
                 type="EPICS_PV",
-                source=ndattribute.signal.source.split("ca://")[-1],
-                dbrtype=ndattribute.dbrtype.value,
+                source=ndattribute.signal.source.split("://")[-1],
+                dbrtype=ndattribute.dbrtype.name,
                 description=ndattribute.description,
             )
         else:

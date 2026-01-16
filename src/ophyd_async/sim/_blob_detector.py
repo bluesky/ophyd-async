@@ -19,12 +19,12 @@ class SimBlobDetector(StandardDetector):
         name: str = "",
     ) -> None:
         self.pattern_generator = pattern_generator or PatternGenerator()
-        super().__init__(
-            trigger_logic=BlobTriggerLogic(pattern_generator=self.pattern_generator),
-            arm_logic=BlobArmLogic(pattern_generator=self.pattern_generator),
-            data_logic=BlobDataLogic(
+        self.add_logics(
+            BlobTriggerLogic(pattern_generator=self.pattern_generator),
+            BlobArmLogic(pattern_generator=self.pattern_generator),
+            BlobDataLogic(
                 path_provider=path_provider, pattern_generator=self.pattern_generator
             ),
-            config_sigs=config_sigs,
-            name=name,
         )
+        self.add_config_signals(*config_sigs)
+        super().__init__(name=name)
