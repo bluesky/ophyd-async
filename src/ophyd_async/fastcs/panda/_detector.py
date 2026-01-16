@@ -23,10 +23,9 @@ class HDFPanda(CommonPandaBlocks, StandardDetector):
         error_hint = f"Is PandABlocks-ioc at least version {MINIMUM_PANDA_IOC}?"
         # This has to be first so we make self.pcap
         connector = fastcs_connector(self, prefix, error_hint)
-        super().__init__(
-            trigger_logic=PandaTriggerLogic(self.pcap),
-            arm_logic=PandaArmLogic(self.pcap),
-            data_logic=PandaHDFDataLogic(path_provider, self.data),
-            name=name,
-            connector=connector,
+        self.add_logics(
+            PandaTriggerLogic(self.pcap),
+            PandaArmLogic(self.pcap),
+            PandaHDFDataLogic(path_provider, self.data),
         )
+        super().__init__(name=name, connector=connector)

@@ -24,14 +24,13 @@ class EigerDetector(StandardDetector):
     ):
         # Need to do this first so the type hints are filled in
         connector = fastcs_connector(self, prefix)
-        super().__init__(
-            trigger_logic=EigerTriggerLogic(self.detector),
-            arm_logic=EigerArmLogic(self.detector),
-            data_logic=OdinDataLogic(
+        self.add_logics(
+            EigerTriggerLogic(self.detector),
+            EigerArmLogic(self.detector),
+            OdinDataLogic(
                 path_provider=path_provider,
                 odin=self.od,
                 detector_bit_depth=self.detector.bit_depth_image,
             ),
-            name=name,
-            connector=connector,
         )
+        super().__init__(name=name, connector=connector)

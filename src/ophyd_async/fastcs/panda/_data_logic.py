@@ -22,9 +22,9 @@ class PandaHDFDataLogic(DetectorDataLogic):
         self.path_provider = path_provider
         self.data_block = data_block
 
-    async def prepare_unbounded(self, device_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(device_name)
+        path_info = self.path_provider(detector_name)
         # Set create dir depth first to guarantee that callback when setting
         # directory path has correct value
         await self.data_block.create_directory.set(path_info.create_dir_depth)

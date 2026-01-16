@@ -9,9 +9,7 @@ from xml.etree import ElementTree as ET
 import numpy as np
 
 from ophyd_async.core import (
-    DetectorArmLogic,
     DetectorDataLogic,
-    DetectorTriggerLogic,
     PathInfo,
     PathProvider,
     SignalDataProvider,
@@ -23,11 +21,9 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.core import stop_busy_record
 
-from ._detector import AreaDetector
 from ._io import (
     ADBaseDataType,
     ADBaseIO,
-    ADBaseIOT,
     ADFileWriteMode,
     NDArrayBaseIO,
     NDFileHDF5IO,
@@ -288,59 +284,49 @@ class ADWriterType(Enum):
     JPEG = "JPEG"
     TIFF = "TIFF"
 
-    def make_detector(
-        self,
-        prefix: str,
-        path_provider: PathProvider,
-        writer_suffix: str | None,
-        driver: ADBaseIOT,
-        trigger_logic: DetectorTriggerLogic,
-        arm_logic: DetectorArmLogic,
-        plugins: dict[str, NDPluginBaseIO] | None = None,
-        config_sigs: Sequence[SignalR] = (),
-        name: str = "",
-    ) -> AreaDetector[ADBaseIOT]:
-        plugins = plugins or {}
-        shape_signals = [driver.array_size_y, driver.array_size_x]
-        data_type_signal = driver.data_type
-        match self:
-            case ADWriterType.HDF:
-                writer = NDFileHDF5IO(f"{prefix}{writer_suffix or 'HDF1:'}")
-                data_logic = ADHDFDataLogic(
-                    shape_signals=shape_signals,
-                    data_type_signal=data_type_signal,
-                    path_provider=path_provider,
-                    driver=driver,
-                    writer=writer,
-                    plugins=list(plugins.values()),
-                )
-            case ADWriterType.JPEG:
-                writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'JPEG1:'}")
-                data_logic = ADMultipartDataLogic(
-                    shape_signals=shape_signals,
-                    data_type_signal=data_type_signal,
-                    path_provider=path_provider,
-                    writer=writer,
-                    extension=".jpg",
-                    mimetype="multipart/related;type=image/jpeg",
-                )
-            case ADWriterType.TIFF:
-                writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'TIFF1:'}")
-                data_logic = ADMultipartDataLogic(
-                    shape_signals=shape_signals,
-                    data_type_signal=data_type_signal,
-                    path_provider=path_provider,
-                    writer=writer,
-                    extension=".tiff",
-                    mimetype="multipart/related;type=image/tiff",
-                )
-            case _:
-                raise RuntimeError("Not implemented")
-        detector = AreaDetector(
-            driver=driver,
-            plugins=dict(writer=writer, **plugins),
-            name=name,
-        )
-        detector.add_logics(trigger_logic, arm_logic, data_logic)
-        detector.add_config_signals(*config_sigs)
-        return detector
+
+def make_writer_data_logic(
+    prefix: str,
+    path_provider: PathProvider,
+    writer_suffix: str | None,
+    driver: ADBaseIO,
+    writer_type: ADWriterType,
+    plugins: dict[str, NDPluginBaseIO] | None = None,
+) -> tuple[NDPluginFileIO, DetectorDataLogic]:
+    plugins = plugins or {}
+    shape_signals = [driver.array_size_y, driver.array_size_x]
+    data_type_signal = driver.data_type
+    match writer_type:
+        case ADWriterType.HDF:
+            writer = NDFileHDF5IO(f"{prefix}{writer_suffix or 'HDF1:'}")
+            data_logic = ADHDFDataLogic(
+                shape_signals=shape_signals,
+                data_type_signal=data_type_signal,
+                path_provider=path_provider,
+                driver=driver,
+                writer=writer,
+                plugins=list(plugins.values()),
+            )
+        case ADWriterType.JPEG:
+            writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'JPEG1:'}")
+            data_logic = ADMultipartDataLogic(
+                shape_signals=shape_signals,
+                data_type_signal=data_type_signal,
+                path_provider=path_provider,
+                writer=writer,
+                extension=".jpg",
+                mimetype="multipart/related;type=image/jpeg",
+            )
+        case ADWriterType.TIFF:
+            writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'TIFF1:'}")
+            data_logic = ADMultipartDataLogic(
+                shape_signals=shape_signals,
+                data_type_signal=data_type_signal,
+                path_provider=path_provider,
+                writer=writer,
+                extension=".tiff",
+                mimetype="multipart/related;type=image/tiff",
+            )
+        case _:
+            raise RuntimeError("Not implemented")
+    return writer, data_logic
