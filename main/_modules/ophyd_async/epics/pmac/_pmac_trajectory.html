@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pmac._pmac_trajectory &#8212; ophyd-async 0.14.3.dev3+gf96a9fa09 documentation</title>
+    <title>ophyd_async.epics.pmac._pmac_trajectory &#8212; ophyd-async 0.14.3.dev4+g624bc26e2 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=7f119b1d"></script>
+    <script src="../../../../_static/documentation_options.js?v=bd69bd98"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev3+gf96a9fa09 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev3+gf96a9fa09 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev4+g624bc26e2 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev4+g624bc26e2 documentation - Home"/>
   
   
 </a></div>
@@ -467,13 +467,18 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Flyable</span><span class="p">,</span>
+    <span class="n">Preparable</span><span class="p">,</span>
+    <span class="n">Stageable</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scanspec.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span><span class="p">,</span> <span class="n">Slice</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scanspec.specs</span><span class="w"> </span><span class="kn">import</span> <span class="n">Spec</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">AsyncStatus</span><span class="p">,</span>
-    <span class="n">FlyerController</span><span class="p">,</span>
+    <span class="n">Device</span><span class="p">,</span>
     <span class="n">error_if_none</span><span class="p">,</span>
     <span class="n">gather_dict</span><span class="p">,</span>
     <span class="n">observe_value</span><span class="p">,</span>
@@ -482,8 +487,8 @@ window.addEventListener("load", () => mermaid.run());
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.motor</span><span class="w"> </span><span class="kn">import</span> <span class="n">Motor</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._pmac_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">CS_INDEX</span><span class="p">,</span> <span class="n">PmacIO</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._pmac_trajectory_generation</span><span class="w"> </span><span class="kn">import</span> <span class="n">PVT</span><span class="p">,</span> <span class="n">Trajectory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._pmac_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">CS_INDEX</span><span class="p">,</span> <span class="n">PmacExecuteState</span><span class="p">,</span> <span class="n">PmacIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._pmac_trajectory_generation</span><span class="w"> </span><span class="kn">import</span> <span class="n">PVT</span><span class="p">,</span> <span class="n">Trajectory</span><span class="p">,</span> <span class="n">UserProgram</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_PmacMotorInfo</span><span class="p">,</span>
     <span class="n">calculate_ramp_position_and_duration</span><span class="p">,</span>
@@ -507,16 +512,23 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="PmacTrajectoryTriggerLogic">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PmacTrajectoryTriggerLogic</span><span class="p">(</span><span class="n">FlyerController</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pmac</span><span class="p">:</span> <span class="n">PmacIO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PmacTrajectoryTriggerLogic</span><span class="p">(</span>
+    <span class="n">Device</span><span class="p">,</span>
+    <span class="n">Stageable</span><span class="p">,</span>
+    <span class="n">Preparable</span><span class="p">,</span>
+    <span class="n">Flyable</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pmac</span><span class="p">:</span> <span class="n">PmacIO</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span> <span class="o">=</span> <span class="n">pmac</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_next_pvt</span><span class="p">:</span> <span class="n">PVT</span> <span class="o">|</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_loaded</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_context</span><span class="p">:</span> <span class="n">PmacPrepareContext</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PmacTrajectoryTriggerLogic.prepare">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.prepare">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Spec</span><span class="p">[</span><span class="n">Motor</span><span class="p">]):</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">calculate</span><span class="p">())</span>
         <span class="nb">slice</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">consume</span><span class="p">(</span><span class="n">SLICE_SIZE</span><span class="p">)</span>
@@ -537,6 +549,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="PmacTrajectoryTriggerLogic.kickoff">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.kickoff">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">prepare_context</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_context</span><span class="p">,</span> <span class="s2">&quot;Cannot kickoff. Must call prepare first.&quot;</span>
@@ -555,6 +568,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <div class="viewcode-block" id="PmacTrajectoryTriggerLogic.complete">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.complete">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">trajectory_status</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_trajectory_status</span><span class="p">,</span> <span class="s2">&quot;Cannot complete. Must call kickoff first.&quot;</span>
@@ -565,11 +579,39 @@ window.addEventListener("load", () => mermaid.run());
         <span class="bp">self</span><span class="o">.</span><span class="n">_loaded</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 
-<div class="viewcode-block" id="PmacTrajectoryTriggerLogic.stop">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stop">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">abort_profile</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span></div>
+<div class="viewcode-block" id="PmacTrajectoryTriggerLogic.stage">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stage">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_if_running</span><span class="p">()</span>
 
+        <span class="c1"># Run an empty fly scan to reset EQU on Panda Brick</span>
+        <span class="k">for</span> <span class="n">use_axis</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">use_axis</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">await</span> <span class="n">use_axis</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">time_array</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">0</span><span class="p">)),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">user_array</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">UserProgram</span><span class="o">.</span><span class="n">END</span><span class="p">)),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">points_to_build</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">build_profile</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">execute_profile</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PmacTrajectoryTriggerLogic.unstage">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.unstage">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_if_running</span><span class="p">()</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_stop_if_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Abort current trajectory, if one is running</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">execute_state</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+            <span class="o">==</span> <span class="n">PmacExecuteState</span><span class="o">.</span><span class="n">EXECUTING</span>
+        <span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmac</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">abort_profile</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
 
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_execute_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">motor_info</span><span class="p">:</span> <span class="n">_PmacMotorInfo</span><span class="p">):</span>

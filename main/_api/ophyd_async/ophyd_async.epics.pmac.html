@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.pmac &#8212; ophyd-async 0.14.3.dev3+gf96a9fa09 documentation</title>
+    <title>ophyd_async.epics.pmac &#8212; ophyd-async 0.14.3.dev4+g624bc26e2 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=7f119b1d"></script>
+    <script src="../../_static/documentation_options.js?v=bd69bd98"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev3+gf96a9fa09 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev3+gf96a9fa09 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev4+g624bc26e2 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev4+g624bc26e2 documentation - Home"/>
   
   
 </a></div>
@@ -543,7 +543,7 @@
 <td><p>Device that moves a PMAC Motor record.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic" title="ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic</span></code></a></p></td>
-<td><p>Base class for controlling ‘flyable’ devices.</p></td>
+<td><p>Common base class for all Ophyd Async Devices.</p></td>
 </tr>
 </tbody>
 </table>
@@ -582,33 +582,41 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.pmac.</span></span><span class="sig-name descname"><span class="pre">PmacTrajectoryTriggerLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pmac</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.pmac.PmacIO" title="ophyd_async.epics.pmac._pmac_io.PmacIO"><span class="pre">PmacIO</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.FlyerController" title="ophyd_async.core.FlyerController"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.FlyerController</span></code></a></p>
-<p>Base class for controlling ‘flyable’ devices.</p>
-<p><a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.14.7.dev20+gaa191e31b"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bluesky.protocols.Flyable</span></code></span></a>.</p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.pmac.</span></span><span class="sig-name descname"><span class="pre">PmacTrajectoryTriggerLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pmac</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.pmac.PmacIO" title="ophyd_async.epics.pmac._pmac_io.PmacIO"><span class="pre">PmacIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Stageable" title="(in bluesky v1.14.7.dev20+gaa191e31b)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bluesky.protocols.Stageable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Preparable" title="(in bluesky v1.14.7.dev20+gaa191e31b)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bluesky.protocols.Preparable</span></code></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="(in bluesky v1.14.7.dev20+gaa191e31b)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bluesky.protocols.Flyable</span></code></a></p>
+<p>Common base class for all Ophyd Async Devices.</p>
+<dl class="myst field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Optional name of the Device</p></li>
+<li><p><strong>connector</strong> – Optional DeviceConnector instance to use at connect()</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.prepare">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://blueskyproject.io/scanspec/main/_api/scanspec.specs.html#scanspec.specs.Spec" title="(in scanspec vmain)"><span class="pre">Spec</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor" title="ophyd_async.epics.motor.Motor"><span class="pre">Motor</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.prepare" title="Link to this definition">#</a></dt>
-<dd><p>Move to the start of the fly scan.</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.kickoff">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kickoff</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.kickoff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.kickoff" title="Link to this definition">#</a></dt>
-<dd><p>Start the fly scan.</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.complete">
 <em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.complete" title="Link to this definition">#</a></dt>
-<dd><p>Block until the fly scan is done.</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stop">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stop" title="Link to this definition">#</a></dt>
-<dd><p>Stop flying and wait everything to be stopped.</p>
-</dd></dl>
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stage">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.stage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stage" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.unstage">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unstage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/pmac/_pmac_trajectory.html#PmacTrajectoryTriggerLogic.unstage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.unstage" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -674,7 +682,8 @@
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.prepare"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.prepare()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.kickoff"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.kickoff()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.complete"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.complete()</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stop"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.stop()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.stage"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.stage()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.unstage"><code class="docutils literal notranslate"><span class="pre">PmacTrajectoryTriggerLogic.unstage()</span></code></a></li>
 </ul>
 </li>
 </ul>
