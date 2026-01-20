@@ -60,7 +60,7 @@ JUNGFRAU_TRIGGER_MODE_MAP = {
 class JungfrauDriverIO(Device):
     """Contains signals for handling IO on the Jungfrau detector.
 
-    This mirrors the intefrace presented by slsDetector/Db/slsDetector.template
+    This mirrors the intefrace provided by slsDetector/Db/slsDetector.template
     """
 
     exposure_time: SignalRW[float]  # in s
