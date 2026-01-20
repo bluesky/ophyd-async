@@ -30,11 +30,16 @@ class NDArrayBaseIO(EpicsDevice):
     unique_id: A[SignalR[int], PvSuffix("UniqueId_RBV")]
     nd_attributes_file: A[SignalRW[str], PvSuffix("NDAttributesFile")]
     acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire")]
+
+    # The array_size_x and y signals are used when outputting an NDArray (i.e. from the driver)
     array_size_x: A[SignalR[int], PvSuffix("ArraySizeX_RBV")]
     array_size_y: A[SignalR[int], PvSuffix("ArraySizeY_RBV")]
+
+    # The array_size0/1/2 signals are used when receiving an NDArray (i.e. in a plugin)
     array_size0: A[SignalR[int], PvSuffix("ArraySize0_RBV")]
     array_size1: A[SignalR[int], PvSuffix("ArraySize1_RBV")]
     array_size2: A[SignalR[int], PvSuffix("ArraySize2_RBV")]
+
     color_mode: A[SignalR[ADBaseColorMode], PvSuffix("ColorMode_RBV")]
     data_type: A[SignalR[ADBaseDataType], PvSuffix("DataType_RBV")]
     array_counter: A[SignalRW[int], PvSuffix.rbv("ArrayCounter")]
