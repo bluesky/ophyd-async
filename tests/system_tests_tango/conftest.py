@@ -1,4 +1,4 @@
-import os
+import asyncio
 import pickle
 import socket
 import subprocess
@@ -30,15 +30,9 @@ def reset_tango_asyncio():
 
 
 def pytest_collection_modifyitems(config, items):
-    tango_dir = os.path.join("system_tests", "tango")
+    tango_dir = "system_tests_tango"
     for item in items:
         if tango_dir in str(item.fspath):
-            if sys.version_info >= (3, 12):
-                item.add_marker(
-                    pytest.mark.skip(
-                        reason="Tango is currently not supported on Python 3.12: https://github.com/bluesky/ophyd-async/issues/681"
-                    )
-                )
             if sys.platform.startswith(
                 "win"
             ):  # expect "win32", but open to a future change: https://mail.python.org/pipermail/patches/2000-May/000648.html
@@ -222,3 +216,21 @@ def everything_signal_info():
     )
 
     return signal_info
+
+
+@pytest.fixture
+def event_loop():
+    """Create a fresh event loop for each test."""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    yield loop
+
+    # Cancel all pending tasks
+    pending = asyncio.all_tasks(loop)
+    for task in pending:
+        task.cancel()
+    loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+
+    loop.close()
+    asyncio.set_event_loop(None)

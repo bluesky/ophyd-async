@@ -9,7 +9,9 @@ from ._signal import (
     tango_signal_x,
 )
 from ._tango_transport import (
+    AttributeInfoEx,
     AttributeProxy,
+    CommandInfo,
     CommandProxy,
     CommandProxyReadCharacter,
     TangoDoubleStringTable,
@@ -21,6 +23,7 @@ from ._tango_transport import (
     get_python_type,
     get_source_metadata,
     get_tango_trl,
+    parse_precision,
 )
 from ._utils import (
     DevStateEnum,
@@ -30,7 +33,9 @@ from ._utils import (
 )
 
 __all__ = [
+    "AttributeInfoEx",
     "AttributeProxy",
+    "CommandInfo",
     "CommandProxy",
     "CommandProxyReadCharacter",
     "DevStateEnum",
@@ -44,6 +49,7 @@ __all__ = [
     "infer_python_type",
     "infer_signal_type",
     "make_backend",
+    "parse_precision",
     "tango_signal_r",
     "tango_signal_rw",
     "tango_signal_w",
