@@ -31,7 +31,7 @@ class NDArrayBaseIO(EpicsDevice):
     nd_attributes_file: A[SignalRW[str], PvSuffix("NDAttributesFile")]
     acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire")]
 
-    # The array_size_x and y signals are used when outputting an NDArray (i.e. from the driver)
+    # The array_size_x/y signals are used when outputting an NDArray (i.e. from a driver)
     array_size_x: A[SignalR[int], PvSuffix("ArraySizeX_RBV")]
     array_size_y: A[SignalR[int], PvSuffix("ArraySizeY_RBV")]
 
