@@ -11,8 +11,8 @@ The original `StandardDetector` implementation had several architectural issues:
 - `DetectorController` and `DetectorWriter` combined multiple concerns (arming, triggering, and data writing), so features like arming which was common between many areaDetectors was inherited in many controllers
 - Detector implementations required complex inheritance hierarchies 
 - Trigger modes were inconsistently named and didn't clearly convey their behavior
-- Detectors that read data from PVs were handled in a completely different way to those that wrote to files
-- There was no way to read signals from devices to produce deadtime
+- Detectors that read data from PVs were handled in a completely different way (StandardReadable) to those that wrote to files (StandardDetector)
+- There was no way to read signals from devices when calculating the deadtime
 
 These issues made it challenging to implement new detectors and support advanced use cases like:
 - Detectors with multiple HDF writers for different ROIs
@@ -68,7 +68,7 @@ The `TriggerInfo` model is restructured with clearer semantics:
 - `trigger`: What type of triggering (INTERNAL, EXTERNAL_EDGE, EXTERNAL_LEVEL)
 - `livetime`: Exposure time (for INTERNAL and EXTERNAL_EDGE)
 - `deadtime`: Time between exposures (for INTERNAL)
-- `exposures_per_collection`: Number of exposures averaged per collection
+- `exposures_per_collection`: Number of exposures averaged into a single collection
 - `collections_per_event`: Number of collections per bluesky event
 - `number_of_events`: Number of bluesky events to emit
 
@@ -76,9 +76,9 @@ The `TriggerInfo` model is restructured with clearer semantics:
 
 Trigger types renamed for clarity:
 - `EDGE_TRIGGER` → `EXTERNAL_EDGE` - Rising edge starts an internally-timed exposure
-- `CONSTANT_GATE` → `EXTERNAL_LEVEL` - High level duration determines exposure time  
-- `VARIABLE_GATE` → `EXTERNAL_LEVEL` - Same as CONSTANT_GATE
-- `INTERNAL` → `INTERNAL` - Detector generates exposures internally
+- `CONSTANT_GATE` → `EXTERNAL_LEVEL` - High level of external trigger signal duration determines exposure time  
+- `VARIABLE_GATE` → `EXTERNAL_LEVEL` - There is no distinction between variable and constant high level time as the triggering system will now determine whether the detector can support level triggering over edge triggering
+- `INTERNAL` remains unchanged
 
 ## Consequences
 

@@ -1,15 +1,12 @@
 from pydantic import NonNegativeInt
 
 from ophyd_async.core import (
-    DetectorTrigger,
     Device,
     SignalR,
     SignalRW,
     SignalX,
     StrictEnum,
-    soft_signal_rw,
 )
-from ophyd_async.fastcs.core import fastcs_connector
 
 
 class JungfrauTriggerMode(StrictEnum):
@@ -51,12 +48,6 @@ class AcquisitionType(StrictEnum):
     PEDESTAL = "Pedestal"
 
 
-JUNGFRAU_TRIGGER_MODE_MAP = {
-    DetectorTrigger.EDGE_TRIGGER: JungfrauTriggerMode.EXTERNAL,
-    DetectorTrigger.INTERNAL: JungfrauTriggerMode.INTERNAL,
-}
-
-
 class JungfrauDriverIO(Device):
     """Contains signals for handling IO on the Jungfrau detector."""
 
@@ -85,10 +76,3 @@ class JungfrauDriverIO(Device):
     bit_depth: SignalR[int]
     trigger_mode: SignalRW[JungfrauTriggerMode]
     detector_status: SignalR[DetectorStatus]
-
-    def __init__(self, uri: str, name: str = ""):
-        # Determines how the TriggerInfo gets mapped to the Jungfrau during prepare
-        self.acquisition_type = soft_signal_rw(
-            AcquisitionType, AcquisitionType.STANDARD
-        )
-        super().__init__(name=name, connector=fastcs_connector(self, uri))
