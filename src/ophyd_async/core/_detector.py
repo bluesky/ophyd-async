@@ -160,6 +160,19 @@ def _trigger_logic_supported(method) -> bool:
     return method.__func__ is not getattr(DetectorTriggerLogic, method.__name__)
 
 
+def _get_supported_triggers(
+    trigger_logic: DetectorTriggerLogic,
+) -> set[DetectorTrigger]:
+    supported_triggers = set()
+    if _trigger_logic_supported(trigger_logic.prepare_internal):
+        supported_triggers.add(DetectorTrigger.INTERNAL)
+    if _trigger_logic_supported(trigger_logic.prepare_edge):
+        supported_triggers.add(DetectorTrigger.EXTERNAL_EDGE)
+    if _trigger_logic_supported(trigger_logic.prepare_level):
+        supported_triggers.add(DetectorTrigger.EXTERNAL_LEVEL)
+    return supported_triggers
+
+
 class DetectorArmLogic(ABC):
     @abstractmethod
     async def arm(self):
@@ -304,13 +317,7 @@ class StandardDetector(
                     raise RuntimeError("Detector already has trigger logic")
                 self._trigger_logic = logic
                 # Store the triggers that are supported
-                self._supported_triggers = set()
-                if _trigger_logic_supported(self._trigger_logic.prepare_internal):
-                    self._supported_triggers.add(DetectorTrigger.INTERNAL)
-                if _trigger_logic_supported(self._trigger_logic.prepare_edge):
-                    self._supported_triggers.add(DetectorTrigger.EXTERNAL_EDGE)
-                if _trigger_logic_supported(self._trigger_logic.prepare_level):
-                    self._supported_triggers.add(DetectorTrigger.EXTERNAL_LEVEL)
+                self._supported_triggers = _get_supported_triggers(logic)
                 # Add the config signals it needs
                 self.add_config_signals(*logic.config_sigs())
             elif isinstance(logic, DetectorArmLogic):
