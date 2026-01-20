@@ -44,10 +44,19 @@ from ._mock_signal_utils import (
     set_mock_value,
     set_mock_values,
 )
-from ._protocol import AsyncConfigurable, AsyncReadable, AsyncStageable, Watcher
+from ._protocol import (
+    AsyncConfigurable,
+    AsyncLocatable,
+    AsyncMovable,
+    AsyncPausable,
+    AsyncReadable,
+    AsyncStageable,
+    Watcher,
+)
 from ._providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
+    AutoMaxIncrementingPathProvider,
     DatasetDescriber,
     FilenameProvider,
     PathInfo,
@@ -150,6 +159,9 @@ __all__ = [
     # Protocols
     "AsyncReadable",
     "AsyncConfigurable",
+    "AsyncLocatable",
+    "AsyncMovable",
+    "AsyncPausable",
     "AsyncStageable",
     "Watcher",
     # Status
@@ -222,6 +234,7 @@ __all__ = [
     "FilenameProvider",
     "StaticFilenameProvider",
     "AutoIncrementFilenameProvider",
+    "AutoMaxIncrementingPathProvider",
     "UUIDFilenameProvider",
     # Datatset
     "DatasetDescriber",
