@@ -73,10 +73,13 @@ async def prepare_pedestal_mode(
         # twice.
         raise ValueError(
             f"Invalid trigger info for pedestal mode. "
-            f"{num} must be equal to 2 * {frames} * {loops}. "
+            f"Number {num} must be equal to 2 * {frames} * {loops}. "
             f"Was create_jungfrau_pedestal_triggering_info used?"
         )
-    await prepare_exposures(detector, livetime, deadtime)
+    await asyncio.gather(
+        detector.trigger_mode.set(JungfrauTriggerMode.INTERNAL),
+        prepare_exposures(detector, livetime, deadtime),
+    )
     # Setting signals once the detector is in pedestal mode can cause errors,
     # so do this last
     await detector.pedestal_mode_state.set(PedestalMode.ON)

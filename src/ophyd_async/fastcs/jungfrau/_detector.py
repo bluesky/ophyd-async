@@ -7,7 +7,7 @@ from ._io import AcquisitionType, JungfrauDriverIO
 from ._trigger_logic import JungfrauTriggerLogic
 
 
-class Jungfrau(StandardDetector):
+class JungfrauDetector(StandardDetector):
     """Ophyd-async implementation of a Jungfrau Detector."""
 
     def __init__(

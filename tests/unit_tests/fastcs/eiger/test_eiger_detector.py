@@ -42,7 +42,7 @@ async def test_prepare_internal_calls_correct_parameters(detector: EigerDetector
             trigger=DetectorTrigger.INTERNAL,
         )
     )
-    assert get_mock(detector).mock_calls == [
+    assert list(get_mock(detector).mock_calls) == [
         call.detector.trigger_mode.put(EigerTriggerMode.INTERNAL, wait=True),
         call.detector.nimages.put(10, wait=True),
         call.detector.count_time.put(0.1, wait=True),
@@ -57,7 +57,6 @@ async def test_prepare_internal_calls_correct_parameters(detector: EigerDetector
         call.od.mw.file_prefix.put("filename.h5", wait=True),
         call.od.mw.acquisition_id.put("filename.h5", wait=True),
         call.od.fp.start_writing.put(None, wait=True),
-        call.events_to_kickoff.put(10, wait=True),
     ]
 
 

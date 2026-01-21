@@ -480,7 +480,9 @@ class StandardDetector(
             )
         # Setup the trigger logic for the right number of exposures
         if value.trigger not in self._supported_triggers:
-            format_triggers = ", ".join([t.name for t in self._supported_triggers])
+            format_triggers = ", ".join(
+                sorted(t.name for t in self._supported_triggers)
+            )
             raise ValueError(
                 f"Trigger type {value.trigger} not supported by '{self.name}', "
                 f"supported types are: [{format_triggers}]"
