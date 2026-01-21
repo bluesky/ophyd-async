@@ -46,10 +46,7 @@ class PluginSignalDataLogic(DetectorDataLogic):
         return SignalDataProvider(self.signal)
 
     def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
-        if self.hinted:
-            return [self.signal.name]
-        else:
-            return []
+        return [self.signal.name] if self.hinted else []
 
 
 async def get_ndarray_resource_info(
