@@ -1,152 +1,110 @@
 import asyncio
-from asyncio import Event
 from pathlib import Path
-from unittest.mock import ANY, AsyncMock, MagicMock
+from unittest.mock import call
 
 import pytest
+from bluesky import RunEngine
 
 from ophyd_async.core import (
+    StandardDetector,
+    StaticFilenameProvider,
+    StaticPathProvider,
+    TriggerInfo,
     callback_on_mock_put,
-    get_mock_put,
     init_devices,
     set_mock_value,
+    soft_signal_rw,
 )
 from ophyd_async.fastcs.core import fastcs_connector
-from ophyd_async.fastcs.odin import OdinIO, OdinWriter
+from ophyd_async.fastcs.odin import OdinDataLogic, OdinIO
+from ophyd_async.testing import assert_has_calls
 
-ODIN_DETECTOR_NAME = "odin_detector"
-EIGER_BIT_DEPTH = 16
+BIT_DEPTH = 16
 
-OdinDriverAndWriter = tuple[OdinIO, OdinWriter]
+
+class TestOdinDet(StandardDetector):
+    def __init__(self, name="", connector=None):
+        path_provider = StaticPathProvider(
+            StaticFilenameProvider("filename"), Path("/tmp")
+        )
+        self.odin = OdinIO(connector=fastcs_connector("PREFIX:"))
+        self.bit_depth = soft_signal_rw(int, BIT_DEPTH)
+        self.add_logics(OdinDataLogic(path_provider, self.odin, self.bit_depth))
+        super().__init__(name, connector)
 
 
 @pytest.fixture
-def odin_driver_and_writer(RE) -> OdinDriverAndWriter:
-    eiger_bit_depth = AsyncMock(get_value=AsyncMock(return_value=EIGER_BIT_DEPTH))
-
-    class MockOdinHDFIO(OdinIO):
-        def __init__(self, uri: str, name: str = ""):
-            super().__init__(name=name, connector=fastcs_connector(self, uri))
-
+def odin_det(RE: RunEngine) -> TestOdinDet:
     with init_devices(mock=True):
-        driver = MockOdinHDFIO("")
-        writer = OdinWriter(MagicMock(), driver, eiger_bit_depth)
-    writer._path_provider.return_value.filename = "filename.h5"  # type: ignore
-    return driver, writer
+        det = TestOdinDet()
+    return det
 
 
-def initialise_signals_to_armed(driver):
-    set_mock_value(driver.fp.writing, True)
-    set_mock_value(driver.mw.writing, True)
-    set_mock_value(driver.mw.file_prefix, "filename.h5")
-    set_mock_value(driver.mw.acquisition_id, "filename.h5")
+async def test_describe_gives_detector_shape(odin_det: TestOdinDet):
+    set_mock_value(odin_det.odin.fp.writing, True)
+    set_mock_value(odin_det.odin.mw.writing, True)
+    set_mock_value(odin_det.odin.fp.data_dims_1, 1024)
+    set_mock_value(odin_det.odin.fp.data_dims_0, 768)
+    await odin_det.prepare(TriggerInfo())
+    description = await odin_det.describe()
+    assert description == {
+        "det": {
+            "dtype": "array",
+            "dtype_numpy": "<u2",
+            "external": "STREAM:",
+            "shape": [
+                1,
+                768,
+                1024,
+            ],
+            "source": "file://localhost/tmp/filename.h5",
+        },
+    }
 
 
-async def test_when_open_called_then_file_correctly_set(
-    odin_driver_and_writer: OdinDriverAndWriter, tmp_path: Path
-):
-    driver, writer = odin_driver_and_writer
-    initialise_signals_to_armed(driver)
-    path_info = writer._path_provider.return_value  # type: ignore
-    path_info.directory_path = tmp_path
-    expected_filename = "filename.h5"
-
-    await writer.open(ODIN_DETECTOR_NAME)
-
-    get_mock_put(driver.fp.file_path).assert_called_once_with(str(tmp_path), wait=ANY)
-    get_mock_put(driver.mw.directory).assert_called_once_with(str(tmp_path), wait=ANY)
-    get_mock_put(driver.fp.file_prefix).assert_called_once_with(
-        expected_filename, wait=ANY
+async def test_when_closed_then_data_capture_turned_off(odin_det: TestOdinDet):
+    await odin_det.unstage()
+    assert_has_calls(
+        odin_det,
+        [
+            call.odin.fp.stop_writing.put(None, wait=True),
+            call.odin.mw.stop.put(None, wait=True),
+        ],
     )
-    get_mock_put(driver.mw.file_prefix).assert_called_once_with(
-        expected_filename, wait=ANY
-    )
-
-
-async def test_when_open_called_then_all_expected_signals_set(
-    odin_driver_and_writer: OdinDriverAndWriter,
-):
-    driver, writer = odin_driver_and_writer
-    initialise_signals_to_armed(driver)
-
-    await writer.open(ODIN_DETECTOR_NAME)
-
-    get_mock_put(driver.fp.data_datatype).assert_called_once_with("uint16", wait=ANY)
-    get_mock_put(driver.fp.frames).assert_called_once_with(0, wait=ANY)
-
-    get_mock_put(driver.fp.start_writing).assert_called_once_with(None, wait=ANY)
-
-
-async def test_bit_depth_is_passed_before_open_and_set_to_data_type_after_open(
-    odin_driver_and_writer: OdinDriverAndWriter,
-):
-    driver, writer = odin_driver_and_writer
-    initialise_signals_to_armed(driver)
-
-    assert await writer._detector_bit_depth.get_value() == EIGER_BIT_DEPTH
-    assert await driver.fp.data_datatype.get_value() == ""
-    await writer.open(ODIN_DETECTOR_NAME)
-    get_mock_put(driver.fp.data_datatype).assert_called_once_with(
-        f"uint{EIGER_BIT_DEPTH}", wait=ANY
-    )
-
-
-async def test_given_data_shape_set_when_open_called_then_describe_has_correct_shape(
-    odin_driver_and_writer: OdinDriverAndWriter,
-):
-    driver, writer = odin_driver_and_writer
-    initialise_signals_to_armed(driver)
-
-    set_mock_value(driver.fp.data_dims_1, 1024)
-    set_mock_value(driver.fp.data_dims_0, 768)
-    description = await writer.open(ODIN_DETECTOR_NAME)
-    assert description["data"]["shape"] == [1, 768, 1024]
-
-
-async def test_when_closed_then_data_capture_turned_off(
-    odin_driver_and_writer: OdinDriverAndWriter,
-):
-    driver, writer = odin_driver_and_writer
-    await writer.close()
-    get_mock_put(driver.fp.stop_writing).assert_called_once_with(None, wait=ANY)
-    get_mock_put(driver.mw.stop).assert_called_once_with(None, wait=ANY)
 
 
 @pytest.mark.asyncio
 async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writing(
-    odin_driver_and_writer,
+    odin_det: TestOdinDet,
 ):
-    driver, writer = odin_driver_and_writer
-
-    file_name_is_set = Event()
-    capture_is_set = Event()
-    callback_on_mock_put(
-        driver.fp.file_prefix, lambda *args, **kwargs: file_name_is_set.set()
+    odin: OdinIO = odin_det.odin
+    ev = asyncio.Event()
+    callback_on_mock_put(odin_det.odin.fp.start_writing, lambda v, wait=True: ev.set())
+    # Start it preparing
+    status = odin_det.prepare(TriggerInfo(number_of_events=15))
+    # Wait for start_writing to be called
+    await ev.wait()
+    # Check it isn't done yet, but has the right calls
+    assert not status.done
+    assert_has_calls(
+        odin,
+        [
+            call.fp.data_datatype.put("uint16", wait=True),
+            call.fp.data_compression.put("BSLZ4", wait=True),
+            call.fp.frames.put(0, wait=True),
+            call.fp.process_frames_per_block.put(1000, wait=True),
+            call.fp.file_path.put("/tmp", wait=True),
+            call.mw.directory.put("/tmp", wait=True),
+            call.fp.file_prefix.put("filename.h5", wait=True),
+            call.mw.file_prefix.put("filename.h5", wait=True),
+            call.mw.acquisition_id.put("filename.h5", wait=True),
+            call.fp.start_writing.put(None, wait=True),
+        ],
     )
-    callback_on_mock_put(
-        driver.fp.start_writing, lambda *args, **kwargs: capture_is_set.set()
-    )
-
-    async def set_waited_signals():
-        set_mock_value(driver.mw.acquisition_id, "filename.h5")
-        set_mock_value(driver.mw.file_prefix, "filename.h5")
-
-    async def set_ready_signals():
-        set_mock_value(driver.mw.writing, True)
-        set_mock_value(driver.fp.writing, True)
-
-    async def wait_and_set_signals():
-        # Block until filename is set
-        await file_name_is_set.wait()
-        # Allow writer.open to proceed to wait_for_value.
-        await asyncio.sleep(0.1)
-        # writer.open now waits on signals; set these, and unset event
-        await set_waited_signals()
-        # Block until capture sets event
-        await capture_is_set.wait()
-        # Allow writer.open to proceed to wait_for_value.
-        await asyncio.sleep(0.1)
-        # writer.open now waits on signals; set these
-        await set_ready_signals()
-
-    await asyncio.gather(writer.open(ODIN_DETECTOR_NAME), wait_and_set_signals())
+    # Set the filewriters going
+    set_mock_value(odin.fp.writing, True)
+    set_mock_value(odin.mw.writing, True)
+    # Check we are done now, and no additional calls
+    await status
+    assert status.done
+    assert_has_calls(odin, [])

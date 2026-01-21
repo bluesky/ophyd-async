@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from contextlib import AbstractContextManager
 from typing import Any, cast
 from unittest.mock import Mock, call
@@ -11,11 +11,14 @@ from event_model import DataKey
 from ophyd_async.core import (
     AsyncConfigurable,
     AsyncReadable,
+    Device,
+    Signal,
     SignalDatatypeT,
     SignalR,
     Table,
     WatchableAsyncStatus,
     Watcher,
+    get_mock,
 )
 
 from ._utils import T
@@ -149,6 +152,30 @@ def assert_emitted(docs: Mapping[str, list[dict]], **numbers: int):
     assert list(docs) == list(numbers)
     actual_numbers = {name: len(d) for name, d in docs.items()}
     assert actual_numbers == numbers
+
+
+def assert_has_calls(device: Device | Signal, calls: Sequence[Any], reset_after=True):
+    """Check that the device connected in mock mode has seen the supplied calls.
+
+    :param device: Device or Signal connected in mock mode to check.
+    :param calls: Expected sequence of mock calls.
+    :param reset_after:
+        Whether to reset the mock after assertion so subsequent calls don't see
+        the same calls again.
+
+    :example:
+    ```python device.trigger() assert_has_calls(
+        device, [
+            call.device.num_frames.put(1, wait=True),
+            call.device.start_writing.put(None, wait=True),
+        ],
+    )
+    ```
+    """
+    mock = get_mock(device)
+    assert list(mock.mock_calls) == list(calls)
+    if reset_after:
+        mock.reset_mock()
 
 
 class ApproxTable:

@@ -7,11 +7,11 @@ from ophyd_async.core import (
     DetectorTrigger,
     EnableDisable,
     TriggerInfo,
-    get_mock,
     init_devices,
     set_mock_value,
 )
 from ophyd_async.epics import adcore
+from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
@@ -89,14 +89,17 @@ async def test_cont_acq_controller_success(
 ):
     await cont_acq_detector.stage()
     await cont_acq_detector.trigger()
-    assert list(get_mock(cont_acq_detector).mock_calls) == [
-        call.cb1.capture.put(False, wait=False),
-        call.cb1.enable_callbacks.put(EnableDisable.ENABLE, wait=True),
-        call.cb1.pre_count.put(0, wait=True),
-        call.cb1.post_count.put(1, wait=True),
-        call.cb1.preset_trigger_count.put(1, wait=True),
-        call.cb1.flush_on_soft_trg.put(
-            adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE, wait=True
-        ),
-        call.cb1.capture.put(True, wait=True),
-    ]
+    assert_has_calls(
+        cont_acq_detector,
+        [
+            call.cb1.capture.put(False, wait=False),
+            call.cb1.enable_callbacks.put(EnableDisable.ENABLE, wait=True),
+            call.cb1.pre_count.put(0, wait=True),
+            call.cb1.post_count.put(1, wait=True),
+            call.cb1.preset_trigger_count.put(1, wait=True),
+            call.cb1.flush_on_soft_trg.put(
+                adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE, wait=True
+            ),
+            call.cb1.capture.put(True, wait=True),
+        ],
+    )

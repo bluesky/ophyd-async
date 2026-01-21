@@ -6,11 +6,11 @@ import pytest
 
 from ophyd_async.core import (
     callback_on_mock_put,
-    get_mock,
     init_devices,
     set_mock_value,
 )
 from ophyd_async.epics import adcore
+from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
@@ -26,9 +26,12 @@ async def test_arm_logic_trigger_internal_calls_acquire(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
     await adbase_detector.trigger()
-    assert list(get_mock(adbase_detector.driver).mock_calls) == [
-        call.acquire.put(True, wait=True),
-    ]
+    assert_has_calls(
+        adbase_detector.driver,
+        [
+            call.acquire.put(True, wait=True),
+        ],
+    )
 
 
 async def test_arm_logic_when_arming_times_out(
@@ -100,9 +103,12 @@ async def test_arm_logic_disarm(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
     await adbase_detector.unstage()
-    assert list(get_mock(adbase_detector.driver).mock_calls) == [
-        call.acquire.put(False, wait=False),
-    ]
+    assert_has_calls(
+        adbase_detector.driver,
+        [
+            call.acquire.put(False, wait=False),
+        ],
+    )
 
 
 async def bad_observe_value(*args, **kwargs):

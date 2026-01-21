@@ -6,11 +6,11 @@ from ophyd_async.core import (
     DetectorTrigger,
     StaticPathProvider,
     TriggerInfo,
-    get_mock,
     init_devices,
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
@@ -42,7 +42,10 @@ async def test_prepare_internal(
     test_adsimdetector: adsimdetector.SimDetector,
 ):
     await test_adsimdetector.prepare(TriggerInfo(number_of_events=11))
-    assert list(get_mock(test_adsimdetector.driver).mock_calls) == [
-        call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-        call.num_images.put(11, wait=True),
-    ]
+    assert_has_calls(
+        test_adsimdetector.driver,
+        [
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
+            call.num_images.put(11, wait=True),
+        ],
+    )

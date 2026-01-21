@@ -1,12 +1,15 @@
 import logging
 import re
-from unittest.mock import MagicMock, call
+from pathlib import Path
+from unittest.mock import call
 
 import pytest
 from bluesky.run_engine import RunEngine
 
 from ophyd_async.core import (
     DetectorTrigger,
+    StaticFilenameProvider,
+    StaticPathProvider,
     TriggerInfo,
     callback_on_mock_put,
     get_mock,
@@ -19,20 +22,16 @@ from ophyd_async.fastcs.jungfrau import (
     JungfrauTriggerMode,
     PedestalMode,
 )
+from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
 def jungfrau(RE: RunEngine):
-    path_provider = MagicMock()
-    path_provider.return_value.filename = "filename.h5"  # type: ignore
+    path_provider = StaticPathProvider(StaticFilenameProvider("filename"), Path("/tmp"))
     with init_devices(mock=True):
         detector = JungfrauDetector("prefix", path_provider, "", "", "jungfrau")
 
-    def set_meta_filename_and_id(value, *args, **kwargs):
-        set_mock_value(detector.odin.mw.file_prefix, value)
-        set_mock_value(detector.odin.mw.acquisition_id, value)
-
-    callback_on_mock_put(detector.odin.fp.file_prefix, set_meta_filename_and_id)
+    # Enough to satisfy the odin writer
     set_mock_value(detector.odin.fp.writing, True)
     set_mock_value(detector.odin.mw.writing, True)
     set_mock_value(detector.detector.bit_depth, 8)
@@ -80,15 +79,18 @@ async def test_arm(jungfrau: JungfrauDetector):
         lambda v, wait: set_mock_value(jungfrau.odin.fp.frames_written, 1),
     )
     await jungfrau.trigger()
-    assert list(mock.mock_calls) == [call.acquisition_start.put(None, wait=True)]
+    assert_has_calls(jungfrau.detector, [call.acquisition_start.put(None, wait=True)])
 
 
 async def test_disarm(jungfrau: JungfrauDetector):
     await jungfrau.unstage()
-    assert list(get_mock(jungfrau.detector).mock_calls) == [
-        call.acquisition_stop.put(None, wait=True),
-        call.pedestal_mode_state.put(PedestalMode.OFF, wait=True),
-    ]
+    assert_has_calls(
+        jungfrau.detector,
+        [
+            call.acquisition_stop.put(None, wait=True),
+            call.pedestal_mode_state.put(PedestalMode.OFF, wait=True),
+        ],
+    )
 
 
 async def test_signals_set_in_pedestal_mode(jungfrau: JungfrauDetector):
@@ -104,12 +106,15 @@ async def test_signals_set_in_pedestal_mode(jungfrau: JungfrauDetector):
     mock = get_mock(jungfrau.detector)
     mock.reset_mock()
     await jungfrau.prepare(good_trigger_info)
-    assert list(mock.mock_calls) == [
-        call.trigger_mode.put(JungfrauTriggerMode.INTERNAL, wait=True),
-        call.period_between_frames.put(0.00102, wait=True),
-        call.exposure_time.put(0.001, wait=True),
-        call.pedestal_mode_state.put(PedestalMode.ON, wait=True),
-    ]
+    assert_has_calls(
+        jungfrau.detector,
+        [
+            call.trigger_mode.put(JungfrauTriggerMode.INTERNAL, wait=True),
+            call.period_between_frames.put(0.00102, wait=True),
+            call.exposure_time.put(0.001, wait=True),
+            call.pedestal_mode_state.put(PedestalMode.ON, wait=True),
+        ],
+    )
 
 
 async def test_signals_set_in_standard_internal_mode(jungfrau: JungfrauDetector):
@@ -119,12 +124,15 @@ async def test_signals_set_in_standard_internal_mode(jungfrau: JungfrauDetector)
         trigger=DetectorTrigger.INTERNAL,
     )
     await jungfrau.prepare(good_trigger_info)
-    assert list(get_mock(jungfrau.detector).mock_calls) == [
-        call.trigger_mode.put(JungfrauTriggerMode.INTERNAL, wait=True),
-        call.frames_per_acq.put(10, wait=True),
-        call.period_between_frames.put(0.00102, wait=True),
-        call.exposure_time.put(0.001, wait=True),
-    ]
+    assert_has_calls(
+        jungfrau.detector,
+        [
+            call.trigger_mode.put(JungfrauTriggerMode.INTERNAL, wait=True),
+            call.frames_per_acq.put(10, wait=True),
+            call.period_between_frames.put(0.00102, wait=True),
+            call.exposure_time.put(0.001, wait=True),
+        ],
+    )
 
 
 async def test_signals_set_in_standard_external_mode(jungfrau: JungfrauDetector):
@@ -135,13 +143,16 @@ async def test_signals_set_in_standard_external_mode(jungfrau: JungfrauDetector)
         deadtime=1,
     )
     await jungfrau.prepare(good_trigger_info)
-    assert list(get_mock(jungfrau.detector).mock_calls) == [
-        call.trigger_mode.put(JungfrauTriggerMode.EXTERNAL, wait=True),
-        call.frames_per_acq.put(10, wait=True),
-        call.period_between_frames.put(0.00102, wait=True),
-        call.exposure_time.put(0.001, wait=True),
-        call.acquisition_start.put(None, wait=True),
-    ]
+    assert_has_calls(
+        jungfrau.detector,
+        [
+            call.trigger_mode.put(JungfrauTriggerMode.EXTERNAL, wait=True),
+            call.frames_per_acq.put(10, wait=True),
+            call.period_between_frames.put(0.00102, wait=True),
+            call.exposure_time.put(0.001, wait=True),
+            call.acquisition_start.put(None, wait=True),
+        ],
+    )
 
 
 async def test_error_in_pedestal_and_external_modes(jungfrau: JungfrauDetector):

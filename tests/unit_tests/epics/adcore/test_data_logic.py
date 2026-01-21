@@ -8,11 +8,11 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
-    get_mock,
     init_devices,
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adsimdetector
+from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
@@ -45,28 +45,31 @@ async def test_prepare_hdf(
     writer = hdf_det.get_plugin("writer", adcore.NDPluginFileIO)
     set_mock_value(writer.file_path_exists, True)
     await hdf_det.prepare(TriggerInfo(number_of_events=3))
-    assert list(get_mock(hdf_det).mock_calls) == [
-        # From prepare
-        call.driver.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-        call.driver.num_images.put(3, wait=True),
-        call.writer.num_frames_chunks.put(1, wait=True),
-        call.writer.chunk_size_auto.put(True, wait=True),
-        call.writer.num_extra_dims.put(0, wait=True),
-        call.writer.lazy_open.put(True, wait=True),
-        call.writer.swmr_mode.put(True, wait=True),
-        call.writer.xml_file_name.put("", wait=True),
-        call.writer.create_directory.put(0, wait=True),
-        call.writer.file_path.put(
-            f"{static_path_provider().directory_path}/", wait=True
-        ),
-        call.writer.file_name.put("ophyd_async_tests", wait=True),
-        call.writer.file_template.put("%s%s.h5", wait=True),
-        call.writer.auto_increment.put(True, wait=True),
-        call.writer.file_number.put(0, wait=True),
-        call.writer.file_write_mode.put(adcore.ADFileWriteMode.STREAM, wait=True),
-        call.writer.num_capture.put(0, wait=True),
-        call.writer.capture.put(True, wait=True),
-    ]
+    assert_has_calls(
+        hdf_det,
+        [
+            # From prepare
+            call.driver.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
+            call.driver.num_images.put(3, wait=True),
+            call.writer.num_frames_chunks.put(1, wait=True),
+            call.writer.chunk_size_auto.put(True, wait=True),
+            call.writer.num_extra_dims.put(0, wait=True),
+            call.writer.lazy_open.put(True, wait=True),
+            call.writer.swmr_mode.put(True, wait=True),
+            call.writer.xml_file_name.put("", wait=True),
+            call.writer.create_directory.put(0, wait=True),
+            call.writer.file_path.put(
+                f"{static_path_provider().directory_path}/", wait=True
+            ),
+            call.writer.file_name.put("ophyd_async_tests", wait=True),
+            call.writer.file_template.put("%s%s.h5", wait=True),
+            call.writer.auto_increment.put(True, wait=True),
+            call.writer.file_number.put(0, wait=True),
+            call.writer.file_write_mode.put(adcore.ADFileWriteMode.STREAM, wait=True),
+            call.writer.num_capture.put(0, wait=True),
+            call.writer.capture.put(True, wait=True),
+        ],
+    )
 
 
 @pytest.mark.parametrize("writer_type", adcore.ADWriterType.__members__.values())

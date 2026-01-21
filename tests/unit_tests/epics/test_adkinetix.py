@@ -6,11 +6,11 @@ from ophyd_async.core import (
     DetectorTrigger,
     StaticPathProvider,
     TriggerInfo,
-    get_mock,
     init_devices,
     set_mock_value,
 )
 from ophyd_async.epics import adcore, adkinetix
+from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
@@ -54,13 +54,16 @@ async def test_prepare_external_edge(
             livetime=0.5,
         )
     )
-    assert list(get_mock(test_adkinetix.driver).mock_calls) == [
-        call.trigger_mode.put(adkinetix.KinetixTriggerMode.EDGE, wait=True),
-        call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-        call.num_images.put(5, wait=True),
-        call.acquire_time.put(0.5, wait=True),
-        call.acquire.put(True, wait=True),
-    ]
+    assert_has_calls(
+        test_adkinetix.driver,
+        [
+            call.trigger_mode.put(adkinetix.KinetixTriggerMode.EDGE, wait=True),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
+            call.num_images.put(5, wait=True),
+            call.acquire_time.put(0.5, wait=True),
+            call.acquire.put(True, wait=True),
+        ],
+    )
 
 
 async def test_prepare_external_level(
@@ -72,21 +75,27 @@ async def test_prepare_external_level(
             number_of_events=2,
         )
     )
-    assert list(get_mock(test_adkinetix.driver).mock_calls) == [
-        call.trigger_mode.put(adkinetix.KinetixTriggerMode.GATE, wait=True),
-        call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-        call.num_images.put(2, wait=True),
-        call.acquire.put(True, wait=True),
-    ]
+    assert_has_calls(
+        test_adkinetix.driver,
+        [
+            call.trigger_mode.put(adkinetix.KinetixTriggerMode.GATE, wait=True),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
+            call.num_images.put(2, wait=True),
+            call.acquire.put(True, wait=True),
+        ],
+    )
 
 
 async def test_prepare_internal(
     test_adkinetix: adkinetix.KinetixDetector,
 ):
     await test_adkinetix.prepare(TriggerInfo(number_of_events=2, livetime=0.3))
-    assert list(get_mock(test_adkinetix.driver).mock_calls) == [
-        call.trigger_mode.put(adkinetix.KinetixTriggerMode.INTERNAL, wait=True),
-        call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-        call.num_images.put(2, wait=True),
-        call.acquire_time.put(0.3, wait=True),
-    ]
+    assert_has_calls(
+        test_adkinetix.driver,
+        [
+            call.trigger_mode.put(adkinetix.KinetixTriggerMode.INTERNAL, wait=True),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
+            call.num_images.put(2, wait=True),
+            call.acquire_time.put(0.3, wait=True),
+        ],
+    )
