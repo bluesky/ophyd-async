@@ -23,7 +23,7 @@ from ._device import (
     default_mock_class,
     init_devices,
 )
-from ._device_filler import DeviceFiller
+from ._device_filler import DeviceAnnotation, DeviceFiller
 from ._enums import (
     EnabledDisabled,
     EnableDisable,
@@ -145,6 +145,7 @@ __all__ = [
     "Device",
     "DeviceConnector",
     "DeviceFiller",
+    "DeviceAnnotation",
     "DeviceVector",
     "init_devices",
     # Protocols

@@ -13,10 +13,6 @@ from ophyd_async.core import (
     SignalRW,
     StrictEnum,
 )
-
-# from ophyd_async.core._device import Device
-# from ophyd_async.core._device_filler import DeviceAnnotation
-# from ophyd_async.core._signal_backend import SignalDatatype
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
 from ._utils import ADBaseDataType, ADFileWriteMode, ADImageMode, convert_ad_dtype_to_np
