@@ -66,18 +66,30 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
 
         coord_mock_calls = get_mock(coord).mock_calls
 
-    assert coord_mock_calls[0] == call.defer_moves.put(True)
-    assert coord_mock_calls[1] == (
-        "cs_axis_setpoint.7.put",
-        (np.float64(-1.2)),
-        {},
-    )
-    assert coord_mock_calls[2] == (
-        "cs_axis_setpoint.8.put",
-        (np.float64(-0.6)),
-        {},
-    )
-    assert coord_mock_calls[3] == call.defer_moves.put(False)
+        assert coord_mock_calls[0] == call.defer_moves.put(True)
+        assert coord_mock_calls[1] == (
+            "cs_axis_setpoint.7.put",
+            (np.float64(-1.2)),
+            {},
+        )
+        assert coord_mock_calls[2] == (
+            "cs_axis_setpoint.8.put",
+            (np.float64(-0.6)),
+            {},
+        )
+        assert coord_mock_calls[3] == call.defer_moves.put(False)
+
+        # Longest move time should be sim_motor_x, so calculate this
+        expected_timeout = DEFAULT_TIMEOUT + (
+            abs(ramp_up_position[sim_x_motor])
+            / motor_info.motor_max_velocity[sim_x_motor]
+        )
+
+        # All motors should have the same move timeout
+        assert all(
+            call_.kwargs["set_timeout"] == expected_timeout
+            for call_ in spy_set_and_wait_for_value.mock_calls
+        )
 
 
 async def test_pmac_trajectory_kickoff(
@@ -220,7 +232,7 @@ async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
 
     # Check that all axes are then set not be used
     assert all(
-        get_mock(axis).put.assert_called_once_with(False, wait=True) is None
+        get_mock(axis).put.assert_called_once_with(False) is None
         for axis in pmac_trajectory.pmac.trajectory.use_axis.values()
     )
 
@@ -228,11 +240,11 @@ async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert mock_pmac_trajectory_io.mock_calls[
         len(pmac_trajectory.pmac.trajectory.use_axis) :
     ] == [
-        call.time_array.put(np.array(0), wait=True),
-        call.user_array.put(np.array(8), wait=True),
-        call.points_to_build.put(1, wait=True),
-        call.build_profile.put(None, wait=True),
-        call.execute_profile.put(True, wait=True),
+        call.time_array.put(np.array(0)),
+        call.user_array.put(np.array(8)),
+        call.points_to_build.put(1),
+        call.build_profile.put(None),
+        call.execute_profile.put(True),
     ]
 
 
