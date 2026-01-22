@@ -2,12 +2,17 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from ophyd_async.core import Array1D, Device, DeviceVector, StandardReadable
+from ophyd_async.core import Array1D, Device, DeviceVector, StandardReadable, SubsetEnum
 from ophyd_async.epics import motor
 from ophyd_async.epics.core import epics_signal_r, epics_signal_rw, epics_signal_x
 
 # Map the CS axis letters to their index (1 indexed)
 CS_INDEX = {letter: index + 1 for index, letter in enumerate("ABCUVWXYZ")}
+
+
+class PmacExecuteState(SubsetEnum):
+    DONE = "Done"
+    EXECUTING = "Executing"
 
 
 class PmacTrajectoryIO(StandardReadable):
@@ -45,6 +50,9 @@ class PmacTrajectoryIO(StandardReadable):
         # be a SignalRW to be waited on in PmacTrajectoryTriggerLogic.
         # TODO: Change record type to bo from busy (https://github.com/DiamondLightSource/pmac/issues/154)
         self.execute_profile = epics_signal_rw(bool, prefix + "ProfileExecute")
+        self.execute_state = epics_signal_r(
+            PmacExecuteState, prefix + "ProfileExecuteState_RBV"
+        )
         self.abort_profile = epics_signal_x(prefix + "ProfileAbort")
         self.profile_cs_name = epics_signal_rw(str, prefix + "ProfileCsName")
         self.calculate_velocities = epics_signal_rw(bool, prefix + "ProfileCalcVel")
