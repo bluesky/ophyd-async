@@ -58,18 +58,18 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
 
     coord_mock_calls = get_mock(coord).mock_calls
 
-    assert coord_mock_calls[0] == call.defer_moves.put(True, wait=True)
+    assert coord_mock_calls[0] == call.defer_moves.put(True)
     assert coord_mock_calls[1] == (
         "cs_axis_setpoint.7.put",
         (np.float64(-1.2)),
-        {"wait": True},
+        {},
     )
     assert coord_mock_calls[2] == (
         "cs_axis_setpoint.8.put",
         (np.float64(-0.6)),
-        {"wait": True},
+        {},
     )
-    assert coord_mock_calls[3] == call.defer_moves.put(False, wait=True)
+    assert coord_mock_calls[3] == call.defer_moves.put(False)
 
 
 async def test_pmac_trajectory_kickoff(

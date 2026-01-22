@@ -73,13 +73,11 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         put_proceeds.set()
         return put_proceeds
 
-    async def put(self, value: SignalDatatypeT | None, wait: bool):
-        new_value = await self.put_mock(value, wait=wait)
+    async def put(self, value: SignalDatatypeT | None):
+        new_value = await self.put_mock(value)
         if new_value is None:
             new_value = value
-        await self.soft_backend.put(new_value, wait=wait)
-        if wait:
-            await self.put_proceeds.wait()
+        await self.soft_backend.put(new_value)
 
     async def get_reading(self) -> Reading:
         return await self.soft_backend.get_reading()

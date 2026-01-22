@@ -1,14 +1,22 @@
 import asyncio
+from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
     DatasetDescriber,
+    Device,
+    DeviceAnnotation,
     DeviceVector,
     EnableDisable,
+    SignalDatatype,
     SignalR,
     SignalRW,
     StrictEnum,
 )
+
+# from ophyd_async.core._device import Device
+# from ophyd_async.core._device_filler import DeviceAnnotation
+# from ophyd_async.core._signal_backend import SignalDatatype
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
 
 from ._utils import ADBaseDataType, ADFileWriteMode, ADImageMode, convert_ad_dtype_to_np
@@ -239,11 +247,22 @@ class NDCBFlushOnSoftTrgMode(StrictEnum):
     IMMEDIATELY = "Immediately"
 
 
+@dataclass
+class NoWaitWhenSetting(DeviceAnnotation):
+    """Annotation to indicate no-wait behaviour."""
+
+    def __init__(self, value: SignalDatatype) -> None:
+        self.value = value
+
+    def __call__(self, parent: Device, child: Device) -> None:
+        DeviceAnnotation.__call__(self, parent, child)  # type: ignore
+
+
 class NDPluginCBIO(NDPluginBaseIO):
     pre_count: A[SignalRW[int], PvSuffix.rbv("PreCount")]
     post_count: A[SignalRW[int], PvSuffix.rbv("PostCount")]
     preset_trigger_count: A[SignalRW[int], PvSuffix.rbv("PresetTriggerCount")]
-    trigger: A[SignalRW[bool], PvSuffix.rbv("Trigger")]
+    trigger: A[SignalRW[bool], PvSuffix.rbv("Trigger"), NoWaitWhenSetting(0)]
     capture: A[SignalRW[bool], PvSuffix.rbv("Capture")]
     flush_on_soft_trg: A[
         SignalRW[NDCBFlushOnSoftTrgMode], PvSuffix.rbv("FlushOnSoftTrg")

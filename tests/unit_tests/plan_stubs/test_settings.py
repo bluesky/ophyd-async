@@ -124,10 +124,10 @@ async def test_retrieve_and_apply_settings(RE, parent_device: ParentOfEverything
         yield from apply_settings_if_different(settings, apply_settings)
         assert not m.mock_calls
         yield from bps.abs_set(parent_device.sig_rw, "foo", wait=True)
-        assert m.mock_calls == [call.sig_rw.put("foo", wait=True)]
+        assert m.mock_calls == [call.sig_rw.put("foo")]
         m.reset_mock()
         yield from apply_settings_if_different(settings, apply_settings)
-        assert m.mock_calls == [call.sig_rw.put("Top level SignalRW", wait=True)]
+        assert m.mock_calls == [call.sig_rw.put("Top level SignalRW")]
 
     RE(my_plan())
 
@@ -161,10 +161,10 @@ async def test_retrieve_and_apply_config_settings(
         yield from apply_settings_if_different(settings, apply_settings)
         assert not m.mock_calls
         yield from bps.abs_set(every_parent_device.a_str, "foo", wait=True)
-        assert m.mock_calls == [call.a_str.put("foo", wait=True)]
+        assert m.mock_calls == [call.a_str.put("foo")]
         m.reset_mock()
         yield from apply_settings_if_different(settings, apply_settings)
-        assert m.mock_calls == [call.a_str.put("test_string", wait=True)]
+        assert m.mock_calls == [call.a_str.put("test_string")]
 
     RE(my_plan())
 
@@ -176,6 +176,6 @@ async def test_ignored_settings(RE, parent_device: ParentOfEverythingDevice):
             parent_device, {parent_device.sig_rw: "foo", parent_device._sig_rw: None}
         )
         yield from apply_settings(settings)
-        assert m.mock_calls == [call.sig_rw.put("foo", wait=True)]
+        assert m.mock_calls == [call.sig_rw.put("foo")]
 
     RE(my_plan())

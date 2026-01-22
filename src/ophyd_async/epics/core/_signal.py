@@ -87,12 +87,13 @@ def _epics_signal_backend(
     r_protocol, r_pv = split_protocol_from_pv(read_pv)
     w_protocol, w_pv = split_protocol_from_pv(write_pv)
     protocol = get_unique({read_pv: r_protocol, write_pv: w_protocol}, "protocols")
-    options = options
+
     signal_backend_type = get_signal_backend_type(protocol)
     return signal_backend_type(
         datatype,
         r_pv,
         w_pv,
+        options,  # type: ignore
     )
 
 
@@ -173,7 +174,6 @@ def epics_signal_w(
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
     attempts: int = 1,
-    # no_wait_on: set[SignalDatatypeT] | bool = False
     wait: bool = True,
     no_wait_when_setting: set[SignalDatatypeT] | None = None,
 ) -> SignalW[SignalDatatypeT]:

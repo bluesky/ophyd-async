@@ -97,7 +97,7 @@ class InstantMotorMock(DeviceMock["Motor"]):
         set_mock_value(device.motor_done_move, 1)
 
         # When setpoint is written to, immediately update readback and done flag
-        def _instant_move(value, wait):
+        def _instant_move(value, wait=None):
             set_mock_value(device.motor_done_move, 0)  # Moving
             set_mock_value(device.user_readback, value)  # Arrive instantly
             set_mock_value(device.motor_done_move, 1)  # Done
@@ -145,7 +145,9 @@ class Motor(
         # Note:cannot use epics_signal_x here, as the motor record specifies that
         # we must write 1 to stop the motor. Simply processing the record is not
         # sufficient.
-        self.motor_stop = epics_signal_w(int, prefix + ".STOP")
+        self.motor_stop = epics_signal_w(
+            int, prefix + ".STOP", no_wait_when_setting={1}
+        )
 
         # Whether set() should complete successfully or not
         self._set_success = True

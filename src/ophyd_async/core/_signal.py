@@ -298,9 +298,7 @@ class SignalW(Signal[SignalDatatypeT], Movable):
             wait_jitter=0,
         ):
             with attempt:
-                await _wait_for(
-                    self._connector.backend.put(value, wait=True), timeout, source
-                )
+                await _wait_for(self._connector.backend.put(value), timeout, source)
         self.log.debug(f"Successfully put value {value} to backend at source {source}")
 
 
@@ -332,7 +330,7 @@ class SignalX(Signal):
             timeout = self._timeout
         source = self._connector.backend.source(self.name, read=False)
         self.log.debug(f"Putting default value to backend at source {source}")
-        await _wait_for(self._connector.backend.put(None, wait=wait), timeout, source)
+        await _wait_for(self._connector.backend.put(None), timeout, source)
         self.log.debug(f"Successfully put default value to backend at source {source}")
 
 

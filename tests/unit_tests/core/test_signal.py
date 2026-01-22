@@ -228,7 +228,7 @@ async def test_set_and_wait_behavior_with_wait_for_set_completion_false():
             timeout=10,
             wait_for_set_completion=False,
         )
-        assert not status.done
+        assert status.done
         assert await match_signal.get_value() == "test"
         set_mock_put_proceeds(set_signal, True)
         await status

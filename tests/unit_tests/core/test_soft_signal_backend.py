@@ -127,7 +127,7 @@ async def test_soft_signal_backend_get_put_monitor(
         await q.assert_updates(initial_value)
 
         # Put to new value and check that
-        await backend.put(put_value, wait=True)
+        await backend.put(put_value)
         await q.assert_updates(put_value)
 
 
@@ -135,7 +135,7 @@ async def test_soft_signal_backend_enum_value_equivalence():
     soft_backend = SoftSignalBackend(MyEnum)
     await soft_backend.connect(timeout=1)
     assert (await soft_backend.get_value()) is MyEnum.A
-    await soft_backend.put(MyEnum.B, True)
+    await soft_backend.put(MyEnum.B)
     assert (await soft_backend.get_value()) is MyEnum.B
 
 
@@ -156,7 +156,7 @@ async def test_soft_signal_backend_set_callback():
 async def test_soft_signal_backend_with_numpy_typing():
     soft_backend = SoftSignalBackend(Array1D[np.float64])
     await soft_backend.connect(timeout=1)
-    await soft_backend.put(np.array([1, 2]), wait=True)
+    await soft_backend.put(np.array([1, 2]))
     array = await soft_backend.get_value()
     assert array.shape == (2,)
     assert array[0] == 1

@@ -218,7 +218,7 @@ class ADBaseContAcqController(ADBaseController[ADBaseIO]):
         )
 
         # Send the trigger to begin acquisition
-        await self.cb_plugin.trigger.set(True, wait=False)
+        await self.cb_plugin.trigger.set(True)
 
     async def disarm(self) -> None:
         await stop_busy_record(self.cb_plugin.capture, False)

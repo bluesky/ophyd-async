@@ -291,11 +291,7 @@ class DerivedSignalBackend(SignalBackend[SignalDatatypeT]):
         )
         raise RuntimeError(msg)
 
-    async def put(self, value: SignalDatatypeT | None, wait: bool) -> None:
-        if wait is False:
-            msg = "Cannot put with wait=False"
-            raise RuntimeError(msg)
-
+    async def put(self, value: SignalDatatypeT | None) -> None:
         value = error_if_none(
             value,
             "Must be given a value to put",

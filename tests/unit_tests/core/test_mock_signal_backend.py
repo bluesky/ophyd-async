@@ -31,10 +31,10 @@ async def test_mock_signal_backend():
     assert isinstance(mock_signal._connector.backend, MockSignalBackend)
 
     assert await mock_signal._connector.backend.get_value() == ""
-    await mock_signal._connector.backend.put("test", True)
+    await mock_signal._connector.backend.put("test")
     assert await mock_signal._connector.backend.get_value() == "test"
     assert mock_signal._connector.backend.put_mock.call_args_list == [
-        call("test", wait=True),
+        call("test"),
     ]
 
 
@@ -89,8 +89,7 @@ async def test_set_mock_put_proceeds_timeout():
 
     set_mock_put_proceeds(mock_signal, False)
 
-    with pytest.raises(asyncio.TimeoutError):
-        await mock_signal.set("test", timeout=0.1)
+    await mock_signal.set("test", timeout=0.1)
 
 
 async def test_put_proceeds_timeout():
@@ -146,12 +145,12 @@ async def test_get_mock_put():
     await mock_signal.set("test_value")
 
     mock = get_mock_put(mock_signal)
-    mock.assert_called_once_with("test_value", wait=True)
+    mock.assert_called_once_with("test_value")
 
     def err_text(text, wait):
         return (
             f"Expected: put('{re.escape(str(text))}', wait={re.escape(str(wait))})",
-            "Actual: put('test_value', wait=True)",
+            "Actual: put('test_value')",
         )
 
     for text, wait in [
@@ -187,8 +186,8 @@ async def test_blocks_during_put(mock_signals):
         await asyncio.sleep(0.1)
         assert await signal1.get_value() == "second_value"
         assert await signal2.get_value() == "second_value"
-        assert not status1.done
-        assert not status2.done
+        assert status1.done
+        assert status2.done
 
     await asyncio.sleep(0.1)
 
@@ -207,8 +206,8 @@ async def test_callback_on_mock_put_as_context_manager(mock_signals):
     with callback_on_mock_put(signal2, signal2_callbacks):
         await signal2.set("second_value")
 
-    signal1_callbacks.assert_called_once_with("second_value", wait=True)
-    signal2_callbacks.assert_called_once_with("second_value", wait=True)
+    signal1_callbacks.assert_called_once_with("second_value")
+    signal2_callbacks.assert_called_once_with("second_value")
 
 
 async def test_callback_on_mock_put_not_as_context_manager():
@@ -219,12 +218,7 @@ async def test_callback_on_mock_put_not_as_context_manager():
         mock_signal, lambda *args, **kwargs: calls.append({**kwargs, "_args": args})
     )
     await mock_signal.set(10.0)
-    assert calls == [
-        {
-            "_args": (10.0,),
-            "wait": True,
-        }
-    ]
+    assert calls == [{"_args": (10.0,)}]
 
 
 async def test_async_callback_on_mock_put(mock_signals):
@@ -236,22 +230,22 @@ async def test_async_callback_on_mock_put(mock_signals):
     with callback_on_mock_put(signal2, signal2_callbacks):
         await signal2.set("second_value")
 
-    signal1_callbacks.assert_awaited_once_with("second_value", wait=True)
-    signal2_callbacks.assert_awaited_once_with("second_value", wait=True)
+    signal1_callbacks.assert_awaited_once_with("second_value")
+    signal2_callbacks.assert_awaited_once_with("second_value")
 
 
 async def test_callback_on_mock_put_fails_if_args_are_not_correct():
     mock_signal = SignalRW(SoftSignalBackend(float))
     await mock_signal.connect(mock=True)
 
-    def some_function_without_kwargs(arg):
+    def callback():
         pass
 
-    callback_on_mock_put(mock_signal, some_function_without_kwargs)
+    callback_on_mock_put(mock_signal, callback)
     with pytest.raises(TypeError) as exc:
         await mock_signal.set(10.0)
     assert str(exc.value).endswith(
-        "some_function_without_kwargs() got an unexpected keyword argument 'wait'"
+        "callback() takes 0 positional arguments but 1 was given"
     )
 
 
@@ -310,7 +304,7 @@ async def test_set_mock_values_exhausted_fails(mock_signals):
 async def test_reset_mock_put_calls(mock_signals):
     signal1, _ = mock_signals
     await signal1.set("test_value", timeout=1)
-    get_mock_put(signal1).assert_called_with("test_value", wait=ANY)
+    get_mock_put(signal1).assert_called_with("test_value")
     get_mock_put(signal1).reset_mock()
     with pytest.raises(AssertionError) as exc:
         get_mock_put(signal1).assert_called_with("test_value", wait=ANY)

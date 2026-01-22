@@ -160,7 +160,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     async def connect(self, timeout: float):
         pass
 
-    async def put(self, value: SignalDatatypeT | None, wait: bool) -> None:
+    async def put(self, value: SignalDatatypeT | None) -> None:
         write_value = self.initial_value if value is None else value
         self.set_value(write_value)
 

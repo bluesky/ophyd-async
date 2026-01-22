@@ -387,12 +387,12 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             "alarm_severity": -1 if sv > 2 else sv,
         }
 
-    async def put(self, value: SignalDatatypeT | None, wait: bool):
+    async def put(self, value: SignalDatatypeT | None):
         if value is None:
             write_value = self.initial_values[self.write_pv]["value"]
         else:
             write_value = self.converter.write_value(value)
-        if value in self.options.no_wait_when_setting:
+        if self.options.no_wait_when_setting:
             wait = False
         else:
             wait = self.options.wait
