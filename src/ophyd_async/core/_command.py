@@ -20,6 +20,7 @@ from ._device import Device, DeviceConnector, LazyMock
 from ._utils import DEFAULT_TIMEOUT
 
 P = ParamSpec("P")
+T_co = TypeVar("T_co", covariant=True)
 T = TypeVar("T")
 
 
@@ -39,7 +40,7 @@ class ExecutionError(CommandError):
     """Raised when a Command fails during execution."""
 
 
-class CommandBackend(Protocol[P, T]):
+class CommandBackend(Protocol[P, T_co]):
     """A backend for a Command."""
 
     @abstractmethod
@@ -47,12 +48,12 @@ class CommandBackend(Protocol[P, T]):
         """Return source of command."""
 
     @abstractmethod
-    def connect(self, timeout: float) -> Awaitable[None]:
+    async def connect(self, timeout: float) -> None:
         """Connect to underlying hardware."""
 
     @abstractmethod
-    def call(self, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
-        """Call the command."""
+    async def call(self, *args: P.args, **kwargs: P.kwargs) -> T_co:
+        """Execute the command and return its result."""
 
 
 class CommandConnector(DeviceConnector):
@@ -267,8 +268,8 @@ class SoftCommandBackend(CommandBackend[P, T]):
         """No-op for SoftCommandBackend."""
         pass
 
-    async def call(self, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
-        """Async implementation for call()."""
+    async def call(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        """Execute the configured callback and return its result."""
         if len(args) != len(self._command_args):
             raise TypeError(
                 f"Expected {len(self._command_args)} arguments, got {len(args)}"
@@ -334,6 +335,6 @@ class MockCommandBackend(CommandBackend[P, T]):
         """Mock backend does not support real connection."""
         raise ConnectionError("It is not possible to connect a MockCommandBackend")
 
-    def call(self, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
+    async def call(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Call the mock command."""
-        return self.call_mock(*args, **kwargs)
+        return await self.call_mock(*args, **kwargs)
