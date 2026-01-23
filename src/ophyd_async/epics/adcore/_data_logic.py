@@ -49,20 +49,27 @@ class PluginSignalDataLogic(DetectorDataLogic):
         return [self.signal.name] if self.hinted else []
 
 
+@dataclass
+class NDArrayDescription:
+    shape_signals: Sequence[SignalR[int]]
+    data_type_signal: SignalR[ADBaseDataType]
+
+
 async def get_ndarray_resource_info(
-    shape_signals: Sequence[SignalR[int]],
-    data_type_signal: SignalR[ADBaseDataType],
+    description: NDArrayDescription,
     data_key: str,
     parameters: dict[str, Any],
     frames_per_chunk: int = 1,
 ) -> StreamResourceInfo:
     # Grab the dimensions and datatype of the NDArray
     shape, datatype = await asyncio.gather(
-        asyncio.gather(*[sig.get_value() for sig in shape_signals]),
-        data_type_signal.get_value(),
+        asyncio.gather(*[sig.get_value() for sig in description.shape_signals]),
+        description.data_type_signal.get_value(),
     )
     if datatype is ADBaseDataType.UNDEFINED:
-        raise ValueError(f"{data_type_signal.source} is blank, this is not supported")
+        raise ValueError(
+            f"{description.data_type_signal.source} is blank, this is not supported"
+        )
     return StreamResourceInfo(
         data_key=data_key,
         shape=tuple(shape),
@@ -145,8 +152,7 @@ class ADHDFDataLogic(DetectorDataLogic):
     :param datakey_suffix: Suffix to append to the data key for the main dataset
     """
 
-    shape_signals: Sequence[SignalR[int]]
-    data_type_signal: SignalR[ADBaseDataType]
+    description: NDArrayDescription
     path_provider: PathProvider
     driver: ADBaseIO
     writer: NDFileHDF5IO
@@ -180,8 +186,7 @@ class ADHDFDataLogic(DetectorDataLogic):
         )
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
-            shape_signals=self.shape_signals,
-            data_type_signal=self.data_type_signal,
+            description=self.description,
             data_key=detector_name + self.datakey_suffix,
             parameters={"dataset": "/entry/data/data"},
             frames_per_chunk=frames_per_chunk,
@@ -232,8 +237,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
     :param datakey_suffix: Suffix to append to the data key for the main dataset
     """
 
-    shape_signals: Sequence[SignalR[int]]
-    data_type_signal: SignalR[ADBaseDataType]
+    description: NDArrayDescription
     path_provider: PathProvider
     writer: NDPluginFileIO
     extension: str
@@ -255,14 +259,15 @@ class ADMultipartDataLogic(DetectorDataLogic):
         )
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
-            shape_signals=self.shape_signals,
-            data_type_signal=self.data_type_signal,
+            description=self.description,
             data_key=detector_name + self.datakey_suffix,
             parameters={
                 "file_template": path_info.filename + "_{:06d}" + self.extension
             },
         )
         return StreamResourceDataProvider(
+            # TODO: remove the type ignore after
+            # https://github.com/bluesky/ophyd-async/issues/1186
             uri=path_info.directory_uri,  # type: ignore
             resources=[main_dataset],
             mimetype=self.mimetype,
@@ -292,14 +297,15 @@ def make_writer_data_logic(
     plugins: Mapping[str, NDPluginBaseIO] | None = None,
 ) -> tuple[NDPluginFileIO, DetectorDataLogic]:
     plugins = plugins or {}
-    shape_signals = [driver.array_size_y, driver.array_size_x]
-    data_type_signal = driver.data_type
+    description = NDArrayDescription(
+        shape_signals=[driver.array_size_y, driver.array_size_x],
+        data_type_signal=driver.data_type,
+    )
     match writer_type:
         case ADWriterType.HDF:
             writer = NDFileHDF5IO(f"{prefix}{writer_suffix or 'HDF1:'}")
             data_logic = ADHDFDataLogic(
-                shape_signals=shape_signals,
-                data_type_signal=data_type_signal,
+                description=description,
                 path_provider=path_provider,
                 driver=driver,
                 writer=writer,
@@ -308,8 +314,7 @@ def make_writer_data_logic(
         case ADWriterType.JPEG:
             writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'JPEG1:'}")
             data_logic = ADMultipartDataLogic(
-                shape_signals=shape_signals,
-                data_type_signal=data_type_signal,
+                description=description,
                 path_provider=path_provider,
                 writer=writer,
                 extension=".jpg",
@@ -318,8 +323,7 @@ def make_writer_data_logic(
         case ADWriterType.TIFF:
             writer = NDPluginFileIO(f"{prefix}{writer_suffix or 'TIFF1:'}")
             data_logic = ADMultipartDataLogic(
-                shape_signals=shape_signals,
-                data_type_signal=data_type_signal,
+                description=description,
                 path_provider=path_provider,
                 writer=writer,
                 extension=".tiff",

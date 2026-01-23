@@ -1,5 +1,7 @@
 """Common GenICam camera deadtime values and utilities."""
 
+__all__ = ["get_camera_deadtime"]
+
 # Map model number to maximum deadtime in any pixel mode
 # TODO: put back in the pixel format calcs from
 # https://github.com/bluesky/ophyd-async/pull/190

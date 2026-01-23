@@ -20,11 +20,11 @@ async def cont_acq_detector() -> adcore.AreaDetector[adcore.ADBaseIO]:
     cb_plugin = adcore.NDCircularBuffIO("PREFIX:CB1:")
     async with init_devices(mock=True):
         det = adcore.AreaDetector(
-            driver=driver, writer_type=None, plugins={"cb1": cb_plugin}
-        )
-        det.add_logics(
-            adcore.ADContAcqArmLogic(driver, cb_plugin),
-            adcore.ADContAcqTriggerLogic(driver, cb_plugin),
+            driver=driver,
+            arm_logic=adcore.ADContAcqArmLogic(driver, cb_plugin),
+            trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb_plugin),
+            writer_type=None,
+            plugins={"cb1": cb_plugin},
         )
 
     set_mock_value(

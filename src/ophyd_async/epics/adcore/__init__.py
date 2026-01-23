@@ -8,6 +8,7 @@ from ._data_logic import (
     ADHDFDataLogic,
     ADMultipartDataLogic,
     ADWriterType,
+    NDArrayDescription,
     PluginSignalDataLogic,
 )
 from ._detector import AreaDetector
@@ -65,6 +66,7 @@ __all__ = [
     "ADArmLogic",
     "ADContAcqArmLogic",
     # DataLogic
+    "NDArrayDescription",
     "PluginSignalDataLogic",
     "ADHDFDataLogic",
     "ADMultipartDataLogic",

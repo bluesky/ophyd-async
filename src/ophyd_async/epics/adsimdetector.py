@@ -20,6 +20,11 @@ from .adcore import (
     prepare_exposures,
 )
 
+__all__ = [
+    "SimDetector",
+    "SimDetectorTriggerLogic",
+]
+
 
 class SimDetectorTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADSimDetector."""

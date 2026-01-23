@@ -25,6 +25,14 @@ from .adcore import (
 )
 from .core import PvSuffix
 
+__all__ = [
+    "KinetixDetector",
+    "KinetixDriverIO",
+    "KinetixTriggerLogic",
+    "KinetixTriggerMode",
+    "KinetixReadoutMode",
+]
+
 
 class KinetixTriggerMode(StrictEnum):
     """Trigger mode for ADKinetix detector."""

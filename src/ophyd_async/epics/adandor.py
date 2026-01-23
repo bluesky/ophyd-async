@@ -24,6 +24,13 @@ from ophyd_async.epics.adcore import (
 )
 from ophyd_async.epics.core import PvSuffix
 
+__all__ = [
+    "AndorDetector",
+    "Andor2DriverIO",
+    "Andor2TriggerLogic",
+    "Andor2TriggerMode",
+]
+
 _MIN_DEAD_TIME = 0.1
 _MAX_NUM_IMAGE = 999_999
 
@@ -54,7 +61,7 @@ class Andor2DriverIO(ADBaseIO):
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
 # runtime. See https://github.com/bluesky/ophyd-async/issues/308
 class Andor2TriggerLogic(DetectorTriggerLogic):
-    """DetectorController for Andor2DriverIO."""
+    """Trigger logic for Andor2DriverIO."""
 
     def __init__(self, driver: Andor2DriverIO):
         self.driver = driver

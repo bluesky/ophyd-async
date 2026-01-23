@@ -28,6 +28,16 @@ from .adcore import (
 )
 from .adgenicam import get_camera_deadtime
 
+__all__ = [
+    "VimbaDetector",
+    "VimbaDriverIO",
+    "VimbaTriggerLogic",
+    "VimbaConvertFormat",
+    "VimbaTriggerSource",
+    "VimbaOverlap",
+    "VimbaExposeOutMode",
+]
+
 
 class VimbaConvertFormat(StrictEnum):
     """Convert pixel format for the Vimba detector."""

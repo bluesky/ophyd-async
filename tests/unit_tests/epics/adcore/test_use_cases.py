@@ -414,8 +414,10 @@ async def test_2_rois_with_hdf():
         hdfs.append(hdf)
         logics.append(
             adcore.ADHDFDataLogic(
-                shape_signals=(roi.size_y, roi.size_x),
-                data_type_signal=driver.data_type,
+                description=adcore.NDArrayDescription(
+                    shape_signals=(roi.size_y, roi.size_x),
+                    data_type_signal=driver.data_type,
+                ),
                 path_provider=path_provider,
                 driver=driver,
                 writer=hdf,

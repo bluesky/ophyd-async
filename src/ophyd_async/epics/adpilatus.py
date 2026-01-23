@@ -26,6 +26,14 @@ from .adcore import (
 )
 from .core import PvSuffix
 
+__all__ = [
+    "PilatusDetector",
+    "PilatusDriverIO",
+    "PilatusTriggerLogic",
+    "PilatusTriggerMode",
+    "PilatusReadoutTime",
+]
+
 _MAX_NUM_IMAGE = 999_999
 
 

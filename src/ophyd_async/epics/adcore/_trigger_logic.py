@@ -28,7 +28,7 @@ class ADContAcqTriggerLogic(DetectorTriggerLogic):
         self.driver = driver
         self.cb_plugin = cb_plugin
 
-    async def prepare_internal(self, num: int, livetime: float, deadtime: float):
+    async def _ensure_driver_acquiring(self, livetime: float):
         # Check the current state of the system
         image_mode, acquiring, acquire_time = await asyncio.gather(
             self.driver.image_mode.get_value(),
@@ -49,7 +49,10 @@ class ADContAcqTriggerLogic(DetectorTriggerLogic):
                 f"Detector exposure time currently set to {acquire_time}, "
                 f"but requested exposure is {livetime}"
             )
-        # Setup the current parameters
+
+    async def prepare_internal(self, num: int, livetime: float, deadtime: float):
+        await self._ensure_driver_acquiring(livetime)
+        # Setup the CB plugin with the current parameters
         await asyncio.gather(
             self.cb_plugin.enable_callbacks.set(EnableDisable.ENABLE),
             self.cb_plugin.pre_count.set(0),

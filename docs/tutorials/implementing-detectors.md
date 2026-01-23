@@ -104,6 +104,16 @@ Note that on each trigger, only a single image is taken, at the default exposure
     RE(my_count_plan_with_prepare(), print)
 ```
 
+The [](#TriggerInfo) contains all the parameters needed to set up the detector:
+- `trigger` - The trigger type: `INTERNAL` (detector generates its own triggers), `EXTERNAL_EDGE` (rising edge starts an internally-timed exposure), or `EXTERNAL_LEVEL` (high level duration determines exposure time)
+- `livetime` - The exposure time per frame
+- `deadtime` - The minimum time between exposures (for internal triggering)
+- `exposures_per_collection` - Number of exposures averaged into a single collection that is passed to the data writer (default 1)
+- `collections_per_event` - Number of collections per bluesky event (default 1)
+
+And if being used for flyscanning (kickoff/complete) then specify:
+- `number_of_events` - Number of bluesky events to emit (default 1)
+
 This also moves the work of setting up the detector from the first call of `trigger()` to the `prepare()` call. We can also move the creation of the descriptor earlier, so there is no extra work to do on the first call to `trigger()`:
 
 ```{eval-rst}
@@ -164,47 +174,72 @@ Now we'll have a look at the code to see how we implement one of these detectors
 :language: python
 ```
 
-It derives from [](#StandardDetector) which is a utility baseclass that implements the protocols we have mentioned so far in this tutorial. It uses a pair of logic classes to provide behavior for each protocol verb:
-- [](#DetectorController) to setup the exposure and trigger mode of the detector, arm it, and wait for it to complete
-- [](#DetectorWriter) to tell the detector to open a file, describe the datasets it will write, and wait for it to have written a given number of frames
+It derives from [](#StandardDetector) which is a utility baseclass that implements the protocols we have mentioned so far in this tutorial. It uses three types of logic classes to provide behavior for each protocol verb:
+- [](#DetectorTriggerLogic) to setup the exposure and trigger mode of the detector
+- [](#DetectorArmLogic) to arm it and wait for it to complete
+- [](#DetectorDataLogic) to tell the detector to open a file, describe the datasets it will write, and emit StreamAsset documents as frames are written
 
-In this case, we have a Controller and Writer class written just for this simulation, both taking a reference to the pattern generator that provides methods for both detector control and file writing. In other cases the detector control and filewriting may be handled by different sub-devices that talk to different parts of the control system. The job of the top level detector class is to take the arguments that the controller and writer need and distribute them, passing the instances to the superclass init.
+In this case, we have three logic classes written just for this simulation, all taking a reference to the pattern generator that provides methods for both detector control and file writing. In other cases the detector control and filewriting may be handled by different sub-devices that talk to different parts of the control system. The job of the top level detector class is to take the arguments that the logic classes need, create the logic instances, and pass them to [](#StandardDetector.add_logics).
 
 Now let's look at the underlying classes that define the detector behavior:
 
-### `BlobDetectorControl`
+### `BlobTriggerLogic`
 
-First we have `BlobDetectorController`, a [](#DetectorController) subclass:
+First we have `BlobTriggerLogic`, a [](#DetectorTriggerLogic) subclass:
 
-```{literalinclude} ../../src/ophyd_async/sim/_blob_detector_controller.py
+```{literalinclude} ../../src/ophyd_async/sim/_blob_trigger_logic.py
 :language: python
 ```
 
-It's job is to control the acquisition process on the detector, starting and stopping the collection of data:
-- `prepare()` takes a [](#TriggerInfo) which details everything the detector needs to know about the upcoming acquisition. In this case we just store it for later use.
+Its job is to configure the detector for different trigger modes. In this case we only implement internal triggering:
+- `prepare_internal()` takes the number of frames, livetime (exposure), and deadtime, and sets up the pattern generator with those parameters.
+
+If we wanted to support external triggering, we would also implement:
+- `prepare_edge()` for external edge triggering (rising edge starts internally-timed exposure)
+- `prepare_level()` for external level/gate triggering (high level duration determines exposure)
+
+We could also implement:
+- `get_deadtime()` to calculate the minimum time between exposures based on configuration
+- `config_sigs()` to return signals that should appear in read_configuration()
+
+### `BlobArmLogic`
+
+Next we have `BlobArmLogic`, a [](#DetectorArmLogic) subclass:
+
+```{literalinclude} ../../src/ophyd_async/sim/_blob_arm_logic.py
+:language: python
+```
+
+Its job is to control the acquisition process on the detector, starting and stopping the collection of data:
 - `arm()` starts the acquisition process that has been prepared. In this case we create a background task that will write our simulation images to file.
 - `wait_for_idle()` waits for that acquisition process to be complete.
 - `disarm()` interrupts the acquisition process, and then waits for it to complete.
 
-### `BlobDetectorWriter`
+### `BlobDataLogic`
 
-Then we have `BlobDetectorWriter`, a [](#DetectorWriter) subclass:
+Then we have `BlobDataLogic`, a [](#DetectorDataLogic) subclass:
 
-```{literalinclude} ../../src/ophyd_async/sim/_blob_detector_writer.py
+```{literalinclude} ../../src/ophyd_async/sim/_blob_data_logic.py
 :language: python
 ```
 
-Its job is to control the file writing process on the detector, which may or may not be coupled to the acquisition process:
-- `open()` tells the detector to open a file, and returns information about the datasets that it will write
-- `hints` gives a list of the datasets that are interesting to plot
-- `get_indices_written()` returns the last index written
-- `observe_indices_written()` repeatedly yields the last index written then waits for the next one to be written
-- `collect_stream_docs()` uses the [](#HDFDocumentComposer) to publish a document per dataset that says which frames have been written since the last call
-- `close()` tells the detector to close the file
+Its job is to manage the file writing and data streaming:
+- `prepare_unbounded()` tells the detector to open a file, and returns a [](#StreamableDataProvider) that describes the datasets that will be written and tracks write progress
+- `get_hinted_fields()` returns the data keys that are interesting to plot
+- `stop()` tells the detector to close the file
+
+The [](#StreamableDataProvider) returned from `prepare_unbounded()` contains:
+- `collections_written_signal` - a signal that tracks how many frames have been written
+- `make_datakeys()` - creates DataKey descriptions for each dataset
+- `make_stream_docs()` - emits StreamResource and StreamDatum documents as frames are written
 
 ## Conclusion
 
-We have seen how to make a [](#StandardDetector) and how the [](#DetectorController) and [](#DetectorWriter) allow us to customise its behavior.
+We have seen how to make a [](#StandardDetector) and how the [](#DetectorTriggerLogic), [](#DetectorArmLogic), and [](#DetectorDataLogic) classes allow us to customise its behavior through composition. This separation of concerns makes it easy to:
+- Mix and match different trigger modes, arming strategies, and data outputs
+- Add multiple data streams (e.g., multiple HDF writers for different ROIs)
+- Combine file writing with signal reading (e.g., add stats plugin outputs)
+- Test each component independently
 
 ```{seealso}
 [](../how-to/implement-ad-detector.md) for writing an implementation of `StandardDetector` for an EPICS areaDetector

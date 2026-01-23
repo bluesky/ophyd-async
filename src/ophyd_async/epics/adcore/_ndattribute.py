@@ -68,6 +68,7 @@ def ndattributes_to_xml(
                 "Attribute",
                 name=ndattribute.name,
                 type="EPICS_PV",
+                # Strip protocol prefix if present
                 source=ndattribute.signal.source.split("://")[-1],
                 dbrtype=ndattribute.dbrtype.name,
                 description=ndattribute.description,

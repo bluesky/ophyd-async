@@ -1,6 +1,7 @@
 """Module which defines abstract classes to work with detectors."""
 
 import asyncio
+import functools
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
@@ -112,6 +113,27 @@ class TriggerInfo(ConfinedModel):
 
 
 class DetectorTriggerLogic:
+    """Logic for configuring detector triggering modes.
+
+    This class defines the interface for detector trigger configuration, handling
+    both internal and external triggering modes. Implementations should provide
+    detector-specific logic for preparing the detector to operate in different
+    trigger modes and manage exposure parameters.
+
+    The class manages:
+    - Configuration signals that should appear in detector metadata
+    - Deadtime calculations based on detector configuration
+    - Preparation for internal (self-triggered) exposures
+    - Preparation for external edge-triggered exposures
+    - Preparation for external level-triggered exposures
+    - Multi-exposure collection batching
+
+    Subclasses must implement the appropriate `prepare_*` method for any trigger
+    mode the detector supports, `get_deadtime` if it supports external
+    triggering, and `config_sigs` if the deadtime would vary according to
+    detector parameters.
+    """
+
     def config_sigs(self) -> set[SignalR]:
         """Return the signals that should appear in read_configuration."""
         return set()
@@ -156,8 +178,14 @@ class DetectorTriggerLogic:
         raise NotImplementedError(self)
 
 
-def _trigger_logic_supported(method) -> bool:
-    return method.__func__ is not getattr(DetectorTriggerLogic, method.__name__)
+def _logic_supported(base_class, method) -> bool:
+    # If the function that is bound in a subclass is the same as the function
+    # attached to the superclass, then the subclass has not overridden it, so
+    # this method is not supported by the subclass.
+    return method.__func__ is not getattr(base_class, method.__name__)
+
+
+_trigger_logic_supported = functools.partial(_logic_supported, DetectorTriggerLogic)
 
 
 def _get_supported_triggers(
@@ -174,6 +202,13 @@ def _get_supported_triggers(
 
 
 class DetectorArmLogic(ABC):
+    """Abstract base class for detector arming and disarming logic.
+
+    Implementations must provide methods to arm the detector, wait for it to become
+    idle, and disarm it. This interface allows for detector-specific behavior during
+    the arm/disarm lifecycle.
+    """
+
     @abstractmethod
     async def arm(self):
         """Arm the detector, waiting until it is armed."""
@@ -188,6 +223,12 @@ class DetectorArmLogic(ABC):
 
 
 def _all_the_same(collections_written: set[int]) -> int:
+    """Ensure all collection counts are the same, raising an error if they differ.
+
+    :param collections_written: Set of collection counts from different providers
+    :return: The single collection count value
+    :raises RuntimeError: If the set contains more than one distinct value
+    """
     if len(collections_written) != 1:
         msg = (
             "Detectors have written different numbers of collections: "
@@ -223,6 +264,13 @@ async def _get_collections_written(
 
 
 class DetectorDataLogic:
+    """Abstract base class for detector data logic and handling.
+
+    Implementations must implement either prepare_unbounded for data sources
+    that work with step scans as well as flyscans, or prepare_single for those
+    that only work with step scans.
+    """
+
     async def prepare_single(self, detector_name: str) -> ReadableDataProvider:
         """Provider can only work for a single event."""
         raise NotImplementedError(self)
@@ -240,8 +288,7 @@ class DetectorDataLogic:
         pass
 
 
-def _data_logic_supported(method) -> bool:
-    return method.__func__ is not getattr(DetectorDataLogic, method.__name__)
+_data_logic_supported = functools.partial(_logic_supported, DetectorDataLogic)
 
 
 @dataclass

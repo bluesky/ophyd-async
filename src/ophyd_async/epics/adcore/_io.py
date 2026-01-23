@@ -78,6 +78,7 @@ class ADState(StrictEnum):
     ABORTED = "Aborted"
 
 
+#: TypeVar for any `ADBaseIO` subclass
 ADBaseIOT = TypeVar("ADBaseIOT", bound="ADBaseIO")
 
 
@@ -97,7 +98,7 @@ class ADBaseIO(NDArrayBaseIO):
 
 
 # Classes for plugins
-
+#: TypeVar for any `NDPluginBaseIO` subclass
 NDPluginBaseIOT = TypeVar("NDPluginBaseIOT", bound="NDPluginBaseIO")
 
 

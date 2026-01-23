@@ -27,6 +27,13 @@ from .adcore import (
 from .adgenicam import get_camera_deadtime
 from .core import PvSuffix
 
+__all__ = [
+    "AravisDetector",
+    "AravisDriverIO",
+    "AravisTriggerLogic",
+    "AravisTriggerSource",
+]
+
 
 class AravisTriggerSource(SubsetEnum):
     """Which trigger source to use when TriggerMode=On."""
