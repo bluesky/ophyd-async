@@ -21,19 +21,22 @@ from ophyd_async.core import (
 
 
 def test_auto_increment_filename_provider(static_path_provider_factory):
-    auto_inc_fp = AutoIncrementFilenameProvider(inc_delimeter="")
+    auto_inc_fp = AutoIncrementFilenameProvider(inc_delimeter="", max_digits=3)
     dp = static_path_provider_factory(auto_inc_fp)
 
-    # Our filenames should go from 00000 to 99999.
+    # Our filenames should go from 000 to 999.
     # We increment by one each time, so just check if casting filename to
     # int gets us i.
-    for i in range(100000):
+    for i in range(1000):
         info = dp()
         assert int(info.filename) == i
 
-    # Since default max digits is 5, incrementing one more time to 100000
+    # Since default max digits is 3, incrementing one more time to 1000
     # will go over the limit and raise a value error
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="Auto incrementing filename counter exceeded maximum of 3 digits!",
+    ):
         dp()
 
 

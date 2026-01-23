@@ -401,7 +401,7 @@ class StandardDetector(
                 elif _data_logic_supported(data_logic.prepare_single):
                     if trigger_info.number_of_collections > 1:
                         raise RuntimeError(
-                            f"Multiple collections not supported by {self}"
+                            f"Multiple collections not supported by {self.name}"
                         )
                     readable_coros.append(data_logic.prepare_single(self.name))
                 else:
@@ -504,14 +504,9 @@ class StandardDetector(
                     await self._trigger_logic.prepare_level(
                         num=value.number_of_exposures,
                     )
-        elif value.trigger != DetectorTrigger.INTERNAL:
-            raise ValueError(
-                f"Detector {self} has no trigger logic, so can only do INTERNAL "
-                "triggering"
-            )
         elif value.livetime != 0.0 or value.deadtime != 0.0:
             raise ValueError(
-                f"Detector {self} has no trigger logic, so cannot set livetime or "
+                f"Detector {self.name} has no trigger logic, so cannot set livetime or "
                 "deadtime"
             )
         # NOTE: this section must come after preparing the trigger logic as we may
@@ -537,9 +532,6 @@ class StandardDetector(
                     f"prepared with number_of_events={trigger_info.number_of_events}."
                 )
                 raise ValueError(msg)
-            if trigger_info.trigger is not DetectorTrigger.INTERNAL:
-                msg = "The trigger method can only be called with INTERNAL triggering"
-                raise ValueError(msg)
             # Ensure the data provider is still usable
             await self._update_prepare_context(trigger_info)
         ctx = error_if_none(self._prepare_ctx, "Prepare should have been run")
@@ -559,7 +551,9 @@ class StandardDetector(
     async def kickoff(self):
         ctx = error_if_none(self._prepare_ctx, "Prepare not called")
         if not ctx.streamable_data_providers:
-            raise ValueError(f"Detector {self} is not streamable, so cannot kickoff")
+            raise ValueError(
+                f"Detector {self.name} is not streamable, so cannot kickoff"
+            )
         collections_written, events_to_kickoff = await asyncio.gather(
             _get_collections_written(ctx.streamable_data_providers),
             self.events_to_kickoff.get_value(),

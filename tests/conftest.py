@@ -11,18 +11,13 @@ from typing import Any
 
 import pytest
 from bluesky.run_engine import RunEngine, TransitionError
-from bluesky.utils import new_uid
 from pytest import FixtureRequest
 
 from ophyd_async.core import (
-    DetectorTrigger,
     FilenameProvider,
     StaticFilenameProvider,
     StaticPathProvider,
-    TriggerInfo,
-    init_devices,
 )
-from ophyd_async.epics import adsimdetector
 
 PANDA_RECORD = str(
     Path(__file__).parent / "unit_tests" / "fastcs" / "panda" / "db" / "panda.db"
@@ -257,45 +252,6 @@ def static_path_provider(
     static_filename_provider: FilenameProvider,
 ):
     return static_path_provider_factory(static_filename_provider)
-
-
-@pytest.fixture
-def one_shot_trigger_info(request: FixtureRequest) -> TriggerInfo:
-    # If the fixture is called with a parameter, use it as the exposures_per_event
-    # otherwise use 1
-    param = getattr(request, "param", 1)
-    return TriggerInfo(
-        number_of_events=1,
-        trigger=DetectorTrigger.INTERNAL,
-        livetime=None,
-        exposures_per_event=param if isinstance(param, int) else 1,
-    )
-
-
-@pytest.fixture
-async def sim_detector(request: FixtureRequest):
-    """Fixture that creates a simulated detector.
-
-    Args:
-        prefix (str): The PV prefix for the detector
-        name (str): Name for the detector instance
-        tmp_path (Path): Temporary directory for file writing
-    """
-    prefix = (
-        request.param[0] if isinstance(request.param, list | tuple) else request.param
-    )
-    name = request.param[1] if isinstance(request.param, list | tuple) else "test"
-    tmp_path = request.getfixturevalue("tmp_path")
-
-    fp = StaticFilenameProvider(f"test-{new_uid()}")
-    dp = StaticPathProvider(fp, tmp_path)
-
-    async with init_devices(mock=True):
-        det = adsimdetector.SimDetector(prefix, dp, name=name)
-
-    det._config_sigs = [det.driver.acquire_time, det.driver.acquire]
-
-    return det
 
 
 def check_docker_sock():

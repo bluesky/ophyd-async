@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 import numpy as np
 
@@ -11,6 +12,8 @@ from ophyd_async.core import (
 )
 
 from ._block import DataBlock, PandaCaptureMode
+
+logger = logging.getLogger("ophyd_async")
 
 
 class PandaHDFDataLogic(DetectorDataLogic):
@@ -48,6 +51,13 @@ class PandaHDFDataLogic(DetectorDataLogic):
         # Load data from the datasets PV on the panda, update internal
         # representation of datasets that the panda will write.
         capture_table = await self.data_block.datasets.get_value()
+        if len(capture_table) == 0:
+            logger.warning(
+                f"PandA {detector_name} DATASETS table is empty! "
+                "No stream resource docs will be generated. "
+                "Make sure captured positions have their corresponding "
+                "*:DATASET PV set to a scientifically relevant name."
+            )
         resources = [
             StreamResourceInfo(
                 data_key=dataset_name,

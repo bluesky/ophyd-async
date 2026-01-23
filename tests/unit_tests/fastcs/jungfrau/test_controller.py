@@ -187,3 +187,12 @@ async def test_prepare_val_error_if_pedestal_mode_and_odd_number_of_events(
         ),
     ):
         await jungfrau.prepare(trigger_info)
+
+
+async def test_deadtime(jungfrau: JungfrauDetector):
+    supported_triggers, deadtime = await jungfrau.get_trigger_deadtime()
+    assert deadtime == 2e-5
+    assert supported_triggers == {
+        DetectorTrigger.EXTERNAL_EDGE,
+        DetectorTrigger.INTERNAL,
+    }

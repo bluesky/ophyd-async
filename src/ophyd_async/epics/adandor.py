@@ -54,7 +54,7 @@ class Andor2DriverIO(ADBaseIO):
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
 # runtime. See https://github.com/bluesky/ophyd-async/issues/308
 class Andor2TriggerLogic(DetectorTriggerLogic):
-    """DetectorCobntroller for Andor2DriverIO."""
+    """DetectorController for Andor2DriverIO."""
 
     def __init__(self, driver: Andor2DriverIO):
         self.driver = driver

@@ -120,8 +120,8 @@ class AutoIncrementFilenameProvider(FilenameProvider):
     def __call__(self, device_name: str | None = None) -> str:
         if len(str(self._current_value)) > self._max_digits:
             raise ValueError(
-                f"Auto incrementing filename counter \
-                  exceeded maximum of {self._max_digits} digits!"
+                f"Auto incrementing filename counter "
+                f"exceeded maximum of {self._max_digits} digits!"
             )
 
         padded_counter = f"{self._current_value:0{self._max_digits}}"

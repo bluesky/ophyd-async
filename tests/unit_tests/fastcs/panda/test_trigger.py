@@ -30,7 +30,7 @@ async def mock_panda():
         inenc: DeviceVector[InencBlock]
 
         def __init__(self, uri: str, name: str = ""):
-            super().__init__(name=name, connector=fastcs_connector(self, uri))
+            super().__init__(name=name, connector=fastcs_connector(uri, self))
 
     async with init_devices(mock=True):
         mock_panda = Panda("PANDAQSRV:", "mock_panda")

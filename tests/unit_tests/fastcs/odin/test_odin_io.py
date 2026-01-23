@@ -22,7 +22,7 @@ from ophyd_async.testing import assert_has_calls
 BIT_DEPTH = 16
 
 
-class TestOdinDet(StandardDetector):
+class OdinDet(StandardDetector):
     def __init__(self, name="", connector=None):
         path_provider = StaticPathProvider(
             StaticFilenameProvider("filename"), Path("/tmp")
@@ -34,13 +34,13 @@ class TestOdinDet(StandardDetector):
 
 
 @pytest.fixture
-def odin_det(RE: RunEngine) -> TestOdinDet:
+def odin_det(RE: RunEngine) -> OdinDet:
     with init_devices(mock=True):
-        det = TestOdinDet()
+        det = OdinDet()
     return det
 
 
-async def test_describe_gives_detector_shape(odin_det: TestOdinDet):
+async def test_describe_gives_detector_shape(odin_det: OdinDet):
     set_mock_value(odin_det.odin.fp.writing, True)
     set_mock_value(odin_det.odin.mw.writing, True)
     set_mock_value(odin_det.odin.fp.data_dims_1, 1024)
@@ -62,7 +62,7 @@ async def test_describe_gives_detector_shape(odin_det: TestOdinDet):
     }
 
 
-async def test_when_closed_then_data_capture_turned_off(odin_det: TestOdinDet):
+async def test_when_closed_then_data_capture_turned_off(odin_det: OdinDet):
     await odin_det.unstage()
     assert_has_calls(
         odin_det,
@@ -73,9 +73,8 @@ async def test_when_closed_then_data_capture_turned_off(odin_det: TestOdinDet):
     )
 
 
-@pytest.mark.asyncio
 async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writing(
-    odin_det: TestOdinDet,
+    odin_det: OdinDet,
 ):
     odin: OdinIO = odin_det.odin
     ev = asyncio.Event()
@@ -108,3 +107,11 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
     await status
     assert status.done
     assert_has_calls(odin, [])
+
+
+@pytest.mark.timeout(15)
+async def test_hinted_fields(odin_det: OdinDet):
+    set_mock_value(odin_det.odin.fp.writing, True)
+    set_mock_value(odin_det.odin.mw.writing, True)
+    await odin_det.prepare(TriggerInfo())
+    assert odin_det.hints == {"fields": ["det"]}

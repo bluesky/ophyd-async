@@ -40,7 +40,7 @@ class VimbaConvertFormat(StrictEnum):
 
 
 class VimbaTriggerSource(StrictEnum):
-    """Mode for the source of triggers on the Vimbda."""
+    """Mode for the source of triggers on the Vimba."""
 
     FREERUN = "Freerun"
     LINE1 = "Line1"
