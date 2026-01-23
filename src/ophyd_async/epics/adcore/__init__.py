@@ -18,6 +18,7 @@ from ._core_io import (
     NDPluginCBIO,
     NDPluginStatsIO,
     NDROIStatIO,
+    NoWaitWhenSetting,
 )
 from ._core_logic import DEFAULT_GOOD_STATES, ADBaseContAcqController, ADBaseController
 from ._core_writer import ADWriter
@@ -68,4 +69,5 @@ __all__ = [
     "NDCBFlushOnSoftTrgMode",
     "NDPluginCBIO",
     "ndattributes_to_xml",
+    "NoWaitWhenSetting",
 ]
