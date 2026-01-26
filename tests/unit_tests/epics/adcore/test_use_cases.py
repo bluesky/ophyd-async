@@ -166,7 +166,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
         for i in range(3)
     ]
     # Check we can prepare and do a second one
-    await det.prepare(TriggerInfo(exposure_timeout=0.01))
+    await det.prepare(TriggerInfo(exposure_timeout=0.1))
     callback_on_mock_put(
         det.driver.acquire, lambda v, wait: set_mock_value(writer.num_captured, 2)
     )
@@ -189,7 +189,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     ]
     # And if we trigger again without updating num_captured then we timeout
     with pytest.raises(
-        TimeoutError, match="Timeout Error while waiting 0.01s to update"
+        TimeoutError, match="Timeout Error while waiting 0.1s to update"
     ):
         await det.trigger()
 
