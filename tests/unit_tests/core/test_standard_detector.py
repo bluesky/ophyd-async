@@ -155,7 +155,7 @@ class StreamableOnlyDataLogic(DetectorDataLogic):
             parameters={"dataset": "/data"},
         )
         provider = StreamResourceDataProvider(
-            uri=f"file://localhost{self.tmp_path}/test.h5",
+            uri=f"file://localhost{self.tmp_path.as_posix()}/test.h5",
             resources=[resource],
             mimetype="application/x-hdf5",
             collections_written_signal=self.collections_written,
@@ -585,7 +585,7 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
                     "dataset": "/data",
                 },
                 "uid": ANY,
-                "uri": f"file://localhost{tmp_path}/test.h5",
+                "uri": f"file://localhost{tmp_path.as_posix()}/test.h5",
             },
         ),
         (
@@ -801,7 +801,7 @@ async def test_multiple_data_logics(tmp_path):
             "dtype_numpy": "|u1",
             "external": "STREAM:",
             "shape": [1, 10, 15],
-            "source": f"file://localhost{tmp_path}/test.h5",
+            "source": f"file://localhost{tmp_path.as_posix()}/test.h5",
         },
         "foo-value": {
             "dtype": "integer",
@@ -818,7 +818,7 @@ async def test_multiple_data_logics(tmp_path):
             "dtype_numpy": "|u1",
             "external": "STREAM:",
             "shape": [1, 10, 15],
-            "source": f"file://localhost{tmp_path}/test.h5",
+            "source": f"file://localhost{tmp_path.as_posix()}/test.h5",
         },
     }
     # Should be able to do fly scanning (has streamable logic)
@@ -849,7 +849,7 @@ async def test_collect_asset_docs_with_explicit_index(tmp_path):
                     "dataset": "/data",
                 },
                 "uid": ANY,
-                "uri": f"file://localhost{tmp_path}/test.h5",
+                "uri": f"file://localhost{tmp_path.as_posix()}/test.h5",
             },
         ),
         (

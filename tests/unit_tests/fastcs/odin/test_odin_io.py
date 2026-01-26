@@ -55,7 +55,7 @@ async def test_describe_gives_detector_shape(odin_det: OdinDet, tmp_path):
                 768,
                 1024,
             ],
-            "source": f"file://localhost{tmp_path}/filename.h5",
+            "source": f"file://localhost{tmp_path.as_posix()}/filename.h5",
         },
     }
 

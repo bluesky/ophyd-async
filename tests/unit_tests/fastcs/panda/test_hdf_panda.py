@@ -86,7 +86,7 @@ async def test_open_returns_correct_descriptors_and_resources(
         if len(table) == 0:
             assert "DATASETS table is empty!" in caplog.text
 
-    uri = f"file://localhost{tmp_path}/test-panda.h5"
+    uri = f"file://localhost{tmp_path.as_posix()}/test-panda.h5"
     for key, entry, expected_key in zip(
         description.keys(), description.values(), table.name, strict=True
     ):
@@ -170,7 +170,7 @@ async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
     )
     # Check it is making 3 collections in each event
     description = await hdf_panda.describe()
-    uri = f"file://localhost{tmp_path}/test-panda.h5"
+    uri = f"file://localhost{tmp_path.as_posix()}/test-panda.h5"
     assert description == {
         "x": {
             "dtype": "array",
