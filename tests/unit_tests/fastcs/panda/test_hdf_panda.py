@@ -154,13 +154,8 @@ async def test_open_sets_correct_signals(hdf_panda: HDFPanda):
 
 async def test_close_sets_correct_signals(hdf_panda: HDFPanda):
     await hdf_panda.unstage()
-    assert_has_calls(
-        hdf_panda,
-        [
-            call.pcap.arm.put(False, wait=True),
-            call.data.capture.put(False, wait=True),
-        ],
-    )
+    assert_has_calls(hdf_panda.pcap, [call.arm.put(False, wait=True)])
+    assert_has_calls(hdf_panda.data, [call.capture.put(False, wait=True)])
 
 
 async def test_flyscan_documents(hdf_panda: HDFPanda):
