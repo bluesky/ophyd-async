@@ -23,10 +23,8 @@ BIT_DEPTH = 16
 
 
 class OdinDet(StandardDetector):
-    def __init__(self, name="", connector=None):
-        path_provider = StaticPathProvider(
-            StaticFilenameProvider("filename"), Path("/tmp")
-        )
+    def __init__(self, tmp_path: Path, name="", connector=None):
+        path_provider = StaticPathProvider(StaticFilenameProvider("filename"), tmp_path)
         self.odin = OdinIO(connector=fastcs_connector("PREFIX:"))
         self.bit_depth = soft_signal_rw(int, BIT_DEPTH)
         self.add_logics(OdinDataLogic(path_provider, self.odin, self.bit_depth))
@@ -34,13 +32,13 @@ class OdinDet(StandardDetector):
 
 
 @pytest.fixture
-def odin_det(RE: RunEngine) -> OdinDet:
+def odin_det(RE: RunEngine, tmp_path) -> OdinDet:
     with init_devices(mock=True):
-        det = OdinDet()
+        det = OdinDet(tmp_path)
     return det
 
 
-async def test_describe_gives_detector_shape(odin_det: OdinDet):
+async def test_describe_gives_detector_shape(odin_det: OdinDet, tmp_path):
     set_mock_value(odin_det.odin.fp.writing, True)
     set_mock_value(odin_det.odin.mw.writing, True)
     set_mock_value(odin_det.odin.fp.data_dims_1, 1024)
@@ -57,7 +55,7 @@ async def test_describe_gives_detector_shape(odin_det: OdinDet):
                 768,
                 1024,
             ],
-            "source": "file://localhost/tmp/filename.h5",
+            "source": f"file://localhost{tmp_path}/filename.h5",
         },
     }
 
@@ -74,7 +72,7 @@ async def test_when_closed_then_data_capture_turned_off(odin_det: OdinDet):
 
 
 async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writing(
-    odin_det: OdinDet,
+    odin_det: OdinDet, tmp_path
 ):
     odin: OdinIO = odin_det.odin
     ev = asyncio.Event()
@@ -93,8 +91,8 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
             call.fp.data_compression.put("BSLZ4", wait=True),
             call.fp.frames.put(0, wait=True),
             call.fp.process_frames_per_block.put(1000, wait=True),
-            call.fp.file_path.put("/tmp", wait=True),
-            call.mw.directory.put("/tmp", wait=True),
+            call.fp.file_path.put(str(tmp_path), wait=True),
+            call.mw.directory.put(str(tmp_path), wait=True),
             call.fp.file_prefix.put("filename.h5", wait=True),
             call.mw.file_prefix.put("filename.h5", wait=True),
             call.mw.acquisition_id.put("filename.h5", wait=True),

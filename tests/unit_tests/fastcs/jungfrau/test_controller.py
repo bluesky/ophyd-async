@@ -1,6 +1,5 @@
 import logging
 import re
-from pathlib import Path
 from unittest.mock import call
 
 import pytest
@@ -26,8 +25,8 @@ from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
-def jungfrau(RE: RunEngine):
-    path_provider = StaticPathProvider(StaticFilenameProvider("filename"), Path("/tmp"))
+def jungfrau(RE: RunEngine, tmp_path):
+    path_provider = StaticPathProvider(StaticFilenameProvider("filename"), tmp_path)
     with init_devices(mock=True):
         detector = JungfrauDetector("prefix", path_provider, "", "", "jungfrau")
 

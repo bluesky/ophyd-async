@@ -1,4 +1,3 @@
-from pathlib import Path
 from unittest.mock import ANY
 
 import pytest
@@ -399,9 +398,9 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
     ]
 
 
-async def test_2_rois_with_hdf():
+async def test_2_rois_with_hdf(tmp_path):
     path_provider = StaticPathProvider(
-        lambda device_name=None: str(device_name), Path("/tmp")
+        lambda device_name=None: str(device_name), tmp_path
     )
     driver = adcore.ADBaseIO("PREFIX:DRV:")
     rois: list[adcore.NDROIIO] = []

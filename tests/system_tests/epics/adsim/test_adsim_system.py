@@ -63,9 +63,9 @@ def _aioca_cleanup(event_loop):
 
 
 @pytest.fixture
-def adsim(RE: RunEngine) -> AreaDetector:
+def adsim(RE: RunEngine, tmp_path) -> AreaDetector:
     prefix = "BL01T"
-    provider = StaticPathProvider(StaticFilenameProvider("adsim"), Path("/tmp"))
+    provider = StaticPathProvider(StaticFilenameProvider("adsim"), tmp_path)
     with init_devices():
         adsim = SimDetector(
             f"{prefix}-DI-CAM-01:",
@@ -122,7 +122,7 @@ def test_prepare_is_idempotent_and_sets_exposure_time(
 )
 @pytest.mark.timeout(TIMEOUT + 15.0)
 def test_software_triggering(
-    RE: RunEngine, adsim: SimDetector, bl01t_di_cam_01: None
+    RE: RunEngine, adsim: SimDetector, bl01t_di_cam_01: None, tmp_path
 ) -> None:
     docs = run_plan_and_get_documents(RE, bp.count([adsim], num=2))
     assert docs == [
@@ -203,7 +203,7 @@ def test_software_triggering(
             run_start=ANY,
             data_key="adsim",
             mimetype="application/x-hdf5",
-            uri="file://localhost/tmp/adsim.h5",
+            uri=f"file://localhost{tmp_path}/adsim.h5",
             parameters={
                 "dataset": "/entry/data/data",
                 "chunk_shape": (1, 1024, 1024),

@@ -141,9 +141,10 @@ class ReadableOnlyDataLogic(DetectorDataLogic):
 class StreamableOnlyDataLogic(DetectorDataLogic):
     """Produces only streamable (file-based) data."""
 
-    def __init__(self):
+    def __init__(self, tmp_path):
         self.collections_written = soft_signal_rw(int)
         self.stop_count = 0
+        self.tmp_path = tmp_path
 
     async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
         resource = StreamResourceInfo(
@@ -154,7 +155,7 @@ class StreamableOnlyDataLogic(DetectorDataLogic):
             parameters={"dataset": "/data"},
         )
         provider = StreamResourceDataProvider(
-            uri="file://localhost/tmp/test.h5",
+            uri=f"file://localhost{self.tmp_path}/test.h5",
             resources=[resource],
             mimetype="application/x-hdf5",
             collections_written_signal=self.collections_written,
@@ -329,12 +330,12 @@ async def test_exposures_per_collection_not_supported():
         (DetectorTrigger.EXTERNAL_LEVEL, "prepare"),
     ],
 )
-async def test_arm_timing(trigger_type, arm_timing):
+async def test_arm_timing(trigger_type, arm_timing, tmp_path):
     """Verify detector is armed at the correct time based on trigger type."""
     det = StandardDetector()
     tl = AllTriggerTypesLogic()
     al = MockArmLogic()
-    dl = StreamableOnlyDataLogic()
+    dl = StreamableOnlyDataLogic(tmp_path)
     det.add_logics(tl, al, dl)
 
     # Prepare the detector
@@ -362,11 +363,11 @@ async def test_arm_timing(trigger_type, arm_timing):
         assert al.armed is True
 
 
-async def test_trigger_arms_detector():
+async def test_trigger_arms_detector(tmp_path):
     """Test that trigger() arms the detector when arm logic is present."""
     det = StandardDetector()
     al = MockArmLogic()
-    dl = StreamableOnlyDataLogic()
+    dl = StreamableOnlyDataLogic(tmp_path)
     det.add_logics(JustInternalTriggerLogic(), al, dl)
 
     await det.prepare(TriggerInfo())
@@ -409,10 +410,10 @@ async def test_describe_before_prepare_raises():
         await det.describe()
 
 
-async def test_describe_collect_before_prepare_raises():
+async def test_describe_collect_before_prepare_raises(tmp_path):
     """Test that describe_collect() fails before prepare()."""
     det = StandardDetector()
-    det.add_logics(StreamableOnlyDataLogic())
+    det.add_logics(StreamableOnlyDataLogic(tmp_path))
 
     with pytest.raises(RuntimeError, match="Prepare not run"):
         await det.describe_collect()
@@ -429,11 +430,11 @@ async def test_trigger_after_multi_event_prepare_raises():
         await det.trigger()
 
 
-async def test_kickoff_respects_prepare_bounds():
+async def test_kickoff_respects_prepare_bounds(tmp_path):
     """Test that multiple kickoff() calls respect prepared bounds."""
     det = StandardDetector()
     tl = JustInternalTriggerLogic()
-    dl = StreamableOnlyDataLogic()
+    dl = StreamableOnlyDataLogic(tmp_path)
     det.add_logics(tl, dl)
 
     # Prepare for 5 events
@@ -488,11 +489,11 @@ async def test_hints_from_single_data_logic():
     }  # ReadableOnlyDataLogic uses foo-value
 
 
-async def test_hints_from_multiple_data_logics():
+async def test_hints_from_multiple_data_logics(tmp_path):
     """Test that hints are aggregated from multiple data logics."""
     det = StandardDetector(name="bar")
     dl1 = ReadableOnlyDataLogic()
-    dl2 = StreamableOnlyDataLogic()
+    dl2 = StreamableOnlyDataLogic(tmp_path)
     det.add_logics(dl1, dl2)
 
     await det.prepare(TriggerInfo())
@@ -560,11 +561,11 @@ async def test_kickoff_without_streamable_data_raises():
         await det.kickoff()
 
 
-async def test_streamable_supports_both_step_and_fly():
+async def test_streamable_supports_both_step_and_fly(tmp_path):
     """Test that streamable data logic supports both step and fly scanning."""
     det = StandardDetector(name="foo")
     tl = JustInternalTriggerLogic()
-    dl = StreamableOnlyDataLogic()
+    dl = StreamableOnlyDataLogic(tmp_path)
     det.add_logics(tl, dl)
 
     # Step scan should work
@@ -584,7 +585,7 @@ async def test_streamable_supports_both_step_and_fly():
                     "dataset": "/data",
                 },
                 "uid": ANY,
-                "uri": "file://localhost/tmp/test.h5",
+                "uri": f"file://localhost{tmp_path}/test.h5",
             },
         ),
         (
@@ -745,10 +746,10 @@ async def test_unstage_disarms_detector():
     assert al.armed is False
 
 
-async def test_prepare_stops_data_logic_when_recreating_providers():
+async def test_prepare_stops_data_logic_when_recreating_providers(tmp_path):
     """Test that prepare() calls stop() on data logic when recreating providers."""
     det = StandardDetector(name="det")
-    dl = StreamableOnlyDataLogic()
+    dl = StreamableOnlyDataLogic(tmp_path)
     det.add_logics(JustInternalTriggerLogic(), dl)
 
     # First prepare with collections_per_event=2
@@ -760,11 +761,11 @@ async def test_prepare_stops_data_logic_when_recreating_providers():
     assert dl.stop_count == 1  # stop() should have been called
 
 
-async def test_different_collections_written_raises():
+async def test_different_collections_written_raises(tmp_path):
     """Test that different collections_written values from providers raises error."""
     det = StandardDetector(name="det")
-    dl1 = StreamableOnlyDataLogic()
-    dl2 = StreamableOnlyDataLogic()
+    dl1 = StreamableOnlyDataLogic(tmp_path)
+    dl2 = StreamableOnlyDataLogic(tmp_path)
     det.add_logics(JustInternalTriggerLogic(), dl1, dl2)
 
     await det.prepare(TriggerInfo(number_of_events=5))
@@ -783,11 +784,11 @@ async def test_different_collections_written_raises():
         await det.kickoff()
 
 
-async def test_multiple_data_logics():
+async def test_multiple_data_logics(tmp_path):
     """Test detector with multiple data logics."""
     det = StandardDetector(name="det")
     dl1 = ReadableOnlyDataLogic()
-    dl2 = StreamableOnlyDataLogic()
+    dl2 = StreamableOnlyDataLogic(tmp_path)
     det.add_logics(JustInternalTriggerLogic(), dl1, dl2)
 
     await det.prepare(TriggerInfo())
@@ -800,7 +801,7 @@ async def test_multiple_data_logics():
             "dtype_numpy": "|u1",
             "external": "STREAM:",
             "shape": [1, 10, 15],
-            "source": "file://localhost/tmp/test.h5",
+            "source": f"file://localhost{tmp_path}/test.h5",
         },
         "foo-value": {
             "dtype": "integer",
@@ -817,7 +818,7 @@ async def test_multiple_data_logics():
             "dtype_numpy": "|u1",
             "external": "STREAM:",
             "shape": [1, 10, 15],
-            "source": "file://localhost/tmp/test.h5",
+            "source": f"file://localhost{tmp_path}/test.h5",
         },
     }
     # Should be able to do fly scanning (has streamable logic)
@@ -825,10 +826,10 @@ async def test_multiple_data_logics():
     await det.kickoff()
 
 
-async def test_collect_asset_docs_with_explicit_index():
+async def test_collect_asset_docs_with_explicit_index(tmp_path):
     """Test collect_asset_docs() with explicitly provided index."""
     det = StandardDetector(name="det")
-    dl = StreamableOnlyDataLogic()
+    dl = StreamableOnlyDataLogic(tmp_path)
     det.add_logics(JustInternalTriggerLogic(), dl)
 
     await det.prepare(TriggerInfo(number_of_events=5, collections_per_event=2))
@@ -848,7 +849,7 @@ async def test_collect_asset_docs_with_explicit_index():
                     "dataset": "/data",
                 },
                 "uid": ANY,
-                "uri": "file://localhost/tmp/test.h5",
+                "uri": f"file://localhost{tmp_path}/test.h5",
             },
         ),
         (

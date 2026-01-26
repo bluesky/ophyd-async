@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from unittest.mock import ANY, call
 
 import pytest
@@ -52,10 +51,8 @@ TABLES = [
 
 
 @pytest.fixture
-async def hdf_panda() -> HDFPanda:
-    path_provider = StaticPathProvider(
-        StaticFilenameProvider("test-panda"), Path("/tmp")
-    )
+async def hdf_panda(tmp_path) -> HDFPanda:
+    path_provider = StaticPathProvider(StaticFilenameProvider("test-panda"), tmp_path)
 
     async with init_devices(mock=True):
         panda = HDFPanda("HDFPANDA:", path_provider=path_provider)
@@ -78,7 +75,7 @@ async def hdf_panda() -> HDFPanda:
 
 @pytest.mark.parametrize("table", TABLES)
 async def test_open_returns_correct_descriptors_and_resources(
-    hdf_panda: HDFPanda, table: DatasetTable, caplog
+    hdf_panda: HDFPanda, table: DatasetTable, caplog, tmp_path
 ):
     set_mock_value(hdf_panda.data.datasets, table)
     with caplog.at_level(logging.WARNING):
@@ -89,7 +86,7 @@ async def test_open_returns_correct_descriptors_and_resources(
         if len(table) == 0:
             assert "DATASETS table is empty!" in caplog.text
 
-    uri = "file://localhost/tmp/test-panda.h5"
+    uri = f"file://localhost{tmp_path}/test-panda.h5"
     for key, entry, expected_key in zip(
         description.keys(), description.values(), table.name, strict=True
     ):
@@ -136,14 +133,14 @@ async def test_open_returns_correct_descriptors_and_resources(
         )
 
 
-async def test_open_sets_correct_signals(hdf_panda: HDFPanda):
+async def test_open_sets_correct_signals(hdf_panda: HDFPanda, tmp_path):
     await hdf_panda.prepare(TriggerInfo(trigger=DetectorTrigger.EXTERNAL_LEVEL))
     assert_has_calls(
         hdf_panda,
         [
             call.data.create_directory.put(0, wait=True),
             call.data.flush_period.put(0, wait=True),
-            call.data.hdf_directory.put("/tmp", wait=True),
+            call.data.hdf_directory.put(str(tmp_path), wait=True),
             call.data.hdf_file_name.put("test-panda.h5", wait=True),
             call.data.capture_mode.put(PandaCaptureMode.FOREVER, wait=True),
             call.data.capture.put(True, wait=True),
@@ -158,7 +155,7 @@ async def test_close_sets_correct_signals(hdf_panda: HDFPanda):
     assert_has_calls(hdf_panda.data, [call.capture.put(False, wait=True)])
 
 
-async def test_flyscan_documents(hdf_panda: HDFPanda):
+async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
     # Check there are no config sigs
     config_description = await hdf_panda.describe_configuration()
     assert config_description == {}
@@ -173,7 +170,7 @@ async def test_flyscan_documents(hdf_panda: HDFPanda):
     )
     # Check it is making 3 collections in each event
     description = await hdf_panda.describe()
-    uri = "file://localhost/tmp/test-panda.h5"
+    uri = f"file://localhost{tmp_path}/test-panda.h5"
     assert description == {
         "x": {
             "dtype": "array",

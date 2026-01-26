@@ -1,4 +1,3 @@
-from pathlib import Path
 from unittest.mock import call, patch
 
 import pytest
@@ -36,8 +35,8 @@ def test_pvs_correct(test_adpilatus: adpilatus.PilatusDetector):
     "readout_time",
     [adpilatus.PilatusReadoutTime.PILATUS2, adpilatus.PilatusReadoutTime.PILATUS3],
 )
-async def test_deadtime(readout_time: adpilatus.PilatusReadoutTime):
-    path_provider = StaticPathProvider(StaticFilenameProvider("data"), Path("/tmp"))
+async def test_deadtime(readout_time: adpilatus.PilatusReadoutTime, tmp_path):
+    path_provider = StaticPathProvider(StaticFilenameProvider("data"), tmp_path)
     pilatus = adpilatus.PilatusDetector("PREFIX:", path_provider, readout_time)
     trigger_modes, deadtime = await pilatus.get_trigger_deadtime()
     assert trigger_modes == {

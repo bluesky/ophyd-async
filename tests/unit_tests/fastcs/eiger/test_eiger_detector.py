@@ -1,4 +1,3 @@
-from pathlib import Path
 from unittest.mock import call
 
 import pytest
@@ -16,8 +15,8 @@ from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
-def detector(RE):
-    path_provider = StaticPathProvider(StaticFilenameProvider("filename"), Path("/tmp"))
+def detector(RE, tmp_path):
+    path_provider = StaticPathProvider(StaticFilenameProvider("filename"), tmp_path)
     with init_devices(mock=True):
         detector = EigerDetector("BL03I", path_provider)
 
@@ -28,7 +27,9 @@ def detector(RE):
     return detector
 
 
-async def test_prepare_internal_calls_correct_parameters(detector: EigerDetector):
+async def test_prepare_internal_calls_correct_parameters(
+    detector: EigerDetector, tmp_path
+):
     await detector.prepare(
         TriggerInfo(
             number_of_events=10,
@@ -47,8 +48,8 @@ async def test_prepare_internal_calls_correct_parameters(detector: EigerDetector
             call.od.fp.data_compression.put("BSLZ4", wait=True),
             call.od.fp.frames.put(0, wait=True),
             call.od.fp.process_frames_per_block.put(1000, wait=True),
-            call.od.fp.file_path.put("/tmp", wait=True),
-            call.od.mw.directory.put("/tmp", wait=True),
+            call.od.fp.file_path.put(str(tmp_path), wait=True),
+            call.od.mw.directory.put(str(tmp_path), wait=True),
             call.od.fp.file_prefix.put("filename.h5", wait=True),
             call.od.mw.file_prefix.put("filename.h5", wait=True),
             call.od.mw.acquisition_id.put("filename.h5", wait=True),
