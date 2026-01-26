@@ -43,13 +43,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
-      - name: Run tests win
-        if: inputs.runs-on == 'windows-latest'
-        run: uv run --locked tox -e tests -- --timeout=10 ${{ inputs.tests-path}}
-
-      - name: Non win tests
-        if: inputs.runs-on != 'windows-latest'
-        run: uv run --locked tox -e tests -- --timeout=2 ${{ inputs.tests-path}}
+      - name: Run tests
+        run: uv run --locked tox -e tests -- ${{ inputs.tests-path}}
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
