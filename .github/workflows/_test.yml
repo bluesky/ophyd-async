@@ -44,7 +44,7 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: Run tests
-        run: uv run --locked tox -e tests -- ${{ inputs.tests-path}}
+        run: uv run --locked tox -e tests -- --durations=20 ${{ inputs.tests-path}}
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
