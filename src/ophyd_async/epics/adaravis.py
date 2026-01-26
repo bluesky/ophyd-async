@@ -74,6 +74,8 @@ class AravisTriggerLogic(DetectorTriggerLogic):
     async def prepare_edge(self, num: int, livetime: float):
         # Trigger on the rising edge of Line1
         # trigger mode must be set first and on its own!
+        # Hardware race condition in Aravis firmware requires setting trigger mode
+        # separately before trigger source to avoid undefined behavior.
         # https://github.com/AravisProject/aravis/issues/1045
         await self.driver.trigger_mode.set(OnOff.ON)
         await self.driver.trigger_source.set(AravisTriggerSource.LINE1)

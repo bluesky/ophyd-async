@@ -49,7 +49,11 @@ class StreamableDataProvider:
     async def make_stream_docs(
         self, collections_written: int, collections_per_event: int
     ) -> AsyncIterator[StreamAsset]:
-        """Make StreamAsset documents up to the given index."""
+        """Make StreamAsset documents up to the given index.
+
+        Default implementation is a no-op. Subclasses should override this
+        to emit actual StreamAsset documents.
+        """
         while False:
             yield
 

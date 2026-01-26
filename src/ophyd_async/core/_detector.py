@@ -285,7 +285,7 @@ class DetectorDataLogic:
 
     async def stop(self) -> None:
         """Stop taking data."""
-        pass
+        return None
 
 
 _data_logic_supported = functools.partial(_logic_supported, DetectorDataLogic)
@@ -425,7 +425,8 @@ class StandardDetector(
     async def _update_prepare_context(self, trigger_info: TriggerInfo) -> None:
         # The only thing that would stop us being able to reuse a provider is
         # if the collections_per_event changes, as that would change the
-        # StreamResource shape, so if that is the same we can reuse it.
+        # StreamResource shape. All other TriggerInfo parameters (exposures, livetime,
+        # etc.) don't affect the data provider configuration.
         if (
             self._prepare_ctx
             and self._prepare_ctx.trigger_info.collections_per_event
