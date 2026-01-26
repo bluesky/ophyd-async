@@ -203,7 +203,7 @@ def test_software_triggering(
             run_start=ANY,
             data_key="adsim",
             mimetype="application/x-hdf5",
-            uri=f"file://localhost{tmp_path.as_posix()}/adsim.h5",
+            uri=f"file://localhost/{tmp_path.as_posix().lstrip('/')}/adsim.h5",
             parameters={
                 "dataset": "/entry/data/data",
                 "chunk_shape": (1, 1024, 1024),

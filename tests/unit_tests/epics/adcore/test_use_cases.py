@@ -82,7 +82,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     await det.trigger()
     path_info = static_path_provider()
     description = await det.describe()
-    uri = f"file://localhost{path_info.directory_path}/{path_info.filename}.h5"
+    uri = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/{path_info.filename}.h5"
     assert description == {
         "det": {
             "dtype": "array",
@@ -217,7 +217,7 @@ async def test_step_scan_tiff_detector(
     await det.trigger()
     path_info = static_path_provider()
     description = await det.describe()
-    uri_dir = f"file://localhost{path_info.directory_path}/"
+    uri_dir = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/"
     assert description == {
         "det": {
             "dtype": "array",
@@ -309,7 +309,7 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
     # Check it is making 3 collections in each event
     path_info = static_path_provider()
     description = await det.describe()
-    uri = f"file://localhost{path_info.directory_path}/{path_info.filename}.h5"
+    uri = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/{path_info.filename}.h5"
     assert description == {
         "det": {
             "dtype": "array",
@@ -455,8 +455,8 @@ async def test_2_rois_with_hdf(tmp_path):
     await det.trigger()
     description = await det.describe()
     path_info = path_provider()
-    uri1 = f"file://localhost{path_info.directory_path}/det-hdf1.h5"
-    uri2 = f"file://localhost{path_info.directory_path}/det-hdf2.h5"
+    uri1 = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/det-hdf1.h5"
+    uri2 = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/det-hdf2.h5"
     assert description == {
         "det-roi1": {
             "dtype": "array",
