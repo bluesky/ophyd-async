@@ -59,7 +59,7 @@ async def test_prepare_hdf(
             call.writer.xml_file_name.put("", wait=True),
             call.writer.create_directory.put(0, wait=True),
             call.writer.file_path.put(
-                f"{static_path_provider().directory_path}/", wait=True
+                f"{static_path_provider().directory_path}{os.sep}", wait=True
             ),
             call.writer.file_name.put("ophyd_async_tests", wait=True),
             call.writer.file_template.put("%s%s.h5", wait=True),
