@@ -82,7 +82,8 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
     # Start it preparing
     status = odin_det.prepare(TriggerInfo(number_of_events=15))
     # Wait for start_writing to be called
-    await ev.wait()
+    async with asyncio.timeout(1):
+        await ev.wait()
     # Check it isn't done yet, but has the right calls
     assert not status.done
     assert_has_calls(
@@ -104,7 +105,8 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
     set_mock_value(odin.fp.writing, True)
     set_mock_value(odin.mw.writing, True)
     # Check we are done now, and no additional calls
-    await status
+    async with asyncio.timeout(1):
+        await status
     assert status.done
     assert_has_calls(odin, [])
 
