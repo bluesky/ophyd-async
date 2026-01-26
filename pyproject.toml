@@ -147,8 +147,8 @@ commands = [
     [
         "pyright",
         "src",
-        "-v",
-        "{env:VIRTUAL_ENV}",
+        "--pythonpath",
+        "{env:VIRTUAL_ENV}/bin/python",
         { replace = "posargs", default = [
         ], extend = true },
     ],
