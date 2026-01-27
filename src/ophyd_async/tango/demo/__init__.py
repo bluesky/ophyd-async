@@ -1,12 +1,13 @@
 from ._counter import TangoCounter
 from ._detector import TangoDetector
-from ._mover import TangoMover
-from ._tango import DemoCounter, DemoMover
+from ._motor import DemoMotor
+from ._stage import DemoStage
+from ._point_detector import DemoPointDetector
 
 __all__ = [
-    "DemoCounter",
-    "DemoMover",
     "TangoCounter",
-    "TangoMover",
+    "DemoMotor",
+    "DemoStage",
+    "DemoPointDetector",
     "TangoDetector",
 ]
