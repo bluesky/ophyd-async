@@ -8,6 +8,7 @@ import pytest
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
+    DeviceFiller,
     DeviceVector,
     NotConnectedError,
     Reference,
@@ -267,3 +268,50 @@ def test_setitem_with_non_device_value():
     device_vector = DeviceVector(children={})
     with pytest.raises(TypeError, match="Expected Device, got"):
         device_vector[1] = "not_a_device"
+
+
+def test_device_filler_check_filled_with_optional_signals():
+    """Test DeviceFiller.check_filled with both mandatory and optional Signals."""
+
+    class TestDevice(Device):
+        mandatory_signal: SignalRW[int]
+        optional_signal: SignalRW[int] | None
+
+    # Create a mock backend factory
+    def mock_backend_factory(datatype):
+        backend = Mock()
+        backend.datatype = datatype
+        return backend
+
+    # Create a mock connector factory
+    def mock_connector_factory():
+        return Mock()
+
+    device = TestDevice()
+    filler = DeviceFiller(
+        device=device,
+        signal_backend_factory=mock_backend_factory,
+        device_connector_factory=mock_connector_factory,
+    )
+
+    # Create signals from annotations (unfilled)
+    list(filler.create_signals_from_annotations(filled=False))
+
+    assert hasattr(device, "optional_signal")
+    assert isinstance(device.optional_signal, SignalRW)
+
+    # Test failure path: check_filled should fail when mandatory signal is unfilled
+    with pytest.raises(RuntimeError, match="cannot provision.*mandatory_signal"):
+        filler.check_filled("test_source")
+
+    # Fill the mandatory signal
+    filler.fill_child_signal("mandatory_signal", SignalRW, None)
+
+    # Test success path: check_filled should succeed and set optional_signal to None
+    filler.check_filled("test_source")
+
+    # Verify mandatory signal exists and optional signal is None
+    assert hasattr(device, "mandatory_signal")
+    assert isinstance(device.mandatory_signal, SignalRW)
+    assert hasattr(device, "optional_signal")
+    assert device.optional_signal is None

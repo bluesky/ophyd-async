@@ -52,6 +52,10 @@ class Block4(StandardReadable):
     signal_rw: SignalRW[int]
 
 
+class Block5(Device):
+    signal_rw: SignalRW[int] | None
+
+
 DeviceT = TypeVar("DeviceT", bound=Device)
 
 
@@ -131,6 +135,19 @@ async def test_device_create_children_from_annotations():
     assert device.device is block_2_device
     assert device.device.device is block_1_device
     assert device.signal_device is top_block_1_device
+
+
+async def test_device_create_device_with_optional_signals():
+    device = with_pvi_connector(Block5, "PREFIX:")
+
+    # Makes sure before connecting we create a signal and it exists in the device
+    assert hasattr(device, "signal_rw")
+    assert isinstance(device.signal_rw, SignalRW)
+
+    await device.connect(mock=True)
+
+    # After connecting if the optional signal is not filled it's set to None
+    assert isinstance(device.signal_rw, SignalRW)
 
 
 async def test_device_create_children_from_annotations_with_device_vectors():

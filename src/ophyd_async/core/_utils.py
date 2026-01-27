@@ -5,6 +5,7 @@ import logging
 from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta, StrEnum
+from inspect import isawaitable
 from typing import (
     Any,
     Generic,
@@ -292,10 +293,36 @@ async def merge_gathered_dicts(
     return ret
 
 
-async def gather_dict(coros: Mapping[T, Awaitable[V]]) -> dict[T, V]:
-    """Take named coros and return a dict of their name to their return value."""
-    values = await asyncio.gather(*coros.values())
-    return dict(zip(coros, values, strict=True))
+def _partition_awaitable(
+    maybe_awaitables: Iterable[T | Awaitable[T]],
+) -> tuple[dict[int, Awaitable[T]], dict[int, T]]:
+    awaitable: dict[int, Awaitable[T]] = {}
+    not_awaitable: dict[int, T] = {}
+    for i, x in enumerate(maybe_awaitables):
+        if isawaitable(x):
+            awaitable[i] = x
+        else:
+            not_awaitable[i] = x
+    return awaitable, not_awaitable
+
+
+async def gather_dict(coros: dict[T | Awaitable[T], V | Awaitable[V]]) -> dict[T, V]:
+    """Await any coros in the keys or values of a dictionary."""
+    k_awaitable, k_not_awaitable = _partition_awaitable(coros.keys())
+    v_awaitable, v_not_awaitable = _partition_awaitable(coros.values())
+
+    # Await all awaitables in parallel
+    k_results, v_results = await asyncio.gather(
+        asyncio.gather(*k_awaitable.values()),
+        asyncio.gather(*v_awaitable.values()),
+    )
+
+    # Combine awaited and non-awaited values by index
+    k_map = k_not_awaitable | dict(zip(k_awaitable, k_results, strict=True))
+    v_map = v_not_awaitable | dict(zip(v_awaitable, v_results, strict=True))
+
+    # Reconstruct dict in original index order
+    return {k_map[i]: v_map[i] for i in range(len(coros))}
 
 
 def in_micros(t: float) -> int:

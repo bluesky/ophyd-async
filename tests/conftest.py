@@ -321,8 +321,10 @@ def check_docker_sock():
             Cannot communicate with the container engine on the host.
             Please make sure $DOCKER_HOST points to the correct socket on the host.
             NOTE:
-                If you are using podman, please enable the socket by running
-                systemctl --user enable podman --now"""
+                For podman, $DOCKER_HOST is typically set by running
+                    export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
+                Also, if you are using podman please enable the socket by running
+                    systemctl --user enable podman --now"""
         raise RuntimeError(message) from err
 
 
