@@ -11,29 +11,29 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalX,
-    StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
+from ophyd_async.core import StandardReadable
+from ophyd_async.tango.core import DevStateEnum, TangoPolling, TangoDevice
 
 
-class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
+class DemoMotor(TangoDevice, StandardReadable, Movable, Stoppable):
     """Tango moving device."""
 
     # Enter the name and type of the signals you want to use
     # If the server doesn't support events, the TangoPolling annotation gives
     # the parameters for ophyd to poll instead
-    position: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
-    velocity: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
+    position: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
+    velocity: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
     state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
     # If a tango name clashes with a bluesky verb, add a trailing underscore
     stop_: SignalX
 
-    def __init__(self, trl: str = "", name=""):
+    def __init__(self, trl: str, name=""):
         super().__init__(trl, name=name)
         self.add_readables([self.position], Format.HINTED_SIGNAL)
         self.add_readables([self.velocity], Format.CONFIG_SIGNAL)
@@ -54,8 +54,8 @@ class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
 
         if not (isinstance(timeout, float) or timeout is None):
             raise ValueError("Timeout must be a float or None")
+        # For this server, set returns immediately so this status should not be awaited
         await self.position.set(value, timeout=timeout)
-
         move_status = AsyncStatus(
             wait_for_value(self.state, DevStateEnum.ON, timeout=timeout)
         )
