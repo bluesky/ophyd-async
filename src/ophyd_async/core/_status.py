@@ -18,7 +18,11 @@ from ._utils import Callback, P, T, WatcherUpdate
 
 
 class AsyncStatusBase(Status, Awaitable[None]):
-    """Convert asyncio awaitable to bluesky Status interface."""
+    """Convert asyncio awaitable to bluesky Status interface.
+
+    AsyncStatusBase can be used as an async context manager to bound the lifetime of
+    its task such that on exit if the task is not completed it is cancelled.
+    """
 
     def __init__(self, awaitable: Coroutine | asyncio.Task, name: str | None = None):
         if isinstance(awaitable, asyncio.Task):
@@ -97,6 +101,14 @@ class AsyncStatusBase(Status, Awaitable[None]):
             f"<{type(self).__name__}, {device_str}"
             f"task: {self.task.get_coro()}, {status}>"
         )
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        if isinstance(exc, CancelledError):
+            self.task.cancel()
+        return False  # re-raise any error that was thrown inside the async with
 
     __str__ = __repr__
 
