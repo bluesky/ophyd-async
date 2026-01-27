@@ -57,6 +57,7 @@ async def test_prepare_hdf(
             call.writer.lazy_open.put(True, wait=True),
             call.writer.swmr_mode.put(True, wait=True),
             call.writer.xml_file_name.put("", wait=True),
+            call.writer.enable_callbacks.put(adcore.EnableDisable.ENABLE, wait=True),
             call.writer.create_directory.put(0, wait=True),
             call.writer.file_path.put(
                 f"{static_path_provider().directory_path}{os.sep}", wait=True
