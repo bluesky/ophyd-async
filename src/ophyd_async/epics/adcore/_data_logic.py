@@ -10,6 +10,7 @@ import numpy as np
 
 from ophyd_async.core import (
     DetectorDataLogic,
+    EnableDisable,
     PathInfo,
     PathProvider,
     SignalDataProvider,
@@ -185,6 +186,7 @@ class ADHDFDataLogic(DetectorDataLogic):
             self.writer.lazy_open.set(True),
             self.writer.swmr_mode.set(True),
             self.writer.xml_file_name.set(""),
+            self.writer.enable_callbacks.set(EnableDisable.ENABLE),
             prepare_file_paths(
                 path_info=path_info, file_template="%s%s.h5", writer=self.writer
             ),
