@@ -311,10 +311,10 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             write_value = self.initial_values[self.write_pv]
         else:
             write_value = self.converter.write_value(value)
-        if self.options.no_wait_when_setting:
-            wait = False
-        else:
+        if isinstance(self.options.wait, bool):
             wait = self.options.wait
+        else:
+            wait = self.options.wait(value)
         try:
             await caput(
                 self.write_pv,

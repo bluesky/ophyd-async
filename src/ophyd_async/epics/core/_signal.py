@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum
 
 from ophyd_async.core import (
@@ -93,7 +94,7 @@ def _epics_signal_backend(
         datatype,
         r_pv,
         w_pv,
-        options,  # type: ignore
+        options,
     )
 
 
@@ -104,8 +105,7 @@ def epics_signal_rw(
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
     attempts: int = 1,
-    wait: bool = True,
-    no_wait_when_setting: set[SignalDatatypeT] | None = None,
+    wait: bool | Callable[[SignalDatatypeT], bool] = True,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs.
 
@@ -119,7 +119,7 @@ def epics_signal_rw(
         datatype,
         read_pv,
         write_pv or read_pv,
-        EpicsOptions(wait, no_wait_when_setting or set()),
+        EpicsOptions(wait=wait),
     )
     return SignalRW(backend, name=name, timeout=timeout, attempts=attempts)
 
@@ -174,8 +174,7 @@ def epics_signal_w(
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
     attempts: int = 1,
-    wait: bool = True,
-    no_wait_when_setting: set[SignalDatatypeT] | None = None,
+    wait: bool | Callable[[SignalDatatypeT], bool] = True,
 ) -> SignalW[SignalDatatypeT]:
     """Create a `SignalW` backed by 1 EPICS PVs.
 
@@ -185,7 +184,7 @@ def epics_signal_w(
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(
-        datatype, write_pv, write_pv, EpicsOptions(wait, no_wait_when_setting or set())
+        datatype, write_pv, write_pv, EpicsOptions(wait=wait)
     )
     return SignalW(backend, name=name, timeout=timeout, attempts=attempts)
 

@@ -145,9 +145,7 @@ class Motor(
         # Note:cannot use epics_signal_x here, as the motor record specifies that
         # we must write 1 to stop the motor. Simply processing the record is not
         # sufficient.
-        self.motor_stop = epics_signal_w(
-            int, prefix + ".STOP", no_wait_when_setting={1}
-        )
+        self.motor_stop = epics_signal_w(int, prefix + ".STOP", wait=False)
 
         # Whether set() should complete successfully or not
         self._set_success = True

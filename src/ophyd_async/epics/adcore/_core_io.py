@@ -1,19 +1,15 @@
 import asyncio
-from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
     DatasetDescriber,
-    Device,
-    DeviceAnnotation,
     DeviceVector,
     EnableDisable,
-    SignalDatatype,
     SignalR,
     SignalRW,
     StrictEnum,
 )
-from ophyd_async.epics.core import EpicsDevice, PvSuffix
+from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix
 
 from ._utils import ADBaseDataType, ADFileWriteMode, ADImageMode, convert_ad_dtype_to_np
 
@@ -26,7 +22,9 @@ class NDArrayBaseIO(EpicsDevice):
     """
 
     unique_id: A[SignalR[int], PvSuffix("UniqueId_RBV")]
-    nd_attributes_file: A[SignalRW[str], PvSuffix("NDAttributesFile")]
+    nd_attributes_file: A[
+        SignalRW[str], PvSuffix("NDAttributesFile"), EpicsOptions(wait=False)
+    ]
     acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire")]
     array_size_x: A[SignalR[int], PvSuffix("ArraySizeX_RBV")]
     array_size_y: A[SignalR[int], PvSuffix("ArraySizeY_RBV")]
@@ -243,22 +241,15 @@ class NDCBFlushOnSoftTrgMode(StrictEnum):
     IMMEDIATELY = "Immediately"
 
 
-@dataclass
-class NoWaitWhenSetting(DeviceAnnotation):
-    """Annotation to indicate no-wait behaviour."""
-
-    def __init__(self, value: SignalDatatype) -> None:
-        self.value = value
-
-    def __call__(self, parent: Device, child: Device) -> None:
-        DeviceAnnotation.__call__(self, parent, child)  # type: ignore
-
-
 class NDPluginCBIO(NDPluginBaseIO):
     pre_count: A[SignalRW[int], PvSuffix.rbv("PreCount")]
     post_count: A[SignalRW[int], PvSuffix.rbv("PostCount")]
     preset_trigger_count: A[SignalRW[int], PvSuffix.rbv("PresetTriggerCount")]
-    trigger: A[SignalRW[bool], PvSuffix.rbv("Trigger"), NoWaitWhenSetting(0)]
+    trigger: A[
+        SignalRW[bool],
+        PvSuffix.rbv("Trigger"),
+        EpicsOptions(wait=False),
+    ]
     capture: A[SignalRW[bool], PvSuffix.rbv("Capture")]
     flush_on_soft_trg: A[
         SignalRW[NDCBFlushOnSoftTrgMode], PvSuffix.rbv("FlushOnSoftTrg")

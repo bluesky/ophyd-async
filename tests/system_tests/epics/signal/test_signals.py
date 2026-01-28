@@ -839,10 +839,8 @@ async def test_put_completion(
 ):
     # Check that we can put to an epics signal and wait for put completion
     slow_seq_pv = ioc_devices.get_pv(protocol, "slowseq")
-    slow_seq_a = epics_signal_rw(int, slow_seq_pv, no_wait_when_setting={1})
-    slow_seq = epics_signal_rw(int, slow_seq_pv)
+    slow_seq = epics_signal_rw(int, slow_seq_pv, wait=lambda value: value == 1)
     await slow_seq.connect()
-    await slow_seq_a.connect()
 
     # First, do a set with blocking and make sure it takes a while
     start = time.monotonic()
@@ -852,7 +850,7 @@ async def test_put_completion(
 
     # Then, make sure if we don't wait it returns ~instantly
     start = time.monotonic()
-    await slow_seq_a.set(2)
+    await slow_seq.set(2)
     stop = time.monotonic()
     assert stop - start < 0.1
 

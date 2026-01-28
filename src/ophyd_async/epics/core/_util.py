@@ -1,11 +1,12 @@
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 from typing import Any, Generic, TypeVar, get_args, get_origin
 
 import numpy as np
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    DeviceAnnotation,
     SignalBackend,
     SignalDatatypeT,
     SignalRW,
@@ -21,9 +22,17 @@ T = TypeVar("T")
 
 
 @dataclass
-class EpicsOptions(Generic[SignalDatatypeT]):
-    wait: bool = True
-    no_wait_when_setting: set[SignalDatatypeT] = field(default_factory=set)
+class EpicsOptions(DeviceAnnotation, Generic[SignalDatatypeT]):
+    """Wait Options for EPICS Signals."""
+
+    def __init__(
+        self,
+        wait: bool | Callable[[SignalDatatypeT], bool] = True,
+    ) -> None:
+        self.wait = wait
+
+    def __call__(self, parent, child):
+        DeviceAnnotation.__call__(self, parent, child)  # type: ignore
 
 
 def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:

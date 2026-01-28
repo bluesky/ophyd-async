@@ -89,7 +89,8 @@ async def test_set_mock_put_proceeds_timeout():
 
     set_mock_put_proceeds(mock_signal, False)
 
-    await mock_signal.set("test", timeout=0.1)
+    with pytest.raises(asyncio.TimeoutError):
+        await mock_signal.set("test", timeout=0.1)
 
 
 async def test_put_proceeds_timeout():
@@ -186,8 +187,8 @@ async def test_blocks_during_put(mock_signals):
         await asyncio.sleep(0.1)
         assert await signal1.get_value() == "second_value"
         assert await signal2.get_value() == "second_value"
-        assert status1.done
-        assert status2.done
+        assert not status1.done
+        assert not status2.done
 
     await asyncio.sleep(0.1)
 
