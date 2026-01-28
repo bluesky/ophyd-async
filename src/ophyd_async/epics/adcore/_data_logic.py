@@ -22,6 +22,7 @@ from ophyd_async.core import (
 from ophyd_async.epics.core import stop_busy_record
 
 from ._io import (
+    ADBaseColorMode,
     ADBaseDataType,
     ADBaseIO,
     ADFileWriteMode,
@@ -53,6 +54,7 @@ class PluginSignalDataLogic(DetectorDataLogic):
 class NDArrayDescription:
     shape_signals: Sequence[SignalR[int]]
     data_type_signal: SignalR[ADBaseDataType]
+    color_mode_signal: SignalR[ADBaseColorMode]
 
 
 async def get_ndarray_resource_info(
@@ -62,13 +64,20 @@ async def get_ndarray_resource_info(
     frames_per_chunk: int = 1,
 ) -> StreamResourceInfo:
     # Grab the dimensions and datatype of the NDArray
-    shape, datatype = await asyncio.gather(
+    shape, datatype, color_mode = await asyncio.gather(
         asyncio.gather(*[sig.get_value() for sig in description.shape_signals]),
         description.data_type_signal.get_value(),
+        description.color_mode_signal.get_value(),
     )
     if datatype is ADBaseDataType.UNDEFINED:
         raise ValueError(
             f"{description.data_type_signal.source} is blank, this is not supported"
+        )
+    if color_mode == ADBaseColorMode.RGB1:
+        shape = [3, *shape]
+    elif color_mode != ADBaseColorMode.MONO:
+        raise RuntimeError(
+            f"Unsupported ColorMode {color_mode}! Only Mono and RGB1 are supported."
         )
     return StreamResourceInfo(
         data_key=data_key,
@@ -300,6 +309,7 @@ def make_writer_data_logic(
     description = NDArrayDescription(
         shape_signals=[driver.array_size_y, driver.array_size_x],
         data_type_signal=driver.data_type,
+        color_mode_signal=driver.color_mode,
     )
     match writer_type:
         case ADWriterType.HDF:

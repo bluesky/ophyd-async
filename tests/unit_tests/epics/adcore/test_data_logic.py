@@ -1,6 +1,6 @@
 import os
 from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
-from unittest.mock import call
+from unittest.mock import ANY, call
 
 import pytest
 
@@ -182,3 +182,47 @@ async def test_stats_describe_raises_error_with_dbr_native(
         " which is not supported",
     ):
         await hdf_det.trigger()
+
+
+@pytest.mark.parametrize(
+    "color_mode,shape",
+    [
+        (adcore.ADBaseColorMode.MONO, [1, 768, 1024]),
+        (adcore.ADBaseColorMode.BAYER, RuntimeError),
+        (adcore.ADBaseColorMode.RGB1, [1, 3, 768, 1024]),
+        (adcore.ADBaseColorMode.RGB2, RuntimeError),
+        (adcore.ADBaseColorMode.RGB3, RuntimeError),
+        (adcore.ADBaseColorMode.YUV444, RuntimeError),
+        (adcore.ADBaseColorMode.YUV422, RuntimeError),
+        (adcore.ADBaseColorMode.YUV421, RuntimeError),
+    ],
+)
+async def test_describe_different_color_modes(
+    hdf_det: adcore.AreaDetector[adcore.ADBaseIO],
+    color_mode: adcore.ADBaseColorMode,
+    shape: list[int] | type[RuntimeError],
+):
+    writer = hdf_det.get_plugin("writer", adcore.NDPluginFileIO)
+    set_mock_value(writer.file_path_exists, True)
+    set_mock_value(hdf_det.driver.color_mode, color_mode)
+    if shape is RuntimeError:
+        # Expected to fail for this mode
+        with pytest.raises(
+            RuntimeError,
+            match=f"Unsupported ColorMode {color_mode.value}!"
+            " Only Mono and RGB1 are supported.",
+        ):
+            await hdf_det.prepare(TriggerInfo())
+    else:
+        # Expected to give the right shape in the descriptor
+        await hdf_det.prepare(TriggerInfo())
+        describe = await hdf_det.describe()
+        assert describe == {
+            "detector": {
+                "dtype": "array",
+                "dtype_numpy": "<u2",
+                "external": "STREAM:",
+                "shape": shape,
+                "source": ANY,
+            },
+        }

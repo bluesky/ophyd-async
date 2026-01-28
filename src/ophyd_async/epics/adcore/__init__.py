@@ -14,6 +14,7 @@ from ._data_logic import (
 from ._detector import AreaDetector
 from ._io import (
     NDROIIO,
+    ADBaseColorMode,
     ADBaseDataType,
     ADBaseIO,
     ADCompression,
@@ -43,6 +44,7 @@ from ._trigger_logic import ADContAcqTriggerLogic, prepare_exposures
 __all__ = [
     # ADCore IOs
     "ADBaseDataType",
+    "ADBaseColorMode",
     "NDArrayBaseIO",
     "ADImageMode",
     "ADState",

@@ -31,6 +31,17 @@ class ADBaseDataType(SupersetEnum):
     UNDEFINED = ""
 
 
+class ADBaseColorMode(SupersetEnum):
+    MONO = "Mono"
+    BAYER = "Bayer"
+    RGB1 = "RGB1"
+    RGB2 = "RGB2"
+    RGB3 = "RGB3"
+    YUV444 = "YUV444"
+    YUV422 = "YUV422"
+    YUV421 = "YUV421"
+
+
 class NDArrayBaseIO(EpicsDevice):
     """Class responsible for passing detector data from drivers to pluglins.
 
@@ -42,12 +53,32 @@ class NDArrayBaseIO(EpicsDevice):
     unique_id: A[SignalR[int], PvSuffix("UniqueId_RBV")]
     nd_attributes_file: A[SignalRW[str], PvSuffix("NDAttributesFile")]
     acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire")]
+
+    # The array_size_x/y signals are used when outputting an NDArray
+    # (i.e. from a driver)
     array_size_x: A[SignalR[int], PvSuffix("ArraySizeX_RBV")]
     array_size_y: A[SignalR[int], PvSuffix("ArraySizeY_RBV")]
+
+    # The array_size0/1/2 signals are used when receiving an NDArray
+    # (i.e. in a plugin)
+    array_size0: A[SignalR[int], PvSuffix("ArraySize0_RBV")]
+    array_size1: A[SignalR[int], PvSuffix("ArraySize1_RBV")]
+    array_size2: A[SignalR[int], PvSuffix("ArraySize2_RBV")]
+
+    color_mode: A[SignalR[ADBaseColorMode], PvSuffix("ColorMode_RBV")]
     data_type: A[SignalR[ADBaseDataType], PvSuffix("DataType_RBV")]
     array_counter: A[SignalRW[int], PvSuffix.rbv("ArrayCounter")]
     # There is no _RBV for this one
     wait_for_plugins: A[SignalRW[bool], PvSuffix("WaitForPlugins")]
+
+    # Version information may be useful to include in metadata
+    ad_core_version: A[SignalR[str], PvSuffix("ADCoreVersion_RBV")]
+    driver_version: A[SignalR[str], PvSuffix("DriverVersion_RBV")]
+    manufacturer: A[SignalR[str], PvSuffix("Manufacturer_RBV")]
+    model: A[SignalR[str], PvSuffix("Model_RBV")]
+    serial_number: A[SignalR[str], PvSuffix("SerialNumber_RBV")]
+    sdk_version: A[SignalR[str], PvSuffix("SDKVersion_RBV")]
+    firmware_version: A[SignalR[str], PvSuffix("FirmwareVersion_RBV")]
 
 
 # Classes for drivers
@@ -89,7 +120,6 @@ class ADBaseIO(NDArrayBaseIO):
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/ADDriver.html
     """
 
-    model: A[SignalRW[str], PvSuffix("Model_RBV")]
     acquire_time: A[SignalRW[float], PvSuffix.rbv("AcquireTime")]
     acquire_period: A[SignalRW[float], PvSuffix.rbv("AcquirePeriod")]
     num_images: A[SignalRW[int], PvSuffix.rbv("NumImages")]
@@ -112,8 +142,6 @@ class NDPluginBaseIO(NDArrayBaseIO):
     nd_array_port: A[SignalRW[str], PvSuffix.rbv("NDArrayPort")]
     enable_callbacks: A[SignalRW[EnableDisable], PvSuffix.rbv("EnableCallbacks")]
     nd_array_address: A[SignalRW[int], PvSuffix.rbv("NDArrayAddress")]
-    array_size0: A[SignalR[int], PvSuffix("ArraySize0_RBV")]
-    array_size1: A[SignalR[int], PvSuffix("ArraySize1_RBV")]
     queue_size: A[SignalRW[int], PvSuffix.rbv("QueueSize")]
 
 
