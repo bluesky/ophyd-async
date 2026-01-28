@@ -7,7 +7,6 @@ from typing import (
     TypeVar,
     get_args,
     get_origin,
-    get_type_hints,
     is_typeddict,
 )
 
@@ -22,6 +21,7 @@ from ._derived_signal_backend import (
 from ._device import Device
 from ._signal import Signal, SignalR, SignalRW, SignalT, SignalW
 from ._signal_backend import Primitive, SignalDatatypeT
+from ._utils import cached_get_type_hints
 
 
 class DerivedSignalFactory(Generic[TransformT]):
@@ -208,7 +208,7 @@ class DerivedSignalFactory(Generic[TransformT]):
 
 
 def _get_return_datatype(func: Callable[..., SignalDatatypeT]) -> type[SignalDatatypeT]:
-    args = get_type_hints(func)
+    args = cached_get_type_hints(func)
     if "return" not in args:
         msg = f"{func} does not have a type hint for it's return value"
         raise TypeError(msg)

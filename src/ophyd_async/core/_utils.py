@@ -5,6 +5,7 @@ import logging
 from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum, EnumMeta, StrEnum
+from functools import lru_cache
 from inspect import isawaitable
 from typing import (
     Any,
@@ -14,6 +15,7 @@ from typing import (
     TypeVar,
     get_args,
     get_origin,
+    get_type_hints,
 )
 
 import numpy as np
@@ -205,6 +207,20 @@ async def wait_for_connection(**coros: Awaitable[None]):
         raise NotConnectedError.with_other_exceptions_logged(exceptions)
 
 
+# Cache get_type_hints calls to avoid expensive introspection across the codebase
+@lru_cache(maxsize=512)
+def cached_get_type_hints(cls: type, include_extras: bool = False) -> dict[str, Any]:
+    """Get type hints with caching to avoid expensive introspection."""
+    return get_type_hints(cls, include_extras=include_extras)
+
+
+# Cache get_origin calls to avoid expensive type introspection
+@lru_cache(maxsize=512)
+def cached_get_origin(tp: Any) -> Any:
+    """Get the origin of a type with caching."""
+    return get_origin(tp)
+
+
 def get_dtype(datatype: type) -> np.dtype:
     """Get the runtime dtype from a numpy ndarray type annotation.
 
@@ -216,7 +232,7 @@ def get_dtype(datatype: type) -> np.dtype:
 
     ```
     """
-    if not get_origin(datatype) == np.ndarray:
+    if not cached_get_origin(datatype) == np.ndarray:
         raise TypeError(f"Expected Array1D[dtype], got {datatype}")
     # datatype = numpy.ndarray[typing.Any, numpy.dtype[numpy.float64]]
     # so extract numpy.float64 from it
@@ -241,7 +257,7 @@ def get_enum_cls(datatype: type | None) -> type[EnumTypes] | None:
 
     ```
     """
-    if get_origin(datatype) is Sequence:
+    if cached_get_origin(datatype) is Sequence:
         datatype = get_args(datatype)[0]
     datatype = get_origin_class(datatype)
     if datatype and issubclass(datatype, Enum):
@@ -337,8 +353,10 @@ def in_micros(t: float) -> int:
     return int(np.ceil(t * 1e6))
 
 
+@lru_cache(maxsize=512)
 def get_origin_class(annotatation: Any) -> type | None:
-    origin = get_origin(annotatation) or annotatation
+    """Get the origin class of a type annotation with caching."""
+    origin = cached_get_origin(annotatation) or annotatation
     if isinstance(origin, type):
         return origin
     return None

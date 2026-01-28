@@ -6,12 +6,13 @@ from abc import abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any, Generic, get_args, get_origin
+from typing import Any, Generic, get_args
 
 import numpy as np
 from bluesky.protocols import Reading
 from event_model import DataKey
 
+from ._datatypes import Table
 from ._signal_backend import (
     Array1D,
     EnumT,
@@ -24,8 +25,7 @@ from ._signal_backend import (
     make_datakey,
     make_metadata,
 )
-from ._table import Table
-from ._utils import Callback, get_dtype, get_enum_cls
+from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls
 
 
 class SoftConverter(Generic[SignalDatatypeT]):
@@ -97,11 +97,11 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     enum_cls = get_enum_cls(datatype)
     if datatype in (Sequence[str], typing.Sequence[str]):
         return SequenceStrSoftConverter()
-    elif get_origin(datatype) in (Sequence, typing.Sequence) and enum_cls:
+    elif cached_get_origin(datatype) in (Sequence, typing.Sequence) and enum_cls:
         return SequenceEnumSoftConverter(enum_cls)
     elif datatype is np.ndarray:
         return NDArraySoftConverter()
-    elif get_origin(datatype) == np.ndarray:
+    elif cached_get_origin(datatype) == np.ndarray:
         if datatype not in get_args(SignalDatatype):
             raise TypeError(f"Expected Array1D[dtype], got {datatype}")
         return NDArraySoftConverter(get_dtype(datatype))
