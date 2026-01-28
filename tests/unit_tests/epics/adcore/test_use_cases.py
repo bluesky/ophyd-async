@@ -416,6 +416,7 @@ async def test_2_rois_with_hdf(tmp_path):
                 description=adcore.NDArrayDescription(
                     shape_signals=(roi.size_y, roi.size_x),
                     data_type_signal=driver.data_type,
+                    color_mode_signal=driver.color_mode,
                 ),
                 path_provider=path_provider,
                 driver=driver,
