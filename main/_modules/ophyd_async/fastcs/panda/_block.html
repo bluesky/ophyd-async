@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.panda._block &#8212; ophyd-async 0.14.3.dev5+g437d826c2 documentation</title>
+    <title>ophyd_async.fastcs.panda._block &#8212; ophyd-async 0.14.3.dev6+g5150bc883 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=445ed94a"></script>
+    <script src="../../../../_static/documentation_options.js?v=6cf62e85"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev5+g437d826c2 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev5+g437d826c2 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev6+g5150bc883 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev6+g5150bc883 documentation - Home"/>
   
   
 </a></div>
@@ -489,7 +489,11 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="DataBlock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.DataBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data block for the PandA. Used for writing data through the IOC.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data block for the PandA. Used for writing data through the IOC.</span>
+
+<span class="sd">    This mirrors the interface provided by</span>
+<span class="sd">    https://github.com/PandABlocks/fastcs-PandABlocks/blob/main/src/fastcs_pandablocks/panda/blocks/data.py</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># In future we may decide to make hdf_* optional</span>
     <span class="n">hdf_directory</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
@@ -538,7 +542,11 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="PulseBlock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PulseBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PulseBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for configuring pulses in the PandA.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for configuring pulses in the PandA.</span>
+
+<span class="sd">    This mirrors the interface provided by</span>
+<span class="sd">    PandABlocks-FPGA/modules/pulse/pulse.block.ini</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaBitMux</span><span class="p">]</span>
     <span class="n">delay</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
@@ -551,7 +559,11 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="PcompBlock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PcompBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PcompBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Position compare block in the PandA.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Position compare block in the PandA.</span>
+
+<span class="sd">    This mirrors the interface provided by</span>
+<span class="sd">    PandABlocks-FPGA/modules/pcomp/pcomp.block.ini</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">active</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
     <span class="nb">dir</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaPcompDirection</span><span class="p">]</span>
@@ -578,7 +590,10 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="SeqBlock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.SeqBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SeqBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sequencer block in the PandA.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sequencer block in the PandA.</span>
+
+<span class="sd">    This mirrors the interface provided by PandABlocks-FPGA/modules/seq/seq.block.ini</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">table</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SeqTable</span><span class="p">]</span>
     <span class="n">active</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
@@ -593,7 +608,10 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="PcapBlock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PcapBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PcapBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Position capture block in the PandA.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Position capture block in the PandA.</span>
+
+<span class="sd">    This mirrors the interface provided by PandABlocks-FPGA/modules/pcap/pcap.block.ini</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">active</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
     <span class="n">arm</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
@@ -603,7 +621,11 @@ window.addEventListener("load", () => mermaid.run());
 <div class="viewcode-block" id="InencBlock">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.InencBlock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">InencBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;In encoder block in the PandA.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;In encoder block in the PandA.</span>
+
+<span class="sd">    This mirrors the interface provided by</span>
+<span class="sd">    PandABlocks-FPGA/modules/inenc/inenc.block.ini</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">val_scale</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="n">val_offset</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></div>

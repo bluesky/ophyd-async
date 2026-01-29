@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.fastcs.eiger &#8212; ophyd-async 0.14.3.dev5+g437d826c2 documentation</title>
+    <title>ophyd_async.fastcs.eiger &#8212; ophyd-async 0.14.3.dev6+g5150bc883 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=445ed94a"></script>
+    <script src="../../_static/documentation_options.js?v=6cf62e85"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev5+g437d826c2 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev5+g437d826c2 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev6+g5150bc883 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev6+g5150bc883 documentation - Home"/>
   
   
 </a></div>
@@ -540,13 +540,13 @@
 <td><p>Contains signals for handling IO on the Eiger detector.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerDetectorIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerDetectorIO</span></code></a></p></td>
-<td><p>Common base class for all Ophyd Async Devices.</p></td>
+<td><p>Driver for Eiger Detector subsystem.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerMonitorIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerMonitorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerMonitorIO</span></code></a></p></td>
-<td><p>Common base class for all Ophyd Async Devices.</p></td>
+<td><p>Driver for Eiger Monitor subsystem.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.eiger.EigerStreamIO" title="ophyd_async.fastcs.eiger._eiger_io.EigerStreamIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EigerStreamIO</span></code></a></p></td>
-<td><p>Common base class for all Ophyd Async Devices.</p></td>
+<td><p>Driver for Eiger Stream subsystem.</p></td>
 </tr>
 </tbody>
 </table>
@@ -629,6 +629,8 @@ can be determined without reading signals.</p>
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.eiger.</span></span><span class="sig-name descname"><span class="pre">EigerDriverIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uri</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/eiger/_eiger_io.html#EigerDriverIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerDriverIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
 <p>Contains signals for handling IO on the Eiger detector.</p>
+<p>This mirrors the interface provided by
+https://github.com/DiamondLightSource/fastcs-eiger/blob/main/src/fastcs_eiger/controllers/eiger_controller.py</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.eiger.EigerDriverIO.stale_parameters">
 <span class="sig-name descname"><span class="pre">stale_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerDriverIO.stale_parameters" title="Link to this definition">#</a></dt>
@@ -659,15 +661,8 @@ can be determined without reading signals.</p>
 <dt class="sig sig-object py" id="ophyd_async.fastcs.eiger.EigerDetectorIO">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.eiger.</span></span><span class="sig-name descname"><span class="pre">EigerDetectorIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/eiger/_eiger_io.html#EigerDetectorIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerDetectorIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
-<p>Common base class for all Ophyd Async Devices.</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> – Optional name of the Device</p></li>
-<li><p><strong>connector</strong> – Optional DeviceConnector instance to use at connect()</p></li>
-</ul>
-</dd>
-</dl>
+<p>Driver for Eiger Detector subsystem.</p>
+<p>This mirrors the interface provided by https://media.dectris.com/SIMPLON_APIReference_v1p6.pdf#page=17</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.eiger.EigerDetectorIO.bit_depth_image">
 <span class="sig-name descname"><span class="pre">bit_depth_image</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerDetectorIO.bit_depth_image" title="Link to this definition">#</a></dt>
@@ -782,30 +777,16 @@ can be determined without reading signals.</p>
 <dt class="sig sig-object py" id="ophyd_async.fastcs.eiger.EigerMonitorIO">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.eiger.</span></span><span class="sig-name descname"><span class="pre">EigerMonitorIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/eiger/_eiger_io.html#EigerMonitorIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerMonitorIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
-<p>Common base class for all Ophyd Async Devices.</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> – Optional name of the Device</p></li>
-<li><p><strong>connector</strong> – Optional DeviceConnector instance to use at connect()</p></li>
-</ul>
-</dd>
-</dl>
+<p>Driver for Eiger Monitor subsystem.</p>
+<p>This mirrors the interface provided by https://media.dectris.com/SIMPLON_APIReference_v1p6.pdf#page=25</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.eiger.EigerStreamIO">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.eiger.</span></span><span class="sig-name descname"><span class="pre">EigerStreamIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/eiger/_eiger_io.html#EigerStreamIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.eiger.EigerStreamIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
-<p>Common base class for all Ophyd Async Devices.</p>
-<dl class="myst field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> – Optional name of the Device</p></li>
-<li><p><strong>connector</strong> – Optional DeviceConnector instance to use at connect()</p></li>
-</ul>
-</dd>
-</dl>
+<p>Driver for Eiger Stream subsystem.</p>
+<p>This mirrors the interface provided by https://media.dectris.com/SIMPLON_APIReference_v1p6.pdf#page=32</p>
 </dd></dl>
 
 </section>

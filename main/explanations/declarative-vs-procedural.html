@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.14.3.dev5+g437d826c2 documentation</title>
+    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.14.3.dev6+g5150bc883 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=445ed94a"></script>
+    <script src="../_static/documentation_options.js?v=6cf62e85"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev5+g437d826c2 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev5+g437d826c2 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev6+g5150bc883 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev6+g5150bc883 documentation - Home"/>
   
   
 </a></div>
@@ -543,7 +543,11 @@
 <h2>Declarative style<a class="headerlink" href="#declarative-style" title="Link to this heading">#</a></h2>
 <p>The declarative style mirrors how you would create a pydantic <code class="docutils literal notranslate"><span class="pre">BaseModel</span></code>. You create type hints to tell the base class what type of object you create, add annotations to tell it some parameters on how to create it, then the base class <code class="docutils literal notranslate"><span class="pre">__init__</span></code> will introspect and create them. For example, in the <code class="docutils literal notranslate"><span class="pre">ophyd_async.fastcs.panda.PulseBlock</span></code> we define the members we expect, and the baseclass will introspect the selected FastCS transport (EPICS IOC or Tango Device Server) and connect them, adding any extras that are published:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PulseBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for configuring pulses in the PandA.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for configuring pulses in the PandA.</span>
+
+<span class="sd">    This mirrors the interface provided by</span>
+<span class="sd">    PandABlocks-FPGA/modules/pulse/pulse.block.ini</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaBitMux</span><span class="p">]</span>
     <span class="n">delay</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
