@@ -16,24 +16,16 @@ from ophyd_async.testing import assert_has_calls
 
 @pytest.fixture
 async def cont_acq_detector() -> adcore.AreaDetector[adcore.ADBaseIO]:
-    driver = adcore.ADBaseIO("PREFIX:DRV:")
-    cb_plugin = adcore.NDCircularBuffIO("PREFIX:CB1:")
     async with init_devices(mock=True):
-        det = adcore.AreaDetector(
-            driver=driver,
-            arm_logic=adcore.ADContAcqArmLogic(driver, cb_plugin),
-            trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb_plugin),
-            writer_type=None,
-            plugins={"cb1": cb_plugin},
-        )
+        det = adcore.ContAcqDetector(prefix="PREFIX:", writer_type=None)
 
     set_mock_value(
-        driver.image_mode,
+        det.driver.image_mode,
         adcore.ADImageMode.CONTINUOUS,
     )
-    set_mock_value(driver.acquire_time, 0.8)
-    set_mock_value(driver.acquire_period, 1.0)
-    set_mock_value(driver.acquire, True)
+    set_mock_value(det.driver.acquire_time, 0.8)
+    set_mock_value(det.driver.acquire_period, 1.0)
+    set_mock_value(det.driver.acquire, True)
     return det
 
 
@@ -92,14 +84,14 @@ async def test_cont_acq_controller_success(
     assert_has_calls(
         cont_acq_detector,
         [
-            call.cb1.capture.put(False, wait=False),
-            call.cb1.enable_callbacks.put(EnableDisable.ENABLE, wait=True),
-            call.cb1.pre_count.put(0, wait=True),
-            call.cb1.post_count.put(1, wait=True),
-            call.cb1.preset_trigger_count.put(1, wait=True),
-            call.cb1.flush_on_soft_trg.put(
+            call.cb.capture.put(False, wait=False),
+            call.cb.enable_callbacks.put(EnableDisable.ENABLE, wait=True),
+            call.cb.pre_count.put(0, wait=True),
+            call.cb.post_count.put(1, wait=True),
+            call.cb.preset_trigger_count.put(1, wait=True),
+            call.cb.flush_on_soft_trg.put(
                 adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE, wait=True
             ),
-            call.cb1.capture.put(True, wait=True),
+            call.cb.capture.put(True, wait=True),
         ],
     )

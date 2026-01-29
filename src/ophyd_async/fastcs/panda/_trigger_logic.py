@@ -10,7 +10,9 @@ class PandaTriggerLogic(DetectorTriggerLogic):
         self.pcap = pcap
 
     def get_deadtime(self, config_values: SignalDict) -> float:
-        return 0.000000008
+        # Need 1 tick of the 125MHz clock as deadtime
+        # https://quantumdetectors.com/products/beamline-data-acquisition-tool/
+        return 8e-9
 
     async def prepare_level(self, num: int):
         pass

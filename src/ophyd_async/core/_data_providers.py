@@ -13,7 +13,7 @@ from ._utils import ConfinedModel
 class ReadableDataProvider:
     @abstractmethod
     async def make_datakeys(self) -> dict[str, DataKey]:
-        """Return a DataKey for each Signal that produces a Reading.
+        """Return a DataKey for each Readable that produces a Reading.
 
         Called before the first exposure is taken.
         """

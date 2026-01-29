@@ -9,8 +9,10 @@ from ophyd_async.core import (
     StandardDetector,
 )
 
+from ._arm_logic import ADContAcqArmLogic
 from ._data_logic import ADWriterType, make_writer_data_logic
-from ._io import ADBaseIOT, NDPluginBaseIO, NDPluginBaseIOT
+from ._io import ADBaseIO, ADBaseIOT, NDCircularBuffIO, NDPluginBaseIO, NDPluginBaseIOT
+from ._trigger_logic import ADContAcqTriggerLogic
 
 
 class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
@@ -65,3 +67,44 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
                 f"got {type(plugin).__name__}"
             )
         return plugin
+
+
+class ContAcqDetector(AreaDetector[ADBaseIO]):
+    """Create an ADSimDetector AreaDetector instance.
+
+    :param prefix: EPICS PV prefix for the detector
+    :param path_provider: Provider for file paths during acquisition
+    :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
+    :param writer_type: Type of file writer (HDF or TIFF)
+    :param writer_suffix: Suffix for the writer PV
+    :param plugins: Additional areaDetector plugins to include
+    :param config_sigs: Additional signals to include in configuration
+    :param name: Name for the detector device
+    """
+
+    def __init__(
+        self,
+        prefix: str,
+        path_provider: PathProvider | None = None,
+        driver_suffix="cam1:",
+        cb_suffix="CB1:",
+        writer_type: ADWriterType | None = ADWriterType.HDF,
+        writer_suffix: str | None = None,
+        plugins: dict[str, NDPluginBaseIO] | None = None,
+        config_sigs: Sequence[SignalR] = (),
+        name: str = "",
+    ) -> None:
+        driver = ADBaseIO(prefix + driver_suffix)
+        cb_plugin = NDCircularBuffIO(prefix + cb_suffix)
+        super().__init__(
+            prefix=prefix,
+            driver=driver,
+            arm_logic=ADContAcqArmLogic(driver, cb_plugin),
+            trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin),
+            path_provider=path_provider,
+            writer_type=writer_type,
+            writer_suffix=writer_suffix,
+            plugins=(plugins or {}) | {"cb": cb_plugin},
+            config_sigs=config_sigs,
+            name=name,
+        )
