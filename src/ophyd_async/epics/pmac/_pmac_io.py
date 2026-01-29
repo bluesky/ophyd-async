@@ -16,7 +16,10 @@ class PmacExecuteState(SubsetEnum):
 
 
 class PmacTrajectoryIO(StandardReadable):
-    """Device that moves a PMAC Motor record."""
+    """Device that moves a PMAC Motor record.
+
+    This mirrors the interface provided by pmac/Db/pmacControllerTrajectory.template
+    """
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self.time_array = epics_signal_rw(
@@ -64,6 +67,7 @@ class PmacAxisAssignmentIO(Device):
     """A Device that (direct) moves a PMAC Coordinate System Motor.
 
     Note that this does not go through a motor record.
+    This mirrors the interface provided by pmac/Db/motor_in_cs.template
     """
 
     def __init__(self, prefix: str, name: str = "") -> None:
@@ -74,7 +78,11 @@ class PmacAxisAssignmentIO(Device):
 
 
 class PmacCoordIO(Device):
-    """A Device that represents a Pmac Coordinate System."""
+    """A Device that represents a Pmac Coordinate System.
+
+    This mirrors the interfaces provided by pmac/Db/pmacCsController.template,
+    and pmac/Db/pmacDirectMotor.template
+    """
 
     def __init__(self, prefix: str, name: str = "") -> None:
         self.defer_moves = epics_signal_rw(bool, f"{prefix}DeferMoves")
@@ -89,7 +97,10 @@ class PmacCoordIO(Device):
 
 
 class PmacIO(Device):
-    """Device that represents a pmac controller."""
+    """Device that represents a pmac controller.
+
+    This mirrors the interface provided by pmac/Db/pmacController.template
+    """
 
     def __init__(
         self,

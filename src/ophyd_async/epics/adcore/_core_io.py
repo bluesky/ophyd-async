@@ -240,6 +240,12 @@ class NDCBFlushOnSoftTrgMode(StrictEnum):
 
 
 class NDPluginCBIO(NDPluginBaseIO):
+    """Plugin that outputs pre/post-trigger NDArrays based on defined conditions.
+
+    This mirrors the interface provided by ADCore//Db/NDCircularBuff.template
+    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html
+    """
+
     pre_count: A[SignalRW[int], PvSuffix.rbv("PreCount")]
     post_count: A[SignalRW[int], PvSuffix.rbv("PostCount")]
     preset_trigger_count: A[SignalRW[int], PvSuffix.rbv("PresetTriggerCount")]

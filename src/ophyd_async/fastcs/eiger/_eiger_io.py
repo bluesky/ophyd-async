@@ -15,14 +15,29 @@ class EigerTriggerMode(StrictEnum):
 
 
 class EigerMonitorIO(Device):
+    """Driver for Eiger Monitor subsystem.
+
+    This mirrors the interface provided by https://media.dectris.com/SIMPLON_APIReference_v1p6.pdf#page=25
+    """
+
     pass
 
 
 class EigerStreamIO(Device):
+    """Driver for Eiger Stream subsystem.
+
+    This mirrors the interface provided by https://media.dectris.com/SIMPLON_APIReference_v1p6.pdf#page=32
+    """
+
     pass
 
 
 class EigerDetectorIO(Device):
+    """Driver for Eiger Detector subsystem.
+
+    This mirrors the interface provided by https://media.dectris.com/SIMPLON_APIReference_v1p6.pdf#page=17
+    """
+
     bit_depth_image: SignalR[int]
     state: SignalR[str]
     count_time: SignalRW[float]
@@ -44,7 +59,11 @@ class EigerDetectorIO(Device):
 
 
 class EigerDriverIO(Device):
-    """Contains signals for handling IO on the Eiger detector."""
+    """Contains signals for handling IO on the Eiger detector.
+
+    This mirrors the interface provided by
+    https://github.com/DiamondLightSource/fastcs-eiger/blob/main/src/fastcs_eiger/controllers/eiger_controller.py
+    """
 
     stale_parameters: SignalR[bool]
     monitor: EigerMonitorIO
