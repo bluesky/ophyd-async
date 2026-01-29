@@ -284,7 +284,6 @@ class SignalW(Signal[SignalDatatypeT], Movable):
         """Set the value and return a status saying when it's done.
 
         :param value: The value to set.
-        :param wait: If True, wait for the set to complete.
         :param timeout: The timeout for the set.
         """
         if timeout == CALCULATE_TIMEOUT:
@@ -318,12 +317,9 @@ class SignalX(Signal):
     """Signal that puts the default value."""
 
     @AsyncStatus.wrap
-    async def trigger(
-        self, wait=True, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
-    ) -> None:
+    async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
         """Trigger the action and return a status saying when it's done.
 
-        :param wait: If True, wait for the trigger to complete.
         :param timeout: The timeout for the trigger.
         """
         if timeout == CALCULATE_TIMEOUT:
@@ -676,7 +672,8 @@ async def set_and_wait_for_value(
     await set_and_wait_for_value(device.parameter, 1)
     ```
     For busy record, or other Signals with pattern:
-      - Set Signal with `wait=True` and stash the Status
+      - Set `wait=non_zero` when creating the signal
+      - Set Signal and stash the Status
       - Read the same Signal to check the operation has started
       - Return the Status so calling code can wait for operation to complete
     ```python

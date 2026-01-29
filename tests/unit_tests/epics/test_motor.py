@@ -80,7 +80,7 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
     class MyError(Exception):
         pass
 
-    def do_timeout(value, wait=None):
+    def do_timeout(value):
         # Raise custom exception to be clear it bubbles up
         raise MyError()
 

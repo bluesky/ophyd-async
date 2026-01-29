@@ -8,6 +8,7 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     StrictEnum,
+    non_zero,
 )
 from ophyd_async.epics.core import EpicsDevice, EpicsOptions, PvSuffix
 
@@ -22,10 +23,8 @@ class NDArrayBaseIO(EpicsDevice):
     """
 
     unique_id: A[SignalR[int], PvSuffix("UniqueId_RBV")]
-    nd_attributes_file: A[
-        SignalRW[str], PvSuffix("NDAttributesFile"), EpicsOptions(wait=False)
-    ]
-    acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire")]
+    nd_attributes_file: A[SignalRW[str], PvSuffix("NDAttributesFile")]
+    acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire"), EpicsOptions(wait=non_zero)]
     array_size_x: A[SignalR[int], PvSuffix("ArraySizeX_RBV")]
     array_size_y: A[SignalR[int], PvSuffix("ArraySizeY_RBV")]
     data_type: A[SignalR[ADBaseDataType], PvSuffix("DataType_RBV")]
@@ -202,7 +201,7 @@ class NDFileIO(NDArrayBaseIO):
     file_write_mode: A[SignalRW[ADFileWriteMode], PvSuffix.rbv("FileWriteMode")]
     num_capture: A[SignalRW[int], PvSuffix.rbv("NumCapture")]
     num_captured: A[SignalR[int], PvSuffix("NumCaptured_RBV")]
-    capture: A[SignalRW[bool], PvSuffix.rbv("Capture")]
+    capture: A[SignalRW[bool], PvSuffix.rbv("Capture"), EpicsOptions(wait=non_zero)]
     array_size0: A[SignalR[int], PvSuffix("ArraySize0")]
     array_size1: A[SignalR[int], PvSuffix("ArraySize1")]
     create_directory: A[SignalRW[int], PvSuffix("CreateDirectory")]
@@ -245,12 +244,8 @@ class NDPluginCBIO(NDPluginBaseIO):
     pre_count: A[SignalRW[int], PvSuffix.rbv("PreCount")]
     post_count: A[SignalRW[int], PvSuffix.rbv("PostCount")]
     preset_trigger_count: A[SignalRW[int], PvSuffix.rbv("PresetTriggerCount")]
-    trigger: A[
-        SignalRW[bool],
-        PvSuffix.rbv("Trigger"),
-        EpicsOptions(wait=False),
-    ]
-    capture: A[SignalRW[bool], PvSuffix.rbv("Capture")]
+    trigger: A[SignalRW[bool], PvSuffix.rbv("Trigger"), EpicsOptions(wait=non_zero)]
+    capture: A[SignalRW[bool], PvSuffix.rbv("Capture"), EpicsOptions(wait=non_zero)]
     flush_on_soft_trg: A[
         SignalRW[NDCBFlushOnSoftTrgMode], PvSuffix.rbv("FlushOnSoftTrg")
     ]

@@ -463,14 +463,14 @@ async def test_command_proxy_put_wait(tango_test_device):
     cmd_proxy = CommandProxy(device_proxy, "echo")
 
     cmd_proxy._last_reading = None
-    await cmd_proxy.put("test_message", wait=True)
+    await cmd_proxy.put("test_message")
     assert cmd_proxy._last_reading["value"] == "test_message"
 
     # Force timeout
     cmd_proxy = CommandProxy(device_proxy, "slow_command")
     cmd_proxy._last_reading = None
     with pytest.raises(TimeoutError) as exc:
-        await cmd_proxy.put(None, wait=True, timeout=0.1)
+        await cmd_proxy.put(None, timeout=0.1)
     assert "command failed" in str(exc.value)
 
 
@@ -480,11 +480,6 @@ async def test_command_proxy_put_wait(tango_test_device):
 async def test_command_proxy_put_nowait(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "slow_command")
-
-    # Try to set wait=False
-    with pytest.raises(RuntimeError) as exc:
-        await cmd_proxy.put(None, wait=False)
-    assert "is not supported" in str(exc.value)
 
     # Reply before timeout
     cmd_proxy._last_reading = None
@@ -516,7 +511,7 @@ async def test_command_proxy_put_exceptions(tango_test_device, wait):
     cmd_proxy = CommandProxy(device_proxy, "raise_exception_cmd")
     await cmd_proxy.connect()
     with pytest.raises(RuntimeError) as exc:
-        await cmd_proxy.put(None, wait=True)
+        await cmd_proxy.put(None)
     assert "device failure" in str(exc.value)
 
 
@@ -526,7 +521,7 @@ async def test_command_get(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "echo")
     await cmd_proxy.connect()
-    await cmd_proxy.put("test_message", wait=True, timeout=1.0)
+    await cmd_proxy.put("test_message", timeout=1.0)
     value = await cmd_proxy.get()
     assert value == "test_message"
 
@@ -546,7 +541,7 @@ async def test_command_get_reading(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "echo")
     await cmd_proxy.connect()
-    await cmd_proxy.put("test_message", wait=True, timeout=1.0)
+    await cmd_proxy.put("test_message", timeout=1.0)
     reading = await cmd_proxy.get_reading()
     assert reading["value"] == "test_message"
 

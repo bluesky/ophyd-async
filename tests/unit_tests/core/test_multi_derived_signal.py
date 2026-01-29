@@ -97,7 +97,7 @@ async def test_setting_position_straight_through():
     assert m.mock_calls == [
         call.height.put(0.5),
         call.y1.user_setpoint.put(1.0),
-        call.y2.user_setpoint.put(pytest.approx(5.55111512312578e-17)),
+        call.y2.user_setpoint.put(pytest.approx(0.0)),
     ]
     m.reset_mock()
 
@@ -118,7 +118,7 @@ async def test_setting_position_extra_indirection():
     assert m.mock_calls == [
         call.x.put(0.5),
         call.x1.user_setpoint.put(1.0),
-        call.x2.user_setpoint.put(pytest.approx(5.55111512312578e-17)),
+        call.x2.user_setpoint.put(pytest.approx(0.0)),
     ]
     m.reset_mock()
 

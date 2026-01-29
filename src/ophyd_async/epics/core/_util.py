@@ -6,7 +6,6 @@ import numpy as np
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
-    DeviceAnnotation,
     SignalBackend,
     SignalDatatypeT,
     SignalRW,
@@ -22,17 +21,20 @@ T = TypeVar("T")
 
 
 @dataclass
-class EpicsOptions(DeviceAnnotation, Generic[SignalDatatypeT]):
-    """Wait Options for EPICS Signals."""
+class EpicsOptions(Generic[SignalDatatypeT]):
+    """Options for EPICS Signals."""
 
-    def __init__(
-        self,
-        wait: bool | Callable[[SignalDatatypeT], bool] = True,
-    ) -> None:
-        self.wait = wait
+    wait: bool | Callable[[SignalDatatypeT], bool] = True
+    """Whether to wait for server-side completion of the operation:
 
-    def __call__(self, parent, child):
-        DeviceAnnotation.__call__(self, parent, child)  # type: ignore
+    - `True`: Return when server-side operation has completed
+    - `False`: Return when server-side operation has started
+    - `callable`: Call with the value being put to decide whether to wait
+
+    For example, use `EpicsOption(wait=non_zero)` for busy records like
+    areaDetector acquire PVs that should not wait when being set to zero
+    as it causes a deadlock.
+    """
 
 
 def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
@@ -91,9 +93,11 @@ class EpicsSignalBackend(SignalBackend[SignalDatatypeT]):
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
+        options: EpicsOptions | None = None,
     ):
         self.read_pv = read_pv
         self.write_pv = write_pv
+        self.options = options or EpicsOptions()
         super().__init__(datatype)
 
 

@@ -265,9 +265,8 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         self.converter: CaConverter = DisconnectedCaConverter(float, dbr.DBR_DOUBLE)
         self.initial_values: dict[str, AugmentedValue] = {}
         self.subscription: Subscription | None = None
-        self.options = options or EpicsOptions()
         self._all_updates = _all_updates()
-        super().__init__(datatype, read_pv, write_pv)
+        super().__init__(datatype, read_pv, write_pv, options)
 
     def source(self, name: str, read: bool):
         return f"ca://{self.read_pv if read else self.write_pv}"

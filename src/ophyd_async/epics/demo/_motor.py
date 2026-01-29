@@ -55,7 +55,7 @@ class DemoMotor(EpicsDevice, StandardReadable, Movable, Stoppable):
         # If not supplied, calculate a suitable timeout for the move
         if timeout == CALCULATE_TIMEOUT:
             timeout = abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
-        # Wait for the value to set, but don't wait for put completion callback
+        # Setting the setpoint starts the motion
         await self.setpoint.set(new_position)
         # Observe the readback Signal, and on each new position...
         async for current_position in observe_value(

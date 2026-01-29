@@ -82,7 +82,7 @@ def _epics_signal_backend(
     datatype: type[SignalDatatypeT] | None,
     read_pv: str,
     write_pv: str,
-    options: EpicsOptions | None,
+    options: EpicsOptions | None = None,
 ) -> SignalBackend[SignalDatatypeT]:
     """Create an epics signal backend."""
     r_protocol, r_pv = split_protocol_from_pv(read_pv)
@@ -90,12 +90,7 @@ def _epics_signal_backend(
     protocol = get_unique({read_pv: r_protocol, write_pv: w_protocol}, "protocols")
 
     signal_backend_type = get_signal_backend_type(protocol)
-    return signal_backend_type(
-        datatype,
-        r_pv,
-        w_pv,
-        options,
-    )
+    return signal_backend_type(datatype, r_pv, w_pv, options)
 
 
 def epics_signal_rw(
@@ -116,10 +111,7 @@ def epics_signal_rw(
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(
-        datatype,
-        read_pv,
-        write_pv or read_pv,
-        EpicsOptions(wait=wait),
+        datatype, read_pv, write_pv or read_pv, EpicsOptions(wait=wait)
     )
     return SignalRW(backend, name=name, timeout=timeout, attempts=attempts)
 
@@ -131,6 +123,7 @@ def epics_signal_rw_rbv(
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
     attempts: int = 1,
+    wait: bool | Callable[[SignalDatatypeT], bool] = True,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv.
 
@@ -147,7 +140,7 @@ def epics_signal_rw_rbv(
         read_pv = f"{write_pv}{read_suffix}"
 
     return epics_signal_rw(
-        datatype, read_pv, write_pv, name, timeout=timeout, attempts=attempts
+        datatype, read_pv, write_pv, name, timeout=timeout, attempts=attempts, wait=wait
     )
 
 
@@ -164,7 +157,7 @@ def epics_signal_r(
     :param name: The name of the signal (defaults to empty string)
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
-    backend = _epics_signal_backend(datatype, read_pv, read_pv, None)
+    backend = _epics_signal_backend(datatype, read_pv, read_pv)
     return SignalR(backend, name=name, timeout=timeout)
 
 
@@ -198,5 +191,5 @@ def epics_signal_x(
     :param name: The name of the signal
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
-    backend = _epics_signal_backend(None, write_pv, write_pv, None)
+    backend = _epics_signal_backend(None, write_pv, write_pv)
     return SignalX(backend, name=name, timeout=timeout)

@@ -125,6 +125,7 @@ from ._utils import (
     get_enum_cls,
     get_unique,
     in_micros,
+    non_zero,
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
@@ -267,6 +268,7 @@ __all__ = [
     "make_datakey",
     "wait_for_connection",
     "Ignore",
+    "non_zero",
     # Derived signal
     "derived_signal_r",
     "derived_signal_rw",

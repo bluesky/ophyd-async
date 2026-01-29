@@ -357,8 +357,7 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         self.converter: PvaConverter = DisconnectedPvaConverter(float)
         self.initial_values: dict[str, Any] = {}
         self.subscription: Subscription | None = None
-        self.options = options or EpicsOptions()
-        super().__init__(datatype, read_pv, write_pv)
+        super().__init__(datatype, read_pv, write_pv, options)
 
     def source(self, name: str, read: bool):
         return f"pva://{self.read_pv if read else self.write_pv}"

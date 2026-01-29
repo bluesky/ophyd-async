@@ -195,7 +195,7 @@ class TangoProxy:
 
     @abstractmethod
     async def put(
-        self, value: object | None, wait: bool = True, timeout: float | None = None
+        self, value: object | None, timeout: float | None = None
     ) -> AsyncStatus | None:
         """Put value to TRL."""
 
@@ -272,13 +272,8 @@ class AttributeProxy(TangoProxy):
 
     @ensure_proper_executor
     async def put(  # type: ignore
-        self, value: object | None, wait: bool = True, timeout: float | None = None
+        self, value: object | None, timeout: float | None = None
     ) -> AsyncStatus | None:
-        if wait is False:
-            raise RuntimeWarning(
-                "wait=False is not supported in Tango."
-                "Simply don't await the status object."
-            )
         # TODO: remove the timeout from this as it is handled at the signal level
         value = self._converter.write_value(value)
         try:
@@ -522,7 +517,7 @@ class CommandProxy(TangoProxy):
         if self._read_character == CommandProxyReadCharacter.READ_WRITE:
             return self._last_reading["value"]
         elif self._read_character == CommandProxyReadCharacter.READ:
-            await self.put(value=None, wait=True, timeout=None)
+            await self.put(value=None, timeout=None)
             return self._last_reading["value"]
 
     async def get_w_value(self) -> object:
@@ -534,13 +529,8 @@ class CommandProxy(TangoProxy):
 
     @ensure_proper_executor
     async def put(  # type: ignore
-        self, value: object | None, wait: bool = True, timeout: float | None = None
+        self, value: object | None, timeout: float | None = None
     ) -> AsyncStatus | None:
-        if wait is False:
-            raise RuntimeError(
-                "wait=False is not supported in Tango."
-                " Simply don't await the status object."
-            )
         value = self._converter.write_value(value)
         try:
 
@@ -568,7 +558,7 @@ class CommandProxy(TangoProxy):
 
     async def get_reading(self) -> Reading:
         if self._read_character == CommandProxyReadCharacter.READ:
-            await self.put(value=None, wait=True, timeout=None)
+            await self.put(value=None, timeout=None)
             return self._last_reading
         else:
             return self._last_reading
@@ -923,11 +913,11 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
         self.converter = make_converter(self.trl_configs[self.read_trl], self.datatype)
         self.proxies[self.read_trl].set_converter(self.converter)  # type: ignore
 
-    async def put(self, value: SignalDatatypeT | None, wait=True, timeout=None) -> None:
+    async def put(self, value: SignalDatatypeT | None, timeout=None) -> None:
         if self.proxies[self.write_trl] is None:
             raise NotConnectedError(f"Not connected to {self.write_trl}")
         self.status = None
-        put_status = await self.proxies[self.write_trl].put(value, wait, timeout)  # type: ignore
+        put_status = await self.proxies[self.write_trl].put(value, timeout)  # type: ignore
         self.status = put_status
 
     async def get_datakey(self, source: str) -> DataKey:
