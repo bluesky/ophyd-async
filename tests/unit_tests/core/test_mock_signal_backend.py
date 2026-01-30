@@ -398,7 +398,7 @@ async def test_when_put_mock_called_with_typo_then_fails_but_calling_directly_pa
     mock = mock_signal._connector.backend.put_mock
     with pytest.raises(AttributeError):
         mock.asssert_called_once()  # Note typo here is deliberate!
-    await mock()
+    await mock(3)
 
 
 async def test_when_callback_on_mock_put_returns_a_value_the_readback_is_set():

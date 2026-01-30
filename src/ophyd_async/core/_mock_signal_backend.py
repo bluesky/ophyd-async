@@ -18,8 +18,8 @@ if TYPE_CHECKING:
     from ._device import LazyMock
 
 MockPutCallback = (
-    Callable[[SignalDatatypeT, bool], SignalDatatypeT | None]
-    | Callable[[SignalDatatypeT, bool], Awaitable[SignalDatatypeT | None]]
+    Callable[[SignalDatatypeT], SignalDatatypeT | None]
+    | Callable[[SignalDatatypeT], Awaitable[SignalDatatypeT | None]]
 )
 
 
@@ -67,7 +67,7 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
             spec=Callable,
             side_effect=self._mock_put_callback
             if self._mock_put_callback
-            else lambda *_, **__: None,
+            else lambda v: None,
         )
         self.mock().attach_mock(put_mock, "put")
         return put_mock
