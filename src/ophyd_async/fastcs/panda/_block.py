@@ -19,7 +19,11 @@ class PandaCaptureMode(StrictEnum):
 
 
 class DataBlock(Device):
-    """Data block for the PandA. Used for writing data through the IOC."""
+    """Data block for the PandA. Used for writing data through the IOC.
+
+    This mirrors the interface provided by
+    https://github.com/PandABlocks/fastcs-PandABlocks/blob/main/src/fastcs_pandablocks/panda/blocks/data.py
+    """
 
     # In future we may decide to make hdf_* optional
     hdf_directory: SignalRW[str]
@@ -56,7 +60,11 @@ class PandaPosMux(SubsetEnum):
 
 
 class PulseBlock(Device):
-    """Used for configuring pulses in the PandA."""
+    """Used for configuring pulses in the PandA.
+
+    This mirrors the interface provided by
+    PandABlocks-FPGA/modules/pulse/pulse.block.ini
+    """
 
     enable: SignalRW[PandaBitMux]
     delay: SignalRW[float]
@@ -66,7 +74,11 @@ class PulseBlock(Device):
 
 
 class PcompBlock(Device):
-    """Position compare block in the PandA."""
+    """Position compare block in the PandA.
+
+    This mirrors the interface provided by
+    PandABlocks-FPGA/modules/pcomp/pcomp.block.ini
+    """
 
     active: SignalR[bool]
     dir: SignalRW[PandaPcompDirection]
@@ -87,7 +99,10 @@ class PandaTimeUnits(StrictEnum):
 
 
 class SeqBlock(Device):
-    """Sequencer block in the PandA."""
+    """Sequencer block in the PandA.
+
+    This mirrors the interface provided by PandABlocks-FPGA/modules/seq/seq.block.ini
+    """
 
     table: SignalRW[SeqTable]
     active: SignalR[bool]
@@ -99,14 +114,21 @@ class SeqBlock(Device):
 
 
 class PcapBlock(Device):
-    """Position capture block in the PandA."""
+    """Position capture block in the PandA.
+
+    This mirrors the interface provided by PandABlocks-FPGA/modules/pcap/pcap.block.ini
+    """
 
     active: SignalR[bool]
     arm: SignalRW[bool]
 
 
 class InencBlock(Device):
-    """In encoder block in the PandA."""
+    """In encoder block in the PandA.
+
+    This mirrors the interface provided by
+    PandABlocks-FPGA/modules/inenc/inenc.block.ini
+    """
 
     val_scale: SignalRW[float]
     val_offset: SignalRW[float]
