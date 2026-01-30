@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 import traceback
 from unittest.mock import MagicMock, Mock
@@ -218,7 +219,9 @@ async def test_many_individual_device_connects_not_slow(parallel):
         coros = {bundle.name: bundle.connect(mock=True) for bundle in bundles}
         await wait_for_connection(**coros)
     duration = time.monotonic() - start
-    assert duration < 1
+    # Windows runners on GitHub are slow...
+    expected_duration = 2.0 if os.name == "nt" else 1.0
+    assert duration < expected_duration
 
 
 async def test_device_with_children_lazily_connects(RE):
