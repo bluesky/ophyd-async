@@ -35,7 +35,7 @@ class CommandBackend(Protocol[P, T_co]):
     """A backend for a Command."""
 
     @abstractmethod
-    def source(self, name: str, read: bool) -> str:
+    def source(self, name: str) -> str:
         """Return source of command."""
 
     @abstractmethod
@@ -59,7 +59,7 @@ class CommandConnector(DeviceConnector):
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Connect the backend to real hardware."""
-        source = self.backend.source(device.name, read=True)
+        source = self.backend.source(device.name)
         device.log.debug(f"Connecting to {source}")
         try:
             await self.backend.connect(timeout)
@@ -91,7 +91,7 @@ class Command(Device, Generic[P, T]):
     @property
     def source(self) -> str:
         """Returns the source of the command."""
-        return self._connector.backend.source(self.name, True)
+        return self._connector.backend.source(self.name)
 
     async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Call the command."""
@@ -255,7 +255,7 @@ class SoftCommandBackend(CommandBackend[P, T]):
                         f"callback return type {actual_return}"
                     )
 
-    def source(self, name: str, read: bool) -> str:
+    def source(self, name: str) -> str:
         """Return the source of the command."""
         return f"softcmd://{name}"
 
@@ -317,9 +317,9 @@ class MockCommandBackend(CommandBackend[P, T]):
         # Attach to the device mock
         self._mock().attach_mock(async_mock, "call")
 
-    def source(self, name: str, read: bool) -> str:
+    def source(self, name: str) -> str:
         """Return the source of the mocked command."""
-        return f"mock+{self._initial_backend.source(name, read)}"
+        return f"mock+{self._initial_backend.source(name)}"
 
     async def connect(self, timeout: float):
         """Mock backend does not support real connection."""
