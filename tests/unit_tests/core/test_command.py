@@ -15,8 +15,7 @@ from ophyd_async.core import (
     SubsetEnum,
     SupersetEnum,
     Table,
-    soft_command_rw,
-    soft_command_x,
+    soft_command,
 )
 
 
@@ -151,11 +150,11 @@ async def test_mock_command_backend():
 
 
 async def test_factory_functions():
-    cmd_rw = soft_command_rw([int], str, lambda x: str(x), name="rw")
+    cmd_rw = soft_command(lambda x: str(x), [int], str, name="rw")
     await cmd_rw.connect()
     assert await cmd_rw(123) == "123"
 
-    cmd_x = soft_command_x(lambda: None, name="x")
+    cmd_x = soft_command(lambda: None, name="x")
     await cmd_x.connect()
     assert await cmd_x() is None
 
@@ -164,8 +163,7 @@ async def test_execution_error_wrapping():
     def failing_callback():
         raise ValueError("Boom")
 
-    backend = SoftCommandBackend([], None, failing_callback)
-    cmd = Command(backend, name="test_cmd")
+    cmd = soft_command(failing_callback, name="test_cmd")
     await cmd.connect()
 
     with pytest.raises(ValueError, match="Boom"):
@@ -177,7 +175,7 @@ async def test_async_return_type_validation():
         return 1
 
     # Should not raise TypeError because it handles Awaitable[int]
-    SoftCommandBackend([], int, async_ret)
+    soft_command(async_ret, [], int)
 
     async def async_ret_wrong() -> str:
         return "1"
@@ -187,12 +185,12 @@ async def test_async_return_type_validation():
         match=r"command_return type <class 'int'> does not match"
         r" callback return type <class 'str'>",
     ):
-        SoftCommandBackend([], int, async_ret_wrong)
+        soft_command(async_ret_wrong, [], int)
 
 
 async def test_command_logging(caplog):
     caplog.set_level(logging.DEBUG)
-    cmd = soft_command_rw([int], str, lambda x: str(x), name="mycmd")
+    cmd = soft_command(lambda x: str(x), [int], str, name="mycmd")
     await cmd.connect()
     assert "Connecting to softcmd://mycmd" in caplog.text
 

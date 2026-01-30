@@ -105,89 +105,24 @@ class Command(Device, Generic[P, T]):
         return result
 
 
-def soft_command_r(
-    command_return: type[T],
-    command_cb: Callable[[], T | Awaitable[T]],
-    units: str | None = None,
-    precision: int | None = None,
-    name: str = "",
-    timeout: float | None = DEFAULT_TIMEOUT,
-) -> Command[[], T]:
-    """Create a read-only Command with a [](#SoftCommandBackend).
-
-    :param command_return: The type of the value the command returns.
-    :param command_cb: The callback function to execute when the command is called.
-    :param units: Units of the return value.
-    :param precision: Precision of the return value.
-    :param name: The name of the command.
-    :param timeout: The default timeout for calling the command.
-    """
-    backend = SoftCommandBackend(None, command_return, command_cb, units, precision)
-    return Command(backend, timeout, name)
-
-
-def soft_command_w(
-    command_args: Sequence[type],
-    command_cb: Callable[P, None | Awaitable[None]],
-    units: str | None = None,
-    precision: int | None = None,
-    name: str = "",
-    timeout: float | None = DEFAULT_TIMEOUT,
-) -> Command[P, None]:
-    """Create a write-only Command with a [](#SoftCommandBackend).
-
-    :param command_args: Types of the arguments the command takes.
-    :param command_cb: The callback function to execute when the command is called.
-    :param units: Units of the return value.
-    :param precision: Precision of the return value.
-    :param name: The name of the command.
-    :param timeout: The default timeout for calling the command.
-    """
-    backend = SoftCommandBackend(command_args, None, command_cb, units, precision)
-    return Command(backend, timeout, name)
-
-
-def soft_command_rw(
-    command_args: Sequence[type],
-    command_return: type[T],
+def soft_command(
     command_cb: Callable[P, T | Awaitable[T]],
-    units: str | None = None,
-    precision: int | None = None,
+    command_args: Sequence[type] | None = None,
+    command_return: type[T] | None = None,
     name: str = "",
     timeout: float | None = DEFAULT_TIMEOUT,
 ) -> Command[P, T]:
-    """Create a read-writable Command with a [](#SoftCommandBackend).
+    """Create a Command with a SoftCommandBackend.
 
+    :param command_cb: The callback function to execute when the command is called.
     :param command_args: Types of the arguments the command takes.
     :param command_return: The type of the value the command returns.
-    :param command_cb: The callback function to execute when the command is called.
-    :param units: Units of the return value.
-    :param precision: Precision of the return value.
     :param name: The name of the command.
     :param timeout: The default timeout for calling the command.
     """
-    backend = SoftCommandBackend(
-        command_args, command_return, command_cb, units, precision
+    backend: SoftCommandBackend[P, T] = SoftCommandBackend(
+        command_args, command_return, command_cb
     )
-    return Command(backend, timeout, name)
-
-
-def soft_command_x(
-    command_cb: Callable[[], None | Awaitable[None]],
-    units: str | None = None,
-    precision: int | None = None,
-    name: str = "",
-    timeout: float | None = DEFAULT_TIMEOUT,
-) -> Command[[], None]:
-    """Create a no-arg/no-return Command with a [](#SoftCommandBackend).
-
-    :param command_cb: The callback function to execute when the command is called.
-    :param units: Units of the return value.
-    :param precision: Precision of the return value.
-    :param name: The name of the command.
-    :param timeout: The default timeout for calling the command.
-    """
-    backend = SoftCommandBackend(None, None, command_cb, units, precision)
     return Command(backend, timeout, name)
 
 
@@ -199,14 +134,10 @@ class SoftCommandBackend(CommandBackend[P, T]):
         command_args: Sequence[type] | None,
         command_return: type[T] | None,
         command_cb: Callable[P, T | Awaitable[T]],
-        units: str | None = None,
-        precision: int | None = None,
     ):
         self._command_args = command_args or []
         self._command_return = command_return
         self._command_cb = command_cb
-        self._units = units
-        self._precision = precision
         self._last_return_value: T | None = None
         self._lock = asyncio.Lock()
 

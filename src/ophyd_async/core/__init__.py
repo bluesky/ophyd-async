@@ -6,10 +6,7 @@ from ._command import (
     CommandConnector,
     MockCommandBackend,
     SoftCommandBackend,
-    soft_command_r,
-    soft_command_rw,
-    soft_command_w,
-    soft_command_x,
+    soft_command,
 )
 from ._derived_signal import (
     DerivedSignalFactory,
@@ -302,9 +299,6 @@ __all__ = [
     "CommandBackend",
     "CommandConnector",
     "SoftCommandBackend",
-    "soft_command_r",
-    "soft_command_w",
-    "soft_command_x",
-    "soft_command_rw",
+    "soft_command",
     "MockCommandBackend",
 ]
