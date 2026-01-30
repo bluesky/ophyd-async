@@ -115,8 +115,8 @@
   - ```{autodoc2-docstring} ophyd_async.core._utils.SupersetEnum
     :summary:
     ```
-* - {py:obj}`Table <ophyd_async.core._table.Table>`
-  - ```{autodoc2-docstring} ophyd_async.core._table.Table
+* - {py:obj}`Table <ophyd_async.core._datatypes.Table>`
+  - ```{autodoc2-docstring} ophyd_async.core._datatypes.Table
     :summary:
     ```
 * - {py:obj}`SignalMetadata <ophyd_async.core._signal_backend.SignalMetadata>`
@@ -439,12 +439,12 @@
   - ```{autodoc2-docstring} ophyd_async.core._signal_backend.SignalDatatypeT
     :summary:
     ```
-* - {py:obj}`DTypeScalar_co <ophyd_async.core._signal_backend.DTypeScalar_co>`
-  - ```{autodoc2-docstring} ophyd_async.core._signal_backend.DTypeScalar_co
+* - {py:obj}`DTypeScalar_co <ophyd_async.core._datatypes.DTypeScalar_co>`
+  - ```{autodoc2-docstring} ophyd_async.core._datatypes.DTypeScalar_co
     :summary:
     ```
-* - {py:obj}`Array1D <ophyd_async.core._signal_backend.Array1D>`
-  - ```{autodoc2-docstring} ophyd_async.core._signal_backend.Array1D
+* - {py:obj}`Array1D <ophyd_async.core._datatypes.Array1D>`
+  - ```{autodoc2-docstring} ophyd_async.core._datatypes.Array1D
     :summary:
     ```
 * - {py:obj}`EnumTypes <ophyd_async.core._utils.EnumTypes>`
@@ -483,8 +483,8 @@
   - ```{autodoc2-docstring} ophyd_async.core._readable.HintedSignal
     :summary:
     ```
-* - {py:obj}`TableSubclass <ophyd_async.core._table.TableSubclass>`
-  - ```{autodoc2-docstring} ophyd_async.core._table.TableSubclass
+* - {py:obj}`TableSubclass <ophyd_async.core._datatypes.TableSubclass>`
+  - ```{autodoc2-docstring} ophyd_async.core._datatypes.TableSubclass
     :summary:
     ```
 ````
@@ -1322,21 +1322,21 @@ Bases: {py:obj}`ophyd_async.core._device.DeviceConnector`
 ````
 
 ````{py:data} DTypeScalar_co
-:canonical: ophyd_async.core._signal_backend.DTypeScalar_co
+:canonical: ophyd_async.core._datatypes.DTypeScalar_co
 :value: >
    'TypeVar(...)'
 
-```{autodoc2-docstring} ophyd_async.core._signal_backend.DTypeScalar_co
+```{autodoc2-docstring} ophyd_async.core._datatypes.DTypeScalar_co
 ```
 
 ````
 
 ````{py:data} Array1D
-:canonical: ophyd_async.core._signal_backend.Array1D
+:canonical: ophyd_async.core._datatypes.Array1D
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.core._signal_backend.Array1D
+```{autodoc2-docstring} ophyd_async.core._datatypes.Array1D
 ```
 
 ````
@@ -1382,44 +1382,44 @@ Bases: {py:obj}`enum.StrEnum`
 ````
 
 `````{py:class} Table(**kwargs)
-:canonical: ophyd_async.core._table.Table
+:canonical: ophyd_async.core._datatypes.Table
 
 Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
-```{autodoc2-docstring} ophyd_async.core._table.Table
+```{autodoc2-docstring} ophyd_async.core._datatypes.Table
 ```
 
 ````{py:attribute} model_config
-:canonical: ophyd_async.core._table.Table.model_config
+:canonical: ophyd_async.core._datatypes.Table.model_config
 :value: >
    'ConfigDict(...)'
 
-```{autodoc2-docstring} ophyd_async.core._table.Table.model_config
+```{autodoc2-docstring} ophyd_async.core._datatypes.Table.model_config
 ```
 
 ````
 
-````{py:method} empty() -> ~ophyd_async.core._table.TableSubclass
-:canonical: ophyd_async.core._table.Table.empty
+````{py:method} empty() -> ~ophyd_async.core._datatypes.TableSubclass
+:canonical: ophyd_async.core._datatypes.Table.empty
 :classmethod:
 
-```{autodoc2-docstring} ophyd_async.core._table.Table.empty
+```{autodoc2-docstring} ophyd_async.core._datatypes.Table.empty
 ```
 
 ````
 
 ````{py:method} numpy_dtype() -> ~numpy.dtype
-:canonical: ophyd_async.core._table.Table.numpy_dtype
+:canonical: ophyd_async.core._datatypes.Table.numpy_dtype
 
-```{autodoc2-docstring} ophyd_async.core._table.Table.numpy_dtype
+```{autodoc2-docstring} ophyd_async.core._datatypes.Table.numpy_dtype
 ```
 
 ````
 
 ````{py:method} numpy_table(selection: slice | None = None) -> ~numpy.ndarray
-:canonical: ophyd_async.core._table.Table.numpy_table
+:canonical: ophyd_async.core._datatypes.Table.numpy_table
 
-```{autodoc2-docstring} ophyd_async.core._table.Table.numpy_table
+```{autodoc2-docstring} ophyd_async.core._datatypes.Table.numpy_table
 ```
 
 ````
@@ -1629,6 +1629,14 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend
 ```
 
+````{py:method} set_mock_put_callback(callback: ~ophyd_async.core._mock_signal_backend.MockPutCallback | None)
+:canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.set_mock_put_callback
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.set_mock_put_callback
+```
+
+````
+
 ````{py:method} put_mock() -> ~unittest.mock.AsyncMock
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.put_mock
 
@@ -1760,7 +1768,7 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ```
 ````
 
-````{py:function} callback_on_mock_put(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], callback: ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], ~ophyd_async.core._signal_backend.SignalDatatypeT | None] | ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], ~collections.abc.Awaitable[~ophyd_async.core._signal_backend.SignalDatatypeT | None]])
+````{py:function} callback_on_mock_put(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], callback: ~ophyd_async.core._mock_signal_backend.MockPutCallback)
 :canonical: ophyd_async.core._mock_signal_utils.callback_on_mock_put
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.callback_on_mock_put
@@ -3344,11 +3352,11 @@ Bases: {py:obj}`ophyd_async.core._utils.StrictEnum`
 `````
 
 ````{py:data} TableSubclass
-:canonical: ophyd_async.core._table.TableSubclass
+:canonical: ophyd_async.core._datatypes.TableSubclass
 :value: >
    'TypeVar(...)'
 
-```{autodoc2-docstring} ophyd_async.core._table.TableSubclass
+```{autodoc2-docstring} ophyd_async.core._datatypes.TableSubclass
 ```
 
 ````

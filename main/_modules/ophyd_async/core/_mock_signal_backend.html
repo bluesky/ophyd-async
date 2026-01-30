@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._mock_signal_backend &#8212; ophyd-async 0.14.3.dev7+g3dbafa8a9 documentation</title>
+    <title>ophyd_async.core._mock_signal_backend &#8212; ophyd-async 0.14.3.dev8+g7f3c2d529 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=17ab88a8"></script>
+    <script src="../../../_static/documentation_options.js?v=8b483b51"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev7+g3dbafa8a9 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev7+g3dbafa8a9 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
   
   
 </a></div>
@@ -466,7 +466,7 @@ window.addEventListener("load", () => mermaid.run());
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unittest.mock</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncMock</span>
@@ -481,6 +481,11 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">LazyMock</span>
+
+<span class="n">MockPutCallback</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="MockSignalBackend">
@@ -509,13 +514,30 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="c1"># use existing Mock if provided</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mock</span> <span class="o">=</span> <span class="n">mock</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mock_put_callback</span><span class="p">:</span> <span class="n">MockPutCallback</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">datatype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_backend</span><span class="o">.</span><span class="n">datatype</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MockSignalBackend.set_mock_put_callback">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend.set_mock_put_callback">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_mock_put_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">MockPutCallback</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;put_mock&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="c1"># put_mock cached property exists, so set the side effect on it</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">put_mock</span><span class="o">.</span><span class="n">side_effect</span> <span class="o">=</span> <span class="n">callback</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># put_mock doesn&#39;t exist, don&#39;t create it as that would be slow</span>
+            <span class="c1"># so just keep it internally</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mock_put_callback</span> <span class="o">=</span> <span class="n">callback</span></div>
+
 
     <span class="nd">@cached_property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">put_mock</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncMock</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the mock that will track calls to `put()`.&quot;&quot;&quot;</span>
         <span class="n">put_mock</span> <span class="o">=</span> <span class="n">AsyncMock</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;put&quot;</span><span class="p">,</span> <span class="n">spec</span><span class="o">=</span><span class="n">Callable</span><span class="p">,</span> <span class="n">side_effect</span><span class="o">=</span><span class="k">lambda</span> <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="o">**</span><span class="n">__</span><span class="p">:</span> <span class="kc">None</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;put&quot;</span><span class="p">,</span>
+            <span class="n">spec</span><span class="o">=</span><span class="n">Callable</span><span class="p">,</span>
+            <span class="n">side_effect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_mock_put_callback</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mock_put_callback</span>
+            <span class="k">else</span> <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mock</span><span class="p">()</span><span class="o">.</span><span class="n">attach_mock</span><span class="p">(</span><span class="n">put_mock</span><span class="p">,</span> <span class="s2">&quot;put&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">put_mock</span>

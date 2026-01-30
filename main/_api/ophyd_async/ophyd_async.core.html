@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.14.3.dev7+g3dbafa8a9 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.14.3.dev8+g7f3c2d529 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=17ab88a8"></script>
+    <script src="../../_static/documentation_options.js?v=8b483b51"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev7+g3dbafa8a9 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev7+g3dbafa8a9 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
   
   
 </a></div>
@@ -603,7 +603,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SupersetEnum" title="ophyd_async.core._utils.SupersetEnum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SupersetEnum</span></code></a></p></td>
 <td><p>Some members should exist in the Backend, and there should be no extras.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Table" title="ophyd_async.core._table.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Table" title="ophyd_async.core._datatypes.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
 <td><p>An abstraction of a Table where each field is a column.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.SignalMetadata" title="ophyd_async.core._signal_backend.SignalMetadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalMetadata</span></code></a></p></td>
@@ -850,10 +850,10 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SignalDatatypeT</span></code></a></p></td>
 <td><p>A typevar for a <a class="reference internal" href="#ophyd_async.core.SignalDatatype" title="ophyd_async.core.SignalDatatype"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">SignalDatatype</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DTypeScalar_co" title="ophyd_async.core._signal_backend.DTypeScalar_co"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DTypeScalar_co</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.DTypeScalar_co" title="ophyd_async.core._datatypes.DTypeScalar_co"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DTypeScalar_co</span></code></a></p></td>
 <td><p>A numpy dtype like <a class="reference external" href="https://numpy.org/devdocs/reference/arrays.scalars.html#numpy.float64" title="NumPy 2.5.dev0"><code class="iref myst docutils literal notranslate"><span class="pre">numpy.float64</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Array1D" title="ophyd_async.core._signal_backend.Array1D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array1D</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.Array1D" title="ophyd_async.core._datatypes.Array1D"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Array1D</span></code></a></p></td>
 <td><p>A type alias for a 1D numpy array with a specific scalar data type.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.EnumTypes" title="ophyd_async.core._utils.EnumTypes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnumTypes</span></code></a></p></td>
@@ -883,7 +883,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.core.HintedSignal" title="ophyd_async.core._readable.HintedSignal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HintedSignal</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._table.TableSubclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._datatypes.TableSubclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableSubclass</span></code></a></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -1870,7 +1870,7 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.core.Table">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_datatypes.html#Table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.ConfinedModel" title="ophyd_async.core._utils.ConfinedModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._utils.ConfinedModel</span></code></a></p>
 <p>An abstraction of a Table where each field is a column.</p>
 <p>For example:</p>
@@ -1902,19 +1902,19 @@ mode. It connects the Device and all its children in real mode in parallel.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.Table.empty">
-<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._table.TableSubclass"><span class="pre">TableSubclass</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table.empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.empty" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.TableSubclass" title="ophyd_async.core._datatypes.TableSubclass"><span class="pre">TableSubclass</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_datatypes.html#Table.empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.empty" title="Link to this definition">#</a></dt>
 <dd><p>Makes an empty table with zero length columns.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.Table.numpy_dtype">
-<span class="sig-name descname"><span class="pre">numpy_dtype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5.dev0)"><span class="pre">dtype</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table.numpy_dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.numpy_dtype" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">numpy_dtype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.5.dev0)"><span class="pre">dtype</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_datatypes.html#Table.numpy_dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.numpy_dtype" title="Link to this definition">#</a></dt>
 <dd><p>Return a numpy dtype for a single row.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.Table.numpy_table">
-<span class="sig-name descname"><span class="pre">numpy_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.14)"><span class="pre">slice</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5.dev0)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_table.html#Table.numpy_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.numpy_table" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">numpy_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#slice" title="(in Python v3.14)"><span class="pre">slice</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/devdocs/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.5.dev0)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_datatypes.html#Table.numpy_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.Table.numpy_table" title="Link to this definition">#</a></dt>
 <dd><p>Return a numpy array of the whole table.</p>
 </dd></dl>
 
@@ -2126,6 +2126,11 @@ to the mock device so it behaves more like the real device.</p>
 <dd><p>Bases: <a class="reference internal" href="#ophyd_async.core.SignalBackend" title="ophyd_async.core._signal_backend.SignalBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._signal_backend.SignalBackend</span></code></a>[<a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core._signal_backend.SignalDatatypeT</span></code></a>]</p>
 <p>Signal backend for testing, created by <code class="docutils literal notranslate"><span class="pre">Device.connect(mock=True)</span></code>.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.MockSignalBackend.set_mock_put_callback">
+<span class="sig-name descname"><span class="pre">set_mock_put_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MockPutCallback</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_backend.html#MockSignalBackend.set_mock_put_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.MockSignalBackend.set_mock_put_callback" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.MockSignalBackend.put_mock">
 <span class="sig-name descname"><span class="pre">put_mock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock" title="(in Python v3.14)"><span class="pre">AsyncMock</span></a></span></span><a class="headerlink" href="#ophyd_async.core.MockSignalBackend.put_mock" title="Link to this definition">#</a></dt>
 <dd><p>Return the mock that will track calls to <code class="docutils literal notranslate"><span class="pre">put()</span></code>.</p>
@@ -2266,7 +2271,7 @@ before all values have been consumed.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ophyd_async.core.callback_on_mock_put">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">callback_on_mock_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><span class="pre">Signal</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable" title="(in Python v3.14)"><span class="pre">Awaitable</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#callback_on_mock_put"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.callback_on_mock_put" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.core.</span></span><span class="sig-name descname"><span class="pre">callback_on_mock_put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.core.Signal" title="ophyd_async.core._signal.Signal"><span class="pre">Signal</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.SignalDatatypeT" title="ophyd_async.core._signal_backend.SignalDatatypeT"><span class="pre">SignalDatatypeT</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MockPutCallback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/core/_mock_signal_utils.html#callback_on_mock_put"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.callback_on_mock_put" title="Link to this definition">#</a></dt>
 <dd><p>For setting a callback when a backend is put to.</p>
 <p>Can either be used in a context, with the callback being unset on exit, or
 as an ordinary function.</p>
@@ -4218,6 +4223,7 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.LazyMock"><code class="docutils literal notranslate"><span class="pre">LazyMock</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.set_mock_put_callback"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.set_mock_put_callback()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.put_mock"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.put_mock()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.set_value"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.set_value()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.MockSignalBackend.source"><code class="docutils literal notranslate"><span class="pre">MockSignalBackend.source()</span></code></a></li>
