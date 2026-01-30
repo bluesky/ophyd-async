@@ -408,3 +408,8 @@ def error_if_none(value: T | None, msg: str) -> T:
     if value is None:
         raise RuntimeError(msg)
     return value
+
+
+def non_zero(value):
+    """Return True if the value cast to an int is not zero."""
+    return int(value) != 0

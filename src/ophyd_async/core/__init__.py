@@ -24,7 +24,7 @@ from ._device import (
     default_mock_class,
     init_devices,
 )
-from ._device_filler import DeviceFiller
+from ._device_filler import DeviceAnnotation, DeviceFiller
 from ._enums import (
     EnabledDisabled,
     EnableDisable,
@@ -123,6 +123,7 @@ from ._utils import (
     get_enum_cls,
     get_unique,
     in_micros,
+    non_zero,
     wait_for_connection,
 )
 from ._yaml_settings import YamlSettingsProvider
@@ -152,6 +153,7 @@ __all__ = [
     "Device",
     "DeviceConnector",
     "DeviceFiller",
+    "DeviceAnnotation",
     "DeviceVector",
     "init_devices",
     # Protocols
@@ -264,6 +266,7 @@ __all__ = [
     "make_datakey",
     "wait_for_connection",
     "Ignore",
+    "non_zero",
     # Derived signal
     "derived_signal_r",
     "derived_signal_rw",

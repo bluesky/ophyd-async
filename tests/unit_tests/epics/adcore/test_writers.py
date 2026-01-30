@@ -128,7 +128,7 @@ async def detectors(
 
 
 async def test_hdf_writer_file_not_found(hdf_writer: adcore.ADHDFWriter):
-    callback_on_mock_put(hdf_writer.fileio.file_path, lambda value, wait: None)
+    callback_on_mock_put(hdf_writer.fileio.file_path, lambda value, wait=None: None)
     with pytest.raises(
         FileNotFoundError, match=r"Path .* doesn't exist or not writable!"
     ):

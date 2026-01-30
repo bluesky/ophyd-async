@@ -29,7 +29,12 @@ from ophyd_async.core import (
     wait_for_connection,
 )
 
-from ._util import EpicsSignalBackend, format_datatype, get_supported_values
+from ._util import (
+    EpicsOptions,
+    EpicsSignalBackend,
+    format_datatype,
+    get_supported_values,
+)
 
 logger = logging.getLogger("ophyd_async")
 
@@ -347,11 +352,12 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
+        options: EpicsOptions | None = None,
     ):
         self.converter: PvaConverter = DisconnectedPvaConverter(float)
         self.initial_values: dict[str, Any] = {}
         self.subscription: Subscription | None = None
-        super().__init__(datatype, read_pv, write_pv)
+        super().__init__(datatype, read_pv, write_pv, options)
 
     def source(self, name: str, read: bool):
         return f"pva://{self.read_pv if read else self.write_pv}"
@@ -380,11 +386,15 @@ class PvaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
             "alarm_severity": -1 if sv > 2 else sv,
         }
 
-    async def put(self, value: SignalDatatypeT | None, wait: bool):
+    async def put(self, value: SignalDatatypeT | None):
         if value is None:
             write_value = self.initial_values[self.write_pv]["value"]
         else:
             write_value = self.converter.write_value(value)
+        if callable(self.options.wait):
+            wait = self.options.wait(value)
+        else:
+            wait = self.options.wait
         await context().put(self.write_pv, {"value": write_value}, wait=wait)
 
     async def get_datakey(self, source: str) -> DataKey:
