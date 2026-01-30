@@ -116,8 +116,8 @@ def _unset_side_effect_cm(put_mock: AsyncMock):
 
 def callback_on_mock_put(
     signal: Signal[SignalDatatypeT],
-    callback: Callable[[SignalDatatypeT, bool], SignalDatatypeT | None]
-    | Callable[[SignalDatatypeT, bool], Awaitable[SignalDatatypeT | None]],
+    callback: Callable[[SignalDatatypeT], SignalDatatypeT | None]
+    | Callable[[SignalDatatypeT], Awaitable[SignalDatatypeT | None]],
 ):
     """For setting a callback when a backend is put to.
 

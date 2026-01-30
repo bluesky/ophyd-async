@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import Enum
 
 from ophyd_async.core import (
@@ -15,7 +16,7 @@ from ophyd_async.core import (
     get_unique,
 )
 
-from ._util import EpicsSignalBackend, get_pv_basename_and_field
+from ._util import EpicsOptions, EpicsSignalBackend, get_pv_basename_and_field
 
 
 class EpicsProtocol(Enum):
@@ -78,14 +79,18 @@ def get_signal_backend_type(protocol: EpicsProtocol) -> type[EpicsSignalBackend]
 
 
 def _epics_signal_backend(
-    datatype: type[SignalDatatypeT] | None, read_pv: str, write_pv: str
+    datatype: type[SignalDatatypeT] | None,
+    read_pv: str,
+    write_pv: str,
+    options: EpicsOptions | None = None,
 ) -> SignalBackend[SignalDatatypeT]:
     """Create an epics signal backend."""
     r_protocol, r_pv = split_protocol_from_pv(read_pv)
     w_protocol, w_pv = split_protocol_from_pv(write_pv)
     protocol = get_unique({read_pv: r_protocol, write_pv: w_protocol}, "protocols")
+
     signal_backend_type = get_signal_backend_type(protocol)
-    return signal_backend_type(datatype, r_pv, w_pv)
+    return signal_backend_type(datatype, r_pv, w_pv, options)
 
 
 def epics_signal_rw(
@@ -95,6 +100,7 @@ def epics_signal_rw(
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
     attempts: int = 1,
+    wait: bool | Callable[[SignalDatatypeT], bool] = True,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs.
 
@@ -104,7 +110,9 @@ def epics_signal_rw(
     :param name: The name of the signal (defaults to empty string)
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
-    backend = _epics_signal_backend(datatype, read_pv, write_pv or read_pv)
+    backend = _epics_signal_backend(
+        datatype, read_pv, write_pv or read_pv, EpicsOptions(wait=wait)
+    )
     return SignalRW(backend, name=name, timeout=timeout, attempts=attempts)
 
 
@@ -115,6 +123,7 @@ def epics_signal_rw_rbv(
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
     attempts: int = 1,
+    wait: bool | Callable[[SignalDatatypeT], bool] = True,
 ) -> SignalRW[SignalDatatypeT]:
     """Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv.
 
@@ -131,7 +140,7 @@ def epics_signal_rw_rbv(
         read_pv = f"{write_pv}{read_suffix}"
 
     return epics_signal_rw(
-        datatype, read_pv, write_pv, name, timeout=timeout, attempts=attempts
+        datatype, read_pv, write_pv, name, timeout=timeout, attempts=attempts, wait=wait
     )
 
 
@@ -158,6 +167,7 @@ def epics_signal_w(
     name: str = "",
     timeout: float = DEFAULT_TIMEOUT,
     attempts: int = 1,
+    wait: bool | Callable[[SignalDatatypeT], bool] = True,
 ) -> SignalW[SignalDatatypeT]:
     """Create a `SignalW` backed by 1 EPICS PVs.
 
@@ -166,7 +176,9 @@ def epics_signal_w(
     :param name: The name of the signal (defaults to empty string)
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
-    backend = _epics_signal_backend(datatype, write_pv, write_pv)
+    backend = _epics_signal_backend(
+        datatype, write_pv, write_pv, EpicsOptions(wait=wait)
+    )
     return SignalW(backend, name=name, timeout=timeout, attempts=attempts)
 
 

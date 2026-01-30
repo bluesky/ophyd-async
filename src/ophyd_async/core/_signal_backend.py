@@ -91,7 +91,7 @@ class SignalBackend(Generic[SignalDatatypeT]):
         """Connect to underlying hardware."""
 
     @abstractmethod
-    async def put(self, value: SignalDatatypeT | None, wait: bool):
+    async def put(self, value: SignalDatatypeT | None):
         """Put a value to the PV, if wait then wait for completion."""
 
     @abstractmethod

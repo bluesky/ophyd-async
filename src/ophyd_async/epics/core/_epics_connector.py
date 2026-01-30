@@ -5,7 +5,8 @@ from typing import Any
 
 from ophyd_async.core import Device, DeviceConnector, DeviceFiller
 
-from ._signal import EpicsSignalBackend, get_signal_backend_type, split_protocol_from_pv
+from ._signal import get_signal_backend_type, split_protocol_from_pv
+from ._util import EpicsOptions, EpicsSignalBackend
 
 
 @dataclass
@@ -44,6 +45,8 @@ def fill_backend_with_prefix(
             backend.write_pv = prefix + (
                 annotation.write_suffix or annotation.read_suffix
             )
+        elif isinstance(annotation, EpicsOptions):
+            backend.options = annotation
         else:
             unhandled.append(annotation)
     annotations.extend(unhandled)

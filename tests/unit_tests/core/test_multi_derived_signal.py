@@ -88,16 +88,16 @@ async def test_setting_position_straight_through():
     m = get_mock(inst)
     await inst.set(TwoJackDerived(height=1.5, angle=-math.pi / 4))
     assert m.mock_calls == [
-        call.y1.user_setpoint.put(2.0, wait=True),
-        call.y2.user_setpoint.put(1.0, wait=True),
+        call.y1.user_setpoint.put(2.0),
+        call.y2.user_setpoint.put(1.0),
     ]
     m.reset_mock()
     # Try to move just one axis
     await inst.height.set(0.5)
     assert m.mock_calls == [
-        call.height.put(0.5, wait=True),
-        call.y1.user_setpoint.put(1.0, wait=True),
-        call.y2.user_setpoint.put(pytest.approx(0.0), wait=True),
+        call.height.put(0.5),
+        call.y1.user_setpoint.put(1.0),
+        call.y2.user_setpoint.put(pytest.approx(0.0)),
     ]
     m.reset_mock()
 
@@ -109,16 +109,16 @@ async def test_setting_position_extra_indirection():
     m = get_mock(inst)
     await inst.set(HorizontalMirrorDerived(x=1.5, roll=-math.pi / 4))
     assert m.mock_calls == [
-        call.x1.user_setpoint.put(2.0, wait=True),
-        call.x2.user_setpoint.put(1.0, wait=True),
+        call.x1.user_setpoint.put(2.0),
+        call.x2.user_setpoint.put(1.0),
     ]
     m.reset_mock()
     # Try to move just one axis
     await inst.x.set(0.5)
     assert m.mock_calls == [
-        call.x.put(0.5, wait=True),
-        call.x1.user_setpoint.put(1.0, wait=True),
-        call.x2.user_setpoint.put(pytest.approx(0.0), wait=True),
+        call.x.put(0.5),
+        call.x1.user_setpoint.put(1.0),
+        call.x2.user_setpoint.put(pytest.approx(0.0)),
     ]
     m.reset_mock()
 
@@ -174,9 +174,9 @@ async def test_derived_signal_backend_put_wait_fails(
     derived_signal: SignalRW,
 ) -> None:
     with pytest.raises(RuntimeError):
-        await derived_signal.set(value=None, wait=False)
+        await derived_signal.set(value=None)
     with pytest.raises(RuntimeError):
-        await derived_signal.set(value=None, wait=True)
+        await derived_signal.set(value=None)
 
 
 def test_make_rw_signal_type_mismatch():

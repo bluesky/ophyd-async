@@ -181,7 +181,7 @@ async def assert_put_read(
     datatype: type[T] | None = None,  # TODO reimplement this
 ):
     backend = signal._connector.backend
-    await backend.put(put_value, wait=True)
+    await backend.put(put_value)
 
     expected_reading = {
         "timestamp": pytest.approx(time.time(), rel=0.1),
@@ -251,7 +251,7 @@ async def test_tango_signal_w(everything_device_trl: str, everything_signal_info
 
         put_value = attr_data.random_value()
 
-        status = signal.set(put_value, wait=True, timeout=timeout)
+        status = signal.set(put_value, timeout=timeout)
         await status
         assert status.done is True and status.success is True
 
@@ -259,7 +259,7 @@ async def test_tango_signal_w(everything_device_trl: str, everything_signal_info
         await status
         assert status.done is True and status.success is True
 
-        status = signal.set(put_value, wait=True)
+        status = signal.set(put_value)
         await status
         assert status.done is True and status.success is True
 
@@ -283,7 +283,7 @@ async def test_tango_signal_rw(everything_device_trl: str, everything_signal_inf
         )
         await signal.connect()
         put_value = attr_data.random_value()
-        await signal.set(put_value, wait=True)
+        await signal.set(put_value)
         await assert_value(signal, put_value)
 
 
