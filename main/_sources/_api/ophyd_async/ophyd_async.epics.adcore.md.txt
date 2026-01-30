@@ -557,7 +557,7 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 ````{py:attribute} acquire
 :canonical: ophyd_async.epics.adcore._core_io.NDArrayBaseIO.acquire
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Acquire')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Acquire'), EpicsOptions(wait=non_zero)]
 :value: >
    None
 
@@ -743,7 +743,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDArrayBaseIO`
 
 ````{py:attribute} capture
 :canonical: ophyd_async.epics.adcore._core_io.NDFileIO.capture
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Capture')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Capture'), EpicsOptions(wait=non_zero)]
 :value: >
    None
 
@@ -1966,7 +1966,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
 
 ````{py:attribute} trigger
 :canonical: ophyd_async.epics.adcore._core_io.NDPluginCBIO.trigger
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Trigger')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Trigger'), EpicsOptions(wait=non_zero)]
 :value: >
    None
 
@@ -1977,7 +1977,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._core_io.NDPluginBaseIO`
 
 ````{py:attribute} capture
 :canonical: ophyd_async.epics.adcore._core_io.NDPluginCBIO.capture
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Capture')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Capture'), EpicsOptions(wait=non_zero)]
 :value: >
    None
 

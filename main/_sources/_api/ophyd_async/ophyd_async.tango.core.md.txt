@@ -181,7 +181,7 @@ Bases: {py:obj}`ophyd_async.tango.core._tango_transport.TangoProxy`
 
 ````
 
-````{py:method} put(value: object | None, wait: bool = True, timeout: float | None = None) -> ~ophyd_async.core.AsyncStatus | None
+````{py:method} put(value: object | None, timeout: float | None = None) -> ~ophyd_async.core.AsyncStatus | None
 :canonical: ophyd_async.tango.core._tango_transport.AttributeProxy.put
 :async:
 
@@ -326,7 +326,7 @@ Bases: {py:obj}`ophyd_async.tango.core._tango_transport.TangoProxy`
 
 ````
 
-````{py:method} put(value: object | None, wait: bool = True, timeout: float | None = None) -> ~ophyd_async.core.AsyncStatus | None
+````{py:method} put(value: object | None, timeout: float | None = None) -> ~ophyd_async.core.AsyncStatus | None
 :canonical: ophyd_async.tango.core._tango_transport.CommandProxy.put
 :async:
 
@@ -612,7 +612,7 @@ Bases: {py:obj}`ophyd_async.core.SignalBackend`\[{py:obj}`ophyd_async.core.Signa
 
 ````
 
-````{py:method} put(value: ~ophyd_async.core.SignalDatatypeT | None, wait=True, timeout=None) -> None
+````{py:method} put(value: ~ophyd_async.core.SignalDatatypeT | None, timeout=None) -> None
 :canonical: ophyd_async.tango.core._tango_transport.TangoSignalBackend.put
 :async:
 

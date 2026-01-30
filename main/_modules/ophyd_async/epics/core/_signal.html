@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.core._signal &#8212; ophyd-async 0.14.3.dev6+g5150bc883 documentation</title>
+    <title>ophyd_async.epics.core._signal &#8212; ophyd-async 0.14.3.dev7+g3dbafa8a9 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=6cf62e85"></script>
+    <script src="../../../../_static/documentation_options.js?v=17ab88a8"></script>
     <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev6+g5150bc883 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev6+g5150bc883 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev7+g3dbafa8a9 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev7+g3dbafa8a9 documentation - Home"/>
   
   
 </a></div>
@@ -467,6 +467,7 @@ window.addEventListener("load", () => mermaid.run());
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
@@ -480,7 +481,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">get_unique</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._util</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsSignalBackend</span><span class="p">,</span> <span class="n">get_pv_basename_and_field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._util</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsOptions</span><span class="p">,</span> <span class="n">EpicsSignalBackend</span><span class="p">,</span> <span class="n">get_pv_basename_and_field</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">EpicsProtocol</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
@@ -543,14 +544,18 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_epics_signal_backend</span><span class="p">(</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">datatype</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">read_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">write_pv</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">options</span><span class="p">:</span> <span class="n">EpicsOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalBackend</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an epics signal backend.&quot;&quot;&quot;</span>
     <span class="n">r_protocol</span><span class="p">,</span> <span class="n">r_pv</span> <span class="o">=</span> <span class="n">split_protocol_from_pv</span><span class="p">(</span><span class="n">read_pv</span><span class="p">)</span>
     <span class="n">w_protocol</span><span class="p">,</span> <span class="n">w_pv</span> <span class="o">=</span> <span class="n">split_protocol_from_pv</span><span class="p">(</span><span class="n">write_pv</span><span class="p">)</span>
     <span class="n">protocol</span> <span class="o">=</span> <span class="n">get_unique</span><span class="p">({</span><span class="n">read_pv</span><span class="p">:</span> <span class="n">r_protocol</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">:</span> <span class="n">w_protocol</span><span class="p">},</span> <span class="s2">&quot;protocols&quot;</span><span class="p">)</span>
+
     <span class="n">signal_backend_type</span> <span class="o">=</span> <span class="n">get_signal_backend_type</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">signal_backend_type</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">r_pv</span><span class="p">,</span> <span class="n">w_pv</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">signal_backend_type</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">r_pv</span><span class="p">,</span> <span class="n">w_pv</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="epics_signal_rw">
@@ -562,6 +567,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a `SignalRW` backed by 1 or 2 EPICS PVs.</span>
 
@@ -571,7 +577,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    :param name: The name of the signal (defaults to empty string)</span>
 <span class="sd">    :param timeout: A timeout to be used when reading (not connecting) this signal</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">_epics_signal_backend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span> <span class="ow">or</span> <span class="n">read_pv</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">_epics_signal_backend</span><span class="p">(</span>
+        <span class="n">datatype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span> <span class="ow">or</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">EpicsOptions</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">)</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">SignalRW</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">attempts</span><span class="o">=</span><span class="n">attempts</span><span class="p">)</span></div>
 
 
@@ -585,6 +593,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a `SignalRW` backed by 1 or 2 EPICS PVs, with a suffix on the readback pv.</span>
 
@@ -601,7 +610,7 @@ window.addEventListener("load", () => mermaid.run());
         <span class="n">read_pv</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">write_pv</span><span class="si">}{</span><span class="n">read_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="k">return</span> <span class="n">epics_signal_rw</span><span class="p">(</span>
-        <span class="n">datatype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">attempts</span><span class="o">=</span><span class="n">attempts</span>
+        <span class="n">datatype</span><span class="p">,</span> <span class="n">read_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">attempts</span><span class="o">=</span><span class="n">attempts</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="n">wait</span>
     <span class="p">)</span></div>
 
 
@@ -634,6 +643,7 @@ window.addEventListener("load", () => mermaid.run());
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SignalDatatypeT</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a `SignalW` backed by 1 EPICS PVs.</span>
 
@@ -642,7 +652,9 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    :param name: The name of the signal (defaults to empty string)</span>
 <span class="sd">    :param timeout: A timeout to be used when reading (not connecting) this signal</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">_epics_signal_backend</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">)</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">_epics_signal_backend</span><span class="p">(</span>
+        <span class="n">datatype</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">,</span> <span class="n">write_pv</span><span class="p">,</span> <span class="n">EpicsOptions</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">wait</span><span class="p">)</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">SignalW</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">attempts</span><span class="o">=</span><span class="n">attempts</span><span class="p">)</span></div>
 
 

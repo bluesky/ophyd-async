@@ -27,6 +27,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceFiller
     :summary:
     ```
+* - {py:obj}`DeviceAnnotation <ophyd_async.core._device_filler.DeviceAnnotation>`
+  - ```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceAnnotation
+    :summary:
+    ```
 * - {py:obj}`DeviceVector <ophyd_async.core._device.DeviceVector>`
   - ```{autodoc2-docstring} ophyd_async.core._device.DeviceVector
     :summary:
@@ -403,6 +407,10 @@
   - ```{autodoc2-docstring} ophyd_async.core._utils.wait_for_connection
     :summary:
     ```
+* - {py:obj}`non_zero <ophyd_async.core._utils.non_zero>`
+  - ```{autodoc2-docstring} ophyd_async.core._utils.non_zero
+    :summary:
+    ```
 * - {py:obj}`derived_signal_r <ophyd_async.core._derived_signal.derived_signal_r>`
   - ```{autodoc2-docstring} ophyd_async.core._derived_signal.derived_signal_r
     :summary:
@@ -645,6 +653,16 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._device_filler.Signal
 ````
 
 `````
+
+````{py:class} DeviceAnnotation
+:canonical: ophyd_async.core._device_filler.DeviceAnnotation
+
+Bases: {py:obj}`typing.Protocol`
+
+```{autodoc2-docstring} ophyd_async.core._device_filler.DeviceAnnotation
+```
+
+````
 
 `````{py:class} DeviceVector(children: ~collections.abc.Mapping[int, ~ophyd_async.core._device.DeviceT], name: str = '')
 :canonical: ophyd_async.core._device.DeviceVector
@@ -1118,7 +1136,7 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`\[{py:obj}`ophyd_async.core._sig
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalW
 ```
 
-````{py:method} set(value: ~ophyd_async.core._signal_backend.SignalDatatypeT, wait=True, timeout: ~ophyd_async.core._utils.CalculatableTimeout = CALCULATE_TIMEOUT) -> None
+````{py:method} set(value: ~ophyd_async.core._signal_backend.SignalDatatypeT, timeout: ~ophyd_async.core._utils.CalculatableTimeout = CALCULATE_TIMEOUT) -> None
 :canonical: ophyd_async.core._signal.SignalW.set
 :async:
 
@@ -1156,7 +1174,7 @@ Bases: {py:obj}`ophyd_async.core._signal.Signal`
 ```{autodoc2-docstring} ophyd_async.core._signal.SignalX
 ```
 
-````{py:method} trigger(wait=True, timeout: ~ophyd_async.core._utils.CalculatableTimeout = CALCULATE_TIMEOUT) -> None
+````{py:method} trigger(timeout: ~ophyd_async.core._utils.CalculatableTimeout = CALCULATE_TIMEOUT) -> None
 :canonical: ophyd_async.core._signal.SignalX.trigger
 :async:
 
@@ -1194,7 +1212,7 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.Signa
 
 ````
 
-````{py:method} put(value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None, wait: bool)
+````{py:method} put(value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None)
 :canonical: ophyd_async.core._signal_backend.SignalBackend.put
 :abstractmethod:
 :async:
@@ -1505,7 +1523,7 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} put(value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None, wait: bool) -> None
+````{py:method} put(value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None) -> None
 :canonical: ophyd_async.core._soft_signal_backend.SoftSignalBackend.put
 :async:
 
@@ -1652,7 +1670,7 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 
 ````
 
-````{py:method} put(value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None, wait: bool)
+````{py:method} put(value: ~ophyd_async.core._signal_backend.SignalDatatypeT | None)
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.put
 :async:
 
@@ -1742,7 +1760,7 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ```
 ````
 
-````{py:function} callback_on_mock_put(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], callback: ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT, bool], ~ophyd_async.core._signal_backend.SignalDatatypeT | None] | ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT, bool], ~collections.abc.Awaitable[~ophyd_async.core._signal_backend.SignalDatatypeT | None]])
+````{py:function} callback_on_mock_put(signal: ~ophyd_async.core._signal.Signal[~ophyd_async.core._signal_backend.SignalDatatypeT], callback: ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], ~ophyd_async.core._signal_backend.SignalDatatypeT | None] | ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeT], ~collections.abc.Awaitable[~ophyd_async.core._signal_backend.SignalDatatypeT | None]])
 :canonical: ophyd_async.core._mock_signal_utils.callback_on_mock_put
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.callback_on_mock_put
@@ -3071,6 +3089,13 @@ Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._utils.T`\]
 ```{autodoc2-docstring} ophyd_async.core._signal.Ignore
 ```
 
+````
+
+````{py:function} non_zero(value)
+:canonical: ophyd_async.core._utils.non_zero
+
+```{autodoc2-docstring} ophyd_async.core._utils.non_zero
+```
 ````
 
 ````{py:function} derived_signal_r(raw_to_derived: ~collections.abc.Callable[..., ~ophyd_async.core._signal_backend.SignalDatatypeT], derived_units: str | None = None, derived_precision: int | None = None, **raw_devices_and_constants: ~ophyd_async.core._device.Device | ~ophyd_async.core._signal_backend.Primitive) -> ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT]
