@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from functools import cached_property
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
@@ -16,6 +16,11 @@ from ._utils import Callback
 
 if TYPE_CHECKING:
     from ._device import LazyMock
+
+MockPutCallback = (
+    Callable[[SignalDatatypeT], SignalDatatypeT | None]
+    | Callable[[SignalDatatypeT], Awaitable[SignalDatatypeT | None]]
+)
 
 
 class MockSignalBackend(SignalBackend[SignalDatatypeT]):
@@ -42,13 +47,27 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
 
         # use existing Mock if provided
         self.mock = mock
+        self._mock_put_callback: MockPutCallback | None = None
         super().__init__(datatype=self.initial_backend.datatype)
+
+    def set_mock_put_callback(self, callback: MockPutCallback | None):
+        if "put_mock" in self.__dict__:
+            # put_mock cached property exists, so set the side effect on it
+            self.put_mock.side_effect = callback
+        else:
+            # put_mock doesn't exist, don't create it as that would be slow
+            # so just keep it internally
+            self._mock_put_callback = callback
 
     @cached_property
     def put_mock(self) -> AsyncMock:
         """Return the mock that will track calls to `put()`."""
         put_mock = AsyncMock(
-            name="put", spec=Callable, side_effect=lambda *_, **__: None
+            name="put",
+            spec=Callable,
+            side_effect=self._mock_put_callback
+            if self._mock_put_callback
+            else lambda v: None,
         )
         self.mock().attach_mock(put_mock, "put")
         return put_mock
