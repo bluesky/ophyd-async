@@ -47,5 +47,5 @@ async def test_when_prepared_eiger_bit_depth_is_passed_and_set_in_odin(detector)
 
     # Assert that odin datatype is set to the eiger bit depth during detector prepare
     get_mock_put(detector.odin.data_type).assert_called_once_with(
-        f"UInt{expected_datatype}", wait=True
+        f"UInt{expected_datatype}"
     )

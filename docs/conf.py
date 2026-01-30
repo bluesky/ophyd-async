@@ -167,6 +167,7 @@ obj_ignore = [
     "ophyd_async.testing._utils.T",
     "ophyd_async.sim._mirror.TwoJackRaw",
     "ophyd_async.sim._mirror.TwoJackDerived",
+    "non_zero",
     "0.1",
     "1.0",
     "bluesky.protocols.T_co",

@@ -122,16 +122,16 @@ async def test_setting_position():
     m = get_mock(inst)
     await inst.position.set(BeamstopPosition.OUT_OF_POSITION)
     assert m.mock_calls == [
-        call.position.put(BeamstopPosition.OUT_OF_POSITION, wait=True),
-        call.x.put(3, wait=True),
-        call.y.put(5, wait=True),
+        call.position.put(BeamstopPosition.OUT_OF_POSITION),
+        call.x.put(3),
+        call.y.put(5),
     ]
     m.reset_mock()
     await inst.position.set(BeamstopPosition.IN_POSITION)
     assert m.mock_calls == [
-        call.position.put(BeamstopPosition.IN_POSITION, wait=True),
-        call.x.put(0, wait=True),
-        call.y.put(0, wait=True),
+        call.position.put(BeamstopPosition.IN_POSITION),
+        call.x.put(0),
+        call.y.put(0),
     ]
 
 
@@ -247,7 +247,7 @@ async def test_set_derived_not_initialized():
         RuntimeError,
         match="Cannot put as no set_derived method given",
     ):
-        await sig._connector.backend.put(1.0, True)
+        await sig._connector.backend.put(1.0)
 
 
 async def test_derived_update_cached_reading_not_initialized(

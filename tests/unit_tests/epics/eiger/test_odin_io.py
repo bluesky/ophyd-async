@@ -1,7 +1,7 @@
 import asyncio
 from asyncio import Event
 from pathlib import Path
-from unittest.mock import ANY, AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -48,8 +48,8 @@ async def test_when_open_called_then_file_correctly_set(
 
     await writer.open(ODIN_DETECTOR_NAME)
 
-    get_mock_put(driver.file_path).assert_called_once_with(str(tmp_path), wait=ANY)
-    get_mock_put(driver.file_name).assert_called_once_with(expected_filename, wait=ANY)
+    get_mock_put(driver.file_path).assert_called_once_with(str(tmp_path))
+    get_mock_put(driver.file_name).assert_called_once_with(expected_filename)
 
 
 async def test_when_open_called_then_all_expected_signals_set(
@@ -60,10 +60,10 @@ async def test_when_open_called_then_all_expected_signals_set(
 
     await writer.open(ODIN_DETECTOR_NAME)
 
-    get_mock_put(driver.data_type).assert_called_once_with("UInt16", wait=ANY)
-    get_mock_put(driver.num_to_capture).assert_called_once_with(0, wait=ANY)
+    get_mock_put(driver.data_type).assert_called_once_with("UInt16")
+    get_mock_put(driver.num_to_capture).assert_called_once_with(0)
 
-    get_mock_put(driver.capture).assert_called_once_with(Writing.CAPTURE, wait=ANY)
+    get_mock_put(driver.capture).assert_called_once_with(Writing.CAPTURE)
 
 
 async def test_bit_depth_is_passed_before_open_and_set_to_data_type_after_open(
@@ -75,9 +75,7 @@ async def test_bit_depth_is_passed_before_open_and_set_to_data_type_after_open(
     assert await writer._detector_bit_depth().get_value() == EIGER_BIT_DEPTH
     assert await driver.data_type.get_value() == ""
     await writer.open(ODIN_DETECTOR_NAME)
-    get_mock_put(driver.data_type).assert_called_once_with(
-        f"UInt{EIGER_BIT_DEPTH}", wait=ANY
-    )
+    get_mock_put(driver.data_type).assert_called_once_with(f"UInt{EIGER_BIT_DEPTH}")
 
 
 async def test_given_data_shape_set_when_open_called_then_describe_has_correct_shape(
@@ -97,7 +95,7 @@ async def test_when_closed_then_data_capture_turned_off(
 ):
     driver, writer = odin_driver_and_writer
     await writer.close()
-    get_mock_put(driver.capture).assert_called_once_with(Writing.DONE, wait=ANY)
+    get_mock_put(driver.capture).assert_called_once_with(Writing.DONE)
 
 
 @pytest.mark.asyncio
