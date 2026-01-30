@@ -5,15 +5,17 @@ import sys
 from pathlib import Path
 
 from tango.test_context import MultiDeviceTestContext
-'''
+
+"""
 This file provides a mechanism for creating a Tango demo device server executed as a
 python subprocess.
 The demo device server is run up using the Tango MultiDeviceTestContext which allows it
 to run standalone without a Tango Database.  Multiple Tango Devices can be loaded into
 the single device server instance.
-'''
+"""
 
 BYTES_TO_READ = 2048
+
 
 class TangoSubprocessDeviceServer:
     def __init__(self, args):

@@ -1,17 +1,17 @@
 import asyncio
+import math
 import time
 from enum import IntEnum
-import math
-from typing import Type
 
 import numpy as np
 from tango import AttrWriteType, DevState, GreenMode
-from tango.server import Device, attribute, command, device_property
 from tango.asyncio import DeviceProxy
+from tango.server import Device, attribute, command, device_property
 
 
 class DemoMotorDevice(Device):
     """Demo tango moving device."""
+
     green_mode = GreenMode.Asyncio
     _position = 0.0
     _setpoint = 0.0
@@ -75,6 +75,7 @@ class Mode(IntEnum):
 
 class DemoMultiChannelDetectorDevice(Device):
     """Demo tango counting device."""
+
     channels = device_property(dtype=int, default_value=0)
 
     green_mode = GreenMode.Asyncio
@@ -119,7 +120,7 @@ class DemoMultiChannelDetectorDevice(Device):
     @command
     async def start(self):
         await self._acquisition()
-        #asyncio.create_task(self._acquisition())
+        # asyncio.create_task(self._acquisition())
 
     @command
     async def reset(self):
@@ -144,14 +145,15 @@ class DemoMultiChannelDetectorDevice(Device):
 
 class DemoPointDetectorChannelDevice(Device):
     """Demo tango counting device."""
-    channel:device_property = device_property(dtype=int, default_value=0)
+
+    channel: device_property = device_property(dtype=int, default_value=0)
 
     green_mode = GreenMode.Asyncio
     _value = 0
     _locator_x = ""
     _locator_y = ""
     _elapsed = 0.0
-    _dp_x: Device|None = None
+    _dp_x: Device | None = None
     _dp_y = None
     _mode: Mode = Mode.LOW
     _energy_modes = [10, 100]
@@ -183,9 +185,17 @@ class DemoPointDetectorChannelDevice(Device):
 
     async def write_elapsed(self, value: float):
         self._elapsed = value
-        x:float = await self._dp_x.position # type: ignore
-        y:float = await self._dp_y.position # type: ignore
-        self._value = math.floor((math.sin(x)**self.channel+math.cos(x*y+self._energy_modes[self._mode])+2)*2500*self._elapsed) # type: ignore
+        x: float = await self._dp_x.position  # type: ignore
+        y: float = await self._dp_y.position  # type: ignore
+        self._value = math.floor(
+            (
+                math.sin(x) ** self.channel
+                + math.cos(x * y + self._energy_modes[self._mode])
+                + 2
+            )
+            * 2500
+            * self._elapsed
+        )  # type: ignore
 
     @command
     async def connect_devices(self):
