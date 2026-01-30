@@ -283,12 +283,8 @@ class Motor(
 
         await self.check_motor_limit(old_position, new_position)
 
-        async with self.user_setpoint.set(
-            new_position, wait=True, timeout=timeout
-        ) as move_status:
-            async for current_position in observe_value(
-                self.user_readback, done_status=move_status
-            ):
+        async with self.user_setpoint.set(new_position, wait=True, timeout=timeout):
+            async for current_position in observe_value(self.user_readback):
                 yield WatcherUpdate(
                     current=current_position,
                     initial=old_position,

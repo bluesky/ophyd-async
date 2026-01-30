@@ -1,5 +1,6 @@
 import asyncio
 import re
+import time
 import traceback
 from asyncio import CancelledError
 from unittest.mock import Mock
@@ -137,6 +138,42 @@ async def test_async_status_str_for_failing_coroutine(failing_coroutine):
         "ValueError",
     ]:
         assert comment_chunk in str(status)
+
+
+async def test_status_complete_before_loop_complete():
+    vals = []
+    start = time.monotonic()
+    async with AsyncStatus(asyncio.sleep(0.01)):
+        for i in range(2):
+            vals.append(i)
+            await asyncio.sleep(1)
+    end = time.monotonic()
+    assert vals == [0]
+    assert end - start == pytest.approx(0.01, abs=0.1)
+
+
+async def test_loop_complete_before_status_complete():
+    vals = []
+    start = time.monotonic()
+    async with AsyncStatus(asyncio.sleep(1)):
+        for i in range(2):
+            vals.append(i)
+            await asyncio.sleep(0.01)
+    end = time.monotonic()
+    assert vals == [0, 1]
+    assert end - start == pytest.approx(0.02, abs=0.1)
+
+
+async def test_error_raised_from_with_status():
+    vals = []
+    start = time.monotonic()
+    with pytest.raises(ValueError, match="breaking out"):
+        async with AsyncStatus(asyncio.sleep(1)):
+            vals.append(0)
+            raise ValueError("breaking out")
+    end = time.monotonic()
+    assert vals == [0]
+    assert end - start == pytest.approx(0, abs=0.1)
 
 
 class FailingMovable(Movable, Device):

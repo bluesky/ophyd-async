@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import functools
 import time
 from asyncio import CancelledError
@@ -38,12 +39,15 @@ class AsyncStatusBase(Status, Awaitable[None]):
                     ) from e
 
             self.task = asyncio.create_task(wait_with_error_message(awaitable))
+            # There is a small chance we could be cancelled before
+            # wait_with_error_message starts.
             # Avoid complaints about awaitable not awaited if task is
             # pre-emptively cancelled, by ensuring it is always disposed
             self.task.add_done_callback(lambda _: awaitable.close())
         self.task.add_done_callback(self._run_callbacks)
         self._callbacks: list[Callback[Status]] = []
         self._name = name
+        self._cancelled_error_ok = False
 
     def __await__(self):
         return self.task.__await__()
@@ -103,12 +107,34 @@ class AsyncStatusBase(Status, Awaitable[None]):
         )
 
     async def __aenter__(self):
+        # Grab the calling task, the one that is doing `with status``
+        calling_task = asyncio.current_task()
+        if calling_task is None:
+            raise RuntimeError("Can only use in a context manager inside a task")
+
+        def _cancel_calling_task(fut: asyncio.Future, task=calling_task):
+            # If no-one cancelled our child task, then it is expected
+            # that we want to break out of the calling task with block
+            # so mark that the CancelledError should be suppressed on exit
+            self._cancelled_error_ok = not fut.cancelled()
+            task.cancel()
+
+        # When our child task is done, then cancel the calling task
+        self.task.add_done_callback(_cancel_calling_task)
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
-        if isinstance(exc, CancelledError):
-            self.task.cancel()
-        return False  # re-raise any error that was thrown inside the async with
+        self.task.cancel()
+        # Need to await the task to suppress teardown warnings, but
+        # we know it will raise CancelledError as we just cancelled it
+        with contextlib.suppress(CancelledError):
+            await self.task
+        if exc_type is CancelledError and self._cancelled_error_ok:
+            # Suppress error as we cancelled it in _cancel_calling_task
+            return True
+        else:
+            # Raise error as we didn't cause it
+            return False
 
     __str__ = __repr__
 
