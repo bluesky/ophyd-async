@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Sequence
 from typing import get_origin
 
@@ -8,7 +9,6 @@ from ophyd_async.core import (
     Array1D,
     Command,
     DeviceMock,
-    ExecutionError,
     MockCommandBackend,
     SoftCommandBackend,
     StrictEnum,
@@ -168,7 +168,7 @@ async def test_execution_error_wrapping():
     cmd = Command(backend, name="test_cmd")
     await cmd.connect()
 
-    with pytest.raises(ExecutionError, match="Command execution failed: Boom"):
+    with pytest.raises(ValueError, match="Boom"):
         await cmd()
 
 
@@ -188,3 +188,15 @@ async def test_async_return_type_validation():
         r" callback return type <class 'str'>",
     ):
         SoftCommandBackend([], int, async_ret_wrong)
+
+
+async def test_command_logging(caplog):
+    caplog.set_level(logging.DEBUG)
+    cmd = soft_command_rw([int], str, lambda x: str(x), name="mycmd")
+    await cmd.connect()
+    assert "Connecting to softcmd://mycmd" in caplog.text
+
+    res = await cmd(42)
+    assert res == "42"
+    assert "Calling command mycmd with args (42,) and kwargs {}" in caplog.text
+    assert "Command mycmd returned 42" in caplog.text

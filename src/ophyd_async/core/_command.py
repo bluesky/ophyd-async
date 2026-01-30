@@ -17,27 +17,18 @@ from typing import (
 from unittest.mock import AsyncMock
 
 from ._device import Device, DeviceConnector, LazyMock
-from ._utils import DEFAULT_TIMEOUT
+from ._utils import DEFAULT_TIMEOUT, NotConnectedError, T
+
+
+async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
+    try:
+        return await asyncio.wait_for(coro, timeout)
+    except TimeoutError as exc:
+        raise TimeoutError(source) from exc
+
 
 P = ParamSpec("P")
 T_co = TypeVar("T_co", covariant=True)
-T = TypeVar("T")
-
-
-class CommandError(Exception):
-    """Base class for all Command related errors."""
-
-
-class ConnectionError(CommandError):
-    """Raised when a Command cannot connect to its backend."""
-
-
-class ConnectionTimeoutError(ConnectionError):
-    """Raised when a Command connection times out."""
-
-
-class ExecutionError(CommandError):
-    """Raised when a Command fails during execution."""
 
 
 class CommandBackend(Protocol[P, T_co]):
@@ -68,7 +59,14 @@ class CommandConnector(DeviceConnector):
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Connect the backend to real hardware."""
-        await self.backend.connect(timeout)
+        source = self.backend.source(device.name, read=True)
+        device.log.debug(f"Connecting to {source}")
+        try:
+            await self.backend.connect(timeout)
+        except TimeoutError as exc:
+            raise NotConnectedError(f"Timeout connecting to {source}") from exc
+        except Exception as exc:
+            raise NotConnectedError(f"Error connecting to {source}: {exc}") from exc
 
 
 class Command(Device, Generic[P, T]):
@@ -97,17 +95,14 @@ class Command(Device, Generic[P, T]):
 
     async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Call the command."""
-        coro = self._connector.backend.call(*args, **kwargs)
-        try:
-            return await asyncio.wait_for(coro, self._timeout)
-        except TimeoutError as exc:
-            raise ConnectionTimeoutError(
-                f"Timeout calling {self.name} after {self._timeout}s"
-            ) from exc
-        except (TypeError, CommandError):
-            raise
-        except Exception as exc:
-            raise ExecutionError(f"Command execution failed: {exc}") from exc
+        self.log.debug(
+            f"Calling command {self.name} with args {args} and kwargs {kwargs}"
+        )
+        result = await _wait_for(
+            self._connector.backend.call(*args, **kwargs), self._timeout, self.source
+        )
+        self.log.debug(f"Command {self.name} returned {result}")
+        return result
 
 
 def soft_command_r(
@@ -297,16 +292,11 @@ class SoftCommandBackend(CommandBackend[P, T]):
                     )
 
         async with self._lock:
-            try:
-                result = self._command_cb(*args, **kwargs)
-                if inspect.isawaitable(result):
-                    result = await result
-                self._last_return_value = result
-                return cast(T, result)
-            except (TypeError, CommandError):
-                raise
-            except Exception as exc:
-                raise ExecutionError(f"Command execution failed: {exc}") from exc
+            result = self._command_cb(*args, **kwargs)
+            if inspect.isawaitable(result):
+                result = await result
+            self._last_return_value = result
+            return cast(T, result)
 
     def _async_lock(self):
         return self._lock
@@ -333,7 +323,7 @@ class MockCommandBackend(CommandBackend[P, T]):
 
     async def connect(self, timeout: float):
         """Mock backend does not support real connection."""
-        raise ConnectionError("It is not possible to connect a MockCommandBackend")
+        raise NotConnectedError("It is not possible to connect a MockCommandBackend")
 
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Call the mock command."""
