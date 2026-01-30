@@ -27,12 +27,14 @@ ds = start_device_server_subprocess(prefix, num_channels=3)
 # connected and named at the end of the with block
 with init_devices():
     # Create a sample stage with X and Y motors
-    stage = demo.DemoStage(ds.trls["test/device/X"],ds.trls["test/device/Y"])
+    stage = demo.DemoStage(ds.trls["test/device/X"], ds.trls["test/device/Y"])
     # Create a multi channel counter with the same number
     # of counters as the IOC
-    pdet = demo.DemoPointDetector(ds.trls["test/device/DET"], 
-    [
-        ds.trls["test/device/C1"],
-        ds.trls["test/device/C2"],
-        ds.trls["test/device/C3"]
-    ])
+    pdet = demo.DemoPointDetector(
+        ds.trls["test/device/DET"],
+        [
+            ds.trls["test/device/C1"],
+            ds.trls["test/device/C2"],
+            ds.trls["test/device/C3"],
+        ],
+    )

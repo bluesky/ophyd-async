@@ -11,14 +11,14 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalX,
+    StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.core import StandardReadable
-from ophyd_async.tango.core import DevStateEnum, TangoPolling, TangoDevice
+from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
 
 
 class DemoMotor(TangoDevice, StandardReadable, Movable, Stoppable):

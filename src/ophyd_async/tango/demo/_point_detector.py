@@ -9,9 +9,9 @@ from ophyd_async.core import (
     SignalR,
     SignalRW,
     SignalX,
+    StandardReadable,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.core import StandardReadable
 from ophyd_async.tango.core import TangoDevice
 
 from ._point_detector_channel import DemoPointDetectorChannel
@@ -31,7 +31,7 @@ class DemoPointDetector(TangoDevice, StandardReadable, Triggerable):
             i = 1
             for channel_trl in channel_trls:
                 device_vector[i] = DemoPointDetectorChannel(channel_trl)
-                i+=1
+                i += 1
             self.channel = DeviceVector(device_vector)
         super().__init__(trl, name=name)
 

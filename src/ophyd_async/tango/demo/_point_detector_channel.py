@@ -2,8 +2,7 @@ from typing import Annotated as A
 
 from ophyd_async.core import SignalR, SignalRW, StandardReadable, StrictEnum
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.core import StandardReadable
-from ophyd_async.tango.core import TangoPolling, TangoDevice
+from ophyd_async.tango.core import TangoDevice, TangoPolling
 
 
 class EnergyMode(StrictEnum):
@@ -21,4 +20,3 @@ class DemoPointDetectorChannel(TangoDevice, StandardReadable):
 
     value: A[SignalR[int], TangoPolling(0.1, 0.1, 0.1), Format.HINTED_UNCACHED_SIGNAL]
     mode: A[SignalRW[EnergyMode], TangoPolling(0.1, 0.1, 0.1), Format.CONFIG_SIGNAL]
-
