@@ -13,15 +13,13 @@ from typing import (
     Union,
     cast,
     get_args,
-    get_origin,
-    get_type_hints,
     runtime_checkable,
 )
 
 from ._device import Device, DeviceConnector, DeviceVector
 from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
-from ._utils import get_origin_class
+from ._utils import cached_get_origin, cached_get_type_hints, get_origin_class
 
 SignalBackendT = TypeVar("SignalBackendT", bound=SignalBackend)
 DeviceConnectorT = TypeVar("DeviceConnectorT", bound=DeviceConnector)
@@ -117,9 +115,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         # https://github.com/python/cpython/issues/124840
         cls = type(self._device)
         # Get hints without Annotated for determining types
-        hints = get_type_hints(cls)
+        hints = cached_get_type_hints(cls)
         # Get hints with Annotated for wrapping signals and backends
-        extra_hints = get_type_hints(cls, include_extras=True)
+        extra_hints = cached_get_type_hints(cls, include_extras=True)
         for attr_name, annotation in hints.items():
             if annotation is Ignore:
                 self.ignored_signals.add(attr_name)
@@ -128,7 +126,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             args = get_args(annotation)
 
             if (
-                get_origin(annotation) is Union
+                cached_get_origin(annotation) is Union
                 and types.NoneType in args
                 and len(args) == 2
             ):

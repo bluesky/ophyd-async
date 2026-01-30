@@ -1,33 +1,21 @@
 from abc import abstractmethod
 from collections.abc import Sequence
-from typing import Generic, TypedDict, TypeVar, get_origin
+from typing import Generic, TypedDict, TypeVar
 
 import numpy as np
 from bluesky.protocols import Reading
 from event_model import DataKey, Dtype, Limits
 
-from ophyd_async.core._utils import (
+from ._datatypes import Array1D, Table
+from ._utils import (
     Callback,
     EnumTypes,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
+    cached_get_origin,
     get_enum_cls,
 )
-
-from ._table import Table
-
-DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
-"""A numpy dtype like [](#numpy.float64)."""
-
-
-# To be a 1D array shape should really be tuple[int], but np.array()
-# currently produces tuple[int, ...] even when it has 1D input args
-# https://github.com/numpy/numpy/issues/28077#issuecomment-2566485178
-Array1D = np.ndarray[tuple[int, ...], np.dtype[DTypeScalar_co]]
-"""A type alias for a 1D numpy array with a specific scalar data type.
-
-E.g. `Array1D[np.float64]` is a 1D numpy array of 64-bit floats."""
 
 Primitive = bool | int | float | str
 SignalDatatype = (
@@ -91,7 +79,7 @@ class SignalBackend(Generic[SignalDatatypeT]):
         """Connect to underlying hardware."""
 
     @abstractmethod
-    async def put(self, value: SignalDatatypeT | None, wait: bool):
+    async def put(self, value: SignalDatatypeT | None):
         """Put a value to the PV, if wait then wait for completion."""
 
     @abstractmethod
@@ -142,7 +130,7 @@ class SignalMetadata(TypedDict, total=False):
 def _datakey_dtype(datatype: type[SignalDatatype]) -> Dtype:
     if (
         datatype is np.ndarray
-        or get_origin(datatype) in (Sequence, np.ndarray)
+        or cached_get_origin(datatype) in (Sequence, np.ndarray)
         or issubclass(datatype, Table)
     ):
         return "array"
@@ -161,7 +149,7 @@ def _datakey_dtype_numpy(
         # The value already has a dtype, use that
         return value.dtype
     elif (
-        get_origin(datatype) is Sequence
+        cached_get_origin(datatype) is Sequence
         or datatype is str
         or issubclass(datatype, EnumTypes)
     ):

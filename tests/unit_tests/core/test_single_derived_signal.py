@@ -122,16 +122,16 @@ async def test_setting_position():
     m = get_mock(inst)
     await inst.position.set(BeamstopPosition.OUT_OF_POSITION)
     assert m.mock_calls == [
-        call.position.put(BeamstopPosition.OUT_OF_POSITION, wait=True),
-        call.x.put(3, wait=True),
-        call.y.put(5, wait=True),
+        call.position.put(BeamstopPosition.OUT_OF_POSITION),
+        call.x.put(3),
+        call.y.put(5),
     ]
     m.reset_mock()
     await inst.position.set(BeamstopPosition.IN_POSITION)
     assert m.mock_calls == [
-        call.position.put(BeamstopPosition.IN_POSITION, wait=True),
-        call.x.put(0, wait=True),
-        call.y.put(0, wait=True),
+        call.position.put(BeamstopPosition.IN_POSITION),
+        call.x.put(0),
+        call.y.put(0),
     ]
 
 
@@ -247,7 +247,7 @@ async def test_set_derived_not_initialized():
         RuntimeError,
         match="Cannot put as no set_derived method given",
     ):
-        await sig._connector.backend.put(1.0, True)
+        await sig._connector.backend.put(1.0)
 
 
 async def test_derived_update_cached_reading_not_initialized(
@@ -287,7 +287,7 @@ async def test_set_derived_callback_already_set(derived_signal_backend: SignalBa
         derived_signal_backend.set_callback(mock_callback)
 
 
-@patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
+@patch("ophyd_async.core._derived_signal.cached_get_type_hints", return_value={})
 def test_get_return_datatype_no_type(movable_beamstop: MovableBeamstop):
     with pytest.raises(
         TypeError, match=re.escape("does not have a type hint for it's return value")
@@ -295,7 +295,7 @@ def test_get_return_datatype_no_type(movable_beamstop: MovableBeamstop):
         derived_signal_r(movable_beamstop._get_position)
 
 
-@patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
+@patch("ophyd_async.core._derived_signal.cached_get_type_hints", return_value={})
 def test_get_first_arg_datatype_no_type(movable_beamstop: MovableBeamstop):
     with pytest.raises(
         TypeError, match=re.escape("does not have a type hinted argument")

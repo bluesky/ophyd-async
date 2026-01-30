@@ -1,9 +1,9 @@
-from collections.abc import Awaitable, Callable, Iterable, Iterator
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from unittest.mock import AsyncMock, Mock
 
 from ._device import Device, DeviceMock
-from ._mock_signal_backend import MockSignalBackend
+from ._mock_signal_backend import MockPutCallback, MockSignalBackend
 from ._signal import Signal, SignalConnector, SignalR
 from ._signal_backend import SignalDatatypeT
 
@@ -109,16 +109,12 @@ def set_mock_values(
 
 
 @contextmanager
-def _unset_side_effect_cm(put_mock: AsyncMock):
+def _unset_side_effect_cm(backend: MockSignalBackend):
     yield
-    put_mock.side_effect = None
+    backend.set_mock_put_callback(None)
 
 
-def callback_on_mock_put(
-    signal: Signal[SignalDatatypeT],
-    callback: Callable[[SignalDatatypeT, bool], SignalDatatypeT | None]
-    | Callable[[SignalDatatypeT, bool], Awaitable[SignalDatatypeT | None]],
-):
+def callback_on_mock_put(signal: Signal[SignalDatatypeT], callback: MockPutCallback):
     """For setting a callback when a backend is put to.
 
     Can either be used in a context, with the callback being unset on exit, or
@@ -132,8 +128,8 @@ def callback_on_mock_put(
         context.
     """
     backend = _get_mock_signal_backend(signal)
-    backend.put_mock.side_effect = callback
-    return _unset_side_effect_cm(backend.put_mock)
+    backend.set_mock_put_callback(callback)
+    return _unset_side_effect_cm(backend)
 
 
 def set_mock_put_proceeds(signal: Signal, proceeds: bool):

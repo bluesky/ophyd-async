@@ -1,13 +1,25 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import Annotated, Any, TypeVar, get_origin, get_type_hints
+from typing import Annotated, Any, TypeVar
 
 import numpy as np
 from pydantic import ConfigDict, Field, model_validator
 from pydantic_numpy.helper.annotation import NpArrayPydanticAnnotation
 
-from ._utils import ConfinedModel, get_dtype
+from ._utils import ConfinedModel, cached_get_origin, cached_get_type_hints, get_dtype
+
+DTypeScalar_co = TypeVar("DTypeScalar_co", covariant=True, bound=np.generic)
+"""A numpy dtype like [](#numpy.float64)."""
+
+
+# To be a 1D array shape should really be tuple[int], but np.array()
+# currently produces tuple[int, ...] even when it has 1D input args
+# https://github.com/numpy/numpy/issues/28077#issuecomment-2566485178
+Array1D = np.ndarray[tuple[int, ...], np.dtype[DTypeScalar_co]]
+"""A type alias for a 1D numpy array with a specific scalar data type.
+
+E.g. `Array1D[np.float64]` is a 1D numpy array of 64-bit floats."""
 
 TableSubclass = TypeVar("TableSubclass", bound="Table")
 
@@ -75,11 +87,8 @@ class Table(ConfinedModel):
         # ...but forbid extra in subclasses so it gets validated
         cls.model_config = ConfigDict(validate_assignment=True, extra="forbid")
         # Change fields to have the correct annotations
-        # TODO: refactor so we don't need this to break circular imports
-        from ._signal_backend import Array1D
-
-        for k, anno in get_type_hints(cls, localns={"Array1D": Array1D}).items():
-            if get_origin(anno) is np.ndarray:
+        for k, anno in cached_get_type_hints(cls).items():
+            if cached_get_origin(anno) is np.ndarray:
                 dtype = get_dtype(anno)
                 new_anno = Annotated[
                     anno,
@@ -88,7 +97,7 @@ class Table(ConfinedModel):
                     ),
                     Field(default_factory=_make_default_factory(dtype)),
                 ]
-            elif get_origin(anno) is Sequence:
+            elif cached_get_origin(anno) is Sequence:
                 new_anno = Annotated[anno, Field(default_factory=list)]
             else:
                 raise TypeError(f"Cannot use annotation {anno} in a Table")
@@ -156,7 +165,7 @@ class Table(ConfinedModel):
             raise AssertionError(f"Cannot construct Table from {data}")
         for field_name, field_value in cls.model_fields.items():
             if (
-                get_origin(field_value.annotation) is np.ndarray
+                cached_get_origin(field_value.annotation) is np.ndarray
                 and field_value.annotation
                 and field_name in data_dict
             ):
