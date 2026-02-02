@@ -114,12 +114,12 @@ class AsyncStatusBase(Status, Awaitable[None]):
         if calling_task is None:
             raise RuntimeError("Can only use in a context manager inside a task")
 
-        def _cancel_calling_task(fut: asyncio.Future, task=calling_task):
+        def _cancel_calling_task(task: asyncio.Task, calling_task=calling_task):
             # If no-one cancelled our child task, then it is expected
             # that we want to break out of the calling task with block
             # so mark that the CancelledError should be suppressed on exit
-            self._cancelled_error_ok = not fut.cancelled()
-            task.cancel()
+            self._cancelled_error_ok = not task.cancelled()
+            calling_task.cancel()
 
         # When our child task is done, then cancel the calling task
         self.task.add_done_callback(_cancel_calling_task)
@@ -174,6 +174,10 @@ class AsyncStatus(AsyncStatusBase):
             await process_step(i)
         # Loop completes, long_operation() is cancelled
     ```
+
+    Note that the body of the with statement will only break at a suspension
+    point like `async for` or `await`, so body code without these suspension
+    points will continue even if the status completes.
     """
 
     @classmethod
