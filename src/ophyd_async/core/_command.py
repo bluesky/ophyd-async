@@ -17,7 +17,12 @@ from typing import (
 from unittest.mock import AsyncMock
 
 from ._device import Device, DeviceConnector, LazyMock
-from ._utils import DEFAULT_TIMEOUT, NotConnectedError, T
+from ._status import AsyncStatus
+from ._utils import (
+    DEFAULT_TIMEOUT,
+    NotConnectedError,
+    T,
+)
 
 
 async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
@@ -43,7 +48,7 @@ class CommandBackend(Protocol[P, T_co]):
         """Connect to underlying hardware."""
 
     @abstractmethod
-    async def call(self, *args: P.args, **kwargs: P.kwargs) -> T_co:
+    async def trigger(self, *args: P.args, **kwargs: P.kwargs) -> T_co:
         """Execute the command and return its result."""
 
 
@@ -70,10 +75,10 @@ class CommandConnector(DeviceConnector):
 
 
 class Command(Device, Generic[P, T]):
-    """A Device that can be called to execute a command.
+    """A Device that can be triggered to execute a command.
 
     :param backend: The backend for executing the command.
-    :param timeout: The default timeout for calling the command.
+    :param timeout: The default timeout for triggering the command.
     :param name: The name of the command.
     """
 
@@ -93,13 +98,12 @@ class Command(Device, Generic[P, T]):
         """Returns the source of the command."""
         return self._connector.backend.source(self.name)
 
-    async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Call the command."""
-        self.log.debug(
-            f"Calling command {self.name} with args {args} and kwargs {kwargs}"
-        )
+    @AsyncStatus.wrap
+    async def trigger(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        """Trigger the command and return a status saying when it's done."""
+        self.log.debug(f"Triggering command {self.name}")
         result = await _wait_for(
-            self._connector.backend.call(*args, **kwargs), self._timeout, self.source
+            self._connector.backend.trigger(*args, **kwargs), self._timeout, self.source
         )
         self.log.debug(f"Command {self.name} returned {result}")
         return result
@@ -181,7 +185,7 @@ class SoftCommandBackend(CommandBackend[P, T]):
         """No-op for SoftCommandBackend."""
         pass
 
-    async def call(self, *args: P.args, **kwargs: P.kwargs) -> T:
+    async def trigger(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute the configured callback and return its result."""
         try:
             bound = self._sig.bind(*args, **kwargs)
@@ -221,12 +225,12 @@ class MockCommandBackend(CommandBackend[P, T]):
         self._mock = mock
 
         async_mock = AsyncMock()
-        self.call_mock: Callable[P, Awaitable[T]] = cast(
+        self.trigger_mock: Callable[P, Awaitable[T]] = cast(
             Callable[P, Awaitable[T]], async_mock
         )
 
         # Attach to the device mock
-        self._mock().attach_mock(async_mock, "call")
+        self._mock().attach_mock(async_mock, "trigger")
 
     def source(self, name: str) -> str:
         """Return the source of the mocked command."""
@@ -236,6 +240,7 @@ class MockCommandBackend(CommandBackend[P, T]):
         """Mock backend does not support real connection."""
         raise NotConnectedError("It is not possible to connect a MockCommandBackend")
 
-    async def call(self, *args: P.args, **kwargs: P.kwargs) -> T:
+    async def trigger(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Call the mock command."""
-        return await self.call_mock(*args, **kwargs)
+        result = await self.trigger_mock(*args, **kwargs)
+        return cast(T, result)

@@ -297,5 +297,5 @@ __all__ = [
     "CommandConnector",
     "MockCommandBackend",
     "SoftCommandBackend",
-    "soft_command"
+    "soft_command",
 ]
