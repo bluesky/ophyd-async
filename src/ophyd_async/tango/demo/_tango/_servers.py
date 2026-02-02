@@ -15,13 +15,12 @@ class DemoMotorDevice(Device):
     green_mode = GreenMode.Asyncio
     _position = 0.0
     _setpoint = 0.0
-    _velocity = 0.5
-    _acceleration = 0.5
-    _precision = 0.1
+    _velocity = 1.0
+    _acceleration = 1.0
     _stop = False
     DEVICE_CLASS_INITIAL_STATE = DevState.ON
 
-    @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
+    @attribute(dtype=float, access=AttrWriteType.READ_WRITE, format="%6.3f")
     async def position(self):
         return self._position
 
@@ -58,13 +57,13 @@ class DemoMotorDevice(Device):
             if self._stop:
                 self._stop = False
                 break
+            if abs(self._position - new_position) < abs(self._velocity * step):
+                self._position = new_position
+                break
             if self._position < new_position:
                 self._position = self._position + self._velocity * step
             else:
                 self._position = self._position - self._velocity * step
-            if abs(self._position - new_position) < self._precision:
-                self._position = new_position
-                break
             await asyncio.sleep(step)
 
 

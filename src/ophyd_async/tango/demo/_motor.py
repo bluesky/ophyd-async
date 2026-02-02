@@ -43,7 +43,8 @@ class DemoMotor(TangoDevice, StandardReadable, Movable, Stoppable):
     async def set(self, value: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT):
         self._set_success = True
         (old_position, velocity) = await asyncio.gather(
-            self.position.get_value(), self.velocity.get_value()
+            self.position.get_value(),
+            self.velocity.get_value(),
         )
         # TODO: check whether Tango does work with negative velocity
         if timeout is CALCULATE_TIMEOUT and velocity == 0:
