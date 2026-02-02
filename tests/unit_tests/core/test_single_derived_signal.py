@@ -287,7 +287,7 @@ async def test_set_derived_callback_already_set(derived_signal_backend: SignalBa
         derived_signal_backend.set_callback(mock_callback)
 
 
-@patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
+@patch("ophyd_async.core._derived_signal.cached_get_type_hints", return_value={})
 def test_get_return_datatype_no_type(movable_beamstop: MovableBeamstop):
     with pytest.raises(
         TypeError, match=re.escape("does not have a type hint for it's return value")
@@ -295,7 +295,7 @@ def test_get_return_datatype_no_type(movable_beamstop: MovableBeamstop):
         derived_signal_r(movable_beamstop._get_position)
 
 
-@patch("ophyd_async.core._derived_signal.get_type_hints", return_value={})
+@patch("ophyd_async.core._derived_signal.cached_get_type_hints", return_value={})
 def test_get_first_arg_datatype_no_type(movable_beamstop: MovableBeamstop):
     with pytest.raises(
         TypeError, match=re.escape("does not have a type hinted argument")
