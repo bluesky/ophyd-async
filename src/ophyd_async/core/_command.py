@@ -107,84 +107,71 @@ class Command(Device, Generic[P, T]):
 
 def soft_command(
     command_cb: Callable[P, T | Awaitable[T]],
-    command_args: Sequence[type] | None = None,
-    command_return: type[T] | None = None,
     name: str = "",
     timeout: float | None = DEFAULT_TIMEOUT,
 ) -> Command[P, T]:
     """Create a Command with a SoftCommandBackend.
 
-    :param command_cb: The callback function to execute when the command is called.
-    :param command_args: Types of the arguments the command takes.
-    :param command_return: The type of the value the command returns.
-    :param name: The name of the command.
-    :param timeout: The default timeout for calling the command.
+    The callback must have full type annotations (all parameters + return).
+    Argument and return types are inferred from those annotations.
     """
-    backend: SoftCommandBackend[P, T] = SoftCommandBackend(
-        command_args, command_return, command_cb
-    )
+    backend: SoftCommandBackend[P, T] = SoftCommandBackend(command_cb)
     return Command(backend, timeout, name)
 
 
 class SoftCommandBackend(CommandBackend[P, T]):
-    """A backend for a Command that uses a Python callback."""
+    """A backend for a Command that uses a Python callback.
 
-    def __init__(
-        self,
-        command_args: Sequence[type] | None,
-        command_return: type[T] | None,
-        command_cb: Callable[P, T | Awaitable[T]],
-    ):
-        self._command_args = command_args or []
-        self._command_return = command_return
+    The callback's annotations define the runtime contract.
+    """
+
+    def __init__(self, command_cb: Callable[P, T | Awaitable[T]]):
         self._command_cb = command_cb
         self._last_return_value: T | None = None
         self._lock = asyncio.Lock()
 
-        # Validate callback signature
-        sig = inspect.signature(command_cb)
-        params = list(sig.parameters.values())
+        self._sig = inspect.signature(command_cb)
+        self._params = list(self._sig.parameters.values())
 
-        if len(params) != len(self._command_args):
+        for p in self._params:
+            if p.kind in (
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD,
+            ):
+                raise TypeError(
+                    f"{command_cb.__name__}() must not use"
+                    f" *args/**kwargs; "
+                    f"got parameter {p.name!r}"
+                )
+
+        # Require full annotations
+        hints = get_type_hints(command_cb)
+        missing = [p.name for p in self._params if p.name not in hints]
+        if missing:
             raise TypeError(
-                f"Number of command_args ({len(self._command_args)}) does not match "
-                f"callback arguments ({len(params)})"
+                f"{command_cb.__name__}() is missing type annotations for"
+                f" parameter(s) "
+                f"{missing}. All parameters must be annotated."
+            )
+        if "return" not in hints:
+            raise TypeError(
+                f"{command_cb.__name__}() is missing a return type annotation. "
+                "The return type must be annotated."
             )
 
-        hints = get_type_hints(command_cb)
-        for i, param in enumerate(params):
-            expected_type = self._command_args[i]
-            actual_type = hints.get(param.name)
-            if actual_type and actual_type is not expected_type:
-                if not (
-                    (
-                        hasattr(actual_type, "__origin__")
-                        and actual_type.__origin__ is expected_type
-                    )
-                    or actual_type == expected_type
-                ):
-                    raise TypeError(
-                        f"command_args type {expected_type} does not match "
-                        f"callback parameter '{param.name}' type {actual_type}"
-                    )
+        # Store expected param types by name (runtime contract)
+        self._expected_param_types: dict[str, type] = {
+            p.name: cast(type, hints[p.name]) for p in self._params
+        }
 
-        if self._command_return is not None:
-            actual_return = hints.get("return")
-            if actual_return and actual_return is not self._command_return:
-                if (
-                    get_origin(actual_return) is Awaitable
-                    or get_origin(actual_return) is asyncio.Future
-                ):
-                    actual_return = get_args(actual_return)[0]
+        inferred_return = hints["return"]
+        if get_origin(inferred_return) in (Awaitable, asyncio.Future):
+            inferred_return = get_args(inferred_return)[0]
 
-                if not (
-                    actual_return is self._command_return
-                    or actual_return == self._command_return
-                ):
-                    raise TypeError(
-                        f"command_return type {self._command_return} does not match "
-                        f"callback return type {actual_return}"
-                    )
+        if inferred_return is None or inferred_return is type(None):
+            self._command_return: type[T] | None = None
+        else:
+            self._command_return = cast(type[T], inferred_return)
 
     def source(self, name: str) -> str:
         """Return the source of the command."""
@@ -196,41 +183,34 @@ class SoftCommandBackend(CommandBackend[P, T]):
 
     async def call(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute the configured callback and return its result."""
-        if len(args) != len(self._command_args):
-            raise TypeError(
-                f"Expected {len(self._command_args)} arguments, got {len(args)}"
-            )
+        try:
+            bound = self._sig.bind(*args, **kwargs)
+        except TypeError as exc:
+            raise TypeError(str(exc)) from exc
 
-        for i, (arg, expected_type) in enumerate(
-            zip(args, self._command_args, strict=True)
-        ):
-            if expected_type is not None:
-                origin = get_origin(expected_type) or expected_type
-                if origin is Sequence:
-                    if not isinstance(arg, Sequence):
-                        sig = inspect.signature(self._command_cb)
-                        param_name = list(sig.parameters.keys())[i]
-                        raise TypeError(
-                            f"Argument '{param_name}' should be {expected_type}, "
-                            f"got {type(arg)}"
-                        )
-                elif not isinstance(arg, origin):
-                    sig = inspect.signature(self._command_cb)
-                    param_name = list(sig.parameters.keys())[i]
+        bound.apply_defaults()
+
+        for name, value in bound.arguments.items():
+            expected_type = self._expected_param_types[name]
+
+            origin = get_origin(expected_type) or expected_type
+            if origin is Sequence:
+                if not isinstance(value, Sequence):
                     raise TypeError(
-                        f"Argument '{param_name}' should be {expected_type}, "
-                        f"got {type(arg)}"
+                        f"Argument '{name}' should be {expected_type},"
+                        f" got {type(value)}"
                     )
+            elif not isinstance(value, origin):
+                raise TypeError(
+                    f"Argument '{name}' should be {expected_type}, got {type(value)}"
+                )
 
         async with self._lock:
             result = self._command_cb(*args, **kwargs)
             if inspect.isawaitable(result):
                 result = await result
-            self._last_return_value = result
+            self._last_return_value = cast(T, result)
             return cast(T, result)
-
-    def _async_lock(self):
-        return self._lock
 
 
 class MockCommandBackend(CommandBackend[P, T]):

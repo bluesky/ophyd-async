@@ -39,7 +39,6 @@ class MyTable(Table):
     b: Sequence[str]
 
 
-# List of types and sample values to test
 TEST_PARAMS = [
     (bool, True),
     (int, 42),
@@ -73,36 +72,36 @@ async def test_soft_command_execution(datatype, value):
     def callback(v: datatype) -> datatype:
         return v
 
-    backend = SoftCommandBackend([datatype], datatype, callback)
+    backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
     await cmd.connect()
 
     res = await cmd(value)
     if isinstance(value, np.ndarray):
         assert np.array_equal(res, value)
-    elif isinstance(value, Table):
-        assert res == value
     else:
         assert res == value
 
 
 @pytest.mark.parametrize("datatype, value", TEST_PARAMS)
 def test_soft_command_init_validation(datatype, value):
-    def callback(v: datatype) -> datatype:
+    def missing_param_annotation(v):
         return v
 
-    # Should succeed
-    SoftCommandBackend([datatype], datatype, callback)
+    with pytest.raises(TypeError, match="missing type annotations for parameter"):
+        SoftCommandBackend(missing_param_annotation)
 
-    # Should fail if args mismatch
-    with pytest.raises(TypeError, match="Number of command_args"):
-        SoftCommandBackend([], datatype, callback)
+    def missing_return_annotation(v: int):
+        return v
 
-    # Should fail if return type mismatch
-    # (Using int as a mismatched type, assuming datatype is not int or is incompatible)
-    wrong_type = str if datatype is int else int
-    with pytest.raises(TypeError, match="command_return type"):
-        SoftCommandBackend([datatype], wrong_type, callback)
+    with pytest.raises(TypeError, match="missing a return type annotation"):
+        SoftCommandBackend(missing_return_annotation)
+
+    def incomplete_param_annotation(v: int, x) -> int:
+        return v
+
+    with pytest.raises(TypeError, match="missing type annotations for parameter"):
+        SoftCommandBackend(incomplete_param_annotation)
 
 
 @pytest.mark.parametrize("datatype, value", TEST_PARAMS)
@@ -110,20 +109,18 @@ async def test_soft_command_runtime_validation(datatype, value):
     def callback(v: datatype) -> None:
         pass
 
-    backend = SoftCommandBackend([datatype], None, callback)
+    backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
     await cmd.connect()
 
     # Wrong number of arguments
-    with pytest.raises(TypeError, match="Expected 1 arguments, got 0"):
+    with pytest.raises(TypeError, match="missing a required argument"):
         await cmd()
 
     # Wrong type of argument
-    wrong_value = (
-        ("not the right type",) if datatype is not str else (123,)
-    )  # tuple for Sequence
+    wrong_value = "not the right type" if datatype is not str else 123
     if get_origin(datatype) is Sequence:
-        wrong_value = 123  # Not a sequence
+        wrong_value = 123
     elif isinstance(value, np.ndarray):
         wrong_value = "not an array"
 
@@ -135,7 +132,7 @@ async def test_mock_command_backend():
     async def async_callback(a: int, b: str) -> str:
         return f"{b}_{a}"
 
-    backend = SoftCommandBackend([int, str], str, async_callback)
+    backend = SoftCommandBackend(async_callback)
     cmd = Command(backend, name="test_cmd")
 
     mock = DeviceMock()
@@ -149,18 +146,24 @@ async def test_mock_command_backend():
     cmd._connector.backend.call_mock.assert_called_once_with(3, "mock")
 
 
-async def test_factory_functions():
-    cmd_rw = soft_command(lambda x: str(x), [int], str, name="rw")
+async def test_soft_command_factory():
+    def rw_cb(x: int) -> str:
+        return str(x)
+
+    cmd_rw = soft_command(rw_cb, name="rw")
     await cmd_rw.connect()
     assert await cmd_rw(123) == "123"
 
-    cmd_x = soft_command(lambda: None, name="x")
+    def x_cb() -> None:
+        return None
+
+    cmd_x = soft_command(x_cb, name="x")
     await cmd_x.connect()
     assert await cmd_x() is None
 
 
 async def test_execution_error_wrapping():
-    def failing_callback():
+    def failing_callback() -> None:
         raise ValueError("Boom")
 
     cmd = soft_command(failing_callback, name="test_cmd")
@@ -174,23 +177,16 @@ async def test_async_return_type_validation():
     async def async_ret() -> int:
         return 1
 
-    # Should not raise TypeError because it handles Awaitable[int]
-    soft_command(async_ret, [], int)
-
-    async def async_ret_wrong() -> str:
-        return "1"
-
-    with pytest.raises(
-        TypeError,
-        match=r"command_return type <class 'int'> does not match"
-        r" callback return type <class 'str'>",
-    ):
-        soft_command(async_ret_wrong, [], int)
+    soft_command(async_ret)
 
 
 async def test_command_logging(caplog):
     caplog.set_level(logging.DEBUG)
-    cmd = soft_command(lambda x: str(x), [int], str, name="mycmd")
+
+    def my_cb(x: int) -> str:
+        return str(x)
+
+    cmd = soft_command(my_cb, name="mycmd")
     await cmd.connect()
     assert "Connecting to softcmd://mycmd" in caplog.text
 
