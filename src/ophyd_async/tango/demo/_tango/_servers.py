@@ -46,25 +46,22 @@ class DemoMotorDevice(Device):
 
     @command
     async def move(self):
-        await self._move(self._setpoint)
-        self.set_state(DevState.ON)
-
-    async def _move(self, new_position):
-        self._setpoint = new_position
+        self.set_state(DevState.MOVING)
         self._stop = False
         step = 0.1
         while True:
             if self._stop:
                 self._stop = False
                 break
-            if abs(self._position - new_position) < abs(self._velocity * step):
-                self._position = new_position
+            if abs(self._position - self._setpoint) < abs(self._velocity * step):
+                self._position = self._setpoint
                 break
-            if self._position < new_position:
+            if self._position < self._setpoint:
                 self._position = self._position + self._velocity * step
             else:
                 self._position = self._position - self._velocity * step
             await asyncio.sleep(step)
+        self.set_state(DevState.ON)
 
 
 class Mode(IntEnum):
