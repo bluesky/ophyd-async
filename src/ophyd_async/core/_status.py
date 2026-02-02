@@ -21,8 +21,10 @@ from ._utils import Callback, P, T, WatcherUpdate
 class AsyncStatusBase(Status, Awaitable[None]):
     """Convert asyncio awaitable to bluesky Status interface.
 
-    AsyncStatusBase can be used as an async context manager to bound the lifetime of
-    its task such that on exit if the task is not completed it is cancelled.
+    Can be used as an async context manager to automatically cancel the calling
+    task when the status completes. This is useful for bounding loop execution:
+    when the status completes, the calling task is cancelled, causing the loop
+    to exit. If the loop completes first, the status task is automatically cancelled.
     """
 
     def __init__(self, awaitable: Coroutine | asyncio.Task, name: str | None = None):
@@ -145,12 +147,32 @@ class AsyncStatus(AsyncStatusBase):
     :param awaitable: The coroutine or task to await.
     :param name: The name of the device, if available.
 
-    For example:
+    Can be awaited like a standard Task:
+
     ```python
     status = AsyncStatus(asyncio.sleep(1))
     assert not status.done
-    await status # waits for 1 second
+    await status  # waits for 1 second
     assert status.done
+    ```
+
+    Can also be used as a context manager to bound loop execution. When the status
+    completes, the calling task is cancelled, causing loops to exit:
+
+    ```python
+    async with motor.set(target_position):
+        async for value in observe_value(detector):
+            process_reading(value)
+            # Loop exits automatically when motor reaches position
+    ```
+
+    If the loop completes before the status, the status task is cancelled:
+
+    ```python
+    async with AsyncStatus(long_operation()):
+        for i in range(3):
+            await process_step(i)
+        # Loop completes, long_operation() is cancelled
     ```
     """
 

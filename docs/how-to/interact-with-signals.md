@@ -43,16 +43,9 @@ To observe every value change and run a function on that value you can use [](#o
 async for value in observe_value(signal):
     do_something_with(value)
 ```
-This will run until you `break` out of the loop. If you would like to break out of the loop when some other operation is complete you can pass an [](#AsyncStatus) that you create yourself or from the result of setting a signal, which will break out of the loop:
+This will run until you `break` out of the loop.
 
-```python
-status = signal.set(value)
-async for value in observe_value(signal2, done_status=status):
-    do_something_with(value)
-    # when signal.set() completes the loop will break out here
-```
-
-You can pass `timeout` to specify how the maximum time to wait for a single update, and `done_timeout` to specify the maximum time to wait for `done_status`.
+You can pass `timeout` to specify the maximum time to wait for a single update.
 
 If you want to wait for multiple signals you can use [](#observe_signals_value):
 ```python
@@ -61,6 +54,38 @@ async for signal, value in observe_value(signal1, signal2):
         do_something_with(value)
     if signal is signal2:
         do_something_else_with(value)
+```
+
+## Use AsyncStatus as a context manager to bound loop execution
+
+If you want a loop to run until some operation completes, you can use [](#AsyncStatus) as a context manager. When the status completes, it will cancel the calling task, causing the loop to exit. This is useful when you want to process signal updates until another operation finishes:
+
+```python
+# Process updates while a motor is moving
+async with motor.set(target_position):
+    async for value in observe_value(detector):
+        process_reading(value)
+        # Loop automatically exits when motor reaches position
+```
+
+If the loop completes before the status, the status task is automatically cancelled:
+
+```python
+async with signal1.set(new_value):
+    for i in range(3):
+        value = await signal.get_value()
+        process(value)
+        # Loop completes after 3 iterations, cancelling the wait for signal1 to finishe being set
+```
+
+If an exception is raised in the loop body, it propagates out normally:
+
+```python
+async with signal1.set(new_value):
+    async for value in observe_value(signal2):
+        if value > threshold:
+            raise ValueError("Threshold exceeded")
+        # Exception propagates, status is cancelled and no longer waits for signal1 to finish being set
 ```
 
 ## Wait for the value to match some expected value
