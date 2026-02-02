@@ -839,18 +839,18 @@ async def test_put_completion(
 ):
     # Check that we can put to an epics signal and wait for put completion
     slow_seq_pv = ioc_devices.get_pv(protocol, "slowseq")
-    slow_seq = epics_signal_rw(int, slow_seq_pv)
+    slow_seq = epics_signal_rw(int, slow_seq_pv, wait=lambda value: value == 1)
     await slow_seq.connect()
 
     # First, do a set with blocking and make sure it takes a while
     start = time.monotonic()
-    await slow_seq.set(1, wait=True)
+    await slow_seq.set(1)
     stop = time.monotonic()
     assert stop - start == pytest.approx(0.5, rel=0.1)
 
     # Then, make sure if we don't wait it returns ~instantly
     start = time.monotonic()
-    await slow_seq.set(2, wait=False)
+    await slow_seq.set(2)
     stop = time.monotonic()
     assert stop - start < 0.1
 
@@ -894,7 +894,7 @@ async def test_signal_retries_when_timeout(
 
     start = time.monotonic()
     with pytest.raises(asyncio.TimeoutError):
-        await sig_rw_times_out.set(1, wait=True)
+        await sig_rw_times_out.set(1)
     stop = time.monotonic()
     # signal tries to set 3 times, so 3 * timeout
     assert stop - start == pytest.approx(0.3, abs=0.1)

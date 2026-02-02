@@ -1,5 +1,6 @@
-from collections.abc import Mapping, Sequence
-from typing import Any, TypeVar, get_args, get_origin
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
+from typing import Any, Generic, TypeVar, get_args, get_origin
 
 import numpy as np
 
@@ -19,6 +20,23 @@ from ophyd_async.core import (
 )
 
 T = TypeVar("T")
+
+
+@dataclass
+class EpicsOptions(Generic[SignalDatatypeT]):
+    """Options for EPICS Signals."""
+
+    wait: bool | Callable[[SignalDatatypeT], bool] = True
+    """Whether to wait for server-side completion of the operation:
+
+    - `True`: Return when server-side operation has completed
+    - `False`: Return when server-side operation has started
+    - `callable`: Call with the value being put to decide whether to wait
+
+    For example, use `EpicsOption(wait=non_zero)` for busy records like
+    areaDetector acquire PVs that should not wait when being set to zero
+    as it causes a deadlock.
+    """
 
 
 def get_pv_basename_and_field(pv: str) -> tuple[str, str | None]:
@@ -77,9 +95,11 @@ class EpicsSignalBackend(SignalBackend[SignalDatatypeT]):
         datatype: type[SignalDatatypeT] | None,
         read_pv: str = "",
         write_pv: str = "",
+        options: EpicsOptions | None = None,
     ):
         self.read_pv = read_pv
         self.write_pv = write_pv
+        self.options = options or EpicsOptions()
         super().__init__(datatype)
 
 
@@ -87,7 +107,7 @@ async def stop_busy_record(
     signal: SignalRW[bool],
     timeout: float = DEFAULT_TIMEOUT,
 ) -> None:
-    await signal.set(False, wait=False)
+    await signal.set(False)
     await wait_for_value(signal, False, timeout=timeout)
 
 

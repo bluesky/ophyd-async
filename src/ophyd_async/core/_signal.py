@@ -279,13 +279,11 @@ class SignalW(Signal[SignalDatatypeT], Movable):
     async def set(
         self,
         value: SignalDatatypeT,
-        wait=True,
         timeout: CalculatableTimeout = CALCULATE_TIMEOUT,
     ) -> None:
         """Set the value and return a status saying when it's done.
 
         :param value: The value to set.
-        :param wait: If True, wait for the set to complete.
         :param timeout: The timeout for the set.
         """
         if timeout == CALCULATE_TIMEOUT:
@@ -299,9 +297,7 @@ class SignalW(Signal[SignalDatatypeT], Movable):
             wait_jitter=0,
         ):
             with attempt:
-                await _wait_for(
-                    self._connector.backend.put(value, wait=wait), timeout, source
-                )
+                await _wait_for(self._connector.backend.put(value), timeout, source)
         self.log.debug(f"Successfully put value {value} to backend at source {source}")
 
 
@@ -321,19 +317,16 @@ class SignalX(Signal):
     """Signal that puts the default value."""
 
     @AsyncStatus.wrap
-    async def trigger(
-        self, wait=True, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
-    ) -> None:
+    async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
         """Trigger the action and return a status saying when it's done.
 
-        :param wait: If True, wait for the trigger to complete.
         :param timeout: The timeout for the trigger.
         """
         if timeout == CALCULATE_TIMEOUT:
             timeout = self._timeout
         source = self._connector.backend.source(self.name, read=False)
         self.log.debug(f"Putting default value to backend at source {source}")
-        await _wait_for(self._connector.backend.put(None, wait=wait), timeout, source)
+        await _wait_for(self._connector.backend.put(None), timeout, source)
         self.log.debug(f"Successfully put default value to backend at source {source}")
 
 
@@ -679,7 +672,8 @@ async def set_and_wait_for_value(
     await set_and_wait_for_value(device.parameter, 1)
     ```
     For busy record, or other Signals with pattern:
-      - Set Signal with `wait=True` and stash the Status
+      - Set `wait=non_zero` when creating the signal
+      - Set Signal and stash the Status
       - Read the same Signal to check the operation has started
       - Return the Status so calling code can wait for operation to complete
     ```python

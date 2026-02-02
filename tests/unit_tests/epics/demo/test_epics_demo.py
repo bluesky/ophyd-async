@@ -55,13 +55,13 @@ async def test_motor_stopped(mock_motor: demo.DemoMotor):
     stop_mock.assert_not_called()
     # Call stop and check it's called with the default value
     await mock_motor.stop()
-    stop_mock.assert_called_once_with(None, wait=True)
+    stop_mock.assert_called_once_with(None)
     # We can also track all the mock puts that have happened on the device
     parent_mock = get_mock(mock_motor)
     await mock_motor.velocity.set(15)
     assert parent_mock.mock_calls == [
-        call.stop_.put(None, wait=True),
-        call.velocity.put(15, wait=True),
+        call.stop_.put(None),
+        call.velocity.put(15),
     ]
 
 
@@ -103,7 +103,7 @@ async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
 async def test_retrieve_mock_and_assert(mock_motor: demo.DemoMotor):
     motor_setpoint_mock = get_mock_put(mock_motor.setpoint)
     await mock_motor.setpoint.set(10)
-    motor_setpoint_mock.assert_called_once_with(10, wait=ANY)
+    motor_setpoint_mock.assert_called_once_with(10)
 
     # Assert that velocity is set before move
     motor_velocity_mock = get_mock_put(mock_motor.velocity)
@@ -115,8 +115,8 @@ async def test_retrieve_mock_and_assert(mock_motor: demo.DemoMotor):
     await mock_motor.velocity.set(100)
     await mock_motor.setpoint.set(67)
     assert parent_mock.mock_calls == [
-        call.velocity(100, wait=True),
-        call.setpoint(67, wait=True),
+        call.velocity(100),
+        call.setpoint(67),
     ]
 
 
@@ -130,7 +130,7 @@ async def test_mocks_in_device_share_parent():
     assert get_mock(mock_motor.setpoint) is mock.setpoint
     assert get_mock_put(mock_motor.setpoint) is mock.setpoint.put
     await mock_motor.setpoint.set(10)
-    get_mock_put(mock_motor.setpoint).assert_called_once_with(10, wait=ANY)
+    get_mock_put(mock_motor.setpoint).assert_called_once_with(10)
 
     await mock_motor.velocity.set(100)
     await mock_motor.setpoint.set(67)
@@ -139,8 +139,8 @@ async def test_mocks_in_device_share_parent():
     await mock_motor.velocity.set(100)
     await mock_motor.setpoint.set(67)
     assert mock.mock_calls == [
-        call.velocity.put(100, wait=True),
-        call.setpoint.put(67, wait=True),
+        call.velocity.put(100),
+        call.setpoint.put(67),
     ]
 
 

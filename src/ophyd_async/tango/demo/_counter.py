@@ -28,8 +28,8 @@ class TangoCounter(TangoDevice, StandardReadable):
     async def trigger(self) -> None:
         sample_time = await self.sample_time.get_value()
         timeout = sample_time + DEFAULT_TIMEOUT
-        await self.start.trigger(wait=True, timeout=timeout)
+        await self.start.trigger(timeout=timeout)
 
     @AsyncStatus.wrap
     async def reset(self) -> None:
-        await self.reset_.trigger(wait=True, timeout=DEFAULT_TIMEOUT)
+        await self.reset_.trigger(timeout=DEFAULT_TIMEOUT)

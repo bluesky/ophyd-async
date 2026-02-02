@@ -49,7 +49,10 @@ class AcquisitionType(StrictEnum):
 
 
 class JungfrauDriverIO(Device):
-    """Contains signals for handling IO on the Jungfrau detector."""
+    """Contains signals for handling IO on the Jungfrau detector.
+
+    This mirrors the intefrace provided by slsDetector/Db/slsDetector.template
+    """
 
     exposure_time: SignalRW[float]  # in s
 

@@ -10,7 +10,7 @@ from ._signal import (
     epics_signal_w,
     epics_signal_x,
 )
-from ._util import stop_busy_record, wait_for_good_state
+from ._util import EpicsOptions, stop_busy_record, wait_for_good_state
 
 __all__ = [
     "PviDeviceConnector",
@@ -26,4 +26,5 @@ __all__ = [
     "epics_signal_x",
     "stop_busy_record",
     "wait_for_good_state",
+    "EpicsOptions",
 ]
