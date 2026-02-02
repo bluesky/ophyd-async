@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.14.3.dev8+g7f3c2d529 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.14.3.dev9+g6ebd5ae5e documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=8b483b51"></script>
+    <script src="../../../_static/documentation_options.js?v=56e3ee8c"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev9+g6ebd5ae5e documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev9+g6ebd5ae5e documentation - Home"/>
   
   
 </a></div>
@@ -784,18 +784,16 @@ window.addEventListener("load", () => mermaid.run());
 
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_motor_limit</span><span class="p">(</span><span class="n">old_position</span><span class="p">,</span> <span class="n">new_position</span><span class="p">)</span>
 
-        <span class="n">move_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span> <span class="n">done_status</span><span class="o">=</span><span class="n">move_status</span>
-        <span class="p">):</span>
-            <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
-                <span class="n">current</span><span class="o">=</span><span class="n">current_position</span><span class="p">,</span>
-                <span class="n">initial</span><span class="o">=</span><span class="n">old_position</span><span class="p">,</span>
-                <span class="n">target</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
-                <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">):</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+                    <span class="n">current</span><span class="o">=</span><span class="n">current_position</span><span class="p">,</span>
+                    <span class="n">initial</span><span class="o">=</span><span class="n">old_position</span><span class="p">,</span>
+                    <span class="n">target</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                    <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
+                <span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Motor was stopped&quot;</span><span class="p">)</span></div>
 

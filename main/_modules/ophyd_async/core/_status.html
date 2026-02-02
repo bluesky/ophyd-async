@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._status &#8212; ophyd-async 0.14.3.dev8+g7f3c2d529 documentation</title>
+    <title>ophyd_async.core._status &#8212; ophyd-async 0.14.3.dev9+g6ebd5ae5e documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=8b483b51"></script>
+    <script src="../../../_static/documentation_options.js?v=56e3ee8c"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -134,8 +134,8 @@ window.addEventListener("load", () => mermaid.run());
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev9+g6ebd5ae5e documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev9+g6ebd5ae5e documentation - Home"/>
   
   
 </a></div>
@@ -468,8 +468,10 @@ window.addEventListener("load", () => mermaid.run());
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">CancelledError</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span>
@@ -482,16 +484,37 @@ window.addEventListener("load", () => mermaid.run());
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AsyncStatusBase</span><span class="p">(</span><span class="n">Status</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert asyncio awaitable to bluesky Status interface.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert asyncio awaitable to bluesky Status interface.</span>
+
+<span class="sd">    Can be used as an async context manager to automatically cancel the calling</span>
+<span class="sd">    task when the status completes. This is useful for bounding loop execution:</span>
+<span class="sd">    when the status completes, the calling task is cancelled, causing the loop</span>
+<span class="sd">    to exit. If the loop completes first, the status task is automatically cancelled.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">awaitable</span><span class="p">:</span> <span class="n">Coroutine</span> <span class="o">|</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">awaitable</span><span class="p">,</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">awaitable</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">awaitable</span><span class="p">)</span>
+
+            <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_with_error_message</span><span class="p">(</span><span class="n">awaitable</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="n">awaitable</span>
+                <span class="k">except</span> <span class="n">CancelledError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">CancelledError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;CancelledError while awaiting </span><span class="si">{</span><span class="n">awaitable</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">wait_with_error_message</span><span class="p">(</span><span class="n">awaitable</span><span class="p">))</span>
+            <span class="c1"># There is a small chance we could be cancelled before</span>
+            <span class="c1"># wait_with_error_message starts.</span>
+            <span class="c1"># Avoid complaints about awaitable not awaited if task is</span>
+            <span class="c1"># pre-emptively cancelled, by ensuring it is always disposed</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">awaitable</span><span class="o">.</span><span class="n">close</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_callbacks</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_callbacks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callback</span><span class="p">[</span><span class="n">Status</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled_error_ok</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__await__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="fm">__await__</span><span class="p">()</span>
@@ -550,6 +573,36 @@ window.addEventListener("load", () => mermaid.run());
             <span class="sa">f</span><span class="s2">&quot;task: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">get_coro</span><span class="p">()</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
         <span class="p">)</span>
 
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aenter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Grab the calling task, the one that is doing `with status``</span>
+        <span class="n">calling_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">current_task</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">calling_task</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Can only use in a context manager inside a task&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_cancel_calling_task</span><span class="p">(</span><span class="n">task</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">,</span> <span class="n">calling_task</span><span class="o">=</span><span class="n">calling_task</span><span class="p">):</span>
+            <span class="c1"># If no-one cancelled our child task, then it is expected</span>
+            <span class="c1"># that we want to break out of the calling task with block</span>
+            <span class="c1"># so mark that the CancelledError should be suppressed on exit</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled_error_ok</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">task</span><span class="o">.</span><span class="n">cancelled</span><span class="p">()</span>
+            <span class="n">calling_task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+
+        <span class="c1"># When our child task is done, then cancel the calling task</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">_cancel_calling_task</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="fm">__aexit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+        <span class="c1"># Need to await the task to suppress teardown warnings, but</span>
+        <span class="c1"># we know it will raise CancelledError as we just cancelled it</span>
+        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="n">CancelledError</span><span class="p">):</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">task</span>
+        <span class="k">if</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="n">CancelledError</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cancelled_error_ok</span><span class="p">:</span>
+            <span class="c1"># Suppress error as we cancelled it in _cancel_calling_task</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Raise error as we didn&#39;t cause it</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
     <span class="fm">__str__</span> <span class="o">=</span> <span class="fm">__repr__</span>
 
 
@@ -561,13 +614,37 @@ window.addEventListener("load", () => mermaid.run());
 <span class="sd">    :param awaitable: The coroutine or task to await.</span>
 <span class="sd">    :param name: The name of the device, if available.</span>
 
-<span class="sd">    For example:</span>
+<span class="sd">    Can be awaited like a standard Task:</span>
+
 <span class="sd">    ```python</span>
 <span class="sd">    status = AsyncStatus(asyncio.sleep(1))</span>
 <span class="sd">    assert not status.done</span>
-<span class="sd">    await status # waits for 1 second</span>
+<span class="sd">    await status  # waits for 1 second</span>
 <span class="sd">    assert status.done</span>
 <span class="sd">    ```</span>
+
+<span class="sd">    Can also be used as a context manager to bound loop execution. When the status</span>
+<span class="sd">    completes, the calling task is cancelled, causing loops to exit:</span>
+
+<span class="sd">    ```python</span>
+<span class="sd">    async with motor.set(target_position):</span>
+<span class="sd">        async for value in observe_value(detector):</span>
+<span class="sd">            process_reading(value)</span>
+<span class="sd">            # Loop exits automatically when motor reaches position</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    If the loop completes before the status, the status task is cancelled:</span>
+
+<span class="sd">    ```python</span>
+<span class="sd">    async with AsyncStatus(long_operation()):</span>
+<span class="sd">        for i in range(3):</span>
+<span class="sd">            await process_step(i)</span>
+<span class="sd">        # Loop completes, long_operation() is cancelled</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Note that the body of the with statement will only break at a suspension</span>
+<span class="sd">    point like `async for` or `await`, so body code without these suspension</span>
+<span class="sd">    points will continue even if the status completes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="AsyncStatus.wrap">

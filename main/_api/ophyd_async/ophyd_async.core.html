@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.14.3.dev8+g7f3c2d529 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.14.3.dev9+g6ebd5ae5e documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=8b483b51"></script>
+    <script src="../../_static/documentation_options.js?v=56e3ee8c"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev8+g7f3c2d529 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.14.3.dev9+g6ebd5ae5e documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.14.3.dev9+g6ebd5ae5e documentation - Home"/>
   
   
 </a></div>
@@ -1403,13 +1403,31 @@ location from a <code class="docutils literal notranslate"><span class="pre">Mov
 </ul>
 </dd>
 </dl>
-<p>For example:</p>
+<p>Can be awaited like a standard Task:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 <span class="k">assert</span> <span class="ow">not</span> <span class="n">status</span><span class="o">.</span><span class="n">done</span>
-<span class="k">await</span> <span class="n">status</span> <span class="c1"># waits for 1 second</span>
+<span class="k">await</span> <span class="n">status</span>  <span class="c1"># waits for 1 second</span>
 <span class="k">assert</span> <span class="n">status</span><span class="o">.</span><span class="n">done</span>
 </pre></div>
 </div>
+<p>Can also be used as a context manager to bound loop execution. When the status
+completes, the calling task is cancelled, causing loops to exit:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">with</span> <span class="n">motor</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">target_position</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">detector</span><span class="p">):</span>
+        <span class="n">process_reading</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="c1"># Loop exits automatically when motor reaches position</span>
+</pre></div>
+</div>
+<p>If the loop completes before the status, the status task is cancelled:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">with</span> <span class="n">AsyncStatus</span><span class="p">(</span><span class="n">long_operation</span><span class="p">()):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">process_step</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="c1"># Loop completes, long_operation() is cancelled</span>
+</pre></div>
+</div>
+<p>Note that the body of the with statement will only break at a suspension
+point like <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">for</span></code> or <code class="docutils literal notranslate"><span class="pre">await</span></code>, so body code without these suspension
+points will continue even if the status completes.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.AsyncStatus.wrap">
 <em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Coroutine" title="(in Python v3.14)"><span class="pre">Coroutine</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">P</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.core.AsyncStatus" title="ophyd_async.core._status.AsyncStatus"><span class="pre">AsyncStatus</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_status.html#AsyncStatus.wrap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.AsyncStatus.wrap" title="Link to this definition">#</a></dt>
