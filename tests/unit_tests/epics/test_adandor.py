@@ -53,11 +53,11 @@ async def test_prepare_external_edge(
     assert_has_calls(
         test_adandor.driver,
         [
-            call.trigger_mode.put(adandor.Andor2TriggerMode.EXT_TRIGGER, wait=True),
-            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-            call.num_images.put(5, wait=True),
-            call.acquire_time.put(0.5, wait=True),
-            call.acquire.put(True, wait=True),
+            call.trigger_mode.put(adandor.Andor2TriggerMode.EXT_TRIGGER),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+            call.num_images.put(5),
+            call.acquire_time.put(0.5),
+            call.acquire.put(True),
         ],
     )
 
@@ -69,8 +69,8 @@ async def test_prepare_forever(
     assert_has_calls(
         test_adandor.driver,
         [
-            call.trigger_mode.put(adandor.Andor2TriggerMode.INTERNAL, wait=True),
-            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-            call.num_images.put(999_999, wait=True),
+            call.trigger_mode.put(adandor.Andor2TriggerMode.INTERNAL),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+            call.num_images.put(999_999),
         ],
     )

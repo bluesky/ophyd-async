@@ -84,7 +84,7 @@ Here we call the verb, but don't wait for it to complete (as that would wait for
 There are a few other things we may wish to do in tests:
 - [](#set_mock_values) if you want to set a series of mock values, with repeated checks at each value
 - [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal
-- [](#set_mock_put_proceeds) to block or unblock `Signal.set(..., wait=True)` from completing
+- [](#set_mock_put_proceeds) to block or unblock `Signal.set()` from completing
 - [](#mock_puts_blocked) a context manager that blocks put proceeds at the start, and unblocks at the end
 
 ### Automatic mock behavior injection

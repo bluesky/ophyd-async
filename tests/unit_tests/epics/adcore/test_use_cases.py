@@ -76,7 +76,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     set_mock_value(writer.file_path_exists, True)
     # When arm is pressed, then make a single frame
     callback_on_mock_put(
-        det.driver.acquire, lambda v, wait: set_mock_value(writer.num_captured, 1)
+        det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 1)
     )
     # Trigger a single frame then describe, get hints and read
     await det.trigger()
@@ -168,7 +168,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     # Check we can prepare and do a second one
     await det.prepare(TriggerInfo(exposure_timeout=0.1))
     callback_on_mock_put(
-        det.driver.acquire, lambda v, wait: set_mock_value(writer.num_captured, 2)
+        det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 2)
     )
     await det.trigger()
     readings = await det.read()
@@ -211,7 +211,7 @@ async def test_step_scan_tiff_detector(
     set_mock_value(writer.file_path_exists, True)
     # When arm is pressed, then make a single frame
     callback_on_mock_put(
-        det.driver.acquire, lambda v, wait: set_mock_value(writer.num_captured, 1)
+        det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 1)
     )
     # Trigger a single frame then describe and read
     await det.trigger()
@@ -440,7 +440,7 @@ async def test_2_rois_with_hdf(tmp_path):
     await det.stage()
 
     # When arm is pressed, then make a single frame on each HDF
-    def publish_captured(v, wait):
+    def publish_captured(v):
         for hdf in hdfs:
             set_mock_value(hdf.num_captured, 1)
 

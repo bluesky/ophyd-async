@@ -29,7 +29,7 @@ async def test_arm_logic_trigger_internal_calls_acquire(
     assert_has_calls(
         adbase_detector.driver,
         [
-            call.acquire.put(True, wait=True),
+            call.acquire.put(True),
         ],
     )
 
@@ -106,7 +106,7 @@ async def test_arm_logic_disarm(
     assert_has_calls(
         adbase_detector.driver,
         [
-            call.acquire.put(False, wait=False),
+            call.acquire.put(False),
         ],
     )
 

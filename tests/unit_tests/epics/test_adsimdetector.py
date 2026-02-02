@@ -45,7 +45,7 @@ async def test_prepare_internal(
     assert_has_calls(
         test_adsimdetector.driver,
         [
-            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-            call.num_images.put(11, wait=True),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+            call.num_images.put(11),
         ],
     )

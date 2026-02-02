@@ -22,8 +22,8 @@ async def adbase():
             0.0,
             0.0,
             [
-                call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-                call.num_images.put(1, wait=True),
+                call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+                call.num_images.put(1),
             ],
         ),
         # Multiple exposures with no livetime or deadtime
@@ -32,8 +32,8 @@ async def adbase():
             0.0,
             0.0,
             [
-                call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-                call.num_images.put(5, wait=True),
+                call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+                call.num_images.put(5),
             ],
         ),
         # Continuous mode (num=0)
@@ -42,8 +42,8 @@ async def adbase():
             0.0,
             0.0,
             [
-                call.image_mode.put(adcore.ADImageMode.CONTINUOUS, wait=True),
-                call.num_images.put(0, wait=True),
+                call.image_mode.put(adcore.ADImageMode.CONTINUOUS),
+                call.num_images.put(0),
             ],
         ),
         # With livetime only
@@ -52,9 +52,9 @@ async def adbase():
             0.1,
             0.0,
             [
-                call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-                call.num_images.put(5, wait=True),
-                call.acquire_time.put(0.1, wait=True),
+                call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+                call.num_images.put(5),
+                call.acquire_time.put(0.1),
             ],
         ),
         # With livetime and deadtime
@@ -63,10 +63,10 @@ async def adbase():
             0.2,
             0.05,
             [
-                call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-                call.num_images.put(10, wait=True),
-                call.acquire_time.put(0.2, wait=True),
-                call.acquire_period.put(0.25, wait=True),
+                call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+                call.num_images.put(10),
+                call.acquire_time.put(0.2),
+                call.acquire_period.put(0.25),
             ],
         ),
         # Large number of exposures with livetime only
@@ -75,9 +75,9 @@ async def adbase():
             0.01,
             0.0,
             [
-                call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-                call.num_images.put(100, wait=True),
-                call.acquire_time.put(0.01, wait=True),
+                call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+                call.num_images.put(100),
+                call.acquire_time.put(0.01),
             ],
         ),
         # With deadtime but no livetime (deadtime should be ignored)
@@ -86,8 +86,8 @@ async def adbase():
             0.0,
             0.1,
             [
-                call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-                call.num_images.put(5, wait=True),
+                call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+                call.num_images.put(5),
             ],
         ),
     ],

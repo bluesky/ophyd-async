@@ -84,14 +84,12 @@ async def test_cont_acq_controller_success(
     assert_has_calls(
         cont_acq_detector,
         [
-            call.cb.capture.put(False, wait=False),
-            call.cb.enable_callbacks.put(EnableDisable.ENABLE, wait=True),
-            call.cb.pre_count.put(0, wait=True),
-            call.cb.post_count.put(1, wait=True),
-            call.cb.preset_trigger_count.put(1, wait=True),
-            call.cb.flush_on_soft_trg.put(
-                adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE, wait=True
-            ),
-            call.cb.capture.put(True, wait=True),
+            call.cb.capture.put(False),
+            call.cb.enable_callbacks.put(EnableDisable.ENABLE),
+            call.cb.pre_count.put(0),
+            call.cb.post_count.put(1),
+            call.cb.preset_trigger_count.put(1),
+            call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
+            call.cb.capture.put(True),
         ],
     )

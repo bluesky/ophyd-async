@@ -64,12 +64,12 @@ async def test_prepare_external_level(
     assert_has_calls(
         test_advimba.driver,
         [
-            call.trigger_mode.put(OnOff.ON, wait=True),
-            call.exposure_mode.put(advimba.VimbaExposeOutMode.TRIGGER_WIDTH, wait=True),
-            call.trigger_source.put(advimba.VimbaTriggerSource.LINE1, wait=True),
-            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-            call.num_images.put(3, wait=True),
-            call.acquire.put(True, wait=True),
+            call.trigger_mode.put(OnOff.ON),
+            call.exposure_mode.put(advimba.VimbaExposeOutMode.TRIGGER_WIDTH),
+            call.trigger_source.put(advimba.VimbaTriggerSource.LINE1),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+            call.num_images.put(3),
+            call.acquire.put(True),
         ],
     )
 
@@ -87,13 +87,13 @@ async def test_prepare_external_edge(
     assert_has_calls(
         test_advimba.driver,
         [
-            call.trigger_mode.put(OnOff.ON, wait=True),
-            call.exposure_mode.put(advimba.VimbaExposeOutMode.TIMED, wait=True),
-            call.trigger_source.put(advimba.VimbaTriggerSource.LINE1, wait=True),
-            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-            call.num_images.put(5, wait=True),
-            call.acquire_time.put(0.5, wait=True),
-            call.acquire.put(True, wait=True),
+            call.trigger_mode.put(OnOff.ON),
+            call.exposure_mode.put(advimba.VimbaExposeOutMode.TIMED),
+            call.trigger_source.put(advimba.VimbaTriggerSource.LINE1),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+            call.num_images.put(5),
+            call.acquire_time.put(0.5),
+            call.acquire.put(True),
         ],
     )
 
@@ -105,10 +105,10 @@ async def test_prepare_internal(
     assert_has_calls(
         test_advimba.driver,
         [
-            call.trigger_mode.put(OnOff.OFF, wait=True),
-            call.exposure_mode.put(advimba.VimbaExposeOutMode.TIMED, wait=True),
-            call.trigger_source.put(advimba.VimbaTriggerSource.FREERUN, wait=True),
-            call.image_mode.put(adcore.ADImageMode.MULTIPLE, wait=True),
-            call.num_images.put(11, wait=True),
+            call.trigger_mode.put(OnOff.OFF),
+            call.exposure_mode.put(advimba.VimbaExposeOutMode.TIMED),
+            call.trigger_source.put(advimba.VimbaTriggerSource.FREERUN),
+            call.image_mode.put(adcore.ADImageMode.MULTIPLE),
+            call.num_images.put(11),
         ],
     )

@@ -166,8 +166,8 @@ def assert_has_calls(device: Device | Signal, calls: Sequence[Any], reset_after=
     :example:
     ```python device.trigger() assert_has_calls(
         device, [
-            call.device.num_frames.put(1, wait=True),
-            call.device.start_writing.put(None, wait=True),
+            call.device.num_frames.put(1),
+            call.device.start_writing.put(None),
         ],
     )
     ```

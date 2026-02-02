@@ -75,10 +75,10 @@ async def test_arm(jungfrau: JungfrauDetector):
     mock.reset_mock()
     callback_on_mock_put(
         jungfrau.detector.acquisition_start,
-        lambda v, wait: set_mock_value(jungfrau.odin.fp.frames_written, 1),
+        lambda v: set_mock_value(jungfrau.odin.fp.frames_written, 1),
     )
     await jungfrau.trigger()
-    assert_has_calls(jungfrau.detector, [call.acquisition_start.put(None, wait=True)])
+    assert_has_calls(jungfrau.detector, [call.acquisition_start.put(None)])
 
 
 async def test_disarm(jungfrau: JungfrauDetector):
@@ -86,8 +86,8 @@ async def test_disarm(jungfrau: JungfrauDetector):
     assert_has_calls(
         jungfrau.detector,
         [
-            call.acquisition_stop.put(None, wait=True),
-            call.pedestal_mode_state.put(PedestalMode.OFF, wait=True),
+            call.acquisition_stop.put(None),
+            call.pedestal_mode_state.put(PedestalMode.OFF),
         ],
     )
 
@@ -108,10 +108,10 @@ async def test_signals_set_in_pedestal_mode(jungfrau: JungfrauDetector):
     assert_has_calls(
         jungfrau.detector,
         [
-            call.trigger_mode.put(JungfrauTriggerMode.INTERNAL, wait=True),
-            call.period_between_frames.put(0.00102, wait=True),
-            call.exposure_time.put(0.001, wait=True),
-            call.pedestal_mode_state.put(PedestalMode.ON, wait=True),
+            call.trigger_mode.put(JungfrauTriggerMode.INTERNAL),
+            call.period_between_frames.put(0.00102),
+            call.exposure_time.put(0.001),
+            call.pedestal_mode_state.put(PedestalMode.ON),
         ],
     )
 
@@ -126,10 +126,10 @@ async def test_signals_set_in_standard_internal_mode(jungfrau: JungfrauDetector)
     assert_has_calls(
         jungfrau.detector,
         [
-            call.trigger_mode.put(JungfrauTriggerMode.INTERNAL, wait=True),
-            call.frames_per_acq.put(10, wait=True),
-            call.period_between_frames.put(0.00102, wait=True),
-            call.exposure_time.put(0.001, wait=True),
+            call.trigger_mode.put(JungfrauTriggerMode.INTERNAL),
+            call.frames_per_acq.put(10),
+            call.period_between_frames.put(0.00102),
+            call.exposure_time.put(0.001),
         ],
     )
 
@@ -145,11 +145,11 @@ async def test_signals_set_in_standard_external_mode(jungfrau: JungfrauDetector)
     assert_has_calls(
         jungfrau.detector,
         [
-            call.trigger_mode.put(JungfrauTriggerMode.EXTERNAL, wait=True),
-            call.frames_per_acq.put(10, wait=True),
-            call.period_between_frames.put(0.00102, wait=True),
-            call.exposure_time.put(0.001, wait=True),
-            call.acquisition_start.put(None, wait=True),
+            call.trigger_mode.put(JungfrauTriggerMode.EXTERNAL),
+            call.frames_per_acq.put(10),
+            call.period_between_frames.put(0.00102),
+            call.exposure_time.put(0.001),
+            call.acquisition_start.put(None),
         ],
     )
 

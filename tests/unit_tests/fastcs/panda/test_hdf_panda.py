@@ -138,21 +138,21 @@ async def test_open_sets_correct_signals(hdf_panda: HDFPanda, tmp_path):
     assert_has_calls(
         hdf_panda,
         [
-            call.data.create_directory.put(0, wait=True),
-            call.data.flush_period.put(0, wait=True),
-            call.data.hdf_directory.put(str(tmp_path), wait=True),
-            call.data.hdf_file_name.put("test-panda.h5", wait=True),
-            call.data.capture_mode.put(PandaCaptureMode.FOREVER, wait=True),
-            call.data.capture.put(True, wait=True),
-            call.pcap.arm.put(True, wait=True),
+            call.data.create_directory.put(0),
+            call.data.flush_period.put(0),
+            call.data.hdf_directory.put(str(tmp_path)),
+            call.data.hdf_file_name.put("test-panda.h5"),
+            call.data.capture_mode.put(PandaCaptureMode.FOREVER),
+            call.data.capture.put(True),
+            call.pcap.arm.put(True),
         ],
     )
 
 
 async def test_close_sets_correct_signals(hdf_panda: HDFPanda):
     await hdf_panda.unstage()
-    assert_has_calls(hdf_panda.pcap, [call.arm.put(False, wait=True)])
-    assert_has_calls(hdf_panda.data, [call.capture.put(False, wait=True)])
+    assert_has_calls(hdf_panda.pcap, [call.arm.put(False)])
+    assert_has_calls(hdf_panda.data, [call.capture.put(False)])
 
 
 async def test_flyscan_documents(hdf_panda: HDFPanda, tmp_path):
