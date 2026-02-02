@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import types
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable, Sequence
 from typing import (
@@ -15,6 +16,8 @@ from typing import (
     get_type_hints,
 )
 from unittest.mock import AsyncMock
+
+import numpy as np
 
 from ._device import Device, DeviceConnector, LazyMock
 from ._status import AsyncStatus
@@ -109,18 +112,110 @@ class Command(Device, Generic[P, T]):
         return result
 
 
-def soft_command(
-    command_cb: Callable[P, T | Awaitable[T]],
-    name: str = "",
-    timeout: float | None = DEFAULT_TIMEOUT,
-) -> Command[P, T]:
-    """Create a Command with a SoftCommandBackend.
+def _extract_numpy_scalar_from_dtype_annotation(
+    dtype_anno: object,
+) -> type[np.generic] | None:
+    """Given something like np.dtype[np.float32], return np.float32."""
+    origin = get_origin(dtype_anno)
+    if origin is np.dtype:
+        args = get_args(dtype_anno)
+        if (
+            len(args) == 1
+            and isinstance(args[0], type)
+            and issubclass(args[0], np.generic)
+        ):
+            return args[0]
+    return None
 
-    The callback must have full type annotations (all parameters + return).
-    Argument and return types are inferred from those annotations.
+
+def _check_value_against_annotation(
+    value: object, annotation: object, *, path: str
+) -> None:
+    """Runtime-check a value against a typing annotation.
+
+    Supports:
+      - plain classes
+      - unions (T1 | T2, Optional[T], Union[...])
+      - Sequence[T] with element checking
+      - numpy.ndarray[...] (including Array1D[np.float32]-style annotations)
     """
-    backend: SoftCommandBackend[P, T] = SoftCommandBackend(command_cb)
-    return Command(backend, timeout, name)
+    # None / NoneType
+    if annotation is None or annotation is type(None):  # noqa: E721
+        if value is not None:
+            raise TypeError(f"{path} should be {annotation}, got {type(value)}")
+        return
+
+    origin = get_origin(annotation)
+
+    # Union support
+    if origin is None and isinstance(annotation, types.UnionType):
+        union_args = annotation.__args__  # type: ignore[attr-defined]
+    elif origin is types.UnionType or origin is getattr(
+        __import__("typing"), "Union", object()
+    ):
+        union_args = get_args(annotation)
+    else:
+        union_args = ()
+
+    if union_args:
+        last_exc: TypeError | None = None
+        for opt in union_args:
+            try:
+                _check_value_against_annotation(value, opt, path=path)
+                return
+            except TypeError as exc:
+                last_exc = exc
+        raise TypeError(
+            f"{path} should be {annotation}, got {type(value)}"
+        ) from last_exc
+
+    # Sequence[T] element checking
+    if origin is Sequence:
+        if not isinstance(value, Sequence) or isinstance(
+            value, (str, bytes, bytearray)
+        ):
+            raise TypeError(f"{path} should be {annotation}, got {type(value)}")
+        (elem_anno,) = get_args(annotation) or (object,)
+        for i, elem in enumerate(value):
+            _check_value_against_annotation(elem, elem_anno, path=f"{path}[{i}]")
+        return
+
+    # numpy.ndarray[...] including Array1D[np.float32]
+    if origin is np.ndarray:
+        if not isinstance(value, np.ndarray):
+            raise TypeError(f"{path} should be {annotation}, got {type(value)}")
+
+        anno_args = get_args(annotation)
+        if len(anno_args) == 2:
+            _shape_anno, dtype_anno = anno_args
+            scalar = _extract_numpy_scalar_from_dtype_annotation(dtype_anno)
+            if scalar is not None:
+                expected_dtype = np.dtype(scalar)
+                if value.dtype != expected_dtype:
+                    raise TypeError(
+                        f"{path} should be {annotation}, got ndarray dtype"
+                        f" {value.dtype}"
+                    )
+                if value.ndim != 1:
+                    raise TypeError(
+                        f"{path} should be 1D array for {annotation},"
+                        f" got ndim={value.ndim}"
+                    )
+        return
+
+    # Parametrized non-Sequence types: check the origin only
+    if origin is not None:
+        if not isinstance(value, origin):
+            raise TypeError(f"{path} should be {annotation}, got {type(value)}")
+        return
+
+    # Plain classes
+    if isinstance(annotation, type):
+        if not isinstance(value, annotation):
+            raise TypeError(f"{path} should be {annotation}, got {type(value)}")
+        return
+
+    raise TypeError(f"{path} should be {annotation}, got {type(value)}")
 
 
 class SoftCommandBackend(CommandBackend[P, T]):
@@ -164,8 +259,8 @@ class SoftCommandBackend(CommandBackend[P, T]):
             )
 
         # Store expected param types by name (runtime contract)
-        self._expected_param_types: dict[str, type] = {
-            p.name: cast(type, hints[p.name]) for p in self._params
+        self._expected_param_types: dict[str, object] = {
+            p.name: hints[p.name] for p in self._params
         }
 
         inferred_return = hints["return"]
@@ -195,19 +290,8 @@ class SoftCommandBackend(CommandBackend[P, T]):
         bound.apply_defaults()
 
         for name, value in bound.arguments.items():
-            expected_type = self._expected_param_types[name]
-
-            origin = get_origin(expected_type) or expected_type
-            if origin is Sequence:
-                if not isinstance(value, Sequence):
-                    raise TypeError(
-                        f"Argument '{name}' should be {expected_type},"
-                        f" got {type(value)}"
-                    )
-            elif not isinstance(value, origin):
-                raise TypeError(
-                    f"Argument '{name}' should be {expected_type}, got {type(value)}"
-                )
+            expected = self._expected_param_types[name]
+            _check_value_against_annotation(value, expected, path=f"Argument '{name}'")
 
         async with self._lock:
             result = self._command_cb(*args, **kwargs)
@@ -244,3 +328,17 @@ class MockCommandBackend(CommandBackend[P, T]):
         """Call the mock command."""
         result = await self.trigger_mock(*args, **kwargs)
         return cast(T, result)
+
+
+def soft_command(
+    command_cb: Callable[P, T | Awaitable[T]],
+    name: str = "",
+    timeout: float | None = DEFAULT_TIMEOUT,
+) -> Command[P, T]:
+    """Create a Command with a SoftCommandBackend.
+
+    The callback must have full type annotations (all parameters + return).
+    Argument and return types are inferred from those annotations.
+    """
+    backend: SoftCommandBackend[P, T] = SoftCommandBackend(command_cb)
+    return Command(backend, timeout, name)

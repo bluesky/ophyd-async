@@ -131,6 +131,60 @@ async def test_soft_command_runtime_validation(datatype, value):
         await cmd.trigger(wrong_value)
 
 
+async def test_soft_command_runtime_validation_nested_types():
+    def callback(v: Sequence[str]) -> float:
+        return 1.0
+
+    backend = SoftCommandBackend(callback)
+    cmd = Command(backend, name="test_cmd")
+    await cmd.connect()
+
+    wrong_arg = [3.5, "string"]
+    with pytest.raises(TypeError, match="should be"):
+        await cmd.trigger(wrong_arg)
+
+    def callback(v: Array1D[np.float32]) -> float:
+        return 1.0
+
+    backend = SoftCommandBackend(callback)
+    cmd = Command(backend, name="test_cmd")
+    await cmd.connect()
+
+    wrong_arg = np.array([3.5, 4.5], dtype=np.float64)  # constructible, but wrong dtype
+    with pytest.raises(TypeError, match="should be"):
+        await cmd.trigger(wrong_arg)
+
+    backend = SoftCommandBackend(callback)
+    cmd = Command(backend, name="test_cmd")
+    await cmd.connect()
+
+    wrong_arg = np.array([[1.0, 2.0]], dtype=np.float32)
+    with pytest.raises(TypeError, match="should be"):
+        await cmd.trigger(wrong_arg)
+
+
+async def test_soft_command_runtime_validation_union_types():
+    def callback(v: int | str) -> float:
+        return 1.0
+
+    backend = SoftCommandBackend(callback)
+    cmd = Command(backend, name="test_cmd")
+    await cmd.connect()
+
+    # Valid cases
+    status = cmd.trigger(3)
+    await status
+    assert status.task.result() == 1.0
+
+    status = cmd.trigger("ok")
+    await status
+    assert status.task.result() == 1.0
+
+    # Invalid case
+    with pytest.raises(TypeError, match="should be"):
+        await cmd.trigger(3.5)
+
+
 async def test_mock_command_backend():
     async def async_callback(a: int, b: str) -> str:
         return f"{b}_{a}"
