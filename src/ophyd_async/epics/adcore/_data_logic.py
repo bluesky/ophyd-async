@@ -70,6 +70,8 @@ async def get_ndarray_resource_info(
         description.data_type_signal.get_value(),
         description.color_mode_signal.get_value(),
     )
+    # Remove entries in shape that are zero
+    shape = [x for x in shape if x > 0]
     if datatype is ADBaseDataType.UNDEFINED:
         raise ValueError(
             f"{description.data_type_signal.source} is blank, this is not supported"
@@ -309,7 +311,7 @@ def make_writer_data_logic(
 ) -> tuple[NDPluginFileIO, DetectorDataLogic]:
     plugins = plugins or {}
     description = NDArrayDescription(
-        shape_signals=[driver.array_size_y, driver.array_size_x],
+        shape_signals=[driver.array_size_z, driver.array_size_y, driver.array_size_x],
         data_type_signal=driver.data_type,
         color_mode_signal=driver.color_mode,
     )

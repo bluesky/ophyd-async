@@ -228,3 +228,20 @@ async def test_describe_different_color_modes(
                 "source": ANY,
             },
         }
+
+
+async def test_3d_dataset_shape(hdf_det: adcore.AreaDetector[adcore.ADBaseIO]):
+    writer = hdf_det.get_plugin("writer", adcore.NDPluginFileIO)
+    set_mock_value(writer.file_path_exists, True)
+    set_mock_value(hdf_det.driver.array_size_z, 10)
+    await hdf_det.prepare(TriggerInfo())
+    describe = await hdf_det.describe()
+    assert describe == {
+        "detector": {
+            "dtype": "array",
+            "dtype_numpy": "<u2",
+            "external": "STREAM:",
+            "shape": [1, 10, 768, 1024],
+            "source": ANY,
+        },
+    }
