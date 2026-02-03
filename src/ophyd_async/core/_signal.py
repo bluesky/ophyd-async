@@ -501,6 +501,12 @@ async def observe_signals_value(
                     f"{[signal.source for signal in signals]}. "
                     f"Last observed signal and value were {last_item}"
                 ) from exc
+            except asyncio.CancelledError as exc:
+                raise asyncio.CancelledError(
+                    f"Cancelled Error while waiting {iteration_timeout}s to update "
+                    f"{[signal.source for signal in signals]}. "
+                    f"Last observed signal and value were {last_item}"
+                ) from exc
             if done_status and item is done_status:
                 if exc := done_status.exception():
                     raise exc
