@@ -12,7 +12,7 @@ from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice, TangoPolling
 
 
-class TangoCounter(TangoDevice, StandardReadable):
+class DemoCounter(TangoDevice, StandardReadable):
     """Tango counting device."""
 
     # Enter the name and type of the signals you want to use
