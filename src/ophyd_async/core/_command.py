@@ -103,15 +103,18 @@ class Command(Device, Generic[P, T]):
         """Returns the source of the command."""
         return self._connector.backend.source(self.name)
 
-    @AsyncStatus.wrap
-    async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Call the command and return a status saying when it's done."""
+    async def _call(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        """Implementation for calling the backend (awaited by AsyncStatus)."""
         self.log.debug(f"Calling command {self.name}")
         result = await _wait_for(
             self._connector.backend(*args, **kwargs), self._timeout, self.source
         )
         self.log.debug(f"Command {self.name} returned {result}")
         return result
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> AsyncStatus:
+        """Call the command and return an AsyncStatus for completion."""
+        return AsyncStatus(self._call(*args, **kwargs), name=self.name)
 
 
 def _extract_numpy_scalar_from_dtype_annotation(
