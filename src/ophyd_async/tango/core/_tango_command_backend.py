@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import asyncio
-from typing import Any, Generic, ParamSpec, TypeVar, cast
+from typing import Any, ParamSpec, TypeVar, cast
 
-from tango import CommandInfo
+from tango import CommandInfo, DeviceProxy
 
 from ophyd_async.core import (
     Command,
@@ -21,6 +20,7 @@ from ._tango_transport import (
     make_converter,
 )
 
+# TODO: Import these from _utils once Command is finalized
 P = ParamSpec("P")
 T = TypeVar("T")
 
@@ -32,13 +32,16 @@ class TangoCommandBackend(CommandBackend[P, T]):
     ----------
     trl:
         Full Tango resource locator to the command (e.g. "sys/tg_test/1/Command")
+    device_proxy:
+        Optional device proxy to use.
     datatype:
         Optional Python datatype to guide enum conversions; if provided it will
         be used to specialize converters.
     """
 
-    def __init__(self, trl: str, datatype: type[T] | None = None):
+    def __init__(self, trl: str, device_proxy: DeviceProxy | None = None, datatype: type[T] | None = None):
         self._trl = trl
+        self._device_proxy = device_proxy
         self._datatype: type[T] | None = datatype
         self._proxy: CommandProxy | None = None
         self._config: CommandInfo | None = None
@@ -49,7 +52,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
         return self._trl
 
     async def connect(self, timeout: float) -> None:
-        tp = await get_tango_trl(self._trl, None, timeout)
+        tp = await get_tango_trl(self._trl, self._device_proxy, timeout)
         if not isinstance(tp, CommandProxy):
             raise NotConnectedError(f"{self._trl} is not a Tango Command")
         self._proxy = tp
@@ -86,7 +89,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
             CommandProxyReadCharacter.READ_WRITE,
         ):
             reading = await self._proxy.get_reading()
-            return cast(T, reading["value"])  # type: ignore[return-value]
+            return cast(T, reading["value"])
         return cast(T, None)
 
 class TangoCommandConnector(CommandConnector):
@@ -94,6 +97,7 @@ class TangoCommandConnector(CommandConnector):
 
 def tango_command(
     trl: str,
+    device_proxy: DeviceProxy | None = None,
     datatype: type[T] | None = None,
     *,
     timeout: float | None = DEFAULT_TIMEOUT,
@@ -105,6 +109,8 @@ def tango_command(
     ----------
     trl:
         Full Tango resource locator to the command.
+    device_proxy:
+        Optional device proxy to use.
     datatype:
         Optional datatype for enum specialization.
     timeout:
@@ -112,5 +118,5 @@ def tango_command(
     name:
         Device name used for logging and provenance.
     """
-    backend: TangoCommandBackend[P, T] = TangoCommandBackend(trl, datatype)
+    backend: TangoCommandBackend[P, T] = TangoCommandBackend(trl, device_proxy, datatype)
     return Command(backend, timeout=timeout, name=name)
