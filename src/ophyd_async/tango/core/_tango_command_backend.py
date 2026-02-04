@@ -89,6 +89,9 @@ class TangoCommandBackend(CommandBackend[P, T]):
             return cast(T, reading["value"])  # type: ignore[return-value]
         return cast(T, None)
 
+class TangoCommandConnector(CommandConnector):
+    pass
+
 def tango_command(
     trl: str,
     datatype: type[T] | None = None,
