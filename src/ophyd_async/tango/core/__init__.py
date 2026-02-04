@@ -25,6 +25,11 @@ from ._tango_transport import (
     get_tango_trl,
     parse_precision,
 )
+from ._tango_command_backend import (
+    TangoCommandBackend,
+    TangoCommandConnector,
+    tango_command,
+)
 from ._utils import (
     DevStateEnum,
     get_device_trl_and_attr,
