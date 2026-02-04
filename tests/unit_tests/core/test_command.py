@@ -76,7 +76,7 @@ async def test_soft_command_execution(datatype, value):
     cmd = Command(backend, name="test_cmd")
     await cmd.connect()
 
-    status = cmd.trigger(value)
+    status = cmd(value)
     await status
     res = status.task.result()
 
@@ -118,7 +118,7 @@ async def test_soft_command_runtime_validation(datatype, value):
 
     # Wrong number of arguments
     with pytest.raises(TypeError, match="missing a required argument"):
-        await cmd.trigger()
+        await cmd()
 
     # Wrong type of argument
     wrong_value = "not the right type" if datatype is not str else 123
@@ -128,7 +128,7 @@ async def test_soft_command_runtime_validation(datatype, value):
         wrong_value = "not an array"
 
     with pytest.raises(TypeError, match="should be"):
-        await cmd.trigger(wrong_value)
+        await cmd(wrong_value)
 
 
 async def test_soft_command_runtime_validation_nested_types():
@@ -141,7 +141,7 @@ async def test_soft_command_runtime_validation_nested_types():
 
     wrong_arg = [3.5, "string"]
     with pytest.raises(TypeError, match="should be"):
-        await cmd.trigger(wrong_arg)
+        await cmd(wrong_arg)
 
     def callback(v: Array1D[np.float32]) -> float:
         return 1.0
@@ -152,7 +152,7 @@ async def test_soft_command_runtime_validation_nested_types():
 
     wrong_arg = np.array([3.5, 4.5], dtype=np.float64)  # constructible, but wrong dtype
     with pytest.raises(TypeError, match="should be"):
-        await cmd.trigger(wrong_arg)
+        await cmd(wrong_arg)
 
     backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
@@ -160,7 +160,7 @@ async def test_soft_command_runtime_validation_nested_types():
 
     wrong_arg = np.array([[1.0, 2.0]], dtype=np.float32)
     with pytest.raises(TypeError, match="should be"):
-        await cmd.trigger(wrong_arg)
+        await cmd(wrong_arg)
 
 
 async def test_soft_command_runtime_validation_union_types():
@@ -172,17 +172,17 @@ async def test_soft_command_runtime_validation_union_types():
     await cmd.connect()
 
     # Valid cases
-    status = cmd.trigger(3)
+    status = cmd(3)
     await status
     assert status.task.result() == 1.0
 
-    status = cmd.trigger("ok")
+    status = cmd("ok")
     await status
     assert status.task.result() == 1.0
 
     # Invalid case
     with pytest.raises(TypeError, match="should be"):
-        await cmd.trigger(3.5)
+        await cmd(3.5)
 
 
 async def test_mock_command_backend():
@@ -197,11 +197,11 @@ async def test_mock_command_backend():
 
     assert isinstance(cmd._connector.backend, MockCommandBackend)
 
-    cmd._connector.backend.trigger_mock.return_value = "mock_res"
-    status = cmd.trigger(3, "mock")
+    cmd._connector.backend.call_mock.return_value = "mock_res"
+    status = cmd(3, "mock")
     await status
     assert status.task.result() == "mock_res"
-    cmd._connector.backend.trigger_mock.assert_awaited_once_with(3, "mock")
+    cmd._connector.backend.call_mock.assert_awaited_once_with(3, "mock")
 
 
 async def test_soft_command_factory():
@@ -210,7 +210,7 @@ async def test_soft_command_factory():
 
     cmd_rw = soft_command(rw_cb, name="rw")
     await cmd_rw.connect()
-    status = cmd_rw.trigger(123)
+    status = cmd_rw(123)
     await status
     assert status.task.result() == "123"
 
@@ -219,7 +219,7 @@ async def test_soft_command_factory():
 
     cmd_x = soft_command(x_cb, name="x")
     await cmd_x.connect()
-    status = cmd_x.trigger()
+    status = cmd_x()
     await status
     assert status.task.result() is None
 
@@ -232,7 +232,7 @@ async def test_execution_error_wrapping():
     await cmd.connect()
 
     with pytest.raises(ValueError, match="Boom"):
-        await cmd.trigger()
+        await cmd()
 
 
 async def test_async_return_type_validation():
@@ -252,9 +252,9 @@ async def test_command_logging(caplog):
     await cmd.connect()
     assert "Connecting to softcmd://mycmd" in caplog.text
 
-    status = cmd.trigger(42)
+    status = cmd(42)
     await status
     assert status.task.result() == "42"
 
-    assert "Triggering command mycmd" in caplog.text
+    assert "Calling command mycmd" in caplog.text
     assert "Command mycmd returned 42" in caplog.text
