@@ -6,10 +6,11 @@ from typing import Any, Generic, TypeVar
 from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
-from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock
+from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock, Signal, Command
 
 from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
 from ._utils import get_full_attr_trl
+from ._tango_command_backend import TangoCommandBackend
 
 T = TypeVar("T")
 
@@ -129,12 +130,15 @@ class TangoDeviceConnector(DeviceConnector):
                 # TODO: strip attribute name
                 full_trl = get_full_attr_trl(self.trl, name)
                 signal_type = await infer_signal_type(full_trl, self.proxy)
-                if signal_type:
+                if issubclass(signal_type, Signal):
                     backend = self.filler.fill_child_signal(name, signal_type)
                     # don't overlaod datatype if provided by annotation
                     if backend.datatype is None:
                         backend.datatype = await infer_python_type(full_trl, self.proxy)
                     backend.set_trl(full_trl)
+                if issubclass(signal_type, Command):
+                    backend = TangoCommandBackend(full_trl, self.proxy)
+                    print(backend)
 
         # Check that all the requested children have been filled
         self.filler.check_filled(f"{self.trl}: {children}")
