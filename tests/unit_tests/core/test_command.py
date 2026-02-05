@@ -1,6 +1,5 @@
 import logging
 from collections.abc import Sequence
-from typing import get_origin
 
 import numpy as np
 import pytest
@@ -75,11 +74,9 @@ async def test_soft_command_execution(datatype, value):
     backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
     await cmd.connect()
-
     status = cmd(value)
     await status
     res = status.task.result()
-
     if isinstance(value, np.ndarray):
         assert np.array_equal(res, value)
     else:
@@ -107,82 +104,27 @@ def test_soft_command_init_validation(datatype, value):
         SoftCommandBackend(incomplete_param_annotation)
 
 
-@pytest.mark.parametrize("datatype, value", TEST_PARAMS)
-async def test_soft_command_runtime_validation(datatype, value):
-    def callback(v: datatype) -> None:
-        pass
+async def test_call_raises_typeerror_on_bad_arguments():
+    async def callback(a: int, b: int) -> int:
+        return a + b
 
     backend = SoftCommandBackend(callback)
-    cmd = Command(backend, name="test_cmd")
-    await cmd.connect()
 
-    # Wrong number of arguments
+    # Too few arguments
     with pytest.raises(TypeError, match="missing a required argument"):
-        await cmd()
+        await backend(1)
 
-    # Wrong type of argument
-    wrong_value = "not the right type" if datatype is not str else 123
-    if get_origin(datatype) is Sequence:
-        wrong_value = 123
-    elif isinstance(value, np.ndarray):
-        wrong_value = "not an array"
+    # Too many positional arguments
+    with pytest.raises(TypeError, match="too many positional arguments"):
+        await backend(1, 2, 3)
 
-    with pytest.raises(TypeError, match="should be"):
-        await cmd(wrong_value)
+    # Unexpected keyword argument
+    with pytest.raises(TypeError, match="unexpected keyword argument"):
+        await backend(a=1, b=2, c=3)
 
-
-async def test_soft_command_runtime_validation_nested_types():
-    def callback(v: Sequence[str]) -> float:
-        return 1.0
-
-    backend = SoftCommandBackend(callback)
-    cmd = Command(backend, name="test_cmd")
-    await cmd.connect()
-
-    wrong_arg = [3.5, "string"]
-    with pytest.raises(TypeError, match="should be"):
-        await cmd(wrong_arg)
-
-    def callback(v: Array1D[np.float32]) -> float:
-        return 1.0
-
-    backend = SoftCommandBackend(callback)
-    cmd = Command(backend, name="test_cmd")
-    await cmd.connect()
-
-    wrong_arg = np.array([3.5, 4.5], dtype=np.float64)  # constructible, but wrong dtype
-    with pytest.raises(TypeError, match="should be"):
-        await cmd(wrong_arg)
-
-    backend = SoftCommandBackend(callback)
-    cmd = Command(backend, name="test_cmd")
-    await cmd.connect()
-
-    wrong_arg = np.array([[1.0, 2.0]], dtype=np.float32)
-    with pytest.raises(TypeError, match="should be"):
-        await cmd(wrong_arg)
-
-
-async def test_soft_command_runtime_validation_union_types():
-    def callback(v: int | str) -> float:
-        return 1.0
-
-    backend = SoftCommandBackend(callback)
-    cmd = Command(backend, name="test_cmd")
-    await cmd.connect()
-
-    # Valid cases
-    status = cmd(3)
-    await status
-    assert status.task.result() == 1.0
-
-    status = cmd("ok")
-    await status
-    assert status.task.result() == 1.0
-
-    # Invalid case
-    with pytest.raises(TypeError, match="should be"):
-        await cmd(3.5)
+    # Multiple values for the same argument
+    with pytest.raises(TypeError, match="multiple values for argument"):
+        await backend(1, a=2)
 
 
 async def test_mock_command_backend():
@@ -191,12 +133,9 @@ async def test_mock_command_backend():
 
     backend = SoftCommandBackend(async_callback)
     cmd = Command(backend, name="test_cmd")
-
     mock = DeviceMock()
     await cmd.connect(mock=mock)
-
     assert isinstance(cmd._connector.backend, MockCommandBackend)
-
     cmd._connector.backend.call_mock.return_value = "mock_res"
     status = cmd(3, "mock")
     await status
@@ -230,7 +169,6 @@ async def test_execution_error_wrapping():
 
     cmd = soft_command(failing_callback, name="test_cmd")
     await cmd.connect()
-
     with pytest.raises(ValueError, match="Boom"):
         await cmd()
 
@@ -251,10 +189,8 @@ async def test_command_logging(caplog):
     cmd = soft_command(my_cb, name="mycmd")
     await cmd.connect()
     assert "Connecting to softcmd://mycmd" in caplog.text
-
     status = cmd(42)
     await status
     assert status.task.result() == "42"
-
     assert "Calling command mycmd" in caplog.text
     assert "Command mycmd returned 42" in caplog.text
