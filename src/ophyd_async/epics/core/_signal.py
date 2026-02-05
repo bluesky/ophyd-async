@@ -27,16 +27,22 @@ class EpicsProtocol(Enum):
 _default_epics_protocol = EpicsProtocol.CA
 
 
-def _make_unavailable_function(error: Exception):
+def _make_unavailable_function(protocol: str, error: Exception):
     def transport_not_available(*args, **kwargs):
-        raise NotImplementedError("Transport not available") from error
+        msg = (
+            f"Protocol {protocol} not available, "
+            f"did you `pip install ophyd_async[{protocol}]`?"
+        )
+        raise NotImplementedError(msg) from error
 
     return transport_not_available
 
 
-def _make_unavailable_class(error: Exception) -> type[EpicsSignalBackend]:
+def _make_unavailable_class(
+    protocol: str, error: Exception
+) -> type[EpicsSignalBackend]:
     class TransportNotAvailable(EpicsSignalBackend):
-        __init__ = _make_unavailable_function(error)
+        __init__ = _make_unavailable_function(protocol, error)
 
     return TransportNotAvailable
 
@@ -44,15 +50,15 @@ def _make_unavailable_class(error: Exception) -> type[EpicsSignalBackend]:
 try:
     from ._p4p import PvaSignalBackend, pvget_with_timeout
 except ImportError as pva_error:
-    PvaSignalBackend = _make_unavailable_class(pva_error)
-    pvget_with_timeout = _make_unavailable_function(pva_error)
+    PvaSignalBackend = _make_unavailable_class("pva", pva_error)
+    pvget_with_timeout = _make_unavailable_function("pva", pva_error)
 else:
     _default_epics_protocol = EpicsProtocol.PVA
 
 try:
     from ._aioca import CaSignalBackend
 except ImportError as ca_error:
-    CaSignalBackend = _make_unavailable_class(ca_error)
+    CaSignalBackend = _make_unavailable_class("ca", ca_error)
 else:
     _default_epics_protocol = EpicsProtocol.CA
 
