@@ -16,7 +16,7 @@ from typing import (
 from unittest.mock import AsyncMock
 
 from ._device import Device, DeviceConnector, LazyMock
-from ._soft_signal_backend import make_converter
+from ._soft_signal_backend import SoftConverter, make_converter
 from ._status import AsyncStatus
 from ._utils import (
     DEFAULT_TIMEOUT,
@@ -125,7 +125,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
         self._command_cb = command_cb
         self._last_return_value: T | None = None
         self._lock = asyncio.Lock()
-
         self._sig = inspect.signature(command_cb)
         self._params = list(self._sig.parameters.values())
 
@@ -160,10 +159,21 @@ class SoftCommandBackend(CommandBackend[P, T]):
             p.name: hints[p.name] for p in self._params
         }
 
+        # Create converters for each parameter during initialization
+        self._converters: dict[str, SoftConverter] = {}
+        for name, expected_type in self._expected_param_types.items():
+            try:
+                self._converters[name] = make_converter(expected_type or float)
+            except TypeError as exc:
+                raise TypeError(
+                    f"Cannot create converter for parameter '{name}' of type"
+                    f" {expected_type}: {exc}"
+                ) from exc
+
+        # Handle return type
         inferred_return = hints["return"]
         if get_origin(inferred_return) in (Awaitable, asyncio.Future):
             inferred_return = get_args(inferred_return)[0]
-
         if inferred_return is None or inferred_return is type(None):
             self._command_return: type[T] | None = None
         else:
@@ -183,22 +193,16 @@ class SoftCommandBackend(CommandBackend[P, T]):
             bound = self._sig.bind(*args, **kwargs)
         except TypeError as exc:
             raise TypeError(str(exc)) from exc
+
         bound.apply_defaults()
 
         for name, value in bound.arguments.items():
-            expected_type = self._expected_param_types[name]
-            try:
-                converter = make_converter(expected_type or float)
-            except TypeError as exc:
-                raise TypeError(
-                    f"Cannot create converter for parameter '{name}' of type"
-                    f" {expected_type}: {exc}"
-                ) from exc
-
+            converter = self._converters[name]
             try:
                 converted_value = converter.write_value(value)
                 bound.arguments[name] = converted_value
             except (TypeError, ValueError) as exc:
+                expected_type = self._expected_param_types[name]
                 raise TypeError(
                     f"Argument '{name}' with value {value!r} is not compatible with "
                     f"expected type {expected_type}: {exc}"
