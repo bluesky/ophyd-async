@@ -1,51 +1,69 @@
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import call
 
 import pytest
 
 from ophyd_async.core import (
     DetectorTrigger,
+    StaticFilenameProvider,
+    StaticPathProvider,
     TriggerInfo,
-    callback_on_mock_put,
-    get_mock_put,
     init_devices,
     set_mock_value,
 )
-from ophyd_async.fastcs.eiger import EigerDetector
+from ophyd_async.fastcs.eiger import EigerDetector, EigerTriggerMode
+from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
-def detector(RE):
+def detector(RE, tmp_path):
+    path_provider = StaticPathProvider(StaticFilenameProvider("filename"), tmp_path)
     with init_devices(mock=True):
-        detector = EigerDetector("BL03I", MagicMock())
+        detector = EigerDetector("BL03I", path_provider)
 
-    def set_meta_filename_and_id(value, *args, **kwargs):
-        set_mock_value(detector.odin.meta_file_name, value)
-        set_mock_value(detector.odin.id, value)
-
-    callback_on_mock_put(detector.odin.file_name, set_meta_filename_and_id)
-
-    detector._writer._path_provider.return_value.filename = "filename.h5"  # type: ignore
-
-    set_mock_value(detector.odin.meta_active, "Active")
-    set_mock_value(detector.odin.capture_rbv, "Capturing")
-    set_mock_value(detector.odin.meta_writing, "Writing")
+    # Enough to satisfy the odin writer
+    set_mock_value(detector.od.fp.writing, True)
+    set_mock_value(detector.od.mw.writing, True)
+    set_mock_value(detector.detector.bit_depth_image, 16)
     return detector
 
 
-async def test_when_prepared_eiger_bit_depth_is_passed_and_set_in_odin(detector):
-    detector._controller.arm = AsyncMock()
-    expected_datatype = 16
-    set_mock_value(detector.drv.detector.bit_depth_image, expected_datatype)
-
+async def test_prepare_internal_calls_correct_parameters(
+    detector: EigerDetector, tmp_path
+):
     await detector.prepare(
         TriggerInfo(
-            exposure_timeout=None,
-            number_of_events=1,
+            number_of_events=10,
+            livetime=0.1,
             trigger=DetectorTrigger.INTERNAL,
         )
     )
-
-    # Assert that odin datatype is set to the eiger bit depth during detector prepare
-    get_mock_put(detector.odin.data_type).assert_called_once_with(
-        f"UInt{expected_datatype}"
+    assert_has_calls(
+        detector,
+        [
+            call.detector.trigger_mode.put(EigerTriggerMode.INTERNAL),
+            call.detector.nimages.put(10),
+            call.detector.count_time.put(0.1),
+            call.detector.frame_time.put(0.1),
+            call.od.fp.data_datatype.put("uint16"),
+            call.od.fp.data_compression.put("BSLZ4"),
+            call.od.fp.frames.put(0),
+            call.od.fp.process_frames_per_block.put(1000),
+            call.od.fp.file_path.put(str(tmp_path)),
+            call.od.mw.directory.put(str(tmp_path)),
+            call.od.fp.file_prefix.put("filename.h5"),
+            call.od.mw.file_prefix.put("filename.h5"),
+            call.od.mw.acquisition_id.put("filename.h5"),
+            call.od.fp.start_writing.put(None),
+        ],
+        reset_after=False,
     )
+
+
+async def test_deadtime_correct(detector: EigerDetector):
+    supported_triggers, deadtime = await detector.get_trigger_deadtime()
+    assert supported_triggers == {
+        DetectorTrigger.INTERNAL,
+        DetectorTrigger.EXTERNAL_EDGE,
+        DetectorTrigger.EXTERNAL_LEVEL,
+    }
+    assert deadtime == 0.0001

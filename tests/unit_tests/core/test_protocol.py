@@ -1,18 +1,8 @@
-from pathlib import Path
-
-import pytest
-
-from ophyd_async.core import (
-    AsyncReadable,
-    StandardFlyer,
-)
-from ophyd_async.sim import SimMotor
+from ophyd_async.core import AsyncReadable, StandardFlyer
+from ophyd_async.sim import SimBlobDetector, SimMotor
 
 
-@pytest.mark.parametrize(
-    "sim_detector", [("test", "test det", Path("/tmp"))], indirect=True
-)
-async def test_readable(sim_detector):
+async def test_readable():
     assert isinstance(SimMotor, AsyncReadable)
-    assert isinstance(sim_detector, AsyncReadable)
+    assert isinstance(SimBlobDetector, AsyncReadable)
     assert not isinstance(StandardFlyer, AsyncReadable)

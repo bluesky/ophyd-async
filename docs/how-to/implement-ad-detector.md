@@ -7,99 +7,206 @@ This document will walk through the steps taken to implement an ophyd-async Devi
 The first stage is to make a module in the `ophyd-async` repository to put the code in:
 
 - If you haven't already, `git clone git@github.com:bluesky/ophyd-async.git` and make a new branch to work in
-- Create a new directory under `src/ophyd_async/epics/` which is the lowercase version of the epics support module for the detector
-  - For example, for [`ADAravis`](https://github.com/areaDetector/ADAravis) make a directory `adaravis`
-- Make an empty `__init__.py` within that directory
+- Create a new file under `src/ophyd_async/epics/` which is the lowercase version of the epics support module for the detector
+  - For example, for [`ADAravis`](https://github.com/areaDetector/ADAravis) make a file `adaravis.py`
 
 ## Add an IO class for the PV interface
 
 Now you need an IO class that subclasses [](#adcore.ADBaseIO). This should add the PVs that are detector driver specific that are required to setup triggering. 
 
-For example for ADAravis this is in the file `_aravis_io.py`:
-```{literalinclude} ../../src/ophyd_async/epics/adaravis/_aravis_io.py
+For example for ADAravis this would include signals for trigger mode, trigger source, and any detector-specific settings.
+
+## Add Trigger Logic for detector-specific triggering
+
+Now you need a class that subclasses [](#DetectorTriggerLogic). This should implement methods for each trigger mode your detector supports:
+- `prepare_internal(num, livetime, deadtime)` - Setup for internal triggering (detector generates its own triggers)
+- `prepare_edge(num, livetime)` - Setup for external edge triggering (rising edge starts an internally-timed exposure)
+- `prepare_level(num)` - Setup for external level/gate triggering (high level duration determines exposure time)
+
+If the detector has configuration values that should be captured in the scan then implement:
+- `config_sigs()` - Return the set of signals that should appear in read_configuration()
+
+If you support external triggering you should also implement:
+- `get_deadtime(config_values)` - Calculate the minimum time between exposures based on configuration values
+
+Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.
+
+For example, for ADAravis:
+```{literalinclude} ../../src/ophyd_async/epics/adaravis.py
 :language: python
+:pyobject: AravisTriggerLogic
 ```
 
-## Add a Controller that knows how to setup the driver
+## Use ADArmLogic or create custom Arm Logic
 
-Now you need a class that subclasses [](#adcore.ADBaseController). This should implement at least:
-- `get_deadtime()` to give the amount of time required between triggers for a given exposure
-- `prepare()` to set the camera up for a given trigger mode, number of frames and exposure 
-
-For example for ADAravis this is in the file `_aravis_controller.py`:
-```{literalinclude} ../../src/ophyd_async/epics/adaravis/_aravis_controller.py
-:language: python
-```
+Most areaDetectors can use the standard [](#adcore.ADArmLogic) which handles arming and disarming via the driver's `acquire` signal. If your detector requires custom arming behavior (e.g., waiting for a specific ready signal), create a [](#DetectorArmLogic) subclass with:
+- `arm()` - Start acquisition
+- `wait_for_idle()` - Wait until acquisition is complete
+- `disarm()` - Stop acquisition
 
 ## Add a Detector that puts it all together
 
-Now you need to make a [](#StandardDetector) subclass that uses your IO and Controller with the standard file IO and Writer classes that come with ADCore. The `__init__` method should take the following:
+Now you need to make an [](#adcore.AreaDetector) subclass that uses your IO and Trigger Logic with the standard Arm Logic and Writer classes that come with ADCore. The `__init__` method should:
+1. Create the driver IO instance
+2. Create instances of your logic classes
+3. Call `super().__init__()` passing the driver and logic instances to the baseclass
+
+The constructor parameters should include:
 - `prefix`: The PV prefix for the driver and plugins
-- `path_provider`: A [](#PathProvider) that tells the detector where to write data
-- `drv_suffix`: A PV suffix for the driver, defaulting to `"cam1:"`
-- `writer_cls`: An [](#adcore.ADWriter) class to instantiate, defaulting to [](#adcore.ADHDFWriter)
-- `fileio_suffix`: An optional PV suffix for the fileio, if not given it will default to the writer class default
+- `path_provider`: A [](#PathProvider) that tells the detector where to write data (optional if `writer_type=None`)
+- `driver_suffix`: A PV suffix for the driver, defaulting to `"cam1:"`
+- `writer_type`: An [](#adcore.ADWriterType) enum value (HDF, TIFF, JPEG) or None to skip file writing
+- `writer_suffix`: An optional PV suffix for the file writer plugin
+- `plugins`: An optional mapping of {`name`: [](#adcore.NDPluginBaseIO)} for additional plugins
+- `config_sigs`: Additional signals to report in configuration (beyond the standard acquire_time and acquire_period)
 - `name`: An optional name for the device
-- `config_sigs`: Optionally the signals to report as configuration
-- `plugins`: An optional mapping of {`name`: [](#adcore.NDPluginBaseIO)} for each additional plugin that might contribute data to the resulting file
+- Any detector-specific override parameters for your trigger logic
 
-For example for ADAravis this is in the file `_aravis.py`:
-```{literalinclude} ../../src/ophyd_async/epics/adaravis/_aravis.py
+For example, for ADAravis:
+```{literalinclude} ../../src/ophyd_async/epics/adaravis.py
 :language: python
+:pyobject: AravisDetector
 ```
 
-## Make it importable
+The `AreaDetector` baseclass will:
+- Store the driver as `self.driver`
+- Call `add_logics()` to register your trigger and arm logic
+- Create and register a data logic for file writing if `writer_type` is not None
+- Add configuration signals (driver.acquire_time, driver.acquire_period, and any you specify)
+- Store any plugins as attributes on the detector
 
-Now you should take all the classes you've made and add it to the top level `__init__.py` to declare the public interface for this module. Typically you should also include any Enum types you have made to support the IO.
+## Declare the public interface
 
-For example for ADAravis this is:
-```{literalinclude} ../../src/ophyd_async/epics/adaravis/__init__.py
+Now you should take all the classes you've made and add them to the top level `__all__`. Typically you should export:
+- The detector class (e.g., `AravisDetector`)
+- The driver IO class (e.g., `AravisDriverIO`)
+- The trigger logic class (e.g., `AravisTriggerLogic`)
+- Any custom Enum types for PV values (e.g., `AravisTriggerSource`)
+
+For example, for ADAravis:
+```{literalinclude} ../../src/ophyd_async/epics/adaravis.py
 :language: python
+:start-at: __all__
+:end-at: ]
 ```
+
+## Add multiple data streams (optional)
+
+The composition-based architecture makes it possible to add multiple data outputs to a detector. After creating the detector, you can call `add_logics()` to add additional data sources:
+
+### Reading stats plugins alongside file writing
+```python
+from ophyd_async.epics.adcore import PluginSignalDataLogic
+
+det = adaravis.AravisDetector(prefix, path_provider)
+# Add stats total as a readable signal in events
+det.add_logics(adcore.PluginSignalDataLogic(det.driver, det.stats.total))
+```
+
+### Multiple HDF writers for different ROIs
+```python
+# Don't create default writer
+det = adaravis.AravisDetector(prefix, writer_type=None)  
+# Add separate writers for each ROI
+det.add_logics(
+    adcore.ADHDFDataLogic(path_provider, det.driver, det.roi1_plugin, datakey_suffix="-roi1"),
+    adcore.ADHDFDataLogic(path_provider, det.driver, det.roi2_plugin, datakey_suffix="-roi2"),
+)
+```
+
+## Continuously acquiring detector
+
+For detectors that acquire continuously, use [](#adcore.ADContAcqTriggerLogic) instead of creating custom trigger logic. This uses the builtin `areaDetector` [circular buffer plugin](https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html) to capture frames while the detector runs continuously.
+
+Requirements:
+- Your AD IOC must have a circular buffer plugin configured
+- The plugin output should be fed to the file writer
+- The detector should already be acquiring continuously before use
+
+Example implementation:
+```python
+driver = adcore.ADBaseIO("PREFIX:DRV:")
+cb_plugin = adcore.NDCircularBuffIO("PREFIX:CB1:")
+det = adcore.AreaDetector(
+    driver=driver,
+    arm_logic=adcore.ADContAcqArmLogic(driver, cb_plugin),
+    trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb_plugin),
+    path_provider=path_provider,
+    plugins={"cb1": cb_plugin},
+)
+```
+
+The [](#adcore.ADContAcqTriggerLogic) will:
+- Validate that exposure time matches the detector's current acquisition period
+- Configure the circular buffer plugin to capture the requested number of frames
+- Use the circular buffer's trigger signal instead of the driver's acquire signal
+
 
 ## Write tests
 
-TODO
+Write unit tests to verify your detector implementation works correctly. You should test:
+
+### Test fixture setup
+
+Use a pytest fixture to initialize your detector in mock mode for testing:
+
+```{literalinclude} ../../tests/unit_tests/epics/test_adaravis.py
+:language: python
+:pyobject: test_adaravis
+```
+
+This fixture:
+- Initializes the detector with `mock=True` for unit testing
+- Sets up required mock values (e.g., `file_path_exists`)
+- Returns the detector for use in test functions
+
+### Test PV correctness
+
+Verify that your detector driver correctly maps to the expected PV names:
+
+```{literalinclude} ../../tests/unit_tests/epics/test_adaravis.py
+:language: python
+:pyobject: test_pvs_correct
+```
+
+### Test deadtime calculation
+
+If your detector supports external triggering, test the `get_deadtime()` method for different detector models and configurations:
+
+```{literalinclude} ../../tests/unit_tests/epics/test_adaravis.py
+:language: python
+:pyobject: test_deadtime
+```
+
+### Test prepare methods
+
+Test each trigger mode your detector supports by verifying that `prepare()` configures the detector with the correct PV values. Test external edge triggering:
+
+```{literalinclude} ../../tests/unit_tests/epics/test_adaravis.py
+:language: python
+:pyobject: test_prepare_external_edge
+```
+
+And test internal triggering:
+
+```{literalinclude} ../../tests/unit_tests/epics/test_adaravis.py
+:language: python
+:pyobject: test_prepare_internal
+```
 
 ## Conclusion
 
 You have now made a detector, and can import and create it like this:
 
 ```python
-from ophyd_async.epics import adaravis, adcore
+from ophyd_async.epics import adaravis
 
-
-det = adaravis.AravisDetector(
-   "PREFIX:", 
-   path_provider, 
-   drv_suffix="DRV:", 
-   writer_cls=adcore.ADHDFWriter, 
-   fileio_suffix="HDF:",
-)
+det = adaravis.AravisDetector("PREFIX:", path_provider)
 ```
 
-## Continuously acquiring detector
-
-In the event that you need to be able to collect data from a detector that is continuously acquiring, you should use the `ContAcqAreaDetector` class.
-This uses the builtin `areaDetector` [circular buffer plugin](https://areadetector.github.io/areaDetector/ADCore/NDPluginCircularBuff.html) to act as the acquisition start/stop replacement, while the detector runs continuously.
-
-Your AD IOC will require at least one instance of this plugin to be configured, and the output of the plugin should be fed to the file writer of your choosing.
-The expectation is that the detector is already acquiring in continuous mode with the expected exposure time prior to using an instance of `ContAcqAreaDetector`.
-
-To instantiate a detector instance, import it and create it like this:
-
-```python
-from ophyd_async.epics import adcore
-
-det = adcore.ContAcqAreaDetector(
-   "PREFIX:", 
-   path_provider, 
-   drv_cls=adcore.ADBaseIO,
-   drv_suffix="DRV:", 
-   cb_suffix="CB:",
-   writer_cls=adcore.ADHDFWriter, 
-   fileio_suffix="HDF:",
-)
-```
-
-Note that typically the only changes from a typical detector are the additional `cb_suffix` kwarg, which is used to identify the prefix to use when instantiating the circular buffer (CB) plugin instance, and the `drv_cls` kwarg, which allows you to specify the driver to use, with the default being the `ADBaseIO` class.
+The detector will now support:
+- Querying supported trigger types with `get_trigger_deadtime()`
+- Step scanning with `trigger()` 
+- Fly scanning with `kickoff()` and `complete()`
+- Automatic handling of file writing and StreamAsset document emission
+- Configuration signal reporting based on your trigger logic

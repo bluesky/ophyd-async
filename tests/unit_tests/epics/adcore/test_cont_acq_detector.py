@@ -1,80 +1,95 @@
+import re
+from unittest.mock import call
+
 import pytest
 
-from ophyd_async.core import DetectorTrigger, TriggerInfo, init_devices, set_mock_value
+from ophyd_async.core import (
+    DetectorTrigger,
+    EnableDisable,
+    TriggerInfo,
+    init_devices,
+    set_mock_value,
+)
 from ophyd_async.epics import adcore
+from ophyd_async.testing import assert_has_calls
 
 
 @pytest.fixture
-def cont_acq_controller(RE):
-    with init_devices(mock=True):
-        drv = adcore.ADBaseIO("DRV")
-        cb_plugin = adcore.NDPluginCBIO("CB1")
+async def cont_acq_detector() -> adcore.AreaDetector[adcore.ADBaseIO]:
+    async with init_devices(mock=True):
+        det = adcore.ContAcqDetector(prefix="PREFIX:", writer_type=None)
 
-    set_mock_value(drv.image_mode, adcore.ADImageMode.CONTINUOUS)
-    set_mock_value(drv.acquire_time, 0.8)
-    set_mock_value(drv.acquire_period, 1.0)
-    set_mock_value(drv.acquire, True)
-    return adcore.ADBaseContAcqController(drv, cb_plugin)
-
-
-def generate_one_shot_trigger_info(trigger_mode=DetectorTrigger.INTERNAL, livetime=0.8):
-    if trigger_mode != DetectorTrigger.INTERNAL:
-        return TriggerInfo(
-            number_of_events=1,
-            trigger=trigger_mode,
-            livetime=livetime,
-            deadtime=0.001,
-        )
-    else:
-        return TriggerInfo(number_of_events=1, trigger=trigger_mode, livetime=livetime)
+    set_mock_value(
+        det.driver.image_mode,
+        adcore.ADImageMode.CONTINUOUS,
+    )
+    set_mock_value(det.driver.acquire_time, 0.8)
+    set_mock_value(det.driver.acquire_period, 1.0)
+    set_mock_value(det.driver.acquire, True)
+    return det
 
 
 async def test_cont_acq_controller_invalid_trigger_mode(
-    cont_acq_controller: adcore.ADBaseContAcqController,
+    cont_acq_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
-    trigger_info = generate_one_shot_trigger_info(
-        trigger_mode=DetectorTrigger.CONSTANT_GATE
-    )
-    with pytest.raises(TypeError) as exc:
-        await cont_acq_controller.prepare(trigger_info)
-    assert (
-        str(exc.value)
-        == "The continuous acq interface only supports internal triggering."
-    )
+    trigger_info = TriggerInfo(trigger=DetectorTrigger.EXTERNAL_EDGE)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Trigger type DetectorTrigger.EXTERNAL_EDGE not supported by 'det', "
+            "supported types are: [INTERNAL]"
+        ),
+    ):
+        await cont_acq_detector.prepare(trigger_info)
 
 
-async def test_cont_acq_controller_invalid_exp_time(
-    cont_acq_controller: adcore.ADBaseContAcqController,
-):
-    with pytest.raises(ValueError) as exc:
-        await cont_acq_controller.prepare(generate_one_shot_trigger_info(livetime=0.1))
-    assert (
-        str(exc.value)
-        == "Detector exposure time currently set to 0.8, but requested exposure is 0.1"
-    )
+ERROR_MESSAGE = (
+    "Driver must be acquiring in continuous mode to use the cont acq interface"
+)
 
 
 async def test_cont_acq_controller_not_in_continuous_mode(
-    cont_acq_controller: adcore.ADBaseContAcqController,
+    cont_acq_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
-    set_mock_value(cont_acq_controller.driver.image_mode, adcore.ADImageMode.SINGLE)
-
-    with pytest.raises(RuntimeError) as exc:
-        await cont_acq_controller.prepare(generate_one_shot_trigger_info())
-    assert (
-        str(exc.value)
-        == "Driver must be acquiring in continuous mode to use the cont acq interface"
-    )
+    set_mock_value(cont_acq_detector.driver.image_mode, adcore.ADImageMode.SINGLE)
+    with pytest.raises(RuntimeError, match=ERROR_MESSAGE):
+        await cont_acq_detector.trigger()
 
 
 async def test_cont_acq_controller_not_acquiring(
-    cont_acq_controller: adcore.ADBaseContAcqController,
+    cont_acq_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
-    set_mock_value(cont_acq_controller.driver.acquire, False)
+    set_mock_value(cont_acq_detector.driver.acquire, False)
+    with pytest.raises(RuntimeError, match=ERROR_MESSAGE):
+        await cont_acq_detector.trigger()
 
-    with pytest.raises(RuntimeError) as exc:
-        await cont_acq_controller.prepare(generate_one_shot_trigger_info())
-    assert (
-        str(exc.value)
-        == "Driver must be acquiring in continuous mode to use the cont acq interface"
+
+async def test_cont_acq_controller_invalid_exposure_time(
+    cont_acq_detector: adcore.AreaDetector[adcore.ADBaseIO],
+):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Detector exposure time currently set to 0.8, but requested exposure is 1.0"
+        ),
+    ):
+        await cont_acq_detector.prepare(TriggerInfo(livetime=1.0))
+
+
+async def test_cont_acq_controller_success(
+    cont_acq_detector: adcore.AreaDetector[adcore.ADBaseIO],
+):
+    await cont_acq_detector.stage()
+    await cont_acq_detector.trigger()
+    assert_has_calls(
+        cont_acq_detector,
+        [
+            call.cb.capture.put(False),
+            call.cb.enable_callbacks.put(EnableDisable.ENABLE),
+            call.cb.pre_count.put(0),
+            call.cb.post_count.put(1),
+            call.cb.preset_trigger_count.put(1),
+            call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
+            call.cb.capture.put(True),
+        ],
     )

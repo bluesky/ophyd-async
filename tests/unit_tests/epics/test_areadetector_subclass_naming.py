@@ -9,6 +9,7 @@ from ophyd_async.core import Device, Signal
 # If we forget then the full test suite will find the subclasses, but
 # running just this test will only get the ones at the top of this file
 from ophyd_async.epics import (
+    adandor,  # noqa
     adaravis,  # noqa
     adcore,
     adkinetix,  # noqa
@@ -25,7 +26,7 @@ def get_rec_subclasses(cls: type):
 
 
 @pytest.mark.parametrize("cls", list(get_rec_subclasses(adcore.NDArrayBaseIO)))
-async def test_regularly_named_attributes(cls: Device):
+async def test_regularly_named_attributes(cls: adcore.NDArrayBaseIO):
     io = cls("")
     for name, device in io.children():
         check_name(name, device)

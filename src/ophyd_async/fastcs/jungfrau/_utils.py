@@ -2,7 +2,7 @@ from pydantic import PositiveInt
 
 from ophyd_async.core import DetectorTrigger, TriggerInfo
 
-from ._controller import JUNGFRAU_DEADTIME_S
+from ._trigger_logic import JUNGFRAU_DEADTIME_S
 
 
 def create_jungfrau_external_triggering_info(
@@ -24,7 +24,7 @@ def create_jungfrau_external_triggering_info(
     """
     return TriggerInfo(
         number_of_events=total_triggers,
-        trigger=DetectorTrigger.EDGE_TRIGGER,
+        trigger=DetectorTrigger.EXTERNAL_EDGE,
         livetime=exposure_time_s,
         deadtime=JUNGFRAU_DEADTIME_S,
     )
@@ -49,7 +49,7 @@ def create_jungfrau_internal_triggering_info(
         number_of_events=1,
         trigger=DetectorTrigger.INTERNAL,
         livetime=exposure_time_s,
-        exposures_per_event=number_of_frames,
+        collections_per_event=number_of_frames,
     )
 
 
@@ -80,8 +80,7 @@ def create_jungfrau_pedestal_triggering_info(
         `TriggerInfo`
     """
     return TriggerInfo(
-        number_of_events=pedestal_loops * 2,
-        exposures_per_event=pedestal_frames,
+        collections_per_event=2 * pedestal_frames * pedestal_loops,
         trigger=DetectorTrigger.INTERNAL,
         livetime=exposure_time_s,
     )
