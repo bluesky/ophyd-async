@@ -6,18 +6,18 @@ from ophyd_async.core import (
     StandardReadable,
 )
 
-from ._counter import TangoCounter
-from ._mover import TangoMover
+from ._counter import DemoCounter
+from ._motor import DemoMotor
 
 
-class TangoDetector(StandardReadable):
+class DemoDetector(StandardReadable):
     """For use with tango detector devices."""
 
     def __init__(self, mover_trl: str, counter_trls: list[str], name=""):
         # A detector device may be composed of tango sub-devices
-        self.mover = TangoMover(mover_trl)
+        self.mover = DemoMotor(mover_trl)
         self.counters = DeviceVector(
-            {i + 1: TangoCounter(c_trl) for i, c_trl in enumerate(counter_trls)}
+            {i + 1: DemoCounter(c_trl) for i, c_trl in enumerate(counter_trls)}
         )
 
         # Define the readables for TangoDetector

@@ -34,9 +34,11 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
-    DemoCounter,
-    DemoMover,
-    TangoDetector,
+    DemoDetector,
+)
+from ophyd_async.tango.demo._tango import (
+    DemoCounterServer,  # noqa: PLC2701
+    DemoMotorDevice,  # noqa: PLC2701
 )
 from ophyd_async.testing import assert_reading
 
@@ -365,11 +367,11 @@ def tango_test_device(subprocess_helper):
 def sim_test_context_trls(subprocess_helper):
     args = (
         {
-            "class": DemoMover,
+            "class": DemoMotorDevice,
             "devices": [{"name": "sim/motor/1"}],
         },
         {
-            "class": DemoCounter,
+            "class": DemoCounterServer,
             "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
         },
     )
@@ -438,7 +440,7 @@ async def test_with_bluesky(tango_test_device):
 @pytest.mark.asyncio
 @pytest.mark.timeout(15.5)
 async def test_tango_sim(sim_test_context_trls):
-    detector = TangoDetector(
+    detector = DemoDetector(
         name="detector",
         mover_trl=sim_test_context_trls["sim/motor/1"],
         counter_trls=[
