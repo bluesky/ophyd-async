@@ -1,5 +1,13 @@
 """The building blocks for making devices."""
 
+from ._command import (
+    Command,
+    CommandBackend,
+    CommandConnector,
+    MockCommandBackend,
+    SoftCommandBackend,
+    soft_command,
+)
 from ._datatypes import Array1D, DTypeScalar_co, Table, TableSubclass
 from ._derived_signal import (
     DerivedSignalFactory,
@@ -284,4 +292,10 @@ __all__ = [
     "OnOff",
     "YesNo",
     "TableSubclass",
+    "Command",
+    "CommandBackend",
+    "CommandConnector",
+    "MockCommandBackend",
+    "SoftCommandBackend",
+    "soft_command",
 ]
