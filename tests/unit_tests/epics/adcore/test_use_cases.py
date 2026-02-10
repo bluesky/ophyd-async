@@ -241,7 +241,7 @@ async def test_step_scan_tiff_detector(
                 "mimetype": "multipart/related;type=image/tiff",
                 "parameters": {
                     "chunk_shape": (1, 768, 1024),
-                    "file_template": "ophyd_async_tests_{:06d}.tiff",
+                    "template": "ophyd_async_tests_{:06d}.tiff",
                 },
                 "uid": ANY,
                 "uri": uri_dir,

@@ -274,9 +274,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
         main_dataset = await get_ndarray_resource_info(
             description=self.description,
             data_key=detector_name + self.datakey_suffix,
-            parameters={
-                "file_template": path_info.filename + "_{:06d}" + self.extension
-            },
+            parameters={"template": path_info.filename + "_{:06d}" + self.extension},
         )
         return StreamResourceDataProvider(
             # TODO: remove the type ignore after
