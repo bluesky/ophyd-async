@@ -117,7 +117,7 @@ class SignalDetails(ConfinedModel):
     write_pv: str
 
     @classmethod
-    def from_entry(cls, entry: Entry):
+    def from_entry(cls, entry: Entry) -> SignalDetails:
         match entry:
             case {"r": read_pv, "w": write_pv}:
                 return cls(signal_type=SignalRW, read_pv=read_pv, write_pv=write_pv)
@@ -223,7 +223,7 @@ class PviTree(ConfinedModel):
     vector_children: list[PviTree] = Field(default=[])
 
     @classmethod
-    async def build_device_tree(cls, name: str, pvi_pv: str, timeout: float):
+    async def build_device_tree(cls, name: str, pvi_pv: str, timeout: float) -> PviTree:
         """Recursively build a PviTree from a top level device.
 
         Starting from the top-level device, this classmethod performs
