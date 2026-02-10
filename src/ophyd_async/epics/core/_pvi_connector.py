@@ -78,7 +78,6 @@ class PviDeviceConnector(DeviceConnector):
             self.pvi_tree = await PviTree.build_device_tree(
                 name=device.name, pvi_pv=self.pvi_pv, timeout=10
             )
-            print(self.pvi_tree)
         # Fill all signals
         for signal_name, signal_details in self.pvi_tree.signals.items():
             backend = self.filler.fill_child_signal(

@@ -1,6 +1,5 @@
 from typing import Annotated as A
 from typing import TypeVar
-from unittest.mock import MagicMock
 
 import pytest
 from bluesky.protocols import HasHints, Hints
@@ -17,6 +16,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import PviDeviceConnector
+from ophyd_async.epics.core._pvi_connector import SignalDetails  # noqa: PLC2701
 
 
 class Block1(Device, HasHints):
@@ -207,14 +207,10 @@ async def test_no_type_annotation_blocks(cls):
 async def test_correctly_setting_signal_type_from_signal_details(
     mock_entry, expected_signal_type
 ):
-    connector = PviDeviceConnector("")
-    connector.filler = MagicMock()
     if not expected_signal_type:
         with pytest.raises(TypeError) as exc:
-            connector._fill_child("signal", mock_entry)
+            SignalDetails.from_entry(mock_entry)
         assert "Can't process entry" in str(exc.value)
     else:
-        connector._fill_child("signal", mock_entry)
-        connector.filler.fill_child_signal.assert_called_once_with(
-            "signal", expected_signal_type, None
-        )
+        details = SignalDetails.from_entry(mock_entry)
+        assert details.signal_type == expected_signal_type
