@@ -22,10 +22,6 @@ from ophyd_async.core import (
 from ._epics_connector import fill_backend_with_prefix
 from ._signal import PvaSignalBackend, pvget_with_timeout
 
-# A PVI entry
-# e.g., {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}
-Entry = dict[str, str]
-
 
 class PviDeviceConnector(DeviceConnector):
     """Connect to PVI structure served over PVA.
@@ -122,7 +118,7 @@ class SignalDetails(ConfinedModel):
     write_pv: str
 
     @classmethod
-    def from_entry(cls, entry: Entry) -> SignalDetails:
+    def from_entry(cls, entry: dict[str, str]) -> SignalDetails:
         match entry:
             case {"r": read_pv, "w": write_pv}:
                 return cls(signal_type=SignalRW, read_pv=read_pv, write_pv=write_pv)
@@ -240,7 +236,11 @@ class PviTree(ConfinedModel):
         :param timeout: Timeout on pvget
         """
         pvi_structure = await pvget_with_timeout(pvi_pv, timeout)
-        entries: dict[str, Entry] = pvi_structure["value"].todict()
+
+        # An example entry is: {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}
+        # these entries are stored under the parent PVI structure name
+        # for example, {"device": {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}}
+        entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
 
         vector_children: list[PviTree] = []
 
