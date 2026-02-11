@@ -1,7 +1,7 @@
 record(ao, "$(IOC_NAME=PANDAQSRV):PULSE:1:DELAY")
 {
     field(EGU,  "us")
-    # Add to PULSE1:PVI PVA structure
+    # Add to PULSE:1:PVI PVA structure
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):PULSE:1:PVI": {
             "value.delay.rw": {
@@ -15,7 +15,7 @@ record(ao, "$(IOC_NAME=PANDAQSRV):PULSE:1:DELAY")
 record(ao, "$(IOC_NAME=PANDAQSRV):PULSE:1:STEP")
 {
     field(EGU,  "us")
-    # Add to PULSE1:PVI PVA structure
+    # Add to PULSE:1:PVI PVA structure
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):PULSE:1:PVI": {
             "value.step.rw": {
@@ -28,7 +28,7 @@ record(ao, "$(IOC_NAME=PANDAQSRV):PULSE:1:STEP")
 
 record(ao, "$(IOC_NAME=PANDAQSRV):PULSE:1:PULSES")
 {
-    # Add to PULSE1:PVI PVA structure
+    # Add to PULSE:1:PVI PVA structure
     info(Q:group, {
         "$(IOC_NAME=PANDAQSRV):PULSE:1:PVI": {
             "value.pulses.rw": {
@@ -58,7 +58,7 @@ $(EXCLUDE_WIDTH=)record(ao, "$(IOC_NAME=PANDAQSRV):PULSE:1:WIDTH")
 $(EXCLUDE_WIDTH=){
 $(EXCLUDE_WIDTH=)    field(EGU,  "us")
 $(EXCLUDE_WIDTH=)    info(Q:group, {
-$(EXCLUDE_WIDTH=)        # Add to PULSE1:PVI PVA structure
+$(EXCLUDE_WIDTH=)        # Add to PULSE:1:PVI PVA structure
 $(EXCLUDE_WIDTH=)        "$(IOC_NAME=PANDAQSRV):PULSE:1:PVI": {
 $(EXCLUDE_WIDTH=)            "value.width.rw": {
 $(EXCLUDE_WIDTH=)                "+channel": "NAME",
@@ -164,7 +164,7 @@ record(waveform, "BOOL:PLEASE")
     info(Q:form, "Binary")
 }
 
-# We want to add $(IOC_NAME=PANDAQSRV):PULSE1 to $(IOC_NAME=PANDAQSRV):PVI
+# We want to add $(IOC_NAME=PANDAQSRV):PULSE:1 to $(IOC_NAME=PANDAQSRV):PVI
 # structure, but we can't create a record called
 # $(IOC_NAME=PANDAQSRV):PVI as it will shadow the QSRV created structure.
 # We make a different PV and use its input link to hack around this
@@ -483,8 +483,8 @@ record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ:1:TABLE:OUTF2")
     })
 }
 
-# Again, SEQ1:TABLE is QSRV only, so need to make a fake PV to put it in
-# SEQ1:PVI
+# Again, SEQ:1:TABLE is QSRV only, so need to make a fake PV to put it in
+# SEQ:1:PVI
 record(stringin, "$(IOC_NAME=PANDAQSRV):SEQ:1:TABLE:_PVI")
 {
     field(VAL,  "$(IOC_NAME=PANDAQSRV):SEQ:1:TABLE")
