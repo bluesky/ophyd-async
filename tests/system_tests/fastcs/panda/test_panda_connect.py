@@ -37,12 +37,14 @@ async def panda_t():
 @pytest.mark.timeout(15.0 if os.name == "nt" else 4.0)
 async def test_panda_with_missing_blocks(panda_pva, panda_t):
     panda = panda_t("PANDAQSRVI:", name="mypanda")
+
     with pytest.raises(
         RuntimeError,
         match=re.escape(
             "mypanda: cannot provision ['pcap'] from PANDAQSRVI:PVI: "
-            "{'pulse': [None, {'d': 'PANDAQSRVI:PULSE1:PVI'}],"
-            " 'seq': [None, {'d': 'PANDAQSRVI:SEQ1:PVI'}]}\nIs it ok?"
+            "mypanda: PANDAQSRVI:PVI\nsub_devices="
+            "{'pulse': 'PANDAQSRVI:PULSE:PVI', 'seq': 'PANDAQSRVI:SEQ:PVI'}\nsignals={}"
+            "\nIs it ok?"
         ),
     ):
         await panda.connect()
