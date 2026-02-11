@@ -1,6 +1,6 @@
 from ._epics_connector import EpicsDeviceConnector, PvSuffix
 from ._epics_device import EpicsDevice
-from ._pvi_connector import PviDeviceConnector, PviTree, SignalDetails
+from ._pvi_connector import Entry, PviDeviceConnector, PviTree, SignalDetails
 from ._signal import (
     CaSignalBackend,
     PvaSignalBackend,
@@ -16,6 +16,7 @@ __all__ = [
     "PviDeviceConnector",
     "PviTree",
     "SignalDetails",
+    "Entry",
     "EpicsDeviceConnector",
     "PvSuffix",
     "EpicsDevice",

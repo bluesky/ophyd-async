@@ -22,6 +22,8 @@ from ophyd_async.core import (
 from ._epics_connector import fill_backend_with_prefix
 from ._signal import PvaSignalBackend, pvget_with_timeout
 
+# A PVI entry
+# e.g., {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}
 Entry = dict[str, str]
 
 
@@ -90,6 +92,9 @@ class PviDeviceConnector(DeviceConnector):
             if device_sub_tree.vector_children:
                 # This is a DeviceVector
                 for vector_child in device_sub_tree.vector_children:
+                    # Vector children in a PVI structure are named "__#"
+                    # where "#" is set as their PviTree root_node against a regex,
+                    # thus guaranteed to be numeric, and so can cast to an int
                     connector = self.filler.fill_child_device(
                         device_name, vector_index=int(vector_child.root_node)
                     )
@@ -242,7 +247,7 @@ class PviTree(ConfinedModel):
         sub_trees, signal_details = await asyncio.gather(
             gather_dict(
                 {
-                    entry_name: cls.build_device_tree(entry_name, entry["d"], 10)
+                    entry_name: cls.build_device_tree(entry_name, entry["d"], timeout)
                     for entry_name, entry in entries.items()
                     if set(entry) == {"d"}
                 }
@@ -258,6 +263,7 @@ class PviTree(ConfinedModel):
 
         # Filter vector children out of stand-alone devices
         for child_name in list(sub_trees):
+            # Check if any sub-devices are named "__#" (e.g., "__1")
             if m := re.match(r"^__(\d+)$", child_name):
                 sub_tree = sub_trees.pop(child_name)
                 sub_tree.root_node = m.group(1)
