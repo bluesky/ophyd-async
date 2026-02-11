@@ -1,6 +1,6 @@
 from ._epics_connector import EpicsDeviceConnector, PvSuffix
 from ._epics_device import EpicsDevice
-from ._pvi_connector import PviDeviceConnector
+from ._pvi_connector import PviDeviceConnector, PviTree, SignalDetails
 from ._signal import (
     CaSignalBackend,
     PvaSignalBackend,
@@ -14,6 +14,8 @@ from ._util import EpicsOptions, stop_busy_record
 
 __all__ = [
     "PviDeviceConnector",
+    "PviTree",
+    "SignalDetails",
     "EpicsDeviceConnector",
     "PvSuffix",
     "EpicsDevice",
