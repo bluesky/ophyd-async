@@ -34,7 +34,7 @@ class AsyncStatusBase(Status, Awaitable[None]):
 
             async def wait_with_error_message(awaitable):
                 try:
-                    return await awaitable
+                    await awaitable
                 except CancelledError as e:
                     raise CancelledError(
                         f"CancelledError while awaiting {awaitable} on {name}"
