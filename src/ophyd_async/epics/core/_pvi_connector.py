@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import re
 
 from pydantic import Field
@@ -236,19 +235,18 @@ class PviTree(ConfinedModel):
         # for example, {"device": {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}}
         entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
 
-        sub_trees, signal_details = await asyncio.gather(
-            gather_dict(
+        signal_details = {
+            entry_name: SignalDetails.from_entry(entry)
+            for entry_name, entry in entries.items()
+            if set(entry) != {"d"}
+        }
+
+        (sub_trees,) = (
+            await gather_dict(
                 {
                     entry_name: cls.build_device_tree(entry_name, entry["d"], timeout)
                     for entry_name, entry in entries.items()
                     if set(entry) == {"d"}
-                }
-            ),
-            gather_dict(
-                {
-                    entry_name: SignalDetails.from_entry(entry)
-                    for entry_name, entry in entries.items()
-                    if set(entry) != {"d"}
                 }
             ),
         )
