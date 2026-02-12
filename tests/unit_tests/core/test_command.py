@@ -76,7 +76,7 @@ async def test_soft_command_execution(datatype, value):
     await cmd.connect()
     status = cmd(value)
     await status
-    res = status.task.result()
+    res = status.value
     if isinstance(value, np.ndarray):
         assert np.array_equal(res, value)
     else:
@@ -139,7 +139,7 @@ async def test_mock_command_backend():
     cmd._connector.backend.call_mock.return_value = "mock_res"
     status = cmd(3, "mock")
     await status
-    assert status.task.result() == "mock_res"
+    assert status.value == "mock_res"
     cmd._connector.backend.call_mock.assert_awaited_once_with(3, "mock")
 
 
@@ -151,7 +151,7 @@ async def test_soft_command_factory():
     await cmd_rw.connect()
     status = cmd_rw(123)
     await status
-    assert status.task.result() == "123"
+    assert status.value == "123"
 
     def x_cb() -> None:
         return None
@@ -160,7 +160,7 @@ async def test_soft_command_factory():
     await cmd_x.connect()
     status = cmd_x()
     await status
-    assert status.task.result() is None
+    assert status.value is None
 
 
 async def test_execution_error_wrapping():
@@ -191,6 +191,6 @@ async def test_command_logging(caplog):
     assert "Connecting to softcmd://mycmd" in caplog.text
     status = cmd(42)
     await status
-    assert status.task.result() == "42"
+    assert status.value == "42"
     assert "Calling command mycmd" in caplog.text
     assert "Command mycmd returned 42" in caplog.text
