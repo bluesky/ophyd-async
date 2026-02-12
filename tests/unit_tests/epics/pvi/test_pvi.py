@@ -15,8 +15,7 @@ from ophyd_async.core import (
     init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
-from ophyd_async.epics.core import PviDeviceConnector
-from ophyd_async.epics.core._pvi_connector import SignalDetails  # noqa: PLC2701
+from ophyd_async.epics.core import PviDeviceConnector, SignalDetails
 
 
 class Block1(Device, HasHints):

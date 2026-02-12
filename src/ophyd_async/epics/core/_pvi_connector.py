@@ -87,12 +87,12 @@ class PviDeviceConnector(DeviceConnector):
         for device_name, device_sub_tree in self.pvi_tree.sub_devices.items():
             if device_sub_tree.vector_children:
                 # This is a DeviceVector
-                for vector_child in device_sub_tree.vector_children:
-                    # Vector children in a PVI structure are named "__#"
-                    # where "#" is set as their PviTree root_node against a regex,
-                    # thus guaranteed to be numeric, and so can cast to an int
+                for (
+                    vector_index,
+                    vector_child,
+                ) in device_sub_tree.vector_children.items():
                     connector = self.filler.fill_child_device(
-                        device_name, vector_index=int(vector_child.root_node)
+                        device_name, vector_index=vector_index
                     )
                     connector.pvi_tree = vector_child
                     connector.pvi_pv = vector_child.pvi_pv
@@ -159,7 +159,6 @@ class PviTree(ConfinedModel):
     ```python
     PviTree(
         pvi_pv="TEST-PANDA:PVI",
-        root_node="panda",
         signals={
             "a": SignalDetails(
                 signal_type=SignalRW,
@@ -191,21 +190,17 @@ class PviTree(ConfinedModel):
     ```python
     PviTree(
         pvi_pv="TEST-PANDA:Calc:PVI",
-        root_node="calc",
         signals={},
         sub_devices={},
         vector_children=[
-            PviTree(pvi_pv="TEST-PANDA:Calc:2:PVI", root_node="1", signals={}, ...),
-            PviTree(pvi_pv="TEST-PANDA:Calc:1:PVI", root_node="2", signals={}, ...)
+            PviTree(pvi_pv="TEST-PANDA:Calc:2:PVI", signals={}, ...),
+            PviTree(pvi_pv="TEST-PANDA:Calc:1:PVI", signals={}, ...)
         ]
     )
     ```
 
     :param pvi_pv:
         The PVI PV of the device.
-
-    :param root_node:
-        The name of the device or signal.
 
     :param signals:
         A dictionary mapping signal names to `SignalDetails` objects.
@@ -218,10 +213,9 @@ class PviTree(ConfinedModel):
     """
 
     pvi_pv: str
-    root_node: str
     signals: dict[str, SignalDetails] = Field(default={})
     sub_devices: dict[str, PviTree] = Field(default={})
-    vector_children: list[PviTree] = Field(default=[])
+    vector_children: dict[int, PviTree] = Field(default={})
 
     @classmethod
     async def build_device_tree(cls, name: str, pvi_pv: str, timeout: float) -> PviTree:
@@ -242,8 +236,6 @@ class PviTree(ConfinedModel):
         # for example, {"device": {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}}
         entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
 
-        vector_children: list[PviTree] = []
-
         sub_trees, signal_details = await asyncio.gather(
             gather_dict(
                 {
@@ -261,17 +253,16 @@ class PviTree(ConfinedModel):
             ),
         )
 
+        vector_children: dict[int, PviTree] = {}
         # Filter vector children out of stand-alone devices
         for child_name in list(sub_trees):
             # Check if any sub-devices are named "__#" (e.g., "__1")
             if m := re.match(r"^__(\d+)$", child_name):
                 sub_tree = sub_trees.pop(child_name)
-                sub_tree.root_node = m.group(1)
-                vector_children.append(sub_tree)
+                vector_children[int(m.group(1))] = sub_tree
 
         return PviTree(
             pvi_pv=pvi_pv,
-            root_node=name,
             signals=signal_details,
             sub_devices=sub_trees,
             vector_children=vector_children,
@@ -279,17 +270,12 @@ class PviTree(ConfinedModel):
 
     def __str__(self) -> str:
         """Print a readable top layer of the PviTree."""
-        sub_devices = {
-            child_name: child_tree.pvi_pv
-            for child_name, child_tree in self.sub_devices.items()
+        children = {
+            child_name: tree.pvi_pv
+            for child_name, tree in {**self.sub_devices, **self.vector_children}.items()
         }
         signals = {
-            signal_name: {
-                signal_details.signal_type: [
-                    signal_details.read_pv,
-                    signal_details.write_pv,
-                ]
-            }
-            for signal_name, signal_details in self.signals.items()
+            signal_name: (detail.signal_type.__name__, detail.read_pv, detail.write_pv)
+            for signal_name, detail in self.signals.items()
         }
-        return f"{self.root_node}: {self.pvi_pv}\n{sub_devices=}\n{signals=}"
+        return f"sub_devices={children}\nsignals={signals}"

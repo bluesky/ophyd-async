@@ -42,8 +42,8 @@ async def test_panda_with_missing_blocks(panda_pva, panda_t):
         RuntimeError,
         match=re.escape(
             "mypanda: cannot provision ['pcap'] from PANDAQSRVI:PVI: "
-            "mypanda: PANDAQSRVI:PVI\nsub_devices="
-            "{'pulse': 'PANDAQSRVI:PULSE:PVI', 'seq': 'PANDAQSRVI:SEQ:PVI'}\nsignals={}"
+            "sub_devices={'pulse': 'PANDAQSRVI:PULSE:PVI', 'seq': 'PANDAQSRVI:SEQ:PVI'}"
+            "\nsignals={}"
             "\nIs it ok?"
         ),
     ):
