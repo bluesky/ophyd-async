@@ -236,19 +236,15 @@ class PviTree(ConfinedModel):
         entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
 
         signal_details = {
-            entry_name: SignalDetails.from_entry(entry)
-            for entry_name, entry in entries.items()
-            if set(entry) != {"d"}
+            entry_name: SignalDetails.from_entry(entries.pop(entry_name))
+            for entry_name in entries
+            if set(entries[entry_name]) != {"d"}
         }
-
-        (sub_trees,) = (
-            await gather_dict(
-                {
-                    entry_name: cls.build_device_tree(entry_name, entry["d"], timeout)
-                    for entry_name, entry in entries.items()
-                    if set(entry) == {"d"}
-                }
-            ),
+        sub_trees = await gather_dict(
+            {
+                entry_name: cls.build_device_tree(entry_name, entry["d"], timeout)
+                for entry_name, entry in entries.items()
+            }
         )
 
         vector_children: dict[int, PviTree] = {}
