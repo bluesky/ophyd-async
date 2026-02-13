@@ -236,15 +236,17 @@ class TangoProxy:
 class AttributeProxy(TangoProxy):
     """Used by the tango transport."""
 
-    _callback: Callback | None = None
-    _eid: int | None = None
-    _poll_task: asyncio.Task | None = None
-    _abs_change: float | None = None
-    _rel_change: float | None = 0.1
-    _polling_period: float = 0.1
-    _allow_polling: bool = False
-    exception: BaseException | None = None
-    _last_reading: Reading = Reading(value=None, timestamp=0, alarm_severity=0)
+    def __init__(self, device_proxy: DeviceProxy, name: str):
+        self._callback: Callback | None = None
+        self._eid: int | None = None
+        self._poll_task: asyncio.Task | None = None
+        self._abs_change: float | None = None
+        self._rel_change: float | None = None
+        self._polling_period: float = 0.1
+        self._allow_polling: bool = False
+        self.exception: BaseException | None = None
+        self._last_reading: Reading = Reading(value=None, timestamp=0, alarm_severity=0)
+        super().__init__(device_proxy, name)
 
     async def connect(self) -> None:
         try:
@@ -310,14 +312,17 @@ class AttributeProxy(TangoProxy):
 
     @ensure_proper_executor
     async def _subscribe_to_event(self):
-        if not self._eid:
-            self._eid = await self._proxy.subscribe_event(
-                self._name,
-                EventType.CHANGE_EVENT,
-                self._event_processor,
-                stateless=True,
-                green_mode=GreenMode.Asyncio,
-            )
+        try:
+            if not self._eid:
+                self._eid = await self._proxy.subscribe_event(
+                    self._name,
+                    EventType.CHANGE_EVENT,
+                    self._event_processor,
+                    green_mode=GreenMode.Asyncio,
+                )
+        except Exception as exc:
+            logger.debug(f"Subscribe to event failed: {exc}")
+            raise RuntimeError(f"Subscribe to event failed: {exc}") from exc
 
     def subscribe_callback(self, callback: Callback | None):
         # If the attribute supports events, then we can subscribe to them
@@ -327,7 +332,7 @@ class AttributeProxy(TangoProxy):
 
         self._callback = callback
         if self.support_events:
-            asyncio.create_task(self._subscribe_to_event())
+            task = asyncio.create_task(self._subscribe_to_event())
         elif self._allow_polling:
             """start polling if no events supported"""
             if self._callback is not None:
