@@ -139,9 +139,6 @@ nitpicky = True
 # domain name if present. Example entries would be ('py:func', 'int') or
 # ('envvar', 'LD_LIBRARY_PATH').
 obj_ignore = [
-    "ophyd_async.core._command.P",
-    "ophyd_async.core._command.T",
-    "ophyd_async.core._command.T_co",
     "ophyd_async.core._derived_signal_backend.RawT",
     "ophyd_async.core._derived_signal_backend.DerivedT",
     "ophyd_async.core._detector.DetectorControllerT",
@@ -157,6 +154,7 @@ obj_ignore = [
     "ophyd_async.core._utils.P",
     "ophyd_async.core._utils.T",
     "ophyd_async.core._utils.V",
+    "ophyd_async.core._utils.T_co",
     "ophyd_async.epics.adcore._core_logic.ADBaseIOT",
     "ophyd_async.epics.adcore._core_logic.ADBaseControllerT",
     "ophyd_async.epics.adcore._core_writer.NDFileIOT",
