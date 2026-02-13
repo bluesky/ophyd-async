@@ -351,7 +351,7 @@ class StandardDetector(
         signal.set_name(f"{self.name}-events_to_kickoff")
         return signal
 
-    def add_logics(
+    def add_detector_logics(
         self, *logics: DetectorTriggerLogic | DetectorArmLogic | DetectorDataLogic
     ) -> None:
         """Add arm, trigger or data logic to the detector.

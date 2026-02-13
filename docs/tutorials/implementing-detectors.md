@@ -179,7 +179,7 @@ It derives from [](#StandardDetector) which is a utility baseclass that implemen
 - [](#DetectorArmLogic) to arm it and wait for it to complete
 - [](#DetectorDataLogic) to tell the detector to open a file, describe the datasets it will write, and emit StreamAsset documents as frames are written
 
-In this case, we have three logic classes written just for this simulation, all taking a reference to the pattern generator that provides methods for both detector control and file writing. In other cases the detector control and filewriting may be handled by different sub-devices that talk to different parts of the control system. The job of the top level detector class is to take the arguments that the logic classes need, create the logic instances, and pass them to [](#StandardDetector.add_logics).
+In this case, we have three logic classes written just for this simulation, all taking a reference to the pattern generator that provides methods for both detector control and file writing. In other cases the detector control and filewriting may be handled by different sub-devices that talk to different parts of the control system. The job of the top level detector class is to take the arguments that the logic classes need, create the logic instances, and pass them to [](#StandardDetector.add_detector_logics).
 
 Now let's look at the underlying classes that define the detector behavior:
 

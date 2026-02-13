@@ -436,7 +436,7 @@ async def test_2_rois_with_hdf(tmp_path):
                 "roi2": rois[1],
             },
         )
-        det.add_logics(*logics)
+        det.add_detector_logics(*logics)
     await det.stage()
 
     # When arm is pressed, then make a single frame on each HDF
@@ -536,7 +536,7 @@ async def test_simdetector_with_stats_signal():
         det = adsimdetector.SimDetector(
             "PREFIX:", writer_type=None, plugins={"stats": stat}
         )
-        det.add_logics(adcore.PluginSignalDataLogic(det.driver, stat.total))
+        det.add_detector_logics(adcore.PluginSignalDataLogic(det.driver, stat.total))
     set_mock_value(stat.total, 1.8)
     await det.stage()
     assert await det.driver.wait_for_plugins.get_value() is False

@@ -24,7 +24,7 @@ class EigerDetector(StandardDetector):
     ):
         # Need to do this first so the type hints are filled in
         connector = fastcs_connector(prefix, self)
-        self.add_logics(
+        self.add_detector_logics(
             EigerTriggerLogic(self.detector),
             EigerArmLogic(self.detector),
             odin.OdinDataLogic(

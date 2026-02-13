@@ -19,7 +19,7 @@ class SimBlobDetector(StandardDetector):
         name: str = "",
     ) -> None:
         self.pattern_generator = pattern_generator or PatternGenerator()
-        self.add_logics(
+        self.add_detector_logics(
             BlobTriggerLogic(pattern_generator=self.pattern_generator),
             BlobArmLogic(pattern_generator=self.pattern_generator),
             BlobDataLogic(

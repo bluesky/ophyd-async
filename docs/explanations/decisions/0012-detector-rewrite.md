@@ -58,7 +58,7 @@ We will restructure `StandardDetector` to use composition with three separate lo
 ### Detector Changes
 
 `StandardDetector` now:
-- Accepts logic components via `add_logics(*logics)` method
+- Accepts logic components via `add_detector_logics(*logics)` method
 - Accepts configuration signals via `add_config_signals(*signals)` method
 - Provides `get_trigger_deadtime()` to query supported triggers and deadtime if hardware triggerable
 
@@ -246,7 +246,7 @@ class SimDetector(adcore.AreaDetector[adcore.ADBaseIO]):
 
 # new - use PluginSignalDataLogic
 detector = SimDetector(prefix, writer_type=None)
-detector.add_logics(PluginSignalDataLogic(driver, stats.total))
+detector.add_detector_logics(PluginSignalDataLogic(driver, stats.total))
 # Now stats.total appears in read() without file writing
 ```
 
@@ -261,7 +261,7 @@ detector = AreaDetector(
     writer_type=None,  # Don't create default writer
 )
 # Add separate HDF writers for different ROIs
-detector.add_logics(
+detector.add_detector_logics(
     ADHDFDataLogic(..., datakey_suffix="-roi1"),
     ADHDFDataLogic(..., datakey_suffix="-roi2"),
 )

@@ -70,7 +70,7 @@ For example, for ADAravis:
 
 The `AreaDetector` baseclass will:
 - Store the driver as `self.driver`
-- Call `add_logics()` to register your trigger and arm logic
+- Call `add_detector_logics()` to register your trigger and arm logic
 - Create and register a data logic for file writing if `writer_type` is not None
 - Add configuration signals (driver.acquire_time, driver.acquire_period, and any you specify)
 - Store any plugins as attributes on the detector
@@ -92,7 +92,7 @@ For example, for ADAravis:
 
 ## Add multiple data streams (optional)
 
-The composition-based architecture makes it possible to add multiple data outputs to a detector. After creating the detector, you can call `add_logics()` to add additional data sources:
+The composition-based architecture makes it possible to add multiple data outputs to a detector. After creating the detector, you can call `add_detector_logics()` to add additional data sources:
 
 ### Reading stats plugins alongside file writing
 ```python
@@ -100,7 +100,7 @@ from ophyd_async.epics.adcore import PluginSignalDataLogic
 
 det = adaravis.AravisDetector(prefix, path_provider)
 # Add stats total as a readable signal in events
-det.add_logics(adcore.PluginSignalDataLogic(det.driver, det.stats.total))
+det.add_detector_logics(adcore.PluginSignalDataLogic(det.driver, det.stats.total))
 ```
 
 ### Multiple HDF writers for different ROIs
@@ -108,7 +108,7 @@ det.add_logics(adcore.PluginSignalDataLogic(det.driver, det.stats.total))
 # Don't create default writer
 det = adaravis.AravisDetector(prefix, writer_type=None)  
 # Add separate writers for each ROI
-det.add_logics(
+det.add_detector_logics(
     adcore.ADHDFDataLogic(path_provider, det.driver, det.roi1_plugin, datakey_suffix="-roi1"),
     adcore.ADHDFDataLogic(path_provider, det.driver, det.roi2_plugin, datakey_suffix="-roi2"),
 )

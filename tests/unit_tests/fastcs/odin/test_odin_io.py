@@ -27,7 +27,9 @@ class OdinDet(StandardDetector):
         path_provider = StaticPathProvider(StaticFilenameProvider("filename"), tmp_path)
         self.odin = OdinIO(connector=fastcs_connector("PREFIX:"))
         self.bit_depth = soft_signal_rw(int, BIT_DEPTH)
-        self.add_logics(OdinDataLogic(path_provider, self.odin, self.bit_depth))
+        self.add_detector_logics(
+            OdinDataLogic(path_provider, self.odin, self.bit_depth)
+        )
         super().__init__(name, connector)
 
 

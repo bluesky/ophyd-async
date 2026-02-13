@@ -34,9 +34,9 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
             for plugin_name, plugin in plugins.items():
                 setattr(self, plugin_name, plugin)
         if trigger_logic:
-            self.add_logics(trigger_logic)
+            self.add_detector_logics(trigger_logic)
         if arm_logic:
-            self.add_logics(arm_logic)
+            self.add_detector_logics(arm_logic)
         if writer_type:
             if path_provider is None:
                 raise ValueError("PathProvider required to add a writer")
@@ -49,7 +49,7 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
                 plugins=plugins,
             )
             self.writer = writer
-            self.add_logics(data_logic)
+            self.add_detector_logics(data_logic)
         self.add_config_signals(
             self.driver.acquire_period, self.driver.acquire_time, *config_sigs
         )

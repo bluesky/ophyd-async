@@ -29,7 +29,7 @@ class JungfrauDetector(StandardDetector):
         self.acquisition_type = soft_signal_rw(
             AcquisitionType, AcquisitionType.STANDARD
         )
-        self.add_logics(
+        self.add_detector_logics(
             JungfrauTriggerLogic(self.detector, self.acquisition_type),
             JungfrauArmLogic(self.detector),
             odin.OdinDataLogic(

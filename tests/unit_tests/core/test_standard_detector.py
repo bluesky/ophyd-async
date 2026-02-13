@@ -199,7 +199,7 @@ async def test_get_trigger_deadtime(
     """Test get_trigger_deadtime with various trigger logic implementations."""
     det = StandardDetector()
     if trigger_logic:
-        det.add_logics(trigger_logic)
+        det.add_detector_logics(trigger_logic)
     triggers, deadtime = await det.get_trigger_deadtime()
     assert triggers == expected_triggers
     assert deadtime == expected_deadtime
@@ -214,7 +214,7 @@ async def test_get_trigger_deadtime_with_settings():
     det = StandardDetector()
     det.sig = deadtime_signal
     tl = DeadtimeTriggerLogic(deadtime_signal)
-    det.add_logics(tl)
+    det.add_detector_logics(tl)
 
     # Verify initial deadtime from signal
     triggers, deadtime = await det.get_trigger_deadtime()
@@ -244,7 +244,7 @@ async def test_prepare_trigger_types(trigger_type):
     """Test each trigger type is properly delegated to trigger logic."""
     det = StandardDetector()
     trigger_logic = AllTriggerTypesLogic()
-    det.add_logics(trigger_logic)
+    det.add_detector_logics(trigger_logic)
 
     trigger_info = TriggerInfo(
         trigger=trigger_type, livetime=0.5, deadtime=0.1, number_of_events=10
@@ -259,7 +259,7 @@ async def test_prepare_trigger_types(trigger_type):
 async def test_prepare_unsupported_trigger_type():
     """Test that preparing with unsupported trigger type raises error."""
     det = StandardDetector()
-    det.add_logics(JustInternalTriggerLogic())
+    det.add_detector_logics(JustInternalTriggerLogic())
 
     with pytest.raises(ValueError, match="Trigger type.*EXTERNAL_EDGE not supported"):
         await det.prepare(TriggerInfo(trigger=DetectorTrigger.EXTERNAL_EDGE))
@@ -298,7 +298,7 @@ async def test_exposures_per_collection(exposures_per_collection):
     """Test exposure averaging configuration."""
     det = StandardDetector()
     tl = AveragingTriggerLogic()
-    det.add_logics(tl)
+    det.add_detector_logics(tl)
 
     await det.prepare(
         TriggerInfo(
@@ -314,7 +314,7 @@ async def test_exposures_per_collection(exposures_per_collection):
 async def test_exposures_per_collection_not_supported():
     """Test that exposures_per_collection > 1 fails without supporting logic."""
     det = StandardDetector()
-    det.add_logics(JustInternalTriggerLogic())  # Doesn't support averaging
+    det.add_detector_logics(JustInternalTriggerLogic())  # Doesn't support averaging
 
     with pytest.raises(
         ValueError, match="Multiple exposures per collection not supported"
@@ -336,7 +336,7 @@ async def test_arm_timing(trigger_type, arm_timing, tmp_path):
     tl = AllTriggerTypesLogic()
     al = MockArmLogic()
     dl = StreamableOnlyDataLogic(tmp_path)
-    det.add_logics(tl, al, dl)
+    det.add_detector_logics(tl, al, dl)
 
     # Prepare the detector
     await det.prepare(TriggerInfo(trigger=trigger_type, number_of_events=2))
@@ -368,7 +368,7 @@ async def test_trigger_arms_detector(tmp_path):
     det = StandardDetector()
     al = MockArmLogic()
     dl = StreamableOnlyDataLogic(tmp_path)
-    det.add_logics(JustInternalTriggerLogic(), al, dl)
+    det.add_detector_logics(JustInternalTriggerLogic(), al, dl)
 
     await det.prepare(TriggerInfo())
 
@@ -392,7 +392,7 @@ async def test_arm_logic_called_on_stage():
     """Test that arm logic is disarmed on stage."""
     det = StandardDetector()
     al = MockArmLogic()
-    det.add_logics(al)
+    det.add_detector_logics(al)
 
     al.armed = True  # Simulate being armed
     await det.stage()
@@ -404,7 +404,7 @@ async def test_arm_logic_called_on_stage():
 async def test_describe_before_prepare_raises():
     """Test that describe() fails before prepare()."""
     det = StandardDetector()
-    det.add_logics(ReadableOnlyDataLogic())
+    det.add_detector_logics(ReadableOnlyDataLogic())
 
     with pytest.raises(RuntimeError, match="Prepare not run"):
         await det.describe()
@@ -413,7 +413,7 @@ async def test_describe_before_prepare_raises():
 async def test_describe_collect_before_prepare_raises(tmp_path):
     """Test that describe_collect() fails before prepare()."""
     det = StandardDetector()
-    det.add_logics(StreamableOnlyDataLogic(tmp_path))
+    det.add_detector_logics(StreamableOnlyDataLogic(tmp_path))
 
     with pytest.raises(RuntimeError, match="Prepare not run"):
         await det.describe_collect()
@@ -422,7 +422,7 @@ async def test_describe_collect_before_prepare_raises(tmp_path):
 async def test_trigger_after_multi_event_prepare_raises():
     """Test that trigger() after prepare with multiple events fails."""
     det = StandardDetector()
-    det.add_logics(JustInternalTriggerLogic())
+    det.add_detector_logics(JustInternalTriggerLogic())
 
     await det.prepare(TriggerInfo(number_of_events=5))
 
@@ -435,7 +435,7 @@ async def test_kickoff_respects_prepare_bounds(tmp_path):
     det = StandardDetector()
     tl = JustInternalTriggerLogic()
     dl = StreamableOnlyDataLogic(tmp_path)
-    det.add_logics(tl, dl)
+    det.add_detector_logics(tl, dl)
 
     # Prepare for 5 events
     await det.prepare(TriggerInfo(number_of_events=5))
@@ -464,7 +464,7 @@ async def test_kickoff_respects_prepare_bounds(tmp_path):
 async def test_stage_resets_state():
     """Test that stage() resets detector state."""
     det = StandardDetector()
-    det.add_logics(JustInternalTriggerLogic())
+    det.add_detector_logics(JustInternalTriggerLogic())
 
     await det.prepare(TriggerInfo(number_of_events=5))
     await det.events_to_kickoff.set(3)
@@ -480,7 +480,7 @@ async def test_stage_resets_state():
 async def test_hints_from_single_data_logic():
     """Test that hints come from data logic."""
     det = StandardDetector()
-    det.add_logics(ReadableOnlyDataLogic())
+    det.add_detector_logics(ReadableOnlyDataLogic())
 
     await det.prepare(TriggerInfo())
 
@@ -494,7 +494,7 @@ async def test_hints_from_multiple_data_logics(tmp_path):
     det = StandardDetector(name="bar")
     dl1 = ReadableOnlyDataLogic()
     dl2 = StreamableOnlyDataLogic(tmp_path)
-    det.add_logics(dl1, dl2)
+    det.add_detector_logics(dl1, dl2)
 
     await det.prepare(TriggerInfo())
 
@@ -547,7 +547,7 @@ async def test_config_signals_in_describe_configuration(
 async def test_kickoff_without_streamable_data_raises():
     """Test that kickoff() without streamable data fails."""
     det = StandardDetector(name="foo")
-    det.add_logics(JustInternalTriggerLogic(), ReadableOnlyDataLogic())
+    det.add_detector_logics(JustInternalTriggerLogic(), ReadableOnlyDataLogic())
 
     # Single event prepare for readable-only logic
     await det.prepare(TriggerInfo())
@@ -566,7 +566,7 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
     det = StandardDetector(name="foo")
     tl = JustInternalTriggerLogic()
     dl = StreamableOnlyDataLogic(tmp_path)
-    det.add_logics(tl, dl)
+    det.add_detector_logics(tl, dl)
 
     # Step scan should work
     status = det.trigger()
@@ -642,7 +642,7 @@ async def test_read_returns_correct_values():
     """Test that read() returns values from readable providers."""
     det = StandardDetector(name="det")
     dl = ReadableOnlyDataLogic()
-    det.add_logics(dl)
+    det.add_detector_logics(dl)
 
     await det.trigger()
     await assert_reading(det, {"foo-value": {"value": 42}})
@@ -682,10 +682,10 @@ async def test_cannot_add_two_trigger_logics():
     tl1 = JustInternalTriggerLogic()
     tl2 = AllTriggerTypesLogic()
 
-    det.add_logics(tl1)
+    det.add_detector_logics(tl1)
 
     with pytest.raises(RuntimeError, match="Detector already has trigger logic"):
-        det.add_logics(tl2)
+        det.add_detector_logics(tl2)
 
 
 async def test_cannot_add_two_arm_logics():
@@ -694,10 +694,10 @@ async def test_cannot_add_two_arm_logics():
     al1 = MockArmLogic()
     al2 = MockArmLogic()
 
-    det.add_logics(al1)
+    det.add_detector_logics(al1)
 
     with pytest.raises(RuntimeError, match="Detector already has arm logic"):
-        det.add_logics(al2)
+        det.add_detector_logics(al2)
 
 
 async def test_add_unknown_logic_type_raises():
@@ -708,13 +708,13 @@ async def test_add_unknown_logic_type_raises():
         pass
 
     with pytest.raises(TypeError, match="Unknown logic type"):
-        det.add_logics(UnknownLogic())
+        det.add_detector_logics(UnknownLogic())
 
 
 async def test_multiple_collections_with_single_only_logic_raises():
     """Test that requesting multiple collections fails with single-only data logic."""
     det = StandardDetector()
-    det.add_logics(ReadableOnlyDataLogic())
+    det.add_detector_logics(ReadableOnlyDataLogic())
 
     with pytest.raises(RuntimeError, match="Multiple collections not supported"):
         await det.prepare(TriggerInfo(number_of_events=5))
@@ -727,7 +727,7 @@ async def test_data_logic_with_no_prepare_methods_raises():
         pass
 
     det = StandardDetector()
-    det.add_logics(EmptyDataLogic())
+    det.add_detector_logics(EmptyDataLogic())
 
     with pytest.raises(RuntimeError, match="hasn't overridden any prepare_\\* methods"):
         await det.prepare(TriggerInfo())
@@ -737,7 +737,7 @@ async def test_unstage_disarms_detector():
     """Test that unstage() calls disarm on the detector."""
     det = StandardDetector()
     al = MockArmLogic()
-    det.add_logics(al)
+    det.add_detector_logics(al)
 
     al.armed = True
     await det.unstage()
@@ -750,7 +750,7 @@ async def test_prepare_stops_data_logic_when_recreating_providers(tmp_path):
     """Test that prepare() calls stop() on data logic when recreating providers."""
     det = StandardDetector(name="det")
     dl = StreamableOnlyDataLogic(tmp_path)
-    det.add_logics(JustInternalTriggerLogic(), dl)
+    det.add_detector_logics(JustInternalTriggerLogic(), dl)
 
     # First prepare with collections_per_event=2
     await det.prepare(TriggerInfo(number_of_events=3, collections_per_event=2))
@@ -766,7 +766,7 @@ async def test_different_collections_written_raises(tmp_path):
     det = StandardDetector(name="det")
     dl1 = StreamableOnlyDataLogic(tmp_path)
     dl2 = StreamableOnlyDataLogic(tmp_path)
-    det.add_logics(JustInternalTriggerLogic(), dl1, dl2)
+    det.add_detector_logics(JustInternalTriggerLogic(), dl1, dl2)
 
     await det.prepare(TriggerInfo(number_of_events=5))
 
@@ -789,7 +789,7 @@ async def test_multiple_data_logics(tmp_path):
     det = StandardDetector(name="det")
     dl1 = ReadableOnlyDataLogic()
     dl2 = StreamableOnlyDataLogic(tmp_path)
-    det.add_logics(JustInternalTriggerLogic(), dl1, dl2)
+    det.add_detector_logics(JustInternalTriggerLogic(), dl1, dl2)
 
     await det.prepare(TriggerInfo())
 
@@ -830,7 +830,7 @@ async def test_collect_asset_docs_with_explicit_index(tmp_path):
     """Test collect_asset_docs() with explicitly provided index."""
     det = StandardDetector(name="det")
     dl = StreamableOnlyDataLogic(tmp_path)
-    det.add_logics(JustInternalTriggerLogic(), dl)
+    det.add_detector_logics(JustInternalTriggerLogic(), dl)
 
     await det.prepare(TriggerInfo(number_of_events=5, collections_per_event=2))
 
