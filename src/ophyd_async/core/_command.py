@@ -246,7 +246,7 @@ class MockCommandBackend(CommandBackend[P, T]):
 
 
 def soft_command(
-    command_cb: Callable[P, T | Awaitable[T]],
+    command_cb: Callable[P, T] | Callable[P, Awaitable[T]],
     name: str = "",
     timeout: float | None = DEFAULT_TIMEOUT,
 ) -> Command[P, T]:
