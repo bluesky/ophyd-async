@@ -98,7 +98,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
 
     def __init__(self, command_cb: Callable[P, T | Awaitable[T]]):
         self._command_cb = command_cb
-        self._last_return_value: T | None = None
         self._lock = asyncio.Lock()
         self._sig = inspect.signature(command_cb)
         self._params = list(self._sig.parameters.values())
@@ -179,7 +178,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
             result = self._command_cb(*bound.args, **kwargs)
             if inspect.isawaitable(result):
                 result = await result
-            self._last_return_value = cast(T, result)
             return cast(T, result)
 
 

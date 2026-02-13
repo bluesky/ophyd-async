@@ -152,6 +152,8 @@ obj_ignore = [
     "ophyd_async.core._signal_backend.SignalDatatypeV",
     "ophyd_async.core._status.AsyncStatusBase",
     "ophyd_async.core._utils.P",
+    "ophyd_async.core._utils.P.args",
+    "ophyd_async.core._utils.P.kwargs",
     "ophyd_async.core._utils.T",
     "ophyd_async.core._utils.V",
     "ophyd_async.core._utils.T_co",
