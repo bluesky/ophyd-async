@@ -6,8 +6,6 @@ from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 from typing import (
     Generic,
-    ParamSpec,
-    TypeVar,
     cast,
     get_args,
     get_origin,
@@ -18,10 +16,7 @@ from unittest.mock import AsyncMock
 from ._device import Device, DeviceConnector, LazyMock
 from ._soft_signal_backend import SoftConverter, make_converter
 from ._status import AsyncStatus
-from ._utils import DEFAULT_TIMEOUT, NotConnectedError, T, _wait_for
-
-P = ParamSpec("P")
-T_co = TypeVar("T_co", covariant=True)
+from ._utils import DEFAULT_TIMEOUT, NotConnectedError, P, T, T_co, _wait_for
 
 
 class CommandBackend(Generic[P, T_co]):

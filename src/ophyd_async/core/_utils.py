@@ -22,6 +22,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict
 
 T = TypeVar("T")
+T_co = TypeVar("T_co", covariant=True)
 V = TypeVar("V")
 P = ParamSpec("P")
 Callback = Callable[[T], None]
