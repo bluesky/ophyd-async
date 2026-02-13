@@ -413,3 +413,10 @@ def error_if_none(value: T | None, msg: str) -> T:
 def non_zero(value):
     """Return True if the value cast to an int is not zero."""
     return int(value) != 0
+
+
+async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
+    try:
+        return await asyncio.wait_for(coro, timeout)
+    except TimeoutError as exc:
+        raise TimeoutError(source) from exc

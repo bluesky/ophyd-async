@@ -18,19 +18,7 @@ from unittest.mock import AsyncMock
 from ._device import Device, DeviceConnector, LazyMock
 from ._soft_signal_backend import SoftConverter, make_converter
 from ._status import AsyncStatus
-from ._utils import (
-    DEFAULT_TIMEOUT,
-    NotConnectedError,
-    T,
-)
-
-
-async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
-    try:
-        return await asyncio.wait_for(coro, timeout)
-    except TimeoutError as exc:
-        raise TimeoutError(source) from exc
-
+from ._utils import DEFAULT_TIMEOUT, NotConnectedError, T, _wait_for
 
 P = ParamSpec("P")
 T_co = TypeVar("T_co", covariant=True)
