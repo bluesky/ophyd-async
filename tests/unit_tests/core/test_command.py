@@ -75,7 +75,7 @@ async def test_soft_command_execution(datatype, value):
     backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
     await cmd.connect()
-    status = cmd(value)
+    status = cmd.execute(value)
     await status
     res = status.value
     if isinstance(value, np.ndarray):
@@ -105,27 +105,23 @@ def test_soft_command_init_validation(datatype, value):
         SoftCommandBackend(incomplete_param_annotation)
 
 
-async def test_call_raises_typeerror_on_bad_arguments():
+async def test_execute_raises_typeerror_on_bad_arguments():
     async def callback(a: int, b: int) -> int:
         return a + b
 
     backend = SoftCommandBackend(callback)
-
     # Too few arguments
     with pytest.raises(TypeError, match="missing a required argument"):
-        await backend(1)
-
+        await backend.execute(1)
     # Too many positional arguments
     with pytest.raises(TypeError, match="too many positional arguments"):
-        await backend(1, 2, 3)
-
+        await backend.execute(1, 2, 3)
     # Unexpected keyword argument
     with pytest.raises(TypeError, match="unexpected keyword argument"):
-        await backend(a=1, b=2, c=3)
-
+        await backend.execute(a=1, b=2, c=3)
     # Multiple values for the same argument
     with pytest.raises(TypeError, match="multiple values for argument"):
-        await backend(1, a=2)
+        await backend.execute(1, a=2)
 
 
 async def test_mock_command_backend():
@@ -139,30 +135,25 @@ async def test_mock_command_backend():
     cmd = Command(backend, name="test_cmd")
     mock = DeviceMock()
     await cmd.connect(mock=mock)
-
     # Verify we got a MockCommandBackend
     assert isinstance(cmd._connector.backend, MockCommandBackend)
-
     # Test 1: Basic execution with callback
     cmd._connector.backend.set_mock_execute_callback(lambda a, b: f"mock_{b}_{a}")
-    status = cmd(3, "test")
+    status = cmd.execute(3, "test")
     result = await status
     assert result == "mock_test_3"
     cmd._connector.backend.execute_mock.assert_awaited_once_with(3, "test")
-
     # Test 2: Verify source method
     source = cmd._connector.backend.source("test")
     assert source == "mock+softcmd://test"
-
     # Test 3: Verify connect raises error
     with pytest.raises(NotConnectedError):
         await cmd._connector.backend.connect(1.0)
-
     # Test 4: Verify mock is lazy-initialized
     new_cmd = Command(backend, name="new_cmd")
     await new_cmd.connect(mock=mock)
     assert "execute_mock" not in new_cmd._connector.backend.__dict__
-    await new_cmd(5, "lazy")
+    await new_cmd.execute(5, "lazy")
     assert "execute_mock" in new_cmd._connector.backend.__dict__
 
 
@@ -172,7 +163,7 @@ async def test_soft_command_factory():
 
     cmd_rw = soft_command(rw_cb, name="rw")
     await cmd_rw.connect()
-    status = cmd_rw(123)
+    status = cmd_rw.execute(123)
     await status
     assert status.value == "123"
 
@@ -181,7 +172,7 @@ async def test_soft_command_factory():
 
     cmd_x = soft_command(x_cb, name="x")
     await cmd_x.connect()
-    status = cmd_x()
+    status = cmd_x.execute()
     await status
     assert status.value is None
 
@@ -193,7 +184,7 @@ async def test_execution_error_wrapping():
     cmd = soft_command(failing_callback, name="test_cmd")
     await cmd.connect()
     with pytest.raises(ValueError, match="Boom"):
-        await cmd()
+        await cmd.execute()
 
 
 async def test_async_return_type_validation():
@@ -212,8 +203,8 @@ async def test_command_logging(caplog):
     cmd = soft_command(my_cb, name="mycmd")
     await cmd.connect()
     assert "Connecting to softcmd://mycmd" in caplog.text
-    status = cmd(42)
+    status = cmd.execute(42)
     await status
     assert status.value == "42"
-    assert "Calling command mycmd" in caplog.text
+    assert "Executing command mycmd" in caplog.text
     assert "Command mycmd returned 42" in caplog.text

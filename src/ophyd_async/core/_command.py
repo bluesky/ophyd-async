@@ -32,7 +32,7 @@ class CommandBackend(Generic[P, T_co]):
         """Connect to underlying hardware."""
 
     @abstractmethod
-    async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T_co:
+    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T_co:
         """Execute the command and return its result."""
 
 
@@ -50,7 +50,6 @@ class CommandConnector(DeviceConnector):
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Connect the backend to real hardware."""
         self.backend = self._init_backend
-
         source = self.backend.source(device.name)
         device.log.debug(f"Connecting to {source}")
         try:
@@ -62,12 +61,7 @@ class CommandConnector(DeviceConnector):
 
 
 class Command(Device, Generic[P, T]):
-    """A Device that can be called to execute a command.
-
-    :param backend: The backend for executing the command.
-    :param timeout: The default timeout for calling the command.
-    :param name: The name of the command.
-    """
+    """A Device that can execute a command."""
 
     _connector: CommandConnector
 
@@ -85,25 +79,22 @@ class Command(Device, Generic[P, T]):
         """Returns the source of the command."""
         return self._connector.backend.source(self.name)
 
-    async def _call(self, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Implementation for calling the backend (awaited by AsyncStatus)."""
-        self.log.debug(f"Calling command {self.name}")
+    async def _execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        """Implementation for executing the backend (awaited by AsyncStatus)."""
+        self.log.debug(f"Executing command {self.name}")
         result = await _wait_for(
-            self._connector.backend(*args, **kwargs), self._timeout, self.source
+            self._connector.backend.execute(*args, **kwargs), self._timeout, self.source
         )
         self.log.debug(f"Command {self.name} returned {result}")
         return result
 
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> AsyncStatus:
-        """Call the command and return an AsyncStatus for completion."""
-        return AsyncStatus(self._call(*args, **kwargs), name=self.name)
+    def execute(self, *args: P.args, **kwargs: P.kwargs) -> AsyncStatus:
+        """Execute the command and return an AsyncStatus for completion."""
+        return AsyncStatus(self._execute(*args, **kwargs), name=self.name)
 
 
 class SoftCommandBackend(CommandBackend[P, T]):
-    """A backend for a Command that uses a Python callback.
-
-    The callback's annotations define the runtime contract.
-    """
+    """A backend for a Command that uses a Python callback."""
 
     def __init__(self, command_cb: Callable[P, T | Awaitable[T]]):
         self._command_cb = command_cb
@@ -111,7 +102,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
         self._lock = asyncio.Lock()
         self._sig = inspect.signature(command_cb)
         self._params = list(self._sig.parameters.values())
-
         for p in self._params:
             if p.kind in (
                 inspect.Parameter.VAR_POSITIONAL,
@@ -122,7 +112,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
                     f" *args/**kwargs; "
                     f"got parameter {p.name!r}"
                 )
-
         # Require full annotations
         hints = get_type_hints(command_cb)
         missing = [p.name for p in self._params if p.name not in hints]
@@ -137,12 +126,10 @@ class SoftCommandBackend(CommandBackend[P, T]):
                 f"{command_cb.__name__}() is missing a return type annotation. "
                 "The return type must be annotated."
             )
-
         # Store expected param types by name (runtime contract)
         self._expected_param_types: dict[str, object] = {
             p.name: hints[p.name] for p in self._params
         }
-
         # Create converters for each parameter during initialization
         self._converters: dict[str, SoftConverter] = {}
         for name, expected_type in self._expected_param_types.items():
@@ -153,7 +140,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
                     f"Cannot create converter for parameter '{name}' of type"
                     f" {expected_type}: {exc}"
                 ) from exc
-
         # Handle return type
         inferred_return = hints["return"]
         if get_origin(inferred_return) in (Awaitable, asyncio.Future):
@@ -171,15 +157,13 @@ class SoftCommandBackend(CommandBackend[P, T]):
         """No-op for SoftCommandBackend."""
         pass
 
-    async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
+    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute the configured callback and return its result."""
         try:
             bound = self._sig.bind(*args, **kwargs)
         except TypeError as exc:
             raise TypeError(str(exc)) from exc
-
         bound.apply_defaults()
-
         for name, value in bound.arguments.items():
             converter = self._converters[name]
             try:
@@ -191,7 +175,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
                     f"Argument '{name}' with value {value!r} is not compatible with "
                     f"expected type {expected_type}: {exc}"
                 ) from exc
-
         async with self._lock:
             result = self._command_cb(*bound.args, **kwargs)
             if inspect.isawaitable(result):
@@ -222,11 +205,11 @@ class MockCommandBackend(CommandBackend[P, T]):
     def execute_mock(self) -> AsyncMock:
         """Return the mock that will track calls to the command execution."""
         execute_mock = AsyncMock(
-            name="__call__",
+            name="execute",
             spec=Callable[P, Awaitable[T]],
             side_effect=self._mock_execute_callback,
         )
-        self._mock().attach_mock(execute_mock, "__call__")
+        self._mock().attach_mock(execute_mock, "execute")
         return execute_mock
 
     def source(self, name: str) -> str:
@@ -237,8 +220,8 @@ class MockCommandBackend(CommandBackend[P, T]):
         """Mock backend does not support real connection."""
         raise NotConnectedError("It is not possible to connect a MockCommandBackend")
 
-    async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Call the mock command."""
+    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        """Execute the mock command."""
         result = await self.execute_mock(*args, **kwargs)
         return cast(T, result)
 
@@ -248,10 +231,6 @@ def soft_command(
     name: str = "",
     timeout: float | None = DEFAULT_TIMEOUT,
 ) -> Command[P, T]:
-    """Create a Command with a SoftCommandBackend.
-
-    The callback must have full type annotations (all parameters + return).
-    Argument and return types are inferred from those annotations.
-    """
+    """Create a Command with a SoftCommandBackend."""
     backend: SoftCommandBackend[P, T] = SoftCommandBackend(command_cb)
     return Command(backend, timeout, name)
