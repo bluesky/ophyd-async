@@ -4,6 +4,7 @@ import asyncio
 import inspect
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable
+from functools import cached_property
 from typing import (
     Generic,
     cast,
@@ -205,14 +206,28 @@ class MockCommandBackend(CommandBackend[P, T]):
     def __init__(self, initial_backend: CommandBackend[P, T], mock: LazyMock):
         self._initial_backend = initial_backend
         self._mock = mock
+        self._mock_execute_callback: Callable[P, Awaitable[T]] | None = None
 
-        async_mock = AsyncMock()
-        self.call_mock: Callable[P, Awaitable[T]] = cast(
-            Callable[P, Awaitable[T]], async_mock
+    def set_mock_execute_callback(self, callback: Callable[P, Awaitable[T]] | None):
+        """Set a callback that will be called when the command is executed."""
+        if "execute_mock" in self.__dict__:
+            # execute_mock cached property exists, so set the side effect on it
+            self.execute_mock.side_effect = callback
+        else:
+            # execute_mock doesn't exist, don't create it as that would be slow
+            # so just keep it internally
+            self._mock_execute_callback = callback
+
+    @cached_property
+    def execute_mock(self) -> AsyncMock:
+        """Return the mock that will track calls to the command execution."""
+        execute_mock = AsyncMock(
+            name="__call__",
+            spec=Callable[P, Awaitable[T]],
+            side_effect=self._mock_execute_callback,
         )
-
-        # Attach to the device mock
-        self._mock().attach_mock(async_mock, "__call__")
+        self._mock().attach_mock(execute_mock, "__call__")
+        return execute_mock
 
     def source(self, name: str) -> str:
         """Return the source of the mocked command."""
@@ -224,7 +239,7 @@ class MockCommandBackend(CommandBackend[P, T]):
 
     async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Call the mock command."""
-        result = await self.call_mock(*args, **kwargs)
+        result = await self.execute_mock(*args, **kwargs)
         return cast(T, result)
 
 

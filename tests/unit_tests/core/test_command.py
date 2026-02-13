@@ -9,6 +9,7 @@ from ophyd_async.core import (
     Command,
     DeviceMock,
     MockCommandBackend,
+    NotConnectedError,
     SoftCommandBackend,
     StrictEnum,
     SubsetEnum,
@@ -128,6 +129,9 @@ async def test_call_raises_typeerror_on_bad_arguments():
 
 
 async def test_mock_command_backend():
+    """Test MockCommandBackend basic functionality."""
+
+    # Setup
     async def async_callback(a: int, b: str) -> str:
         return f"{b}_{a}"
 
@@ -135,12 +139,31 @@ async def test_mock_command_backend():
     cmd = Command(backend, name="test_cmd")
     mock = DeviceMock()
     await cmd.connect(mock=mock)
+
+    # Verify we got a MockCommandBackend
     assert isinstance(cmd._connector.backend, MockCommandBackend)
-    cmd._connector.backend.call_mock.return_value = "mock_res"
-    status = cmd(3, "mock")
-    await status
-    assert status.value == "mock_res"
-    cmd._connector.backend.call_mock.assert_awaited_once_with(3, "mock")
+
+    # Test 1: Basic execution with callback
+    cmd._connector.backend.set_mock_execute_callback(lambda a, b: f"mock_{b}_{a}")
+    status = cmd(3, "test")
+    result = await status
+    assert result == "mock_test_3"
+    cmd._connector.backend.execute_mock.assert_awaited_once_with(3, "test")
+
+    # Test 2: Verify source method
+    source = cmd._connector.backend.source("test")
+    assert source == "mock+softcmd://test"
+
+    # Test 3: Verify connect raises error
+    with pytest.raises(NotConnectedError):
+        await cmd._connector.backend.connect(1.0)
+
+    # Test 4: Verify mock is lazy-initialized
+    new_cmd = Command(backend, name="new_cmd")
+    await new_cmd.connect(mock=mock)
+    assert "execute_mock" not in new_cmd._connector.backend.__dict__
+    await new_cmd(5, "lazy")
+    assert "execute_mock" in new_cmd._connector.backend.__dict__
 
 
 async def test_soft_command_factory():
