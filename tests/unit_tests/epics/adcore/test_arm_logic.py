@@ -62,7 +62,7 @@ async def test_arm_logic_wait_for_idle_in_bad_state(
         adbase_detector.driver.detector_state,
         adcore.ADState.ERROR,
     )
-    with patch("ophyd_async.epics.adcore._arm_logic.DEFAULT_TIMEOUT", 0.02):
+    with patch("ophyd_async.epics.adcore._arm_logic.DEFAULT_TIMEOUT", 0.05):
         with pytest.raises(ValueError) as exc_info:
             await adbase_detector.trigger()
 
