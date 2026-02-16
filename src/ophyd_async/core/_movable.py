@@ -3,7 +3,8 @@ from abc import ABC, abstractmethod
 
 from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
 
-from ._device import Device
+from ._device import Device, DeviceMock, default_mock_class
+from ._mock_signal_utils import callback_on_mock_put, set_mock_value
 from ._signal import SignalR, SignalRW, observe_value
 from ._status import WatchableAsyncStatus
 from ._utils import (
@@ -40,6 +41,22 @@ class MovableLogic(ABC):
         """Return the units and precision."""
 
 
+class InstanMovableMock(DeviceMock["StandardMovable"]):
+    """Mock behaviour that instantly moves readback to setpoint."""
+
+    async def connect(self, device: "StandardMovable") -> None:
+        """Mock signals to do an instant move on setpoint write."""
+        setpoint = device._movable_logic.setpoint_signal  # noqa: SLF001
+        readback = device._movable_logic.readback_signal  # noqa: SLF001
+
+        # When setpoint is written to, immediately update readback and done flag
+        def _instant_move(value):
+            set_mock_value(readback, value)  # Arrive instantly
+
+        callback_on_mock_put(setpoint, _instant_move)
+
+
+@default_mock_class(InstanMovableMock)
 class StandardMovable(Device, Locatable[float], Stoppable, Subscribable):
     """Device that provides standard logic for moving.
 
@@ -97,6 +114,8 @@ class StandardMovable(Device, Locatable[float], Stoppable, Subscribable):
                     unit=units,
                     precision=precision,
                 )
+        if not self._set_success:
+            raise RuntimeError(f"Motor {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
