@@ -5,16 +5,14 @@ from scanspec.specs import Fly, Line, Spiral
 
 from ophyd_async.core import set_mock_value
 from ophyd_async.epics.motor import Motor
-from ophyd_async.epics.pmac import (
-    PmacIO,
+from ophyd_async.epics.pmac import PmacIO
+from ophyd_async.epics.pmac._pmac_trajectory_generation import (  # noqa: PLC2701
+    MIN_INTERVAL,
+    PVT,
+    Trajectory,
 )
-from ophyd_async.epics.pmac._pmac_trajectory_generation import (
-    MIN_INTERVAL,  # noqa: PLC2701
-    PVT,  # noqa: PLC2701
-    Trajectory,  # noqa: PLC2701
-)
-from ophyd_async.epics.pmac._utils import (
-    _PmacMotorInfo,  # noqa: PLC2701
+from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
+    _PmacMotorInfo,
 )
 
 
