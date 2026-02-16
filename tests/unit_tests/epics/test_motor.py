@@ -152,7 +152,7 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
 
 async def test_set_with_zero_velocity(sim_motor: motor.Motor) -> None:
     await sim_motor.velocity.set(0)
-    with pytest.raises(ValueError, match="Mover has zero velocity"):
+    with pytest.raises(ValueError, match=f"Motor {sim_motor.name} has zero velocity"):
         await sim_motor.set(3.14)
 
 
@@ -335,7 +335,8 @@ async def test_prepare(
 async def test_kickoff(sim_motor: motor.Motor):
     sim_motor.set = MagicMock()
     with pytest.raises(
-        RuntimeError, match="Motor must be prepared before attempting to kickoff"
+        RuntimeError,
+        match=f"Motor {sim_motor.name} must be prepared before attempting to kickoff",
     ):
         await sim_motor.kickoff()
     # TODO: why was this called _twice_?
@@ -352,7 +353,9 @@ async def test_kickoff(sim_motor: motor.Motor):
 
 
 async def test_complete(sim_motor: motor.Motor) -> None:
-    with pytest.raises(RuntimeError, match="kickoff not called"):
+    with pytest.raises(
+        RuntimeError, match=f"kickoff for motor {sim_motor.name} not called"
+    ):
         sim_motor.complete()
     sim_motor._fly_status = sim_motor.set(20)
     assert not sim_motor._fly_status.done

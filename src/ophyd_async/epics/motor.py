@@ -95,8 +95,7 @@ class MotorMoveLogicSignals:
 class MotorMoveLogic(MovableLogic):
     """Add the specific logic for moving a motor."""
 
-    def __init__(self, motor_name: str, motor_signals: MotorMoveLogicSignals):
-        self.motor_name = motor_name
+    def __init__(self, motor_signals: MotorMoveLogicSignals):
         self.motor_signals = motor_signals
 
         self.readback_signal = motor_signals.user_readback
@@ -136,13 +135,14 @@ class MotorMoveLogic(MovableLogic):
             not motor_upper_limit >= old_position >= motor_lower_limit
             or not motor_upper_limit >= new_position >= motor_lower_limit
         ):
+            name = self.motor_signals.user_readback.name
             raise MotorLimitsError(
-                f"{self.motor_name} motor trajectory for requested fly/move is from "
+                f"{name} motor trajectory for requested fly/move is from "
                 f"{old_position}{egu} to "
                 f"{new_position}{egu} but motor limits are "
                 f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
                 f"dial limits are "
-                f"{dial_lower_limit}{egu} <= x <= {dial_upper_limit}"
+                f"{dial_lower_limit}{egu} <= x <= {dial_upper_limit}."
             )
 
     async def calculate_timeout(
@@ -162,7 +162,7 @@ class MotorMoveLogic(MovableLogic):
                 + DEFAULT_TIMEOUT
             )
         except ZeroDivisionError as error:
-            msg = "Mover has zero velocity"
+            msg = f"Motor {self.motor_signals.user_readback.name} has zero velocity."
             raise ValueError(msg) from error
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:
@@ -238,7 +238,6 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
 
         self.add_movable_logic(
             MotorMoveLogic(
-                motor_name=name,
                 motor_signals=MotorMoveLogicSignals(
                     user_readback=self.user_readback,
                     user_setpoint=self.user_setpoint,
@@ -276,8 +275,8 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
         )
         if abs(value.velocity) > max_speed:
             raise MotorLimitsError(
-                f"Velocity {abs(value.velocity)} {egu}/s was requested for a motor "
-                f" with max speed of {max_speed} {egu}/s"
+                f"Velocity {abs(value.velocity)} {egu}/s was requested for motor "
+                f"{self.name} with max speed of {max_speed} {egu}/s."
             )
 
         acceleration_time = await self.acceleration_time.get_value()
@@ -297,7 +296,8 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
     async def kickoff(self):
         """Begin moving motor from prepared position to final position."""
         fly_info = error_if_none(
-            self._fly_info, "Motor must be prepared before attempting to kickoff"
+            self._fly_info,
+            f"Motor {self.name} must be prepared before attempting to kickoff.",
         )
 
         acceleration_time = await self.acceleration_time.get_value()
@@ -308,5 +308,7 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
 
     def complete(self) -> WatchableAsyncStatus:
         """Mark as complete once motor reaches completed position."""
-        fly_status = error_if_none(self._fly_status, "kickoff not called")
+        fly_status = error_if_none(
+            self._fly_status, f"kickoff for motor {self.name} not called."
+        )
         return fly_status
