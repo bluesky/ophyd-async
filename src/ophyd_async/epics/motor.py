@@ -6,6 +6,7 @@ https://github.com/epics-modules/motor
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 
 from bluesky.protocols import Flyable, Preparable
 
@@ -76,40 +77,34 @@ class UseSetMode(StrictEnum):
     """Change offset (in record or in controller) when setpoint is written."""
 
 
+@dataclass
+class MotorMoveLogicSignals:
+    user_readback: SignalR[float]
+    user_setpoint: SignalRW[float]
+    motor_stop: SignalW[int]
+    low_limit_travel: SignalRW[float]
+    high_limit_travel: SignalRW[float]
+    motor_egu: SignalR[str]
+    dial_low_limit_travel: SignalRW[float]
+    dial_high_limit_travel: SignalRW[float]
+    velocity: SignalRW[float]
+    acceleration_time: SignalRW[float]
+    precision: SignalR[int]
+
+
 class MotorMoveLogic(MovableLogic):
     """Add the specific logic for moving a motor."""
 
-    def __init__(
-        self,
-        motor_name: str,
-        user_readback: SignalR[float],
-        user_setpoint: SignalRW[float],
-        motor_stop: SignalW[int],
-        low_limit_travel: SignalRW[float],
-        high_limit_travel: SignalRW[float],
-        motor_egu: SignalR[str],
-        dial_low_limit_travel: SignalRW[float],
-        dial_high_limit_travel: SignalRW[float],
-        velocity: SignalRW[float],
-        acceleration_time: SignalRW[float],
-        precision: SignalR[int],
-    ):
+    def __init__(self, motor_name: str, motor_signals: MotorMoveLogicSignals):
         self.motor_name = motor_name
-        self.readback_signal = user_readback
-        self.setpoint_signal = user_setpoint
-        self.motor_stop = motor_stop
-        self.low_limit_travel = low_limit_travel
-        self.high_limit_travel = high_limit_travel
-        self.motor_egu = motor_egu
-        self.dial_low_limit_travel = dial_low_limit_travel
-        self.dial_high_limit_travel = dial_high_limit_travel
-        self.velocity = velocity
-        self.acceleration_time = acceleration_time
-        self.precision = precision
+        self.motor_signals = motor_signals
+
+        self.readback_signal = motor_signals.user_readback
+        self.setpoint_signal = motor_signals.user_setpoint
 
     async def stop(self):
         """Request to stop moving."""
-        await self.motor_stop.set(1)
+        await self.motor_signals.motor_stop.set(1)
 
     async def check_move(self, old_position: float, new_position: float):
         """Check the positions are within limits.
@@ -124,11 +119,11 @@ class MotorMoveLogic(MovableLogic):
             dial_lower_limit,
             dial_upper_limit,
         ) = await asyncio.gather(
-            self.low_limit_travel.get_value(),
-            self.high_limit_travel.get_value(),
-            self.motor_egu.get_value(),
-            self.dial_low_limit_travel.get_value(),
-            self.dial_high_limit_travel.get_value(),
+            self.motor_signals.low_limit_travel.get_value(),
+            self.motor_signals.high_limit_travel.get_value(),
+            self.motor_signals.motor_egu.get_value(),
+            self.motor_signals.dial_low_limit_travel.get_value(),
+            self.motor_signals.dial_high_limit_travel.get_value(),
         )
 
         # EPICS motor record treats dial limits of 0, 0 as no limit
@@ -157,8 +152,8 @@ class MotorMoveLogic(MovableLogic):
             velocity,
             acceleration_time,
         ) = await asyncio.gather(
-            self.velocity.get_value(),
-            self.acceleration_time.get_value(),
+            self.motor_signals.velocity.get_value(),
+            self.motor_signals.acceleration_time.get_value(),
         )
         try:
             return (
@@ -172,7 +167,8 @@ class MotorMoveLogic(MovableLogic):
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         return await asyncio.gather(
-            self.motor_egu.get_value(), self.precision.get_value()
+            self.motor_signals.motor_egu.get_value(),
+            self.motor_signals.precision.get_value(),
         )
 
 
@@ -243,17 +239,19 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
         self.add_movable_logic(
             MotorMoveLogic(
                 motor_name=name,
-                user_readback=self.user_readback,
-                user_setpoint=self.user_setpoint,
-                motor_stop=self.motor_stop,
-                low_limit_travel=self.low_limit_travel,
-                high_limit_travel=self.high_limit_travel,
-                motor_egu=self.motor_egu,
-                dial_low_limit_travel=self.dial_low_limit_travel,
-                dial_high_limit_travel=self.dial_high_limit_travel,
-                velocity=self.velocity,
-                acceleration_time=self.acceleration_time,
-                precision=self.precision,
+                motor_signals=MotorMoveLogicSignals(
+                    user_readback=self.user_readback,
+                    user_setpoint=self.user_setpoint,
+                    motor_stop=self.motor_stop,
+                    low_limit_travel=self.low_limit_travel,
+                    high_limit_travel=self.high_limit_travel,
+                    motor_egu=self.motor_egu,
+                    dial_low_limit_travel=self.dial_low_limit_travel,
+                    dial_high_limit_travel=self.dial_high_limit_travel,
+                    velocity=self.velocity,
+                    acceleration_time=self.acceleration_time,
+                    precision=self.precision,
+                ),
             )
         )
         super().__init__(name)
