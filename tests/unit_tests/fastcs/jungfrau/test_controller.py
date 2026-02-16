@@ -11,10 +11,12 @@ from ophyd_async.core import (
     init_devices,
     set_mock_value,
 )
-from ophyd_async.fastcs.jungfrau import AcquisitionType, DetectorStatus, Jungfrau
-from ophyd_async.fastcs.jungfrau._signals import (
-    JungfrauTriggerMode,  # noqa: PLC2701
-    PedestalMode,  # noqa: PLC2701
+from ophyd_async.fastcs.jungfrau import (
+    AcquisitionType,
+    DetectorStatus,
+    Jungfrau,
+    JungfrauTriggerMode,
+    PedestalMode,
 )
 
 
