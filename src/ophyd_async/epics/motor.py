@@ -79,9 +79,8 @@ class MotorMoveLogic(MovableLogic):
         self.readback_signal = motor.user_readback
         self.setpoint_signal = motor.user_setpoint
 
-    async def stop(self, success=False):
+    async def stop(self):
         """Request to stop moving and return immediately."""
-        self.motor._set_success = success  # noqa: SLF001
         await self.motor.motor_stop.set(1)
 
     async def check_move(self, old_position: float, new_position: float):
@@ -126,7 +125,6 @@ class MotorMoveLogic(MovableLogic):
     async def calculate_timeout(
         self, old_position: float, new_position: float
     ) -> float:
-        self._set_success = True
         (
             old_position,
             velocity,

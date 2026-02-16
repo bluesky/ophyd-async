@@ -88,7 +88,7 @@ class StandardMovable(Device, Locatable[float], Stoppable, Subscribable):
                     precision=precision,
                 )
         if not self._set_success:
-            raise RuntimeError("Motor was stopped")
+            raise RuntimeError(f"Motor {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
