@@ -15,6 +15,9 @@ from ophyd_async.core import (
     DeviceMock,
     FlyMotorInfo,
     MovableLogic,
+    SignalR,
+    SignalRW,
+    SignalW,
     StandardMovable,
     StandardReadable,
     StrictEnum,
@@ -74,14 +77,39 @@ class UseSetMode(StrictEnum):
 
 
 class MotorMoveLogic(MovableLogic):
-    def __init__(self, motor: Motor):
-        self.motor = motor
-        self.readback_signal = motor.user_readback
-        self.setpoint_signal = motor.user_setpoint
+    """Add the specific logic for moving a motor."""
+
+    def __init__(
+        self,
+        motor_name: str,
+        user_readback: SignalR[float],
+        user_setpoint: SignalRW[float],
+        motor_stop: SignalW[int],
+        low_limit_travel: SignalRW[float],
+        high_limit_travel: SignalRW[float],
+        motor_egu: SignalR[str],
+        dial_low_limit_travel: SignalRW[float],
+        dial_high_limit_travel: SignalRW[float],
+        velocity: SignalRW[float],
+        acceleration_time: SignalRW[float],
+        precision: SignalR[int],
+    ):
+        self.motor_name = motor_name
+        self.readback_signal = user_readback
+        self.setpoint_signal = user_setpoint
+        self.motor_stop = motor_stop
+        self.low_limit_travel = low_limit_travel
+        self.high_limit_travel = high_limit_travel
+        self.motor_egu = motor_egu
+        self.dial_low_limit_travel = dial_low_limit_travel
+        self.dial_high_limit_travel = dial_high_limit_travel
+        self.velocity = velocity
+        self.acceleration_time = acceleration_time
+        self.precision = precision
 
     async def stop(self):
-        """Request to stop moving and return immediately."""
-        await self.motor.motor_stop.set(1)
+        """Request to stop moving."""
+        await self.motor_stop.set(1)
 
     async def check_move(self, old_position: float, new_position: float):
         """Check the positions are within limits.
@@ -96,11 +124,11 @@ class MotorMoveLogic(MovableLogic):
             dial_lower_limit,
             dial_upper_limit,
         ) = await asyncio.gather(
-            self.motor.low_limit_travel.get_value(),
-            self.motor.high_limit_travel.get_value(),
-            self.motor.motor_egu.get_value(),
-            self.motor.dial_low_limit_travel.get_value(),
-            self.motor.dial_high_limit_travel.get_value(),
+            self.low_limit_travel.get_value(),
+            self.high_limit_travel.get_value(),
+            self.motor_egu.get_value(),
+            self.dial_low_limit_travel.get_value(),
+            self.dial_high_limit_travel.get_value(),
         )
 
         # EPICS motor record treats dial limits of 0, 0 as no limit
@@ -114,7 +142,7 @@ class MotorMoveLogic(MovableLogic):
             or not motor_upper_limit >= new_position >= motor_lower_limit
         ):
             raise MotorLimitsError(
-                f"{self.motor.name} motor trajectory for requested fly/move is from "
+                f"{self.motor_name} motor trajectory for requested fly/move is from "
                 f"{old_position}{egu} to "
                 f"{new_position}{egu} but motor limits are "
                 f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
@@ -130,9 +158,9 @@ class MotorMoveLogic(MovableLogic):
             velocity,
             acceleration_time,
         ) = await asyncio.gather(
-            self.motor.user_setpoint.get_value(),
-            self.motor.velocity.get_value(),
-            self.motor.acceleration_time.get_value(),
+            self.setpoint_signal.get_value(),
+            self.velocity.get_value(),
+            self.acceleration_time.get_value(),
         )
         try:
             return (
@@ -145,9 +173,8 @@ class MotorMoveLogic(MovableLogic):
             raise ValueError(msg) from error
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:
-        """Return the units and precision."""
         return await asyncio.gather(
-            self.motor.motor_egu.get_value(), self.motor.precision.get_value()
+            self.motor_egu.get_value(), self.precision.get_value()
         )
 
 
@@ -215,7 +242,22 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
         # Set on kickoff(), complete when motor reaches self._fly_completed_position
         self._fly_status: WatchableAsyncStatus | None = None
 
-        self.add_movable_logic(MotorMoveLogic(self))
+        self.add_movable_logic(
+            MotorMoveLogic(
+                motor_name=name,
+                user_readback=self.user_readback,
+                user_setpoint=self.user_setpoint,
+                motor_stop=self.motor_stop,
+                low_limit_travel=self.low_limit_travel,
+                high_limit_travel=self.high_limit_travel,
+                motor_egu=self.motor_egu,
+                dial_low_limit_travel=self.dial_low_limit_travel,
+                dial_high_limit_travel=self.dial_high_limit_travel,
+                velocity=self.velocity,
+                acceleration_time=self.acceleration_time,
+                precision=self.precision,
+            )
+        )
         super().__init__(name)
 
     async def check_motor_limit(self, abs_start_pos: float, abs_end_pos: float):
