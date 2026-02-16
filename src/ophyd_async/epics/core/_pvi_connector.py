@@ -73,7 +73,7 @@ class PviDeviceConnector(DeviceConnector):
         if not self.pvi_tree:
             # Top-level device, so discover PVI tree
             self.pvi_tree = await PviTree.build_device_tree(
-                name=device.name, pvi_pv=self.pvi_pv, timeout=timeout
+                pvi_pv=self.pvi_pv, timeout=timeout
             )
         # Fill all signals
         for signal_name, signal_details in self.pvi_tree.signals.items():
@@ -217,7 +217,7 @@ class PviTree(ConfinedModel):
     vector_children: dict[int, PviTree] = Field(default={})
 
     @classmethod
-    async def build_device_tree(cls, name: str, pvi_pv: str, timeout: float) -> PviTree:
+    async def build_device_tree(cls, pvi_pv: str, timeout: float) -> PviTree:
         """Recursively build a PviTree from a top level device.
 
         Starting from the top-level device, this classmethod performs
@@ -237,12 +237,12 @@ class PviTree(ConfinedModel):
 
         signal_details = {
             entry_name: SignalDetails.from_entry(entries.pop(entry_name))
-            for entry_name in entries
+            for entry_name in list(entries)
             if set(entries[entry_name]) != {"d"}
         }
         sub_trees = await gather_dict(
             {
-                entry_name: cls.build_device_tree(entry_name, entry["d"], timeout)
+                entry_name: cls.build_device_tree(entry["d"], timeout)
                 for entry_name, entry in entries.items()
             }
         )
