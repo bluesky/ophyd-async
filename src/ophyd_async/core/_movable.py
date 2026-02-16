@@ -79,6 +79,9 @@ class StandardMovable(Device, Locatable[float], Stoppable, Subscribable):
             async for current_position in observe_value(
                 self._movable_logic.readback_signal
             ):
+                if not self._set_success:
+                    raise RuntimeError(f"Motor {self.name} was stopped.")
+
                 yield WatcherUpdate(
                     current=current_position,
                     initial=old_position,
@@ -87,8 +90,6 @@ class StandardMovable(Device, Locatable[float], Stoppable, Subscribable):
                     unit=units,
                     precision=precision,
                 )
-        if not self._set_success:
-            raise RuntimeError(f"Motor {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
