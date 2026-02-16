@@ -7,32 +7,21 @@ from __future__ import annotations
 
 import asyncio
 
-from bluesky.protocols import (
-    Flyable,
-    Locatable,
-    Location,
-    Preparable,
-    Reading,
-    Stoppable,
-    Subscribable,
-)
+from bluesky.protocols import Flyable, Preparable
 
 from ophyd_async.core import (
-    CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    CalculatableTimeout,
-    Callback,
     DeviceMock,
     FlyMotorInfo,
+    MovableLogic,
+    StandardMovable,
     StandardReadable,
     StrictEnum,
     WatchableAsyncStatus,
-    WatcherUpdate,
     callback_on_mock_put,
     default_mock_class,
     error_if_none,
-    observe_value,
     set_mock_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
@@ -84,6 +73,86 @@ class UseSetMode(StrictEnum):
     """Change offset (in record or in controller) when setpoint is written."""
 
 
+class MotorMoveLogic(MovableLogic):
+    def __init__(self, motor: Motor):
+        self.motor = motor
+        self.readback_signal = motor.user_readback
+        self.setpoint_signal = motor.user_setpoint
+
+    async def stop(self, success=False):
+        """Request to stop moving and return immediately."""
+        self._set_success = success
+        await self.motor.motor_stop.set(1)
+
+    async def check_move(self, old_position: float, new_position: float):
+        """Check the positions are within limits.
+
+        Will raise a MotorLimitsException if the given absolute positions will be
+        outside the motor soft limits.
+        """
+        (
+            motor_lower_limit,
+            motor_upper_limit,
+            egu,
+            dial_lower_limit,
+            dial_upper_limit,
+        ) = await asyncio.gather(
+            self.motor.low_limit_travel.get_value(),
+            self.motor.high_limit_travel.get_value(),
+            self.motor.motor_egu.get_value(),
+            self.motor.dial_low_limit_travel.get_value(),
+            self.motor.dial_high_limit_travel.get_value(),
+        )
+
+        # EPICS motor record treats dial limits of 0, 0 as no limit
+        # Use DLLM and DHLM to check
+        if dial_lower_limit == 0 and dial_upper_limit == 0:
+            return
+
+        # Use real motor limit(i.e. HLM and LLM) to check if the move is permissible
+        if (
+            not motor_upper_limit >= old_position >= motor_lower_limit
+            or not motor_upper_limit >= new_position >= motor_lower_limit
+        ):
+            raise MotorLimitsError(
+                f"{self.motor.name} motor trajectory for requested fly/move is from "
+                f"{old_position}{egu} to "
+                f"{new_position}{egu} but motor limits are "
+                f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
+                f"dial limits are "
+                f"{dial_lower_limit}{egu} <= x <= {dial_upper_limit}"
+            )
+
+    async def calculate_timeout(
+        self, old_position: float, new_position: float
+    ) -> float:
+        self._set_success = True
+        (
+            old_position,
+            velocity,
+            acceleration_time,
+        ) = await asyncio.gather(
+            self.motor.user_setpoint.get_value(),
+            self.motor.velocity.get_value(),
+            self.motor.acceleration_time.get_value(),
+        )
+        try:
+            return (
+                abs((new_position - old_position) / velocity)
+                + 2 * acceleration_time
+                + DEFAULT_TIMEOUT
+            )
+        except ZeroDivisionError as error:
+            msg = "Mover has zero velocity"
+            raise ValueError(msg) from error
+
+    async def get_units_precision(self) -> tuple[str | None, int | None]:
+        """Return the units and precision."""
+        return await asyncio.gather(
+            self.motor.motor_egu.get_value(), self.motor.precision.get_value()
+        )
+
+
 class InstantMotorMock(DeviceMock["Motor"]):
     """Mock behaviour that instantly moves readback to setpoint."""
 
@@ -106,14 +175,7 @@ class InstantMotorMock(DeviceMock["Motor"]):
 
 
 @default_mock_class(InstantMotorMock)
-class Motor(
-    StandardReadable,
-    Locatable[float],
-    Stoppable,
-    Flyable,
-    Preparable,
-    Subscribable[float],
-):
+class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
     """Device that moves a motor record."""
 
     def __init__(self, prefix: str, name="") -> None:
@@ -149,22 +211,14 @@ class Motor(
         # the move in set, so need to pass wait=False
         self.motor_stop = epics_signal_w(int, prefix + ".STOP", wait=False)
 
-        # Whether set() should complete successfully or not
-        self._set_success = True
-
         # Currently requested fly info, stored in prepare
         self._fly_info: FlyMotorInfo | None = None
 
         # Set on kickoff(), complete when motor reaches self._fly_completed_position
         self._fly_status: WatchableAsyncStatus | None = None
 
-        super().__init__(name=name)
-
-    def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
-        """Set name of the motor and its children."""
-        super().set_name(name, child_name_separator=child_name_separator)
-        # Readback should be named the same as its parent in read()
-        self.user_readback.set_name(name)
+        self.add_movable_logic(MotorMoveLogic(self))
+        super().__init__(name)
 
     async def check_motor_limit(self, abs_start_pos: float, abs_end_pos: float):
         """Check the positions are within limits.
@@ -172,38 +226,7 @@ class Motor(
         Will raise a MotorLimitsException if the given absolute positions will be
         outside the motor soft limits.
         """
-        (
-            motor_lower_limit,
-            motor_upper_limit,
-            egu,
-            dial_lower_limit,
-            dial_upper_limit,
-        ) = await asyncio.gather(
-            self.low_limit_travel.get_value(),
-            self.high_limit_travel.get_value(),
-            self.motor_egu.get_value(),
-            self.dial_low_limit_travel.get_value(),
-            self.dial_high_limit_travel.get_value(),
-        )
-
-        # EPICS motor record treats dial limits of 0, 0 as no limit
-        # Use DLLM and DHLM to check
-        if dial_lower_limit == 0 and dial_upper_limit == 0:
-            return
-
-        # Use real motor limit(i.e. HLM and LLM) to check if the move is permissible
-        if (
-            not motor_upper_limit >= abs_start_pos >= motor_lower_limit
-            or not motor_upper_limit >= abs_end_pos >= motor_lower_limit
-        ):
-            raise MotorLimitsError(
-                f"{self.name} motor trajectory for requested fly/move is from "
-                f"{abs_start_pos}{egu} to "
-                f"{abs_end_pos}{egu} but motor limits are "
-                f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
-                f"dial limits are "
-                f"{dial_lower_limit}{egu} <= x <= {dial_upper_limit}"
-            )
+        await self._movable_logic.check_move(abs_start_pos, abs_end_pos)
 
     @AsyncStatus.wrap
     async def prepare(self, value: FlyMotorInfo):
@@ -251,71 +274,3 @@ class Motor(
         """Mark as complete once motor reaches completed position."""
         fly_status = error_if_none(self._fly_status, "kickoff not called")
         return fly_status
-
-    @WatchableAsyncStatus.wrap
-    async def set(  # type: ignore
-        self, new_position: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
-    ):
-        """Move motor to the given value."""
-        self._set_success = True
-        (
-            old_position,
-            units,
-            precision,
-            velocity,
-            acceleration_time,
-        ) = await asyncio.gather(
-            self.user_setpoint.get_value(),
-            self.motor_egu.get_value(),
-            self.precision.get_value(),
-            self.velocity.get_value(),
-            self.acceleration_time.get_value(),
-        )
-
-        if timeout is CALCULATE_TIMEOUT:
-            try:
-                timeout = (
-                    abs((new_position - old_position) / velocity)
-                    + 2 * acceleration_time
-                    + DEFAULT_TIMEOUT
-                )
-            except ZeroDivisionError as error:
-                msg = "Mover has zero velocity"
-                raise ValueError(msg) from error
-
-        await self.check_motor_limit(old_position, new_position)
-
-        async with self.user_setpoint.set(new_position, timeout=timeout):
-            async for current_position in observe_value(self.user_readback):
-                yield WatcherUpdate(
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.name,
-                    unit=units,
-                    precision=precision,
-                )
-        if not self._set_success:
-            raise RuntimeError("Motor was stopped")
-
-    async def stop(self, success=False):
-        """Request to stop moving and return immediately."""
-        self._set_success = success
-        await self.motor_stop.set(1)
-
-    async def locate(self) -> Location[float]:
-        """Return the current setpoint and readback of the motor."""
-        setpoint, readback = await asyncio.gather(
-            self.user_setpoint.get_value(), self.user_readback.get_value()
-        )
-        return Location(setpoint=setpoint, readback=readback)
-
-    def subscribe_reading(self, function: Callback[dict[str, Reading[float]]]) -> None:
-        """Subscribe to reading."""
-        self.user_readback.subscribe_reading(function)
-
-    subscribe = subscribe_reading
-
-    def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
-        """Unsubscribe."""
-        self.user_readback.clear_sub(function)

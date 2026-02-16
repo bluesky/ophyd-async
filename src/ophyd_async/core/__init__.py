@@ -45,6 +45,7 @@ from ._mock_signal_utils import (
     set_mock_value,
     set_mock_values,
 )
+from ._movable import MovableLogic, StandardMovable
 from ._protocol import (
     AsyncConfigurable,
     AsyncLocatable,
@@ -156,6 +157,9 @@ __all__ = [
     "DeviceAnnotation",
     "DeviceVector",
     "init_devices",
+    # Movable
+    "MovableLogic",
+    "StandardMovable",
     # Protocols
     "AsyncReadable",
     "AsyncConfigurable",
