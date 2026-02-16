@@ -154,11 +154,9 @@ class MotorMoveLogic(MovableLogic):
         self, old_position: float, new_position: float
     ) -> float:
         (
-            old_position,
             velocity,
             acceleration_time,
         ) = await asyncio.gather(
-            self.setpoint_signal.get_value(),
             self.velocity.get_value(),
             self.acceleration_time.get_value(),
         )
