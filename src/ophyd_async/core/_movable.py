@@ -16,6 +16,8 @@ from ._utils import (
 
 
 class MovableLogic(ABC):
+    """Movable logic for stopping and checking valid moves of a StandardMovable."""
+
     setpoint_signal: SignalRW[float]
     readback_signal: SignalR[float]
 
@@ -25,13 +27,13 @@ class MovableLogic(ABC):
 
     @abstractmethod
     async def check_move(self, old_position: float, new_position: float) -> None:
-        """Check the move is valid and return the timeout."""
+        """Check the move is valid."""
 
     @abstractmethod
     async def calculate_timeout(
         self, old_position: float, new_position: float
     ) -> float:
-        """Check the move is valid and return the timeout."""
+        """Calculate valid timeout for a move."""
 
     @abstractmethod
     async def get_units_precision(self) -> tuple[str | None, int | None]:
@@ -39,13 +41,18 @@ class MovableLogic(ABC):
 
 
 class StandardMovable(Device, Locatable[float], Stoppable, Subscribable):
+    """Device that provides standard logic for moving.
+
+    This class must be inherited and have ``add_movable_logic`` called.
+    """
+
     # Whether set() should complete successfully or not
     _set_success = True
     __movable_logic: MovableLogic | None = None
 
     def add_movable_logic(self, logic: MovableLogic):
         if self.__movable_logic is not None:
-            raise RuntimeError("Device already has movable logic")
+            raise RuntimeError("Device already has movable logic.")
         self.__movable_logic = logic
 
     @property
@@ -61,20 +68,20 @@ class StandardMovable(Device, Locatable[float], Stoppable, Subscribable):
     async def set(
         self, new_position: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
     ):
-        """Move motor to the given value."""
+        """Move to the given value."""
         self._set_success = True
         old_position, (units, precision) = await asyncio.gather(
             self._movable_logic.setpoint_signal.get_value(),
             self._movable_logic.get_units_precision(),
         )
         await self._movable_logic.check_move(old_position, new_position)
-        calculated_timeout = await self._movable_logic.calculate_timeout(
-            old_position, new_position
-        )
 
+        if timeout is CALCULATE_TIMEOUT:
+            timeout = await self._movable_logic.calculate_timeout(
+                old_position, new_position
+            )
         async with self._movable_logic.setpoint_signal.set(
-            new_position,
-            timeout=calculated_timeout if timeout is CALCULATE_TIMEOUT else timeout,
+            new_position, timeout=timeout
         ):
             async for current_position in observe_value(
                 self._movable_logic.readback_signal
