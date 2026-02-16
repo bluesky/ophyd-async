@@ -23,7 +23,7 @@ class MovableLogic(ABC):
     readback_signal: SignalR[float]
 
     @abstractmethod
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop the motion."""
 
     @abstractmethod
@@ -41,7 +41,7 @@ class MovableLogic(ABC):
         """Return the units and precision."""
 
 
-class InstanMovableMock(DeviceMock["StandardMovable"]):
+class InstantMovableMock(DeviceMock["StandardMovable"]):
     """Mock behaviour that instantly moves readback to setpoint."""
 
     async def connect(self, device: "StandardMovable") -> None:
@@ -56,7 +56,7 @@ class InstanMovableMock(DeviceMock["StandardMovable"]):
         callback_on_mock_put(setpoint, _instant_move)
 
 
-@default_mock_class(InstanMovableMock)
+@default_mock_class(InstantMovableMock)
 class StandardMovable(Device, Locatable[float], Stoppable, Subscribable):
     """Device that provides standard logic for moving.
 
