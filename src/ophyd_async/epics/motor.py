@@ -81,7 +81,7 @@ class MotorMoveLogic(MovableLogic):
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
-        self._set_success = success
+        self.motor._set_success = success  # noqa: SLF001
         await self.motor.motor_stop.set(1)
 
     async def check_move(self, old_position: float, new_position: float):
