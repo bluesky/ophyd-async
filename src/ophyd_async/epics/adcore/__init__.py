@@ -23,6 +23,7 @@ from ._core_logic import DEFAULT_GOOD_STATES, ADBaseContAcqController, ADBaseCon
 from ._core_writer import ADWriter
 from ._hdf_writer import ADHDFWriter
 from ._jpeg_writer import ADJPEGWriter
+from ._plan_stubs import setup_ndattributes, setup_ndstats_sum
 from ._single_trigger import SingleTriggerDetector
 from ._tiff_writer import ADTIFFWriter
 from ._utils import (
@@ -68,4 +69,6 @@ __all__ = [
     "NDCBFlushOnSoftTrgMode",
     "NDPluginCBIO",
     "ndattributes_to_xml",
+    "setup_ndattributes",
+    "setup_ndstats_sum",
 ]

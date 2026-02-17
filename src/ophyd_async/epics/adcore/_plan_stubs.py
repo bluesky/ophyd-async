@@ -1,18 +1,19 @@
 from collections.abc import Sequence
 
 import bluesky.plan_stubs as bps
+from bluesky.utils import plan
 
-from ophyd_async.epics.adcore import (
-    AreaDetector,
-    NDArrayBaseIO,
+from ._core_detector import AreaDetector
+from ._core_io import NDArrayBaseIO, NDFileHDFIO
+from ._utils import (
     NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
-    NDFileHDFIO,
     ndattributes_to_xml,
 )
 
 
+@plan
 def setup_ndattributes(
     device: NDArrayBaseIO, ndattributes: Sequence[NDAttributeParam | NDAttributePv]
 ):
@@ -24,6 +25,7 @@ def setup_ndattributes(
     )
 
 
+@plan
 def setup_ndstats_sum(detector: AreaDetector):
     """Set up nd stats sum nd attribute for a detector."""
     hdf = getattr(detector, "fileio", None)
