@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.plan_stubs &#8212; ophyd-async 0.16.dev5+g1c4efdc00 documentation</title>
+    <title>ophyd_async.plan_stubs &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=71c8c0d6"></script>
+    <script src="../../_static/documentation_options.js?v=90f830b9"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev5+g1c4efdc00 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev5+g1c4efdc00 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
   
   
 </a></div>
@@ -531,28 +531,19 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.ensure_connected" title="ophyd_async.plan_stubs._ensure_connected.ensure_connected"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_connected</span></code></a></p></td>
 <td><p>Plan stub to ensure devices are connected with a given timeout.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.setup_ndattributes" title="ophyd_async.plan_stubs._nd_attributes.setup_ndattributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndattributes</span></code></a></p></td>
-<td></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.setup_ndstats_sum" title="ophyd_async.plan_stubs._nd_attributes.setup_ndstats_sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndstats_sum</span></code></a></p></td>
-<td><p>Set up nd stats sum nd attribute for a detector.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.apply_panda_settings" title="ophyd_async.plan_stubs._panda.apply_panda_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_panda_settings</span></code></a></p></td>
-<td><p>Apply given settings to a panda device.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.apply_settings" title="ophyd_async.plan_stubs._settings.apply_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_settings</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.apply_settings" title="ophyd_async.plan_stubs._settings.apply_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_settings</span></code></a></p></td>
 <td><p>Set every SignalRW to the given value in Settings. If value is None ignore it.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.apply_settings_if_different" title="ophyd_async.plan_stubs._settings.apply_settings_if_different"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_settings_if_different</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.apply_settings_if_different" title="ophyd_async.plan_stubs._settings.apply_settings_if_different"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_settings_if_different</span></code></a></p></td>
 <td><p>Set every SignalRW in settings, only if it is different to the current value.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.get_current_settings" title="ophyd_async.plan_stubs._settings.get_current_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_current_settings</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.get_current_settings" title="ophyd_async.plan_stubs._settings.get_current_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_current_settings</span></code></a></p></td>
 <td><p>Get current settings on <code class="docutils literal notranslate"><span class="pre">Device</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.retrieve_settings" title="ophyd_async.plan_stubs._settings.retrieve_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">retrieve_settings</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.retrieve_settings" title="ophyd_async.plan_stubs._settings.retrieve_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">retrieve_settings</span></code></a></p></td>
 <td><p>Retrieve named Settings for a Device from a provider.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.store_settings" title="ophyd_async.plan_stubs._settings.store_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_settings</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.plan_stubs.store_settings" title="ophyd_async.plan_stubs._settings.store_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_settings</span></code></a></p></td>
 <td><p>Walk a Device for SignalRWs and store their values.</p></td>
 </tr>
 </tbody>
@@ -565,23 +556,6 @@
 <dt class="sig sig-object py" id="ophyd_async.plan_stubs.ensure_connected">
 <span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">ensure_connected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">devices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><span class="pre">Device</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mock</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><span class="pre">LazyMock</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">DEFAULT_TIMEOUT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_reconnect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_ensure_connected.html#ensure_connected"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.ensure_connected" title="Link to this definition">#</a></dt>
 <dd><p>Plan stub to ensure devices are connected with a given timeout.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.plan_stubs.setup_ndattributes">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">setup_ndattributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore.NDArrayBaseIO"><span class="pre">NDArrayBaseIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndattributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributeParam" title="ophyd_async.epics.adcore.NDAttributeParam"><span class="pre">NDAttributeParam</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributePv" title="ophyd_async.epics.adcore.NDAttributePv"><span class="pre">NDAttributePv</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_nd_attributes.html#setup_ndattributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.setup_ndattributes" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.plan_stubs.setup_ndstats_sum">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">setup_ndstats_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.AreaDetector" title="ophyd_async.epics.adcore.AreaDetector"><span class="pre">AreaDetector</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_nd_attributes.html#setup_ndstats_sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.setup_ndstats_sum" title="Link to this definition">#</a></dt>
-<dd><p>Set up nd stats sum nd attribute for a detector.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ophyd_async.plan_stubs.apply_panda_settings">
-<span class="sig-prename descclassname"><span class="pre">ophyd_async.plan_stubs.</span></span><span class="sig-name descname"><span class="pre">apply_panda_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Settings" title="ophyd_async.core.Settings"><span class="pre">Settings</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.HDFPanda" title="ophyd_async.fastcs.panda.HDFPanda"><span class="pre">HDFPanda</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.utils.MsgGenerator.html#bluesky.utils.MsgGenerator" title="(in bluesky v1.14.7.dev29+gfb2c32466)"><span class="pre">MsgGenerator</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/plan_stubs/_panda.html#apply_panda_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.plan_stubs.apply_panda_settings" title="Link to this definition">#</a></dt>
-<dd><p>Apply given settings to a panda device.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -703,9 +677,6 @@ the signals given in settings.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.ensure_connected"><code class="docutils literal notranslate"><span class="pre">ensure_connected()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.setup_ndattributes"><code class="docutils literal notranslate"><span class="pre">setup_ndattributes()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.setup_ndstats_sum"><code class="docutils literal notranslate"><span class="pre">setup_ndstats_sum()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.apply_panda_settings"><code class="docutils literal notranslate"><span class="pre">apply_panda_settings()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.apply_settings"><code class="docutils literal notranslate"><span class="pre">apply_settings()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.apply_settings_if_different"><code class="docutils literal notranslate"><span class="pre">apply_settings_if_different()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.plan_stubs.get_current_settings"><code class="docutils literal notranslate"><span class="pre">get_current_settings()</span></code></a></li>

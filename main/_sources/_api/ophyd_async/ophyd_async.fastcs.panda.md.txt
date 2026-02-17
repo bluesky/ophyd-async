@@ -121,6 +121,18 @@
     ```
 ````
 
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`apply_panda_settings <ophyd_async.fastcs.panda._plan_stubs.apply_panda_settings>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.panda._plan_stubs.apply_panda_settings
+    :summary:
+    ```
+````
+
 ### API
 
 `````{py:class} CommonPandaBlocks(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
@@ -1654,3 +1666,10 @@ Bases: {py:obj}`ophyd_async.core.FlyerController`\[{py:obj}`ophyd_async.fastcs.p
 ````
 
 `````
+
+````{py:function} apply_panda_settings(settings: ~ophyd_async.core.Settings[~ophyd_async.fastcs.panda._hdf_panda.HDFPanda]) -> ~bluesky.utils.MsgGenerator[None]
+:canonical: ophyd_async.fastcs.panda._plan_stubs.apply_panda_settings
+
+```{autodoc2-docstring} ophyd_async.fastcs.panda._plan_stubs.apply_panda_settings
+```
+````

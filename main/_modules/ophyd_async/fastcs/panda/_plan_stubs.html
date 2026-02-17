@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.panda._block &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
+    <title>ophyd_async.fastcs.panda._plan_stubs &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
   
   
   
@@ -482,7 +482,7 @@ mermaid.initialize(
 );
 
 window.addEventListener("load", load);</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/fastcs/panda/_block';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/fastcs/panda/_plan_stubs';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -872,7 +872,7 @@ window.addEventListener("load", load);</script>
     
     <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.fastcs.panda._block</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.fastcs.panda._plan_stubs</span></li>
   </ul>
 </nav>
 </div>
@@ -889,186 +889,23 @@ window.addEventListener("load", load);</script>
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.fastcs.panda._block</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Device</span><span class="p">,</span>
-    <span class="n">DeviceVector</span><span class="p">,</span>
-    <span class="n">SignalR</span><span class="p">,</span>
-    <span class="n">SignalRW</span><span class="p">,</span>
-    <span class="n">StrictEnum</span><span class="p">,</span>
-    <span class="n">SubsetEnum</span><span class="p">,</span>
-<span class="p">)</span>
+  <h1>Source code for ophyd_async.fastcs.panda._plan_stubs</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">MsgGenerator</span><span class="p">,</span> <span class="n">plan</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._table</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetTable</span><span class="p">,</span> <span class="n">SeqTable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.plan_stubs</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_settings</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._hdf_panda</span><span class="w"> </span><span class="kn">import</span> <span class="n">HDFPanda</span>
 
 
-<div class="viewcode-block" id="PandaCaptureMode">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaCaptureMode">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PandaCaptureMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Capture mode for the `DataBlock` on the PandA.&quot;&quot;&quot;</span>
-
-    <span class="n">FIRST_N</span> <span class="o">=</span> <span class="s2">&quot;FIRST_N&quot;</span>
-    <span class="n">LAST_N</span> <span class="o">=</span> <span class="s2">&quot;LAST_N&quot;</span>
-    <span class="n">FOREVER</span> <span class="o">=</span> <span class="s2">&quot;FOREVER&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="DataBlock">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.DataBlock">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">DataBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data block for the PandA. Used for writing data through the IOC.</span>
-
-<span class="sd">    This mirrors the interface provided by</span>
-<span class="sd">    https://github.com/PandABlocks/fastcs-PandABlocks/blob/main/src/fastcs_pandablocks/panda/blocks/data.py</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># In future we may decide to make hdf_* optional</span>
-    <span class="n">hdf_directory</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">hdf_file_name</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">num_capture</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">num_captured</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">create_directory</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">directory_exists</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="n">capture_mode</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaCaptureMode</span><span class="p">]</span>
-    <span class="n">capture</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="n">flush_period</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">datasets</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">DatasetTable</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="PandaPcompDirection">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaPcompDirection">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PandaPcompDirection</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Direction options for position compare in the PandA.&quot;&quot;&quot;</span>
-
-    <span class="n">POSITIVE</span> <span class="o">=</span> <span class="s2">&quot;Positive&quot;</span>
-    <span class="n">NEGATIVE</span> <span class="o">=</span> <span class="s2">&quot;Negative&quot;</span>
-    <span class="n">EITHER</span> <span class="o">=</span> <span class="s2">&quot;Either&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="PandaBitMux">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaBitMux">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PandaBitMux</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Bit input with configurable delay in the PandA.&quot;&quot;&quot;</span>
-
-    <span class="n">ZERO</span> <span class="o">=</span> <span class="s2">&quot;ZERO&quot;</span>
-    <span class="n">ONE</span> <span class="o">=</span> <span class="s2">&quot;ONE&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="PandaPosMux">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaPosMux">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PandaPosMux</span><span class="p">(</span><span class="n">SubsetEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pos input in the PandA.&quot;&quot;&quot;</span>
-
-    <span class="n">ZERO</span> <span class="o">=</span> <span class="s2">&quot;ZERO&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="PulseBlock">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PulseBlock">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PulseBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Used for configuring pulses in the PandA.</span>
-
-<span class="sd">    This mirrors the interface provided by</span>
-<span class="sd">    PandABlocks-FPGA/modules/pulse/pulse.block.ini</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaBitMux</span><span class="p">]</span>
-    <span class="n">delay</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">pulses</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">step</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">width</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="PcompBlock">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PcompBlock">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PcompBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Position compare block in the PandA.</span>
-
-<span class="sd">    This mirrors the interface provided by</span>
-<span class="sd">    PandABlocks-FPGA/modules/pcomp/pcomp.block.ini</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">active</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="nb">dir</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaPcompDirection</span><span class="p">]</span>
-    <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaBitMux</span><span class="p">]</span>
-    <span class="n">pulses</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">start</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">step</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">width</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="PandaTimeUnits">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PandaTimeUnits">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PandaTimeUnits</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Options for units of time in the PandA.&quot;&quot;&quot;</span>
-
-    <span class="n">MIN</span> <span class="o">=</span> <span class="s2">&quot;min&quot;</span>
-    <span class="n">S</span> <span class="o">=</span> <span class="s2">&quot;s&quot;</span>
-    <span class="n">MS</span> <span class="o">=</span> <span class="s2">&quot;ms&quot;</span>
-    <span class="n">US</span> <span class="o">=</span> <span class="s2">&quot;us&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="SeqBlock">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.SeqBlock">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">SeqBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sequencer block in the PandA.</span>
-
-<span class="sd">    This mirrors the interface provided by PandABlocks-FPGA/modules/seq/seq.block.ini</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">table</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SeqTable</span><span class="p">]</span>
-    <span class="n">active</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="n">repeats</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">prescale</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">prescale_units</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaTimeUnits</span><span class="p">]</span>
-    <span class="n">enable</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaBitMux</span><span class="p">]</span>
-    <span class="n">posa</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">PandaPosMux</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="PcapBlock">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.PcapBlock">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">PcapBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Position capture block in the PandA.</span>
-
-<span class="sd">    This mirrors the interface provided by PandABlocks-FPGA/modules/pcap/pcap.block.ini</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">active</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="n">arm</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="InencBlock">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.InencBlock">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">InencBlock</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;In encoder block in the PandA.</span>
-
-<span class="sd">    This mirrors the interface provided by</span>
-<span class="sd">    PandABlocks-FPGA/modules/inenc/inenc.block.ini</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">val_scale</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
-    <span class="n">val_offset</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="CommonPandaBlocks">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.CommonPandaBlocks">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">CommonPandaBlocks</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pandablocks device with blocks which are common and required on introspection.&quot;&quot;&quot;</span>
-
-    <span class="n">pulse</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">PulseBlock</span><span class="p">]</span>
-    <span class="n">seq</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">SeqBlock</span><span class="p">]</span>
-    <span class="n">pcomp</span><span class="p">:</span> <span class="n">DeviceVector</span><span class="p">[</span><span class="n">PcompBlock</span><span class="p">]</span>
-    <span class="n">pcap</span><span class="p">:</span> <span class="n">PcapBlock</span>
-    <span class="n">data</span><span class="p">:</span> <span class="n">DataBlock</span></div>
+<div class="viewcode-block" id="apply_panda_settings">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.apply_panda_settings">[docs]</a>
+<span class="nd">@plan</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_panda_settings</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">Settings</span><span class="p">[</span><span class="n">HDFPanda</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">MsgGenerator</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply given settings to a panda device.&quot;&quot;&quot;</span>
+    <span class="n">units</span><span class="p">,</span> <span class="n">others</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="k">lambda</span> <span class="n">signal</span><span class="p">:</span> <span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_units&quot;</span><span class="p">))</span>
+    <span class="k">yield from</span> <span class="n">apply_settings</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">apply_settings</span><span class="p">(</span><span class="n">others</span><span class="p">)</span></div>
 
 </pre></div>
 

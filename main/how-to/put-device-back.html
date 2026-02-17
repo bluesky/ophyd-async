@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to use settings to put devices back in their original state &#8212; ophyd-async 0.16.dev5+g1c4efdc00 documentation</title>
+    <title>How to use settings to put devices back in their original state &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=71c8c0d6"></script>
+    <script src="../_static/documentation_options.js?v=90f830b9"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev5+g1c4efdc00 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev5+g1c4efdc00 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
   
   
 </a></div>
@@ -518,7 +518,7 @@
 <section id="variations">
 <h2>Variations<a class="headerlink" href="#variations" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p>If you are doing this on something like a PandA which has to apply the settings in a particular order, then pass a different <code class="docutils literal notranslate"><span class="pre">apply_plan</span></code> (like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_panda_settings" title="ophyd_async.plan_stubs.apply_panda_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">apply_panda_settings</span></code></a> to <code class="docutils literal notranslate"><span class="pre">apply_settings_if_different</span></code>)</p></li>
+<li><p>If you are doing this on something like a PandA which has to apply the settings in a particular order, then pass a different <code class="docutils literal notranslate"><span class="pre">apply_plan</span></code> (like <a class="reference internal" href="../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.apply_panda_settings" title="ophyd_async.fastcs.panda.apply_panda_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">apply_panda_settings</span></code></a> to <code class="docutils literal notranslate"><span class="pre">apply_settings_if_different</span></code>)</p></li>
 <li><p>If you want to apply the settings without checking if they are different in the device then call the <code class="docutils literal notranslate"><span class="pre">apply_plan</span></code> directly rather than wrapping it in <code class="docutils literal notranslate"><span class="pre">apply_settings_if_different</span></code>.</p></li>
 </ul>
 </section>

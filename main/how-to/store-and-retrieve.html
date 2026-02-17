@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to store and retrieve device settings &#8212; ophyd-async 0.16.dev5+g1c4efdc00 documentation</title>
+    <title>How to store and retrieve device settings &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=71c8c0d6"></script>
+    <script src="../_static/documentation_options.js?v=90f830b9"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev5+g1c4efdc00 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev5+g1c4efdc00 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
   
   
 </a></div>
@@ -503,7 +503,7 @@
 <section id="loading-a-device-to-its-stored-state-step-3">
 <h2>Loading a device to its stored state (step 3)<a class="headerlink" href="#loading-a-device-to-its-stored-state-step-3" title="Link to this heading">#</a></h2>
 <p>To set a device to the state we saved it to in step 2, we need to use the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.retrieve_settings" title="ophyd_async.plan_stubs.retrieve_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">retrieve_settings</span></code></a> plan stub, using the same <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SettingsProvider" title="ophyd_async.core.SettingsProvider"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">SettingsProvider</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">Device</span></code></a> which were used in step 2. When using this with the YamlSettingsProvider, this will convert the saved yaml file into a Settings object which is tied to the relevant device. Then use the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_settings" title="ophyd_async.plan_stubs.apply_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">apply_settings</span></code></a> plan stub to set the SignalRWs on the connected device.</p>
-<p>Some devices require extra logic when applying settings. For example, the PandA needs to set all its PVs with suffix “_units” before all its other PVs. A plan stub which includes this extra bit of logic is included for the PandA: <a class="reference internal" href="../_api/ophyd_async/ophyd_async.plan_stubs.html#ophyd_async.plan_stubs.apply_panda_settings" title="ophyd_async.plan_stubs.apply_panda_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">apply_panda_settings</span></code></a>.</p>
+<p>Some devices require extra logic when applying settings. For example, the PandA needs to set all its PVs with suffix “_units” before all its other PVs. A plan stub which includes this extra bit of logic is included for the PandA: <a class="reference internal" href="../_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.apply_panda_settings" title="ophyd_async.fastcs.panda.apply_panda_settings"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">apply_panda_settings</span></code></a>.</p>
 <p>Continuing from the previous example, we can load the PandA by running</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">load_panda</span><span class="p">(</span><span class="n">panda1</span><span class="p">:</span> <span class="n">HDFPanda</span><span class="p">):</span>
     <span class="n">provider</span> <span class="o">=</span> <span class="n">YamlSettingsProvider</span><span class="p">(</span><span class="s2">&quot;directory_to_save_yaml_to&quot;</span><span class="p">)</span>

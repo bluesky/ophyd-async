@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.16.dev5+g1c4efdc00 documentation</title>
+    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=71c8c0d6"></script>
+    <script src="../../_static/documentation_options.js?v=90f830b9"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev5+g1c4efdc00 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev5+g1c4efdc00 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
   
   
 </a></div>
@@ -629,6 +629,12 @@
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ndattributes_to_xml" title="ophyd_async.epics.adcore._utils.ndattributes_to_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndattributes_to_xml</span></code></a></p></td>
 <td><p>Convert a set of NDAttribute params to XML.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.setup_ndattributes" title="ophyd_async.epics.adcore._plan_stubs.setup_ndattributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndattributes</span></code></a></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.setup_ndstats_sum" title="ophyd_async.epics.adcore._plan_stubs.setup_ndstats_sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndstats_sum</span></code></a></p></td>
+<td><p>Set up nd stats sum nd attribute for a detector.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1843,6 +1849,17 @@ See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginCirc
 <dd><p>Convert a set of NDAttribute params to XML.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.setup_ndattributes">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">setup_ndattributes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adcore.NDArrayBaseIO" title="ophyd_async.epics.adcore._core_io.NDArrayBaseIO"><span class="pre">NDArrayBaseIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndattributes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.14)"><span class="pre">Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributeParam" title="ophyd_async.epics.adcore._utils.NDAttributeParam"><span class="pre">NDAttributeParam</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.adcore.NDAttributePv" title="ophyd_async.epics.adcore._utils.NDAttributePv"><span class="pre">NDAttributePv</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_plan_stubs.html#setup_ndattributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.setup_ndattributes" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.setup_ndstats_sum">
+<span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">setup_ndstats_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adcore.AreaDetector" title="ophyd_async.epics.adcore._core_detector.AreaDetector"><span class="pre">AreaDetector</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_plan_stubs.html#setup_ndstats_sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.setup_ndstats_sum" title="Link to this definition">#</a></dt>
+<dd><p>Set up nd stats sum nd attribute for a detector.</p>
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -2132,6 +2149,8 @@ See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDPluginCirc
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ndattributes_to_xml"><code class="docutils literal notranslate"><span class="pre">ndattributes_to_xml()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.setup_ndattributes"><code class="docutils literal notranslate"><span class="pre">setup_ndattributes()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.setup_ndstats_sum"><code class="docutils literal notranslate"><span class="pre">setup_ndstats_sum()</span></code></a></li>
 </ul>
 </li>
 </ul>
