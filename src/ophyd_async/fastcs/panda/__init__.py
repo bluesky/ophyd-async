@@ -14,6 +14,7 @@ from ._block import (
 )
 from ._control import PandaPcapController
 from ._hdf_panda import HDFPanda
+from ._plan_stubs import apply_panda_settings
 from ._table import (
     DatasetTable,
     PandaHdf5DatasetType,
@@ -58,4 +59,5 @@ __all__ = [
     "ScanSpecInfo",
     "ScanSpecSeqTableTriggerLogic",
     "PosOutScaleOffset",
+    "apply_panda_settings",
 ]

@@ -1,6 +1,6 @@
 import pytest
 
-from ophyd_async.plan_stubs import setup_ndstats_sum
+from ophyd_async.epics.adcore import setup_ndstats_sum
 from ophyd_async.testing import ParentOfEverythingDevice
 
 
