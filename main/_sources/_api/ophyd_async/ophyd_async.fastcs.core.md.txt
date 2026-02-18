@@ -23,7 +23,7 @@
 
 ### API
 
-````{py:function} fastcs_connector(device: ~ophyd_async.core.Device, uri: str, error_hint: str = '') -> ~ophyd_async.core.DeviceConnector
+````{py:function} fastcs_connector(uri: str, device: ~ophyd_async.core.Device | None = None, error_hint: str = '') -> ~ophyd_async.core.DeviceConnector
 :canonical: ophyd_async.fastcs.core.fastcs_connector
 
 ```{autodoc2-docstring} ophyd_async.fastcs.core.fastcs_connector

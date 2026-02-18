@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.testing._assert &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
+    <title>ophyd_async.testing._assert &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=90f830b9"></script>
+    <script src="../../../_static/documentation_options.js?v=640eed8f"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
   
   
 </a></div>
@@ -891,7 +891,7 @@ window.addEventListener("load", load);</script>
                   
   <h1>Source code for ophyd_async.testing._assert</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractContextManager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">cast</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unittest.mock</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mock</span><span class="p">,</span> <span class="n">call</span>
@@ -903,11 +903,14 @@ window.addEventListener("load", load);</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AsyncConfigurable</span><span class="p">,</span>
     <span class="n">AsyncReadable</span><span class="p">,</span>
+    <span class="n">Device</span><span class="p">,</span>
+    <span class="n">Signal</span><span class="p">,</span>
     <span class="n">SignalDatatypeT</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">Table</span><span class="p">,</span>
     <span class="n">WatchableAsyncStatus</span><span class="p">,</span>
     <span class="n">Watcher</span><span class="p">,</span>
+    <span class="n">get_mock</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">T</span>
@@ -1061,6 +1064,33 @@ window.addEventListener("load", load);</script>
     <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
     <span class="n">actual_numbers</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">docs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
     <span class="k">assert</span> <span class="n">actual_numbers</span> <span class="o">==</span> <span class="n">numbers</span></div>
+
+
+
+<div class="viewcode-block" id="assert_has_calls">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.assert_has_calls">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">assert_has_calls</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">calls</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">reset_after</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check that the device connected in mock mode has seen the supplied calls.</span>
+
+<span class="sd">    :param device: Device or Signal connected in mock mode to check.</span>
+<span class="sd">    :param calls: Expected sequence of mock calls.</span>
+<span class="sd">    :param reset_after:</span>
+<span class="sd">        Whether to reset the mock after assertion so subsequent calls don&#39;t see</span>
+<span class="sd">        the same calls again.</span>
+
+<span class="sd">    :example:</span>
+<span class="sd">    ```python device.trigger() assert_has_calls(</span>
+<span class="sd">        device, [</span>
+<span class="sd">            call.device.num_frames.put(1),</span>
+<span class="sd">            call.device.start_writing.put(None),</span>
+<span class="sd">        ],</span>
+<span class="sd">    )</span>
+<span class="sd">    ```</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mock</span> <span class="o">=</span> <span class="n">get_mock</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">mock</span><span class="o">.</span><span class="n">mock_calls</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">calls</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">reset_after</span><span class="p">:</span>
+        <span class="n">mock</span><span class="o">.</span><span class="n">reset_mock</span><span class="p">()</span></div>
 
 
 

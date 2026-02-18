@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._plan_stubs &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
+    <title>ophyd_async.epics.adcore._plan_stubs &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=90f830b9"></script>
+    <script src="../../../../_static/documentation_options.js?v=640eed8f"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
   
   
 </a></div>
@@ -895,9 +895,9 @@ window.addEventListener("load", load);</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">bluesky.plan_stubs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">bps</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">plan</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._core_detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">AreaDetector</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._core_io</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArrayBaseIO</span><span class="p">,</span> <span class="n">NDFileHDFIO</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._detector</span><span class="w"> </span><span class="kn">import</span> <span class="n">AreaDetector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._io</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArrayBaseIO</span><span class="p">,</span> <span class="n">NDStatsIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._ndattribute</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">NDAttributeDataType</span><span class="p">,</span>
     <span class="n">NDAttributeParam</span><span class="p">,</span>
     <span class="n">NDAttributePv</span><span class="p">,</span>
@@ -909,7 +909,8 @@ window.addEventListener("load", load);</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.setup_ndattributes">[docs]</a>
 <span class="nd">@plan</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">setup_ndattributes</span><span class="p">(</span>
-    <span class="n">device</span><span class="p">:</span> <span class="n">NDArrayBaseIO</span><span class="p">,</span> <span class="n">ndattributes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDAttributeParam</span> <span class="o">|</span> <span class="n">NDAttributePv</span><span class="p">]</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">NDArrayBaseIO</span><span class="p">,</span>
+    <span class="n">ndattributes</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDAttributeParam</span> <span class="o">|</span> <span class="n">NDAttributePv</span><span class="p">],</span>
 <span class="p">):</span>
     <span class="n">xml</span> <span class="o">=</span> <span class="n">ndattributes_to_xml</span><span class="p">(</span><span class="n">ndattributes</span><span class="p">)</span>
     <span class="k">yield from</span> <span class="n">bps</span><span class="o">.</span><span class="n">abs_set</span><span class="p">(</span>
@@ -923,22 +924,16 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="setup_ndstats_sum">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.setup_ndstats_sum">[docs]</a>
 <span class="nd">@plan</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">setup_ndstats_sum</span><span class="p">(</span><span class="n">detector</span><span class="p">:</span> <span class="n">AreaDetector</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">setup_ndstats_sum</span><span class="p">(</span><span class="n">detector</span><span class="p">:</span> <span class="n">AreaDetector</span><span class="p">,</span> <span class="n">stats_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;stats&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up nd stats sum nd attribute for a detector.&quot;&quot;&quot;</span>
-    <span class="n">hdf</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="s2">&quot;fileio&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hdf</span><span class="p">,</span> <span class="n">NDFileHDFIO</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">detector</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> to have &#39;fileio&#39; attribute that is an &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;NDFileHDFIO, got </span><span class="si">{</span><span class="n">hdf</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">get_plugin</span><span class="p">(</span><span class="n">stats_name</span><span class="p">,</span> <span class="n">NDStatsIO</span><span class="p">)</span>
     <span class="k">yield from</span> <span class="p">(</span>
         <span class="n">setup_ndattributes</span><span class="p">(</span>
-            <span class="n">hdf</span><span class="p">,</span>
+            <span class="n">stats</span><span class="p">,</span>
             <span class="p">[</span>
                 <span class="n">NDAttributeParam</span><span class="p">(</span>
                     <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detector</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-sum&quot;</span><span class="p">,</span>
-                    <span class="n">param</span><span class="o">=</span><span class="s2">&quot;NDPluginStatsTotal&quot;</span><span class="p">,</span>
+                    <span class="n">param</span><span class="o">=</span><span class="s2">&quot;TOTAL&quot;</span><span class="p">,</span>
                     <span class="n">datatype</span><span class="o">=</span><span class="n">NDAttributeDataType</span><span class="o">.</span><span class="n">DOUBLE</span><span class="p">,</span>
                     <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Sum of the array&quot;</span><span class="p">,</span>
                 <span class="p">)</span>

@@ -67,6 +67,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.core._util.stop_busy_record
     :summary:
     ```
+* - {py:obj}`wait_for_good_state <ophyd_async.epics.core._util.wait_for_good_state>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._util.wait_for_good_state
+    :summary:
+    ```
 ````
 
 ### API
@@ -220,11 +224,19 @@ Bases: {py:obj}`ophyd_async.core.Device`
 ```
 ````
 
-````{py:function} stop_busy_record(signal: ~ophyd_async.core.SignalRW[~ophyd_async.core.SignalDatatypeT], value: ~ophyd_async.core.SignalDatatypeT, timeout: float = DEFAULT_TIMEOUT) -> None
+````{py:function} stop_busy_record(signal: ~ophyd_async.core.SignalRW[bool], timeout: float = DEFAULT_TIMEOUT) -> None
 :canonical: ophyd_async.epics.core._util.stop_busy_record
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.core._util.stop_busy_record
+```
+````
+
+````{py:function} wait_for_good_state(state_signal: ~ophyd_async.core.SignalR[~ophyd_async.core.SignalDatatypeT], good_states: set[~ophyd_async.core.SignalDatatypeT], message_signal: ~ophyd_async.core.SignalR[str] | None = None, timeout: float = DEFAULT_TIMEOUT) -> None
+:canonical: ophyd_async.epics.core._util.wait_for_good_state
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.core._util.wait_for_good_state
 ```
 ````
 

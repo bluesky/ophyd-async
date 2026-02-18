@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.jungfrau._utils &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
+    <title>ophyd_async.fastcs.jungfrau._utils &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=90f830b9"></script>
+    <script src="../../../../_static/documentation_options.js?v=640eed8f"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
   
   
 </a></div>
@@ -894,7 +894,7 @@ window.addEventListener("load", load);</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">DetectorTrigger</span><span class="p">,</span> <span class="n">TriggerInfo</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">JUNGFRAU_DEADTIME_S</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._trigger_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">JUNGFRAU_DEADTIME_S</span>
 
 
 <div class="viewcode-block" id="create_jungfrau_external_triggering_info">
@@ -918,7 +918,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">TriggerInfo</span><span class="p">(</span>
         <span class="n">number_of_events</span><span class="o">=</span><span class="n">total_triggers</span><span class="p">,</span>
-        <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EDGE_TRIGGER</span><span class="p">,</span>
+        <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EXTERNAL_EDGE</span><span class="p">,</span>
         <span class="n">livetime</span><span class="o">=</span><span class="n">exposure_time_s</span><span class="p">,</span>
         <span class="n">deadtime</span><span class="o">=</span><span class="n">JUNGFRAU_DEADTIME_S</span><span class="p">,</span>
     <span class="p">)</span></div>
@@ -946,7 +946,7 @@ window.addEventListener("load", load);</script>
         <span class="n">number_of_events</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">,</span>
         <span class="n">livetime</span><span class="o">=</span><span class="n">exposure_time_s</span><span class="p">,</span>
-        <span class="n">exposures_per_event</span><span class="o">=</span><span class="n">number_of_frames</span><span class="p">,</span>
+        <span class="n">collections_per_event</span><span class="o">=</span><span class="n">number_of_frames</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
@@ -980,8 +980,7 @@ window.addEventListener("load", load);</script>
 <span class="sd">        `TriggerInfo`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">TriggerInfo</span><span class="p">(</span>
-        <span class="n">number_of_events</span><span class="o">=</span><span class="n">pedestal_loops</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="n">exposures_per_event</span><span class="o">=</span><span class="n">pedestal_frames</span><span class="p">,</span>
+        <span class="n">collections_per_event</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">pedestal_frames</span> <span class="o">*</span> <span class="n">pedestal_loops</span><span class="p">,</span>
         <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">,</span>
         <span class="n">livetime</span><span class="o">=</span><span class="n">exposure_time_s</span><span class="p">,</span>
     <span class="p">)</span></div>

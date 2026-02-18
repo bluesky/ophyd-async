@@ -1,0 +1,959 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>12. Rewrite StandardDetector with Composition-Based Logic &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=3fefa004" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=640eed8f"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=30646c52"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'explanations/decisions/0012-detector-rewrite';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'main';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="icon" href="../../_static/ophyd-favicon.svg"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Declarative vs Procedural Devices" href="../declarative-vs-procedural.html" />
+    <link rel="prev" title="11. Buffer updates when using camonitor" href="0011-buffer-updates-camonitor.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="main" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+  
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../tutorials.html">
+    Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../how-to.html">
+    How-to Guides
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../explanations.html">
+    Explanations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../reference.html">
+    Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-external" href="https://blueskyproject.io">
+    Bluesky Project
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/bluesky/ophyd-async" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/ophyd-async" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fas fa-cube fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../decisions.html">Architectural Decision Records</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="0001-record-architecture-decisions.html">1. Record architecture decisions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0002-switched-to-python-copier-template.html">2. Adopt python-copier-template for project structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0003-ophyd-async-migration.html">3. Ophyd Async migration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0004-repository-structure.html">4. Repository Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0005-respect-black-line-length.html">5. Respect black line length</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0006-procedural-device-definitions.html">6. Procedural Device Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0007-subpackage-structure.html">7. Sub-package Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0008-signal-types.html">8. Settle on Signal Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0009-procedural-vs-declarative-devices.html">9. Procedural vs Declarative Devices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0010-docstring-format.html">10. Decide on docstring format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0011-buffer-updates-camonitor.html">11. Buffer updates when using <code class="docutils literal notranslate"><span class="pre">camonitor</span></code></a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">12. Rewrite StandardDetector with Composition-Based Logic</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../declarative-vs-procedural.html">Declarative vs Procedural Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../design-goals.html">Design goals and differences with ophyd sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../device-connection-strategies.html">Device connection strategies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../devices-signals-backends.html">Devices, Signals and their Backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fly-scanning.html">What is the difference between step and fly scanning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plan-stubs.html">What plan stubs will do to Devices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../when-to-extend-movable.html">When should a device extend movable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../where-device-logic.html">Where should Device logic live?</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../explanations.html" class="nav-link">Explanations</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="../decisions.html" class="nav-link">Architectural Decision Records</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">12. Rewrite StandardDetector with Composition-Based Logic</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="rewrite-standarddetector-with-composition-based-logic">
+<h1>12. Rewrite StandardDetector with Composition-Based Logic<a class="headerlink" href="#rewrite-standarddetector-with-composition-based-logic" title="Link to this heading">#</a></h1>
+<p>Date: 2026-01-20</p>
+<section id="status">
+<h2>Status<a class="headerlink" href="#status" title="Link to this heading">#</a></h2>
+<p>Accepted</p>
+</section>
+<section id="context">
+<h2>Context<a class="headerlink" href="#context" title="Link to this heading">#</a></h2>
+<p>The original <code class="docutils literal notranslate"><span class="pre">StandardDetector</span></code> implementation had several architectural issues:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DetectorController</span></code> and <code class="docutils literal notranslate"><span class="pre">DetectorWriter</span></code> combined multiple concerns (arming, triggering, and data writing), so features like arming which was common between many areaDetectors was inherited in many controllers</p></li>
+<li><p>Detector implementations required complex inheritance hierarchies</p></li>
+<li><p>Trigger modes were inconsistently named and didn’t clearly convey their behavior</p></li>
+<li><p>Detectors that read data from PVs were handled in a completely different way (StandardReadable) to those that wrote to files (StandardDetector)</p></li>
+<li><p>There was no way to read signals from devices when calculating the deadtime</p></li>
+</ul>
+<p>These issues made it challenging to implement new detectors and support advanced use cases like:</p>
+<ul class="simple">
+<li><p>Detectors with multiple HDF writers for different ROIs</p></li>
+<li><p>Detectors with mixed streaming and non-streaming outputs</p></li>
+<li><p>Detectors that combine file writing with signal reading (e.g., stats plugins)</p></li>
+</ul>
+</section>
+<section id="decision">
+<h2>Decision<a class="headerlink" href="#decision" title="Link to this heading">#</a></h2>
+<p>We will restructure <code class="docutils literal notranslate"><span class="pre">StandardDetector</span></code> to use composition with three separate logic classes:</p>
+<section id="new-logic-classes">
+<h3>New Logic Classes<a class="headerlink" href="#new-logic-classes" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">DetectorTriggerLogic</span></code></strong> - Handles trigger configuration</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare_internal(num,</span> <span class="pre">livetime,</span> <span class="pre">deadtime)</span></code> - Setup for internal triggering</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare_edge(num,</span> <span class="pre">livetime)</span></code> - Setup for external edge triggering</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare_level(num)</span></code> - Setup for external level (gate) triggering</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare_exposures_per_collection(n)</span></code> - Configure exposure averaging</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_deadtime(config_values)</span></code> - Calculate detector deadtime</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">config_sigs()</span></code> - Signals to include in <code class="docutils literal notranslate"><span class="pre">read_configuration()</span></code></p></li>
+</ul>
+</li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">DetectorArmLogic</span></code></strong> - Handles detector arming/acquisition</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">arm()</span></code> - Arm the detector</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_for_idle()</span></code> - Wait for detector to become idle</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">disarm()</span></code> - Disarm the detector</p></li>
+</ul>
+</li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">DetectorDataLogic</span></code></strong> - Handles data production</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare_single(detector_name)</span></code> - Returns <code class="docutils literal notranslate"><span class="pre">ReadableDataProvider</span></code> for single-event data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare_unbounded(detector_name)</span></code> - Returns <code class="docutils literal notranslate"><span class="pre">StreamableDataProvider</span></code> for streaming data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_hinted_fields(detector_name)</span></code> - Returns field names to hint</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stop()</span></code> - Stop data acquisition</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="data-provider-classes">
+<h3>Data Provider Classes<a class="headerlink" href="#data-provider-classes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">ReadableDataProvider</span></code></strong> - For non-streaming data (appears in event documents)</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">make_datakeys()</span></code> - Generate DataKey descriptions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make_readings()</span></code> - Read current values</p></li>
+</ul>
+</li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">StreamableDataProvider</span></code></strong> - For streaming data (appears in StreamDatum documents)</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">make_datakeys(collections_per_event)</span></code> - Generate DataKey descriptions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make_stream_docs(collections_written,</span> <span class="pre">collections_per_event)</span></code> - Emit StreamAsset documents</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">collections_written_signal</span></code> - Signal tracking write progress</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="detector-changes">
+<h3>Detector Changes<a class="headerlink" href="#detector-changes" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">StandardDetector</span></code> now:</p>
+<ul class="simple">
+<li><p>Accepts logic components via <code class="docutils literal notranslate"><span class="pre">add_detector_logics(*logics)</span></code> method</p></li>
+<li><p>Accepts configuration signals via <code class="docutils literal notranslate"><span class="pre">add_config_signals(*signals)</span></code> method</p></li>
+<li><p>Provides <code class="docutils literal notranslate"><span class="pre">get_trigger_deadtime()</span></code> to query supported triggers and deadtime if hardware triggerable</p></li>
+</ul>
+</section>
+<section id="updated-triggerinfo">
+<h3>Updated TriggerInfo<a class="headerlink" href="#updated-triggerinfo" title="Link to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">TriggerInfo</span></code> model is restructured with clearer semantics:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">trigger</span></code>: What type of triggering (INTERNAL, EXTERNAL_EDGE, EXTERNAL_LEVEL)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">livetime</span></code>: Exposure time (for INTERNAL and EXTERNAL_EDGE)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deadtime</span></code>: Time between exposures (for INTERNAL)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exposures_per_collection</span></code>: Number of exposures averaged into a single collection</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">collections_per_event</span></code>: Number of collections per bluesky event</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_of_events</span></code>: Number of bluesky events to emit</p></li>
+</ul>
+</section>
+<section id="trigger-type-renaming">
+<h3>Trigger Type Renaming<a class="headerlink" href="#trigger-type-renaming" title="Link to this heading">#</a></h3>
+<p>Trigger types renamed for clarity:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">EDGE_TRIGGER</span></code> → <code class="docutils literal notranslate"><span class="pre">EXTERNAL_EDGE</span></code> - Rising edge starts an internally-timed exposure</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CONSTANT_GATE</span></code> → <code class="docutils literal notranslate"><span class="pre">EXTERNAL_LEVEL</span></code> - High level of external trigger signal duration determines exposure time</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">VARIABLE_GATE</span></code> → <code class="docutils literal notranslate"><span class="pre">EXTERNAL_LEVEL</span></code> - There is no distinction between variable and constant high level time as the triggering system will now determine whether the detector can support level triggering over edge triggering</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code> remains unchanged</p></li>
+</ul>
+</section>
+</section>
+<section id="consequences">
+<h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading">#</a></h2>
+<section id="benefits">
+<h3>Benefits<a class="headerlink" href="#benefits" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Separation of Concerns</strong>: Each logic class has a single, well-defined responsibility</p></li>
+<li><p><strong>Easier Testing</strong>: Logic components can be tested independently</p></li>
+<li><p><strong>Flexible Composition</strong>: Detectors can mix and match logic components</p></li>
+<li><p><strong>Multiple Data Streams</strong>: Easy to add multiple data logics for different outputs</p></li>
+<li><p><strong>Clearer Semantics</strong>: Trigger types and timing parameters have unambiguous meanings</p></li>
+<li><p><strong>Better Type Safety</strong>: Concrete detector classes provide proper typing</p></li>
+</ol>
+</section>
+<section id="breaking-changes">
+<h3>Breaking Changes<a class="headerlink" href="#breaking-changes" title="Link to this heading">#</a></h3>
+<p>All detector implementations need updating:</p>
+<section id="detector-controller-trigger-logic-arm-logic">
+<h4>Detector Controller → Trigger Logic + Arm Logic<a class="headerlink" href="#detector-controller-trigger-logic-arm-logic" title="Link to this heading">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SimController</span><span class="p">(</span><span class="n">DetectorController</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">driver</span>
+        
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="o">==</span> <span class="n">TriggerInfo</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">,</span> <span class="s2">&quot;Can only do internal&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">num_images</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">)</span>
+        
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
+        
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># new  </span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SimTriggerLogic</span><span class="p">(</span><span class="n">DetectorTriggerLogic</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">driver</span>
+        
+    <span class="c1"># Also prepare_edge and prepare_level if hardware triggering supported</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">num_images</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+
+<span class="c1"># if ADArmLogic is not suitable</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SimArmLogic</span><span class="p">(</span><span class="n">DetectorArmLogic</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">driver</span>
+        
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">)</span>
+        
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="detector-writer-data-logic">
+<h4>Detector Writer → Data Logic<a class="headerlink" href="#detector-writer-data-logic" title="Link to this heading">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ADHDFWriter</span><span class="p">(</span><span class="n">DetectorWriter</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exposures_per_event</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># Setup file writing</span>
+        <span class="k">return</span> <span class="n">describe_dict</span>
+        
+<span class="c1"># new</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ADHDFDataLogic</span><span class="p">(</span><span class="n">DetectorDataLogic</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># Setup file writing  </span>
+        <span class="k">return</span> <span class="n">StreamResourceDataProvider</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="triggerinfo-updates">
+<h4>TriggerInfo Updates<a class="headerlink" href="#triggerinfo-updates" title="Link to this heading">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old</span>
+<span class="n">TriggerInfo</span><span class="p">(</span>
+    <span class="n">number_of_events</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EDGE_TRIGGER</span><span class="p">,</span>
+    <span class="n">livetime</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">deadtime</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># new  </span>
+<span class="n">TriggerInfo</span><span class="p">(</span>
+    <span class="n">number_of_events</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EXTERNAL_EDGE</span><span class="p">,</span>
+    <span class="n">livetime</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">deadtime</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="complete-simdetector-example">
+<h4>Complete SimDetector Example<a class="headerlink" href="#complete-simdetector-example" title="Link to this heading">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old - controller and writer_cls.with_io</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adcore</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SimDetector</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">AreaDetector</span><span class="p">[</span><span class="n">SimController</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
+        <span class="n">drv_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
+        <span class="n">writer_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADWriter</span><span class="p">]</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ADHDFWriter</span><span class="p">,</span>
+        <span class="n">fileio_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">plugins</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">driver</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">drv_suffix</span><span class="p">)</span>
+        <span class="n">controller</span> <span class="o">=</span> <span class="n">SimController</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span>        
+        <span class="n">writer</span> <span class="o">=</span> <span class="n">writer_cls</span><span class="o">.</span><span class="n">with_io</span><span class="p">(</span>
+            <span class="n">prefix</span><span class="p">,</span>
+            <span class="n">path_provider</span><span class="p">,</span>
+            <span class="n">dataset_source</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
+            <span class="n">fileio_suffix</span><span class="o">=</span><span class="n">fileio_suffix</span><span class="p">,</span>
+            <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
+        <span class="p">)</span>        
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">controller</span><span class="o">=</span><span class="n">controller</span><span class="p">,</span>
+            <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
+            <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<span class="c1"># new - handled by the baseclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics</span><span class="w"> </span><span class="kn">import</span> <span class="n">adcore</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SimDetector</span><span class="p">(</span><span class="n">adcore</span><span class="o">.</span><span class="n">AreaDetector</span><span class="p">[</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an ADSimDetector AreaDetector instance.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">driver_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
+        <span class="n">writer_type</span><span class="p">:</span> <span class="n">ADWriterType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">ADWriterType</span><span class="o">.</span><span class="n">HDF</span><span class="p">,</span>
+        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">plugins</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">driver</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ADBaseIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+            <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
+            <span class="n">arm_logic</span><span class="o">=</span><span class="n">adcore</span><span class="o">.</span><span class="n">ADArmLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
+            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">SimDetectorTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
+            <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
+            <span class="n">writer_type</span><span class="o">=</span><span class="n">writer_type</span><span class="p">,</span>
+            <span class="n">writer_suffix</span><span class="o">=</span><span class="n">writer_suffix</span><span class="p">,</span>
+            <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
+            <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="reading-stats-without-files">
+<h4>Reading Stats Without Files<a class="headerlink" href="#reading-stats-without-files" title="Link to this heading">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old - not easily supported</span>
+
+<span class="c1"># new - use PluginSignalDataLogic</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">SimDetector</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">writer_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">detector</span><span class="o">.</span><span class="n">add_detector_logics</span><span class="p">(</span><span class="n">PluginSignalDataLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">stats</span><span class="o">.</span><span class="n">total</span><span class="p">))</span>
+<span class="c1"># Now stats.total appears in read() without file writing</span>
+</pre></div>
+</div>
+</section>
+<section id="multiple-data-streams">
+<h4>Multiple Data Streams<a class="headerlink" href="#multiple-data-streams" title="Link to this heading">#</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># old - required complex inheritance</span>
+
+<span class="c1"># new - add multiple data logics</span>
+<span class="n">detector</span> <span class="o">=</span> <span class="n">AreaDetector</span><span class="p">(</span>
+    <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
+    <span class="n">arm_logic</span><span class="o">=</span><span class="n">ADArmLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
+    <span class="n">writer_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Don&#39;t create default writer</span>
+<span class="p">)</span>
+<span class="c1"># Add separate HDF writers for different ROIs</span>
+<span class="n">detector</span><span class="o">.</span><span class="n">add_detector_logics</span><span class="p">(</span>
+    <span class="n">ADHDFDataLogic</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">datakey_suffix</span><span class="o">=</span><span class="s2">&quot;-roi1&quot;</span><span class="p">),</span>
+    <span class="n">ADHDFDataLogic</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">datakey_suffix</span><span class="o">=</span><span class="s2">&quot;-roi2&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="migration-path">
+<h3>Migration Path<a class="headerlink" href="#migration-path" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>Update detector controller classes to separate trigger and arm logic</p></li>
+<li><p>Update detector writer classes to data logic classes</p></li>
+<li><p>Update detector instantiation to use new composition API</p></li>
+<li><p>Update trigger type enums in scan plans</p></li>
+<li><p>Test with representative detectors before deploying widely</p></li>
+</ol>
+</section>
+<section id="future-enhancements-enabled">
+<h3>Future Enhancements Enabled<a class="headerlink" href="#future-enhancements-enabled" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Pedestal mode for Jungfrau (special prepare logic with validation)</p></li>
+<li><p>Lambda “event mode” with multiple data streams</p></li>
+<li><p>Easy addition of NDStats outputs alongside file writing</p></li>
+<li><p>Better support for continuous acquisition detectors</p></li>
+<li><p>Simplified testing with mock logic components</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="0011-buffer-updates-camonitor.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">11. Buffer updates when using <code class="docutils literal notranslate"><span class="pre">camonitor</span></code></p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../declarative-vs-procedural.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Declarative vs Procedural Devices</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#status">Status</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#context">Context</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision">Decision</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-logic-classes">New Logic Classes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#data-provider-classes">Data Provider Classes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-changes">Detector Changes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#updated-triggerinfo">Updated TriggerInfo</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#trigger-type-renaming">Trigger Type Renaming</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#consequences">Consequences</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#benefits">Benefits</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#breaking-changes">Breaking Changes</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-controller-trigger-logic-arm-logic">Detector Controller → Trigger Logic + Arm Logic</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#detector-writer-data-logic">Detector Writer → Data Logic</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#triggerinfo-updates">TriggerInfo Updates</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#complete-simdetector-example">Complete SimDetector Example</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#reading-stats-without-files">Reading Stats Without Files</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-data-streams">Multiple Data Streams</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#migration-path">Migration Path</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#future-enhancements-enabled">Future Enhancements Enabled</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  
+  <div class="tocsection editthispage">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/explanations/decisions/0012-detector-rewrite.md">
+      <i class="fa-solid fa-pencil"></i>
+      
+      
+        
+          Edit on GitHub
+        
+      
+    </a>
+  </div>
+</div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/explanations/decisions/0012-detector-rewrite.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

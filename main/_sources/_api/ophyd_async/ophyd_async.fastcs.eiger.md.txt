@@ -15,164 +15,89 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`EigerDetector <ophyd_async.fastcs.eiger._eiger.EigerDetector>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger.EigerDetector
+* - {py:obj}`EigerDetector <ophyd_async.fastcs.eiger._detector.EigerDetector>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._detector.EigerDetector
     :summary:
     ```
-* - {py:obj}`EigerController <ophyd_async.fastcs.eiger._eiger_controller.EigerController>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_controller.EigerController
+* - {py:obj}`EigerDetectorIO <ophyd_async.fastcs.eiger._io.EigerDetectorIO>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO
     :summary:
     ```
-* - {py:obj}`EigerDriverIO <ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO
+* - {py:obj}`EigerMonitorIO <ophyd_async.fastcs.eiger._io.EigerMonitorIO>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerMonitorIO
     :summary:
     ```
-* - {py:obj}`EigerDetectorIO <ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO
+* - {py:obj}`EigerStreamIO <ophyd_async.fastcs.eiger._io.EigerStreamIO>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerStreamIO
     :summary:
     ```
-* - {py:obj}`EigerMonitorIO <ophyd_async.fastcs.eiger._eiger_io.EigerMonitorIO>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerMonitorIO
-    :summary:
-    ```
-* - {py:obj}`EigerStreamIO <ophyd_async.fastcs.eiger._eiger_io.EigerStreamIO>`
-  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerStreamIO
+* - {py:obj}`EigerTriggerMode <ophyd_async.fastcs.eiger._io.EigerTriggerMode>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerTriggerMode
     :summary:
     ```
 ````
 
 ### API
 
-`````{py:class} EigerDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix='-EA-EIGER-01:', hdf_suffix='-EA-EIGER-01:OD:', odin_nodes: int = 4, name='')
-:canonical: ophyd_async.fastcs.eiger._eiger.EigerDetector
+`````{py:class} EigerDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, name='')
+:canonical: ophyd_async.fastcs.eiger._detector.EigerDetector
 
 Bases: {py:obj}`ophyd_async.core.StandardDetector`
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger.EigerDetector
-```
-
-````{py:method} prepare(value: ~ophyd_async.core.TriggerInfo) -> None
-:canonical: ophyd_async.fastcs.eiger._eiger.EigerDetector.prepare
-:async:
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger.EigerDetector.prepare
-```
-
-````
-
-`````
-
-`````{py:class} EigerController(driver: ~ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO)
-:canonical: ophyd_async.fastcs.eiger._eiger_controller.EigerController
-
-Bases: {py:obj}`ophyd_async.core.DetectorController`
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_controller.EigerController
-```
-
-````{py:method} get_deadtime(exposure: float | None) -> float
-:canonical: ophyd_async.fastcs.eiger._eiger_controller.EigerController.get_deadtime
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_controller.EigerController.get_deadtime
-```
-
-````
-
-````{py:method} set_energy(energy: float, tolerance: float = 0.1)
-:canonical: ophyd_async.fastcs.eiger._eiger_controller.EigerController.set_energy
-:async:
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_controller.EigerController.set_energy
-```
-
-````
-
-````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo)
-:canonical: ophyd_async.fastcs.eiger._eiger_controller.EigerController.prepare
-:async:
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_controller.EigerController.prepare
-```
-
-````
-
-````{py:method} arm()
-:canonical: ophyd_async.fastcs.eiger._eiger_controller.EigerController.arm
-:async:
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_controller.EigerController.arm
-```
-
-````
-
-````{py:method} wait_for_idle()
-:canonical: ophyd_async.fastcs.eiger._eiger_controller.EigerController.wait_for_idle
-:async:
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_controller.EigerController.wait_for_idle
-```
-
-````
-
-````{py:method} disarm()
-:canonical: ophyd_async.fastcs.eiger._eiger_controller.EigerController.disarm
-:async:
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_controller.EigerController.disarm
-```
-
-````
-
-`````
-
-`````{py:class} EigerDriverIO(uri: str, name: str = '')
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO
-
-Bases: {py:obj}`ophyd_async.core.Device`
-
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._detector.EigerDetector
 ```
 
 ````{py:attribute} stale_parameters
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO.stale_parameters
+:canonical: ophyd_async.fastcs.eiger._detector.EigerDetector.stale_parameters
 :type: ~ophyd_async.core.SignalR[bool]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO.stale_parameters
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._detector.EigerDetector.stale_parameters
 ```
 
 ````
 
 ````{py:attribute} monitor
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO.monitor
-:type: ~ophyd_async.fastcs.eiger._eiger_io.EigerMonitorIO
+:canonical: ophyd_async.fastcs.eiger._detector.EigerDetector.monitor
+:type: ~ophyd_async.fastcs.eiger._io.EigerMonitorIO
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO.monitor
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._detector.EigerDetector.monitor
 ```
 
 ````
 
 ````{py:attribute} stream
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO.stream
-:type: ~ophyd_async.fastcs.eiger._eiger_io.EigerStreamIO
+:canonical: ophyd_async.fastcs.eiger._detector.EigerDetector.stream
+:type: ~ophyd_async.fastcs.eiger._io.EigerStreamIO
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO.stream
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._detector.EigerDetector.stream
 ```
 
 ````
 
 ````{py:attribute} detector
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO.detector
-:type: ~ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO
+:canonical: ophyd_async.fastcs.eiger._detector.EigerDetector.detector
+:type: ~ophyd_async.fastcs.eiger._io.EigerDetectorIO
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDriverIO.detector
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._detector.EigerDetector.detector
+```
+
+````
+
+````{py:attribute} od
+:canonical: ophyd_async.fastcs.eiger._detector.EigerDetector.od
+:type: ~ophyd_async.fastcs.odin.OdinIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._detector.EigerDetector.od
 ```
 
 ````
@@ -180,207 +105,207 @@ Bases: {py:obj}`ophyd_async.core.Device`
 `````
 
 `````{py:class} EigerDetectorIO(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO
 
 Bases: {py:obj}`ophyd_async.core.Device`
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO
 ```
 
 ````{py:attribute} bit_depth_image
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.bit_depth_image
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.bit_depth_image
 :type: ~ophyd_async.core.SignalR[int]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.bit_depth_image
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.bit_depth_image
 ```
 
 ````
 
 ````{py:attribute} state
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.state
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.state
 :type: ~ophyd_async.core.SignalR[str]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.state
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.state
 ```
 
 ````
 
 ````{py:attribute} count_time
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.count_time
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.count_time
 :type: ~ophyd_async.core.SignalRW[float]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.count_time
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.count_time
 ```
 
 ````
 
 ````{py:attribute} frame_time
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.frame_time
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.frame_time
 :type: ~ophyd_async.core.SignalRW[float]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.frame_time
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.frame_time
 ```
 
 ````
 
 ````{py:attribute} nimages
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.nimages
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.nimages
 :type: ~ophyd_async.core.SignalRW[int]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.nimages
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.nimages
 ```
 
 ````
 
 ````{py:attribute} ntrigger
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.ntrigger
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.ntrigger
 :type: ~ophyd_async.core.SignalRW[int]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.ntrigger
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.ntrigger
 ```
 
 ````
 
 ````{py:attribute} nexpi
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.nexpi
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.nexpi
 :type: ~ophyd_async.core.SignalRW[int] | None
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.nexpi
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.nexpi
 ```
 
 ````
 
 ````{py:attribute} trigger_mode
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.trigger_mode
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.trigger_mode
 :type: ~ophyd_async.core.SignalRW[str]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.trigger_mode
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.trigger_mode
 ```
 
 ````
 
 ````{py:attribute} roi_mode
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.roi_mode
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.roi_mode
 :type: ~ophyd_async.core.SignalRW[str]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.roi_mode
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.roi_mode
 ```
 
 ````
 
 ````{py:attribute} photon_energy
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.photon_energy
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.photon_energy
 :type: ~ophyd_async.core.SignalRW[float]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.photon_energy
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.photon_energy
 ```
 
 ````
 
 ````{py:attribute} beam_center_x
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.beam_center_x
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.beam_center_x
 :type: ~ophyd_async.core.SignalRW[float]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.beam_center_x
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.beam_center_x
 ```
 
 ````
 
 ````{py:attribute} beam_center_y
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.beam_center_y
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.beam_center_y
 :type: ~ophyd_async.core.SignalRW[float]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.beam_center_y
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.beam_center_y
 ```
 
 ````
 
 ````{py:attribute} detector_distance
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.detector_distance
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.detector_distance
 :type: ~ophyd_async.core.SignalRW[float]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.detector_distance
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.detector_distance
 ```
 
 ````
 
 ````{py:attribute} omega_start
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.omega_start
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.omega_start
 :type: ~ophyd_async.core.SignalRW[float]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.omega_start
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.omega_start
 ```
 
 ````
 
 ````{py:attribute} omega_increment
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.omega_increment
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.omega_increment
 :type: ~ophyd_async.core.SignalRW[float]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.omega_increment
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.omega_increment
 ```
 
 ````
 
 ````{py:attribute} arm
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.arm
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.arm
 :type: ~ophyd_async.core.SignalX
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.arm
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.arm
 ```
 
 ````
 
 ````{py:attribute} disarm
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.disarm
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.disarm
 :type: ~ophyd_async.core.SignalX
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.disarm
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.disarm
 ```
 
 ````
 
 ````{py:attribute} trigger
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.trigger
+:canonical: ophyd_async.fastcs.eiger._io.EigerDetectorIO.trigger
 :type: ~ophyd_async.core.SignalX
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerDetectorIO.trigger
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerDetectorIO.trigger
 ```
 
 ````
@@ -388,21 +313,61 @@ Bases: {py:obj}`ophyd_async.core.Device`
 `````
 
 ````{py:class} EigerMonitorIO(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerMonitorIO
+:canonical: ophyd_async.fastcs.eiger._io.EigerMonitorIO
 
 Bases: {py:obj}`ophyd_async.core.Device`
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerMonitorIO
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerMonitorIO
 ```
 
 ````
 
 ````{py:class} EigerStreamIO(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
-:canonical: ophyd_async.fastcs.eiger._eiger_io.EigerStreamIO
+:canonical: ophyd_async.fastcs.eiger._io.EigerStreamIO
 
 Bases: {py:obj}`ophyd_async.core.Device`
 
-```{autodoc2-docstring} ophyd_async.fastcs.eiger._eiger_io.EigerStreamIO
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerStreamIO
 ```
 
 ````
+
+`````{py:class} EigerTriggerMode()
+:canonical: ophyd_async.fastcs.eiger._io.EigerTriggerMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerTriggerMode
+```
+
+````{py:attribute} INTERNAL
+:canonical: ophyd_async.fastcs.eiger._io.EigerTriggerMode.INTERNAL
+:value: >
+   'ints'
+
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerTriggerMode.INTERNAL
+```
+
+````
+
+````{py:attribute} EDGE
+:canonical: ophyd_async.fastcs.eiger._io.EigerTriggerMode.EDGE
+:value: >
+   'exts'
+
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerTriggerMode.EDGE
+```
+
+````
+
+````{py:attribute} GATE
+:canonical: ophyd_async.fastcs.eiger._io.EigerTriggerMode.GATE
+:value: >
+   'exte'
+
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._io.EigerTriggerMode.GATE
+```
+
+````
+
+`````

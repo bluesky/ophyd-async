@@ -7,7 +7,7 @@
 :allowtitles:
 ```
 
-## Package Contents
+## Module Contents
 
 ### Classes
 
@@ -15,274 +15,160 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`VimbaDetector <ophyd_async.epics.advimba._vimba.VimbaDetector>`
-  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba.VimbaDetector
+* - {py:obj}`VimbaDetector <ophyd_async.epics.advimba.VimbaDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaDetector
     :summary:
     ```
-* - {py:obj}`VimbaController <ophyd_async.epics.advimba._vimba_controller.VimbaController>`
-  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_controller.VimbaController
+* - {py:obj}`VimbaDriverIO <ophyd_async.epics.advimba.VimbaDriverIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaDriverIO
     :summary:
     ```
-* - {py:obj}`VimbaDriverIO <ophyd_async.epics.advimba._vimba_io.VimbaDriverIO>`
-  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO
+* - {py:obj}`VimbaTriggerLogic <ophyd_async.epics.advimba.VimbaTriggerLogic>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic
     :summary:
     ```
-* - {py:obj}`VimbaExposeOutMode <ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode>`
-  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode
+* - {py:obj}`VimbaConvertFormat <ophyd_async.epics.advimba.VimbaConvertFormat>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaConvertFormat
     :summary:
     ```
-* - {py:obj}`VimbaTriggerSource <ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource>`
-  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource
+* - {py:obj}`VimbaTriggerSource <ophyd_async.epics.advimba.VimbaTriggerSource>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerSource
     :summary:
     ```
-* - {py:obj}`VimbaOverlap <ophyd_async.epics.advimba._vimba_io.VimbaOverlap>`
-  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOverlap
+* - {py:obj}`VimbaOverlap <ophyd_async.epics.advimba.VimbaOverlap>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaOverlap
     :summary:
     ```
-* - {py:obj}`VimbaConvertFormat <ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat>`
-  - ```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat
+* - {py:obj}`VimbaExposeOutMode <ophyd_async.epics.advimba.VimbaExposeOutMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaExposeOutMode
     :summary:
     ```
 ````
 
 ### API
 
-````{py:class} VimbaDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix: str = 'cam1:', writer_cls: type[~ophyd_async.epics.adcore.ADWriter] = adcore.ADHDFWriter, fileio_suffix: str | None = None, name: str = '', plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = ())
-:canonical: ophyd_async.epics.advimba._vimba.VimbaDetector
+````{py:class} VimbaDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider | None = None, driver_suffix='cam1:', override_deadtime: float | None = None, writer_type: ~ophyd_async.epics.adcore.ADWriterType | None = ADWriterType.HDF, writer_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+:canonical: ophyd_async.epics.advimba.VimbaDetector
 
-Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.advimba._vimba_controller.VimbaController`\]
+Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.advimba.VimbaDriverIO`\]
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba.VimbaDetector
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaDetector
 ```
 
 ````
-
-`````{py:class} VimbaController(driver: ~ophyd_async.epics.advimba._vimba_io.VimbaDriverIO, good_states: frozenset[~ophyd_async.epics.adcore.ADState] = adcore.DEFAULT_GOOD_STATES)
-:canonical: ophyd_async.epics.advimba._vimba_controller.VimbaController
-
-Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async.epics.advimba._vimba_io.VimbaDriverIO`\]
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_controller.VimbaController
-```
-
-````{py:method} get_deadtime(exposure: float | None) -> float
-:canonical: ophyd_async.epics.advimba._vimba_controller.VimbaController.get_deadtime
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_controller.VimbaController.get_deadtime
-```
-
-````
-
-````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo)
-:canonical: ophyd_async.epics.advimba._vimba_controller.VimbaController.prepare
-:async:
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_controller.VimbaController.prepare
-```
-
-````
-
-`````
 
 `````{py:class} VimbaDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO
+:canonical: ophyd_async.epics.advimba.VimbaDriverIO
 
 Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaDriverIO
 ```
 
 ````{py:attribute} convert_pixel_format
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.convert_pixel_format
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat], PvSuffix('ConvertPixelFormat')]
+:canonical: ophyd_async.epics.advimba.VimbaDriverIO.convert_pixel_format
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba.VimbaConvertFormat], ophyd_async.epics.core.PvSuffix.rbv('ConvertPixelFormat')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.convert_pixel_format
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaDriverIO.convert_pixel_format
 ```
 
 ````
 
 ````{py:attribute} trigger_source
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_source
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource], PvSuffix('TriggerSource')]
+:canonical: ophyd_async.epics.advimba.VimbaDriverIO.trigger_source
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba.VimbaTriggerSource], ophyd_async.epics.core.PvSuffix.rbv('TriggerSource')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_source
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaDriverIO.trigger_source
 ```
 
 ````
 
 ````{py:attribute} trigger_mode
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_mode
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.OnOff], PvSuffix('TriggerMode')]
+:canonical: ophyd_async.epics.advimba.VimbaDriverIO.trigger_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.OnOff], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_mode
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaDriverIO.trigger_mode
 ```
 
 ````
 
 ````{py:attribute} trigger_overlap
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_overlap
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaOverlap], PvSuffix('TriggerOverlap')]
+:canonical: ophyd_async.epics.advimba.VimbaDriverIO.trigger_overlap
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba.VimbaOverlap], ophyd_async.epics.core.PvSuffix.rbv('TriggerOverlap')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.trigger_overlap
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaDriverIO.trigger_overlap
 ```
 
 ````
 
 ````{py:attribute} exposure_mode
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.exposure_mode
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode], PvSuffix('ExposureMode')]
+:canonical: ophyd_async.epics.advimba.VimbaDriverIO.exposure_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.advimba.VimbaExposeOutMode], ophyd_async.epics.core.PvSuffix.rbv('ExposureMode')]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaDriverIO.exposure_mode
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaDriverIO.exposure_mode
 ```
 
 ````
 
 `````
 
-`````{py:class} VimbaExposeOutMode()
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode
+`````{py:class} VimbaTriggerLogic(driver: ~ophyd_async.epics.advimba.VimbaDriverIO, override_deadtime: float | None = None)
+:canonical: ophyd_async.epics.advimba.VimbaTriggerLogic
 
-Bases: {py:obj}`ophyd_async.core.StrictEnum`
+Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic
 ```
 
-````{py:attribute} TIMED
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode.TIMED
-:value: >
-   'Timed'
+````{py:method} config_sigs() -> set[~ophyd_async.core.SignalR]
+:canonical: ophyd_async.epics.advimba.VimbaTriggerLogic.config_sigs
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode.TIMED
-```
-
-````
-
-````{py:attribute} TRIGGER_WIDTH
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode.TRIGGER_WIDTH
-:value: >
-   'TriggerWidth'
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaExposeOutMode.TRIGGER_WIDTH
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic.config_sigs
 ```
 
 ````
 
-`````
+````{py:method} get_deadtime(config_values: ~ophyd_async.core.SignalDict) -> float
+:canonical: ophyd_async.epics.advimba.VimbaTriggerLogic.get_deadtime
 
-`````{py:class} VimbaTriggerSource()
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource
-
-Bases: {py:obj}`ophyd_async.core.StrictEnum`
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource
-```
-
-````{py:attribute} FREERUN
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.FREERUN
-:value: >
-   'Freerun'
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.FREERUN
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic.get_deadtime
 ```
 
 ````
 
-````{py:attribute} LINE1
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.LINE1
-:value: >
-   'Line1'
+````{py:method} prepare_internal(num: int, livetime: float, deadtime: float)
+:canonical: ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_internal
+:async:
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.LINE1
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_internal
 ```
 
 ````
 
-````{py:attribute} LINE2
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.LINE2
-:value: >
-   'Line2'
+````{py:method} prepare_edge(num: int, livetime: float)
+:canonical: ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_edge
+:async:
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.LINE2
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_edge
 ```
 
 ````
 
-````{py:attribute} FIXED_RATE
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.FIXED_RATE
-:value: >
-   'FixedRate'
+````{py:method} prepare_level(num: int)
+:canonical: ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_level
+:async:
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.FIXED_RATE
-```
-
-````
-
-````{py:attribute} SOFTWARE
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.SOFTWARE
-:value: >
-   'Software'
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.SOFTWARE
-```
-
-````
-
-````{py:attribute} ACTION0
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.ACTION0
-:value: >
-   'Action0'
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.ACTION0
-```
-
-````
-
-````{py:attribute} ACTION1
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.ACTION1
-:value: >
-   'Action1'
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaTriggerSource.ACTION1
-```
-
-````
-
-`````
-
-`````{py:class} VimbaOverlap()
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOverlap
-
-Bases: {py:obj}`ophyd_async.core.StrictEnum`
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOverlap
-```
-
-````{py:attribute} OFF
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOverlap.OFF
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOverlap.OFF
-```
-
-````
-
-````{py:attribute} PREV_FRAME
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaOverlap.PREV_FRAME
-:value: >
-   'PreviousFrame'
-
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaOverlap.PREV_FRAME
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_level
 ```
 
 ````
@@ -290,59 +176,199 @@ Bases: {py:obj}`ophyd_async.core.StrictEnum`
 `````
 
 `````{py:class} VimbaConvertFormat()
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat
+:canonical: ophyd_async.epics.advimba.VimbaConvertFormat
 
 Bases: {py:obj}`ophyd_async.core.StrictEnum`
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaConvertFormat
 ```
 
 ````{py:attribute} NONE
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.NONE
+:canonical: ophyd_async.epics.advimba.VimbaConvertFormat.NONE
 :value: >
    'None'
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.NONE
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaConvertFormat.NONE
 ```
 
 ````
 
 ````{py:attribute} MONO8
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.MONO8
+:canonical: ophyd_async.epics.advimba.VimbaConvertFormat.MONO8
 :value: >
    'Mono8'
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.MONO8
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaConvertFormat.MONO8
 ```
 
 ````
 
 ````{py:attribute} MONO16
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.MONO16
+:canonical: ophyd_async.epics.advimba.VimbaConvertFormat.MONO16
 :value: >
    'Mono16'
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.MONO16
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaConvertFormat.MONO16
 ```
 
 ````
 
 ````{py:attribute} RGB8
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.RGB8
+:canonical: ophyd_async.epics.advimba.VimbaConvertFormat.RGB8
 :value: >
    'RGB8'
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.RGB8
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaConvertFormat.RGB8
 ```
 
 ````
 
 ````{py:attribute} RGB16
-:canonical: ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.RGB16
+:canonical: ophyd_async.epics.advimba.VimbaConvertFormat.RGB16
 :value: >
    'RGB16'
 
-```{autodoc2-docstring} ophyd_async.epics.advimba._vimba_io.VimbaConvertFormat.RGB16
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaConvertFormat.RGB16
+```
+
+````
+
+`````
+
+`````{py:class} VimbaTriggerSource()
+:canonical: ophyd_async.epics.advimba.VimbaTriggerSource
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerSource
+```
+
+````{py:attribute} FREERUN
+:canonical: ophyd_async.epics.advimba.VimbaTriggerSource.FREERUN
+:value: >
+   'Freerun'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerSource.FREERUN
+```
+
+````
+
+````{py:attribute} LINE1
+:canonical: ophyd_async.epics.advimba.VimbaTriggerSource.LINE1
+:value: >
+   'Line1'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerSource.LINE1
+```
+
+````
+
+````{py:attribute} LINE2
+:canonical: ophyd_async.epics.advimba.VimbaTriggerSource.LINE2
+:value: >
+   'Line2'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerSource.LINE2
+```
+
+````
+
+````{py:attribute} FIXED_RATE
+:canonical: ophyd_async.epics.advimba.VimbaTriggerSource.FIXED_RATE
+:value: >
+   'FixedRate'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerSource.FIXED_RATE
+```
+
+````
+
+````{py:attribute} SOFTWARE
+:canonical: ophyd_async.epics.advimba.VimbaTriggerSource.SOFTWARE
+:value: >
+   'Software'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerSource.SOFTWARE
+```
+
+````
+
+````{py:attribute} ACTION0
+:canonical: ophyd_async.epics.advimba.VimbaTriggerSource.ACTION0
+:value: >
+   'Action0'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerSource.ACTION0
+```
+
+````
+
+````{py:attribute} ACTION1
+:canonical: ophyd_async.epics.advimba.VimbaTriggerSource.ACTION1
+:value: >
+   'Action1'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerSource.ACTION1
+```
+
+````
+
+`````
+
+`````{py:class} VimbaOverlap()
+:canonical: ophyd_async.epics.advimba.VimbaOverlap
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaOverlap
+```
+
+````{py:attribute} OFF
+:canonical: ophyd_async.epics.advimba.VimbaOverlap.OFF
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaOverlap.OFF
+```
+
+````
+
+````{py:attribute} PREV_FRAME
+:canonical: ophyd_async.epics.advimba.VimbaOverlap.PREV_FRAME
+:value: >
+   'PreviousFrame'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaOverlap.PREV_FRAME
+```
+
+````
+
+`````
+
+`````{py:class} VimbaExposeOutMode()
+:canonical: ophyd_async.epics.advimba.VimbaExposeOutMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaExposeOutMode
+```
+
+````{py:attribute} TIMED
+:canonical: ophyd_async.epics.advimba.VimbaExposeOutMode.TIMED
+:value: >
+   'Timed'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaExposeOutMode.TIMED
+```
+
+````
+
+````{py:attribute} TRIGGER_WIDTH
+:canonical: ophyd_async.epics.advimba.VimbaExposeOutMode.TRIGGER_WIDTH
+:value: >
+   'TriggerWidth'
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaExposeOutMode.TRIGGER_WIDTH
 ```
 
 ````

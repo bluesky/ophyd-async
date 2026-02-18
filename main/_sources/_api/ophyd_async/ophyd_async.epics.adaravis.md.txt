@@ -7,7 +7,7 @@
 :allowtitles:
 ```
 
-## Package Contents
+## Module Contents
 
 ### Classes
 
@@ -15,89 +15,106 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`AravisDetector <ophyd_async.epics.adaravis._aravis.AravisDetector>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis.AravisDetector
+* - {py:obj}`AravisDetector <ophyd_async.epics.adaravis.AravisDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisDetector
     :summary:
     ```
-* - {py:obj}`AravisController <ophyd_async.epics.adaravis._aravis_controller.AravisController>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_controller.AravisController
+* - {py:obj}`AravisDriverIO <ophyd_async.epics.adaravis.AravisDriverIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisDriverIO
     :summary:
     ```
-* - {py:obj}`AravisDriverIO <ophyd_async.epics.adaravis._aravis_io.AravisDriverIO>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO
+* - {py:obj}`AravisTriggerLogic <ophyd_async.epics.adaravis.AravisTriggerLogic>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic
     :summary:
     ```
-* - {py:obj}`AravisTriggerSource <ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource
+* - {py:obj}`AravisTriggerSource <ophyd_async.epics.adaravis.AravisTriggerSource>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerSource
     :summary:
     ```
 ````
 
 ### API
 
-````{py:class} AravisDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix='cam1:', writer_cls: type[~ophyd_async.epics.adcore.ADWriter] = adcore.ADHDFWriter, fileio_suffix: str | None = None, name: str = '', config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None)
-:canonical: ophyd_async.epics.adaravis._aravis.AravisDetector
+````{py:class} AravisDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider | None = None, driver_suffix='cam1:', override_deadtime: float | None = None, writer_type: ~ophyd_async.epics.adcore.ADWriterType | None = ADWriterType.HDF, writer_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+:canonical: ophyd_async.epics.adaravis.AravisDetector
 
-Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adaravis._aravis_controller.AravisController`\]
+Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adaravis.AravisDriverIO`\]
 
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis.AravisDetector
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisDetector
 ```
 
 ````
 
-`````{py:class} AravisController(driver: ~ophyd_async.epics.adcore._core_logic.ADBaseIOT, good_states: frozenset[~ophyd_async.epics.adcore._core_io.ADState] = DEFAULT_GOOD_STATES, image_mode: ~ophyd_async.epics.adcore._utils.ADImageMode = ADImageMode.MULTIPLE)
-:canonical: ophyd_async.epics.adaravis._aravis_controller.AravisController
+`````{py:class} AravisDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adaravis.AravisDriverIO
 
-Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async.epics.adaravis._aravis_io.AravisDriverIO`\]
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_controller.AravisController
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisDriverIO
 ```
 
-````{py:method} get_deadtime(exposure: float | None) -> float
-:canonical: ophyd_async.epics.adaravis._aravis_controller.AravisController.get_deadtime
+````{py:attribute} trigger_mode
+:canonical: ophyd_async.epics.adaravis.AravisDriverIO.trigger_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.OnOff], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
+:value: >
+   None
 
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_controller.AravisController.get_deadtime
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisDriverIO.trigger_mode
 ```
 
 ````
 
-````{py:method} prepare(trigger_info: ~ophyd_async.core.TriggerInfo) -> None
-:canonical: ophyd_async.epics.adaravis._aravis_controller.AravisController.prepare
-:async:
+````{py:attribute} trigger_source
+:canonical: ophyd_async.epics.adaravis.AravisDriverIO.trigger_source
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adaravis.AravisTriggerSource], ophyd_async.epics.core.PvSuffix.rbv('TriggerSource')]
+:value: >
+   None
 
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_controller.AravisController.prepare
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisDriverIO.trigger_source
 ```
 
 ````
 
 `````
 
-`````{py:class} AravisDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
-:canonical: ophyd_async.epics.adaravis._aravis_io.AravisDriverIO
+`````{py:class} AravisTriggerLogic(driver: ~ophyd_async.epics.adaravis.AravisDriverIO, override_deadtime: float | None = None)
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic
 
-Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
+Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic
 ```
 
-````{py:attribute} trigger_mode
-:canonical: ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_mode
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.core.OnOff], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
-:value: >
-   None
+````{py:method} config_sigs() -> set[~ophyd_async.core.SignalR]
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.config_sigs
 
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_mode
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.config_sigs
 ```
 
 ````
 
-````{py:attribute} trigger_source
-:canonical: ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_source
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource], ophyd_async.epics.core.PvSuffix.rbv('TriggerSource')]
-:value: >
-   None
+````{py:method} get_deadtime(config_values: ~ophyd_async.core.SignalDict) -> float
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.get_deadtime
 
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisDriverIO.trigger_source
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.get_deadtime
+```
+
+````
+
+````{py:method} prepare_internal(num: int, livetime: float, deadtime: float)
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.prepare_internal
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.prepare_internal
+```
+
+````
+
+````{py:method} prepare_edge(num: int, livetime: float)
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.prepare_edge
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.prepare_edge
 ```
 
 ````
@@ -105,19 +122,19 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 `````
 
 `````{py:class} AravisTriggerSource()
-:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource
+:canonical: ophyd_async.epics.adaravis.AravisTriggerSource
 
 Bases: {py:obj}`ophyd_async.core.SubsetEnum`
 
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerSource
 ```
 
 ````{py:attribute} LINE1
-:canonical: ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource.LINE1
+:canonical: ophyd_async.epics.adaravis.AravisTriggerSource.LINE1
 :value: >
    'Line1'
 
-```{autodoc2-docstring} ophyd_async.epics.adaravis._aravis_io.AravisTriggerSource.LINE1
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerSource.LINE1
 ```
 
 ````

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.core &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
+    <title>ophyd_async.fastcs.core &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=90f830b9"></script>
+    <script src="../../../_static/documentation_options.js?v=640eed8f"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
   
   
 </a></div>
@@ -898,11 +898,14 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="fastcs_connector">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.fastcs.core.html#ophyd_async.fastcs.core.fastcs_connector">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">fastcs_connector</span><span class="p">(</span><span class="n">device</span><span class="p">:</span> <span class="n">Device</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">error_hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DeviceConnector</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fastcs_connector</span><span class="p">(</span>
+    <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Device</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">error_hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DeviceConnector</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create devices and connections on pvi device `Device`.&quot;&quot;&quot;</span>
     <span class="c1"># TODO: add Tango support based on uri scheme</span>
     <span class="n">connector</span> <span class="o">=</span> <span class="n">PviDeviceConnector</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span> <span class="n">error_hint</span><span class="p">)</span>
-    <span class="n">connector</span><span class="o">.</span><span class="n">create_children_from_annotations</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">device</span><span class="p">:</span>
+        <span class="n">connector</span><span class="o">.</span><span class="n">create_children_from_annotations</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">connector</span></div>
 
 

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.core._util &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
+    <title>ophyd_async.epics.core._util &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=90f830b9"></script>
+    <script src="../../../../_static/documentation_options.js?v=640eed8f"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
   
   
 </a></div>
@@ -900,12 +900,14 @@ window.addEventListener("load", load);</script>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">SignalBackend</span><span class="p">,</span>
     <span class="n">SignalDatatypeT</span><span class="p">,</span>
+    <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">StrictEnum</span><span class="p">,</span>
     <span class="n">SubsetEnum</span><span class="p">,</span>
     <span class="n">SupersetEnum</span><span class="p">,</span>
     <span class="n">get_dtype</span><span class="p">,</span>
     <span class="n">get_enum_cls</span><span class="p">,</span>
+    <span class="n">observe_value</span><span class="p">,</span>
     <span class="n">wait_for_value</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -999,12 +1001,42 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="stop_busy_record">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.stop_busy_record">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop_busy_record</span><span class="p">(</span>
-    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
-    <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
+    <span class="n">signal</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
+    <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="wait_for_good_state">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.core.html#ophyd_async.epics.core.wait_for_good_state">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_good_state</span><span class="p">(</span>
+    <span class="n">state_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">good_states</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">message_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wait for state_signal to be one of good_states within timeout.&quot;&quot;&quot;</span>
+    <span class="n">state</span><span class="p">:</span> <span class="n">SignalDatatypeT</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="n">state_signal</span><span class="p">,</span> <span class="n">done_timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">good_states</span><span class="p">:</span>
+                <span class="k">return</span>
+    <span class="k">except</span> <span class="ne">TimeoutError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># No updates from the detector, maybe it is disconnected</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Could not monitor state: </span><span class="si">{</span><span class="n">state_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># No good state in time, report message if given</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">state_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> not in a good state: </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">: &quot;</span>
+            <span class="k">if</span> <span class="n">message_signal</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="k">await</span> <span class="n">message_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;expected one of </span><span class="si">{</span><span class="n">good_states</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
 
 </pre></div>
 

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=90f830b9"></script>
+    <script src="../../../_static/documentation_options.js?v=640eed8f"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
   
   
 </a></div>
@@ -893,19 +893,19 @@ window.addEventListener("load", load);</script>
 <span></span><span class="sd">&quot;&quot;&quot;Module which defines abstract classes to work with detectors.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncGenerator</span><span class="p">,</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">Generic</span><span class="p">,</span>
-    <span class="n">TypeVar</span><span class="p">,</span>
-<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Collectable</span><span class="p">,</span>
     <span class="n">Flyable</span><span class="p">,</span>
+    <span class="n">HasHints</span><span class="p">,</span>
     <span class="n">Hints</span><span class="p">,</span>
     <span class="n">Preparable</span><span class="p">,</span>
     <span class="n">Reading</span><span class="p">,</span>
@@ -917,128 +917,235 @@ window.addEventListener("load", load);</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">event_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataKey</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">NonNegativeInt</span><span class="p">,</span> <span class="n">PositiveInt</span><span class="p">,</span> <span class="n">computed_field</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceConnector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._data_providers</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReadableDataProvider</span><span class="p">,</span> <span class="n">StreamableDataProvider</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncConfigurable</span><span class="p">,</span> <span class="n">AsyncReadable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalR</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SignalDict</span><span class="p">,</span>
+    <span class="n">SignalR</span><span class="p">,</span>
+    <span class="n">SignalRW</span><span class="p">,</span>
+    <span class="n">observe_signals_value</span><span class="p">,</span>
+    <span class="n">soft_signal_rw</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._status</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">WatchableAsyncStatus</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">ConfinedModel</span><span class="p">,</span> <span class="n">WatcherUpdate</span><span class="p">,</span> <span class="n">merge_gathered_dicts</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">ConfinedModel</span><span class="p">,</span>
+    <span class="n">WatcherUpdate</span><span class="p">,</span>
+    <span class="n">error_if_none</span><span class="p">,</span>
+    <span class="n">merge_gathered_dicts</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="DetectorTrigger">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTrigger">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DetectorTrigger</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of mechanism for triggering a detector to take frames.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of mechanism for triggering a detector to take exposures.&quot;&quot;&quot;</span>
 
     <span class="n">INTERNAL</span> <span class="o">=</span> <span class="s2">&quot;INTERNAL&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detector generates internal trigger for given rate&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;On arm generate internally timed exposures&quot;&quot;&quot;</span>
 
-    <span class="n">EDGE_TRIGGER</span> <span class="o">=</span> <span class="s2">&quot;EDGE_TRIGGER&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expect a series of arbitrary length trigger signals&quot;&quot;&quot;</span>
+    <span class="n">EXTERNAL_EDGE</span> <span class="o">=</span> <span class="s2">&quot;EXTERNAL_EDGE&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;On every (normally rising) edge of an external input generate an internally</span>
+<span class="sd">    timed exposure&quot;&quot;&quot;</span>
 
-    <span class="n">CONSTANT_GATE</span> <span class="o">=</span> <span class="s2">&quot;CONSTANT_GATE&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expect a series of constant width external gate signals&quot;&quot;&quot;</span>
-
-    <span class="n">VARIABLE_GATE</span> <span class="o">=</span> <span class="s2">&quot;VARIABLE_GATE&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expect a series of variable width external gate signals&quot;&quot;&quot;</span></div>
+    <span class="n">EXTERNAL_LEVEL</span> <span class="o">=</span> <span class="s2">&quot;EXTERNAL_LEVEL&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;On a rising edge of an external input start an exposure, ending on the falling</span>
+<span class="sd">    edge&quot;&quot;&quot;</span></div>
 
 
 
 <div class="viewcode-block" id="TriggerInfo">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerInfo">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">TriggerInfo</span><span class="p">(</span><span class="n">ConfinedModel</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal set of information required to setup triggering on a detector.&quot;&quot;&quot;</span>
-
-    <span class="n">number_of_events</span><span class="p">:</span> <span class="n">NonNegativeInt</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">NonNegativeInt</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of events that will be processed, (0 means infinite).</span>
-
-<span class="sd">    Can be:</span>
-<span class="sd">    - A single integer or</span>
-<span class="sd">    - A list of integers for multiple events</span>
-
-<span class="sd">    Example for tomography: ``TriggerInfo(number_of_events=[2,3,100,3])``.</span>
-<span class="sd">    This would process:</span>
-
-<span class="sd">    - 2 events for dark field images</span>
-<span class="sd">    - 3 events for initial flat field images</span>
-<span class="sd">    - 100 events for projections</span>
-<span class="sd">    - 3 events for final flat field images</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Information required to setup `trigger` or `kickoff` on a `StandardDetector`.&quot;&quot;&quot;</span>
 
     <span class="n">trigger</span><span class="p">:</span> <span class="n">DetectorTrigger</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sort of triggers that will be sent&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;What sort of triggering should the detector be set for.&quot;&quot;&quot;</span>
 
-    <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the minimum deadtime between exposures&quot;&quot;&quot;</span>
+    <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">ge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For INTERNAL or EXTERNAL_EDGE triggering, how long should each exposure be.</span>
+<span class="sd">    0 means whatever is currently set.&quot;&quot;&quot;</span>
 
-    <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ge</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the maximum high time of the exposures&quot;&quot;&quot;</span>
+    <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">ge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;For INTERNAL triggering, how long should be left between each exposure.</span>
+<span class="sd">    0 means use the minimum the detector supports.&quot;&quot;&quot;</span>
 
-    <span class="n">exposure_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the maximum timeout on waiting for an exposure&quot;&quot;&quot;</span>
+    <span class="n">exposures_per_collection</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;An exposure corresponds to a single trigger sent to the detector.</span>
+<span class="sd">    If many exposures are averaged together on the detector or in a processing</span>
+<span class="sd">    chain to make a single collection that is exposed to bluesky as data then</span>
+<span class="sd">    this number should be set to the number of exposures to be processed into a</span>
+<span class="sd">    single collection.&quot;&quot;&quot;</span>
 
-    <span class="n">exposures_per_event</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The number of exposures that are grouped into a single StreamDatum index.</span>
-<span class="sd">    A exposures_per_event &gt; 1 can be useful to have exposures from a faster detector</span>
-<span class="sd">    able to be zipped with a single exposure from a slower detector. E.g. if</span>
-<span class="sd">    number_of_events=10 and exposures_per_event=5 then the detector will take</span>
-<span class="sd">    50 exposures, but publish 10 StreamDatum indices, and describe() will show a</span>
-<span class="sd">    shape of (5, h, w) for each.</span>
-<span class="sd">    Default is 1.</span>
+    <span class="n">collections_per_event</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A collection is exposed to bluesky as data, but different detectors can</span>
+<span class="sd">    be set to have a different number of collections per event so that multiple</span>
+<span class="sd">    collections from a faster detector can be zipped with a single collection</span>
+<span class="sd">    from a slower detector. E.g. if number_of_events=10 and</span>
+<span class="sd">    collections_per_event=5 then the detector will take 50 exposures, but</span>
+<span class="sd">    publish 10 StreamDatum indices, and describe() will show a shape of (5, h,</span>
+<span class="sd">    w) for each.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">number_of_events</span><span class="p">:</span> <span class="n">NonNegativeInt</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Number of bluesky events that will be emitted, (0 means infinite).&quot;&quot;&quot;</span>
+
+    <span class="n">exposure_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;livetime&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;deadtime&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+        <span class="n">gt</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;What is the maximum timeout on waiting for an exposure&quot;&quot;&quot;</span>
 
     <span class="nd">@computed_field</span>
     <span class="nd">@cached_property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">total_number_of_exposures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
-            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_events</span>
-        <span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposures_per_event</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">number_of_collections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_events</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">collections_per_event</span>
+
+    <span class="nd">@computed_field</span>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">number_of_exposures</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_collections</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">exposures_per_collection</span></div>
 
 
 
-<div class="viewcode-block" id="DetectorController">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">DetectorController</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detector logic for arming and disarming the detector.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DetectorTriggerLogic">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectorTriggerLogic</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Logic for configuring detector triggering modes.</span>
 
-<div class="viewcode-block" id="DetectorController.get_deadtime">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController.get_deadtime">[docs]</a>
+<span class="sd">    This class defines the interface for detector trigger configuration, handling</span>
+<span class="sd">    both internal and external triggering modes. Implementations should provide</span>
+<span class="sd">    detector-specific logic for preparing the detector to operate in different</span>
+<span class="sd">    trigger modes and manage exposure parameters.</span>
+
+<span class="sd">    The class manages:</span>
+<span class="sd">    - Configuration signals that should appear in detector metadata</span>
+<span class="sd">    - Deadtime calculations based on detector configuration</span>
+<span class="sd">    - Preparation for internal (self-triggered) exposures</span>
+<span class="sd">    - Preparation for external edge-triggered exposures</span>
+<span class="sd">    - Preparation for external level-triggered exposures</span>
+<span class="sd">    - Multi-exposure collection batching</span>
+
+<span class="sd">    Subclasses must implement the appropriate `prepare_*` method for any trigger</span>
+<span class="sd">    mode the detector supports, `get_deadtime` if it supports external</span>
+<span class="sd">    triggering, and `config_sigs` if the deadtime would vary according to</span>
+<span class="sd">    detector parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DetectorTriggerLogic.config_sigs">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic.config_sigs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_sigs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the signals that should appear in read_configuration.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">set</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DetectorTriggerLogic.get_deadtime">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic.get_deadtime">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_values</span><span class="p">:</span> <span class="n">SignalDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the deadtime in seconds for the detector.</span>
+
+<span class="sd">        :param config_values: the value of each signal in `config_sigs`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DetectorTriggerLogic.prepare_internal">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic.prepare_internal">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the detector to take internally triggered exposures.</span>
+
+<span class="sd">        :param num: the number of exposures to take</span>
+<span class="sd">        :param livetime: how long the exposure should be, 0 means what is currently set</span>
+<span class="sd">        :param deadtime: how long between exposures, 0 means the shortest possible</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DetectorTriggerLogic.prepare_edge">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic.prepare_edge">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the detector to take external edge triggered exposures.</span>
+
+<span class="sd">        :param num: the number of exposures to take</span>
+<span class="sd">        :param livetime: how long the exposure should be, 0 means what is currently set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DetectorTriggerLogic.prepare_level">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic.prepare_level">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the detector to take external level triggered exposures.</span>
+
+<span class="sd">        :param num: the number of exposures to take</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DetectorTriggerLogic.prepare_exposures_per_collection">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic.prepare_exposures_per_collection">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_exposures_per_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposures_per_collection</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare processing of multiple exposures into a single collection.</span>
+
+<span class="sd">        :param exposures_per_collection:</span>
+<span class="sd">            number of exposures to process into each collection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_logic_supported</span><span class="p">(</span><span class="n">base_class</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="c1"># If the function that is bound in a subclass is the same as the function</span>
+    <span class="c1"># attached to the superclass, then the subclass has not overridden it, so</span>
+    <span class="c1"># this method is not supported by the subclass.</span>
+    <span class="k">return</span> <span class="n">method</span><span class="o">.</span><span class="vm">__func__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">base_class</span><span class="p">,</span> <span class="n">method</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="n">_trigger_logic_supported</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">_logic_supported</span><span class="p">,</span> <span class="n">DetectorTriggerLogic</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_supported_triggers</span><span class="p">(</span>
+    <span class="n">trigger_logic</span><span class="p">:</span> <span class="n">DetectorTriggerLogic</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="n">DetectorTrigger</span><span class="p">]:</span>
+    <span class="n">supported_triggers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">_trigger_logic_supported</span><span class="p">(</span><span class="n">trigger_logic</span><span class="o">.</span><span class="n">prepare_internal</span><span class="p">):</span>
+        <span class="n">supported_triggers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_trigger_logic_supported</span><span class="p">(</span><span class="n">trigger_logic</span><span class="o">.</span><span class="n">prepare_edge</span><span class="p">):</span>
+        <span class="n">supported_triggers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EXTERNAL_EDGE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_trigger_logic_supported</span><span class="p">(</span><span class="n">trigger_logic</span><span class="o">.</span><span class="n">prepare_level</span><span class="p">):</span>
+        <span class="n">supported_triggers</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EXTERNAL_LEVEL</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">supported_triggers</span>
+
+
+<div class="viewcode-block" id="DetectorArmLogic">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorArmLogic">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectorArmLogic</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for detector arming and disarming logic.</span>
+
+<span class="sd">    Implementations must provide methods to arm the detector, wait for it to become</span>
+<span class="sd">    idle, and disarm it. This interface allows for detector-specific behavior during</span>
+<span class="sd">    the arm/disarm lifecycle.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DetectorArmLogic.arm">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorArmLogic.arm">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposure</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get state-independent deadtime.</span>
-
-<span class="sd">        For a given exposure, what is the safest minimum time between exposures that</span>
-<span class="sd">        can be determined without reading signals.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Arm the detector, waiting until it is armed.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DetectorController.prepare">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController.prepare">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Do all necessary steps to prepare the detector for triggers.</span>
-
-<span class="sd">        :param trigger_info: The sort of triggers to expect.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-
-
-<div class="viewcode-block" id="DetectorController.arm">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController.arm">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Arm the detector.&quot;&quot;&quot;</span></div>
-
-
-<div class="viewcode-block" id="DetectorController.wait_for_idle">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController.wait_for_idle">[docs]</a>
+<div class="viewcode-block" id="DetectorArmLogic.wait_for_idle">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorArmLogic.wait_for_idle">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait on the internal _arm_status and wait for it to get disarmed/idle.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait for the detector to be disarmed or idle.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DetectorController.disarm">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController.disarm">[docs]</a>
+<div class="viewcode-block" id="DetectorArmLogic.disarm">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorArmLogic.disarm">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Disarm the detector, return detector to an idle state.&quot;&quot;&quot;</span></div>
@@ -1046,79 +1153,105 @@ window.addEventListener("load", load);</script>
 
 
 
-<div class="viewcode-block" id="DetectorWriter">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">DetectorWriter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Logic for making detector write data to somewhere persistent (e.g. HDF5 file).&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_all_the_same</span><span class="p">(</span><span class="n">collections_written</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure all collection counts are the same, raising an error if they differ.</span>
 
-<div class="viewcode-block" id="DetectorWriter.open">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter.open">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">exposures_per_event</span><span class="p">:</span> <span class="n">PositiveInt</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Open writer and wait for it to be ready for data.</span>
-
-<span class="sd">        :param exposures_per_event:</span>
-<span class="sd">            Each StreamDatum index corresponds to this many written exposures</span>
-<span class="sd">        :return: Output for ``describe()``</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
+<span class="sd">    :param collections_written: Set of collection counts from different providers</span>
+<span class="sd">    :return: The single collection count value</span>
+<span class="sd">    :raises RuntimeError: If the set contains more than one distinct value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">collections_written</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Detectors have written different numbers of collections: &quot;</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">collections_written</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">collections_written</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="DetectorWriter.get_hints">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter.get_hints">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_hints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The hints to be used for the detector.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{}</span></div>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_get_collections_written</span><span class="p">(</span>
+    <span class="n">data_providers</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">StreamableDataProvider</span><span class="p">],</span>
+    <span class="n">reducer</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">_all_the_same</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a single collections_written value for the given providers.</span>
+
+<span class="sd">    By default this function ensures all providers agree and returns that</span>
+<span class="sd">    single value. If `reducer` is provided it will be called with the set of</span>
+<span class="sd">    observed values and should return a single int to use.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Work out where all the streamable data providers are up to</span>
+    <span class="n">collections_written</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="o">*</span><span class="p">[</span><span class="n">sdp</span><span class="o">.</span><span class="n">collections_written_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> <span class="k">for</span> <span class="n">sdp</span> <span class="ow">in</span> <span class="n">data_providers</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">collections_written</span><span class="p">:</span>
+        <span class="c1"># Let our reducer decide how to return a single int</span>
+        <span class="k">return</span> <span class="n">reducer</span><span class="p">(</span><span class="n">collections_written</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># There are none, this is valid as we then don&#39;t use the value anywhere</span>
+        <span class="c1"># so just return 0</span>
+        <span class="k">return</span> <span class="mi">0</span>
 
 
-<div class="viewcode-block" id="DetectorWriter.get_indices_written">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter.get_indices_written">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the number of indices written.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="DetectorDataLogic">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorDataLogic">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectorDataLogic</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for detector data logic and handling.</span>
+
+<span class="sd">    Implementations must implement either prepare_unbounded for data sources</span>
+<span class="sd">    that work with step scans as well as flyscans, or prepare_single for those</span>
+<span class="sd">    that only work with step scans.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DetectorDataLogic.prepare_single">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorDataLogic.prepare_single">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReadableDataProvider</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provider can only work for a single event.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
-    <span class="c1"># Note: this method is really async, but if we make it async here then we</span>
-    <span class="c1"># need to give it a body with a redundant yield statement, which is a bit</span>
-    <span class="c1"># awkward. So we just leave it as a regular method and let the user</span>
-    <span class="c1"># implement it as async.</span>
-<div class="viewcode-block" id="DetectorWriter.observe_indices_written">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter.observe_indices_written">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">observe_indices_written</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yield the index of each frame (or equivalent data point) as it is written.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="DetectorDataLogic.prepare_unbounded">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorDataLogic.prepare_unbounded">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamableDataProvider</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provider can work for an unbounded number of collections.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="DetectorWriter.collect_stream_docs">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter.collect_stream_docs">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">collect_stream_docs</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">indices_written</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create Stream docs up to given number written.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="DetectorDataLogic.get_hinted_fields">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorDataLogic.get_hinted_fields">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the hinted streams.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
 
 
-<div class="viewcode-block" id="DetectorWriter.close">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter.close">[docs]</a>
-    <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Close writer, blocks until I/O is complete.&quot;&quot;&quot;</span></div>
+<div class="viewcode-block" id="DetectorDataLogic.stop">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorDataLogic.stop">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop taking data.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
 </div>
 
 
 
-<span class="c1"># Add type var for controller so we can define</span>
-<span class="c1"># StandardDetector[KinetixController, ADWriter] for example</span>
-<span class="n">DetectorControllerT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DetectorControllerT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">DetectorController</span><span class="p">)</span>
-<span class="n">DetectorWriterT</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;DetectorWriterT&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">DetectorWriter</span><span class="p">)</span>
+<span class="n">_data_logic_supported</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">_logic_supported</span><span class="p">,</span> <span class="n">DetectorDataLogic</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_ensure_trigger_info_exists</span><span class="p">(</span><span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TriggerInfo</span><span class="p">:</span>
-    <span class="c1"># make absolute sure we realy have a valid TriggerInfo ... mostly for pylance</span>
-    <span class="k">if</span> <span class="n">trigger_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Trigger info must be set before calling this method.&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">trigger_info</span>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_PrepareCtx</span><span class="p">:</span>
+    <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span>
+    <span class="n">readable_data_providers</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ReadableDataProvider</span><span class="p">]</span>
+    <span class="n">streamable_data_providers</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">StreamableDataProvider</span><span class="p">]</span>
+    <span class="n">collections_written</span><span class="p">:</span> <span class="nb">int</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_KickoffCtx</span><span class="p">:</span>
+    <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span>
+    <span class="n">data_providers</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">StreamableDataProvider</span><span class="p">]</span>
+    <span class="n">collections_written</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">collections_requested</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">is_last_kickoff</span><span class="p">:</span> <span class="nb">bool</span>
 
 
 <div class="viewcode-block" id="StandardDetector">
@@ -1133,232 +1266,406 @@ window.addEventListener("load", load);</script>
     <span class="n">Flyable</span><span class="p">,</span>
     <span class="n">Collectable</span><span class="p">,</span>
     <span class="n">WritesStreamAssets</span><span class="p">,</span>
-    <span class="n">Generic</span><span class="p">[</span><span class="n">DetectorControllerT</span><span class="p">,</span> <span class="n">DetectorWriterT</span><span class="p">],</span>
+    <span class="n">HasHints</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Detector base class for step and fly scanning detectors.</span>
 
-<span class="sd">    Aggregates controller and writer logic together.</span>
-
-<span class="sd">    :param controller: Logic for arming and disarming the detector</span>
-<span class="sd">    :param writer: Logic for making the detector write persistent data</span>
-<span class="sd">    :param config_sigs: Signals to read when describe and read configuration are called</span>
-<span class="sd">    :param name: Device name</span>
+<span class="sd">    Aggregates trigger, arm, reading or stream logic together.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">controller</span><span class="p">:</span> <span class="n">DetectorControllerT</span><span class="p">,</span>
-        <span class="n">writer</span><span class="p">:</span> <span class="n">DetectorWriterT</span><span class="p">,</span>
-        <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">connector</span><span class="p">:</span> <span class="n">DeviceConnector</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># Logic for the detector</span>
+    <span class="n">_trigger_logic</span><span class="p">:</span> <span class="n">DetectorTriggerLogic</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_arm_logic</span><span class="p">:</span> <span class="n">DetectorArmLogic</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_data_logics</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DetectorDataLogic</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="c1"># Signals to include in read_configuration</span>
+    <span class="n">_config_signals</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="c1"># Context produced by prepare, used by trigger and kickoff</span>
+    <span class="n">_prepare_ctx</span><span class="p">:</span> <span class="n">_PrepareCtx</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># Context produced by kickoff, used by complete</span>
+    <span class="n">_kickoff_ctx</span><span class="p">:</span> <span class="n">_KickoffCtx</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># The triggers that are supported by the trigger logic</span>
+    <span class="n">_supported_triggers</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">DetectorTrigger</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">}</span>
+
+    <span class="c1"># Report the number of events for the next kickoff</span>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">events_to_kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="c1"># TODO: only allow this to be revised down when trigger_info.number_of_events &gt;1</span>
+        <span class="c1"># and we have a reusable data provider</span>
+        <span class="c1"># requries https://github.com/bluesky/ophyd-async/issues/1119</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="c1"># Name and parent this manually as `Device` doesn&#39;t know how to deal with cached</span>
+        <span class="c1"># properties</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">-events_to_kickoff&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">signal</span>
+
+<div class="viewcode-block" id="StandardDetector.add_detector_logics">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.add_detector_logics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_detector_logics</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">logics</span><span class="p">:</span> <span class="n">DetectorTriggerLogic</span> <span class="o">|</span> <span class="n">DetectorArmLogic</span> <span class="o">|</span> <span class="n">DetectorDataLogic</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span> <span class="o">=</span> <span class="n">controller</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span> <span class="o">=</span> <span class="n">writer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">config_sigs</span><span class="p">)</span>
-        <span class="c1"># For prepare</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_arm_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="c1"># For kickoff</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_watchers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">WatchableAsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="c1"># Represents the total number of exposures that will have been completed at the</span>
-        <span class="c1"># end of the next `complete`.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_completable_exposures</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span><span class="p">:</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">connector</span><span class="o">=</span><span class="n">connector</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add arm, trigger or data logic to the detector.</span>
+
+<span class="sd">        :param logic: The logic to add</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">logic</span> <span class="ow">in</span> <span class="n">logics</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logic</span><span class="p">,</span> <span class="n">DetectorTriggerLogic</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Detector already has trigger logic&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span> <span class="o">=</span> <span class="n">logic</span>
+                <span class="c1"># Store the triggers that are supported</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_supported_triggers</span> <span class="o">=</span> <span class="n">_get_supported_triggers</span><span class="p">(</span><span class="n">logic</span><span class="p">)</span>
+                <span class="c1"># Add the config signals it needs</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_config_signals</span><span class="p">(</span><span class="o">*</span><span class="n">logic</span><span class="o">.</span><span class="n">config_sigs</span><span class="p">())</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logic</span><span class="p">,</span> <span class="n">DetectorArmLogic</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Detector already has arm logic&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="o">=</span> <span class="n">logic</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logic</span><span class="p">,</span> <span class="n">DetectorDataLogic</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">,</span> <span class="n">logic</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown logic type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">logic</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.add_config_signals">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.add_config_signals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_config_signals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">signals</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a signal to read_configuration().</span>
+
+<span class="sd">        :param sig: The signal to add</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_signals</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_config_signals</span><span class="p">,</span> <span class="o">*</span><span class="n">signals</span><span class="p">)</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_disarm_and_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">coros</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_logic</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="k">for</span> <span class="n">data_logic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="p">:</span>
+            <span class="n">coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">disarm</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StandardDetector.get_trigger_deadtime">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.get_trigger_deadtime">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_trigger_deadtime</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Settings</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">set</span><span class="p">[</span><span class="n">DetectorTrigger</span><span class="p">],</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get supported trigger types and deadtime for the detector.</span>
+
+<span class="sd">        :param settings: Optional settings to use when getting configuration values</span>
+<span class="sd">        :return: Tuple of supported trigger types and deadtime in seconds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span> <span class="ow">and</span> <span class="n">_trigger_logic_supported</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">get_deadtime</span>
+        <span class="p">):</span>
+            <span class="n">config_values</span> <span class="o">=</span> <span class="n">SignalDict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">config_sigs</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">settings</span> <span class="ow">and</span> <span class="n">sig</span> <span class="ow">in</span> <span class="n">settings</span><span class="p">:</span>
+                    <span class="c1"># Use value from settings if it is in there</span>
+                    <span class="c1"># cast to a SignalRW because settings can only contain those</span>
+                    <span class="n">config_values</span><span class="p">[</span><span class="n">sig</span><span class="p">]</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="n">cast</span><span class="p">(</span><span class="n">SignalRW</span><span class="p">,</span> <span class="n">sig</span><span class="p">)]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Get the value live</span>
+                    <span class="n">config_values</span><span class="p">[</span><span class="n">sig</span><span class="p">]</span> <span class="o">=</span> <span class="k">await</span> <span class="n">sig</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+            <span class="n">deadtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="n">config_values</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">deadtime</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_supported_triggers</span><span class="p">,</span> <span class="n">deadtime</span></div>
+
 
 <div class="viewcode-block" id="StandardDetector.stage">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.stage">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make sure the detector is idle and ready to be used.&quot;&quot;&quot;</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_config_sigs</span><span class="p">()</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">close</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">disarm</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="kc">None</span></div>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_disarm_and_stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kickoff_ctx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_to_kickoff</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_check_config_sigs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check configuration signals are named and connected.&quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">signal</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                    <span class="s2">&quot;config signal must be named before it is passed to the detector&quot;</span>
-                <span class="p">)</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">await</span> <span class="n">signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
-            <span class="k">except</span> <span class="ne">NotImplementedError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;config signal </span><span class="si">{</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> must be connected before it is &quot;</span>
-                    <span class="o">+</span> <span class="s2">&quot;passed to the detector&quot;</span>
-                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
-
-<div class="viewcode-block" id="StandardDetector.unstage">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.unstage">[docs]</a>
-    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disarm the detector and stop file writing.&quot;&quot;&quot;</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">close</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">disarm</span><span class="p">())</span></div>
-
-
-<div class="viewcode-block" id="StandardDetector.read_configuration">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.read_configuration">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="StandardDetector.describe_configuration">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.describe_configuration">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sigs</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="StandardDetector.read">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.read">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;There is no data to be placed in events, so this is empty.&quot;&quot;&quot;</span>
-        <span class="c1"># All data is in StreamResources, not Events, so nothing to output here</span>
-        <span class="k">return</span> <span class="p">{}</span></div>
-
-
-<div class="viewcode-block" id="StandardDetector.describe">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.describe">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span></div>
-
-
-<div class="viewcode-block" id="StandardDetector.trigger">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.trigger">[docs]</a>
-    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span>
-                <span class="n">TriggerInfo</span><span class="p">(</span>
-                    <span class="n">number_of_events</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                    <span class="n">trigger</span><span class="o">=</span><span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-        <span class="n">trigger_info</span> <span class="o">=</span> <span class="n">_ensure_trigger_info_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The trigger method can only be called with INTERNAL triggering&quot;</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_events</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;Triggering is not supported for multiple events, the detector was &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;prepared with number_of_events=</span><span class="si">{</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_events</span><span class="si">}</span><span class="s2">.&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># Arm the detector and wait for it to finish.</span>
-        <span class="n">indices_written</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">wait_for_idle</span><span class="p">()</span>
-        <span class="n">end_observation</span> <span class="o">=</span> <span class="n">indices_written</span> <span class="o">+</span> <span class="mi">1</span>
-
-        <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
-            <span class="n">DEFAULT_TIMEOUT</span> <span class="o">+</span> <span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">deadtime</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_update_prepare_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># The only thing that would stop us being able to reuse a provider is</span>
+        <span class="c1"># if the collections_per_event changes, as that would change the</span>
+        <span class="c1"># StreamResource shape. All other TriggerInfo parameters (exposures, livetime,</span>
+        <span class="c1"># etc.) don&#39;t affect the data provider configuration.</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span>
+            <span class="o">==</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span>
         <span class="p">):</span>
-            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">end_observation</span><span class="p">:</span>
-                <span class="k">break</span></div>
+            <span class="c1"># Reuse the existing data providers</span>
+            <span class="n">readable_data_providers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="o">.</span><span class="n">readable_data_providers</span>
+            <span class="n">streamable_data_providers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Stop the existing providers if there is a context and make new ones</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">data_logic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="n">data_logic</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="c1"># Setup the data logic for the right number of collections</span>
+            <span class="n">streamable_coros</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">StreamableDataProvider</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">readable_coros</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">ReadableDataProvider</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">data_logic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_data_logic_supported</span><span class="p">(</span><span class="n">data_logic</span><span class="o">.</span><span class="n">prepare_unbounded</span><span class="p">):</span>
+                    <span class="n">streamable_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_logic</span><span class="o">.</span><span class="n">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">_data_logic_supported</span><span class="p">(</span><span class="n">data_logic</span><span class="o">.</span><span class="n">prepare_single</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_collections</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Multiple collections not supported by </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                    <span class="n">readable_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_logic</span><span class="o">.</span><span class="n">prepare_single</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;DataLogic hasn&#39;t overridden any prepare_* methods &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_logic</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">streamable_data_providers</span><span class="p">,</span> <span class="n">readable_data_providers</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+                <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">streamable_coros</span><span class="p">),</span>
+                <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">readable_coros</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="c1"># Stash the prepare context so we can use it in trigger/kickoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span> <span class="o">=</span> <span class="n">_PrepareCtx</span><span class="p">(</span>
+            <span class="n">trigger_info</span><span class="o">=</span><span class="n">trigger_info</span><span class="p">,</span>
+            <span class="n">streamable_data_providers</span><span class="o">=</span><span class="n">streamable_data_providers</span><span class="p">,</span>
+            <span class="n">readable_data_providers</span><span class="o">=</span><span class="n">readable_data_providers</span><span class="p">,</span>
+            <span class="n">collections_written</span><span class="o">=</span><span class="k">await</span> <span class="n">_get_collections_written</span><span class="p">(</span>
+                <span class="n">streamable_data_providers</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
 
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_wait_for_index</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">data_providers</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">StreamableDataProvider</span><span class="p">],</span>
+        <span class="n">trigger_info</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">,</span>
+        <span class="n">initial_collections_written</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">collections_requested</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">wait_for_idle</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">]:</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="n">current_collections_written</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">dp</span><span class="o">.</span><span class="n">collections_written_signal</span><span class="p">:</span> <span class="n">initial_collections_written</span>
+            <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">data_providers</span>
+        <span class="p">}</span>
+        <span class="n">collections_per_event</span> <span class="o">=</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span>
+        <span class="n">target_collections_written</span> <span class="o">=</span> <span class="n">initial_collections_written</span> <span class="o">+</span> <span class="n">collections_requested</span>
+        <span class="k">if</span> <span class="n">data_providers</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">sig</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">observe_signals_value</span><span class="p">(</span>
+                <span class="o">*</span><span class="n">current_collections_written</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">exposure_timeout</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="n">current_collections_written</span><span class="p">[</span><span class="n">sig</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="n">collections_written</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">current_collections_written</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+                <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">current</span><span class="o">=</span><span class="n">collections_written</span> <span class="o">//</span> <span class="n">collections_per_event</span><span class="p">,</span>
+                    <span class="n">initial</span><span class="o">=</span><span class="n">initial_collections_written</span> <span class="o">//</span> <span class="n">collections_per_event</span><span class="p">,</span>
+                    <span class="n">target</span><span class="o">=</span><span class="n">target_collections_written</span> <span class="o">//</span> <span class="n">collections_per_event</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">collections_written</span> <span class="o">&gt;=</span> <span class="n">target_collections_written</span><span class="p">:</span>
+                    <span class="k">break</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="ow">and</span> <span class="n">wait_for_idle</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">wait_for_idle</span><span class="p">()</span>
 
 <div class="viewcode-block" id="StandardDetector.prepare">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.prepare">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">TriggerInfo</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Arm detector.</span>
-
-<span class="sd">        Prepare the detector with trigger information. This is determined at and passed</span>
-<span class="sd">        in from the plan level.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the detector for a number of triggers.</span>
 
 <span class="sd">        :param value: TriggerInfo describing how to trigger the detector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Deadtime must be supplied when in externally triggered mode&quot;</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">:</span>
-            <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">get_deadtime</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">livetime</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span>
-            <span class="n">value</span><span class="o">.</span><span class="n">number_of_events</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
-            <span class="k">else</span> <span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">]</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span> <span class="ow">and</span> <span class="n">_trigger_logic_supported</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">prepare_exposures_per_collection</span>
+        <span class="p">):</span>
+            <span class="c1"># If we can do multiple exposures per collection then set it up</span>
+            <span class="c1"># even if there was only 1 requested to clear previous settings</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">prepare_exposures_per_collection</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">.</span><span class="n">exposures_per_collection</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">exposures_per_collection</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Multiple exposures per collection not supported by </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># Setup the trigger logic for the right number of exposures</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_supported_triggers</span><span class="p">:</span>
+            <span class="n">format_triggers</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="nb">sorted</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_supported_triggers</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Trigger type </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">trigger</span><span class="si">}</span><span class="s2"> not supported by &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;supported types are: [</span><span class="si">{</span><span class="n">format_triggers</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="p">:</span>
+            <span class="k">match</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span><span class="p">:</span>
+                <span class="k">case</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">prepare_internal</span><span class="p">(</span>
+                        <span class="n">num</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_exposures</span><span class="p">,</span>
+                        <span class="n">livetime</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">livetime</span><span class="p">,</span>
+                        <span class="n">deadtime</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">deadtime</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">case</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EXTERNAL_EDGE</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">prepare_edge</span><span class="p">(</span>
+                        <span class="n">num</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_exposures</span><span class="p">,</span>
+                        <span class="n">livetime</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">livetime</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">case</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">EXTERNAL_LEVEL</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">prepare_level</span><span class="p">(</span>
+                        <span class="n">num</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_exposures</span><span class="p">,</span>
+                    <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">livetime</span> <span class="o">!=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">value</span><span class="o">.</span><span class="n">deadtime</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> has no trigger logic, so cannot set livetime or &quot;</span>
+                <span class="s2">&quot;deadtime&quot;</span>
+            <span class="p">)</span>
+        <span class="c1"># NOTE: this section must come after preparing the trigger logic as we may</span>
+        <span class="c1"># use parameters from it to determine datatype for the streams</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_prepare_context</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="c1"># Tell people how many collections we will acquire for</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_to_kickoff</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">)</span>
+        <span class="c1"># External triggering can arm now</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span></div>
 
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">exposures_per_event</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="o">=</span> <span class="n">value</span></div>
+<div class="viewcode-block" id="StandardDetector.trigger">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.trigger">[docs]</a>
+    <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># If a prepare has not been done since stage, do an implicit one here</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">TriggerInfo</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Check the one that was provided is suitable for triggering</span>
+            <span class="n">trigger_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="o">.</span><span class="n">trigger_info</span>
+            <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_events</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;trigger() is not supported for multiple events, the detector was &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;prepared with number_of_events=</span><span class="si">{</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_events</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="c1"># Ensure the data provider is still usable</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_prepare_context</span><span class="p">(</span><span class="n">trigger_info</span><span class="p">)</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="p">,</span> <span class="s2">&quot;Prepare should have been run&quot;</span><span class="p">)</span>
+        <span class="c1"># Arm the detector and wait for it to finish.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_index</span><span class="p">(</span>
+            <span class="n">data_providers</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span><span class="p">,</span>
+            <span class="n">trigger_info</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="p">,</span>
+            <span class="n">initial_collections_written</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">collections_written</span><span class="p">,</span>
+            <span class="n">collections_requested</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">wait_for_idle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">update</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.kickoff">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.kickoff">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kickoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Prepare must be called before kickoff!&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="o">==</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_completable_exposures</span> <span class="o">+=</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">exposures_per_event</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="p">,</span> <span class="s2">&quot;Prepare not called&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not streamable, so cannot kickoff&quot;</span>
             <span class="p">)</span>
-        <span class="k">except</span> <span class="ne">StopIteration</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Kickoff called more than the configured number of &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="o">.</span><span class="n">total_number_of_exposures</span><span class="si">}</span><span class="s2"> iteration(s)!&quot;</span>
-            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span></div>
+        <span class="n">collections_written</span><span class="p">,</span> <span class="n">events_to_kickoff</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="n">_get_collections_written</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events_to_kickoff</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="n">collections_requested</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">events_to_kickoff</span> <span class="o">*</span> <span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span>
+        <span class="p">)</span>
+        <span class="n">last_requested_collection</span> <span class="o">=</span> <span class="n">collections_written</span> <span class="o">+</span> <span class="n">collections_requested</span>
+        <span class="n">last_expected_collection</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">collections_written</span> <span class="o">+</span> <span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_collections</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">last_requested_collection</span> <span class="o">&gt;</span> <span class="n">last_expected_collection</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Kickoff requested </span><span class="si">{</span><span class="n">collections_written</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">last_requested_collection</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but detector was only prepared up to </span><span class="si">{</span><span class="n">last_expected_collection</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kickoff_ctx</span> <span class="o">=</span> <span class="n">_KickoffCtx</span><span class="p">(</span>
+            <span class="n">trigger_info</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="p">,</span>
+            <span class="n">data_providers</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span><span class="p">,</span>
+            <span class="n">collections_written</span><span class="o">=</span><span class="n">collections_written</span><span class="p">,</span>
+            <span class="n">collections_requested</span><span class="o">=</span><span class="n">collections_requested</span><span class="p">,</span>
+            <span class="n">is_last_kickoff</span><span class="o">=</span><span class="n">last_requested_collection</span> <span class="o">==</span> <span class="n">last_expected_collection</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># External trigering has been armed already, internal should arm now</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="ow">and</span> <span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="o">==</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.complete">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.complete">[docs]</a>
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">trigger_info</span> <span class="o">=</span> <span class="n">_ensure_trigger_info_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_trigger_info</span><span class="p">)</span>
-        <span class="n">indices_written</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">observe_indices_written</span><span class="p">(</span>
-            <span class="n">trigger_info</span><span class="o">.</span><span class="n">exposure_timeout</span>
-            <span class="ow">or</span> <span class="p">(</span>
-                <span class="n">DEFAULT_TIMEOUT</span>
-                <span class="o">+</span> <span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">livetime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="o">+</span> <span class="p">(</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">deadtime</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indices_written</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                    <span class="n">current</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
-                    <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_frame</span><span class="p">,</span>
-                    <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span><span class="p">,</span>
-                    <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="n">precision</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                    <span class="n">time_elapsed</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fly_start</span>
-                    <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="p">)</span>
-                <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span><span class="p">:</span>
-                    <span class="k">break</span>
-        <span class="k">finally</span><span class="p">:</span>
-            <span class="k">await</span> <span class="n">indices_written</span><span class="o">.</span><span class="n">aclose</span><span class="p">()</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_completable_exposures</span> <span class="o">&gt;=</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">total_number_of_exposures</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_completable_exposures</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_events_to_complete</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_events_iter</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_controller</span><span class="o">.</span><span class="n">wait_for_idle</span><span class="p">()</span></div>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_kickoff_ctx</span><span class="p">,</span> <span class="s2">&quot;Kickoff not called&quot;</span><span class="p">)</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_index</span><span class="p">(</span>
+            <span class="n">data_providers</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">data_providers</span><span class="p">,</span>
+            <span class="n">trigger_info</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="p">,</span>
+            <span class="n">initial_collections_written</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">collections_written</span><span class="p">,</span>
+            <span class="n">collections_requested</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">collections_requested</span><span class="p">,</span>
+            <span class="n">wait_for_idle</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">is_last_kickoff</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">update</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.describe_configuration">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.describe_configuration">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span>
+            <span class="n">sig</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_signals</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.read_configuration">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.read_configuration">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span><span class="n">sig</span><span class="o">.</span><span class="n">read</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_signals</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardDetector.describe">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.describe">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="p">,</span> <span class="s2">&quot;Prepare not run&quot;</span><span class="p">)</span>
+        <span class="c1"># Readable and Streamable data providers produce data during read</span>
+        <span class="n">coros</span> <span class="o">=</span> <span class="p">[</span><span class="n">dp</span><span class="o">.</span><span class="n">make_datakeys</span><span class="p">()</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">readable_data_providers</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span>
+            <span class="n">dp</span><span class="o">.</span><span class="n">make_datakeys</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span><span class="n">coros</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.describe_collect">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.describe_collect">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">describe_collect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">DataKey</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_describe</span></div>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="p">,</span> <span class="s2">&quot;Prepare not run&quot;</span><span class="p">)</span>
+        <span class="c1"># Only streamable data providers produce data during collect</span>
+        <span class="n">coros</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">dp</span><span class="o">.</span><span class="n">make_datakeys</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span><span class="n">coros</span><span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
+        <span class="n">fields</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">:</span>
+            <span class="n">fields</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">dl</span><span class="o">.</span><span class="n">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Hints</span><span class="p">(</span><span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StandardDetector.read">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.read">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">]:</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="p">,</span> <span class="s2">&quot;Prepare not called&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">merge_gathered_dicts</span><span class="p">(</span>
+            <span class="n">dp</span><span class="o">.</span><span class="n">make_readings</span><span class="p">()</span> <span class="k">for</span> <span class="n">dp</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">readable_data_providers</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.collect_asset_docs">
@@ -1367,23 +1674,36 @@ window.addEventListener("load", load);</script>
         <span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">StreamAsset</span><span class="p">]:</span>
         <span class="c1"># Collect stream datum documents for all indices written.</span>
-        <span class="c1"># The index is optional, and provided for fly scans, however this needs to be</span>
-        <span class="c1"># retrieved for step scans.</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="p">,</span> <span class="s2">&quot;Prepare not called&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">collect_stream_docs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">doc</span></div>
+            <span class="c1"># The index is optional, and provided for fly scans, if there is</span>
+            <span class="c1"># more than one detector to make sure they collect in step</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_index</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">data_provider</span> <span class="ow">in</span> <span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">data_provider</span><span class="o">.</span><span class="n">make_stream_docs</span><span class="p">(</span>
+                <span class="n">collections_written</span><span class="o">=</span><span class="n">index</span> <span class="o">*</span> <span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span><span class="p">,</span>
+                <span class="n">collections_per_event</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">yield</span> <span class="n">doc</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.get_index">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.get_index">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">get_indices_written</span><span class="p">()</span></div>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="p">,</span> <span class="s2">&quot;Prepare not called&quot;</span><span class="p">)</span>
+        <span class="n">min_collections_written</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_get_collections_written</span><span class="p">(</span>
+            <span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span><span class="p">,</span> <span class="n">reducer</span><span class="o">=</span><span class="nb">min</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">min_collections_written</span> <span class="o">//</span> <span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">collections_per_event</span></div>
 
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writer</span><span class="o">.</span><span class="n">get_hints</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+<div class="viewcode-block" id="StandardDetector.unstage">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.unstage">[docs]</a>
+    <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disarm the detector and stop file writing.&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_disarm_and_stop</span><span class="p">()</span></div>
+</div>
 
 </pre></div>
 

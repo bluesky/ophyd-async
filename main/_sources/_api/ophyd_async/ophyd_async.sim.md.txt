@@ -224,28 +224,19 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
 ````
 
-````{py:method} write_images_to_file(exposure: float, period: float, number_of_frames: int)
+````{py:method} setup_acquisition_parameters(exposure: float, period: float, number_of_frames: int)
+:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.setup_acquisition_parameters
+
+```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.setup_acquisition_parameters
+```
+
+````
+
+````{py:method} write_images_to_file()
 :canonical: ophyd_async.sim._pattern_generator.PatternGenerator.write_images_to_file
 :async:
 
 ```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.write_images_to_file
-```
-
-````
-
-````{py:method} wait_for_next_index(timeout: float)
-:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.wait_for_next_index
-:async:
-
-```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.wait_for_next_index
-```
-
-````
-
-````{py:method} get_last_index() -> int
-:canonical: ophyd_async.sim._pattern_generator.PatternGenerator.get_last_index
-
-```{autodoc2-docstring} ophyd_async.sim._pattern_generator.PatternGenerator.get_last_index
 ```
 
 ````

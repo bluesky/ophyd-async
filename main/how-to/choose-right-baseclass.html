@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to choose the right base class when implementing a new Device &#8212; ophyd-async 0.16.dev6+g0b4219c5a documentation</title>
+    <title>How to choose the right base class when implementing a new Device &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=90f830b9"></script>
+    <script src="../_static/documentation_options.js?v=640eed8f"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.16.dev6+g0b4219c5a documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
   
   
 </a></div>
@@ -489,7 +489,7 @@
 <p>There are some utility baseclasses that allow you to create a Device pre-populated with the right verbs to work in bluesky plans:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> allows you to compose the values of child Signals and Devices together so that you can <code class="docutils literal notranslate"><span class="pre">read()</span></code> the Device during a step scan.</p></li>
-<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> allows file-writing detectors to be used within both step and fly scans, reporting periodic references to the data that has been written so far. An instance of a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorController" title="ophyd_async.core.DetectorController"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorController</span></code></a> and a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorWriter" title="ophyd_async.core.DetectorWriter"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorWriter</span></code></a> are required to provide this functionality.</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> allows file-writing detectors to be used within both step and fly scans, reporting periodic references to the data that has been written so far. Instances of <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic" title="ophyd_async.core.DetectorTriggerLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorTriggerLogic</span></code></a>, <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorArmLogic" title="ophyd_async.core.DetectorArmLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorArmLogic</span></code></a>, and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorDataLogic" title="ophyd_async.core.DetectorDataLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorDataLogic</span></code></a> are composed together to provide this functionality. This separation of concerns makes it easy to mix and match different trigger modes, arming strategies, and data outputs.</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardFlyer" title="ophyd_async.core.StandardFlyer"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardFlyer</span></code></a> allows actuators (like a motor controller) to be used within a fly scan. Implementing a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.FlyerController" title="ophyd_async.core.FlyerController"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">FlyerController</span></code></a> is required to provide this functionality.</p></li>
 </ul>
 </section>

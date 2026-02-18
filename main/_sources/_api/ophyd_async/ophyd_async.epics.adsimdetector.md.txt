@@ -7,7 +7,7 @@
 :allowtitles:
 ```
 
-## Package Contents
+## Module Contents
 
 ### Classes
 
@@ -15,56 +15,43 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`SimDriverIO <ophyd_async.epics.adsimdetector._sim_io.SimDriverIO>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adsimdetector._sim_io.SimDriverIO
+* - {py:obj}`SimDetector <ophyd_async.epics.adsimdetector.SimDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adsimdetector.SimDetector
     :summary:
     ```
-* - {py:obj}`SimController <ophyd_async.epics.adsimdetector._sim_controller.SimController>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adsimdetector._sim_controller.SimController
-    :summary:
-    ```
-* - {py:obj}`SimDetector <ophyd_async.epics.adsimdetector._sim.SimDetector>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adsimdetector._sim.SimDetector
+* - {py:obj}`SimDetectorTriggerLogic <ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic
     :summary:
     ```
 ````
 
 ### API
 
-````{py:class} SimDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
-:canonical: ophyd_async.epics.adsimdetector._sim_io.SimDriverIO
+````{py:class} SimDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider | None = None, driver_suffix='cam1:', writer_type: ~ophyd_async.epics.adcore.ADWriterType | None = ADWriterType.HDF, writer_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+:canonical: ophyd_async.epics.adsimdetector.SimDetector
 
-Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
+Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adcore.ADBaseIO`\]
 
-```{autodoc2-docstring} ophyd_async.epics.adsimdetector._sim_io.SimDriverIO
+```{autodoc2-docstring} ophyd_async.epics.adsimdetector.SimDetector
 ```
 
 ````
 
-`````{py:class} SimController(driver: ~ophyd_async.epics.adsimdetector._sim_io.SimDriverIO, good_states: frozenset[~ophyd_async.epics.adcore.ADState] = adcore.DEFAULT_GOOD_STATES)
-:canonical: ophyd_async.epics.adsimdetector._sim_controller.SimController
+`````{py:class} SimDetectorTriggerLogic(driver: ~ophyd_async.epics.adcore.ADBaseIO)
+:canonical: ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic
 
-Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseController`\[{py:obj}`ophyd_async.epics.adsimdetector._sim_io.SimDriverIO`\]
+Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
-```{autodoc2-docstring} ophyd_async.epics.adsimdetector._sim_controller.SimController
+```{autodoc2-docstring} ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic
 ```
 
-````{py:method} get_deadtime(exposure: float | None) -> float
-:canonical: ophyd_async.epics.adsimdetector._sim_controller.SimController.get_deadtime
+````{py:method} prepare_internal(num: int, livetime: float, deadtime: float)
+:canonical: ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.prepare_internal
+:async:
 
-```{autodoc2-docstring} ophyd_async.epics.adsimdetector._sim_controller.SimController.get_deadtime
+```{autodoc2-docstring} ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.prepare_internal
 ```
 
 ````
 
 `````
-
-````{py:class} SimDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider, drv_suffix='cam1:', writer_cls: type[~ophyd_async.epics.adcore.ADWriter] = adcore.ADHDFWriter, fileio_suffix: str | None = None, name='', config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None)
-:canonical: ophyd_async.epics.adsimdetector._sim.SimDetector
-
-Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adsimdetector._sim_controller.SimController`\]
-
-```{autodoc2-docstring} ophyd_async.epics.adsimdetector._sim.SimDetector
-```
-
-````
