@@ -75,7 +75,7 @@ async def test_stop(m1: SimMotor):
     assert new_pos >= 0.1
 
     assert not move_status.success
-    with pytest.raises(RuntimeError, match="Motor was stopped"):
+    with pytest.raises(RuntimeError, match=f"Motor {m1.name} was stopped"):
         await move_status
 
 

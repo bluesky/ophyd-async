@@ -98,8 +98,8 @@ class MotorMoveLogic(MovableLogic):
     def __init__(self, motor_signals: MotorMoveLogicSignals):
         self.motor_signals = motor_signals
 
-        self.readback_signal = motor_signals.user_readback
-        self.setpoint_signal = motor_signals.user_setpoint
+        self.readback = motor_signals.user_readback
+        self.setpoint = motor_signals.user_setpoint
 
     async def stop(self):
         """Request to stop moving."""
@@ -236,24 +236,26 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
         # Set on kickoff(), complete when motor reaches self._fly_completed_position
         self._fly_status: WatchableAsyncStatus | None = None
 
-        self.add_movable_logic(
-            MotorMoveLogic(
-                motor_signals=MotorMoveLogicSignals(
-                    user_readback=self.user_readback,
-                    user_setpoint=self.user_setpoint,
-                    motor_stop=self.motor_stop,
-                    low_limit_travel=self.low_limit_travel,
-                    high_limit_travel=self.high_limit_travel,
-                    motor_egu=self.motor_egu,
-                    dial_low_limit_travel=self.dial_low_limit_travel,
-                    dial_high_limit_travel=self.dial_high_limit_travel,
-                    velocity=self.velocity,
-                    acceleration_time=self.acceleration_time,
-                    precision=self.precision,
-                ),
-            )
+        motor_signals = MotorMoveLogicSignals(
+            user_readback=self.user_readback,
+            user_setpoint=self.user_setpoint,
+            motor_stop=self.motor_stop,
+            low_limit_travel=self.low_limit_travel,
+            high_limit_travel=self.high_limit_travel,
+            motor_egu=self.motor_egu,
+            dial_low_limit_travel=self.dial_low_limit_travel,
+            dial_high_limit_travel=self.dial_high_limit_travel,
+            velocity=self.velocity,
+            acceleration_time=self.acceleration_time,
+            precision=self.precision,
         )
+        self._movable_logic = MotorMoveLogic(motor_signals)
         super().__init__(name)
+
+    @property
+    def movable_logic(self) -> MotorMoveLogic:
+        """Return MotorMoveLogic for this motor."""
+        return self._movable_logic
 
     async def check_motor_limit(self, abs_start_pos: float, abs_end_pos: float):
         """Check the positions are within limits.
@@ -261,7 +263,7 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
         Will raise a MotorLimitsException if the given absolute positions will be
         outside the motor soft limits.
         """
-        await self._movable_logic.check_move(abs_start_pos, abs_end_pos)
+        await self.movable_logic.check_move(abs_start_pos, abs_end_pos)
 
     @AsyncStatus.wrap
     async def prepare(self, value: FlyMotorInfo):
