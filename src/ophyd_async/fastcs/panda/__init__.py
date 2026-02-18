@@ -22,6 +22,7 @@ from ._fly_logic import (
     StaticPcompTriggerLogic,
     StaticSeqTableTriggerLogic,
 )
+from ._plan_stubs import apply_panda_settings
 from ._table import (
     DatasetTable,
     PandaHdf5DatasetType,
@@ -54,4 +55,5 @@ __all__ = [
     "ScanSpecInfo",
     "ScanSpecSeqTableTriggerLogic",
     "PosOutScaleOffset",
+    "apply_panda_settings",
 ]

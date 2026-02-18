@@ -39,6 +39,7 @@ from ._ndattribute import (
     NDAttributePvDbrType,
     ndattributes_to_xml,
 )
+from ._plan_stubs import setup_ndattributes, setup_ndstats_sum
 from ._trigger_logic import ADContAcqTriggerLogic, prepare_exposures
 
 __all__ = [
@@ -82,4 +83,6 @@ __all__ = [
     "NDAttributePv",
     "NDAttributeParam",
     "ndattributes_to_xml",
+    "setup_ndattributes",
+    "setup_ndstats_sum",
 ]

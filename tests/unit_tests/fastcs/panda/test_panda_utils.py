@@ -10,12 +10,9 @@ from ophyd_async.fastcs.panda import (
     DataBlock,
     PandaTimeUnits,
     SeqTable,
-)
-from ophyd_async.plan_stubs import (
     apply_panda_settings,
-    retrieve_settings,
-    store_settings,
 )
+from ophyd_async.plan_stubs import retrieve_settings, store_settings
 
 
 async def get_mock_panda():
