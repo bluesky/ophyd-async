@@ -5,7 +5,6 @@ import pytest
 from ophyd_async.core import StaticPathProvider, init_devices
 from ophyd_async.epics import adcore, adsimdetector
 from ophyd_async.epics.core import epics_signal_r
-from ophyd_async.plan_stubs import setup_ndattributes, setup_ndstats_sum
 
 
 def test_setup_ndstats_raises_type_error(RE, static_path_provider: StaticPathProvider):
@@ -15,7 +14,7 @@ def test_setup_ndstats_raises_type_error(RE, static_path_provider: StaticPathPro
         AttributeError,
         match="det has no plugin named 'stats'",
     ):
-        RE(setup_ndstats_sum(det))
+        RE(adcore.setup_ndstats_sum(det))
 
 
 async def test_nd_attributes_plan_stub(RE):
@@ -33,7 +32,7 @@ async def test_nd_attributes_plan_stub(RE):
         description="The sample temperature",
         dbrtype=adcore.NDAttributePvDbrType.DBR_FLOAT,
     )
-    RE(setup_ndattributes(stat, [pv, param]))
+    RE(adcore.setup_ndattributes(stat, [pv, param]))
     text = await stat.nd_attributes_file.get_value()
     xml = ET.fromstring(text)
     assert xml[0].tag == "Attribute"
@@ -65,4 +64,4 @@ async def test_nd_attributes_plan_stub_gives_correct_error(RE, arg):
         match=f"Invalid type for ndattributes: {type(arg)}. "
         + "Expected NDAttributePv or NDAttributeParam.",
     ):
-        RE(setup_ndattributes(stat, [arg]))
+        RE(adcore.setup_ndattributes(stat, [arg]))

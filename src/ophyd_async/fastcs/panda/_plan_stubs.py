@@ -3,7 +3,7 @@ from bluesky.utils import MsgGenerator, plan
 from ophyd_async.core import Settings
 from ophyd_async.plan_stubs import apply_settings
 
-from ._hdf_panda import HDFPanda
+from ._detector import HDFPanda
 
 
 @plan
