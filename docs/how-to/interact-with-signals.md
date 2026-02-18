@@ -31,10 +31,6 @@ status = signal.set(value, timeout)
 # do something else here
 await status
 ```
-Rarely there are operations (like telling an EPICS motor to stop) where you have to tell the control system not to wait for the operation to complete, otherwise it will deadlock with the operation that started it moving in the first place:
-```python
-await stop_signal.set(value, wait=False)
-```
 
 ## Observe every value change
 

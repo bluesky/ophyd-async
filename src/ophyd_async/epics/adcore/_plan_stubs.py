@@ -3,9 +3,9 @@ from collections.abc import Sequence
 import bluesky.plan_stubs as bps
 from bluesky.utils import plan
 
-from ._core_detector import AreaDetector
-from ._core_io import NDArrayBaseIO, NDFileHDFIO
-from ._utils import (
+from ._detector import AreaDetector
+from ._io import NDArrayBaseIO, NDStatsIO
+from ._ndattribute import (
     NDAttributeDataType,
     NDAttributeParam,
     NDAttributePv,
@@ -15,7 +15,8 @@ from ._utils import (
 
 @plan
 def setup_ndattributes(
-    device: NDArrayBaseIO, ndattributes: Sequence[NDAttributeParam | NDAttributePv]
+    device: NDArrayBaseIO,
+    ndattributes: Sequence[NDAttributeParam | NDAttributePv],
 ):
     xml = ndattributes_to_xml(ndattributes)
     yield from bps.abs_set(
@@ -26,22 +27,16 @@ def setup_ndattributes(
 
 
 @plan
-def setup_ndstats_sum(detector: AreaDetector):
+def setup_ndstats_sum(detector: AreaDetector, stats_name: str = "stats"):
     """Set up nd stats sum nd attribute for a detector."""
-    hdf = getattr(detector, "fileio", None)
-    if not isinstance(hdf, NDFileHDFIO):
-        msg = (
-            f"Expected {detector.name} to have 'fileio' attribute that is an "
-            f"NDFileHDFIO, got {hdf}"
-        )
-        raise TypeError(msg)
+    stats = detector.get_plugin(stats_name, NDStatsIO)
     yield from (
         setup_ndattributes(
-            hdf,
+            stats,
             [
                 NDAttributeParam(
                     name=f"{detector.name}-sum",
-                    param="NDPluginStatsTotal",
+                    param="TOTAL",
                     datatype=NDAttributeDataType.DOUBLE,
                     description="Sum of the array",
                 )

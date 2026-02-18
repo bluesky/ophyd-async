@@ -780,3 +780,11 @@ def walk_signal_sources(device: Device) -> dict[str, str]:
     return {
         path: dev.source for path, dev in all_devices.items() if isinstance(dev, Signal)
     }
+
+
+class SignalDict(dict[SignalR, Any]):
+    def __getitem__(self, key: SignalR[SignalDatatypeT]) -> SignalDatatypeT:
+        return super().__getitem__(key)
+
+    def __setitem__(self, key: SignalR[SignalDatatypeT], value: SignalDatatypeT):
+        return super().__setitem__(key, value)

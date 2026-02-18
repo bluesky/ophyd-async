@@ -1,6 +1,5 @@
-from ._controller import JUNGFRAU_DEADTIME_S, JungfrauController
-from ._jungfrau import Jungfrau
-from ._signals import (
+from ._detector import JungfrauDetector
+from ._io import (
     AcquisitionType,
     DetectorStatus,
     GainMode,
@@ -8,6 +7,7 @@ from ._signals import (
     JungfrauTriggerMode,
     PedestalMode,
 )
+from ._trigger_logic import JUNGFRAU_DEADTIME_S
 from ._utils import (
     create_jungfrau_external_triggering_info,
     create_jungfrau_internal_triggering_info,
@@ -15,12 +15,11 @@ from ._utils import (
 )
 
 __all__ = [
-    "Jungfrau",
+    "JungfrauDetector",
     "DetectorStatus",
     "create_jungfrau_external_triggering_info",
     "create_jungfrau_internal_triggering_info",
     "create_jungfrau_pedestal_triggering_info",
-    "JungfrauController",
     "JungfrauDriverIO",
     "JungfrauTriggerMode",
     "AcquisitionType",
