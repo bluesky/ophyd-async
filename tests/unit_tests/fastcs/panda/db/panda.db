@@ -650,7 +650,8 @@ $(EXCLUDE_PCAP=)        }
 $(EXCLUDE_PCAP=)    })
 $(EXCLUDE_PCAP=)}
 
-
+# This EXTRA block uses the legacy PVI structure of defining vectors
+# used by pandablocks-ioc, for backwards compatibility testing purposes.
 $(INCLUDE_EXTRA_BLOCK=#)record(ao, "$(IOC_NAME=PANDAQSRV):EXTRA1:SIG1")
 $(INCLUDE_EXTRA_BLOCK=#){
 $(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
