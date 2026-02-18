@@ -198,6 +198,18 @@ class PviTree(ConfinedModel):
     )
     ```
 
+    Example 3: A device with legacy vector children
+    -----------------------------------------
+    Legacy FastCS PVI vector structure is supported, where vector children are
+    represented as:
+
+    ```json
+    {
+        "calc": {"d": {"v1": "TEST-PANDA:Calc1:PVI", "v2": "TEST-PANDA:Calc2:PVI"}},
+    }
+    ```
+    generate the same PviTree as in Example 2, excluding a PVI PV.
+
     :param pvi_pv:
         The PVI PV of the device.
 
@@ -235,14 +247,21 @@ class PviTree(ConfinedModel):
         # for example, {"device": {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}}
         entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
 
+        # Cannot have a vector of signals,
+        # so these entries are guarenteed to be dict[str, str]
         signal_details = {
             entry_name: SignalDetails.from_entry(entries.pop(entry_name))
             for entry_name in list(entries)
             if set(entries[entry_name]) != {"d"}
         }
+
         sub_trees = await gather_dict(
             {
                 entry_name: cls.build_device_tree(entry["d"], timeout)
+                if isinstance(entry["d"], str)
+                else cls._handle_legacy_device_entry(
+                    entry["d"], timeout
+                )  # Found a legacy entry, try to handle
                 for entry_name, entry in entries.items()
             }
         )
@@ -273,3 +292,35 @@ class PviTree(ConfinedModel):
             for signal_name, detail in self.signals.items()
         }
         return f"sub_devices={children}\nsignals={signals}"
+
+    @classmethod
+    async def _handle_legacy_device_entry(
+        cls, legacy_entry: dict[str, str], timeout: float
+    ) -> PviTree:
+        # Check for known legacy entry format
+        if not all(
+            re.match(r"^v(\d+)$", child_name) for child_name in legacy_entry.keys()
+        ):
+            raise ValueError(
+                f"Invalid legacy entry keys. Expected format 'v<digits>', "
+                f"got: {list(legacy_entry.keys())}"
+            )
+
+        # Build PviTree for each vector entry
+        sub_trees = await gather_dict(
+            {
+                int(entry_name.split("v")[1]): cls.build_device_tree(
+                    vector_entry, timeout
+                )
+                for entry_name, vector_entry in legacy_entry.items()
+            }
+        )
+
+        # Legacy FastCS vector cannot contain child signals,
+        # devices, or its own PVI PV.
+        return PviTree(
+            pvi_pv="",
+            signals={},
+            sub_devices={},
+            vector_children=sub_trees,
+        )
