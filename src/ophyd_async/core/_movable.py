@@ -31,7 +31,7 @@ class MovableLogic(ABC):
 
     async def calculate_timeout(
         self, old_position: float, new_position: float
-    ) -> CalculatableTimeout:
+    ) -> float | None:
         """Optional hook to calculate valid timeout for a move."""
         return None
 
