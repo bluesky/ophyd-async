@@ -446,27 +446,22 @@ class StandardDetector(
             # Setup the data logic for the right number of collections
             streamable_coros: list[Awaitable[StreamableDataProvider]] = []
             readable_coros: list[Awaitable[ReadableDataProvider]] = []
-            for data_logic in self._data_logics:
-                if _data_logic_supported(data_logic.prepare_unbounded):
+            for dl in self._data_logics:
+                if _data_logic_supported(dl.prepare_unbounded):
                     streamable_coros.append(
-                        data_logic.prepare_unbounded(
-                            self.name + data_logic.datakey_suffix
-                        )
+                        dl.prepare_unbounded(self.name + dl.datakey_suffix)
                     )
-                elif _data_logic_supported(data_logic.prepare_single):
+                elif _data_logic_supported(dl.prepare_single):
                     if trigger_info.number_of_collections > 1:
                         raise RuntimeError(
                             f"Multiple collections not supported by"
-                            f" {self.name + data_logic.datakey_suffix}"
+                            f" {self.name + dl.datakey_suffix}"
                         )
                     readable_coros.append(
-                        data_logic.prepare_single(self.name + data_logic.datakey_suffix)
+                        dl.prepare_single(self.name + dl.datakey_suffix)
                     )
                 else:
-                    msg = (
-                        "DataLogic hasn't overridden any prepare_* methods "
-                        f"{data_logic}"
-                    )
+                    msg = f"DataLogic hasn't overridden any prepare_* methods {dl}"
                     raise RuntimeError(msg)
             streamable_data_providers, readable_data_providers = await asyncio.gather(
                 asyncio.gather(*streamable_coros),

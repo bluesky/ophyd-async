@@ -170,7 +170,6 @@ class ADHDFDataLogic(DetectorDataLogic):
     writer: NDFileHDF5IO
     plugins: Sequence[NDPluginBaseIO] = ()
     datakey_suffix: str = ""
-    name: str | None = None
 
     async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
         # Work out where to write

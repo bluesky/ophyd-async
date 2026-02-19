@@ -422,7 +422,6 @@ async def test_2_rois_with_hdf(tmp_path):
                 driver=driver,
                 writer=hdf,
                 datakey_suffix=f"-roi{i}",
-                name=hdf.name,
             )
         )
     async with init_devices(mock=True):
