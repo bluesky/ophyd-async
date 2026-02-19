@@ -25,15 +25,15 @@ class MovableLogic(ABC):
     async def stop(self) -> None:
         """Stop the motion."""
 
-    @abstractmethod
     async def check_move(self, old_position: float, new_position: float) -> None:
-        """Check the move is valid."""
+        """Optional hook to check the move is valid."""
+        return None
 
-    @abstractmethod
     async def calculate_timeout(
         self, old_position: float, new_position: float
     ) -> CalculatableTimeout:
-        """Calculate valid timeout for a move."""
+        """Optional hook to calculate valid timeout for a move."""
+        return None
 
     @abstractmethod
     async def get_units_precision(self) -> tuple[str | None, int | None]:
