@@ -271,6 +271,9 @@ class DetectorDataLogic:
     that only work with step scans.
     """
 
+    # Suffix to use for datakey when multiple data logics are present
+    datakey_suffix: str = ""
+
     async def prepare_single(self, detector_name: str) -> ReadableDataProvider:
         """Provider can only work for a single event."""
         raise NotImplementedError(self)
@@ -445,13 +448,20 @@ class StandardDetector(
             readable_coros: list[Awaitable[ReadableDataProvider]] = []
             for data_logic in self._data_logics:
                 if _data_logic_supported(data_logic.prepare_unbounded):
-                    streamable_coros.append(data_logic.prepare_unbounded(self.name))
+                    streamable_coros.append(
+                        data_logic.prepare_unbounded(
+                            self.name + data_logic.datakey_suffix
+                        )
+                    )
                 elif _data_logic_supported(data_logic.prepare_single):
                     if trigger_info.number_of_collections > 1:
                         raise RuntimeError(
-                            f"Multiple collections not supported by {self.name}"
+                            f"Multiple collections not supported by"
+                            f" {self.name + data_logic.datakey_suffix}"
                         )
-                    readable_coros.append(data_logic.prepare_single(self.name))
+                    readable_coros.append(
+                        data_logic.prepare_single(self.name + data_logic.datakey_suffix)
+                    )
                 else:
                     msg = (
                         "DataLogic hasn't overridden any prepare_* methods "
@@ -672,7 +682,7 @@ class StandardDetector(
     def hints(self) -> Hints:
         fields: list[str] = []
         for dl in self._data_logics:
-            fields.extend(dl.get_hinted_fields(self.name))
+            fields.extend(dl.get_hinted_fields(self.name + dl.datakey_suffix))
         return Hints(fields=fields)
 
     async def read(self) -> dict[str, Reading]:

@@ -422,6 +422,7 @@ async def test_2_rois_with_hdf(tmp_path):
                 driver=driver,
                 writer=hdf,
                 datakey_suffix=f"-roi{i}",
+                name=hdf.name,
             )
         )
     async with init_devices(mock=True):
@@ -456,8 +457,8 @@ async def test_2_rois_with_hdf(tmp_path):
     await det.trigger()
     description = await det.describe()
     path_info = path_provider()
-    uri1 = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/det-hdf1.h5"
-    uri2 = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/det-hdf2.h5"
+    uri1 = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/det-roi1.h5"
+    uri2 = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/det-roi2.h5"
     assert description == {
         "det-roi1": {
             "dtype": "array",

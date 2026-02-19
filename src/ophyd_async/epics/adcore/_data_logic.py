@@ -170,10 +170,11 @@ class ADHDFDataLogic(DetectorDataLogic):
     writer: NDFileHDF5IO
     plugins: Sequence[NDPluginBaseIO] = ()
     datakey_suffix: str = ""
+    name: str | None = None
 
     async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(self.writer.name)
+        path_info = self.path_provider(detector_name)
         # Determine number of frames that will be saved per HDF chunk.
         # On a fresh IOC startup, this is set to zero until the first capture,
         # so if it is zero, set it to 1.
@@ -200,7 +201,7 @@ class ADHDFDataLogic(DetectorDataLogic):
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
             description=self.description,
-            data_key=detector_name + self.datakey_suffix,
+            data_key=detector_name,
             parameters={"dataset": "/entry/data/data"},
             frames_per_chunk=frames_per_chunk,
         )
@@ -233,7 +234,7 @@ class ADHDFDataLogic(DetectorDataLogic):
 
     def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
         # The main NDArray dataset is always hinted
-        return [detector_name + self.datakey_suffix]
+        return [detector_name]
 
 
 @dataclass
@@ -259,7 +260,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
 
     async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(self.writer.name)
+        path_info = self.path_provider(detector_name)
         # Setup the file writer
         await prepare_file_paths(
             path_info=path_info,
@@ -273,7 +274,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
             description=self.description,
-            data_key=detector_name + self.datakey_suffix,
+            data_key=detector_name,
             parameters={"template": path_info.filename + "_{:06d}" + self.extension},
         )
         return StreamResourceDataProvider(
@@ -290,7 +291,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
 
     def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
         # The main NDArray dataset is always hinted
-        return [detector_name + self.datakey_suffix]
+        return [detector_name]
 
 
 class ADWriterType(Enum):
