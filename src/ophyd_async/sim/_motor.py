@@ -56,10 +56,11 @@ class SimMotorMoveLogic(MovableLogic):
 
     async def _internal_sim_move(self, new_position: float) -> None:
         velocity = await self.signals.velocity.get_value()
-        old_position = await self.readback.get_value()
+        old_position = await self.signals.user_setpoint.get_value()
         if old_position == new_position:
             return
 
+        await self.signals.user_setpoint.set(new_position)
         if velocity == 0:
             self.signals.user_readback_set(new_position)
             return
