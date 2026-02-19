@@ -8,12 +8,14 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     SignalBackend,
     SignalDatatypeT,
+    SignalR,
     SignalRW,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
     get_dtype,
     get_enum_cls,
+    observe_value,
     wait_for_value,
 )
 
@@ -102,9 +104,36 @@ class EpicsSignalBackend(SignalBackend[SignalDatatypeT]):
 
 
 async def stop_busy_record(
-    signal: SignalRW[SignalDatatypeT],
-    value: SignalDatatypeT,
+    signal: SignalRW[bool],
     timeout: float = DEFAULT_TIMEOUT,
 ) -> None:
-    await signal.set(value)
-    await wait_for_value(signal, value, timeout=timeout)
+    await signal.set(False)
+    await wait_for_value(signal, False, timeout=timeout)
+
+
+async def wait_for_good_state(
+    state_signal: SignalR[SignalDatatypeT],
+    good_states: set[SignalDatatypeT],
+    message_signal: SignalR[str] | None = None,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> None:
+    """Wait for state_signal to be one of good_states within timeout."""
+    state: SignalDatatypeT | None = None
+    try:
+        async for state in observe_value(state_signal, done_timeout=timeout):
+            if state in good_states:
+                return
+    except TimeoutError as exc:
+        if state is None:
+            # No updates from the detector, maybe it is disconnected
+            raise TimeoutError(
+                f"Could not monitor state: {state_signal.source}"
+            ) from exc
+        else:
+            # No good state in time, report message if given
+            msg = f"{state_signal.source} not in a good state: {state}: "
+            if message_signal:
+                msg += await message_signal.get_value()
+            else:
+                msg += f"expected one of {good_states}"
+            raise ValueError(msg) from exc

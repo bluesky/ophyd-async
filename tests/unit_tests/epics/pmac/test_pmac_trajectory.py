@@ -12,12 +12,12 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
-from ophyd_async.epics.pmac._pmac_trajectory import (
-    PmacExecuteState,  # noqa: PLC2701
-    PmacTrajectoryTriggerLogic,  # noqa: PLC2701
+from ophyd_async.epics.pmac._pmac_trajectory import (  # noqa: PLC2701
+    PmacExecuteState,
+    PmacTrajectoryTriggerLogic,
 )
-from ophyd_async.epics.pmac._utils import (
-    _PmacMotorInfo,  # noqa: PLC2701
+from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
+    _PmacMotorInfo,
 )
 
 

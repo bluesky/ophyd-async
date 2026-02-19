@@ -210,7 +210,8 @@ class MotorBundle(Device):
 
 
 @pytest.mark.parametrize("parallel", (False, True))
-async def test_many_individual_device_connects_not_slow(parallel):
+@pytest.mark.parametrize("execution_number", range(1))
+async def test_many_individual_device_connects_not_slow(parallel, execution_number):
     start = time.monotonic()
     bundles = [MotorBundle(f"bundle{i}") for i in range(100)]
     if parallel:

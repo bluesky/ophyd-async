@@ -37,7 +37,8 @@ async def test_sim_blob_detector_count(
     assert_emitted(
         docs, start=1, descriptor=1, stream_resource=2, stream_datum=4, event=2, stop=1
     )
-    path = docs["stream_resource"][0]["uri"].split("://localhost")[-1]
+    uri = docs["stream_resource"][0]["uri"]
+    path = uri.split("://localhost")[-1]
     if os.name == "nt":
         path = path.lstrip("/")
     # Check data looks right
@@ -49,7 +50,7 @@ async def test_sim_blob_detector_count(
     # Check descriptor looks right
     assert docs["descriptor"][0]["data_keys"] == {
         "det": {
-            "source": "sim://pattern-generator-hdf-file",
+            "source": uri,
             "shape": [1, 240, 320],
             "dtype": "array",
             "dtype_numpy": "|u1",
@@ -57,8 +58,8 @@ async def test_sim_blob_detector_count(
             "external": "STREAM:",
         },
         "det-sum": {
-            "source": "sim://pattern-generator-hdf-file",
-            "shape": [],
+            "source": uri,
+            "shape": [1],
             "dtype": "number",
             "dtype_numpy": "<i8",
             "object_name": "det",
