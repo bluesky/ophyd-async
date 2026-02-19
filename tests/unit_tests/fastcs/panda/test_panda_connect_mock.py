@@ -56,7 +56,7 @@ async def panda_t():
     class Panda(CommonPandaBlocksNoData):
         def __init__(self, uri: str, name: str = ""):
             super().__init__(
-                name=name, connector=fastcs_connector(self, uri, "Is it ok?")
+                name=name, connector=fastcs_connector(uri, self, "Is it ok?")
             )
 
     yield Panda

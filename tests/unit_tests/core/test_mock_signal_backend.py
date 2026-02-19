@@ -1,6 +1,6 @@
 import asyncio
 import re
-from unittest.mock import ANY, AsyncMock, MagicMock, call
+from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
 
@@ -308,11 +308,11 @@ async def test_reset_mock_put_calls(mock_signals):
     get_mock_put(signal1).assert_called_with("test_value")
     get_mock_put(signal1).reset_mock()
     with pytest.raises(AssertionError) as exc:
-        get_mock_put(signal1).assert_called_with("test_value", wait=ANY)
+        get_mock_put(signal1).assert_called_with("test_value")
     # Replacing spaces because they change between runners
     # (e.g the github actions runner has more)
     assert str(exc.value).replace(" ", "").replace("\n", "") == (
-        "expectedcallnotfound.Expected:put('test_value',wait=<ANY>)Actual:notcalled."
+        "expectedcallnotfound.Expected:put('test_value')Actual:notcalled."
     )
 
 

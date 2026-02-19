@@ -1,5 +1,12 @@
 """The building blocks for making devices."""
 
+from ._data_providers import (
+    ReadableDataProvider,
+    SignalDataProvider,
+    StreamableDataProvider,
+    StreamResourceDataProvider,
+    StreamResourceInfo,
+)
 from ._datatypes import Array1D, DTypeScalar_co, Table, TableSubclass
 from ._derived_signal import (
     DerivedSignalFactory,
@@ -9,9 +16,10 @@ from ._derived_signal import (
 )
 from ._derived_signal_backend import Transform, merge_gathered_dicts
 from ._detector import (
-    DetectorController,
+    DetectorArmLogic,
+    DetectorDataLogic,
     DetectorTrigger,
-    DetectorWriter,
+    DetectorTriggerLogic,
     StandardDetector,
     TriggerInfo,
 )
@@ -33,7 +41,6 @@ from ._enums import (
     YesNo,
 )
 from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
-from ._hdf_dataset import HDFDatasetDescription, HDFDocumentComposer
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
@@ -46,6 +53,18 @@ from ._mock_signal_utils import (
     set_mock_values,
 )
 from ._movable import MovableLogic, StandardMovable
+from ._path_providers import (
+    AutoIncrementFilenameProvider,
+    AutoIncrementingPathProvider,
+    AutoMaxIncrementingPathProvider,
+    FilenameProvider,
+    PathInfo,
+    PathProvider,
+    StaticFilenameProvider,
+    StaticPathProvider,
+    UUIDFilenameProvider,
+    YMDPathProvider,
+)
 from ._protocol import (
     AsyncConfigurable,
     AsyncLocatable,
@@ -54,19 +73,6 @@ from ._protocol import (
     AsyncReadable,
     AsyncStageable,
     Watcher,
-)
-from ._providers import (
-    AutoIncrementFilenameProvider,
-    AutoIncrementingPathProvider,
-    AutoMaxIncrementingPathProvider,
-    DatasetDescriber,
-    FilenameProvider,
-    PathInfo,
-    PathProvider,
-    StaticFilenameProvider,
-    StaticPathProvider,
-    UUIDFilenameProvider,
-    YMDPathProvider,
 )
 from ._readable import (
     ConfigSignal,
@@ -79,6 +85,7 @@ from ._signal import (
     Ignore,
     Signal,
     SignalConnector,
+    SignalDict,
     SignalR,
     SignalRW,
     SignalW,
@@ -220,15 +227,17 @@ __all__ = [
     "walk_config_signals",
     "walk_devices",
     "walk_signal_sources",
+    "SignalDict",
     # Readable
     "StandardReadable",
     "StandardReadableFormat",
     # Detector
-    "StandardDetector",
-    "TriggerInfo",
     "DetectorTrigger",
-    "DetectorController",
-    "DetectorWriter",
+    "TriggerInfo",
+    "DetectorTriggerLogic",
+    "DetectorArmLogic",
+    "DetectorDataLogic",
+    "StandardDetector",
     # Path
     "PathInfo",
     "PathProvider",
@@ -240,10 +249,12 @@ __all__ = [
     "AutoIncrementFilenameProvider",
     "AutoMaxIncrementingPathProvider",
     "UUIDFilenameProvider",
-    # Datatset
-    "DatasetDescriber",
-    "HDFDatasetDescription",
-    "HDFDocumentComposer",
+    # Data Providers
+    "ReadableDataProvider",
+    "StreamableDataProvider",
+    "SignalDataProvider",
+    "StreamResourceInfo",
+    "StreamResourceDataProvider",
     # Flyer
     "StandardFlyer",
     "FlyMotorInfo",
