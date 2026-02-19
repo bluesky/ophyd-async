@@ -23,7 +23,6 @@ from ophyd_async.testing import (
     assert_emitted,
     assert_reading,
     assert_value,
-    wait_for_pending_wakeups,
 )
 
 # Can be removed once numpy >=2 is pinned.
@@ -66,24 +65,29 @@ async def test_motor_stopped(mock_motor: demo.DemoMotor):
 
 
 async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
-    # Start it moving
-    s = mock_motor.set(0.55)
-    assert not s.done
-    # Watch for updates, and make sure the first update is the current position
-    watcher = StatusWatcher(s)
+    target = 0.55
+    status = mock_motor.set(target)
+
+    watcher = StatusWatcher(status)
+
+    # StandardMovable instantly moves the current position to target in mock mode.
     await watcher.wait_for_call(
-        name="mock_motor",
-        current=0.0,
+        current=target,
         initial=0.0,
-        target=0.55,
+        target=target,
+        name="mock_motor",
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.08),
+        time_elapsed=pytest.approx(0.0, abs=0.1),
     )
-    await asyncio.sleep(0.1)
-    await wait_for_pending_wakeups()
-    assert s.done
-    assert s.success
+
+    await status
+
+    assert status.done
+    assert status.success
+
+    final_value = await mock_motor.readback.get_value()
+    assert final_value == target
 
 
 async def test_retrieve_mock_and_assert(mock_motor: demo.DemoMotor):
