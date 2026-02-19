@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 
-from pydantic import Field
+from pydantic import (
+    Field,
+    computed_field,
+    field_validator,
+)
 
 from ophyd_async.core import (
     ConfinedModel,
@@ -90,11 +95,32 @@ class PviDeviceConnector(DeviceConnector):
                     vector_index,
                     vector_child,
                 ) in device_sub_tree.vector_children.items():
-                    connector = self.filler.fill_child_device(
-                        device_name, vector_index=vector_index
-                    )
-                    connector.pvi_tree = vector_child
-                    connector.pvi_pv = vector_child.pvi_pv
+                    if device_sub_tree.is_signal_vector:
+                        # DeviceVector of signals
+                        if isinstance(vector_child, SignalDetails):
+                            backend = self.filler.fill_child_signal(
+                                device_name, vector_child.signal_type, vector_index
+                            )
+                            backend.read_pv = vector_child.read_pv
+                            backend.write_pv = vector_child.write_pv
+                        else:
+                            raise TypeError(
+                                "Failed to fill DeviceVector. "
+                                f"Expected SignalDetails, got {type(vector_child)}"
+                            )
+                    else:
+                        # DeviceVector of devices
+                        if isinstance(vector_child, PviTree):
+                            connector = self.filler.fill_child_device(
+                                device_name, vector_index=vector_index
+                            )
+                            connector.pvi_tree = vector_child
+                            connector.pvi_pv = vector_child.pvi_pv
+                        else:
+                            raise TypeError(
+                                "Failed to fill DeviceVector. "
+                                f"Expected PviTree, got {type(vector_child)}"
+                            )
             else:
                 # This is a Device
                 connector = self.filler.fill_child_device(device_name)
@@ -198,14 +224,17 @@ class PviTree(ConfinedModel):
     )
     ```
 
+    This is similar for vectors of signals, where `vector_children` would instead
+    be populated with `SignalDetails`
+
     Example 3: A device with legacy vector children
     -----------------------------------------
-    Legacy FastCS PVI vector structure is supported, where vector children are
-    represented as:
+    Legacy PVI vector structure is supported, for backwards compatability
+    with pandablocks-ioc, where vector children are represented as:
 
-    ```json
+    ```
     {
-        "calc": {"d": {"v1": "TEST-PANDA:Calc1:PVI", "v2": "TEST-PANDA:Calc2:PVI"}},
+        "calc": [None, {"d": "TEST-PANDA:Calc1:PVI"}, {"d": "TEST-PANDA:Calc2:PVI"}],
     }
     ```
     generate the same PviTree as in Example 2, excluding a PVI PV.
@@ -214,19 +243,24 @@ class PviTree(ConfinedModel):
         The PVI PV of the device.
 
     :param signals:
-        A dictionary mapping signal names to `SignalDetails` objects.
+        A mapping of signal names to `SignalDetails` objects.
 
     :param sub_devices:
-        A dictionary mapping sub-device names to their corresponding `PviTree` objects.
+        A mapping of sub-device names to their corresponding `PviTree` objects.
 
     :param vector_children:
-        A list of `PviTree` objects representing child devices of a vector device.
+        A mapping of int to `PviTree` objects representing child devices of a vector
+        device.
+
+    :attr is_signal_vector:
+        A computed property returning True if any child device in `vector_children`
+        is an instance of `SignalDetails`, else False.
     """
 
-    pvi_pv: str
-    signals: dict[str, SignalDetails] = Field(default={})
-    sub_devices: dict[str, PviTree] = Field(default={})
-    vector_children: dict[int, PviTree] = Field(default={})
+    pvi_pv: str = Field(default="")
+    signals: Mapping[str, SignalDetails] = Field(default_factory=dict)
+    sub_devices: Mapping[str, PviTree] = Field(default_factory=dict)
+    vector_children: Mapping[int, PviTree | SignalDetails] = Field(default_factory=dict)
 
     @classmethod
     async def build_device_tree(cls, pvi_pv: str, timeout: float) -> PviTree:
@@ -247,32 +281,30 @@ class PviTree(ConfinedModel):
         # for example, {"device": {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}}
         entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
 
-        # Cannot have a vector of signals,
-        # so these entries are guarenteed to be dict[str, str]
         signal_details = {
             entry_name: SignalDetails.from_entry(entries.pop(entry_name))
             for entry_name in list(entries)
-            if set(entries[entry_name]) != {"d"}
+            if not isinstance(entries[entry_name], list)
+            and set(entries[entry_name]) != {"d"}
         }
 
         sub_trees = await gather_dict(
             {
-                entry_name: cls.build_device_tree(entry["d"], timeout)
-                if isinstance(entry["d"], str)
-                else cls._handle_legacy_device_entry(
-                    entry["d"], timeout
-                )  # Found a legacy entry, try to handle
+                entry_name: cls._handle_legacy_entry(entry, timeout)
+                if isinstance(entry, list)  # Found a legacy entry, try to handle
+                else cls.build_device_tree(entry["d"], timeout)
                 for entry_name, entry in entries.items()
             }
         )
 
-        vector_children: dict[int, PviTree] = {}
+        vector_children: dict[int, PviTree | SignalDetails] = {}
         # Filter vector children out of stand-alone devices
-        for child_name in list(sub_trees):
-            # Check if any sub-devices are named "__#" (e.g., "__1")
-            if m := re.match(r"^__(\d+)$", child_name):
-                sub_tree = sub_trees.pop(child_name)
-                vector_children[int(m.group(1))] = sub_tree
+
+        for processed_entries in (sub_trees, signal_details):
+            for child_name in list(processed_entries):
+                if m := re.match(r"^__(\d+)$", child_name):
+                    sub_tree = processed_entries.pop(child_name)
+                    vector_children[int(m.group(1))] = sub_tree
 
         return PviTree(
             pvi_pv=pvi_pv,
@@ -280,6 +312,29 @@ class PviTree(ConfinedModel):
             sub_devices=sub_trees,
             vector_children=vector_children,
         )
+
+    @classmethod
+    async def _handle_legacy_entry(
+        cls, legacy_entry: list[None | dict[str, str]], timeout: float
+    ) -> PviTree:
+        sub_trees = await gather_dict(
+            {
+                vector_index: cls.build_device_tree(vector_entry["d"], timeout)
+                for vector_index, vector_entry in enumerate(legacy_entry)
+                if vector_entry is not None
+            }
+        )
+
+        # Legacy FastCS vector should not contain child signals,
+        # devices, or its own PVI PV.
+        return PviTree(
+            vector_children=sub_trees,
+        )
+
+    @computed_field
+    @property
+    def is_signal_vector(self) -> bool:
+        return any(isinstance(v, SignalDetails) for v in self.vector_children.values())
 
     def __str__(self) -> str:
         """Print a readable top layer of the PviTree."""
@@ -293,34 +348,25 @@ class PviTree(ConfinedModel):
         }
         return f"sub_devices={children}\nsignals={signals}"
 
+    @field_validator("vector_children")
     @classmethod
-    async def _handle_legacy_device_entry(
-        cls, legacy_entry: dict[str, str], timeout: float
-    ) -> PviTree:
-        # Check for known legacy entry format
-        if not all(
-            re.match(r"^v(\d+)$", child_name) for child_name in legacy_entry.keys()
+    def _check_consistency_of_vector_children_type(
+        cls,
+        vector_children: Mapping[int, PviTree | SignalDetails],
+    ):
+        if not (
+            all(
+                isinstance(vector_child, SignalDetails)
+                for vector_child in vector_children.values()
+            )
+            or all(
+                isinstance(vector_child, PviTree)
+                for vector_child in vector_children.values()
+            )
         ):
             raise ValueError(
-                f"Invalid legacy entry keys. Expected format 'v<digits>', "
-                f"got: {list(legacy_entry.keys())}"
+                "Failed to validate PviTree. "
+                "vector_children must all be of type `SignalDetails` or `PviTree`. "
+                f"Received mixed type: {vector_children=}"
             )
-
-        # Build PviTree for each vector entry
-        sub_trees = await gather_dict(
-            {
-                int(entry_name.split("v")[1]): cls.build_device_tree(
-                    vector_entry, timeout
-                )
-                for entry_name, vector_entry in legacy_entry.items()
-            }
-        )
-
-        # Legacy FastCS vector cannot contain child signals,
-        # devices, or its own PVI PV.
-        return PviTree(
-            pvi_pv="",
-            signals={},
-            sub_devices={},
-            vector_children=sub_trees,
-        )
+        return vector_children

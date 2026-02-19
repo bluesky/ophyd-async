@@ -592,6 +592,44 @@ record(waveform, "$(IOC_NAME=PANDAQSRV):SEQ:1:STRTABLE:COL2")
     })
 }
 
+record(stringin, "$(IOC_NAME=PANDAQSRV):TTLOUT:_PVI")
+{
+    field(VAL,  "$(IOC_NAME=PANDAQSRV):TTLOUT:PVI")
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):PVI": {
+            "value.ttlout.d": {
+                "+channel": "VAL",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
+record(stringin, "$(IOC_NAME=PANDAQSRV):TTLOUT1:VAL")
+{
+    field(VAL,  "$(IOC_NAME=PANDAQSRV):TTLOUT1:VAL")
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):TTLOUT:PVI": {
+            "value.__1.r": {
+                "+channel": "VAL",
+                "+type": "plain"
+            }
+        }
+    })
+}
+
+record(stringin, "$(IOC_NAME=PANDAQSRV):TTLOUT2:VAL")
+{
+    field(VAL,  "$(IOC_NAME=PANDAQSRV):TTLOUT2:VAL")
+    info(Q:group, {
+        "$(IOC_NAME=PANDAQSRV):TTLOUT:PVI": {
+            "value.__2.r": {
+                "+channel": "VAL",
+                "+type": "plain"
+            }
+        }
+    })
+}
 
 $(EXCLUDE_PCAP=)record(bo, "$(IOC_NAME=PANDAQSRV):PCAP:ARM")
 $(EXCLUDE_PCAP=){
@@ -670,7 +708,7 @@ $(INCLUDE_EXTRA_BLOCK=#){
 $(INCLUDE_EXTRA_BLOCK=#)    field(VAL,  "$(IOC_NAME=PANDAQSRV):EXTRA1:PVI")
 $(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
 $(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):PVI": {
-$(INCLUDE_EXTRA_BLOCK=#)            "value.extra.d.v1": {
+$(INCLUDE_EXTRA_BLOCK=#)            "value.extra[1].d": {
 $(INCLUDE_EXTRA_BLOCK=#)                "+channel": "VAL",
 $(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
 $(INCLUDE_EXTRA_BLOCK=#)            }
@@ -696,7 +734,7 @@ $(INCLUDE_EXTRA_BLOCK=#){
 $(INCLUDE_EXTRA_BLOCK=#)    field(VAL,  "$(IOC_NAME=PANDAQSRV):EXTRA2:PVI")
 $(INCLUDE_EXTRA_BLOCK=#)    info(Q:group, {
 $(INCLUDE_EXTRA_BLOCK=#)        "$(IOC_NAME=PANDAQSRV):PVI": {
-$(INCLUDE_EXTRA_BLOCK=#)            "value.extra.d.v2": {
+$(INCLUDE_EXTRA_BLOCK=#)            "value.extra[2].d": {
 $(INCLUDE_EXTRA_BLOCK=#)                "+channel": "VAL",
 $(INCLUDE_EXTRA_BLOCK=#)                "+type": "plain"
 $(INCLUDE_EXTRA_BLOCK=#)            }
