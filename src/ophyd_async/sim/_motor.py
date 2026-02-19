@@ -42,14 +42,6 @@ class SimMotorMoveLogic(MovableLogic):
         """Stop the motion."""
         await self.setpoint.set(await self.readback.get_value())
 
-    async def check_move(self, old_position: float, new_position: float) -> None:
-        """No motor validation as have no limits."""
-        pass
-
-    async def calculate_timeout(self, old_position: float, new_position: float) -> None:
-        """Timeout not required, return None."""
-        return None
-
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         """Return the units and precision."""
         return await self.signals.units.get_value(), None
