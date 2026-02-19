@@ -153,13 +153,13 @@ async def test_movable_set_calls_movable_logic_check_move_and_calculate_timeout(
     movable: StandardMovableImpl,
 ):
     mock_check_move = movable._movable_logic.check_move = AsyncMock()
-    # mock_calculate_timeout = movable._movable_logic.calculate_timeout = AsyncMock(
-    #     return_value=5
-    # )
+    mock_calculate_timeout = movable._movable_logic.calculate_timeout = AsyncMock(
+        return_value=5
+    )
     await movable.set(10)
 
     mock_check_move.assert_awaited_once_with(0, 10)
-    # mock_calculate_timeout.assert_awaited_once_with(0, 10)
+    mock_calculate_timeout.assert_awaited_once_with(0, 10)
 
 
 async def test_motor_set_with_instant_mock(
