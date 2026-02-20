@@ -271,8 +271,8 @@ class DetectorDataLogic:
     that only work with step scans.
     """
 
-    #: Add this suffix to the detector name to specify the datakey. These need to be different
-    #: for each DetectorDataLogic added to a detector
+    #: Add this suffix to the detector name to specify the datakey. These need to be
+    #: different for each DetectorDataLogic added to a detector
     datakey_suffix: str = ""
 
     async def prepare_single(self, datakey_name: str) -> ReadableDataProvider:
