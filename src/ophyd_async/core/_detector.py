@@ -278,7 +278,7 @@ class DetectorDataLogic:
         """Provider can only work for a single event."""
         raise NotImplementedError(self)
 
-    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         """Provider can work for an unbounded number of collections."""
         raise NotImplementedError(self)
 
