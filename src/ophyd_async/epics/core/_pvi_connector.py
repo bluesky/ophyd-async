@@ -317,6 +317,17 @@ class PviTree(ConfinedModel):
     async def _handle_legacy_entry(
         cls, legacy_entry: list[None | dict[str, str]], timeout: float
     ) -> PviTree:
+        """Handle legacy vector entries.
+
+        For example;
+        ```
+        {
+            "calc": [None, {"d": "TEST-PANDA:Calc1:PVI"}, {"d": "TEST-PANDA:Calc2:PVI"}]
+        }
+        ```
+
+        a `PviTree` is built for each device entry in this list.
+        """
         sub_trees = await gather_dict(
             {
                 vector_index: cls.build_device_tree(vector_entry["d"], timeout)
@@ -334,6 +345,7 @@ class PviTree(ConfinedModel):
     @computed_field
     @property
     def is_signal_vector(self) -> bool:
+        """Flags if a PviTree represents a DeviceVector of Signals or Devices."""
         return any(isinstance(v, SignalDetails) for v in self.vector_children.values())
 
     def __str__(self) -> str:
@@ -354,6 +366,7 @@ class PviTree(ConfinedModel):
         cls,
         vector_children: Mapping[int, PviTree | SignalDetails],
     ):
+        """Validates that parsed vector children are all of the same type."""
         if not (
             all(
                 isinstance(vector_child, SignalDetails)
