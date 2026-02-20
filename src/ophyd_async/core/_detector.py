@@ -274,7 +274,7 @@ class DetectorDataLogic:
     # Suffix to use for datakey when multiple data logics are present
     datakey_suffix: str = ""
 
-    async def prepare_single(self, detector_name: str) -> ReadableDataProvider:
+    async def prepare_single(self, datakey_name: str) -> ReadableDataProvider:
         """Provider can only work for a single event."""
         raise NotImplementedError(self)
 
