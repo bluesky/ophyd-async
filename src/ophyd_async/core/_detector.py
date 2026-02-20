@@ -282,7 +282,7 @@ class DetectorDataLogic:
         """Provider can work for an unbounded number of collections."""
         raise NotImplementedError(self)
 
-    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
         """Return the hinted streams."""
         return []
 
