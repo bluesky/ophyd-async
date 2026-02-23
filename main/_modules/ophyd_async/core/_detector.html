@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.17.dev2+g0454f8a26 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=640eed8f"></script>
+    <script src="../../../_static/documentation_options.js?v=4042130a"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
   
   
 </a></div>
@@ -1204,23 +1204,27 @@ window.addEventListener("load", load);</script>
 <span class="sd">    that only work with step scans.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="c1">#: Add this suffix to the detector name to specify the datakey. These need to be</span>
+    <span class="c1">#: different for each DetectorDataLogic added to a detector</span>
+    <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
 <div class="viewcode-block" id="DetectorDataLogic.prepare_single">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorDataLogic.prepare_single">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReadableDataProvider</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReadableDataProvider</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provider can only work for a single event.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DetectorDataLogic.prepare_unbounded">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorDataLogic.prepare_unbounded">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamableDataProvider</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamableDataProvider</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Provider can work for an unbounded number of collections.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DetectorDataLogic.get_hinted_fields">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorDataLogic.get_hinted_fields">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the hinted streams.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[]</span></div>
 
@@ -1403,20 +1407,22 @@ window.addEventListener("load", load);</script>
             <span class="c1"># Setup the data logic for the right number of collections</span>
             <span class="n">streamable_coros</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">StreamableDataProvider</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">readable_coros</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">ReadableDataProvider</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">data_logic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">_data_logic_supported</span><span class="p">(</span><span class="n">data_logic</span><span class="o">.</span><span class="n">prepare_unbounded</span><span class="p">):</span>
-                    <span class="n">streamable_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_logic</span><span class="o">.</span><span class="n">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
-                <span class="k">elif</span> <span class="n">_data_logic_supported</span><span class="p">(</span><span class="n">data_logic</span><span class="o">.</span><span class="n">prepare_single</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">dl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">_data_logic_supported</span><span class="p">(</span><span class="n">dl</span><span class="o">.</span><span class="n">prepare_unbounded</span><span class="p">):</span>
+                    <span class="n">streamable_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">dl</span><span class="o">.</span><span class="n">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">dl</span><span class="o">.</span><span class="n">datakey_suffix</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">_data_logic_supported</span><span class="p">(</span><span class="n">dl</span><span class="o">.</span><span class="n">prepare_single</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">trigger_info</span><span class="o">.</span><span class="n">number_of_collections</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Multiple collections not supported by </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;Multiple collections not supported by&quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dl</span><span class="o">.</span><span class="n">datakey_suffix</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
-                    <span class="n">readable_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_logic</span><span class="o">.</span><span class="n">prepare_single</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="s2">&quot;DataLogic hasn&#39;t overridden any prepare_* methods &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_logic</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">readable_coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">dl</span><span class="o">.</span><span class="n">prepare_single</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">dl</span><span class="o">.</span><span class="n">datakey_suffix</span><span class="p">)</span>
                     <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;DataLogic hasn&#39;t overridden any prepare_* methods </span><span class="si">{</span><span class="n">dl</span><span class="si">}</span><span class="s2">&quot;</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="n">streamable_data_providers</span><span class="p">,</span> <span class="n">readable_data_providers</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
                 <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">streamable_coros</span><span class="p">),</span>
@@ -1656,7 +1662,7 @@ window.addEventListener("load", load);</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hints</span><span class="p">:</span>
         <span class="n">fields</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">dl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">:</span>
-            <span class="n">fields</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">dl</span><span class="o">.</span><span class="n">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+            <span class="n">fields</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">dl</span><span class="o">.</span><span class="n">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">dl</span><span class="o">.</span><span class="n">datakey_suffix</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">Hints</span><span class="p">(</span><span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StandardDetector.read">

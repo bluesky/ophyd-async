@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
+    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.17.dev2+g0454f8a26 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=640eed8f"></script>
+    <script src="../../../../_static/documentation_options.js?v=4042130a"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
   
   
 </a></div>
@@ -937,7 +937,7 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="PluginSignalDataLogic.prepare_single">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.PluginSignalDataLogic.prepare_single">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDataProvider</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_single</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalDataProvider</span><span class="p">:</span>
         <span class="c1"># Need to wait for all the plugins to have finished before we can read</span>
         <span class="c1"># the plugin signal</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">wait_for_plugins</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
@@ -946,7 +946,7 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="PluginSignalDataLogic.get_hinted_fields">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.PluginSignalDataLogic.get_hinted_fields">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hinted</span> <span class="k">else</span> <span class="p">[]</span></div>
 </div>
 
@@ -1079,9 +1079,9 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="ADHDFDataLogic.prepare_unbounded">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADHDFDataLogic.prepare_unbounded">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamableDataProvider</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamableDataProvider</span><span class="p">:</span>
         <span class="c1"># Work out where to write</span>
-        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span><span class="p">(</span><span class="n">datakey_name</span><span class="p">)</span>
         <span class="c1"># Determine number of frames that will be saved per HDF chunk.</span>
         <span class="c1"># On a fresh IOC startup, this is set to zero until the first capture,</span>
         <span class="c1"># so if it is zero, set it to 1.</span>
@@ -1108,7 +1108,7 @@ window.addEventListener("load", load);</script>
         <span class="c1"># Return a provider that reflects what we have made</span>
         <span class="n">main_dataset</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_ndarray_resource_info</span><span class="p">(</span>
             <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
-            <span class="n">data_key</span><span class="o">=</span><span class="n">detector_name</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">datakey_suffix</span><span class="p">,</span>
+            <span class="n">data_key</span><span class="o">=</span><span class="n">datakey_name</span><span class="p">,</span>
             <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;/entry/data/data&quot;</span><span class="p">},</span>
             <span class="n">frames_per_chunk</span><span class="o">=</span><span class="n">frames_per_chunk</span><span class="p">,</span>
         <span class="p">)</span>
@@ -1145,9 +1145,9 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="ADHDFDataLogic.get_hinted_fields">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADHDFDataLogic.get_hinted_fields">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="c1"># The main NDArray dataset is always hinted</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">detector_name</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">datakey_suffix</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">datakey_name</span><span class="p">]</span></div>
 </div>
 
 
@@ -1177,9 +1177,9 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="ADMultipartDataLogic.prepare_unbounded">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADMultipartDataLogic.prepare_unbounded">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamableDataProvider</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamableDataProvider</span><span class="p">:</span>
         <span class="c1"># Work out where to write</span>
-        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span><span class="p">(</span><span class="n">datakey_name</span><span class="p">)</span>
         <span class="c1"># Setup the file writer</span>
         <span class="k">await</span> <span class="n">prepare_file_paths</span><span class="p">(</span>
             <span class="n">path_info</span><span class="o">=</span><span class="n">path_info</span><span class="p">,</span>
@@ -1193,7 +1193,7 @@ window.addEventListener("load", load);</script>
         <span class="c1"># Return a provider that reflects what we have made</span>
         <span class="n">main_dataset</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_ndarray_resource_info</span><span class="p">(</span>
             <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
-            <span class="n">data_key</span><span class="o">=</span><span class="n">detector_name</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">datakey_suffix</span><span class="p">,</span>
+            <span class="n">data_key</span><span class="o">=</span><span class="n">datakey_name</span><span class="p">,</span>
             <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="n">path_info</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;_</span><span class="si">{:06d}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">},</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">StreamResourceDataProvider</span><span class="p">(</span>
@@ -1214,9 +1214,9 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="ADMultipartDataLogic.get_hinted_fields">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADMultipartDataLogic.get_hinted_fields">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="c1"># The main NDArray dataset is always hinted</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">detector_name</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">datakey_suffix</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">datakey_name</span><span class="p">]</span></div>
 </div>
 
 

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.odin._data_logic &#8212; ophyd-async 0.17.dev1+gcc4f1d5d8 documentation</title>
+    <title>ophyd_async.fastcs.odin._data_logic &#8212; ophyd-async 0.17.dev2+g0454f8a26 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=640eed8f"></script>
+    <script src="../../../../_static/documentation_options.js?v=4042130a"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev1+gcc4f1d5d8 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
   
   
 </a></div>
@@ -924,9 +924,9 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="OdinDataLogic.prepare_unbounded">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.OdinDataLogic.prepare_unbounded">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamableDataProvider</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_unbounded</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamableDataProvider</span><span class="p">:</span>
         <span class="c1"># Work out where to write</span>
-        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span><span class="p">(</span><span class="n">detector_name</span><span class="p">)</span>
+        <span class="n">path_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path_provider</span><span class="p">(</span><span class="n">datakey_name</span><span class="p">)</span>
         <span class="c1"># Get the current bit depth</span>
         <span class="n">datatype</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;uint</span><span class="si">{</span><span class="k">await</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">detector_bit_depth</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="c1"># Setup the HDF writer</span>
@@ -951,7 +951,7 @@ window.addEventListener("load", load);</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">fp</span><span class="o">.</span><span class="n">data_dims_0</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">fp</span><span class="o">.</span><span class="n">data_dims_1</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
         <span class="p">)</span>
         <span class="n">resource</span> <span class="o">=</span> <span class="n">StreamResourceInfo</span><span class="p">(</span>
-            <span class="n">data_key</span><span class="o">=</span><span class="n">detector_name</span><span class="p">,</span>
+            <span class="n">data_key</span><span class="o">=</span><span class="n">datakey_name</span><span class="p">,</span>
             <span class="n">shape</span><span class="o">=</span><span class="n">data_shape</span><span class="p">,</span>
             <span class="n">chunk_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">data_shape</span><span class="p">),</span>
             <span class="n">dtype_numpy</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">datatype</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="p">,</span>
@@ -976,9 +976,9 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="OdinDataLogic.get_hinted_fields">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.OdinDataLogic.get_hinted_fields">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detector_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_hinted_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="c1"># The main dataset is always hinted</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">detector_name</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">datakey_name</span><span class="p">]</span></div>
 </div>
 
 </pre></div>

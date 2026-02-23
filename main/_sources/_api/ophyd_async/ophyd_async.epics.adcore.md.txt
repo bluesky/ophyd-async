@@ -1939,7 +1939,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````
 
-````{py:method} prepare_single(detector_name: str) -> ~ophyd_async.core.SignalDataProvider
+````{py:method} prepare_single(datakey_name: str) -> ~ophyd_async.core.SignalDataProvider
 :canonical: ophyd_async.epics.adcore._data_logic.PluginSignalDataLogic.prepare_single
 :async:
 
@@ -1948,7 +1948,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````
 
-````{py:method} get_hinted_fields(detector_name: str) -> ~collections.abc.Sequence[str]
+````{py:method} get_hinted_fields(datakey_name: str) -> ~collections.abc.Sequence[str]
 :canonical: ophyd_async.epics.adcore._data_logic.PluginSignalDataLogic.get_hinted_fields
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.PluginSignalDataLogic.get_hinted_fields
@@ -2031,7 +2031,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````
 
-````{py:method} prepare_unbounded(detector_name: str) -> ~ophyd_async.core.StreamableDataProvider
+````{py:method} prepare_unbounded(datakey_name: str) -> ~ophyd_async.core.StreamableDataProvider
 :canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.prepare_unbounded
 :async:
 
@@ -2049,7 +2049,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````
 
-````{py:method} get_hinted_fields(detector_name: str) -> ~collections.abc.Sequence[str]
+````{py:method} get_hinted_fields(datakey_name: str) -> ~collections.abc.Sequence[str]
 :canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.get_hinted_fields
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.get_hinted_fields
@@ -2132,7 +2132,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````
 
-````{py:method} prepare_unbounded(detector_name: str) -> ~ophyd_async.core.StreamableDataProvider
+````{py:method} prepare_unbounded(datakey_name: str) -> ~ophyd_async.core.StreamableDataProvider
 :canonical: ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.prepare_unbounded
 :async:
 
@@ -2150,7 +2150,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````
 
-````{py:method} get_hinted_fields(detector_name: str) -> ~collections.abc.Sequence[str]
+````{py:method} get_hinted_fields(datakey_name: str) -> ~collections.abc.Sequence[str]
 :canonical: ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.get_hinted_fields
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.get_hinted_fields

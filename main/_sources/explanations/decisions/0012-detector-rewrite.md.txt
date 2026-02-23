@@ -39,9 +39,9 @@ We will restructure `StandardDetector` to use composition with three separate lo
    - `disarm()` - Disarm the detector
 
 3. **`DetectorDataLogic`** - Handles data production
-   - `prepare_single(detector_name)` - Returns `ReadableDataProvider` for single-event data
-   - `prepare_unbounded(detector_name)` - Returns `StreamableDataProvider` for streaming data
-   - `get_hinted_fields(detector_name)` - Returns field names to hint
+   - `prepare_single(datakey_name)` - Returns `ReadableDataProvider` for single-event data
+   - `prepare_unbounded(datakey_name)` - Returns `StreamableDataProvider` for streaming data
+   - `get_hinted_fields(datakey_name)` - Returns field names to hint
    - `stop()` - Stop data acquisition
 
 ### Data Provider Classes
@@ -149,7 +149,7 @@ class ADHDFWriter(DetectorWriter):
         
 # new
 class ADHDFDataLogic(DetectorDataLogic):
-    async def prepare_unbounded(self, detector_name: str):
+    async def prepare_unbounded(self, datakey_name: str):
         # Setup file writing  
         return StreamResourceDataProvider(...)
 ```

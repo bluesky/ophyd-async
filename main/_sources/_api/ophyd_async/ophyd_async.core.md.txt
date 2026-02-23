@@ -2287,7 +2287,17 @@ Bases: {py:obj}`abc.ABC`
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorDataLogic
 ```
 
-````{py:method} prepare_single(detector_name: str) -> ~ophyd_async.core._data_providers.ReadableDataProvider
+````{py:attribute} datakey_suffix
+:canonical: ophyd_async.core._detector.DetectorDataLogic.datakey_suffix
+:type: str
+:value: <Multiline-String>
+
+```{autodoc2-docstring} ophyd_async.core._detector.DetectorDataLogic.datakey_suffix
+```
+
+````
+
+````{py:method} prepare_single(datakey_name: str) -> ~ophyd_async.core._data_providers.ReadableDataProvider
 :canonical: ophyd_async.core._detector.DetectorDataLogic.prepare_single
 :abstractmethod:
 :async:
@@ -2297,7 +2307,7 @@ Bases: {py:obj}`abc.ABC`
 
 ````
 
-````{py:method} prepare_unbounded(detector_name: str) -> ~ophyd_async.core._data_providers.StreamableDataProvider
+````{py:method} prepare_unbounded(datakey_name: str) -> ~ophyd_async.core._data_providers.StreamableDataProvider
 :canonical: ophyd_async.core._detector.DetectorDataLogic.prepare_unbounded
 :abstractmethod:
 :async:
@@ -2307,7 +2317,7 @@ Bases: {py:obj}`abc.ABC`
 
 ````
 
-````{py:method} get_hinted_fields(detector_name: str) -> ~collections.abc.Sequence[str]
+````{py:method} get_hinted_fields(datakey_name: str) -> ~collections.abc.Sequence[str]
 :canonical: ophyd_async.core._detector.DetectorDataLogic.get_hinted_fields
 
 ```{autodoc2-docstring} ophyd_async.core._detector.DetectorDataLogic.get_hinted_fields
@@ -2577,7 +2587,7 @@ Bases: {py:obj}`ophyd_async.core._path_providers.PathProvider`
 
 ````
 
-````{py:class} YMDPathProvider(filename_provider: ~ophyd_async.core._path_providers.FilenameProvider, base_directory_path: ~pathlib.PurePath, base_directory_uri: str | None = None, create_dir_depth: int = -3, device_name_as_base_dir: bool = False)
+````{py:class} YMDPathProvider(filename_provider: ~ophyd_async.core._path_providers.FilenameProvider, base_directory_path: ~pathlib.PurePath, base_directory_uri: str | None = None, create_dir_depth: int = -3, datakey_name_as_base_dir: bool = False)
 :canonical: ophyd_async.core._path_providers.YMDPathProvider
 
 Bases: {py:obj}`ophyd_async.core._path_providers.PathProvider`

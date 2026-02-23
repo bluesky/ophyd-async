@@ -315,7 +315,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 ```{autodoc2-docstring} ophyd_async.fastcs.odin._data_logic.OdinDataLogic
 ```
 
-````{py:method} prepare_unbounded(detector_name: str) -> ~ophyd_async.core.StreamableDataProvider
+````{py:method} prepare_unbounded(datakey_name: str) -> ~ophyd_async.core.StreamableDataProvider
 :canonical: ophyd_async.fastcs.odin._data_logic.OdinDataLogic.prepare_unbounded
 :async:
 
@@ -333,7 +333,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````
 
-````{py:method} get_hinted_fields(detector_name: str) -> ~collections.abc.Sequence[str]
+````{py:method} get_hinted_fields(datakey_name: str) -> ~collections.abc.Sequence[str]
 :canonical: ophyd_async.fastcs.odin._data_logic.OdinDataLogic.get_hinted_fields
 
 ```{autodoc2-docstring} ophyd_async.fastcs.odin._data_logic.OdinDataLogic.get_hinted_fields
