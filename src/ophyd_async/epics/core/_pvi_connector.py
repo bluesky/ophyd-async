@@ -357,12 +357,34 @@ class PviTree(ConfinedModel):
     def __str__(self) -> str:
         """Print a readable top layer of the PviTree."""
         children = {
-            child_name: tree.pvi_pv
-            for child_name, tree in {**self.sub_devices, **self.vector_children}.items()
+            **{
+                child_name: tree.pvi_pv for child_name, tree in self.sub_devices.items()
+            },
+            **{
+                child_name: vector_child.pvi_pv
+                for child_name, vector_child in self.vector_children.items()
+                if isinstance(vector_child, PviTree)
+            },
         }
+
         signals = {
-            signal_name: (detail.signal_type.__name__, detail.read_pv, detail.write_pv)
-            for signal_name, detail in self.signals.items()
+            **{
+                signal_name: (
+                    detail.signal_type.__name__,
+                    detail.read_pv,
+                    detail.write_pv,
+                )
+                for signal_name, detail in self.signals.items()
+            },
+            **{
+                signal_name: (
+                    vector_child.signal_type.__name__,
+                    vector_child.read_pv,
+                    vector_child.write_pv,
+                )
+                for signal_name, vector_child in self.vector_children.items()
+                if isinstance(vector_child, SignalDetails)
+            },
         }
         return f"sub_devices={children}\nsignals={signals}"
 
