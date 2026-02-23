@@ -6,11 +6,11 @@ from ophyd_async.core import SubsetEnum
 from ophyd_async.epics.core import epics_signal_rw
 
 # Allow these imports from private modules for tests
-from ophyd_async.epics.core._aioca import (
-    make_converter as ca_make_converter,  # noqa: PLC2701
+from ophyd_async.epics.core._aioca import (  # noqa: PLC2701
+    make_converter as ca_make_converter,
 )
-from ophyd_async.epics.core._p4p import (
-    make_converter as pva_make_converter,  # noqa: PLC2701
+from ophyd_async.epics.core._p4p import (  # noqa: PLC2701
+    make_converter as pva_make_converter,
 )
 
 

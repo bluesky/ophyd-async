@@ -11,7 +11,7 @@ When writing a new Device there are several base classes to choose from that wil
 There are some utility baseclasses that allow you to create a Device pre-populated with the right verbs to work in bluesky plans:
 
 - [](#StandardReadable) allows you to compose the values of child Signals and Devices together so that you can `read()` the Device during a step scan.
-- [](#StandardDetector) allows file-writing detectors to be used within both step and fly scans, reporting periodic references to the data that has been written so far. An instance of a [](#DetectorController) and a [](#DetectorWriter) are required to provide this functionality.
+- [](#StandardDetector) allows file-writing detectors to be used within both step and fly scans, reporting periodic references to the data that has been written so far. Instances of [](#DetectorTriggerLogic), [](#DetectorArmLogic), and [](#DetectorDataLogic) are composed together to provide this functionality. This separation of concerns makes it easy to mix and match different trigger modes, arming strategies, and data outputs.
 - [](#StandardFlyer) allows actuators (like a motor controller) to be used within a fly scan. Implementing a [](#FlyerController) is required to provide this functionality.
 
 ## Adding verbs via protocols
