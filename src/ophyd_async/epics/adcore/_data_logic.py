@@ -41,13 +41,13 @@ class PluginSignalDataLogic(DetectorDataLogic):
     signal: SignalR
     hinted: bool = True
 
-    async def prepare_single(self, detector_name: str) -> SignalDataProvider:
+    async def prepare_single(self, datakey_name: str) -> SignalDataProvider:
         # Need to wait for all the plugins to have finished before we can read
         # the plugin signal
         await self.driver.wait_for_plugins.set(True)
         return SignalDataProvider(self.signal)
 
-    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
         return [self.signal.name] if self.hinted else []
 
 
@@ -171,9 +171,9 @@ class ADHDFDataLogic(DetectorDataLogic):
     plugins: Sequence[NDPluginBaseIO] = ()
     datakey_suffix: str = ""
 
-    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(self.writer.name)
+        path_info = self.path_provider(datakey_name)
         # Determine number of frames that will be saved per HDF chunk.
         # On a fresh IOC startup, this is set to zero until the first capture,
         # so if it is zero, set it to 1.
@@ -200,7 +200,7 @@ class ADHDFDataLogic(DetectorDataLogic):
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
             description=self.description,
-            data_key=detector_name + self.datakey_suffix,
+            data_key=datakey_name,
             parameters={"dataset": "/entry/data/data"},
             frames_per_chunk=frames_per_chunk,
         )
@@ -231,9 +231,9 @@ class ADHDFDataLogic(DetectorDataLogic):
     async def stop(self) -> None:
         await stop_busy_record(self.writer.capture)
 
-    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
         # The main NDArray dataset is always hinted
-        return [detector_name + self.datakey_suffix]
+        return [datakey_name]
 
 
 @dataclass
@@ -257,9 +257,9 @@ class ADMultipartDataLogic(DetectorDataLogic):
     mimetype: str
     datakey_suffix: str = ""
 
-    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(self.writer.name)
+        path_info = self.path_provider(datakey_name)
         # Setup the file writer
         await prepare_file_paths(
             path_info=path_info,
@@ -273,7 +273,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
         # Return a provider that reflects what we have made
         main_dataset = await get_ndarray_resource_info(
             description=self.description,
-            data_key=detector_name + self.datakey_suffix,
+            data_key=datakey_name,
             parameters={"template": path_info.filename + "_{:06d}" + self.extension},
         )
         return StreamResourceDataProvider(
@@ -288,9 +288,9 @@ class ADMultipartDataLogic(DetectorDataLogic):
     async def stop(self) -> None:
         await stop_busy_record(self.writer.capture)
 
-    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
         # The main NDArray dataset is always hinted
-        return [detector_name + self.datakey_suffix]
+        return [datakey_name]
 
 
 class ADWriterType(Enum):
