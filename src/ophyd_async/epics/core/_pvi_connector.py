@@ -14,6 +14,7 @@ from ophyd_async.core import (
     Device,
     DeviceConnector,
     DeviceFiller,
+    DeviceVector,
     LazyMock,
     Signal,
     SignalR,
@@ -80,17 +81,16 @@ class PviDeviceConnector(DeviceConnector):
             self.pvi_tree = await PviTree.build_device_tree(
                 pvi_pv=self.pvi_pv, timeout=timeout
             )
-        # Fill all signals
-        for signal_name, signal_details in self.pvi_tree.signals.items():
-            backend = self.filler.fill_child_signal(
-                signal_name, signal_details.signal_type, None
-            )
-            backend.read_pv = signal_details.read_pv
-            backend.write_pv = signal_details.write_pv
         # Fill all sub devices
         for device_name, device_sub_tree in self.pvi_tree.sub_devices.items():
             if device_sub_tree.vector_children:
                 # This is a DeviceVector
+                # Fill DeviceVector, then handle its vector children
+                connector = self.filler.fill_child_device(
+                    device_name, device_type=DeviceVector
+                )
+                connector.pvi_tree = device_sub_tree
+                connector.pvi_pv = device_sub_tree.pvi_pv
                 for (
                     vector_index,
                     vector_child,
@@ -126,6 +126,13 @@ class PviDeviceConnector(DeviceConnector):
                 connector = self.filler.fill_child_device(device_name)
                 connector.pvi_tree = device_sub_tree
                 connector.pvi_pv = device_sub_tree.pvi_pv
+        # Fill all signals
+        for signal_name, signal_details in self.pvi_tree.signals.items():
+            backend = self.filler.fill_child_signal(
+                signal_name, signal_details.signal_type, None
+            )
+            backend.read_pv = signal_details.read_pv
+            backend.write_pv = signal_details.write_pv
 
         # Check that all the requested children have been filled
         suffix = f"\n{self.error_hint}" if self.error_hint else ""
@@ -280,7 +287,6 @@ class PviTree(ConfinedModel):
         # these entries are stored under the parent PVI structure name
         # for example, {"device": {"d": "Prefix:Device:PVI", "rw": "Prefix:A"}}
         entries: dict[str, dict[str, str]] = pvi_structure["value"].todict()
-
         signal_details = {
             entry_name: SignalDetails.from_entry(entries.pop(entry_name))
             for entry_name in list(entries)

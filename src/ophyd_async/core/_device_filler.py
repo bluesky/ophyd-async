@@ -30,10 +30,19 @@ LogicalName = NewType("LogicalName", str)
 
 
 def _get_datatype(annotation: Any) -> type | None:
-    """Return int from SignalRW[int]."""
+    """Return int from SignalRW[int] or CustomList[list[int]]."""
     args = get_args(annotation)
     if len(args) == 1 and get_origin_class(args[0]):
         return args[0]
+
+    # Handle sub-classes of generic classes
+    for base in getattr(annotation, "__orig_bases__", ()):
+        origin = get_origin_class(base)
+        if origin:
+            base_args = get_args(base)
+            if len(base_args) == 1 and get_origin_class(base_args[0]):
+                return base_args[0]
+
     return None
 
 
@@ -149,7 +158,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             if issubclass(origin, Signal):
                 self._store_signal_datatype(name, annotation)
                 self._uncreated_signals[name] = origin
-            elif origin == DeviceVector:
+            elif origin == DeviceVector or issubclass(origin, DeviceVector):
                 child_type = _get_datatype(annotation)
                 child_origin = get_origin_class(child_type)
                 if child_origin is None or not issubclass(child_origin, Device):
@@ -160,7 +169,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 if issubclass(child_origin, Signal):
                     self._store_signal_datatype(name, child_type)
                 self._vector_device_type[_logical(name)] = child_origin
-                setattr(self._device, name, DeviceVector({}))
+                self._uncreated_devices[name] = origin
             else:
                 self._uncreated_devices[name] = origin
 
@@ -243,6 +252,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             if not cls:
                 msg = "Malformed device vector"
                 raise TypeError(msg)
+            # Fill DeviceVector
+            self.fill_child_device(name, cls)
+            # Then handle children
             for i in range(1, num + 1):
                 if issubclass(cls, Signal):
                     self.fill_child_signal(name, cls, i)
@@ -271,10 +283,6 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             )
 
     def _ensure_device_vector(self, name: LogicalName) -> DeviceVector:
-        if not hasattr(self._device, name):
-            # We have no type hints, so use whatever we are told
-            self._vector_device_type[name] = None
-            setattr(self._device, name, DeviceVector({}))
         vector = getattr(self._device, name)
         if not isinstance(vector, DeviceVector):
             self._raise(name, f"Expected DeviceVector, got {vector}")
@@ -327,7 +335,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     def fill_child_device(
         self,
         name: str,
-        device_type: type[Device] = Device,
+        device_type: type[Device | DeviceVector] = Device,
         vector_index: int | None = None,
     ) -> DeviceConnectorT:
         """Mark a Device as filled, and return its connector for filling.
@@ -346,7 +354,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         elif name in self._filled_backends:
             # We made it and filled it so return for validation
             connector = self._filled_connectors[name]
-        elif vector_index:
+        elif vector_index is not None:
             # We need to add a new entry to a DeviceVector
             vector = self._ensure_device_vector(name)
             vector_device_type = self._vector_device_type[name] or device_type
@@ -358,8 +366,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
+        elif device_type is DeviceVector:
+            # We need to add a new child DeviceVector to the top level Device
+            self._vector_device_type[name] = None
+            connector = self._device_connector_factory()
+            setattr(self._device, name, device_type(connector=connector, children={}))
         else:
-            # We need to add a new child to the top level Device
+            # We need to add a new child Device to the top level Device
             connector = self._device_connector_factory()
             setattr(self._device, name, device_type(connector=connector))
         return connector

@@ -290,20 +290,13 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
 
     def __init__(
         self,
-        children: Mapping[int, DeviceT],
+        children: Mapping[int, DeviceT] | None = None,
         name: str = "",
+        connector: DeviceConnector | None = None,
     ) -> None:
         self._children: dict[int, DeviceT] = {}
-        self.update(children)
-        super().__init__(name=name)
-
-    def __setattr__(self, name: str, child: Any) -> None:
-        if name != "parent" and isinstance(child, Device):
-            raise AttributeError(
-                "DeviceVector can only have integer named children, "
-                "set via device_vector[i] = child"
-            )
-        super().__setattr__(name, child)
+        self.update(children) if children else self.update({})
+        super().__init__(name=name, connector=connector)
 
     def __getitem__(self, key: int) -> DeviceT:
         return self._children[key]
