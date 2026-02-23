@@ -9,6 +9,7 @@ from ._assert import (
     assert_configuration,
     assert_describe_signal,
     assert_emitted,
+    assert_has_calls,
     assert_reading,
     assert_value,
     partial_reading,
@@ -83,4 +84,5 @@ __all__ = [
     "Exploder",
     "MovableBeamstop",
     "ReadOnlyBeamstop",
+    "assert_has_calls",
 ]
