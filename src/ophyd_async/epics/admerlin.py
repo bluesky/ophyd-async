@@ -42,6 +42,10 @@ class MerlinTriggerMode(StrictEnum):
     TRIGGER_START_RISING = "Trigger start rising"
     TRIGGER_START_FALLING = "Trigger start falling"
     TRIGGER_BOTH_RISING = "Trigger both rising"
+    LVDS_TRIG_ENABLE = "LVDS Trig Enable"
+    LVDS_TRIG_START_RISING = "LVDS Trig start rising"
+    LVDS_TRIG_START_FALLING = "LVDS Trig start falling"
+    LVDS_TRIG_BOTH_RISING = "LVDS Trig both rising"
     SOFTWARE = "Software"
 
 
