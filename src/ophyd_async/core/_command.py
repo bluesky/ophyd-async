@@ -79,7 +79,8 @@ class Command(Device, Generic[P, T]):
         """Returns the source of the command."""
         return self._connector.backend.source(self.name)
 
-    async def _execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
+    @AsyncStatus.wrap
+    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Implementation for executing the backend (awaited by AsyncStatus)."""
         self.log.debug(f"Executing command {self.name}")
         result = await _wait_for(
@@ -87,10 +88,6 @@ class Command(Device, Generic[P, T]):
         )
         self.log.debug(f"Command {self.name} returned {result}")
         return result
-
-    def execute(self, *args: P.args, **kwargs: P.kwargs) -> AsyncStatus:
-        """Execute the command and return an AsyncStatus for completion."""
-        return AsyncStatus(self._execute(*args, **kwargs), name=self.name)
 
 
 class SoftCommandBackend(CommandBackend[P, T]):
