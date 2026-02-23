@@ -325,7 +325,6 @@ class AttributeProxy(TangoProxy):
                 )  # type: ignore
         except Exception as exc:
             logger.debug(f"Subscribe to event failed: {exc}")
-            raise RuntimeError(f"Subscribe to event failed: {exc}") from exc
 
     def subscribe_callback(self, callback: Callback | None):
         # If the attribute supports events, then we can subscribe to them

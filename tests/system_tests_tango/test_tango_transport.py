@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import re
 from collections.abc import Sequence
 from typing import Any
@@ -859,3 +860,21 @@ async def test_type_mismatch_longstringarray(tango_test_device):
     assert "has type" in val
     assert "TangoLongStringTable" in val
     assert "TangoDoubleStringTable" in val
+
+
+@pytest.mark.asyncio
+async def test_attribute_subscribe_event_fail(tango_test_device, caplog):
+    device_proxy = await DeviceProxy(tango_test_device)
+    attr_proxy = AttributeProxy(device_proxy, "nonexistent")
+    attr_proxy.support_events = True
+
+    def callback(reading, value):
+        pass
+
+    with caplog.at_level(logging.DEBUG, logger="ophyd_async"):
+        attr_proxy.subscribe_callback(callback)
+        await asyncio.sleep(0.1)
+
+    assert any(
+        "Subscribe to event failed" in record.message for record in caplog.records
+    )
