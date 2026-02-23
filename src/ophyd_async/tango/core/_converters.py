@@ -1,10 +1,9 @@
-from collections.abc import Sequence
 from typing import Any, Generic
 
 import numpy as np
 from numpy.typing import NDArray
+from tango import DevState
 
-# from tango import DevState
 from ophyd_async.core import SignalDatatypeT
 
 from ._utils import DevStateEnum
@@ -49,11 +48,11 @@ class TangoEnumArrayConverter(TangoConverter):
 class TangoDevStateConverter(TangoConverter):
     _labels = [e.value for e in DevStateEnum]
 
-    def write_value(self, value: str) -> DevStateEnum:
+    def write_value(self, value: str) -> DevState:
         idx = self._labels.index(value)
-        return DevStateEnum(idx)
+        return DevState(idx)
 
-    def value(self, value: DevStateEnum) -> str:
+    def value(self, value: DevState) -> str:
         idx = int(value)
         return self._labels[idx]
 
@@ -62,17 +61,17 @@ class TangoDevStateArrayConverter(TangoConverter):
     _labels = [e.value for e in DevStateEnum]
 
     def _write_convert(self, value):
-        return DevStateEnum(self._labels.index(value))
+        return DevState(self._labels.index(value))
 
     def _convert(self, value):
         return self._labels[int(value)]
 
-    def write_value(self, value: NDArray[np.str_]) -> Sequence[DevStateEnum]:
-        vfunc = np.vectorize(self._write_convert, otypes=[DevStateEnum])
+    def write_value(self, value: NDArray[np.str_]) -> NDArray[np.int_]:
+        vfunc = np.vectorize(self._write_convert, otypes=[DevState])
         new_array = vfunc(value)
         return new_array
 
-    def value(self, value: Sequence[DevStateEnum]) -> NDArray[np.str_]:
+    def value(self, value: NDArray[np.int_]) -> NDArray[np.str_]:
         vfunc = np.vectorize(self._convert)
         new_array = vfunc(value)
         return new_array

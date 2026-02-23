@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import partial
 from typing import Any, Generic, TypeVar
 
 from tango import DeviceProxy
@@ -26,7 +25,7 @@ class TangoDevice(Device):
     """
 
     trl: str = ""
-    proxy: partial[DeviceProxy] | DeviceProxy | None = None
+    proxy: DeviceProxy | None = None
 
     def __init__(
         self,
@@ -73,7 +72,7 @@ def fill_backend_with_polling(
 class TangoDeviceConnector(DeviceConnector):
     def __init__(
         self,
-        trl: str,
+        trl: str | None,
         support_events: bool,
         auto_fill_signals: bool = True,
     ) -> None:
@@ -90,7 +89,7 @@ class TangoDeviceConnector(DeviceConnector):
                 device=device,
                 signal_backend_factory=TangoSignalBackend,
                 device_connector_factory=lambda: TangoDeviceConnector(
-                    "", self._support_events
+                    None, self._support_events
                 ),
             )
             list(self.filler.create_devices_from_annotations(filled=False))
@@ -108,18 +107,14 @@ class TangoDeviceConnector(DeviceConnector):
         return await super().connect_mock(device, mock)
 
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
-        if not isinstance(self.proxy, DeviceProxy):
-            if not self.trl:
-                raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
-            # AsyncDeviceProxy is an awaitable partial that returns a real
-            # DeviceProxy which itself is not awaitable. Not sure if typing
-            # is solvable here.
-            self.proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
+        if not self.trl:
+            raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
+        self.proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
         children = sorted(
             set()
             .union(self.proxy.get_attribute_list())
             .union(self.proxy.get_command_list())
-        )
+        )  # type: ignore
 
         children = [
             child for child in children if child not in self.filler.ignored_signals

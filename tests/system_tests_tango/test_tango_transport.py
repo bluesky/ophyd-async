@@ -145,8 +145,16 @@ def test_get_python_type(tango_type, tango_format, expected):
         assert issubclass(py_type, StrictEnum)
         assert [e.name for e in py_type] == list(DevState.names.keys())
     elif tango_type is not float:
-        print(f"CONFIG: {config.data_type}, {config.data_format}")
-        assert get_python_type(config) == expected
+        if (
+            tango_format is AttrDataFormat.IMAGE
+            and tango_type is CmdArgType.DevVarStringArray
+        ):
+            with pytest.raises(TypeError) as exc:
+                get_python_type(config)
+            assert str(exc.value) == "Images of type str or enum are not supported"
+        else:
+            assert get_python_type(config) == expected
+        return
     else:
         if tango_format == "bad_format":
             with pytest.raises(TypeError) as exc:
