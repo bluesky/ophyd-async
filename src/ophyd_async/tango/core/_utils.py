@@ -21,9 +21,10 @@ class DevStateEnum(StrictEnum):
     UNKNOWN = "UNKNOWN"
 
 
-def get_full_attr_trl(device_trl: str, attr_name: str):
+def get_full_attr_trl(device_trl: str, attr_name: str) -> str:
     device_parts = device_trl.split("#", 1)
-    # my/device/name#dbase=no splits into my/device/name and dbase=no
+    # my/device/name#dbase=no splits into my/device/name and
+    # dbase=no
     full_trl = device_parts[0] + "/" + attr_name
     if len(device_parts) > 1:
         full_trl += "#" + device_parts[1]
