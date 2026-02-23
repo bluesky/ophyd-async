@@ -74,6 +74,7 @@ async def test_soft_command_execution(datatype, value):
 
     backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
+    assert cmd._connector.backend.get_return_type() == datatype
     await cmd.connect()
     status = cmd.execute(value)
     await status
@@ -149,12 +150,16 @@ async def test_mock_command_backend():
     # Test 3: Verify connect raises error
     with pytest.raises(NotConnectedError):
         await cmd._connector.backend.connect(1.0)
-    # Test 4: Verify mock is lazy-initialized
+    # Test 4: Verify mock is lazy-initialized and returns default for return type
     new_cmd = Command(backend, name="new_cmd")
     await new_cmd.connect(mock=mock)
     assert "execute_mock" not in new_cmd._connector.backend.__dict__
-    await new_cmd.execute(5, "lazy")
+    status = new_cmd.execute(5, "lazy")
+    await status
+    assert status.value == ""
     assert "execute_mock" in new_cmd._connector.backend.__dict__
+    # Test 5 verify return type
+    assert new_cmd._connector.backend.get_return_type() is str
 
 
 async def test_soft_command_factory():

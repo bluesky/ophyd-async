@@ -35,6 +35,10 @@ class CommandBackend(Generic[P, T_co]):
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T_co:
         """Execute the command and return its result."""
 
+    @abstractmethod
+    def get_return_type(self) -> type[T_co] | None:
+        """Return the return type of the command, or None if it returns None."""
+
 
 class CommandConnector(DeviceConnector):
     """A connector for a Command."""
@@ -98,6 +102,7 @@ class SoftCommandBackend(CommandBackend[P, T]):
         self._lock = asyncio.Lock()
         self._sig = inspect.signature(command_cb)
         self._params = list(self._sig.parameters.values())
+        self._return_type = self._sig.return_annotation
         for p in self._params:
             if p.kind in (
                 inspect.Parameter.VAR_POSITIONAL,
@@ -177,6 +182,9 @@ class SoftCommandBackend(CommandBackend[P, T]):
                 result = await result
             return cast(T, result)
 
+    def get_return_type(self) -> type[T] | None:
+        return self._command_return
+
 
 class MockCommandBackend(CommandBackend[P, T]):
     """A backend for a Command that uses a mock for testing."""
@@ -185,6 +193,16 @@ class MockCommandBackend(CommandBackend[P, T]):
         self._initial_backend = initial_backend
         self._mock = mock
         self._mock_execute_callback: Callable[P, Awaitable[T]] | None = None
+        self._return_type = initial_backend.get_return_type()
+        self._return_converter: SoftConverter | None = (
+            make_converter(self._return_type) if self._return_type is not None else None
+        )
+
+    def source(self, name: str) -> str:
+        return f"mock+{self._initial_backend.source(name)}"
+
+    def get_return_type(self) -> type[T] | None:
+        return self._return_type
 
     def set_mock_execute_callback(self, callback: Callable[P, Awaitable[T]] | None):
         """Set a callback that will be called when the command is executed."""
@@ -202,23 +220,23 @@ class MockCommandBackend(CommandBackend[P, T]):
         execute_mock = AsyncMock(
             name="execute",
             spec=Callable[P, Awaitable[T]],
-            side_effect=self._mock_execute_callback,
+            side_effect=self._mock_execute_callback
+            if self._mock_execute_callback
+            else lambda *args, **kwargs: None,
         )
         self._mock().attach_mock(execute_mock, "execute")
         return execute_mock
 
-    def source(self, name: str) -> str:
-        """Return the source of the mocked command."""
-        return f"mock+{self._initial_backend.source(name)}"
+    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
+        """Execute the mock command."""
+        result = await self.execute_mock(*args, **kwargs)
+        if result is None and self._return_converter is not None:
+            result = self._return_converter.write_value(None)
+        return cast(T, result)
 
     async def connect(self, timeout: float):
         """Mock backend does not support real connection."""
         raise NotConnectedError("It is not possible to connect a MockCommandBackend")
-
-    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Execute the mock command."""
-        result = await self.execute_mock(*args, **kwargs)
-        return cast(T, result)
 
 
 def soft_command(
