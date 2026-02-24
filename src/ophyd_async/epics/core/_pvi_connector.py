@@ -68,7 +68,10 @@ class PviDeviceConnector(DeviceConnector):
             self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock):
-        self.filler.create_device_vector_entries_to_mock(self.mock_device_vector_len)
+        if isinstance(device, DeviceVector):
+            self.filler.create_device_vector_entries_to_mock(
+                self.mock_device_vector_len
+            )
         # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_mock(device, mock)
@@ -81,51 +84,54 @@ class PviDeviceConnector(DeviceConnector):
             self.pvi_tree = await PviTree.build_device_tree(
                 pvi_pv=self.pvi_pv, timeout=timeout
             )
+
         # Fill all sub devices
         for device_name, device_sub_tree in self.pvi_tree.sub_devices.items():
             if device_sub_tree.vector_children:
                 # This is a DeviceVector
-                # Fill DeviceVector, then handle its vector children
                 connector = self.filler.fill_child_device(
                     device_name, device_type=DeviceVector
                 )
                 connector.pvi_tree = device_sub_tree
                 connector.pvi_pv = device_sub_tree.pvi_pv
-                for (
-                    vector_index,
-                    vector_child,
-                ) in device_sub_tree.vector_children.items():
-                    if device_sub_tree.is_signal_vector:
-                        # DeviceVector of signals
-                        if isinstance(vector_child, SignalDetails):
-                            backend = self.filler.fill_child_signal(
-                                device_name, vector_child.signal_type, vector_index
-                            )
-                            backend.read_pv = vector_child.read_pv
-                            backend.write_pv = vector_child.write_pv
-                        else:
-                            raise TypeError(
-                                "Failed to fill DeviceVector. "
-                                f"Expected SignalDetails, got {type(vector_child)}"
-                            )
-                    else:
-                        # DeviceVector of devices
-                        if isinstance(vector_child, PviTree):
-                            connector = self.filler.fill_child_device(
-                                device_name, vector_index=vector_index
-                            )
-                            connector.pvi_tree = vector_child
-                            connector.pvi_pv = vector_child.pvi_pv
-                        else:
-                            raise TypeError(
-                                "Failed to fill DeviceVector. "
-                                f"Expected PviTree, got {type(vector_child)}"
-                            )
             else:
                 # This is a Device
                 connector = self.filler.fill_child_device(device_name)
                 connector.pvi_tree = device_sub_tree
                 connector.pvi_pv = device_sub_tree.pvi_pv
+
+        # Fill all vector sub-device
+        for (
+            vector_index,
+            vector_child,
+        ) in self.pvi_tree.vector_children.items():
+            if self.pvi_tree.is_signal_vector:
+                # DeviceVector of signals
+                if isinstance(vector_child, SignalDetails):
+                    backend = self.filler.fill_child_signal(
+                        device.name, vector_child.signal_type, vector_index
+                    )
+                    backend.read_pv = vector_child.read_pv
+                    backend.write_pv = vector_child.write_pv
+                else:
+                    raise TypeError(
+                        "Failed to fill DeviceVector. "
+                        f"Expected SignalDetails, got {type(vector_child)}"
+                    )
+            else:
+                # DeviceVector of devices
+                if isinstance(vector_child, PviTree):
+                    connector = self.filler.fill_child_device(
+                        device.name, vector_index=vector_index
+                    )
+                    connector.pvi_tree = vector_child
+                    connector.pvi_pv = vector_child.pvi_pv
+                else:
+                    raise TypeError(
+                        "Failed to fill DeviceVector. "
+                        f"Expected PviTree, got {type(vector_child)}"
+                    )
+
         # Fill all signals
         for signal_name, signal_details in self.pvi_tree.signals.items():
             backend = self.filler.fill_child_signal(
