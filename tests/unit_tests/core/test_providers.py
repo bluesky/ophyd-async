@@ -145,7 +145,7 @@ def test_ymd_path_provider(static_filename_provider, tmp_path):
     info_a = ymd_path_provider()
     assert info_a.directory_path == tmp_path / date_path
 
-    info_b = ymd_path_provider(device_name="test_device")
+    info_b = ymd_path_provider(datakey_name="test_device")
     assert info_b.directory_path == tmp_path / "test_device" / date_path
 
 

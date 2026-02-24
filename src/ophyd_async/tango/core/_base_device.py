@@ -109,12 +109,12 @@ class TangoDeviceConnector(DeviceConnector):
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         if not self.trl:
             raise RuntimeError(f"Could not created Device Proxy for TRL {self.trl}")
-        self.proxy = await AsyncDeviceProxy(self.trl)
+        self.proxy = await AsyncDeviceProxy(self.trl)  # type: ignore
         children = sorted(
             set()
             .union(self.proxy.get_attribute_list())
             .union(self.proxy.get_command_list())
-        )
+        )  # type: ignore
 
         children = [
             child for child in children if child not in self.filler.ignored_signals

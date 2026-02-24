@@ -53,7 +53,7 @@ class FilenameProvider(Protocol):
     """Base class for callable classes providing filenames."""
 
     @abstractmethod
-    def __call__(self, device_name: str | None = None) -> str:
+    def __call__(self, datakey_name: str | None = None) -> str:
         """Get a filename to use for output data, w/o extension."""
 
 
@@ -61,7 +61,7 @@ class PathProvider(Protocol):
     """Abstract class that tells a detector where to write its data."""
 
     @abstractmethod
-    def __call__(self, device_name: str | None = None) -> PathInfo:
+    def __call__(self, datakey_name: str | None = None) -> PathInfo:
         """Get the current directory to write files into."""
 
 
@@ -71,7 +71,7 @@ class StaticFilenameProvider(FilenameProvider):
     def __init__(self, filename: str):
         self._static_filename = filename
 
-    def __call__(self, device_name: str | None = None) -> str:
+    def __call__(self, datakey_name: str | None = None) -> str:
         return self._static_filename
 
 
@@ -86,7 +86,7 @@ class UUIDFilenameProvider(FilenameProvider):
         self._uuid_call_func = uuid_call_func
         self._uuid_call_args = uuid_call_args or []
 
-    def __call__(self, device_name: str | None = None) -> str:
+    def __call__(self, datakey_name: str | None = None) -> str:
         if (
             self._uuid_call_func in [uuid.uuid3, uuid.uuid5]
             and len(self._uuid_call_args) < 2
@@ -117,7 +117,7 @@ class AutoIncrementFilenameProvider(FilenameProvider):
         self._increment = increment
         self._inc_delimeter = inc_delimeter
 
-    def __call__(self, device_name: str | None = None) -> str:
+    def __call__(self, datakey_name: str | None = None) -> str:
         if len(str(self._current_value)) > self._max_digits:
             raise ValueError(
                 f"Auto incrementing filename counter "
@@ -147,8 +147,8 @@ class StaticPathProvider(PathProvider):
         self._directory_uri = directory_uri
         self._create_dir_depth = create_dir_depth
 
-    def __call__(self, device_name: str | None = None) -> PathInfo:
-        filename = self._filename_provider(device_name)
+    def __call__(self, datakey_name: str | None = None) -> PathInfo:
+        filename = self._filename_provider(datakey_name)
 
         return PathInfo(
             directory_path=self._directory_path,
@@ -204,7 +204,7 @@ class AutoMaxIncrementingPathProvider(PathProvider):
             highest_number = self._next_value
         return highest_number
 
-    def __call__(self, device_name: str | None = None) -> PathInfo:
+    def __call__(self, datakey_name: str | None = None) -> PathInfo:
         base_path_info = self._base_path_provider.__call__()
         base_path_dir = Path(base_path_info.directory_path)
         if self._dated:
@@ -284,8 +284,8 @@ class AutoIncrementingPathProvider(PathProvider):
         self._increment = increment
         self._inc_delimeter = inc_delimeter
 
-    def __call__(self, device_name: str | None = None) -> PathInfo:
-        filename = self._filename_provider(device_name)
+    def __call__(self, datakey_name: str | None = None) -> PathInfo:
+        filename = self._filename_provider(datakey_name)
 
         padded_counter = f"{self._current_value:0{self._max_digits}}"
 
@@ -294,8 +294,8 @@ class AutoIncrementingPathProvider(PathProvider):
             auto_inc_dir_name = (
                 f"{self._base_name}{self._inc_delimeter}{padded_counter}"
             )
-        elif device_name is not None:
-            auto_inc_dir_name = f"{device_name}{self._inc_delimeter}{padded_counter}"
+        elif datakey_name is not None:
+            auto_inc_dir_name = f"{datakey_name}{self._inc_delimeter}{padded_counter}"
 
         self._inc_counter += 1
         if self._inc_counter == self._num_calls_per_inc:
@@ -323,7 +323,7 @@ class YMDPathProvider(PathProvider):
         base_directory_path: PurePath,
         base_directory_uri: str | None = None,
         create_dir_depth: int = -3,  # Default to -3 to create YMD dirs
-        device_name_as_base_dir: bool = False,
+        datakey_name_as_base_dir: bool = False,
     ) -> None:
         self._filename_provider = filename_provider
         self._base_directory_path = base_directory_path
@@ -334,9 +334,9 @@ class YMDPathProvider(PathProvider):
         ):
             self._base_directory_uri += "/"
         self._create_dir_depth = create_dir_depth
-        self._device_name_as_base_dir = device_name_as_base_dir
+        self._datakey_name_as_base_dir = datakey_name_as_base_dir
 
-    def __call__(self, device_name: str | None = None) -> PathInfo:
+    def __call__(self, datakey_name: str | None = None) -> PathInfo:
         path_type = type(self._base_directory_path)
         if path_type == PureWindowsPath:
             sep = "\\"
@@ -344,20 +344,20 @@ class YMDPathProvider(PathProvider):
             sep = "/"
 
         current_date = date.today().strftime(f"%Y{sep}%m{sep}%d")
-        if device_name is None:
+        if datakey_name is None:
             ymd_dir_path = current_date
-        elif self._device_name_as_base_dir:
+        elif self._datakey_name_as_base_dir:
             ymd_dir_path = path_type(
                 current_date,
-                device_name,
+                datakey_name,
             )
         else:
             ymd_dir_path = path_type(
-                device_name,
+                datakey_name,
                 current_date,
             )
 
-        filename = self._filename_provider(device_name)
+        filename = self._filename_provider(datakey_name)
 
         directory_uri = None
         if self._base_directory_uri is not None:
