@@ -131,10 +131,10 @@ class ReadableOnlyDataLogic(DetectorDataLogic):
     def __init__(self):
         self.signal = soft_signal_rw(int, initial_value=42, name="foo-value")
 
-    async def prepare_single(self, detector_name: str) -> ReadableDataProvider:
+    async def prepare_single(self, datakey_name: str) -> ReadableDataProvider:
         return SignalDataProvider(self.signal)
 
-    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
         return ["foo-value"]
 
 
@@ -146,9 +146,9 @@ class StreamableOnlyDataLogic(DetectorDataLogic):
         self.stop_count = 0
         self.tmp_path = tmp_path
 
-    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         resource = StreamResourceInfo(
-            data_key=detector_name,
+            data_key=datakey_name,
             shape=(10, 15),
             chunk_shape=(1, 10, 15),
             dtype_numpy="|u1",
@@ -165,8 +165,8 @@ class StreamableOnlyDataLogic(DetectorDataLogic):
     async def stop(self) -> None:
         self.stop_count += 1
 
-    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
-        return [detector_name]
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
+        return [datakey_name]
 
 
 # Parameterized Tests for Logic Combinations

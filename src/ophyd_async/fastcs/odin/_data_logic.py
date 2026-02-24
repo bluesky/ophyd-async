@@ -28,9 +28,9 @@ class OdinDataLogic(DetectorDataLogic):
         self.odin = odin
         self.detector_bit_depth = detector_bit_depth
 
-    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(detector_name)
+        path_info = self.path_provider(datakey_name)
         # Get the current bit depth
         datatype = f"uint{await self.detector_bit_depth.get_value()}"
         # Setup the HDF writer
@@ -55,7 +55,7 @@ class OdinDataLogic(DetectorDataLogic):
             self.odin.fp.data_dims_0.get_value(), self.odin.fp.data_dims_1.get_value()
         )
         resource = StreamResourceInfo(
-            data_key=detector_name,
+            data_key=datakey_name,
             shape=data_shape,
             chunk_shape=(1, *data_shape),
             dtype_numpy=np.dtype(datatype).str,
@@ -74,6 +74,6 @@ class OdinDataLogic(DetectorDataLogic):
             self.odin.mw.stop.trigger(),
         )
 
-    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
         # The main dataset is always hinted
-        return [detector_name]
+        return [datakey_name]
