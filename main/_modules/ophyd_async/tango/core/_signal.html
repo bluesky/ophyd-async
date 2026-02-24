@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.17.dev2+g0454f8a26 documentation</title>
+    <title>ophyd_async.tango.core._signal &#8212; ophyd-async 0.17.dev3+g3c6dfc0f6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=4042130a"></script>
+    <script src="../../../../_static/documentation_options.js?v=146bf8aa"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev3+g3c6dfc0f6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev3+g3c6dfc0f6 documentation - Home"/>
   
   
 </a></div>
@@ -895,19 +895,17 @@ window.addEventListener("load", load);</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntEnum</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AttrWriteType</span><span class="p">,</span>
     <span class="n">DeviceProxy</span><span class="p">,</span>
-    <span class="n">DevState</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tango.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceProxy</span> <span class="k">as</span> <span class="n">AsyncDeviceProxy</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
     <span class="n">Signal</span><span class="p">,</span>
+    <span class="n">SignalDatatype</span><span class="p">,</span>
     <span class="n">SignalDatatypeT</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
@@ -1049,20 +1047,23 @@ window.addEventListener("load", load);</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.infer_python_type">[docs]</a>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">infer_python_type</span><span class="p">(</span>
     <span class="n">trl</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span> <span class="o">|</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span> <span class="o">|</span> <span class="nb">type</span><span class="p">[</span><span class="n">DevState</span><span class="p">]</span> <span class="o">|</span> <span class="n">IntEnum</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatype</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Infers the python type from the TRL.&quot;&quot;&quot;</span>
     <span class="c1"># TODO: work out if this is still needed</span>
     <span class="n">device_trl</span><span class="p">,</span> <span class="n">tr_name</span> <span class="o">=</span> <span class="n">get_device_trl_and_attr</span><span class="p">(</span><span class="n">trl</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">dev_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">)</span>
+        <span class="n">dev_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">dev_proxy</span> <span class="o">=</span> <span class="n">proxy</span>
 
     <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">():</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>
+        <span class="c1"># A Device proxy instantiated by awaiting</span>
+        <span class="c1"># tango.asyncio.DeviceProxy is typed the same as the sync</span>
+        <span class="c1"># despite having awaitable methods.</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="n">py_type</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">():</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="n">py_type</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find </span><span class="si">{</span><span class="n">tr_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">device_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1077,7 +1078,7 @@ window.addEventListener("load", load);</script>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">Signal</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">device_trl</span><span class="p">,</span> <span class="n">tr_name</span> <span class="o">=</span> <span class="n">get_device_trl_and_attr</span><span class="p">(</span><span class="n">trl</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">dev_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">)</span>
+        <span class="n">dev_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">dev_proxy</span> <span class="o">=</span> <span class="n">proxy</span>
 
@@ -1086,7 +1087,7 @@ window.addEventListener("load", load);</script>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find </span><span class="si">{</span><span class="n">tr_name</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">device_trl</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_list</span><span class="p">():</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">writable</span> <span class="ow">in</span> <span class="p">[</span><span class="n">AttrWriteType</span><span class="o">.</span><span class="n">READ_WRITE</span><span class="p">,</span> <span class="n">AttrWriteType</span><span class="o">.</span><span class="n">READ_WITH_WRITE</span><span class="p">]:</span>
             <span class="k">return</span> <span class="n">SignalRW</span>
         <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">writable</span> <span class="o">==</span> <span class="n">AttrWriteType</span><span class="o">.</span><span class="n">READ</span><span class="p">:</span>
@@ -1095,7 +1096,7 @@ window.addEventListener("load", load);</script>
             <span class="k">return</span> <span class="n">SignalW</span>
 
     <span class="k">if</span> <span class="n">tr_name</span> <span class="ow">in</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_list</span><span class="p">():</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="k">await</span> <span class="n">dev_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="n">tr_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="n">command_character</span> <span class="o">=</span> <span class="n">get_command_character</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">command_character</span> <span class="o">==</span> <span class="n">CommandProxyReadCharacter</span><span class="o">.</span><span class="n">READ</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">SignalR</span>

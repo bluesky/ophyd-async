@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.17.dev2+g0454f8a26 documentation</title>
+    <title>ophyd_async.tango.core._tango_transport &#8212; ophyd-async 0.17.dev3+g3c6dfc0f6 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=4042130a"></script>
+    <script src="../../../../_static/documentation_options.js?v=146bf8aa"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev2+g0454f8a26 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev3+g3c6dfc0f6 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev3+g3c6dfc0f6 documentation - Home"/>
   
   
 </a></div>
@@ -937,6 +937,7 @@ window.addEventListener("load", load);</script>
     <span class="n">Callback</span><span class="p">,</span>
     <span class="n">NotConnectedError</span><span class="p">,</span>
     <span class="n">SignalBackend</span><span class="p">,</span>
+    <span class="n">SignalDatatype</span><span class="p">,</span>
     <span class="n">SignalDatatypeT</span><span class="p">,</span>
     <span class="n">SignalMetadata</span><span class="p">,</span>
     <span class="n">StrictEnum</span><span class="p">,</span>
@@ -979,7 +980,7 @@ window.addEventListener("load", load);</script>
             <span class="n">set_global_executor</span><span class="p">(</span><span class="n">AsyncioExecutor</span><span class="p">())</span>
         <span class="k">return</span> <span class="k">await</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">wrapper</span></div>
+    <span class="k">return</span> <span class="n">wrapper</span>  <span class="c1"># type: ignore[return-value]</span></div>
 
 
 
@@ -1001,7 +1002,9 @@ window.addEventListener("load", load);</script>
 
 <div class="viewcode-block" id="get_python_type">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.get_python_type">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span> <span class="o">|</span> <span class="n">TestConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_python_type</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span> <span class="o">|</span> <span class="n">TestConfig</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatype</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For converting between recieved tango types and python primatives.&quot;&quot;&quot;</span>
     <span class="n">tango_type</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">tango_format</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1032,7 +1035,7 @@ window.addEventListener("load", load);</script>
     <span class="k">if</span> <span class="n">tango_type</span> <span class="ow">is</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevVarDoubleStringArray</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">TangoDoubleStringTable</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">[</span><span class="n">SignalDatatype</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">tango_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SCALAR</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">cls</span>
         <span class="k">elif</span> <span class="n">tango_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">SPECTRUM</span><span class="p">:</span>
@@ -1041,7 +1044,7 @@ window.addEventListener("load", load);</script>
             <span class="k">return</span> <span class="n">Array1D</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
         <span class="k">elif</span> <span class="n">tango_format</span> <span class="o">==</span> <span class="n">AttrDataFormat</span><span class="o">.</span><span class="n">IMAGE</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="nb">str</span> <span class="ow">or</span> <span class="nb">issubclass</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">StrictEnum</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Images of type str or enum are not supported&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="bp">cls</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">cls</span>
@@ -1057,7 +1060,7 @@ window.addEventListener("load", load);</script>
     <span class="k">elif</span> <span class="n">is_binary</span><span class="p">(</span><span class="n">tango_type</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">tango_type</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevEnum</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;enum_labels&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;enum_labels&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">CommandInfo</span><span class="p">):</span>
             <span class="n">enum_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">enum_labels</span><span class="p">}</span>
             <span class="k">return</span> <span class="n">_get_type</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">(</span><span class="s2">&quot;TangoEnum&quot;</span><span class="p">,</span> <span class="n">enum_dict</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1142,15 +1145,17 @@ window.addEventListener("load", load);</script>
 <span class="k">class</span><span class="w"> </span><span class="nc">AttributeProxy</span><span class="p">(</span><span class="n">TangoProxy</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Used by the tango transport.&quot;&quot;&quot;</span>
 
-    <span class="n">_callback</span><span class="p">:</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_eid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_poll_task</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_abs_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_rel_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">0.1</span>
-    <span class="n">_polling_period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
-    <span class="n">_allow_polling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">exception</span><span class="p">:</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_last_reading</span><span class="p">:</span> <span class="n">Reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alarm_severity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device_proxy</span><span class="p">:</span> <span class="n">DeviceProxy</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">:</span> <span class="n">Callback</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_poll_task</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_abs_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rel_change</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polling_period</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_allow_polling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exception</span><span class="p">:</span> <span class="ne">BaseException</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_reading</span><span class="p">:</span> <span class="n">Reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alarm_severity</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">device_proxy</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AttributeProxy.connect">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.connect">[docs]</a>
@@ -1163,7 +1168,7 @@ window.addEventListener("load", load);</script>
             <span class="n">eid</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">subscribe_event</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">EventType</span><span class="o">.</span><span class="n">CHANGE_EVENT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_processor</span>
             <span class="p">)</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">unsubscribe_event</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">unsubscribe_event</span><span class="p">(</span><span class="n">eid</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">support_events</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span></div>
@@ -1173,7 +1178,7 @@ window.addEventListener("load", load);</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
-        <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
 
 
@@ -1181,7 +1186,7 @@ window.addEventListener("load", load);</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_w_value">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_w_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
-        <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">w_value</span><span class="p">)</span></div>
 
 
@@ -1196,7 +1201,7 @@ window.addEventListener("load", load);</script>
         <span class="k">try</span><span class="p">:</span>
 
             <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_write</span><span class="p">():</span>
-                <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">write_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">write_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
             <span class="n">task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">_write</span><span class="p">())</span>
             <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
@@ -1212,14 +1217,14 @@ window.addEventListener("load", load);</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_config">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AttributeInfoEx</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_attribute_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
 <div class="viewcode-block" id="AttributeProxy.get_reading">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.get_reading">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Reading</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
-        <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">read_attribute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="n">reading</span> <span class="o">=</span> <span class="n">Reading</span><span class="p">(</span>
             <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
             <span class="n">timestamp</span><span class="o">=</span><span class="n">attr</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">totime</span><span class="p">(),</span>
@@ -1237,14 +1242,16 @@ window.addEventListener("load", load);</script>
 
     <span class="nd">@ensure_proper_executor</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_subscribe_to_event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">subscribe_event</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span>
-                <span class="n">EventType</span><span class="o">.</span><span class="n">CHANGE_EVENT</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_event_processor</span><span class="p">,</span>
-                <span class="n">stateless</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">green_mode</span><span class="o">=</span><span class="n">GreenMode</span><span class="o">.</span><span class="n">Asyncio</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">subscribe_event</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span>
+                    <span class="n">EventType</span><span class="o">.</span><span class="n">CHANGE_EVENT</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_event_processor</span><span class="p">,</span>
+                    <span class="n">green_mode</span><span class="o">=</span><span class="n">GreenMode</span><span class="o">.</span><span class="n">Asyncio</span><span class="p">,</span>
+                <span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subscribe to event failed: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AttributeProxy.subscribe_callback">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.subscribe_callback">[docs]</a>
@@ -1284,7 +1291,7 @@ window.addEventListener("load", load);</script>
     <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">unsubscribe_event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">,</span> <span class="n">green_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">unsubscribe_event</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eid</span><span class="p">,</span> <span class="n">green_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not unsubscribe from event: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">finally</span><span class="p">:</span>
@@ -1486,7 +1493,7 @@ window.addEventListener("load", load);</script>
 <div class="viewcode-block" id="CommandProxy.connect">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.connect">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_read_character</span> <span class="o">=</span> <span class="n">get_command_character</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_config</span><span class="p">)</span></div>
 
 
@@ -1522,7 +1529,7 @@ window.addEventListener("load", load);</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.CommandProxy.get_config">[docs]</a>
     <span class="nd">@ensure_proper_executor</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CommandInfo</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proxy</span><span class="o">.</span><span class="n">get_command_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
 <div class="viewcode-block" id="CommandProxy.get_reading">
@@ -1578,7 +1585,7 @@ window.addEventListener("load", load);</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.get_source_metadata">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_source_metadata</span><span class="p">(</span>
     <span class="n">tango_resource</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">tr_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeInfoEx</span><span class="p">],</span>
+    <span class="n">tr_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalMetadata</span><span class="p">:</span>
     <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">config</span> <span class="ow">in</span> <span class="n">tr_configs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1621,7 +1628,7 @@ window.addEventListener("load", load);</script>
             <span class="n">tr_dtype</span> <span class="o">=</span> <span class="n">get_python_type</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">tr_dtype</span> <span class="o">==</span> <span class="n">CmdArgType</span><span class="o">.</span><span class="n">DevState</span><span class="p">:</span>
-                <span class="n">_choices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">DevState</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">_choices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">DevState</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
 
             <span class="n">_precision</span> <span class="o">=</span> <span class="n">parse_precision</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
 
@@ -1654,7 +1661,7 @@ window.addEventListener("load", load);</script>
     <span class="n">device_trl</span><span class="p">,</span> <span class="n">trl_name</span> <span class="o">=</span> <span class="n">get_device_trl_and_attr</span><span class="p">(</span><span class="n">full_trl</span><span class="p">)</span>
     <span class="n">trl_name</span> <span class="o">=</span> <span class="n">trl_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">device_proxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">device_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">device_proxy</span> <span class="o">=</span> <span class="k">await</span> <span class="n">AsyncDeviceProxy</span><span class="p">(</span><span class="n">device_trl</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
     <span class="c1"># all attributes can be always accessible with low register</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">device_proxy</span><span class="p">,</span> <span class="n">DeviceProxy</span><span class="p">):</span>
         <span class="n">all_attrs</span> <span class="o">=</span> <span class="p">[</span>
@@ -1734,7 +1741,7 @@ window.addEventListener("load", load);</script>
             <span class="n">read_trl</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="p">,</span>
             <span class="n">write_trl</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">device_proxy</span><span class="p">,</span>
         <span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trl_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeInfoEx</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trl_configs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">AttributeInfoEx</span> <span class="o">|</span> <span class="n">CommandInfo</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_polling</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="kc">False</span><span class="p">,</span>
             <span class="mf">0.1</span><span class="p">,</span>
