@@ -127,6 +127,14 @@ env_list = ["pre-commit", "type-checking", "tests", "docs"]
 [tool.tox.env_run_base]
 # Pass all environment variables to the test environments
 passenv = ["*"]
+# Allow binaries from the base env to be run
+allowlist_externals = [
+    "pytest",
+    "pre-commit",
+    "sphinx-build",
+    "sphinx-autobuild",
+    "pyright",
+]
 
 [tool.tox.env.pre-commit]
 description = "Run pre-commit on all files"
