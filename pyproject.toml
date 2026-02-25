@@ -69,7 +69,7 @@ dev = [
     "sphinxcontrib-mermaid",
     "sphinx-copybutton",
     "sphinx-design",
-    "tox-uv",
+    "tox-uv-bare",
     "types-mock",
     "types-pyyaml",
 ]
