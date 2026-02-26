@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adandor &#8212; ophyd-async 0.17.dev5+g18ee1f787 documentation</title>
+    <title>ophyd_async.epics.admerlin &#8212; ophyd-async 0.17.dev5+g18ee1f787 documentation</title>
   
   
   
@@ -482,7 +482,7 @@ mermaid.initialize(
 );
 
 window.addEventListener("load", load);</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/adandor';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/admerlin';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -872,7 +872,7 @@ window.addEventListener("load", load);</script>
     
     <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.adandor</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.admerlin</span></li>
   </ul>
 </nav>
 </div>
@@ -889,10 +889,10 @@ window.addEventListener("load", load);</script>
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.epics.adandor</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Support for the ADAndor areaDetector driver.</span>
+  <h1>Source code for ophyd_async.epics.admerlin</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Support for the ADMerlin areaDetector driver.</span>
 
-<span class="sd">https://github.com/areaDetector/ADAndor.</span>
+<span class="sd">https://github.com/areaDetector/ADMerlin.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
@@ -917,81 +917,84 @@ window.addEventListener("load", load);</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">PvSuffix</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;AndorDetector&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Andor2DriverIO&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Andor2TriggerLogic&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Andor2TriggerMode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MerlinDetector&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MerlinDriverIO&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MerlinTriggerLogic&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MerlinTriggerMode&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
-<span class="n">_MIN_DEAD_TIME</span> <span class="o">=</span> <span class="mf">0.1</span>
-<span class="n">_MAX_NUM_IMAGE</span> <span class="o">=</span> <span class="mi">999_999</span>
+<span class="n">_MIN_DEAD_TIME</span> <span class="o">=</span> <span class="mf">0.002</span>
 
 
-<div class="viewcode-block" id="Andor2TriggerMode">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerMode">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Andor2TriggerMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger modes for ADAndor detector.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MerlinTriggerMode">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinTriggerMode">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MerlinTriggerMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger modes for ADMerlin detector.&quot;&quot;&quot;</span>
 
     <span class="n">INTERNAL</span> <span class="o">=</span> <span class="s2">&quot;Internal&quot;</span>
-    <span class="n">EXT_TRIGGER</span> <span class="o">=</span> <span class="s2">&quot;External&quot;</span>
-    <span class="n">EXT_START</span> <span class="o">=</span> <span class="s2">&quot;External Start&quot;</span>
-    <span class="n">EXT_EXPOSURE</span> <span class="o">=</span> <span class="s2">&quot;External Exposure&quot;</span>
-    <span class="n">EXT_FVP</span> <span class="o">=</span> <span class="s2">&quot;External FVP&quot;</span>
+    <span class="n">TRIGGER_ENABLE</span> <span class="o">=</span> <span class="s2">&quot;Trigger Enable&quot;</span>
+    <span class="n">TRIGGER_START_RISING</span> <span class="o">=</span> <span class="s2">&quot;Trigger start rising&quot;</span>
+    <span class="n">TRIGGER_START_FALLING</span> <span class="o">=</span> <span class="s2">&quot;Trigger start falling&quot;</span>
+    <span class="n">TRIGGER_BOTH_RISING</span> <span class="o">=</span> <span class="s2">&quot;Trigger both rising&quot;</span>
+    <span class="n">LVDS_TRIG_ENABLE</span> <span class="o">=</span> <span class="s2">&quot;LVDS Trig Enable&quot;</span>
+    <span class="n">LVDS_TRIG_START_RISING</span> <span class="o">=</span> <span class="s2">&quot;LVDS Trig start rising&quot;</span>
+    <span class="n">LVDS_TRIG_START_FALLING</span> <span class="o">=</span> <span class="s2">&quot;LVDS Trig start falling&quot;</span>
+    <span class="n">LVDS_TRIG_BOTH_RISING</span> <span class="o">=</span> <span class="s2">&quot;LVDS Trig both rising&quot;</span>
     <span class="n">SOFTWARE</span> <span class="o">=</span> <span class="s2">&quot;Software&quot;</span></div>
 
 
 
-<div class="viewcode-block" id="Andor2DriverIO">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2DriverIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Andor2DriverIO</span><span class="p">(</span><span class="n">ADBaseIO</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Driver for andor model:DU897_BV as deployed on p99.</span>
+<div class="viewcode-block" id="MerlinDriverIO">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinDriverIO">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MerlinDriverIO</span><span class="p">(</span><span class="n">ADBaseIO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Driver for merlin model:DU897_BV as deployed on p99.</span>
 
-<span class="sd">    This mirrors the interface provided by AdAndor/db/andor.template.</span>
-<span class="sd">    https://areadetector.github.io/areaDetector/ADAndor/andorDoc.html</span>
+<span class="sd">    This mirrors the interface provided by ADMerlin/db/merlin.template.</span>
+<span class="sd">    https://github.com/areaDetector/ADMerlin/blob/master/merlinApp/Db/merlin.template</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">trigger_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Andor2TriggerMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;TriggerMode&quot;</span><span class="p">)]</span>
-    <span class="n">andor_accumulate_period</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;AndorAccumulatePeriod_RBV&quot;</span><span class="p">)]</span></div>
+    <span class="n">trigger_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">MerlinTriggerMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;TriggerMode&quot;</span><span class="p">)]</span></div>
 
 
 
-<span class="c1"># The deadtime of an Andor2 controller varies depending on the exact model of camera.</span>
+<span class="c1"># The deadtime of an Merlin controller varies depending on the exact model of camera.</span>
 <span class="c1"># Ideally we would maximize performance by dynamically retrieving the deadtime at</span>
 <span class="c1"># runtime. See https://github.com/bluesky/ophyd-async/issues/308</span>
-<div class="viewcode-block" id="Andor2TriggerLogic">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Andor2TriggerLogic</span><span class="p">(</span><span class="n">DetectorTriggerLogic</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger logic for Andor2DriverIO.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MerlinTriggerLogic">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinTriggerLogic">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MerlinTriggerLogic</span><span class="p">(</span><span class="n">DetectorTriggerLogic</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger logic for MerlinDriverIO.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">Andor2DriverIO</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">MerlinDriverIO</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">driver</span>
 
-<div class="viewcode-block" id="Andor2TriggerLogic.get_deadtime">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic.get_deadtime">[docs]</a>
+<div class="viewcode-block" id="MerlinTriggerLogic.get_deadtime">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinTriggerLogic.get_deadtime">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_values</span><span class="p">:</span> <span class="n">SignalDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">_MIN_DEAD_TIME</span></div>
 
 
-<div class="viewcode-block" id="Andor2TriggerLogic.prepare_internal">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_internal">[docs]</a>
+<div class="viewcode-block" id="MerlinTriggerLogic.prepare_internal">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinTriggerLogic.prepare_internal">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">Andor2TriggerMode</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span> <span class="ow">or</span> <span class="n">_MAX_NUM_IMAGE</span><span class="p">,</span> <span class="n">livetime</span><span class="p">,</span> <span class="n">deadtime</span><span class="p">)</span></div>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">MerlinTriggerMode</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">livetime</span><span class="p">,</span> <span class="n">deadtime</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Andor2TriggerLogic.prepare_edge">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_edge">[docs]</a>
+<div class="viewcode-block" id="MerlinTriggerLogic.prepare_edge">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinTriggerLogic.prepare_edge">[docs]</a>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">Andor2TriggerMode</span><span class="o">.</span><span class="n">EXT_TRIGGER</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span> <span class="ow">or</span> <span class="n">_MAX_NUM_IMAGE</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span></div>
+        <span class="c1"># Is this the right trigger mode?</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">MerlinTriggerMode</span><span class="o">.</span><span class="n">TRIGGER_START_RISING</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span></div>
 </div>
 
 
 
-<div class="viewcode-block" id="AndorDetector">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.AndorDetector">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">AndorDetector</span><span class="p">(</span><span class="n">AreaDetector</span><span class="p">[</span><span class="n">Andor2DriverIO</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an ADAndor AreaDetector instance.</span>
+<div class="viewcode-block" id="MerlinDetector">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.admerlin.html#ophyd_async.epics.admerlin.MerlinDetector">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MerlinDetector</span><span class="p">(</span><span class="n">AreaDetector</span><span class="p">[</span><span class="n">MerlinDriverIO</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an ADMerlin AreaDetector instance.</span>
 
 <span class="sd">    :param prefix: EPICS PV prefix for the detector</span>
 <span class="sd">    :param path_provider: Provider for file paths during acquisition</span>
@@ -1014,12 +1017,12 @@ window.addEventListener("load", load);</script>
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">driver</span> <span class="o">=</span> <span class="n">Andor2DriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
+        <span class="n">driver</span> <span class="o">=</span> <span class="n">MerlinDriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
             <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
             <span class="n">arm_logic</span><span class="o">=</span><span class="n">ADArmLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
-            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">Andor2TriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
+            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">MerlinTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
             <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
             <span class="n">writer_type</span><span class="o">=</span><span class="n">writer_type</span><span class="p">,</span>
             <span class="n">writer_suffix</span><span class="o">=</span><span class="n">writer_suffix</span><span class="p">,</span>
