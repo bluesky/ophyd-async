@@ -25,9 +25,9 @@ class PandaHDFDataLogic(DetectorDataLogic):
         self.path_provider = path_provider
         self.data_block = data_block
 
-    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         # Work out where to write
-        path_info = self.path_provider(detector_name)
+        path_info = self.path_provider(datakey_name)
         # Set create dir depth first to guarantee that callback when setting
         # directory path has correct value
         await self.data_block.create_directory.set(path_info.create_dir_depth)
@@ -53,7 +53,7 @@ class PandaHDFDataLogic(DetectorDataLogic):
         capture_table = await self.data_block.datasets.get_value()
         if len(capture_table) == 0:
             logger.warning(
-                f"PandA {detector_name} DATASETS table is empty! "
+                f"PandA {datakey_name} DATASETS table is empty! "
                 "No stream resource docs will be generated. "
                 "Make sure captured positions have their corresponding "
                 "*:DATASET PV set to a scientifically relevant name."
