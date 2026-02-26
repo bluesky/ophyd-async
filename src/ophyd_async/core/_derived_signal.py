@@ -345,16 +345,42 @@ def derived_signal_w(
 
 
 def get_locatable_type(obj: object) -> type | None:
-    """Extract datatype from Locatable parent class.
+    """Resolve Locatable[T] through the full MRO, including TypeVar substitutions.
 
     :param obj: Object with possible Locatable inheritance
     :return: Type hint associated with Locatable, or None if not found.
     """
-    for base in getattr(obj.__class__, "__orig_bases__", []):
-        if get_origin(base) is Locatable:
+    typevar_map: dict[TypeVar, object] = {}
+
+    # Walk from subclass to base
+    for cls in obj.__class__.__mro__:
+        # If this class was parametrized.
+        orig_bases = getattr(cls, "__orig_bases__", ())
+
+        for base in orig_bases:
+            origin = get_origin(base)
             args = get_args(base)
-            if args:
-                return args[0]
+
+            if origin is None:
+                continue
+
+            # Map TypeVars to concrete types
+            parameters = getattr(origin, "__parameters__", ())
+            for param, arg in zip(parameters, args, strict=False):
+                if isinstance(arg, TypeVar) and arg in typevar_map:
+                    typevar_map[param] = typevar_map[arg]
+                else:
+                    typevar_map[param] = arg
+
+            # If this is Locatable[...] resolve its argument
+            if origin == Locatable:
+                if args:
+                    resolved = args[0]
+                    if isinstance(resolved, TypeVar):
+                        resolved = typevar_map.get(resolved)
+                    if isinstance(resolved, type):
+                        return resolved
+
     return None
 
 
