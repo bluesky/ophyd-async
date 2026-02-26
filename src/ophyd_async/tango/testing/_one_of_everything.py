@@ -83,7 +83,7 @@ _all_attribute_definitions = [
         "my_state",
         "DevState",
         DevState.INIT,
-        np.array(list(DevState.names.values()), dtype=DevState),
+        np.array(list(DevState.names.values()), dtype=DevState),  # type: ignore
     ),
 ]
 

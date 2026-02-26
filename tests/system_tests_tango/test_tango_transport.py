@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import re
 from collections.abc import Sequence
 from typing import Any
@@ -145,8 +146,16 @@ def test_get_python_type(tango_type, tango_format, expected):
         assert issubclass(py_type, StrictEnum)
         assert [e.name for e in py_type] == list(DevState.names.keys())
     elif tango_type is not float:
-        print(f"CONFIG: {config.data_type}, {config.data_format}")
-        assert get_python_type(config) == expected
+        if (
+            tango_format is AttrDataFormat.IMAGE
+            and tango_type is CmdArgType.DevVarStringArray
+        ):
+            with pytest.raises(TypeError) as exc:
+                get_python_type(config)
+            assert str(exc.value) == "Images of type str or enum are not supported"
+        else:
+            assert get_python_type(config) == expected
+        return
     else:
         if tango_format == "bad_format":
             with pytest.raises(TypeError) as exc:
@@ -851,3 +860,21 @@ async def test_type_mismatch_longstringarray(tango_test_device):
     assert "has type" in val
     assert "TangoLongStringTable" in val
     assert "TangoDoubleStringTable" in val
+
+
+@pytest.mark.asyncio
+async def test_attribute_subscribe_event_fail(tango_test_device, caplog):
+    device_proxy = await DeviceProxy(tango_test_device)
+    attr_proxy = AttributeProxy(device_proxy, "nonexistent")
+    attr_proxy.support_events = True
+
+    def callback(reading, value):
+        pass
+
+    with caplog.at_level(logging.DEBUG, logger="ophyd_async"):
+        attr_proxy.subscribe_callback(callback)
+        await asyncio.sleep(0.1)
+
+    assert any(
+        "Subscribe to event failed" in record.message for record in caplog.records
+    )
