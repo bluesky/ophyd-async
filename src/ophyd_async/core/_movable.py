@@ -1,11 +1,13 @@
 import asyncio
 from abc import ABC, abstractmethod
+from typing import Generic
 
 from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
 
 from ._device import Device, DeviceMock, default_mock_class
 from ._mock_signal_utils import callback_on_mock_put, set_mock_value
 from ._signal import SignalR, SignalRW, observe_value
+from ._signal_backend import SignalDatatypeT
 from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
@@ -15,23 +17,25 @@ from ._utils import (
 )
 
 
-class MovableLogic(ABC):
+class MovableLogic(ABC, Generic[SignalDatatypeT]):
     """Movable logic for stopping and checking valid moves of a StandardMovable."""
 
-    setpoint: SignalRW[float]
-    readback: SignalR[float]
+    setpoint: SignalRW[SignalDatatypeT]
+    readback: SignalR[SignalDatatypeT]
 
     @abstractmethod
     async def stop(self) -> None:
         """Stop the motion."""
 
-    async def check_move(self, old_position: float, new_position: float) -> None:
+    async def check_move(
+        self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
+    ) -> None:
         """Optional hook to check the move is valid."""
         return None
 
     async def calculate_timeout(
-        self, old_position: float, new_position: float
-    ) -> float | None:
+        self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
+    ) -> SignalDatatypeT | None:
         """Optional hook to calculate valid timeout for a move."""
         return None
 
@@ -39,7 +43,9 @@ class MovableLogic(ABC):
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         """Return the units and precision."""
 
-    def move(self, new_position: float, timeout: CalculatableTimeout) -> AsyncStatus:
+    def move(
+        self, new_position: SignalDatatypeT, timeout: CalculatableTimeout
+    ) -> AsyncStatus:
         return self.setpoint.set(new_position, timeout=timeout)
 
 
@@ -56,7 +62,13 @@ class InstantMovableMock(DeviceMock["StandardMovable"]):
 
 
 @default_mock_class(InstantMovableMock)
-class StandardMovable(Device, Locatable[float], Stoppable, Subscribable[float]):
+class StandardMovable(
+    Device,
+    Locatable[SignalDatatypeT],
+    Stoppable,
+    Subscribable[SignalDatatypeT],
+    Generic[SignalDatatypeT],
+):
     """Device that provides standard logic for moving.
 
     This class must be inherited and have a ``movable_logic``property.
@@ -71,9 +83,11 @@ class StandardMovable(Device, Locatable[float], Stoppable, Subscribable[float]):
     def movable_logic(self) -> MovableLogic:
         """Add movable logic for a device."""
 
-    @WatchableAsyncStatus.wrap
+    @WatchableAsyncStatus[SignalDatatypeT].wrap
     async def set(
-        self, new_position: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT
+        self,
+        new_position: SignalDatatypeT,
+        timeout: CalculatableTimeout = CALCULATE_TIMEOUT,
     ):
         """Move to the given value."""
         self._set_success = True
@@ -95,9 +109,9 @@ class StandardMovable(Device, Locatable[float], Stoppable, Subscribable[float]):
                     done_status=self._move_status,
                 ):
                     if not self._set_success:
-                        raise RuntimeError(f"Motor {self.name} was stopped.")
+                        raise RuntimeError(f"Device {self.name} was stopped.")
 
-                    yield WatcherUpdate(
+                    yield WatcherUpdate[SignalDatatypeT](
                         current=current_position,
                         initial=old_position,
                         target=new_position,
@@ -116,7 +130,7 @@ class StandardMovable(Device, Locatable[float], Stoppable, Subscribable[float]):
         # Readback should be named the same as its parent in read()
         self.movable_logic.readback.set_name(name)
 
-    async def locate(self) -> Location[float]:
+    async def locate(self) -> Location[SignalDatatypeT]:
         """Return the current setpoint and readback of the motor."""
         setpoint, readback = await asyncio.gather(
             self.movable_logic.setpoint.get_value(),
@@ -124,12 +138,16 @@ class StandardMovable(Device, Locatable[float], Stoppable, Subscribable[float]):
         )
         return Location(setpoint=setpoint, readback=readback)
 
-    def subscribe_reading(self, function: Callback[dict[str, Reading[float]]]) -> None:
+    def subscribe_reading(
+        self, function: Callback[dict[str, Reading[SignalDatatypeT]]]
+    ) -> None:
         """Subscribe to reading."""
         self.movable_logic.readback.subscribe_reading(function)
 
     subscribe = subscribe_reading
 
-    def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
+    def clear_sub(
+        self, function: Callback[dict[str, Reading[SignalDatatypeT]]]
+    ) -> None:
         """Unsubscribe."""
         self.movable_logic.readback.clear_sub(function)

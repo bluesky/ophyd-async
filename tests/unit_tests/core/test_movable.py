@@ -22,7 +22,7 @@ from ophyd_async.core import (
 from ophyd_async.testing import wait_for_pending_wakeups
 
 
-class MovableLogicImpl(MovableLogic):
+class MovableLogicImpl(MovableLogic[float]):
     def __init__(self, setpoint: SignalRW[float], readback: SignalR[float]):
         self.readback = readback
         self.setpoint = setpoint
@@ -33,9 +33,7 @@ class MovableLogicImpl(MovableLogic):
     async def check_move(self, old_position: float, new_position: float) -> None:
         pass
 
-    async def calculate_timeout(
-        self, old_position: float, new_position: float
-    ) -> CalculatableTimeout:
+    async def calculate_timeout(self, old_position: float, new_position: float) -> None:
         return None
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:

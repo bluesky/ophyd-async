@@ -92,7 +92,7 @@ class MotorMoveLogicSignals:
     precision: SignalR[int]
 
 
-class MotorMoveLogic(MovableLogic):
+class MotorMoveLogic(MovableLogic[float]):
     """Add the specific logic for moving a motor."""
 
     def __init__(self, motor_signals: MotorMoveLogicSignals):
