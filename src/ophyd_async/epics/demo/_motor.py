@@ -28,7 +28,7 @@ class DemoMotorMoveSiganls:
     stop: SignalX
 
 
-class DemoMotorMoveLogic(MovableLogic):
+class DemoMotorMoveLogic(MovableLogic[float]):
     def __init__(self, motor_signals: DemoMotorMoveSiganls):
         self.motor_signals = motor_signals
         self.readback = motor_signals.readback

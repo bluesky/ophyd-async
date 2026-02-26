@@ -32,7 +32,7 @@ class SimMotorMoveLogicSignals:
     units: SignalRW[str]
 
 
-class SimMotorMoveLogic(MovableLogic):
+class SimMotorMoveLogic(MovableLogic[float]):
     def __init__(self, signals: SimMotorMoveLogicSignals):
         self.signals = signals
         self.setpoint = signals.user_setpoint
@@ -119,7 +119,7 @@ class SimMotorMoveLogic(MovableLogic):
         return AsyncStatus(self._internal_sim_move(new_position))
 
 
-class SimMotor(StandardReadable, StandardMovable):
+class SimMotor(StandardReadable, StandardMovable[float]):
     """For usage when simulating a motor."""
 
     def __init__(
