@@ -271,15 +271,19 @@ class DetectorDataLogic:
     that only work with step scans.
     """
 
-    async def prepare_single(self, detector_name: str) -> ReadableDataProvider:
+    #: Add this suffix to the detector name to specify the datakey. These need to be
+    #: different for each DetectorDataLogic added to a detector
+    datakey_suffix: str = ""
+
+    async def prepare_single(self, datakey_name: str) -> ReadableDataProvider:
         """Provider can only work for a single event."""
         raise NotImplementedError(self)
 
-    async def prepare_unbounded(self, detector_name: str) -> StreamableDataProvider:
+    async def prepare_unbounded(self, datakey_name: str) -> StreamableDataProvider:
         """Provider can work for an unbounded number of collections."""
         raise NotImplementedError(self)
 
-    def get_hinted_fields(self, detector_name: str) -> Sequence[str]:
+    def get_hinted_fields(self, datakey_name: str) -> Sequence[str]:
         """Return the hinted streams."""
         return []
 
@@ -443,20 +447,22 @@ class StandardDetector(
             # Setup the data logic for the right number of collections
             streamable_coros: list[Awaitable[StreamableDataProvider]] = []
             readable_coros: list[Awaitable[ReadableDataProvider]] = []
-            for data_logic in self._data_logics:
-                if _data_logic_supported(data_logic.prepare_unbounded):
-                    streamable_coros.append(data_logic.prepare_unbounded(self.name))
-                elif _data_logic_supported(data_logic.prepare_single):
+            for dl in self._data_logics:
+                if _data_logic_supported(dl.prepare_unbounded):
+                    streamable_coros.append(
+                        dl.prepare_unbounded(self.name + dl.datakey_suffix)
+                    )
+                elif _data_logic_supported(dl.prepare_single):
                     if trigger_info.number_of_collections > 1:
                         raise RuntimeError(
-                            f"Multiple collections not supported by {self.name}"
+                            f"Multiple collections not supported by"
+                            f" {self.name + dl.datakey_suffix}"
                         )
-                    readable_coros.append(data_logic.prepare_single(self.name))
-                else:
-                    msg = (
-                        "DataLogic hasn't overridden any prepare_* methods "
-                        f"{data_logic}"
+                    readable_coros.append(
+                        dl.prepare_single(self.name + dl.datakey_suffix)
                     )
+                else:
+                    msg = f"DataLogic hasn't overridden any prepare_* methods {dl}"
                     raise RuntimeError(msg)
             streamable_data_providers, readable_data_providers = await asyncio.gather(
                 asyncio.gather(*streamable_coros),
@@ -672,7 +678,7 @@ class StandardDetector(
     def hints(self) -> Hints:
         fields: list[str] = []
         for dl in self._data_logics:
-            fields.extend(dl.get_hinted_fields(self.name))
+            fields.extend(dl.get_hinted_fields(self.name + dl.datakey_suffix))
         return Hints(fields=fields)
 
     async def read(self) -> dict[str, Reading]:

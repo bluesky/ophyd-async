@@ -66,12 +66,12 @@ class TangoDevStateArrayConverter(TangoConverter):
     def _convert(self, value):
         return self._labels[int(value)]
 
-    def write_value(self, value: NDArray[np.str_]) -> NDArray[DevState]:
+    def write_value(self, value: NDArray[np.str_]) -> NDArray[np.int_]:
         vfunc = np.vectorize(self._write_convert, otypes=[DevState])
         new_array = vfunc(value)
         return new_array
 
-    def value(self, value: NDArray[DevState]) -> NDArray[np.str_]:
+    def value(self, value: NDArray[np.int_]) -> NDArray[np.str_]:
         vfunc = np.vectorize(self._convert)
         new_array = vfunc(value)
         return new_array

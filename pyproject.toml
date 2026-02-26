@@ -33,7 +33,7 @@ requires-python = ">=3.11"
 sim = ["h5py"]
 ca = ["aioca>=2.0a4"]
 pva = ["p4p>=4.2.0"]
-tango = ["pytango==10.0.3"]
+tango = ["pytango==10.1.3"]
 demo = ["ipython", "matplotlib", "pyqt6"]
 
 [dependency-groups]
@@ -69,7 +69,7 @@ dev = [
     "sphinxcontrib-mermaid",
     "sphinx-copybutton",
     "sphinx-design",
-    "tox-uv",
+    "tox-uv-bare",
     "types-mock",
     "types-pyyaml",
 ]
@@ -127,6 +127,14 @@ env_list = ["pre-commit", "type-checking", "tests", "docs"]
 [tool.tox.env_run_base]
 # Pass all environment variables to the test environments
 passenv = ["*"]
+# Allow binaries from the base env to be run
+allowlist_externals = [
+    "pytest",
+    "pre-commit",
+    "sphinx-build",
+    "sphinx-autobuild",
+    "pyright",
+]
 
 [tool.tox.env.pre-commit]
 description = "Run pre-commit on all files"

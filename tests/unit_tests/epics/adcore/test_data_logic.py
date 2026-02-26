@@ -5,6 +5,7 @@ from unittest.mock import ANY, call
 import pytest
 
 from ophyd_async.core import (
+    AutoIncrementingPathProvider,
     EnableDisable,
     StaticFilenameProvider,
     StaticPathProvider,
@@ -37,6 +38,23 @@ async def test_hdf_writer_file_not_found(hdf_det: adcore.AreaDetector[adcore.ADB
         FileNotFoundError, match=r"Path .* doesn't exist or not writable!"
     ):
         await hdf_det.prepare(TriggerInfo())
+
+
+async def test_hdf_writer_passes_parent_name_to_path_provider(tmp_path: Path):
+    pp = AutoIncrementingPathProvider(
+        StaticFilenameProvider("test"), tmp_path, max_digits=3
+    )
+    async with init_devices(mock=True):
+        det = adsimdetector.SimDetector("PREFIX:", pp, name="sim_detector")
+
+    writer = det.get_plugin("writer", adcore.NDPluginFileIO)
+    set_mock_value(writer.file_path_exists, True)
+    await det.stage()
+    await det.prepare(TriggerInfo())
+    assert (
+        await writer.file_path.get_value()
+        == str(tmp_path) + os.sep + "sim_detector_000" + os.sep
+    )
 
 
 async def test_prepare_hdf(

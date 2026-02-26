@@ -3,19 +3,17 @@
 from __future__ import annotations
 
 import logging
-from enum import IntEnum
 
-import numpy.typing as npt
 from tango import (
     AttrWriteType,
     DeviceProxy,
-    DevState,
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Signal,
+    SignalDatatype,
     SignalDatatypeT,
     SignalR,
     SignalRW,
@@ -140,20 +138,23 @@ def tango_signal_x(
 
 async def infer_python_type(
     trl: str = "", proxy: DeviceProxy | None = None
-) -> object | npt.NDArray | type[DevState] | IntEnum:
+) -> type[SignalDatatype] | None:
     """Infers the python type from the TRL."""
     # TODO: work out if this is still needed
     device_trl, tr_name = get_device_trl_and_attr(trl)
     if proxy is None:
-        dev_proxy = await AsyncDeviceProxy(device_trl)
+        dev_proxy = await AsyncDeviceProxy(device_trl)  # type: ignore
     else:
         dev_proxy = proxy
 
     if tr_name in dev_proxy.get_command_list():
-        config = await dev_proxy.get_command_config(tr_name)
+        # A Device proxy instantiated by awaiting
+        # tango.asyncio.DeviceProxy is typed the same as the sync
+        # despite having awaitable methods.
+        config = await dev_proxy.get_command_config(tr_name)  # type: ignore
         py_type = get_python_type(config)
     elif tr_name in dev_proxy.get_attribute_list():
-        config = await dev_proxy.get_attribute_config(tr_name)
+        config = await dev_proxy.get_attribute_config(tr_name)  # type: ignore
         py_type = get_python_type(config)
     else:
         raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
@@ -165,7 +166,7 @@ async def infer_signal_type(
 ) -> type[Signal] | None:
     device_trl, tr_name = get_device_trl_and_attr(trl)
     if proxy is None:
-        dev_proxy = await AsyncDeviceProxy(device_trl)
+        dev_proxy = await AsyncDeviceProxy(device_trl)  # type: ignore
     else:
         dev_proxy = proxy
 
@@ -174,7 +175,7 @@ async def infer_signal_type(
             raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
 
     if tr_name in dev_proxy.get_attribute_list():
-        config = await dev_proxy.get_attribute_config(tr_name)
+        config = await dev_proxy.get_attribute_config(tr_name)  # type: ignore
         if config.writable in [AttrWriteType.READ_WRITE, AttrWriteType.READ_WITH_WRITE]:
             return SignalRW
         elif config.writable == AttrWriteType.READ:
@@ -183,7 +184,7 @@ async def infer_signal_type(
             return SignalW
 
     if tr_name in dev_proxy.get_command_list():
-        config = await dev_proxy.get_command_config(tr_name)
+        config = await dev_proxy.get_command_config(tr_name)  # type: ignore
         command_character = get_command_character(config)
         if command_character == CommandProxyReadCharacter.READ:
             return SignalR

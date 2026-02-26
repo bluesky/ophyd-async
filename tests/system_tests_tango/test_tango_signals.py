@@ -16,6 +16,7 @@ from ophyd_async.tango.core import (
     TangoDevice,
     TangoSignalBackend,
     get_full_attr_trl,
+    infer_python_type,
     parse_precision,
     tango_signal_r,
     tango_signal_rw,
@@ -566,3 +567,12 @@ async def test_parse_precision(everything_device_trl):
             assert precision == 2
         else:
             assert precision is None
+
+
+@pytest.mark.asyncio
+async def test_infer_python_type(everything_device_trl):
+    proxy = await DeviceProxy(everything_device_trl)
+    bad_attr = everything_device_trl + "/this_does_not_exist"
+    with pytest.raises(RuntimeError) as exc:
+        await infer_python_type(trl=bad_attr, proxy=proxy)
+    assert "Cannot find" in str(exc.value)
