@@ -129,26 +129,35 @@ class StandardMovable(
         resolved_timeout: float | None = (
             calculate_timeout if timeout is CALCULATE_TIMEOUT else timeout
         )  # type: ignore
-        move_status = self.movable_logic.get_move_status(
-            new_position, timeout=resolved_timeout
-        )
-        if move_status is None:
-            return
-        async for update in self.movable_logic.move(
-            move_status=move_status,
-            old_position=old_position,
-            new_position=new_position,
-            timeout=resolved_timeout,
-            units=units,
-            precision=precision,
-        ):
-            if not self._set_success:
-                raise RuntimeError(f"Device {self.name} was stopped.")
-            yield update
+        try:
+            self._move_status = self.movable_logic.get_move_status(
+                new_position, timeout=resolved_timeout
+            )
+            if self._move_status is None:
+                return
+            async for update in self.movable_logic.move(
+                move_status=self._move_status,
+                old_position=old_position,
+                new_position=new_position,
+                timeout=resolved_timeout,
+                units=units,
+                precision=precision,
+            ):
+                if not self._set_success:
+                    raise RuntimeError(f"Device {self.name} was stopped.")
+                yield update
+        finally:
+            self._move_status = None
+
+        if not self._set_success:
+            raise RuntimeError(f"Device {self.name} was stopped.")
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
         self._set_success = success
+        if self._move_status is not None:
+            self._move_status.task.cancel()
+            self._move_status = None
         await self.movable_logic.stop()
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
