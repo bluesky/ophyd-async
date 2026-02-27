@@ -1,5 +1,5 @@
 import asyncio
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Generic
 
 from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
@@ -17,15 +17,15 @@ from ._utils import (
 )
 
 
-class MovableLogic(ABC, Generic[SignalDatatypeT]):
+class MovableLogic(Generic[SignalDatatypeT]):
     """Movable logic for stopping and checking valid moves of a StandardMovable."""
 
     setpoint: SignalRW[SignalDatatypeT]
     readback: SignalR[SignalDatatypeT]
 
-    @abstractmethod
     async def stop(self) -> None:
-        """Stop the motion."""
+        """Optional hook to add logic on how to stop the motion."""
+        return None
 
     async def check_move(
         self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
@@ -39,9 +39,9 @@ class MovableLogic(ABC, Generic[SignalDatatypeT]):
         """Optional hook to calculate valid timeout for a move."""
         return None
 
-    @abstractmethod
     async def get_units_precision(self) -> tuple[str | None, int | None]:
-        """Return the units and precision."""
+        """Optional hook to return the units and precision."""
+        return None, None
 
     def move(
         self, new_position: SignalDatatypeT, timeout: CalculatableTimeout
@@ -131,7 +131,7 @@ class StandardMovable(
         self.movable_logic.readback.set_name(name)
 
     async def locate(self) -> Location[SignalDatatypeT]:
-        """Return the current setpoint and readback of the motor."""
+        """Return the current setpoint and readback of the device."""
         setpoint, readback = await asyncio.gather(
             self.movable_logic.setpoint.get_value(),
             self.movable_logic.readback.get_value(),
