@@ -149,6 +149,14 @@ class StandardMovable(
 
                 if self._move_status.done:
                     break
+        except asyncio.CancelledError as e:
+            # only translate if this is an *internal watcher*, not the setpoint task
+            # itself
+            if self._move_status and self._move_status.done:
+                raise RuntimeError(f"Device {self.name} was stopped") from e
+            else:
+                # propagate to outer task for tests like yours
+                raise
         finally:
             self._move_status = None
 
