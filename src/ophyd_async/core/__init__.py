@@ -6,6 +6,7 @@ from ._command import (
     CommandConnector,
     MockCommandBackend,
     SoftCommandBackend,
+    make_converter,
     soft_command,
 )
 from ._data_providers import (
@@ -309,4 +310,5 @@ __all__ = [
     "MockCommandBackend",
     "SoftCommandBackend",
     "soft_command",
+    "make_converter",
 ]

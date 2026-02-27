@@ -8,13 +8,13 @@ from ophyd_async.core import (
     Array1D,
     Command,
     DeviceMock,
-    MockCommandBackend,
     NotConnectedError,
     SoftCommandBackend,
     StrictEnum,
     SubsetEnum,
     SupersetEnum,
     Table,
+    make_converter,
     soft_command,
 )
 
@@ -125,10 +125,43 @@ async def test_execute_raises_typeerror_on_bad_arguments():
         await backend.execute(1, a=2)
 
 
-async def test_mock_command_backend():
-    """Test MockCommandBackend basic functionality."""
+@pytest.mark.parametrize("datatype, value", TEST_PARAMS)
+async def test_mock_command_backend_default_values(datatype, value):
+    """Test MockCommandBackend returns manufactured defaults for various types."""
 
-    # Setup
+    async def callback(v: datatype) -> datatype:
+        return v
+
+    backend = SoftCommandBackend(callback)
+    cmd = Command(backend, name="test_cmd")
+    mock = DeviceMock()
+    await cmd.connect(mock=mock)
+
+    # Execute without setting a callback - should return manufactured default
+    status = cmd.execute(value)
+    await status
+
+    # Manufactured defaults are: 0 for int/float, "" for str, False for bool, etc.
+    # The SoftConverter.write_value(None) is what's called.
+    expected_default = make_converter(datatype).write_value(None)
+
+    if isinstance(expected_default, np.ndarray):
+        assert np.array_equal(status.value, expected_default)
+    elif isinstance(expected_default, Table):
+        for field in expected_default.__dict__:
+            v1 = getattr(status.value, field)
+            v2 = getattr(expected_default, field)
+            if isinstance(v1, np.ndarray):
+                assert np.array_equal(v1, v2)
+            else:
+                assert v1 == v2
+    else:
+        assert status.value == expected_default
+
+
+async def test_mock_command_backend_custom_callback():
+    """Test MockCommandBackend uses the provided custom callback."""
+
     async def async_callback(a: int, b: str) -> str:
         return f"{b}_{a}"
 
@@ -136,30 +169,56 @@ async def test_mock_command_backend():
     cmd = Command(backend, name="test_cmd")
     mock = DeviceMock()
     await cmd.connect(mock=mock)
-    # Verify we got a MockCommandBackend
-    assert isinstance(cmd._connector.backend, MockCommandBackend)
-    # Test 1: Basic execution with callback
+
+    # Set custom callback
     cmd._connector.backend.set_mock_execute_callback(lambda a, b: f"mock_{b}_{a}")
     status = cmd.execute(3, "test")
     result = await status
     assert result == "mock_test_3"
     cmd._connector.backend.execute_mock.assert_awaited_once_with(3, "test")
-    # Test 2: Verify source method
-    source = cmd._connector.backend.source("test")
-    assert source == "mock+softcmd://test"
-    # Test 3: Verify connect raises error
+
+
+async def test_mock_command_backend_lazy_init():
+    """Verify execute_mock is lazy-initialized."""
+
+    async def callback(a: int) -> int:
+        return a
+
+    backend = SoftCommandBackend(callback)
+    cmd = Command(backend, name="test_cmd")
+    mock = DeviceMock()
+    await cmd.connect(mock=mock)
+
+    # execute_mock should not be in __dict__ before use
+    assert "execute_mock" not in cmd._connector.backend.__dict__
+
+    # First execution triggers initialization
+    status = cmd.execute(42)
+    await status
+
+    assert "execute_mock" in cmd._connector.backend.__dict__
+
+
+async def test_mock_command_backend_properties():
+    """Verify source, return type, and connection behavior."""
+
+    async def callback(a: int) -> str:
+        return str(a)
+
+    backend = SoftCommandBackend(callback)
+    cmd = Command(backend, name="test_cmd")
+    mock = DeviceMock()
+    await cmd.connect(mock=mock)
+
+    # Verify source string
+    assert cmd._connector.backend.source("test") == "mock+softcmd://test"
+
+    # Verify return type
+    assert cmd._connector.backend.get_return_type() is str
+
+    # Verify connect raises error
     with pytest.raises(NotConnectedError):
         await cmd._connector.backend.connect(1.0)
-    # Test 4: Verify mock is lazy-initialized and returns default for return type
-    new_cmd = Command(backend, name="new_cmd")
-    await new_cmd.connect(mock=mock)
-    assert "execute_mock" not in new_cmd._connector.backend.__dict__
-    status = new_cmd.execute(5, "lazy")
-    await status
-    assert status.value == ""
-    assert "execute_mock" in new_cmd._connector.backend.__dict__
-    # Test 5 verify return type
-    assert new_cmd._connector.backend.get_return_type() is str
 
 
 async def test_soft_command_factory():
