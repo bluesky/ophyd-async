@@ -1,5 +1,6 @@
 import asyncio
 from abc import abstractmethod
+from collections.abc import AsyncGenerator
 from functools import cached_property
 from typing import Generic
 
@@ -36,7 +37,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
 
     async def calculate_timeout(
         self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
-    ) -> SignalDatatypeT | None:
+    ) -> float | None:
         """Optional hook to calculate valid timeout for a move."""
         return None
 
@@ -44,10 +45,34 @@ class MovableLogic(Generic[SignalDatatypeT]):
         """Optional hook to return the units and precision."""
         return None, None
 
-    def move(
-        self, new_position: SignalDatatypeT, timeout: CalculatableTimeout
+    def get_move_status(
+        self, new_position: SignalDatatypeT, timeout: float | None
     ) -> AsyncStatus:
         return self.setpoint.set(new_position, timeout=timeout)
+
+    async def move(
+        self,
+        move_status: AsyncStatus,
+        old_position: SignalDatatypeT,
+        new_position: SignalDatatypeT,
+        timeout: float | None,
+        units: str | None,
+        precision: int | None,
+    ) -> AsyncGenerator[WatcherUpdate[SignalDatatypeT], None]:
+
+        async with move_status:
+            async for current_position in observe_value(
+                self.readback,
+                done_status=move_status,
+            ):
+                yield WatcherUpdate[SignalDatatypeT](
+                    current=current_position,
+                    initial=old_position,
+                    target=new_position,
+                    name=self.readback.name,
+                    unit=units,
+                    precision=precision,
+                )
 
 
 class InstantMovableMock(DeviceMock["StandardMovable"]):
@@ -98,28 +123,28 @@ class StandardMovable(
         )
         await self.movable_logic.check_move(old_position, new_position)
 
-        if timeout is CALCULATE_TIMEOUT:
-            timeout = await self.movable_logic.calculate_timeout(
-                old_position, new_position
-            )
-        self._move_status = self.movable_logic.move(new_position, timeout)
-        if self._move_status is not None:
-            async with self._move_status:
-                async for current_position in observe_value(
-                    self.movable_logic.readback,
-                    done_status=self._move_status,
-                ):
-                    if not self._set_success:
-                        raise RuntimeError(f"Device {self.name} was stopped.")
-
-                    yield WatcherUpdate[SignalDatatypeT](
-                        current=current_position,
-                        initial=old_position,
-                        target=new_position,
-                        name=self.name,
-                        unit=units,
-                        precision=precision,
-                    )
+        calculate_timeout = await self.movable_logic.calculate_timeout(
+            old_position, new_position
+        )
+        resolved_timeout: float | None = (
+            calculate_timeout if timeout is CALCULATE_TIMEOUT else timeout
+        )  # type: ignore
+        move_status = self.movable_logic.get_move_status(
+            new_position, timeout=resolved_timeout
+        )
+        if move_status is None:
+            return
+        async for update in self.movable_logic.move(
+            move_status=move_status,
+            old_position=old_position,
+            new_position=new_position,
+            timeout=resolved_timeout,
+            units=units,
+            precision=precision,
+        ):
+            if not self._set_success:
+                raise RuntimeError(f"Device {self.name} was stopped.")
+            yield update
 
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""

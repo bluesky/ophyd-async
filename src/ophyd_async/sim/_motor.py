@@ -115,7 +115,9 @@ class SimMotorMoveLogic(MovableLogic[float]):
             # Update the readback position
             self.signals.user_readback_set(position)
 
-    def move(self, new_position: float, timeout: CalculatableTimeout) -> AsyncStatus:
+    def get_move_status(
+        self, new_position: float, timeout: CalculatableTimeout
+    ) -> AsyncStatus:
         """Override the default to provide simulated move."""
         return AsyncStatus(self._internal_sim_move(new_position))
 
