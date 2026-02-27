@@ -1,7 +1,6 @@
 import asyncio
-import contextlib
 import time
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cached_property
 
@@ -17,9 +16,7 @@ from ophyd_async.core import (
     StandardMovable,
     StandardReadable,
     WatchableAsyncStatus,
-    WatcherUpdate,
     error_if_none,
-    observe_value,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
@@ -116,31 +113,6 @@ class SimMotorMoveLogic(MovableLogic[float]):
     ) -> AsyncStatus:
         """Override the default to provide simulated move."""
         return AsyncStatus(self._internal_sim_move(new_position))
-
-    async def move(
-        self,
-        move_status: AsyncStatus,
-        old_position: float,
-        new_position: float,
-        timeout: float | None,
-        units: str | None,
-        precision: int | None,
-    ) -> AsyncGenerator[WatcherUpdate[float], None]:
-
-        # If stop is called then this will raise a CancelledError, ignore it
-        with contextlib.suppress(asyncio.CancelledError):
-            async for current_position in observe_value(
-                self.readback,
-                done_status=move_status,
-            ):
-                yield WatcherUpdate[float](
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.readback.name,
-                    unit=units,
-                    precision=precision,
-                )
 
 
 class SimMotor(StandardReadable, StandardMovable[float]):
