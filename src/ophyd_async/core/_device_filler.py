@@ -38,13 +38,16 @@ def _get_datatype(annotation: Any) -> type | None:
     return None
 
 
-def _get_device_vector_child_datatype(vector: Device) -> type | None:
+def _get_device_vector_child_datatype(vector: Device | type[Device]) -> type | None:
+    # If passed a Device, try to get the original class
+    # extracting DeviceVector[SomeDevice] from a <DeviceVector>
     if generic_class := getattr(vector, "__orig_class__", None):
         # Type hinted DeviceVector
         # e.g., DeviceVector[SomeDevice]
         return _get_datatype(generic_class)
     else:
         # Sub class of type hinted DeviceVector
+        # We must extract the original base, which we can do from a type or cls
         # e.g., instance of `class CustomVector(DeviceVector[SomeDevice])`
         for base in getattr(vector, "__orig_bases__", ()):
             origin = get_origin_class(base)
@@ -175,7 +178,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             elif (isinstance(annotation, type) and issubclass(annotation, Device)) or (
                 isinstance(annotation, types.GenericAlias) and callable(annotation)
             ):
-                # Check for DeviceVector type hint
+                # Check for DeviceVector generic alias type hint
+                # If this is a plain `type`, then _get_datatype will return None
                 if vector_child_class := _get_datatype(annotation):
                     # Get the origin class of the type hint
                     child_origin = get_origin_class(vector_child_class)
@@ -183,6 +187,18 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                         # This is a DeviceVector of Signals, so validate hint
                         # i.e., Check that Signal hint contains datatype
                         self._validate_signal_datatype(name, vector_child_class)
+                # We may have a sub-class of DeviceVector
+                # If it is not a sub-class, then its a Device, so continue
+                # if it is a sub-class, check for datatype, and raise if None
+                elif (
+                    isinstance(annotation, type)
+                    and issubclass(annotation, DeviceVector)
+                    and not _get_device_vector_child_datatype(annotation)
+                ):
+                    # DeviceVector has no type parameter
+                    self._raise(
+                        name, f"Expected DeviceVector[SomeDevice], got {annotation}."
+                    )
                 self._uncreated_devices[name] = annotation
 
     def check_created(self):
