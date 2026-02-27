@@ -1,11 +1,11 @@
 import asyncio
 from asyncio import CancelledError, Event, get_event_loop
+from functools import cached_property
 from unittest.mock import AsyncMock, Mock
 
 import pytest
 
 from ophyd_async.core import (
-    CalculatableTimeout,
     MovableLogic,
     SignalR,
     SignalRW,
@@ -27,34 +27,19 @@ class MovableLogicImpl(MovableLogic[float]):
         self.readback = readback
         self.setpoint = setpoint
 
-    async def stop(self):
-        pass
-
-    async def check_move(self, old_position: float, new_position: float) -> None:
-        pass
-
-    async def calculate_timeout(self, old_position: float, new_position: float) -> None:
-        return None
-
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         return "mm", 3
-
-    def move(self, new_position: float, timeout: CalculatableTimeout):
-        return self.setpoint.set(new_position, timeout=timeout)
 
 
 class StandardMovableImpl(StandardMovable):
     def __init__(self, name: str = ""):
         self.readback, _ = soft_signal_r_and_setter(float)
         self.setpoint = soft_signal_rw(float)
-        self._movable_logic = MovableLogicImpl(
-            setpoint=self.setpoint, readback=self.readback
-        )
         super().__init__(name=name)
 
-    @property
+    @cached_property
     def movable_logic(self) -> MovableLogicImpl:
-        return self._movable_logic
+        return MovableLogicImpl(setpoint=self.setpoint, readback=self.readback)
 
 
 @pytest.fixture
@@ -62,6 +47,13 @@ async def movable() -> StandardMovableImpl:
     async with init_devices(mock=True):
         movable = StandardMovableImpl()
     return movable
+
+
+def test_movable_logic_is_cached(movable: StandardMovableImpl):
+    logic = movable.movable_logic
+    logic2 = movable.movable_logic
+
+    assert logic == logic2
 
 
 async def test_locatable(movable: StandardMovableImpl) -> None:
@@ -150,8 +142,8 @@ async def test_cancellederror_in_set_ensures_movable_setpoint_set_task_is_cancel
 async def test_movable_set_calls_movable_logic_check_move_and_calculate_timeout(
     movable: StandardMovableImpl,
 ):
-    mock_check_move = movable._movable_logic.check_move = AsyncMock()
-    mock_calculate_timeout = movable._movable_logic.calculate_timeout = AsyncMock(
+    mock_check_move = movable.movable_logic.check_move = AsyncMock()
+    mock_calculate_timeout = movable.movable_logic.calculate_timeout = AsyncMock(
         return_value=5
     )
     await movable.set(10)

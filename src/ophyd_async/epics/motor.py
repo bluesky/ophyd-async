@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
+from functools import cached_property
 
 from bluesky.protocols import Flyable, Preparable
 
@@ -236,6 +237,11 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
         # Set on kickoff(), complete when motor reaches self._fly_completed_position
         self._fly_status: WatchableAsyncStatus | None = None
 
+        super().__init__(name)
+
+    @cached_property
+    def movable_logic(self) -> MotorMoveLogic:
+        """Return MotorMoveLogic for this motor."""
         motor_signals = MotorMoveLogicSignals(
             user_readback=self.user_readback,
             user_setpoint=self.user_setpoint,
@@ -249,13 +255,7 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
             acceleration_time=self.acceleration_time,
             precision=self.precision,
         )
-        self._movable_logic = MotorMoveLogic(motor_signals)
-        super().__init__(name)
-
-    @property
-    def movable_logic(self) -> MotorMoveLogic:
-        """Return MotorMoveLogic for this motor."""
-        return self._movable_logic
+        return MotorMoveLogic(motor_signals)
 
     async def check_motor_limit(self, abs_start_pos: float, abs_end_pos: float):
         """Check the positions are within limits.

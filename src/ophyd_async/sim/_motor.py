@@ -2,6 +2,7 @@ import asyncio
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import cached_property
 
 import numpy as np
 
@@ -163,9 +164,17 @@ class SimMotor(StandardReadable, StandardMovable[float]):
         self._movable_logic = SimMotorMoveLogic(motor_signals)
         super().__init__(name=name)
 
-    @property
+    @cached_property
     def movable_logic(self):
-        return self._movable_logic
+        motor_signals = SimMotorMoveLogicSignals(
+            user_readback=self.user_readback,
+            user_readback_set=self._user_readback_set,
+            user_setpoint=self.user_setpoint,
+            velocity=self.velocity,
+            acceleration_time=self.acceleration_time,
+            units=self.units,
+        )
+        return SimMotorMoveLogic(motor_signals)
 
     @AsyncStatus.wrap
     async def prepare(self, value: FlyMotorInfo):

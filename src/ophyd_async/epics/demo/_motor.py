@@ -1,5 +1,6 @@
 import asyncio
 from dataclasses import dataclass
+from functools import cached_property
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -66,6 +67,10 @@ class DemoMotor(StandardReadable, StandardMovable):
         # If a signal name clashes with a bluesky verb add _ to the attribute name
         self.stop_ = epics_signal_x(prefix + "Stop.PROC")
 
+        super().__init__(name)
+
+    @cached_property
+    def movable_logic(self) -> DemoMotorMoveLogic:
         motor_signals = DemoMotorMoveSiganls(
             readback=self.readback,
             setpoint=self.setpoint,
@@ -74,10 +79,4 @@ class DemoMotor(StandardReadable, StandardMovable):
             precision=self.precision,
             stop=self.stop_,
         )
-        self._movable_logic = DemoMotorMoveLogic(motor_signals)
-
-        super().__init__(name)
-
-    @property
-    def movable_logic(self) -> DemoMotorMoveLogic:
-        return self._movable_logic
+        return DemoMotorMoveLogic(motor_signals)

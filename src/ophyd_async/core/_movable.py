@@ -1,5 +1,6 @@
 import asyncio
 from abc import abstractmethod
+from functools import cached_property
 from typing import Generic
 
 from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
@@ -78,7 +79,7 @@ class StandardMovable(
     _set_success = True
     _move_status: AsyncStatus | None = None
 
-    @property
+    @cached_property
     @abstractmethod
     def movable_logic(self) -> MovableLogic:
         """Add movable logic for a device."""
