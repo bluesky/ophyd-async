@@ -60,19 +60,20 @@ class MovableLogic(Generic[SignalDatatypeT]):
         precision: int | None,
     ) -> AsyncGenerator[WatcherUpdate[SignalDatatypeT], None]:
 
-        async with move_status:
-            async for current_position in observe_value(
-                self.readback,
-                # done_status=move_status,
-            ):
-                yield WatcherUpdate[SignalDatatypeT](
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.readback.name,
-                    unit=units,
-                    precision=precision,
-                )
+        obs_val = observe_value(self.readback, done_status=move_status)
+        try:
+            async with move_status:
+                async for current_position in obs_val:
+                    yield WatcherUpdate[SignalDatatypeT](
+                        current=current_position,
+                        initial=old_position,
+                        target=new_position,
+                        name=self.readback.name,
+                        unit=units,
+                        precision=precision,
+                    )
+        finally:
+            await obs_val.aclose()
 
 
 class InstantMovableMock(DeviceMock["StandardMovable"]):
