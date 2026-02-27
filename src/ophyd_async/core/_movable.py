@@ -147,8 +147,6 @@ class StandardMovable(
                     raise RuntimeError(f"Device {self.name} was stopped.")
                 yield update
 
-                if self._move_status.done:
-                    break
         finally:
             self._move_status = None
 
@@ -158,9 +156,6 @@ class StandardMovable(
     async def stop(self, success=False):
         """Request to stop moving and return immediately."""
         self._set_success = success
-        if self._move_status is not None:
-            self._move_status.task.cancel()
-            self._move_status = None
         await self.movable_logic.stop()
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:

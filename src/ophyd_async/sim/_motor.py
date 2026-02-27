@@ -27,20 +27,13 @@ from ophyd_async.core import StandardReadableFormat as Format
 
 
 @dataclass
-class SimMotorMoveLogicSignals:
-    user_readback: SignalR[float]
-    user_readback_set: Callable[[float], None]
-    user_setpoint: SignalRW[float]
+class SimMotorMoveLogic(MovableLogic[float]):
+    readback: SignalR[float]
+    readback_set: Callable[[float], None]
+    setpoint: SignalRW[float]
     velocity: SignalRW[float]
     acceleration_time: SignalRW[float]
     units: SignalRW[str]
-
-
-class SimMotorMoveLogic(MovableLogic[float]):
-    def __init__(self, signals: SimMotorMoveLogicSignals):
-        self.signals = signals
-        self.setpoint = signals.user_setpoint
-        self.readback = signals.user_readback
 
     async def stop(self) -> None:
         """Stop the motion."""
@@ -48,21 +41,21 @@ class SimMotorMoveLogic(MovableLogic[float]):
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         """Return the units and precision."""
-        return await self.signals.units.get_value(), None
+        return await self.units.get_value(), None
 
     async def _internal_sim_move(self, new_position: float) -> None:
-        velocity = await self.signals.velocity.get_value()
-        old_position = await self.signals.user_setpoint.get_value()
+        velocity = await self.velocity.get_value()
+        old_position = await self.setpoint.get_value()
         if old_position == new_position:
             return
 
-        await self.signals.user_setpoint.set(new_position)
+        await self.setpoint.set(new_position)
         if velocity == 0:
-            self.signals.user_readback_set(new_position)
+            self.readback_set(new_position)
             return
 
         start = time.monotonic()
-        acceleration_time = abs(await self.signals.acceleration_time.get_value())
+        acceleration_time = abs(await self.acceleration_time.get_value())
         sign = np.sign(new_position - old_position)
         velocity = abs(velocity) * sign
         # The total distance to move
@@ -116,7 +109,7 @@ class SimMotorMoveLogic(MovableLogic[float]):
             relative_time = time.monotonic() - start
             await asyncio.sleep(t - relative_time)
             # Update the readback position
-            self.signals.user_readback_set(position)
+            self.readback_set(position)
 
     def get_move_status(
         self, new_position: float, timeout: CalculatableTimeout
@@ -183,28 +176,18 @@ class SimMotor(StandardReadable, StandardMovable[float]):
         # Set on kickoff(), complete when motor reaches end position
         self._fly_status: WatchableAsyncStatus | None = None
 
-        motor_signals = SimMotorMoveLogicSignals(
-            user_readback=self.user_readback,
-            user_readback_set=self._user_readback_set,
-            user_setpoint=self.user_setpoint,
-            velocity=self.velocity,
-            acceleration_time=self.acceleration_time,
-            units=self.units,
-        )
-        self._movable_logic = SimMotorMoveLogic(motor_signals)
         super().__init__(name=name)
 
     @cached_property
     def movable_logic(self):
-        motor_signals = SimMotorMoveLogicSignals(
-            user_readback=self.user_readback,
-            user_readback_set=self._user_readback_set,
-            user_setpoint=self.user_setpoint,
+        return SimMotorMoveLogic(
+            readback=self.user_readback,
+            readback_set=self._user_readback_set,
+            setpoint=self.user_setpoint,
             velocity=self.velocity,
             acceleration_time=self.acceleration_time,
             units=self.units,
         )
-        return SimMotorMoveLogic(motor_signals)
 
     @AsyncStatus.wrap
     async def prepare(self, value: FlyMotorInfo):

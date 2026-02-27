@@ -26,34 +26,27 @@ from ophyd_async.epics.core import (
 
 
 @dataclass
-class DemoMotorMoveSiganls:
+class DemoMotorMoveLogic(MovableLogic[float]):
     readback: SignalR[float]
     setpoint: SignalRW[float]
     velocity: SignalRW[float]
     units: SignalR[str]
     precision: SignalR[int]
-    stop: SignalX
-
-
-class DemoMotorMoveLogic(MovableLogic[float]):
-    def __init__(self, motor_signals: DemoMotorMoveSiganls):
-        self.motor_signals = motor_signals
-        self.readback = motor_signals.readback
-        self.setpoint = motor_signals.setpoint
+    stop_: SignalX
 
     async def stop(self):
-        await self.motor_signals.stop.trigger()
+        await self.stop_.trigger()
 
     async def calculate_timeout(
         self, old_position: float, new_position: float
     ) -> float:
-        velocity = await self.motor_signals.velocity.get_value()
+        velocity = await self.velocity.get_value()
         return abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
 
     async def get_units_precision(self) -> tuple[str, int]:
         return await asyncio.gather(
-            self.motor_signals.units.get_value(),
-            self.motor_signals.precision.get_value(),
+            self.units.get_value(),
+            self.precision.get_value(),
         )
 
     async def move(
@@ -106,12 +99,11 @@ class DemoMotor(StandardReadable, StandardMovable):
 
     @cached_property
     def movable_logic(self) -> DemoMotorMoveLogic:
-        motor_signals = DemoMotorMoveSiganls(
+        return DemoMotorMoveLogic(
             readback=self.readback,
             setpoint=self.setpoint,
             velocity=self.velocity,
             units=self.units,
             precision=self.precision,
-            stop=self.stop_,
+            stop_=self.stop_,
         )
-        return DemoMotorMoveLogic(motor_signals)
