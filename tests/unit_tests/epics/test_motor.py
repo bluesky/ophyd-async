@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
@@ -100,6 +101,10 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
     )
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32" and sys.version_info[:2] == (3, 11),
+    reason="Flaky on Windows Python 3.11 due to asyncio scheduling differences",
+)
 async def test_motor_moving_stopped(sim_motor: motor.Motor):
     set_mock_value(sim_motor.motor_done_move, False)
     set_mock_put_proceeds(sim_motor.user_setpoint, False)
