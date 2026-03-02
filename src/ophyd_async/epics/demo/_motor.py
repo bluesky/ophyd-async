@@ -54,23 +54,23 @@ class DemoMotorMoveLogic(MovableLogic[float]):
         precision: int | None,
     ) -> AsyncGenerator[WatcherUpdate[float], None]:
 
-        async with move_status:
-            # Observe the readback Signal, and on each new position...
-            async for current_position in observe_value(
-                self.readback, done_timeout=timeout
-            ):
-                # Emit a progress bar update
-                yield WatcherUpdate(
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.readback.name,
-                    unit=units,
-                    precision=precision,
-                )
-                # If we are at the desired position the break
-                if np.isclose(current_position, new_position):
-                    break
+        await move_status
+        # Observe the readback Signal, and on each new position...
+        async for current_position in observe_value(
+            self.readback, done_timeout=timeout
+        ):
+            # Emit a progress bar update
+            yield WatcherUpdate(
+                current=current_position,
+                initial=old_position,
+                target=new_position,
+                name=self.readback.name,
+                unit=units,
+                precision=precision,
+            )
+            # If we are at the desired position the break
+            if np.isclose(current_position, new_position):
+                break
 
 
 class DemoMotor(EpicsDevice, StandardReadable, StandardMovable):
