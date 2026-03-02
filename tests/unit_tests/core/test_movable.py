@@ -28,7 +28,7 @@ class StandardMovableImpl(StandardMovable):
 
     @cached_property
     def movable_logic(self) -> MovableLogic[float]:
-        return MovableLogic[float](setpoint=self.setpoint, readback=self.readback)
+        return MovableLogic(setpoint=self.setpoint, readback=self.readback)
 
 
 @pytest.fixture

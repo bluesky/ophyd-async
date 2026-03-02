@@ -80,7 +80,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
                 self.readback,
                 done_status=move_status,
             ):
-                yield WatcherUpdate[SignalDatatypeT](
+                yield WatcherUpdate(
                     current=current_position,
                     initial=old_position,
                     target=new_position,
@@ -117,14 +117,13 @@ class StandardMovable(
 
     # Whether set() should complete successfully or not
     _set_success = True
-    _move_status: AsyncStatus | None = None
 
     @cached_property
     @abstractmethod
     def movable_logic(self) -> MovableLogic:
         """Add movable logic for a device."""
 
-    @WatchableAsyncStatus[SignalDatatypeT].wrap
+    @WatchableAsyncStatus.wrap
     async def set(
         self,
         new_position: SignalDatatypeT,
@@ -144,25 +143,19 @@ class StandardMovable(
         resolved_timeout: float | None = (
             calculate_timeout if timeout is CALCULATE_TIMEOUT else timeout
         )  # type: ignore
-        try:
-            self._move_status = self.movable_logic.get_move_status(
-                new_position, timeout=resolved_timeout
-            )
-            if self._move_status is None:
-                return
-            async for update in self.movable_logic.move(
-                move_status=self._move_status,
-                old_position=old_position,
-                new_position=new_position,
-                timeout=resolved_timeout,
-                units=units,
-                precision=precision,
-            ):
-                if not self._set_success:
-                    raise RuntimeError(f"Device {self.name} was stopped.")
-                yield update
-        finally:
-            self._move_status = None
+
+        move_status = self.movable_logic.get_move_status(
+            new_position, timeout=resolved_timeout
+        )
+        async for update in self.movable_logic.move(
+            move_status=move_status,
+            old_position=old_position,
+            new_position=new_position,
+            timeout=resolved_timeout,
+            units=units,
+            precision=precision,
+        ):
+            yield update
 
         if not self._set_success:
             raise RuntimeError(f"Device {self.name} was stopped.")
