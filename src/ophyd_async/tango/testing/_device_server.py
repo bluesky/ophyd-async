@@ -23,7 +23,7 @@ class TangoSubprocessDeviceServer:
 
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("", 0))
+        self.sock.bind(("127.0.0.1", 0))
         port = str(self.sock.getsockname()[1])
         self.sock.listen(1)
         subprocess_path = str(Path(__file__).parent / "_device_server.py")
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     port = int(sys.argv[1])
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(("localhost", port))
+    sock.connect(("127.0.0.1", port))
 
     pickled_args = sock.recv(BYTES_TO_READ)
     context_args = pickle.loads(pickled_args)
