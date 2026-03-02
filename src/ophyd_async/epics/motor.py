@@ -82,8 +82,6 @@ class UseSetMode(StrictEnum):
 class MotorMoveLogic(MovableLogic[float]):
     """Add the specific logic for moving a motor."""
 
-    readback: SignalR[float]
-    setpoint: SignalRW[float]
     motor_stop: SignalW[int]
     low_limit_travel: SignalRW[float]
     high_limit_travel: SignalRW[float]

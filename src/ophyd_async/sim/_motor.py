@@ -12,7 +12,6 @@ from ophyd_async.core import (
     CalculatableTimeout,
     FlyMotorInfo,
     MovableLogic,
-    SignalR,
     SignalRW,
     StandardMovable,
     StandardReadable,
@@ -28,9 +27,7 @@ from ophyd_async.core import StandardReadableFormat as Format
 
 @dataclass
 class SimMotorMoveLogic(MovableLogic[float]):
-    readback: SignalR[float]
     readback_set: Callable[[float], None]
-    setpoint: SignalRW[float]
     velocity: SignalRW[float]
     acceleration_time: SignalRW[float]
     units: SignalRW[str]

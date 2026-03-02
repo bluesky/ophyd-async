@@ -1,10 +1,17 @@
 import asyncio
 from abc import abstractmethod
 from collections.abc import AsyncGenerator
+from dataclasses import dataclass
 from functools import cached_property
 from typing import Generic
 
-from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
+from bluesky.protocols import (
+    Locatable,
+    Location,
+    Reading,
+    Stoppable,
+    Subscribable,
+)
 
 from ._device import Device, DeviceMock, default_mock_class
 from ._mock_signal_utils import callback_on_mock_put, set_mock_value
@@ -19,6 +26,7 @@ from ._utils import (
 )
 
 
+@dataclass
 class MovableLogic(Generic[SignalDatatypeT]):
     """Movable logic for stopping and checking valid moves of a StandardMovable."""
 
