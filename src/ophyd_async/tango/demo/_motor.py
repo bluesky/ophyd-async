@@ -27,17 +27,11 @@ class DemoMotor(TangoDevice, StandardReadable, Movable, Stoppable):
     # Enter the name and type of the signals you want to use
     # If the server doesn't support events, the TangoPolling annotation gives
     # the parameters for ophyd to poll instead
-    position: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
-    velocity: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
+    position: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001), Format.HINTED_SIGNAL]
+    velocity: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001), Format.CONFIG_SIGNAL]
     state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
     # If a tango name clashes with a bluesky verb, add a trailing underscore
     stop_: SignalX
-
-    def __init__(self, trl: str, name=""):
-        super().__init__(trl, name=name)
-        self.add_readables([self.position], Format.HINTED_SIGNAL)
-        self.add_readables([self.velocity], Format.CONFIG_SIGNAL)
-        self._set_success = True
 
     @WatchableAsyncStatus.wrap
     async def set(self, value: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT):

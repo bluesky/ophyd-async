@@ -1,9 +1,7 @@
 import asyncio
 import math
-import time
 from enum import IntEnum
 
-import numpy as np
 from tango import AttrWriteType, DevState, GreenMode
 from tango.asyncio import DeviceProxy
 from tango.server import Device, attribute, command, device_property
@@ -203,49 +201,3 @@ class DemoPointDetectorChannelDevice(Device):
     @attribute(dtype=int, access=AttrWriteType.READ)
     async def value(self):
         return self._value
-
-
-class DemoCounterServer(Device):
-    """Demo tango counting device."""
-
-    green_mode = GreenMode.Asyncio
-    _counts = 0
-    _sample_time = 1.0
-
-    @attribute(dtype=int, access=AttrWriteType.READ)
-    async def counts(self):
-        return self._counts
-
-    @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
-    async def sample_time(self):
-        return self._sample_time
-
-    async def write_sample_time(self, value: float):
-        self._sample_time = value
-
-    @attribute(dtype=DevState, access=AttrWriteType.READ)
-    async def state(self):
-        return self.get_state()
-
-    @command
-    async def reset(self):
-        self._counts = 0
-        return self._counts
-
-    @command
-    async def start(self):
-        self._counts = 0
-        if self._sample_time <= 0.0:
-            return
-        self.set_state(DevState.MOVING)
-        await self._trigger()
-        self.set_state(DevState.ON)
-
-    async def _trigger(self):
-        st = time.time()
-        while True:
-            ct = time.time()
-            if ct - st > self._sample_time:
-                break
-            self._counts += int(np.random.normal(1000, 100))
-            await asyncio.sleep(0.1)

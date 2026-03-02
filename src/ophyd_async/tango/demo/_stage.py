@@ -6,7 +6,7 @@ from ._motor import DemoMotor
 class DemoStage(StandardReadable):
     """A simulated sample stage with X and Y movables."""
 
-    def __init__(self, x_trl: str | None = "", y_trl: str | None = "", name="") -> None:
+    def __init__(self, x_trl: str, y_trl: str, name="") -> None:
         # Define some child Devices
         with self.add_children_as_readables():
             self.x = DemoMotor(x_trl)

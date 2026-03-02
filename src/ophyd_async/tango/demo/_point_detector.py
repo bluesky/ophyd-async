@@ -27,12 +27,12 @@ class DemoPointDetector(TangoDevice, StandardReadable, Triggerable):
 
     def __init__(self, trl: str, channel_trls: list[str], name: str = "") -> None:
         with self.add_children_as_readables():
-            device_vector = {}
-            i = 1
-            for channel_trl in channel_trls:
-                device_vector[i] = DemoPointDetectorChannel(channel_trl)
-                i += 1
-            self.channel = DeviceVector(device_vector)
+            self.channel = DeviceVector(
+                {
+                    i + 1: DemoPointDetectorChannel(channel_trl)
+                    for i, channel_trl in enumerate(channel_trls)
+                }
+            )
         super().__init__(trl, name=name)
 
     @AsyncStatus.wrap
