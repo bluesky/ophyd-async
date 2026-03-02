@@ -146,7 +146,6 @@ class StandardMovable(
                 if not self._set_success:
                     raise RuntimeError(f"Device {self.name} was stopped.")
                 yield update
-
         finally:
             self._move_status = None
 
