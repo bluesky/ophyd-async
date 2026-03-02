@@ -48,7 +48,7 @@ def test_movable_logic_is_cached(movable: StandardMovableImpl):
 async def test_locatable(movable: StandardMovableImpl) -> None:
     callback_on_mock_put(
         movable.setpoint,
-        lambda x, *_, **__: set_mock_value(movable.readback, x),
+        lambda x: set_mock_value(movable.readback, x),
     )
     assert (await movable.locate())["readback"] == 0
     with mock_puts_blocked(movable.setpoint):
