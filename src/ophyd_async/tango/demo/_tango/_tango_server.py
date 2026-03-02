@@ -1,3 +1,4 @@
+import atexit
 from pathlib import Path
 
 import tango
@@ -62,7 +63,7 @@ def start_device_server_subprocess(
     device_proxy.locators = channel_locators
     device_proxy.connect_devices()
 
-    # Equivalent of this call ?
-    #    atexit.register(ioc.stop)
+    # Ensure the tango subprocess closes down and cleans up
+    atexit.register(tango_server.disconnect)
 
     return tango_server
