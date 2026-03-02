@@ -2,6 +2,7 @@ import asyncio
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from functools import cached_property
+from typing import Annotated as A
 
 import numpy as np
 
@@ -14,14 +15,13 @@ from ophyd_async.core import (
     SignalX,
     StandardMovable,
     StandardReadable,
-    StandardReadableFormat,
     WatcherUpdate,
     observe_value,
 )
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import (
-    epics_signal_r,
-    epics_signal_rw,
-    epics_signal_x,
+    EpicsDevice,
+    PvSuffix,
 )
 
 
@@ -79,23 +79,17 @@ class DemoMotorMoveLogic(MovableLogic[float]):
                 break
 
 
-class DemoMotor(StandardReadable, StandardMovable):
+class DemoMotor(EpicsDevice, StandardReadable, StandardMovable):
     """A demo movable that moves based on velocity."""
 
-    def __init__(self, prefix: str, name: str = ""):
-        with self.add_children_as_readables(StandardReadableFormat.HINTED_SIGNAL):
-            self.readback = epics_signal_r(float, prefix + "Readback")
-        self.setpoint = epics_signal_rw(float, prefix + "Setpoint")
-
-        with self.add_children_as_readables(StandardReadableFormat.CONFIG_SIGNAL):
-            self.velocity = epics_signal_rw(float, prefix + "Velocity")
-            self.units = epics_signal_r(str, prefix + "Readback.EGU")
-
-        self.precision = epics_signal_r(int, prefix + "Readback.PREC")
-        # If a signal name clashes with a bluesky verb add _ to the attribute name
-        self.stop_ = epics_signal_x(prefix + "Stop.PROC")
-
-        super().__init__(name)
+    # Define some signals
+    readback: A[SignalR[float], PvSuffix("Readback"), Format.HINTED_SIGNAL]
+    velocity: A[SignalRW[float], PvSuffix("Velocity"), Format.CONFIG_SIGNAL]
+    units: A[SignalR[str], PvSuffix("Readback.EGU"), Format.CONFIG_SIGNAL]
+    setpoint: A[SignalRW[float], PvSuffix("Setpoint")]
+    precision: A[SignalR[int], PvSuffix("Readback.PREC")]
+    # If a signal name clashes with a bluesky verb add _ to the attribute name
+    stop_: A[SignalX, PvSuffix("Stop.PROC")]
 
     @cached_property
     def movable_logic(self) -> DemoMotorMoveLogic:
