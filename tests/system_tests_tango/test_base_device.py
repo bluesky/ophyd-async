@@ -34,11 +34,13 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
-    DemoDetector,
+    DemoMotor,
+    DemoPointDetector,
 )
 from ophyd_async.tango.demo._tango import (
-    DemoCounterServer,  # noqa: PLC2701
     DemoMotorDevice,  # noqa: PLC2701
+    DemoMultiChannelDetectorDevice,  # noqa: PLC2701
+    DemoPointDetectorChannelDevice,  # noqa: PLC2701
 )
 from ophyd_async.testing import assert_reading
 
@@ -365,16 +367,20 @@ def tango_test_device(subprocess_helper):
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
 def sim_test_context_trls(subprocess_helper):
-    args = (
+    args = [
         {
             "class": DemoMotorDevice,
             "devices": [{"name": "sim/motor/1"}],
         },
         {
-            "class": DemoCounterServer,
+            "class": DemoPointDetectorChannelDevice,
             "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
         },
-    )
+        {
+            "class": DemoMultiChannelDetectorDevice,
+            "devices": [{"name": "sim/detector/1"}],
+        },
+    ]
     with subprocess_helper(args) as context:
         yield context.trls
 
@@ -440,31 +446,36 @@ async def test_with_bluesky(tango_test_device):
 @pytest.mark.asyncio
 @pytest.mark.timeout(15.5)
 async def test_tango_sim(sim_test_context_trls):
-    detector = DemoDetector(
+    detector = DemoPointDetector(
         name="detector",
-        mover_trl=sim_test_context_trls["sim/motor/1"],
-        counter_trls=[
+        trl=sim_test_context_trls["sim/detector/1"],
+        channel_trls=[
             sim_test_context_trls["sim/counter/1"],
             sim_test_context_trls["sim/counter/2"],
         ],
     )
     await detector.connect()
     await detector.trigger()
-    await detector.mover.velocity.set(0.5)
+
+    motor = DemoMotor(name="motor", trl=sim_test_context_trls["sim/motor/1"])
+    await motor.connect()
+    await motor.velocity.set(0.5)
 
     RE = RunEngine()
 
     RE(bps.read(detector))
-    RE(bps.mv(detector, 0))
-    RE(bp.count(list(detector.counters.values())))
+    RE(bps.mv(motor, 0))
+    RE(bp.count(list(detector.channel.values())))
 
-    set_status = detector.set(1.0)
+    set_status = motor.set(1.0)
     await asyncio.sleep(1.0)
-    stop_status = detector.stop()
+
+    stop_status = motor.stop()
     await set_status
     await stop_status
     assert all([set_status.done, stop_status.done])
     assert all([set_status.success, stop_status.success])
+    await asyncio.sleep(3.0)
 
 
 @pytest.mark.asyncio

@@ -54,8 +54,7 @@ class DemoMotor(TangoDevice, StandardReadable, Movable, Stoppable):
         move_status = AsyncStatus(
             wait_for_value(self.state, DevStateEnum.ON, timeout=timeout)
         )
-
-        try:
+        async with move_status:
             async for current_position in observe_value(
                 self.position, done_status=move_status
             ):
@@ -65,9 +64,6 @@ class DemoMotor(TangoDevice, StandardReadable, Movable, Stoppable):
                     target=value,
                     name=self.name,
                 )
-        except RuntimeError as exc:
-            self._set_success = False
-            raise RuntimeError("Motor was stopped") from exc
         if not self._set_success:
             raise RuntimeError("Motor was stopped")
 
