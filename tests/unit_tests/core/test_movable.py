@@ -145,7 +145,7 @@ async def test_motor_set_with_instant_mock(
     """Integration test: use motor.set() with InstantMotorMock.
 
     This verifies that InstantMotorMock provides all necessary default values
-    (velocity, limits, etc.) so motor.set() works without errors.
+    so device.set() works without errors.
     """
     # Use motor.set() to move the motor - should work without errors
     status = movable.set(100.0)
