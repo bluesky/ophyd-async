@@ -7,8 +7,6 @@ import pytest
 
 from ophyd_async.core import (
     MovableLogic,
-    SignalR,
-    SignalRW,
     StandardMovable,
     callback_on_mock_put,
     get_mock_put,
@@ -22,15 +20,6 @@ from ophyd_async.core import (
 from ophyd_async.testing import wait_for_pending_wakeups
 
 
-class MovableLogicImpl(MovableLogic[float]):
-    def __init__(self, setpoint: SignalRW[float], readback: SignalR[float]):
-        self.readback = readback
-        self.setpoint = setpoint
-
-    async def get_units_precision(self) -> tuple[str | None, int | None]:
-        return "mm", 3
-
-
 class StandardMovableImpl(StandardMovable):
     def __init__(self, name: str = ""):
         self.readback, _ = soft_signal_r_and_setter(float)
@@ -38,8 +27,8 @@ class StandardMovableImpl(StandardMovable):
         super().__init__(name=name)
 
     @cached_property
-    def movable_logic(self) -> MovableLogicImpl:
-        return MovableLogicImpl(setpoint=self.setpoint, readback=self.readback)
+    def movable_logic(self) -> MovableLogic:
+        return MovableLogic(setpoint=self.setpoint, readback=self.readback)
 
 
 @pytest.fixture
