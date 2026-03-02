@@ -295,7 +295,7 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
         connector: DeviceConnector | None = None,
     ) -> None:
         self._children: dict[int, DeviceT] = {}
-        self.update(children) if children else self.update({})
+        self.update(children or {})
         super().__init__(name=name, connector=connector)
 
     def __getitem__(self, key: int) -> DeviceT:

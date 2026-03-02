@@ -92,13 +92,11 @@ class PviDeviceConnector(DeviceConnector):
                 connector = self.filler.fill_child_device(
                     device_name, device_type=DeviceVector
                 )
-                connector.pvi_tree = device_sub_tree
-                connector.pvi_pv = device_sub_tree.pvi_pv
             else:
                 # This is a Device
                 connector = self.filler.fill_child_device(device_name)
-                connector.pvi_tree = device_sub_tree
-                connector.pvi_pv = device_sub_tree.pvi_pv
+            connector.pvi_tree = device_sub_tree
+            connector.pvi_pv = device_sub_tree.pvi_pv
 
         # Fill all vector sub-device
         for (

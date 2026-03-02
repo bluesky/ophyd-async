@@ -29,6 +29,10 @@ UniqueName = NewType("UniqueName", str)
 LogicalName = NewType("LogicalName", str)
 
 
+class DeviceFactory(Protocol):
+    def __call__(self, connector: DeviceConnector) -> Device: ...
+
+
 def _get_datatype(annotation: Any) -> type | None:
     """Return int from SignalRW[int]."""
     args = get_args(annotation)
@@ -51,7 +55,7 @@ def _get_device_vector_child_datatype(vector: Device | type[Device]) -> type | N
         # e.g., instance of `class CustomVector(DeviceVector[SomeDevice])`
         for base in getattr(vector, "__orig_bases__", ()):
             origin = get_origin_class(base)
-            if origin:
+            if origin is DeviceVector:
                 return _get_datatype(base)
 
     return None
@@ -93,9 +97,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self._device_connector_factory = device_connector_factory
         # Annotations stored ready for the creation phase
         self._uncreated_signals: dict[UniqueName, type[Signal]] = {}
-        self._uncreated_devices: dict[
-            UniqueName, type[Device] | Callable[..., Device]
-        ] = {}
+        self._uncreated_devices: dict[UniqueName, type[Device] | DeviceFactory] = {}
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
         self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
@@ -406,10 +408,6 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
-        elif device_type is DeviceVector:
-            # We need to add a new child DeviceVector to the top level Device
-            connector = self._device_connector_factory()
-            setattr(self._device, name, device_type(connector=connector, children={}))
         else:
             # We need to add a new child Device to the top level Device
             connector = self._device_connector_factory()
