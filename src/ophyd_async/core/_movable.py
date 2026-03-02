@@ -28,7 +28,13 @@ from ._utils import (
 
 @dataclass
 class MovableLogic(Generic[SignalDatatypeT]):
-    """Movable logic for stopping and checking valid moves of a StandardMovable."""
+    """Minimum logic needed for controlling a ``StandardMovable``.
+
+    Can be inherited to add specialised logic for stop, checking if a move is valid,
+    calculate a valid timeout for a move, and add units and precision. Sub classes can
+    also override the ``get_move_status`` and ``move`` methods if more control is needed
+    to provide a custom AsyncStatus and to handle the move logic.
+    """
 
     setpoint: SignalRW[SignalDatatypeT]
     readback: SignalR[SignalDatatypeT]
@@ -56,6 +62,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
     def get_move_status(
         self, new_position: SignalDatatypeT, timeout: float | None
     ) -> AsyncStatus:
+        """Return the AsyncStatus for the move."""
         return self.setpoint.set(new_position, timeout=timeout)
 
     async def move(
@@ -67,7 +74,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
         units: str | None,
         precision: int | None,
     ) -> AsyncGenerator[WatcherUpdate[SignalDatatypeT], None]:
-
+        """Move the device and provide WatcherUpdates until device move complete."""
         async with move_status:
             async for current_position in observe_value(
                 self.readback,
@@ -105,7 +112,7 @@ class StandardMovable(
 ):
     """Device that provides standard logic for moving.
 
-    This class must be inherited and have a ``movable_logic``property.
+    This class must be inherited and have a ``movable_logic`` @cached_property.
     """
 
     # Whether set() should complete successfully or not
