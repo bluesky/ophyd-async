@@ -27,8 +27,8 @@ class StandardMovableImpl(StandardMovable):
         super().__init__(name=name)
 
     @cached_property
-    def movable_logic(self) -> MovableLogic:
-        return MovableLogic(setpoint=self.setpoint, readback=self.readback)
+    def movable_logic(self) -> MovableLogic[float]:
+        return MovableLogic[float](setpoint=self.setpoint, readback=self.readback)
 
 
 @pytest.fixture
@@ -78,8 +78,6 @@ async def test_movable_move_timeout(movable: StandardMovableImpl):
         current=0.0,
         initial=0.0,
         target=0.3,
-        unit="mm",
-        precision=3,
         time_elapsed=pytest.approx(0.0, abs=0.2),
     )
 

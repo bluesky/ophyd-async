@@ -24,9 +24,16 @@ async def test_move_sim_in_plan():
     assert await m2.user_readback.get_value() == -2
 
 
+@pytest.fixture(params=[True, False])
+def m1(
+    request: pytest.FixtureRequest,
+) -> SimMotor:
+    return SimMotor("M1", instant=request.param)
+
+
 @pytest.fixture
-def m1() -> SimMotor:
-    return SimMotor("M1", instant=False)
+def m2() -> SimMotor:
+    return SimMotor("M2", instant=False)
 
 
 @pytest.mark.xfail(reason="Flaky test")
@@ -58,24 +65,24 @@ async def test_move_profiles(setpoint, expected, m1: SimMotor):
     assert await m1.user_readback.get_value() == setpoint
 
 
-async def test_short_move_is_exactly_move_time(m1: SimMotor):
+async def test_short_move_is_exactly_move_time(m2: SimMotor):
     with patch("asyncio.sleep") as mock_sleep:
-        await m1.set(0.0032)
+        await m2.set(0.0032)
     mock_sleep.assert_called_once_with(pytest.approx(0.08, abs=0.02))
 
 
 @pytest.mark.timeout(3)
-async def test_stop(m1: SimMotor):
+async def test_stop(m2: SimMotor):
     # this move should take 10 seconds but we will stop it after 0.5
-    move_status = m1.set(10)
+    move_status = m2.set(10)
     await asyncio.sleep(0.5)
-    await m1.stop(success=False)
-    new_pos = await m1.user_readback.get_value()
+    await m2.stop(success=False)
+    new_pos = await m2.user_readback.get_value()
     assert new_pos < 10
     assert new_pos >= 0.1
 
     assert not move_status.success
-    with pytest.raises(RuntimeError, match=f"Device {m1.name} was stopped"):
+    with pytest.raises(RuntimeError, match=f"Device {m2.name} was stopped"):
         await move_status
 
 
