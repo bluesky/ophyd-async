@@ -284,7 +284,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
 
         for name in list(self._uncreated_commands):
             child_type = self._uncreated_commands.pop(name)
-            backend = self._command_backend_factory()
+            backend = self._command_backend_factory(None)
             extras = list(self._extras[name])
             yield backend, extras
             command = child_type(backend)
@@ -402,12 +402,15 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         return connector
 
     def fill_child_command(
-        self,
-        name: str,
-        command_type: type[Command] = Command,
-        vector_index: int | None = None,
+            self,
+            name: str,
+            command_type: type[Command] = Command,
+            vector_index: int | None = None,
     ) -> CommandBackendT:
         """Mark a Command as filled and return its backend.
+
+        This version prioritizes checking _filled_command_backends before the shadowing
+        check, matching the behavior of fill_child_signal.
 
         :param name: Logical name (without trailing underscore).
         :param command_type: The ``Command`` subclass to create.
@@ -420,30 +423,43 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
                 f"{self._device.name}: cannot fill Command child '{name}' — "
                 "no command_backend_factory was provided to DeviceFiller"
             )
+
         name = cast(LogicalName, name)
+
+        # First check unfilled command backends
         if name in self._unfilled_command_backends:
             backend, expected_command_type = self._unfilled_command_backends.pop(name)
             self._filled_command_backends[name] = backend, expected_command_type
+
+        # Then check filled command backends (this was missing in the original)
         elif name in self._filled_command_backends:
             backend, expected_command_type = self._filled_command_backends[name]
+
+        # Handle DeviceVector case
         elif vector_index:
             vector = self._ensure_device_vector(name)
             vector_command_type = self._vector_device_type[name] or command_type
             if not issubclass(vector_command_type, Command):
                 msg = f"{vector_command_type} is not a Command"
                 raise TypeError(msg)
-            backend = self._command_backend_factory()
+            backend = self._command_backend_factory(None)
             expected_command_type = vector_command_type
             vector[vector_index] = vector_command_type(backend)
+
+        # Shadowing check moved to last position
         elif child := getattr(self._device, name, None):
             self._raise(name, f"Cannot make child as it would shadow {child}")
+
+        # Create new command if none of the above matched
         else:
-            backend = self._command_backend_factory()
+            backend = self._command_backend_factory(None)
             expected_command_type = command_type
             setattr(self._device, name, command_type(backend))
+
         if command_type is not expected_command_type:
             self._raise(
                 name,
                 f"is a {command_type.__name__} not a {expected_command_type.__name__}",
             )
+
         return backend

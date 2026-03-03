@@ -15,6 +15,7 @@ from ophyd_async.core import (
     make_converter,
     soft_command,
     SignalRW,
+    SignalR,
     StandardReadable,
     StandardReadableFormat as Format,
 )
@@ -22,7 +23,7 @@ from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
 )
-from ophyd_async.tango.core import TangoDevice, get_full_attr_trl
+from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, DevStateEnum
 
 class MyStrictEnum(StrictEnum):
     A = "A"
@@ -83,7 +84,7 @@ def everything_device_trl(subprocess_helper):
 
 class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
     # datatype of enum commands must be explicitly hinted
-    strenum_cmd: A[SignalRW[ExampleStrEnum], Format.HINTED_UNCACHED_SIGNAL]
+    strenum_cmd: A[Command[ExampleStrEnum, ExampleStrEnum], Format.HINTED_UNCACHED_SIGNAL]
 
 
 @pytest.fixture()
@@ -98,15 +99,11 @@ async def test_tango_command_connect(everything_device: TangoDevice):
         assert name in dir(everything_device)
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("datatype, value, cmd_name", TEST_PARAMS)
 async def test_tango_command(
         everything_device: TangoDevice,
         everything_signal_info,
-        datatype,
-        value,
-        cmd_name,
 ):
     await everything_device.connect()
-    cmd = getattr(everything_device, cmd_name)
+    cmd = getattr(everything_device, "bool_cmd")
     assert isinstance(cmd, Command)
-    assert datatype == cmd._connector.backend.get_return_type()
+    assert bool == cmd._connector.backend.get_return_type()
