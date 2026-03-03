@@ -553,3 +553,116 @@ async def test_simdetector_with_stats_signal():
     }
     await assert_reading(det, {"det-stats-total": {"value": 1.8}})
     assert det.hints == {"fields": ["det-stats-total"]}
+
+
+async def test_step_scan_keep_numimages(
+    static_path_provider: StaticPathProvider,
+):
+    stat = adcore.NDStatsIO("PREFIX:STATS:")
+    async with init_devices(mock=True):
+        det = adsimdetector.SimDetector(
+            "PREFIX:", static_path_provider, plugins={"stats": stat}
+        )
+
+    set_mock_value(det.driver.acquire_period, 0.1)
+    set_mock_value(det.driver.acquire_time, 0.05)
+    set_mock_value(det.driver.array_size_x, 1024)
+    set_mock_value(det.driver.array_size_y, 768)
+    await det.driver.num_images.set(42)
+    assert await det.driver.num_images.get_value() == 42
+    triginfo = await det.default_trigger_info()
+    assert triginfo.collections_per_event == 42
+    writer = det.get_plugin("writer", adcore.NDFileHDF5IO)
+    await det.stage()
+    assert await det.driver.wait_for_plugins.get_value() is False
+    assert det._prepare_ctx is None
+    await assert_configuration(
+        det,
+        {
+            "det-driver-acquire_period": {"value": 0.1},
+            "det-driver-acquire_time": {"value": 0.05},
+        },
+    )
+    # Check we need to call prepare or trigger before we can describe
+    with pytest.raises(RuntimeError, match="Prepare not run"):
+        await det.describe()
+    # Need to tell it the path is valid
+    set_mock_value(writer.file_path_exists, True)
+    # When arm is pressed, then make a single frame
+    callback_on_mock_put(
+        det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 42)
+    )
+    # Trigger a single frame then describe, get hints and read
+    await det.trigger()
+    assert await det.driver.num_images.get_value() == 42
+    triginfo = await det.default_trigger_info()
+    assert triginfo.collections_per_event == 42
+    assert det._prepare_ctx is not None
+    assert det._prepare_ctx.trigger_info.collections_per_event == 42
+    path_info = static_path_provider()
+    description = await det.describe()
+    uri = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/{path_info.filename}.h5"
+    assert description == {
+        "det": {
+            "dtype": "array",
+            "dtype_numpy": "|i1",
+            "external": "STREAM:",
+            "shape": [42, 768, 1024],
+            "source": uri,
+        },
+    }
+    assert det.hints == {"fields": ["det"]}
+    await assert_reading(det, {})
+    sr, sd = [doc async for doc in det.collect_asset_docs()]
+    assert sr == (
+        "stream_resource",
+        {
+            "data_key": "det",
+            "mimetype": "application/x-hdf5",
+            "parameters": {
+                "chunk_shape": (1, 768, 1024),
+                "dataset": "/entry/data/data",
+            },
+            "uid": ANY,
+            "uri": uri,
+        },
+    )
+
+    assert sd == (
+        "stream_datum",
+        {
+            "descriptor": "",
+            "indices": {"start": 0, "stop": 1},
+            "seq_nums": {"start": 0, "stop": 0},
+            "stream_resource": sr[1]["uid"],
+            "uid": ANY,
+        },
+    )
+
+    # Check we can prepare and change the exposure
+    await det.prepare(TriggerInfo(collections_per_event=42,
+                                  exposure_timeout=0.1))
+    callback_on_mock_put(
+        det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 84)
+    )
+    await det.trigger()
+    readings = await det.read()
+    assert readings == {}
+    docs = [doc async for doc in det.collect_asset_docs()]
+    doc, = docs
+    assert doc == (
+        "stream_datum",
+        {
+            "descriptor": "",
+            "indices": {"start": 1, "stop": 2},
+            "seq_nums": {"start": 0, "stop": 0},
+            "stream_resource": sr[1]["uid"],
+            "uid": ANY,
+        },
+    )
+
+    # And if we trigger again without updating num_captured then we timeout
+    with pytest.raises(
+        TimeoutError, match="Timeout Error while waiting 0.1s to update"
+    ):
+        await det.trigger()

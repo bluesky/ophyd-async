@@ -572,11 +572,14 @@ class StandardDetector(
         if self._arm_logic and value.trigger != DetectorTrigger.INTERNAL:
             await self._arm_logic.arm()
 
+    async def default_trigger_info(self) -> TriggerInfo:
+        return TriggerInfo()
+
     @WatchableAsyncStatus.wrap
     async def trigger(self) -> AsyncIterator[WatcherUpdate[int]]:
         if self._prepare_ctx is None:
             # If a prepare has not been done since stage, do an implicit one here
-            await self.prepare(TriggerInfo())
+            await self.prepare(await self.default_trigger_info())
         else:
             # Check the one that was provided is suitable for triggering
             trigger_info = self._prepare_ctx.trigger_info
