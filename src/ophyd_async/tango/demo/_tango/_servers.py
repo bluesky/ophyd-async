@@ -109,7 +109,7 @@ class DemoMultiChannelDetectorDevice(Device):
     async def connect_devices(self):
         for locator in self._locators:
             # Connect by tango device proxy to the X motor
-            self._dps.append(await DeviceProxy(locator))
+            self._dps.append(await DeviceProxy(locator))  # type: ignore
 
     @command
     async def start(self):
@@ -183,7 +183,7 @@ class DemoPointDetectorChannelDevice(Device):
         y: float = await self._dp_y.position  # type: ignore
         self._value = math.floor(
             (
-                math.sin(x) ** self.channel
+                math.sin(x) ** self.channel  # type: ignore
                 + math.cos(x * y + self._energy_modes[self._mode])
                 + 2
             )
@@ -194,9 +194,9 @@ class DemoPointDetectorChannelDevice(Device):
     @command
     async def connect_devices(self):
         # Connect by tango device proxy to the X motor
-        self._dp_x = await DeviceProxy(self._locator_x)
+        self._dp_x = await DeviceProxy(self._locator_x)  # type: ignore
         # Connect by tango device proxy to the Y motor
-        self._dp_y = await DeviceProxy(self._locator_y)
+        self._dp_y = await DeviceProxy(self._locator_y)  # type: ignore
 
     @attribute(dtype=int, access=AttrWriteType.READ)
     async def value(self):
