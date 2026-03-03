@@ -1,4 +1,3 @@
-import asyncio
 from collections.abc import Mapping, Sequence
 from typing import Generic
 
@@ -73,7 +72,6 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
     async def default_trigger_info(self) -> TriggerInfo:
         exposures = await self.driver.num_images.get_value()
         return TriggerInfo(collections_per_event=exposures)
-
 
 
 class ContAcqDetector(AreaDetector[ADBaseIO]):

@@ -640,8 +640,7 @@ async def test_step_scan_keep_numimages(
     )
 
     # Check we can prepare and change the exposure
-    await det.prepare(TriggerInfo(collections_per_event=42,
-                                  exposure_timeout=0.1))
+    await det.prepare(TriggerInfo(collections_per_event=42, exposure_timeout=0.1))
     callback_on_mock_put(
         det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 84)
     )
@@ -649,7 +648,7 @@ async def test_step_scan_keep_numimages(
     readings = await det.read()
     assert readings == {}
     docs = [doc async for doc in det.collect_asset_docs()]
-    doc, = docs
+    (doc,) = docs
     assert doc == (
         "stream_datum",
         {
