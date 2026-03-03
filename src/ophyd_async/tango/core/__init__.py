@@ -23,6 +23,7 @@ from ._tango_transport import (
     get_python_type,
     get_source_metadata,
     get_tango_trl,
+    make_converter,
     parse_precision,
 )
 from ._tango_command_backend import (
@@ -35,6 +36,13 @@ from ._utils import (
     get_device_trl_and_attr,
     get_full_attr_trl,
     try_to_cast_as_float,
+)
+from ._converters import (
+    TangoConverter,
+    TangoEnumConverter,
+    TangoEnumArrayConverter,
+    TangoDevStateConverter,
+    TangoDevStateArrayConverter,
 )
 
 __all__ = [
@@ -54,6 +62,7 @@ __all__ = [
     "infer_python_type",
     "infer_signal_type",
     "make_backend",
+    "make_converter",
     "parse_precision",
     "tango_signal_r",
     "tango_signal_rw",
@@ -64,6 +73,11 @@ __all__ = [
     "TangoDeviceConnector",
     "TangoLongStringTable",
     "TangoDoubleStringTable",
+    "TangoConverter",
+    "TangoEnumConverter",
+    "TangoEnumArrayConverter",
+    "TangoDevStateConverter",
+    "TangoDevStateArrayConverter",
     "try_to_cast_as_float",
     "get_device_trl_and_attr",
     "get_full_attr_trl",

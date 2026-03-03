@@ -132,13 +132,16 @@ class TangoDeviceConnector(DeviceConnector):
                 signal_type = await infer_signal_type(full_trl, self.proxy)
                 if issubclass(signal_type, Signal):
                     backend = self.filler.fill_child_signal(name, signal_type)
-                    # don't overlaod datatype if provided by annotation
-                    if backend.datatype is None:
-                        backend.datatype = await infer_python_type(full_trl, self.proxy)
-                    backend.set_trl(full_trl)
-                if issubclass(signal_type, Command):
-                    backend = TangoCommandBackend(full_trl, self.proxy)
-                    print(backend)
+                elif issubclass(signal_type, Command):
+                    backend = self.filler.fill_child_command(name)
+                else:
+                    raise TypeError(
+                        f"Cannot infer type for {full_trl} (type {signal_type})"
+                    )
+                # don't overlaod datatype if provided by annotation
+                if backend.datatype is None:
+                    backend.datatype = await infer_python_type(full_trl, self.proxy)
+                backend.set_trl(full_trl)
 
         # Check that all the requested children have been filled
         self.filler.check_filled(f"{self.trl}: {children}")
