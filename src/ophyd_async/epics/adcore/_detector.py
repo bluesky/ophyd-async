@@ -71,7 +71,7 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
 
     async def default_trigger_info(self) -> TriggerInfo:
         exposures = await self.driver.num_images.get_value()
-        return TriggerInfo(collections_per_event=exposures)
+        return TriggerInfo(collections_per_event=max(1, exposures))
 
 
 class ContAcqDetector(AreaDetector[ADBaseIO]):
