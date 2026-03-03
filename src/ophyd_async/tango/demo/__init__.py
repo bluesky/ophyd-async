@@ -5,9 +5,11 @@ from ._tango import (
     DemoMotorDevice,
     DemoMultiChannelDetectorDevice,
     DemoPointDetectorChannelDevice,
+    start_device_server_subprocess,
 )
 
 __all__ = [
+    "start_device_server_subprocess",
     "DemoMotor",
     "DemoStage",
     "DemoPointDetector",

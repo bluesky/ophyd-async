@@ -39,6 +39,7 @@ from ophyd_async.tango.demo import (
     DemoMultiChannelDetectorDevice,
     DemoPointDetector,
     DemoPointDetectorChannelDevice,
+    start_device_server_subprocess,
 )
 from ophyd_async.testing import assert_reading
 
@@ -458,6 +459,13 @@ async def test_with_bluesky(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+async def test_tango_demo():
+    server = start_device_server_subprocess("test/device", 3)
+    server.disconnect()
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
 @pytest.mark.timeout(15.5)
 async def test_tango_sim(sim_test_context_trls):
     detector = DemoPointDetector(
@@ -469,7 +477,10 @@ async def test_tango_sim(sim_test_context_trls):
         ],
     )
     await detector.connect()
+    await detector.acquire_time.set(0.1)
     await detector.trigger()
+    await detector.acquiring.read()
+    await detector.acquire_time.read()
 
     motor = DemoMotor(name="motor", trl=sim_test_context_trls["sim/motor/1"])
     await motor.connect()
