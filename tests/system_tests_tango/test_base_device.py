@@ -35,12 +35,10 @@ from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoMotor,
+    DemoMotorDevice,
+    DemoMultiChannelDetectorDevice,
     DemoPointDetector,
-)
-from ophyd_async.tango.demo._tango import (
-    DemoMotorDevice,  # noqa: PLC2701
-    DemoMultiChannelDetectorDevice,  # noqa: PLC2701
-    DemoPointDetectorChannelDevice,  # noqa: PLC2701
+    DemoPointDetectorChannelDevice,
 )
 from ophyd_async.testing import assert_reading
 
@@ -382,6 +380,22 @@ def sim_test_context_trls(subprocess_helper):
         },
     ]
     with subprocess_helper(args) as context:
+        # Now connect the channel devices to the motor devices
+        device_proxy = tango.DeviceProxy(context.trls["sim/counter/1"])
+        device_proxy.locator_x = context.trls["sim/motor/1"]
+        device_proxy.locator_y = context.trls["sim/motor/1"]
+        device_proxy.connect_devices()
+        device_proxy = tango.DeviceProxy(context.trls["sim/counter/2"])
+        device_proxy.locator_x = context.trls["sim/motor/1"]
+        device_proxy.locator_y = context.trls["sim/motor/1"]
+        device_proxy.connect_devices()
+        device_proxy = tango.DeviceProxy(context.trls["sim/detector/1"])
+        device_proxy.locators = [
+            context.trls["sim/counter/1"],
+            context.trls["sim/counter/2"],
+        ]
+        device_proxy.connect_devices()
+
         yield context.trls
 
 
