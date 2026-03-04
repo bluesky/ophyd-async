@@ -8,9 +8,9 @@ if __name__ == "__main__":
     port = int(sys.argv[1])
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(("localhost", port))
+    sock.connect(("127.0.0.1", port))
 
-    pickled_args = sock.recv(1024)
+    pickled_args = sock.recv(2048)
     context_args = pickle.loads(pickled_args)
 
     device_names = []
@@ -23,6 +23,6 @@ if __name__ == "__main__":
         for name in device_names:
             trls[name] = context.get_device_access(name)
         sock.send(pickle.dumps(trls))
-        while sock.recv(1024):
+        while sock.recv(2048):
             pass  # when connection closes subprocess should end
     sock.close()
