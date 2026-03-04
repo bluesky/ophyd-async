@@ -150,18 +150,6 @@ async def test_async_status_str_for_failing_coroutine(failing_coroutine):
         assert comment_chunk in str(status)
 
 
-async def test_status_complete_before_loop_complete():
-    vals = []
-    # If the status completes before the loop, then if should
-    # break out without erroring
-    with timing_check(0.01):
-        async with AsyncStatus(asyncio.sleep(0.01)):
-            for i in range(2):
-                vals.append(i)
-                await asyncio.sleep(1)
-    assert vals == [0]
-
-
 async def test_loop_complete_before_status_complete():
     vals = []
 
@@ -197,80 +185,14 @@ async def test_error_raised_from_with_status():
 async def test_status_coroutine_raises_exception(failing_coroutine):
     vals = []
     # The exception from the status task should propagate out
-    with timing_check(0.01):
+    with timing_check(0.1):
         with pytest.raises(ValueError):
             async with AsyncStatus(failing_coroutine()):
                 for i in range(10):
                     vals.append(i)
-                    await asyncio.sleep(1)
-    # Loop should be cancelled after first iteration when status fails
-    assert vals == [0]
-
-
-async def test_status_already_complete_before_entering():
-    vals = []
-
-    # Create a status that completes immediately
-    status = AsyncStatus(asyncio.sleep(0))
-    await asyncio.sleep(0.01)  # Ensure it's complete
-    assert status.done
-
-    # Using it as a context manager should cancel the loop after first iteration
-    # (callback is added and called synchronously, but cancellation happens at next
-    # await)
-    with timing_check(0.01):
-        async with status:
-            for i in range(10):
-                vals.append(i)
-                await asyncio.sleep(1)
-    # The loop executes one iteration before cancellation takes effect
-    assert vals == [0]
-
-
-async def test_finally_block_executes_when_cancelled():
-    vals = []
-
-    async with AsyncStatus(asyncio.sleep(0.01)):
-        try:
-            for i in range(10):
-                vals.append(i)
-                await asyncio.sleep(1)
-        finally:
-            vals.append("cleanup")
-
-    assert vals == [0, "cleanup"]
-
-
-async def test_nested_asyncstatus_context_managers_inner_breaks():
-    vals = []
-
-    # Inner status completes first, should cancel inner loop but not outer
-    with timing_check(0.02):
-        async with AsyncStatus(asyncio.sleep(1)):
-            vals.append("outer_start")
-            async with AsyncStatus(asyncio.sleep(0.01)):
-                for i in range(10):
-                    vals.append(f"inner_{i}")
-                    await asyncio.sleep(1)
-            vals.append("outer_continue")
-            await asyncio.sleep(0.01)
-    assert vals == ["outer_start", "inner_0", "outer_continue"]
-
-
-async def test_nested_asyncstatus_context_managers_outer_breaks():
-    vals = []
-
-    # Outer status completes first, should cancel inner context manager too
-    with timing_check(0.02):
-        async with AsyncStatus(asyncio.sleep(0.01)):
-            vals.append("outer_start")
-            async with AsyncStatus(asyncio.sleep(1)):
-                for i in range(10):
-                    vals.append(f"inner_{i}")
-                    await asyncio.sleep(1)
-            vals.append("outer_continue")
-            await asyncio.sleep(0.01)
-    assert vals == ["outer_start", "inner_0"]
+                    await asyncio.sleep(0.01)
+    # Loop should complete and error only be raised at the end
+    assert vals == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 async def test_awaiting_status_inside_its_own_context():
@@ -279,9 +201,9 @@ async def test_awaiting_status_inside_its_own_context():
     async with AsyncStatus(asyncio.sleep(0.01)) as status:
         vals.append(0)
         await status  # Explicitly await the status
-        vals.append(1)  # This should not be reached
+        vals.append(1)
 
-    assert vals == [0]
+    assert vals == [0, 1]
 
 
 async def test_no_await_points_in_loop_body():
@@ -312,44 +234,6 @@ async def test_both_status_and_loop_raise_exceptions():
             raise ValueError("Loop failed")
 
     assert vals == [0]
-
-
-async def test_status_with_precancelled_task():
-    task = asyncio.create_task(asyncio.sleep(1))
-    task.cancel()
-
-    with contextlib.suppress(asyncio.CancelledError):
-        await task  # Ensure it's cancelled
-
-    status = AsyncStatus(task)
-    vals = []
-
-    # Using a pre-cancelled status cancels the loop at the first await point
-    # The CancelledError is not suppressed since the context manager didn't cause it
-    with pytest.raises(asyncio.CancelledError):
-        async with status:
-            for i in range(10):
-                vals.append(i)
-                await asyncio.sleep(0.1)
-
-    # The loop executes one iteration before cancellation takes effect
-    assert vals == [0]
-
-
-async def test_status_context_with_exception_in_finally():
-    vals = []
-
-    with pytest.raises(RuntimeError, match="Finally block error"):
-        async with AsyncStatus(asyncio.sleep(0.01)):
-            try:
-                for i in range(10):
-                    vals.append(i)
-                    await asyncio.sleep(1)
-            finally:
-                vals.append("finally")
-                raise RuntimeError("Finally block error")
-
-    assert vals == [0, "finally"]
 
 
 class FailingMovable(Movable, Device):
