@@ -52,36 +52,40 @@ async for signal, value in observe_value(signal1, signal2):
         do_something_else_with(value)
 ```
 
-## Use AsyncStatus as a context manager to bound loop execution
+## Use `done_status` to exit a loop when an operation completes
 
-If you want a loop to run until some operation completes, you can use [](#AsyncStatus) as a context manager. When the status completes, it will cancel the calling task, causing the loop to exit. This is useful when you want to process signal updates until another operation finishes:
+If you want a loop to run until some operation completes, pass the status as
+`done_status` to [](#observe_value). When the status finishes, the iterator
+stops automatically. If the status raised an exception it is re-raised by
+the iterator:
 
 ```python
 # Process updates while a motor is moving
-async with motor.set(target_position):
-    async for value in observe_value(detector):
+async with motor.set(target_position) as status:
+    async for value in observe_value(detector, done_status=status):
         process_reading(value)
-        # Loop automatically exits when motor reaches position
+        # Iterator exits automatically when motor reaches position
 ```
 
-If the loop completes before the status, the status task is automatically cancelled:
+If the loop completes before the status, the status task is automatically
+cancelled when the `async with` block exits:
 
 ```python
 async with signal1.set(new_value):
     for i in range(3):
         value = await signal.get_value()
         process(value)
-        # Loop completes after 3 iterations, cancelling the wait for signal1 to finishe being set
+        # Loop completes after 3 iterations, cancelling the wait for signal1 to finish being set
 ```
 
 If an exception is raised in the loop body, it propagates out normally:
 
 ```python
-async with signal1.set(new_value):
-    async for value in observe_value(signal2):
+async with signal1.set(new_value) as status:
+    async for value in observe_value(signal2, done_status=status):
         if value > threshold:
             raise ValueError("Threshold exceeded")
-        # Exception propagates, status is cancelled and no longer waits for signal1 to finish being set
+        # Exception propagates, status is cancelled
 ```
 
 ## Wait for the value to match some expected value

@@ -21,10 +21,10 @@ from ._utils import Callback, P, T, WatcherUpdate
 class AsyncStatusBase(Status, Awaitable[None]):
     """Convert asyncio awaitable to bluesky Status interface.
 
-    Can be used as an async context manager to automatically cancel the calling
-    task when the status completes. This is useful for bounding loop execution:
-    when the status completes, the calling task is cancelled, causing the loop
-    to exit. If the loop completes first, the status task is automatically cancelled.
+    Can be used as an async context manager to cancel the status task when the
+    context is exited. Use this to ensure the status task is cancelled if the
+    loop exits before the status completes, to avoid leaving dangling tasks that
+    generate warnings in test cleanup.
     """
 
     def __init__(self, awaitable: Coroutine | asyncio.Task, name: str | None = None):
@@ -137,17 +137,9 @@ class AsyncStatus(AsyncStatusBase):
     assert status.done
     ```
 
-    Can also be used as a context manager to bound loop execution. When the status
-    completes, the calling task is cancelled, causing loops to exit:
-
-    ```python
-    async with motor.set(target_position):
-        async for value in observe_value(detector):
-            process_reading(value)
-            # Loop exits automatically when motor reaches position
-    ```
-
-    If the loop completes before the status, the status task is cancelled:
+    Can also be used as a context manager to cancel the status task when the
+    block exits. This is useful when the loop completes before the status and
+    you want to clean up the status task rather than leaving it dangling:
 
     ```python
     async with AsyncStatus(long_operation()):
@@ -156,9 +148,16 @@ class AsyncStatus(AsyncStatusBase):
         # Loop completes, long_operation() is cancelled
     ```
 
-    Note that the body of the with statement will only break at a suspension
-    point like `async for` or `await`, so body code without these suspension
-    points will continue even if the status completes.
+    To exit a loop when the status completes, pass the status as `done_status`
+    to [](#observe_value). When the status finishes, the iterator will stop;
+    if the status raised an exception it will be re-raised by the iterator:
+
+    ```python
+    async with motor.set(target_position) as status:
+        async for value in observe_value(detector, done_status=status):
+            process_reading(value)
+            # Iterator exits automatically when motor reaches position
+    ```
     """
 
     @classmethod

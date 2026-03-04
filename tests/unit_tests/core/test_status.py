@@ -150,6 +150,32 @@ async def test_async_status_str_for_failing_coroutine(failing_coroutine):
         assert comment_chunk in str(status)
 
 
+async def test_status_complete_loop_continues():
+    vals = []
+    # When the status completes, the loop body must NOT be interrupted;
+    # the context manager only cancels the status task on exit, not the caller.
+    async with AsyncStatus(asyncio.sleep(0.01)):
+        for i in range(5):
+            vals.append(i)
+            await asyncio.sleep(0.02)  # status finishes during first sleep
+    assert vals == [0, 1, 2, 3, 4]
+
+
+async def test_context_manager_does_not_cancel_caller():
+    # Guard against regressions: wrapping a loop in `async with status:` without
+    # done_status should NOT cause the loop to exit when the status finishes.
+    vals = []
+    status = AsyncStatus(asyncio.sleep(0))
+    await asyncio.sleep(0.01)  # Ensure status is already done
+    assert status.done
+
+    async with status:
+        for i in range(5):
+            vals.append(i)
+            await asyncio.sleep(0)
+    assert vals == [0, 1, 2, 3, 4]
+
+
 async def test_loop_complete_before_status_complete():
     vals = []
 
