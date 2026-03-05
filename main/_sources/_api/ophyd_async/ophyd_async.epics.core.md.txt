@@ -19,6 +19,14 @@
   - ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector
     :summary:
     ```
+* - {py:obj}`PviTree <ophyd_async.epics.core._pvi_connector.PviTree>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree
+    :summary:
+    ```
+* - {py:obj}`SignalDetails <ophyd_async.epics.core._pvi_connector.SignalDetails>`
+  - ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.SignalDetails
+    :summary:
+    ```
 * - {py:obj}`EpicsDeviceConnector <ophyd_async.epics.core._epics_connector.EpicsDeviceConnector>`
   - ```{autodoc2-docstring} ophyd_async.epics.core._epics_connector.EpicsDeviceConnector
     :summary:
@@ -94,6 +102,17 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 
 ````
 
+````{py:attribute} pvi_tree
+:canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.pvi_tree
+:type: PviTree | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.pvi_tree
+```
+
+````
+
 ````{py:method} create_children_from_annotations(device: ~ophyd_async.core.Device)
 :canonical: ophyd_async.epics.core._pvi_connector.PviDeviceConnector.create_children_from_annotations
 
@@ -116,6 +135,131 @@ Bases: {py:obj}`ophyd_async.core.DeviceConnector`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviDeviceConnector.connect_real
+```
+
+````
+
+`````
+
+`````{py:class} PviTree(/, **data: ~typing.Any)
+:canonical: ophyd_async.epics.core._pvi_connector.PviTree
+
+Bases: {py:obj}`ophyd_async.core.ConfinedModel`
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree
+```
+
+````{py:attribute} pvi_pv
+:canonical: ophyd_async.epics.core._pvi_connector.PviTree.pvi_pv
+:type: str
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.pvi_pv
+```
+
+````
+
+````{py:attribute} signals
+:canonical: ophyd_async.epics.core._pvi_connector.PviTree.signals
+:type: ~collections.abc.Mapping[str, ~ophyd_async.epics.core._pvi_connector.SignalDetails]
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.signals
+```
+
+````
+
+````{py:attribute} sub_devices
+:canonical: ophyd_async.epics.core._pvi_connector.PviTree.sub_devices
+:type: ~collections.abc.Mapping[str, ~ophyd_async.epics.core._pvi_connector.PviTree]
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.sub_devices
+```
+
+````
+
+````{py:attribute} vector_children
+:canonical: ophyd_async.epics.core._pvi_connector.PviTree.vector_children
+:type: ~collections.abc.Mapping[int, ~ophyd_async.epics.core._pvi_connector.PviTree | ~ophyd_async.epics.core._pvi_connector.SignalDetails]
+:value: >
+   'Field(...)'
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.vector_children
+```
+
+````
+
+````{py:method} build_device_tree(pvi_pv: str, timeout: float) -> ~ophyd_async.epics.core._pvi_connector.PviTree
+:canonical: ophyd_async.epics.core._pvi_connector.PviTree.build_device_tree
+:async:
+:classmethod:
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.build_device_tree
+```
+
+````
+
+````{py:property} is_signal_vector
+:canonical: ophyd_async.epics.core._pvi_connector.PviTree.is_signal_vector
+:type: bool
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.PviTree.is_signal_vector
+```
+
+````
+
+`````
+
+`````{py:class} SignalDetails(/, **data: ~typing.Any)
+:canonical: ophyd_async.epics.core._pvi_connector.SignalDetails
+
+Bases: {py:obj}`ophyd_async.core.ConfinedModel`
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.SignalDetails
+```
+
+````{py:attribute} signal_type
+:canonical: ophyd_async.epics.core._pvi_connector.SignalDetails.signal_type
+:type: type[~ophyd_async.core.Signal]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.SignalDetails.signal_type
+```
+
+````
+
+````{py:attribute} read_pv
+:canonical: ophyd_async.epics.core._pvi_connector.SignalDetails.read_pv
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.SignalDetails.read_pv
+```
+
+````
+
+````{py:attribute} write_pv
+:canonical: ophyd_async.epics.core._pvi_connector.SignalDetails.write_pv
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.SignalDetails.write_pv
+```
+
+````
+
+````{py:method} from_entry(entry: dict[str, str]) -> ~ophyd_async.epics.core._pvi_connector.SignalDetails
+:canonical: ophyd_async.epics.core._pvi_connector.SignalDetails.from_entry
+:classmethod:
+
+```{autodoc2-docstring} ophyd_async.epics.core._pvi_connector.SignalDetails.from_entry
 ```
 
 ````
