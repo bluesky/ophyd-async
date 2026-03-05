@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from ophyd_async.core import DetectorTriggerLogic, SignalDict, SignalRW
+from ophyd_async.core import DetectorTriggerLogic, SignalDict, SignalRW, TriggerInfo
 
 from ._io import AcquisitionType, JungfrauDriverIO, JungfrauTriggerMode, PedestalMode
 
@@ -115,3 +115,7 @@ class JungfrauTriggerLogic(DetectorTriggerLogic):
             await prepare_standard_mode(
                 self.detector, JungfrauTriggerMode.EXTERNAL, num, livetime
             )
+
+    async def default_trigger_info(self) -> TriggerInfo:
+        # TODO, get the current num images
+        return TriggerInfo()

@@ -7,22 +7,23 @@ from collections.abc import Sequence
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTriggerLogic,
     PathProvider,
     SignalDict,
     SignalR,
     SignalRW,
     StrictEnum,
 )
-from ophyd_async.epics.adcore import (
+from ophyd_async.epics.core import PvSuffix
+
+from .adcore import (
     ADArmLogic,
     ADBaseIO,
     ADWriterType,
     AreaDetector,
+    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
-from ophyd_async.epics.core import PvSuffix
 
 __all__ = [
     "MerlinDetector",
@@ -66,7 +67,7 @@ class MerlinTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for MerlinDriverIO."""
 
     def __init__(self, driver: MerlinDriverIO):
-        self.driver = driver
+        super().__init__(driver=driver)
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return _MIN_DEAD_TIME

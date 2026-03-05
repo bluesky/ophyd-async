@@ -1,6 +1,12 @@
 import asyncio
 
-from ophyd_async.core import DetectorTriggerLogic, EnableDisable
+from ophyd_async.core import (
+    DetectorTriggerLogic as _DetectorTriggerLogic,
+)
+from ophyd_async.core import (
+    EnableDisable,
+    TriggerInfo,
+)
 
 from ._io import ADBaseIO, ADImageMode, NDCBFlushOnSoftTrgMode, NDCircularBuffIO
 
@@ -23,9 +29,20 @@ async def prepare_exposures(
     await asyncio.gather(*coros)
 
 
+class DetectorTriggerLogic(_DetectorTriggerLogic):
+    driver: ADBaseIO
+
+    def __init__(self, driver: ADBaseIO):
+        self.driver = driver
+
+    async def default_trigger_info(self) -> TriggerInfo:
+        exposures = await self.driver.num_images.get_value()
+        return TriggerInfo(collections_per_event=max(1, exposures))
+
+
 class ADContAcqTriggerLogic(DetectorTriggerLogic):
     def __init__(self, driver: ADBaseIO, cb_plugin: NDCircularBuffIO):
-        self.driver = driver
+        super().__init__(driver=driver)
         self.cb_plugin = cb_plugin
 
     async def _ensure_driver_acquiring(self, livetime: float):

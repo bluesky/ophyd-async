@@ -7,7 +7,6 @@ from ophyd_async.core import (
     PathProvider,
     SignalR,
     StandardDetector,
-    TriggerInfo,
 )
 
 from ._arm_logic import ADContAcqArmLogic
@@ -68,10 +67,6 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
                 f"got {type(plugin).__name__}"
             )
         return plugin
-
-    async def default_trigger_info(self) -> TriggerInfo:
-        exposures = await self.driver.num_images.get_value()
-        return TriggerInfo(collections_per_event=max(1, exposures))
 
 
 class ContAcqDetector(AreaDetector[ADBaseIO]):

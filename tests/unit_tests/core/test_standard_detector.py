@@ -43,6 +43,9 @@ class JustInternalTriggerLogic(DetectorTriggerLogic):
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         self.num, self.livetime, self.deadtime = num, livetime, deadtime
 
+    async def default_trigger_info(self) -> TriggerInfo:
+        return TriggerInfo()
+
 
 class AllTriggerTypesLogic(DetectorTriggerLogic):
     """Supports all types of triggering."""
@@ -573,6 +576,8 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
     # Yield so detector can get collections written, then set it so we complete
     await wait_for_pending_wakeups(raise_if_exceeded=False)
     await dl.collections_written.set(1)
+    assert status.done
+    assert status.success
     docs = [doc async for doc in det.collect_asset_docs()]
     assert docs == [
         (
@@ -599,7 +604,6 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
             },
         ),
     ]
-    assert status.done
     # Fly scan should also work
     await det.prepare(TriggerInfo(number_of_events=5))
     await det.kickoff()

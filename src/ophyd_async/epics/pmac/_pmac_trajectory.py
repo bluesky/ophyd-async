@@ -14,6 +14,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     Device,
+    TriggerInfo,
     error_if_none,
     gather_dict,
     observe_value,
@@ -265,3 +266,7 @@ class PmacTrajectoryTriggerLogic(
         statuses = await asyncio.gather(*coros)
         await coord.defer_moves.set(False)
         await asyncio.gather(*statuses)
+
+    async def default_trigger_info(self) -> TriggerInfo:
+        # TODO, get the current number of collections
+        return TriggerInfo()

@@ -177,6 +177,10 @@ class DetectorTriggerLogic:
         """
         raise NotImplementedError(self)
 
+    async def default_trigger_info(self) -> TriggerInfo:
+        """Fallback for the default TriggerInfo in plans without prepare."""
+        raise NotImplementedError(self)
+
 
 def _logic_supported(base_class, method) -> bool:
     # If the function that is bound in a subclass is the same as the function
@@ -572,14 +576,15 @@ class StandardDetector(
         if self._arm_logic and value.trigger != DetectorTrigger.INTERNAL:
             await self._arm_logic.arm()
 
-    async def default_trigger_info(self) -> TriggerInfo:
-        return TriggerInfo()
-
     @WatchableAsyncStatus.wrap
     async def trigger(self) -> AsyncIterator[WatcherUpdate[int]]:
         if self._prepare_ctx is None:
             # If a prepare has not been done since stage, do an implicit one here
-            await self.prepare(await self.default_trigger_info())
+            if self._trigger_logic is not None:
+                await self.prepare(await self._trigger_logic.default_trigger_info())
+            else:
+                # TODO, handle this edge case better
+                await self.prepare(TriggerInfo())
         else:
             # Check the one that was provided is suitable for triggering
             trigger_info = self._prepare_ctx.trigger_info

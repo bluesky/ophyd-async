@@ -7,7 +7,6 @@ from collections.abc import Sequence
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTriggerLogic,
     PathProvider,
     SignalDict,
     SignalR,
@@ -20,6 +19,7 @@ from .adcore import (
     ADBaseIO,
     ADWriterType,
     AreaDetector,
+    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -62,7 +62,7 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADKinetix detectors."""
 
     def __init__(self, driver: KinetixDriverIO):
-        self.driver = driver
+        super().__init__(driver=driver)
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return 0.001

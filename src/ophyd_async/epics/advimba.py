@@ -8,7 +8,6 @@ from collections.abc import Sequence
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTriggerLogic,
     OnOff,
     PathProvider,
     SignalDict,
@@ -23,6 +22,7 @@ from .adcore import (
     ADBaseIO,
     ADWriterType,
     AreaDetector,
+    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -91,7 +91,7 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADVimba detectors."""
 
     def __init__(self, driver: VimbaDriverIO, override_deadtime: float | None = None):
-        self.driver = driver
+        super().__init__(driver=driver)
         self.override_deadtime = override_deadtime
 
     def config_sigs(self) -> set[SignalR]:

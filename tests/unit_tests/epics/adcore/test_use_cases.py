@@ -570,7 +570,7 @@ async def test_step_scan_keep_numimages(
     set_mock_value(det.driver.array_size_y, 768)
     await det.driver.num_images.set(42)
     assert await det.driver.num_images.get_value() == 42
-    triginfo = await det.default_trigger_info()
+    triginfo = await det._trigger_logic.default_trigger_info()
     assert triginfo.collections_per_event == 42
     writer = det.get_plugin("writer", adcore.NDFileHDF5IO)
     await det.stage()
@@ -595,7 +595,7 @@ async def test_step_scan_keep_numimages(
     # Trigger a single frame then describe, get hints and read
     await det.trigger()
     assert await det.driver.num_images.get_value() == 42
-    triginfo = await det.default_trigger_info()
+    triginfo = await det._trigger_logic.default_trigger_info()
     assert triginfo.collections_per_event == 42
     assert det._prepare_ctx is not None
     assert det._prepare_ctx.trigger_info.collections_per_event == 42

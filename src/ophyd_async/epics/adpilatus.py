@@ -8,7 +8,6 @@ from enum import Enum
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTriggerLogic,
     PathProvider,
     SignalDict,
     SignalR,
@@ -21,6 +20,7 @@ from .adcore import (
     ADBaseIO,
     ADWriterType,
     AreaDetector,
+    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -74,7 +74,7 @@ class PilatusTriggerLogic(DetectorTriggerLogic):
         driver: PilatusDriverIO,
         readout_time: PilatusReadoutTime,
     ):
-        self.driver = driver
+        super().__init__(driver=driver)
         self.readout_time = readout_time
 
     def get_deadtime(self, config_values: SignalDict) -> float:

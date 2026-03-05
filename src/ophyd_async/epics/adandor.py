@@ -7,7 +7,6 @@ from collections.abc import Sequence
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTriggerLogic,
     PathProvider,
     SignalDict,
     SignalR,
@@ -19,6 +18,7 @@ from ophyd_async.epics.adcore import (
     ADBaseIO,
     ADWriterType,
     AreaDetector,
+    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -64,7 +64,7 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Andor2DriverIO."""
 
     def __init__(self, driver: Andor2DriverIO):
-        self.driver = driver
+        super().__init__(driver=driver)
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return _MIN_DEAD_TIME

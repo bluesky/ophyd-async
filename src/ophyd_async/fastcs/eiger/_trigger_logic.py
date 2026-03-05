@@ -1,6 +1,6 @@
 import asyncio
 
-from ophyd_async.core import DetectorTriggerLogic, SignalDict
+from ophyd_async.core import DetectorTriggerLogic, SignalDict, TriggerInfo
 
 from ._io import EigerDetectorIO, EigerTriggerMode
 
@@ -42,3 +42,7 @@ class EigerTriggerLogic(DetectorTriggerLogic):
 
     async def prepare_level(self, num: int):
         await _prepare_detector(self.detector, EigerTriggerMode.GATE, num)
+
+    async def default_trigger_info(self) -> TriggerInfo:
+        # TODO, get the current num images
+        return TriggerInfo()

@@ -7,7 +7,6 @@ from collections.abc import Sequence
 from typing import Annotated as A
 
 from ophyd_async.core import (
-    DetectorTriggerLogic,
     OnOff,
     PathProvider,
     SignalDict,
@@ -21,6 +20,7 @@ from .adcore import (
     ADBaseIO,
     ADWriterType,
     AreaDetector,
+    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -55,7 +55,7 @@ class AravisTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Aravis GigE and USB3 cameras."""
 
     def __init__(self, driver: AravisDriverIO, override_deadtime: float | None = None):
-        self.driver = driver
+        super().__init__(driver=driver)
         self.override_deadtime = override_deadtime
 
     def config_sigs(self) -> set[SignalR]:
