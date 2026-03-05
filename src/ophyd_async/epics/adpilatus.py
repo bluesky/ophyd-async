@@ -18,9 +18,9 @@ from ophyd_async.core import (
 from .adcore import (
     ADArmLogic,
     ADBaseIO,
+    ADTriggerLogic,
     ADWriterType,
     AreaDetector,
-    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -66,7 +66,7 @@ class PilatusReadoutTime(float, Enum):
     PILATUS3 = 0.95e-3
 
 
-class PilatusTriggerLogic(DetectorTriggerLogic[PilatusDriverIO]):
+class PilatusTriggerLogic(ADTriggerLogic[PilatusDriverIO]):
     """Trigger logic for ADPilatus detectors."""
 
     def __init__(

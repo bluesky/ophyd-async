@@ -20,9 +20,9 @@ from ophyd_async.epics.core import PvSuffix
 from .adcore import (
     ADArmLogic,
     ADBaseIO,
+    ADTriggerLogic,
     ADWriterType,
     AreaDetector,
-    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -87,7 +87,7 @@ class VimbaDriverIO(ADBaseIO):
     exposure_mode: A[SignalRW[VimbaExposeOutMode], PvSuffix.rbv("ExposureMode")]
 
 
-class VimbaTriggerLogic(DetectorTriggerLogic[VimbaDriverIO]):
+class VimbaTriggerLogic(ADTriggerLogic[VimbaDriverIO]):
     """Trigger logic for ADVimba detectors."""
 
     def __init__(self, driver: VimbaDriverIO, override_deadtime: float | None = None):

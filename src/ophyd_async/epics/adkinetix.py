@@ -17,9 +17,9 @@ from ophyd_async.core import (
 from .adcore import (
     ADArmLogic,
     ADBaseIO,
+    ADTriggerLogic,
     ADWriterType,
     AreaDetector,
-    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -58,7 +58,7 @@ class KinetixDriverIO(ADBaseIO):
     readout_port_idx: A[SignalRW[KinetixReadoutMode], PvSuffix("ReadoutPortIdx")]
 
 
-class KinetixTriggerLogic(DetectorTriggerLogic[KinetixDriverIO]):
+class KinetixTriggerLogic(ADTriggerLogic[KinetixDriverIO]):
     """Trigger logic for ADKinetix detectors."""
 
     def __init__(self, driver: KinetixDriverIO):

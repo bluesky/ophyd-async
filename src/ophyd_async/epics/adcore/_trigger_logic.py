@@ -32,7 +32,7 @@ async def prepare_exposures(
     await asyncio.gather(*coros)
 
 
-class DetectorTriggerLogic(_DetectorTriggerLogic, Generic[DriverT]):
+class ADTriggerLogic(_DetectorTriggerLogic, Generic[DriverT]):
     driver: DriverT
 
     def __init__(self, driver: DriverT):
@@ -43,7 +43,7 @@ class DetectorTriggerLogic(_DetectorTriggerLogic, Generic[DriverT]):
         return TriggerInfo(collections_per_event=max(1, exposures))
 
 
-class ADContAcqTriggerLogic(DetectorTriggerLogic[DriverT]):
+class ADContAcqTriggerLogic(ADTriggerLogic[DriverT]):
     def __init__(self, driver: DriverT, cb_plugin: NDCircularBuffIO):
         super().__init__(driver=driver)
         self.cb_plugin = cb_plugin

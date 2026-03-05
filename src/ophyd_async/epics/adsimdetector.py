@@ -13,20 +13,20 @@ from ophyd_async.core import (
 from .adcore import (
     ADArmLogic,
     ADBaseIO,
+    ADTriggerLogic,
     ADWriterType,
     AreaDetector,
-    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
 
 __all__ = [
     "SimDetector",
-    "SimDetectorTriggerLogic",
+    "SimADTriggerLogic",
 ]
 
 
-class SimDetectorTriggerLogic(DetectorTriggerLogic):
+class SimADTriggerLogic(ADTriggerLogic):
     """Trigger logic for ADSimDetector."""
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
@@ -62,7 +62,7 @@ class SimDetector(AreaDetector[ADBaseIO]):
             prefix=prefix,
             driver=driver,
             arm_logic=ADArmLogic(driver),
-            trigger_logic=SimDetectorTriggerLogic(driver),
+            trigger_logic=SimADTriggerLogic(driver),
             path_provider=path_provider,
             writer_type=writer_type,
             writer_suffix=writer_suffix,

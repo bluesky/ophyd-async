@@ -18,9 +18,9 @@ from ophyd_async.core import (
 from .adcore import (
     ADArmLogic,
     ADBaseIO,
+    ADTriggerLogic,
     ADWriterType,
     AreaDetector,
-    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -51,7 +51,7 @@ class AravisDriverIO(ADBaseIO):
     trigger_source: A[SignalRW[AravisTriggerSource], PvSuffix.rbv("TriggerSource")]
 
 
-class AravisTriggerLogic(DetectorTriggerLogic[AravisDriverIO]):
+class AravisTriggerLogic(ADTriggerLogic[AravisDriverIO]):
     """Trigger logic for Aravis GigE and USB3 cameras."""
 
     def __init__(self, driver: AravisDriverIO, override_deadtime: float | None = None):

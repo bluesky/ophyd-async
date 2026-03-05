@@ -18,9 +18,9 @@ from ophyd_async.epics.core import PvSuffix
 from .adcore import (
     ADArmLogic,
     ADBaseIO,
+    ADTriggerLogic,
     ADWriterType,
     AreaDetector,
-    DetectorTriggerLogic,
     NDPluginBaseIO,
     prepare_exposures,
 )
@@ -63,7 +63,7 @@ class MerlinDriverIO(ADBaseIO):
 # The deadtime of an Merlin controller varies depending on the exact model of camera.
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
 # runtime. See https://github.com/bluesky/ophyd-async/issues/308
-class MerlinTriggerLogic(DetectorTriggerLogic[MerlinDriverIO]):
+class MerlinTriggerLogic(ADTriggerLogic[MerlinDriverIO]):
     """Trigger logic for MerlinDriverIO."""
 
     def __init__(self, driver: MerlinDriverIO):
