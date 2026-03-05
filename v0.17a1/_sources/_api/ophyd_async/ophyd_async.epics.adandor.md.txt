@@ -1,0 +1,184 @@
+# {py:mod}`ophyd_async.epics.adandor`
+
+```{py:module} ophyd_async.epics.adandor
+```
+
+```{autodoc2-docstring} ophyd_async.epics.adandor
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`AndorDetector <ophyd_async.epics.adandor.AndorDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adandor.AndorDetector
+    :summary:
+    ```
+* - {py:obj}`Andor2DriverIO <ophyd_async.epics.adandor.Andor2DriverIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2DriverIO
+    :summary:
+    ```
+* - {py:obj}`Andor2TriggerLogic <ophyd_async.epics.adandor.Andor2TriggerLogic>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic
+    :summary:
+    ```
+* - {py:obj}`Andor2TriggerMode <ophyd_async.epics.adandor.Andor2TriggerMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerMode
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} AndorDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider | None = None, driver_suffix='cam1:', writer_type: ~ophyd_async.epics.adcore.ADWriterType | None = ADWriterType.HDF, writer_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+:canonical: ophyd_async.epics.adandor.AndorDetector
+
+Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.adandor.Andor2DriverIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.AndorDetector
+```
+
+````
+
+`````{py:class} Andor2DriverIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.adandor.Andor2DriverIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2DriverIO
+```
+
+````{py:attribute} trigger_mode
+:canonical: ophyd_async.epics.adandor.Andor2DriverIO.trigger_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.adandor.Andor2TriggerMode], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2DriverIO.trigger_mode
+```
+
+````
+
+````{py:attribute} andor_accumulate_period
+:canonical: ophyd_async.epics.adandor.Andor2DriverIO.andor_accumulate_period
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[float], PvSuffix('AndorAccumulatePeriod_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2DriverIO.andor_accumulate_period
+```
+
+````
+
+`````
+
+`````{py:class} Andor2TriggerLogic(driver: ~ophyd_async.epics.adandor.Andor2DriverIO)
+:canonical: ophyd_async.epics.adandor.Andor2TriggerLogic
+
+Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic
+```
+
+````{py:method} get_deadtime(config_values: ~ophyd_async.core.SignalDict) -> float
+:canonical: ophyd_async.epics.adandor.Andor2TriggerLogic.get_deadtime
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic.get_deadtime
+```
+
+````
+
+````{py:method} prepare_internal(num: int, livetime: float, deadtime: float)
+:canonical: ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_internal
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_internal
+```
+
+````
+
+````{py:method} prepare_edge(num: int, livetime: float)
+:canonical: ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_edge
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_edge
+```
+
+````
+
+`````
+
+`````{py:class} Andor2TriggerMode()
+:canonical: ophyd_async.epics.adandor.Andor2TriggerMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerMode
+```
+
+````{py:attribute} INTERNAL
+:canonical: ophyd_async.epics.adandor.Andor2TriggerMode.INTERNAL
+:value: >
+   'Internal'
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerMode.INTERNAL
+```
+
+````
+
+````{py:attribute} EXT_TRIGGER
+:canonical: ophyd_async.epics.adandor.Andor2TriggerMode.EXT_TRIGGER
+:value: >
+   'External'
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerMode.EXT_TRIGGER
+```
+
+````
+
+````{py:attribute} EXT_START
+:canonical: ophyd_async.epics.adandor.Andor2TriggerMode.EXT_START
+:value: >
+   'External Start'
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerMode.EXT_START
+```
+
+````
+
+````{py:attribute} EXT_EXPOSURE
+:canonical: ophyd_async.epics.adandor.Andor2TriggerMode.EXT_EXPOSURE
+:value: >
+   'External Exposure'
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerMode.EXT_EXPOSURE
+```
+
+````
+
+````{py:attribute} EXT_FVP
+:canonical: ophyd_async.epics.adandor.Andor2TriggerMode.EXT_FVP
+:value: >
+   'External FVP'
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerMode.EXT_FVP
+```
+
+````
+
+````{py:attribute} SOFTWARE
+:canonical: ophyd_async.epics.adandor.Andor2TriggerMode.SOFTWARE
+:value: >
+   'Software'
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerMode.SOFTWARE
+```
+
+````
+
+`````
