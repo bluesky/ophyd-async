@@ -90,6 +90,8 @@ class VimbaDriverIO(ADBaseIO):
 class VimbaTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADVimba detectors."""
 
+    driver: VimbaDriverIO
+
     def __init__(self, driver: VimbaDriverIO, override_deadtime: float | None = None):
         super().__init__(driver=driver)
         self.override_deadtime = override_deadtime

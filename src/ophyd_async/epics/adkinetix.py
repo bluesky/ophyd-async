@@ -61,6 +61,8 @@ class KinetixDriverIO(ADBaseIO):
 class KinetixTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADKinetix detectors."""
 
+    driver: KinetixDriverIO
+
     def __init__(self, driver: KinetixDriverIO):
         super().__init__(driver=driver)
 

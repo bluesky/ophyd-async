@@ -54,6 +54,8 @@ class AravisDriverIO(ADBaseIO):
 class AravisTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Aravis GigE and USB3 cameras."""
 
+    driver: AravisDriverIO
+
     def __init__(self, driver: AravisDriverIO, override_deadtime: float | None = None):
         super().__init__(driver=driver)
         self.override_deadtime = override_deadtime

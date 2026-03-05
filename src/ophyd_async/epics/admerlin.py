@@ -66,6 +66,8 @@ class MerlinDriverIO(ADBaseIO):
 class MerlinTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for MerlinDriverIO."""
 
+    driver: MerlinDriverIO
+
     def __init__(self, driver: MerlinDriverIO):
         super().__init__(driver=driver)
 

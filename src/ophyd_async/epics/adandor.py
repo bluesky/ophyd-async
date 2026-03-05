@@ -63,6 +63,8 @@ class Andor2DriverIO(ADBaseIO):
 class Andor2TriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Andor2DriverIO."""
 
+    driver: Andor2DriverIO
+
     def __init__(self, driver: Andor2DriverIO):
         super().__init__(driver=driver)
 
