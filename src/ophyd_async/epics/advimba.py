@@ -87,10 +87,8 @@ class VimbaDriverIO(ADBaseIO):
     exposure_mode: A[SignalRW[VimbaExposeOutMode], PvSuffix.rbv("ExposureMode")]
 
 
-class VimbaTriggerLogic(DetectorTriggerLogic):
+class VimbaTriggerLogic(DetectorTriggerLogic[VimbaDriverIO]):
     """Trigger logic for ADVimba detectors."""
-
-    driver: VimbaDriverIO
 
     def __init__(self, driver: VimbaDriverIO, override_deadtime: float | None = None):
         super().__init__(driver=driver)

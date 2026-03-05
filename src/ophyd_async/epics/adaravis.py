@@ -51,10 +51,8 @@ class AravisDriverIO(ADBaseIO):
     trigger_source: A[SignalRW[AravisTriggerSource], PvSuffix.rbv("TriggerSource")]
 
 
-class AravisTriggerLogic(DetectorTriggerLogic):
+class AravisTriggerLogic(DetectorTriggerLogic[AravisDriverIO]):
     """Trigger logic for Aravis GigE and USB3 cameras."""
-
-    driver: AravisDriverIO
 
     def __init__(self, driver: AravisDriverIO, override_deadtime: float | None = None):
         super().__init__(driver=driver)

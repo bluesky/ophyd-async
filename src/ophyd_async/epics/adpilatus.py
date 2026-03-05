@@ -66,10 +66,8 @@ class PilatusReadoutTime(float, Enum):
     PILATUS3 = 0.95e-3
 
 
-class PilatusTriggerLogic(DetectorTriggerLogic):
+class PilatusTriggerLogic(DetectorTriggerLogic[PilatusDriverIO]):
     """Trigger logic for ADPilatus detectors."""
-
-    driver: PilatusDriverIO
 
     def __init__(
         self,

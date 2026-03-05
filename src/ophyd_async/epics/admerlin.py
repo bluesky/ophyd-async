@@ -63,10 +63,8 @@ class MerlinDriverIO(ADBaseIO):
 # The deadtime of an Merlin controller varies depending on the exact model of camera.
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
 # runtime. See https://github.com/bluesky/ophyd-async/issues/308
-class MerlinTriggerLogic(DetectorTriggerLogic):
+class MerlinTriggerLogic(DetectorTriggerLogic[MerlinDriverIO]):
     """Trigger logic for MerlinDriverIO."""
-
-    driver: MerlinDriverIO
 
     def __init__(self, driver: MerlinDriverIO):
         super().__init__(driver=driver)

@@ -60,10 +60,8 @@ class Andor2DriverIO(ADBaseIO):
 # The deadtime of an Andor2 controller varies depending on the exact model of camera.
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
 # runtime. See https://github.com/bluesky/ophyd-async/issues/308
-class Andor2TriggerLogic(DetectorTriggerLogic):
+class Andor2TriggerLogic(DetectorTriggerLogic[Andor2DriverIO]):
     """Trigger logic for Andor2DriverIO."""
-
-    driver: Andor2DriverIO
 
     def __init__(self, driver: Andor2DriverIO):
         super().__init__(driver=driver)
