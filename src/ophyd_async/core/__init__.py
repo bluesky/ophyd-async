@@ -1,5 +1,14 @@
 """The building blocks for making devices."""
 
+from ._command import (
+    Command,
+    CommandBackend,
+    CommandConnector,
+    MockCommandBackend,
+    SoftCommandBackend,
+    make_converter,
+    soft_command,
+)
 from ._data_providers import (
     ReadableDataProvider,
     SignalDataProvider,
@@ -295,4 +304,11 @@ __all__ = [
     "OnOff",
     "YesNo",
     "TableSubclass",
+    "Command",
+    "CommandBackend",
+    "CommandConnector",
+    "MockCommandBackend",
+    "SoftCommandBackend",
+    "soft_command",
+    "make_converter",
 ]

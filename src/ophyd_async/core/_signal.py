@@ -4,7 +4,7 @@ import asyncio
 import functools
 import inspect
 import time
-from collections.abc import AsyncGenerator, Awaitable, Callable
+from collections.abc import AsyncGenerator, Callable
 from typing import Any, Generic, TypeVar, cast
 
 from bluesky.protocols import (
@@ -30,16 +30,9 @@ from ._utils import (
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
     Callback,
-    T,
+    _wait_for,
     error_if_none,
 )
-
-
-async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
-    try:
-        return await asyncio.wait_for(coro, timeout)
-    except TimeoutError as exc:
-        raise TimeoutError(source) from exc
 
 
 def _add_timeout(func):
