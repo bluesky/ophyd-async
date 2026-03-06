@@ -134,7 +134,7 @@ class SimMotorMoveLogic(MovableLogic[float]):
                 async with move_status:
                     async for current_position in observe_value(
                         self.readback,
-                        # done_status=move_status,
+                        done_status=move_status,
                     ):
                         yield WatcherUpdate[float](
                             current=current_position,
