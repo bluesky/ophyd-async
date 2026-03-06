@@ -5,6 +5,7 @@ https://github.com/areaDetector/ADVimba.
 
 import asyncio
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
@@ -25,6 +26,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
+    trigger_info_from_num_images,
 )
 from .adgenicam import get_camera_deadtime
 
@@ -87,12 +89,12 @@ class VimbaDriverIO(ADBaseIO):
     exposure_mode: A[SignalRW[VimbaExposeOutMode], PvSuffix.rbv("ExposureMode")]
 
 
+@dataclass
 class VimbaTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADVimba detectors."""
 
-    def __init__(self, driver: VimbaDriverIO, override_deadtime: float | None = None):
-        self.driver = driver
-        self.override_deadtime = override_deadtime
+    driver: VimbaDriverIO
+    override_deadtime: float | None = None
 
     def config_sigs(self) -> set[SignalR]:
         return {self.driver.model}
@@ -126,6 +128,9 @@ class VimbaTriggerLogic(DetectorTriggerLogic):
             self.driver.trigger_source.set(VimbaTriggerSource.LINE1),
         )
         await prepare_exposures(self.driver, num)
+
+    async def default_trigger_info(self):
+        return await trigger_info_from_num_images(self.driver)
 
 
 class VimbaDetector(AreaDetector[VimbaDriverIO]):

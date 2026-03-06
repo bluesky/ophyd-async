@@ -4,6 +4,7 @@ https://github.com/areaDetector/ADAndor.
 """
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
@@ -21,6 +22,7 @@ from ophyd_async.epics.adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
+    trigger_info_from_num_images,
 )
 from ophyd_async.epics.core import PvSuffix
 
@@ -60,11 +62,11 @@ class Andor2DriverIO(ADBaseIO):
 # The deadtime of an Andor2 controller varies depending on the exact model of camera.
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
 # runtime. See https://github.com/bluesky/ophyd-async/issues/308
+@dataclass
 class Andor2TriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Andor2DriverIO."""
 
-    def __init__(self, driver: Andor2DriverIO):
-        self.driver = driver
+    driver: Andor2DriverIO
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return _MIN_DEAD_TIME
@@ -76,6 +78,9 @@ class Andor2TriggerLogic(DetectorTriggerLogic):
     async def prepare_edge(self, num: int, livetime: float):
         await self.driver.trigger_mode.set(Andor2TriggerMode.EXT_TRIGGER)
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE, livetime)
+
+    async def default_trigger_info(self):
+        return await trigger_info_from_num_images(self.driver)
 
 
 class AndorDetector(AreaDetector[Andor2DriverIO]):

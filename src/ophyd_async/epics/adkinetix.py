@@ -4,6 +4,7 @@ https://github.com/NSLS-II/ADKinetix.
 """
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
@@ -22,6 +23,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
+    trigger_info_from_num_images,
 )
 from .core import PvSuffix
 
@@ -58,11 +60,11 @@ class KinetixDriverIO(ADBaseIO):
     readout_port_idx: A[SignalRW[KinetixReadoutMode], PvSuffix("ReadoutPortIdx")]
 
 
+@dataclass
 class KinetixTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADKinetix detectors."""
 
-    def __init__(self, driver: KinetixDriverIO):
-        self.driver = driver
+    driver: KinetixDriverIO
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return 0.001
@@ -78,6 +80,9 @@ class KinetixTriggerLogic(DetectorTriggerLogic):
     async def prepare_level(self, num: int):
         await self.driver.trigger_mode.set(KinetixTriggerMode.GATE)
         await prepare_exposures(self.driver, num)
+
+    async def default_trigger_info(self):
+        return await trigger_info_from_num_images(self.driver)
 
 
 class KinetixDetector(AreaDetector[KinetixDriverIO]):

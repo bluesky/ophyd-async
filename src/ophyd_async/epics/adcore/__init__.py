@@ -40,7 +40,11 @@ from ._ndattribute import (
     ndattributes_to_xml,
 )
 from ._plan_stubs import setup_ndattributes, setup_ndstats_sum
-from ._trigger_logic import ADContAcqTriggerLogic, prepare_exposures
+from ._trigger_logic import (
+    ADContAcqTriggerLogic,
+    prepare_exposures,
+    trigger_info_from_num_images,
+)
 
 __all__ = [
     # ADCore IOs
@@ -65,6 +69,7 @@ __all__ = [
     # TriggerLogic
     "prepare_exposures",
     "ADContAcqTriggerLogic",
+    "trigger_info_from_num_images",
     # ArmLogic
     "ADArmLogic",
     "ADContAcqArmLogic",
