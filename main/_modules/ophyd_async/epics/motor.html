@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.17.dev8+g4e49c5fe1 documentation</title>
+    <title>ophyd_async.epics.motor &#8212; ophyd-async 0.17a2.dev1+ge1a5c8520 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=ba6c603a"></script>
+    <script src="../../../_static/documentation_options.js?v=f2ba9245"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -561,8 +561,8 @@ window.addEventListener("load", load);</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17.dev8+g4e49c5fe1 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17.dev8+g4e49c5fe1 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev1+ge1a5c8520 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev1+ge1a5c8520 documentation - Home"/>
   
   
 </a></div>
@@ -1211,8 +1211,10 @@ window.addEventListener("load", load);</script>
 
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_motor_limit</span><span class="p">(</span><span class="n">old_position</span><span class="p">,</span> <span class="n">new_position</span><span class="p">)</span>
 
-        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">):</span>
-            <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="p">):</span>
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span> <span class="k">as</span> <span class="n">status</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span> <span class="n">done_status</span><span class="o">=</span><span class="n">status</span>
+            <span class="p">):</span>
                 <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
                     <span class="n">current</span><span class="o">=</span><span class="n">current_position</span><span class="p">,</span>
                     <span class="n">initial</span><span class="o">=</span><span class="n">old_position</span><span class="p">,</span>
