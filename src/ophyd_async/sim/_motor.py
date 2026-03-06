@@ -18,7 +18,6 @@ from ophyd_async.core import (
     WatchableAsyncStatus,
     WatcherUpdate,
     error_if_none,
-    observe_value,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
@@ -36,8 +35,6 @@ class SimMotorMoveLogic(MovableLogic[float]):
     async def stop(self) -> None:
         """Stop the motion."""
         await self.setpoint.set(await self.readback.get_value())
-        if self.move_status is not None:
-            self.move_status.task.cancel()
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         """Return the units and precision."""
@@ -115,8 +112,7 @@ class SimMotorMoveLogic(MovableLogic[float]):
         self, new_position: float, timeout: CalculatableTimeout
     ) -> AsyncStatus:
         """Override the default to provide simulated move."""
-        self.move_status = AsyncStatus(self._internal_sim_move(new_position))
-        return self.move_status
+        return AsyncStatus(self._internal_sim_move(new_position))
 
     async def move(
         self,
@@ -127,23 +123,18 @@ class SimMotorMoveLogic(MovableLogic[float]):
         units: str | None,
         precision: int | None,
     ) -> AsyncGenerator[WatcherUpdate[float], None]:
-
         try:
             # If stop is called then this will raise a CancelledError, ignore it
             with contextlib.suppress(asyncio.CancelledError):
-                async with move_status:
-                    async for current_position in observe_value(
-                        self.readback,
-                        done_status=move_status,
-                    ):
-                        yield WatcherUpdate[float](
-                            current=current_position,
-                            initial=old_position,
-                            target=new_position,
-                            name=self.readback.name,
-                            unit=units,
-                            precision=precision,
-                        )
+                async for update in super().move(
+                    move_status=move_status,
+                    old_position=old_position,
+                    new_position=new_position,
+                    timeout=timeout,
+                    units=units,
+                    precision=precision,
+                ):
+                    yield update
         finally:
             move_status.task.cancel()
 
