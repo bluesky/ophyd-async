@@ -36,7 +36,6 @@ def m2() -> SimMotor:
     return SimMotor("M2", instant=False)
 
 
-@pytest.mark.xfail(reason="Flaky test")
 @pytest.mark.skipif("win" in sys.platform, reason="windows CI runners too weedy")
 @pytest.mark.parametrize(
     "setpoint,expected",
@@ -47,22 +46,22 @@ def m2() -> SimMotor:
         (-0.025, [0.0, -0.025]),
     ],
 )
-async def test_move_profiles(setpoint, expected, m1: SimMotor):
-    await m1.acceleration_time.set(0.1)
-    status = m1.set(setpoint)
+async def test_move_profiles(setpoint, expected, m2: SimMotor):
+    await m2.acceleration_time.set(0.1)
+    status = m2.set(setpoint)
     watcher = StatusWatcher(status)
     for i, v in enumerate(expected):
         await watcher.wait_for_call(
             current=pytest.approx(v),
             initial=0.0,
-            name="M1",
+            name="M2",
             target=setpoint,
             time_elapsed=pytest.approx(i * 0.1, abs=0.1),
             unit="mm",
         )
     await status
     watcher.mock.assert_not_called()
-    assert await m1.user_readback.get_value() == setpoint
+    assert await m2.user_readback.get_value() == setpoint
 
 
 async def test_short_move_is_exactly_move_time(m2: SimMotor):

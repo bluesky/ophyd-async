@@ -9,7 +9,6 @@ import numpy as np
 
 from ophyd_async.core import (
     AsyncStatus,
-    CalculatableTimeout,
     FlyMotorInfo,
     MovableLogic,
     SignalRW,
@@ -18,6 +17,7 @@ from ophyd_async.core import (
     WatchableAsyncStatus,
     WatcherUpdate,
     error_if_none,
+    observe_value,
     soft_signal_r_and_setter,
     soft_signal_rw,
 )
@@ -42,17 +42,11 @@ class SimMotorMoveLogic(MovableLogic[float]):
         """Return the units and precision."""
         return await self.units.get_value(), None
 
-    async def _internal_sim_move(self, new_position: float) -> None:
-        velocity = await self.velocity.get_value()
-        old_position = await self.setpoint.get_value()
+    async def _internal_sim_move(
+        self, old_position: float, new_position: float, velocity: float
+    ):
         if old_position == new_position:
             return
-
-        await self.setpoint.set(new_position)
-        if velocity == 0:
-            self.readback_set(new_position)
-            return
-
         start = time.monotonic()
         acceleration_time = abs(await self.acceleration_time.get_value())
         sign = np.sign(new_position - old_position)
@@ -110,37 +104,39 @@ class SimMotorMoveLogic(MovableLogic[float]):
             # Update the readback position
             self.readback_set(position)
 
-    def get_move_status(
-        self, new_position: float, timeout: CalculatableTimeout
-    ) -> AsyncStatus:
-        """Override the default to provide simulated move."""
-        return AsyncStatus(self._internal_sim_move(new_position))
-
     async def move(
         self,
-        move_status: AsyncStatus,
         old_position: float,
         new_position: float,
         timeout: float | None,
         units: str | None,
         precision: int | None,
     ) -> AsyncGenerator[WatcherUpdate[float], None]:
-        # Needed so stop can successfully stop the task.
-        self._move_status = move_status
-        try:
-            # If stop is called then this will raise a CancelledError, ignore it
-            with contextlib.suppress(asyncio.CancelledError):
-                async for update in super().move(
-                    move_status=move_status,
-                    old_position=old_position,
-                    new_position=new_position,
-                    timeout=timeout,
-                    units=units,
-                    precision=precision,
-                ):
-                    yield update
-        finally:
-            move_status.task.cancel()
+        # get move velocity
+        velocity = await self.velocity.get_value()
+        # update the setpoint to where we want to be
+        await self.setpoint.set(new_position)
+        # If zero velocity, do instant move
+        if velocity == 0:
+            self.readback_set(new_position)
+        else:
+            self._move_status = AsyncStatus(
+                self._internal_sim_move(old_position, new_position, velocity)
+            )
+            async with self._move_status:
+                # If stop is called then this will raise a CancelledError, ignore it
+                with contextlib.suppress(asyncio.CancelledError):
+                    async for current_position in observe_value(
+                        self.readback, done_status=self._move_status
+                    ):
+                        yield WatcherUpdate(
+                            current=current_position,
+                            initial=old_position,
+                            target=new_position,
+                            name=self.readback.name,
+                            unit=units,
+                            precision=precision,
+                        )
 
 
 class SimMotor(StandardReadable, StandardMovable[float]):

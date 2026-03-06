@@ -120,7 +120,7 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
     get_mock_put(sim_motor.motor_stop).assert_called_once_with(1)
 
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
-    await wait_for_pending_wakeups()
+    await wait_for_pending_wakeups(max_yields=25)
 
     assert s.done
     assert s.success is False

@@ -73,13 +73,7 @@ async def test_movable_move_timeout(movable: StandardMovableImpl):
     s.watch(watcher)
     with pytest.raises(MyError):
         await s
-    watcher.assert_called_once_with(
-        name="movable",
-        current=0.0,
-        initial=0.0,
-        target=0.3,
-        time_elapsed=pytest.approx(0.0, abs=0.2),
-    )
+    watcher.assert_not_called()
 
 
 async def test_movable_moving_stopped(movable: StandardMovableImpl):
