@@ -1,5 +1,5 @@
 import asyncio
-from typing import Generic, TypeVar
+from dataclasses import dataclass
 
 from ophyd_async.core import (
     DetectorTriggerLogic as _DetectorTriggerLogic,
@@ -10,8 +10,6 @@ from ophyd_async.core import (
 )
 
 from ._io import ADBaseIO, ADImageMode, NDCBFlushOnSoftTrgMode, NDCircularBuffIO
-
-DriverT = TypeVar("DriverT", bound=ADBaseIO)
 
 
 async def prepare_exposures(
@@ -32,21 +30,16 @@ async def prepare_exposures(
     await asyncio.gather(*coros)
 
 
-class ADTriggerLogic(_DetectorTriggerLogic, Generic[DriverT]):
-    driver: DriverT
-
-    def __init__(self, driver: DriverT):
-        self.driver = driver
-
-    async def default_trigger_info(self) -> TriggerInfo:
-        exposures = await self.driver.num_images.get_value()
-        return TriggerInfo(collections_per_event=max(1, exposures))
+async def trigger_info_from_num_images(driver: ADBaseIO) -> TriggerInfo:
+    """Default TriggerInfo for AD detectors, reading num_images from the driver."""
+    num = await driver.num_images.get_value()
+    return TriggerInfo(collections_per_event=max(1, num))
 
 
-class ADContAcqTriggerLogic(ADTriggerLogic[DriverT]):
-    def __init__(self, driver: DriverT, cb_plugin: NDCircularBuffIO):
-        super().__init__(driver=driver)
-        self.cb_plugin = cb_plugin
+@dataclass
+class ADContAcqTriggerLogic(_DetectorTriggerLogic):
+    driver: ADBaseIO
+    cb_plugin: NDCircularBuffIO
 
     async def _ensure_driver_acquiring(self, livetime: float):
         # Check the current state of the system
@@ -80,3 +73,7 @@ class ADContAcqTriggerLogic(ADTriggerLogic[DriverT]):
             self.cb_plugin.preset_trigger_count.set(1),
             self.cb_plugin.flush_on_soft_trg.set(NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
         )
+
+    async def default_trigger_info(self) -> TriggerInfo:
+        num = await self.cb_plugin.post_count.get_value()
+        return TriggerInfo(collections_per_event=max(1, num))

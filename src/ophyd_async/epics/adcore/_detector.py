@@ -3,6 +3,7 @@ from typing import Generic
 
 from ophyd_async.core import (
     DetectorArmLogic,
+    DetectorTriggerLogic,
     PathProvider,
     SignalR,
     StandardDetector,
@@ -11,7 +12,7 @@ from ophyd_async.core import (
 from ._arm_logic import ADContAcqArmLogic
 from ._data_logic import ADWriterType, make_writer_data_logic
 from ._io import ADBaseIO, ADBaseIOT, NDCircularBuffIO, NDPluginBaseIO, NDPluginBaseIOT
-from ._trigger_logic import ADContAcqTriggerLogic, ADTriggerLogic
+from ._trigger_logic import ADContAcqTriggerLogic
 
 
 class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
@@ -19,7 +20,7 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
         self,
         driver: ADBaseIOT,
         arm_logic: DetectorArmLogic | None = None,
-        trigger_logic: ADTriggerLogic | None = None,
+        trigger_logic: DetectorTriggerLogic | None = None,
         path_provider: PathProvider | None = None,
         writer_type: ADWriterType | None = ADWriterType.HDF,
         prefix: str = "",

@@ -5,9 +5,11 @@ https://github.com/areaDetector/ADVimba.
 
 import asyncio
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
+    DetectorTriggerLogic,
     OnOff,
     PathProvider,
     SignalDict,
@@ -20,11 +22,11 @@ from ophyd_async.epics.core import PvSuffix
 from .adcore import (
     ADArmLogic,
     ADBaseIO,
-    ADTriggerLogic,
     ADWriterType,
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
+    trigger_info_from_num_images,
 )
 from .adgenicam import get_camera_deadtime
 
@@ -87,12 +89,12 @@ class VimbaDriverIO(ADBaseIO):
     exposure_mode: A[SignalRW[VimbaExposeOutMode], PvSuffix.rbv("ExposureMode")]
 
 
-class VimbaTriggerLogic(ADTriggerLogic[VimbaDriverIO]):
+@dataclass
+class VimbaTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADVimba detectors."""
 
-    def __init__(self, driver: VimbaDriverIO, override_deadtime: float | None = None):
-        super().__init__(driver=driver)
-        self.override_deadtime = override_deadtime
+    driver: VimbaDriverIO
+    override_deadtime: float | None = None
 
     def config_sigs(self) -> set[SignalR]:
         return {self.driver.model}
@@ -126,6 +128,9 @@ class VimbaTriggerLogic(ADTriggerLogic[VimbaDriverIO]):
             self.driver.trigger_source.set(VimbaTriggerSource.LINE1),
         )
         await prepare_exposures(self.driver, num)
+
+    async def default_trigger_info(self):
+        return await trigger_info_from_num_images(self.driver)
 
 
 class VimbaDetector(AreaDetector[VimbaDriverIO]):

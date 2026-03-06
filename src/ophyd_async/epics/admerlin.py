@@ -4,9 +4,11 @@ https://github.com/areaDetector/ADMerlin.
 """
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
+    DetectorTriggerLogic,
     PathProvider,
     SignalDict,
     SignalR,
@@ -18,11 +20,11 @@ from ophyd_async.epics.core import PvSuffix
 from .adcore import (
     ADArmLogic,
     ADBaseIO,
-    ADTriggerLogic,
     ADWriterType,
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
+    trigger_info_from_num_images,
 )
 
 __all__ = [
@@ -63,11 +65,11 @@ class MerlinDriverIO(ADBaseIO):
 # The deadtime of an Merlin controller varies depending on the exact model of camera.
 # Ideally we would maximize performance by dynamically retrieving the deadtime at
 # runtime. See https://github.com/bluesky/ophyd-async/issues/308
-class MerlinTriggerLogic(ADTriggerLogic[MerlinDriverIO]):
+@dataclass
+class MerlinTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for MerlinDriverIO."""
 
-    def __init__(self, driver: MerlinDriverIO):
-        super().__init__(driver=driver)
+    driver: MerlinDriverIO
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return _MIN_DEAD_TIME
@@ -80,6 +82,9 @@ class MerlinTriggerLogic(ADTriggerLogic[MerlinDriverIO]):
         # Is this the right trigger mode?
         await self.driver.trigger_mode.set(MerlinTriggerMode.TRIGGER_START_RISING)
         await prepare_exposures(self.driver, num, livetime)
+
+    async def default_trigger_info(self):
+        return await trigger_info_from_num_images(self.driver)
 
 
 class MerlinDetector(AreaDetector[MerlinDriverIO]):

@@ -18,7 +18,9 @@ For example for ADAravis this would include signals for trigger mode, trigger so
 
 ## Add Trigger Logic for detector-specific triggering
 
-Now you need a class that subclasses [](#DetectorTriggerLogic). This should implement methods for each trigger mode your detector supports:
+Now you need a class that subclasses [](#DetectorTriggerLogic). Decorate it with `@dataclass` and declare the driver (and any other constructor arguments) as class-level annotated fields rather than writing an `__init__` method.
+
+Implement methods for each trigger mode your detector supports:
 - `prepare_internal(num, livetime, deadtime)` - Setup for internal triggering (detector generates its own triggers)
 - `prepare_edge(num, livetime)` - Setup for external edge triggering (rising edge starts an internally-timed exposure)
 - `prepare_level(num)` - Setup for external level/gate triggering (high level duration determines exposure time)
@@ -29,7 +31,10 @@ If the detector has configuration values that should be captured in the scan the
 If you support external triggering you should also implement:
 - `get_deadtime(config_values)` - Calculate the minimum time between exposures based on configuration values
 
-Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.
+You should also implement:
+- `default_trigger_info()` - Return the [](#TriggerInfo) to use when `trigger()` is called without a preceding `prepare()` (i.e. an implicit prepare in a step scan). Call `await trigger_info_from_num_images(self.driver)` to read back the current `num_images` from the driver, preserving any value set by the operator rather than resetting it to 1.
+
+Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented. Likewise, `default_trigger_info` is opt-in: if you do not implement it, `trigger()` without a prior `prepare()` falls back to a bare `TriggerInfo()`.
 
 For example, for ADAravis:
 ```{literalinclude} ../../src/ophyd_async/epics/adaravis.py

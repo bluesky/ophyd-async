@@ -580,11 +580,13 @@ class StandardDetector(
     async def trigger(self) -> AsyncIterator[WatcherUpdate[int]]:
         if self._prepare_ctx is None:
             # If a prepare has not been done since stage, do an implicit one here
-            if self._trigger_logic is not None:
-                await self.prepare(await self._trigger_logic.default_trigger_info())
+            if self._trigger_logic is not None and _trigger_logic_supported(
+                self._trigger_logic.default_trigger_info
+            ):
+                trigger_info = await self._trigger_logic.default_trigger_info()
             else:
-                # TODO, handle this edge case better
-                await self.prepare(TriggerInfo())
+                trigger_info = TriggerInfo()
+            await self.prepare(trigger_info)
         else:
             # Check the one that was provided is suitable for triggering
             trigger_info = self._prepare_ctx.trigger_info

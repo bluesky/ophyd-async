@@ -42,8 +42,8 @@ from ._ndattribute import (
 from ._plan_stubs import setup_ndattributes, setup_ndstats_sum
 from ._trigger_logic import (
     ADContAcqTriggerLogic,
-    ADTriggerLogic,
     prepare_exposures,
+    trigger_info_from_num_images,
 )
 
 __all__ = [
@@ -69,7 +69,7 @@ __all__ = [
     # TriggerLogic
     "prepare_exposures",
     "ADContAcqTriggerLogic",
-    "ADTriggerLogic",
+    "trigger_info_from_num_images",
     # ArmLogic
     "ADArmLogic",
     "ADContAcqArmLogic",

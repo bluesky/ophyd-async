@@ -1,7 +1,8 @@
 import asyncio
 import logging
+from dataclasses import dataclass
 
-from ophyd_async.core import DetectorTriggerLogic, SignalDict, SignalRW, TriggerInfo
+from ophyd_async.core import DetectorTriggerLogic, SignalDict, SignalRW
 
 from ._io import AcquisitionType, JungfrauDriverIO, JungfrauTriggerMode, PedestalMode
 
@@ -85,12 +86,10 @@ async def prepare_pedestal_mode(
     await detector.pedestal_mode_state.set(PedestalMode.ON)
 
 
+@dataclass
 class JungfrauTriggerLogic(DetectorTriggerLogic):
-    def __init__(
-        self, detector: JungfrauDriverIO, acquisition_type: SignalRW[AcquisitionType]
-    ):
-        self.detector = detector
-        self.acquisition_type = acquisition_type
+    detector: JungfrauDriverIO
+    acquisition_type: SignalRW[AcquisitionType]
 
     # Deadtime here is really used as "time between frames"
     def get_deadtime(self, config_values: SignalDict) -> float:
@@ -115,7 +114,3 @@ class JungfrauTriggerLogic(DetectorTriggerLogic):
             await prepare_standard_mode(
                 self.detector, JungfrauTriggerMode.EXTERNAL, num, livetime
             )
-
-    async def default_trigger_info(self) -> TriggerInfo:
-        # TODO, get the current num images
-        return TriggerInfo()

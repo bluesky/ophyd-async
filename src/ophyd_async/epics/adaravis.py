@@ -4,9 +4,11 @@ https://github.com/areaDetector/ADAravis
 """
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Annotated as A
 
 from ophyd_async.core import (
+    DetectorTriggerLogic,
     OnOff,
     PathProvider,
     SignalDict,
@@ -18,11 +20,11 @@ from ophyd_async.core import (
 from .adcore import (
     ADArmLogic,
     ADBaseIO,
-    ADTriggerLogic,
     ADWriterType,
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
+    trigger_info_from_num_images,
 )
 from .adgenicam import get_camera_deadtime
 from .core import PvSuffix
@@ -51,12 +53,12 @@ class AravisDriverIO(ADBaseIO):
     trigger_source: A[SignalRW[AravisTriggerSource], PvSuffix.rbv("TriggerSource")]
 
 
-class AravisTriggerLogic(ADTriggerLogic[AravisDriverIO]):
+@dataclass
+class AravisTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for Aravis GigE and USB3 cameras."""
 
-    def __init__(self, driver: AravisDriverIO, override_deadtime: float | None = None):
-        super().__init__(driver=driver)
-        self.override_deadtime = override_deadtime
+    driver: AravisDriverIO
+    override_deadtime: float | None = None
 
     def config_sigs(self) -> set[SignalR]:
         return {self.driver.model}
@@ -80,6 +82,9 @@ class AravisTriggerLogic(ADTriggerLogic[AravisDriverIO]):
         await self.driver.trigger_mode.set(OnOff.ON)
         await self.driver.trigger_source.set(AravisTriggerSource.LINE1)
         await prepare_exposures(self.driver, num, livetime)
+
+    async def default_trigger_info(self):
+        return await trigger_info_from_num_images(self.driver)
 
 
 class AravisDetector(AreaDetector[AravisDriverIO]):
