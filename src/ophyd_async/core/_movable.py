@@ -137,21 +137,21 @@ class StandardMovable(
         )
         await self.movable_logic.check_move(old_position, new_position)
 
-        calculate_timeout = await self.movable_logic.calculate_timeout(
-            old_position, new_position
-        )
-        resolved_timeout: float | None = (
-            calculate_timeout if timeout is CALCULATE_TIMEOUT else timeout
-        )  # type: ignore
+        if timeout == CALCULATE_TIMEOUT:
+            move_timeout = await self.movable_logic.calculate_timeout(
+                old_position, new_position
+            )
+        else:
+            move_timeout = timeout
 
         move_status = self.movable_logic.get_move_status(
-            new_position, timeout=resolved_timeout
+            new_position, timeout=move_timeout
         )
         async for update in self.movable_logic.move(
             move_status=move_status,
             old_position=old_position,
             new_position=new_position,
-            timeout=resolved_timeout,
+            timeout=move_timeout,
             units=units,
             precision=precision,
         ):
