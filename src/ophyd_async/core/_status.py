@@ -21,10 +21,10 @@ from ._utils import Callback, P, T, WatcherUpdate
 class AsyncStatusBase(Status, Awaitable[None]):
     """Convert asyncio awaitable to bluesky Status interface.
 
-    Can be used as an async context manager to automatically cancel the calling
-    task when the status completes. This is useful for bounding loop execution:
-    when the status completes, the calling task is cancelled, causing the loop
-    to exit. If the loop completes first, the status task is automatically cancelled.
+    Can be used as an async context manager to cancel the status task when the
+    context is exited. Use this to ensure the status task is cancelled if the
+    loop exits before the status completes, to avoid leaving dangling tasks that
+    generate warnings in test cleanup.
     """
 
     def __init__(self, awaitable: Coroutine | asyncio.Task, name: str | None = None):
@@ -49,7 +49,6 @@ class AsyncStatusBase(Status, Awaitable[None]):
         self.task.add_done_callback(self._run_callbacks)
         self._callbacks: list[Callback[Status]] = []
         self._name = name
-        self._cancelled_error_ok = False
 
     def __await__(self):
         return self.task.__await__()
@@ -109,20 +108,6 @@ class AsyncStatusBase(Status, Awaitable[None]):
         )
 
     async def __aenter__(self):
-        # Grab the calling task, the one that is doing `with status``
-        calling_task = asyncio.current_task()
-        if calling_task is None:
-            raise RuntimeError("Can only use in a context manager inside a task")
-
-        def _cancel_calling_task(task: asyncio.Task, calling_task=calling_task):
-            # If no-one cancelled our child task, then it is expected
-            # that we want to break out of the calling task with block
-            # so mark that the CancelledError should be suppressed on exit
-            self._cancelled_error_ok = not task.cancelled()
-            calling_task.cancel()
-
-        # When our child task is done, then cancel the calling task
-        self.task.add_done_callback(_cancel_calling_task)
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
@@ -131,12 +116,8 @@ class AsyncStatusBase(Status, Awaitable[None]):
         # we know it will raise CancelledError as we just cancelled it
         with contextlib.suppress(CancelledError):
             await self.task
-        if exc_type is CancelledError and self._cancelled_error_ok:
-            # Suppress error as we cancelled it in _cancel_calling_task
-            return True
-        else:
-            # Raise error as we didn't cause it
-            return False
+        # Raise any errors from the block, but not cancellation errors from the status
+        return False
 
     __str__ = __repr__
 
@@ -156,17 +137,9 @@ class AsyncStatus(AsyncStatusBase):
     assert status.done
     ```
 
-    Can also be used as a context manager to bound loop execution. When the status
-    completes, the calling task is cancelled, causing loops to exit:
-
-    ```python
-    async with motor.set(target_position):
-        async for value in observe_value(detector):
-            process_reading(value)
-            # Loop exits automatically when motor reaches position
-    ```
-
-    If the loop completes before the status, the status task is cancelled:
+    Can also be used as a context manager to cancel the status task when the
+    block exits. This is useful when the loop completes before the status and
+    you want to clean up the status task rather than leaving it dangling:
 
     ```python
     async with AsyncStatus(long_operation()):
@@ -175,9 +148,16 @@ class AsyncStatus(AsyncStatusBase):
         # Loop completes, long_operation() is cancelled
     ```
 
-    Note that the body of the with statement will only break at a suspension
-    point like `async for` or `await`, so body code without these suspension
-    points will continue even if the status completes.
+    To exit a loop when the status completes, pass the status as `done_status`
+    to [](#observe_value). When the status finishes, the iterator will stop;
+    if the status raised an exception it will be re-raised by the iterator:
+
+    ```python
+    async with motor.set(target_position) as status:
+        async for value in observe_value(detector, done_status=status):
+            process_reading(value)
+            # Iterator exits automatically when motor reaches position
+    ```
     """
 
     @classmethod
