@@ -1,14 +1,18 @@
 import asyncio
 import contextlib
 import time
+from collections.abc import AsyncGenerator, Callable
+from dataclasses import dataclass
+from functools import cached_property
 
 import numpy as np
-from bluesky.protocols import Locatable, Location, Reading, Stoppable, Subscribable
 
 from ophyd_async.core import (
     AsyncStatus,
-    Callback,
     FlyMotorInfo,
+    MovableLogic,
+    SignalRW,
+    StandardMovable,
     StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
@@ -20,93 +24,27 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 
 
-class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float]):
-    """For usage when simulating a motor."""
+@dataclass
+class SimMotorMoveLogic(MovableLogic[float]):
+    readback_set: Callable[[float], None]
+    velocity: SignalRW[float]
+    acceleration_time: SignalRW[float]
+    units: SignalRW[str]
+    _move_status: AsyncStatus | None = None
 
-    def __init__(
-        self,
-        name: str = "",
-        instant: bool = True,
-        initial_value: float = 0.0,
-        units: str = "mm",
-    ) -> None:
-        """Simulate a motor, with optional velocity.
+    async def stop(self) -> None:
+        """Stop the motion."""
+        await self.setpoint.set(await self.readback.get_value())
+        if self._move_status is not None:
+            self._move_status.task.cancel()
 
-        :param name: name of device
-        :param instant: whether to move instantly or calculate move time using velocity
-        :param initial_value: initial position of the motor
-        :param units: units of the motor position
-        """
-        # Define some signals
-        with self.add_children_as_readables(Format.HINTED_SIGNAL):
-            self.user_readback, self._user_readback_set = soft_signal_r_and_setter(
-                float, 0
-            )
-        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
-            self.velocity = soft_signal_rw(float, 0 if instant else 1.0)
-            self.acceleration_time = soft_signal_rw(float, 0.5)
-            self.units = soft_signal_rw(str, units)
-        self.user_setpoint = soft_signal_rw(float, initial_value)
+    async def get_units_precision(self) -> tuple[str | None, int | None]:
+        """Return the units and precision."""
+        return await self.units.get_value(), None
 
-        # Whether set() should complete successfully or not
-        self._set_success = True
-        self._move_status: AsyncStatus | None = None
-        # Stored in prepare
-        self._fly_info: FlyMotorInfo | None = None
-        # Set on kickoff(), complete when motor reaches end position
-        self._fly_status: WatchableAsyncStatus | None = None
-
-        super().__init__(name=name)
-
-    def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
-        super().set_name(name, child_name_separator=child_name_separator)
-        # Readback should be named the same as its parent in read()
-        self.user_readback.set_name(name)
-
-    @AsyncStatus.wrap
-    async def prepare(self, value: FlyMotorInfo):
-        """Calculate run-up and move there, setting fly velocity when there."""
-        self._fly_info = value
-        # Move to start as fast as we can
-        await self.velocity.set(0)
-        await self.set(
-            value.ramp_up_start_pos(await self.acceleration_time.get_value())
-        )
-        # Set the velocity for the actual move
-        await self.velocity.set(value.velocity)
-
-    async def locate(self) -> Location[float]:
-        """Return the current setpoint and readback of the motor."""
-        setpoint, readback = await asyncio.gather(
-            self.user_setpoint.get_value(), self.user_readback.get_value()
-        )
-        return Location(setpoint=setpoint, readback=readback)
-
-    def subscribe_reading(self, function: Callback[dict[str, Reading[float]]]) -> None:
-        self.user_readback.subscribe_reading(function)
-
-    subscribe = subscribe_reading
-
-    def clear_sub(self, function: Callback[dict[str, Reading[float]]]) -> None:
-        self.user_readback.clear_sub(function)
-
-    @AsyncStatus.wrap
-    async def kickoff(self):
-        """Begin moving motor from prepared position to final position."""
-        fly_info = error_if_none(
-            self._fly_info, "Motor must be prepared before attempting to kickoff"
-        )
-        acceleration_time = await self.acceleration_time.get_value()
-        self._fly_status = self.set(fly_info.ramp_down_end_pos(acceleration_time))
-        # Wait for the acceleration time to ensure we are at velocity
-        await asyncio.sleep(acceleration_time)
-
-    def complete(self) -> WatchableAsyncStatus:
-        """Mark as complete once motor reaches completed position."""
-        fly_status = error_if_none(self._fly_status, "kickoff not called")
-        return fly_status
-
-    async def _move(self, old_position: float, new_position: float, velocity: float):
+    async def _internal_sim_move(
+        self, old_position: float, new_position: float, velocity: float
+    ):
         if old_position == new_position:
             return
         start = time.monotonic()
@@ -164,50 +102,113 @@ class SimMotor(StandardReadable, Stoppable, Subscribable[float], Locatable[float
             relative_time = time.monotonic() - start
             await asyncio.sleep(t - relative_time)
             # Update the readback position
-            self._user_readback_set(position)
+            self.readback_set(position)
 
-    @WatchableAsyncStatus.wrap
-    async def set(self, value: float):
-        """Asynchronously move the motor to a new position."""
-        new_position = value
-        # Make sure any existing move tasks are stopped
-        if self._move_status:
-            self._move_status.task.cancel()
-            self._move_status = None
-        # work out where we were
-        old_position, units, velocity = await asyncio.gather(
-            self.user_setpoint.get_value(),
-            self.units.get_value(),
-            self.velocity.get_value(),
-        )
+    async def move(
+        self,
+        old_position: float,
+        new_position: float,
+        timeout: float | None,
+        units: str | None,
+        precision: int | None,
+    ) -> AsyncGenerator[WatcherUpdate[float], None]:
+        # get move velocity
+        velocity = await self.velocity.get_value()
         # update the setpoint to where we want to be
-        await self.user_setpoint.set(new_position)
+        await self.setpoint.set(new_position)
         # If zero velocity, do instant move
         if velocity == 0:
-            self._user_readback_set(new_position)
+            self.readback_set(new_position)
         else:
             self._move_status = AsyncStatus(
-                self._move(old_position, new_position, velocity)
+                self._internal_sim_move(old_position, new_position, velocity)
             )
-            # If stop is called then this will raise a CancelledError, ignore it
-            with contextlib.suppress(asyncio.CancelledError):
-                async for current_position in observe_value(
-                    self.user_readback, done_status=self._move_status
-                ):
-                    yield WatcherUpdate(
-                        current=current_position,
-                        initial=old_position,
-                        target=new_position,
-                        name=self.name,
-                        unit=units,
-                    )
-        if not self._set_success:
-            raise RuntimeError("Motor was stopped")
+            async with self._move_status:
+                # If stop is called then this will raise a CancelledError, ignore it
+                with contextlib.suppress(asyncio.CancelledError):
+                    async for current_position in observe_value(
+                        self.readback, done_status=self._move_status
+                    ):
+                        yield WatcherUpdate(
+                            current=current_position,
+                            initial=old_position,
+                            target=new_position,
+                            name=self.readback.name,
+                            unit=units,
+                            precision=precision,
+                        )
 
-    async def stop(self, success=True):
-        """Stop the motor if it is moving."""
-        self._set_success = success
-        if self._move_status:
-            self._move_status.task.cancel()
-            self._move_status = None
-        await self.user_setpoint.set(await self.user_readback.get_value())
+
+class SimMotor(StandardReadable, StandardMovable[float]):
+    """For usage when simulating a motor."""
+
+    def __init__(
+        self,
+        name: str = "",
+        instant: bool = True,
+        initial_value: float = 0.0,
+        units: str = "mm",
+    ) -> None:
+        """Simulate a motor, with optional velocity.
+
+        :param name: name of device
+        :param instant: whether to move instantly or calculate move time using velocity
+        :param initial_value: initial position of the motor
+        :param units: units of the motor position
+        """
+        # Define some signals
+        with self.add_children_as_readables(Format.HINTED_SIGNAL):
+            self.user_readback, self._user_readback_set = soft_signal_r_and_setter(
+                float, 0
+            )
+        with self.add_children_as_readables(Format.CONFIG_SIGNAL):
+            self.velocity = soft_signal_rw(float, 0 if instant else 1.0)
+            self.acceleration_time = soft_signal_rw(float, 0.5)
+            self.units = soft_signal_rw(str, units)
+        self.user_setpoint = soft_signal_rw(float, initial_value)
+
+        # Stored in prepare
+        self._fly_info: FlyMotorInfo | None = None
+        # Set on kickoff(), complete when motor reaches end position
+        self._fly_status: WatchableAsyncStatus | None = None
+
+        super().__init__(name=name)
+
+    @cached_property
+    def movable_logic(self):
+        return SimMotorMoveLogic(
+            readback=self.user_readback,
+            readback_set=self._user_readback_set,
+            setpoint=self.user_setpoint,
+            velocity=self.velocity,
+            acceleration_time=self.acceleration_time,
+            units=self.units,
+        )
+
+    @AsyncStatus.wrap
+    async def prepare(self, value: FlyMotorInfo):
+        """Calculate run-up and move there, setting fly velocity when there."""
+        self._fly_info = value
+        # Move to start as fast as we can
+        await self.velocity.set(0)
+        await self.set(
+            value.ramp_up_start_pos(await self.acceleration_time.get_value())
+        )
+        # Set the velocity for the actual move
+        await self.velocity.set(value.velocity)
+
+    @AsyncStatus.wrap
+    async def kickoff(self):
+        """Begin moving motor from prepared position to final position."""
+        fly_info = error_if_none(
+            self._fly_info, "Motor must be prepared before attempting to kickoff"
+        )
+        acceleration_time = await self.acceleration_time.get_value()
+        self._fly_status = self.set(fly_info.ramp_down_end_pos(acceleration_time))
+        # Wait for the acceleration time to ensure we are at velocity
+        await asyncio.sleep(acceleration_time)
+
+    def complete(self) -> WatchableAsyncStatus:
+        """Mark as complete once motor reaches completed position."""
+        fly_status = error_if_none(self._fly_status, "kickoff not called")
+        return fly_status

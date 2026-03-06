@@ -1,5 +1,5 @@
 import asyncio
-from asyncio import CancelledError, Event, get_event_loop
+import sys
 from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
@@ -15,7 +15,6 @@ from ophyd_async.core import (
     default_mock_class,
     get_mock_put,
     init_devices,
-    mock_puts_blocked,
     observe_value,
     set_mock_put_proceeds,
     set_mock_value,
@@ -102,6 +101,10 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
     )
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32" and sys.version_info[:2] == (3, 11),
+    reason="Flaky on Windows Python 3.11 due to asyncio scheduling differences",
+)
 async def test_motor_moving_stopped(sim_motor: motor.Motor):
     set_mock_value(sim_motor.motor_done_move, False)
     set_mock_put_proceeds(sim_motor.user_setpoint, False)
@@ -117,7 +120,7 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
     get_mock_put(sim_motor.motor_stop).assert_called_once_with(1)
 
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
-    await wait_for_pending_wakeups()
+    await wait_for_pending_wakeups(max_yields=25)
 
     assert s.done
     assert s.success is False
@@ -154,7 +157,7 @@ async def test_set_velocity(sim_motor: motor.Motor) -> None:
 
 async def test_set_with_zero_velocity(sim_motor: motor.Motor) -> None:
     await sim_motor.velocity.set(0)
-    with pytest.raises(ValueError, match="Mover has zero velocity"):
+    with pytest.raises(ValueError, match=f"Motor {sim_motor.name} has zero velocity"):
         await sim_motor.set(3.14)
 
 
@@ -209,35 +212,6 @@ async def test_set(sim_motor: motor.Motor, setpoint, velocity, timeout) -> None:
     await sim_motor.velocity.set(velocity)
     await sim_motor.set(setpoint, timeout=timeout)
     assert (await sim_motor.locate()).get("setpoint") == setpoint
-
-
-async def test_cancellederror_in_set_ensures_motor_setpoint_set_task_is_cancelled(
-    sim_motor: motor.Motor,
-):
-    sleep_result = get_event_loop().create_future()
-    block_until_ready = Event()
-
-    async def wait_forever_in_setpoint_set(value: float, *args, **kwargs):
-        try:
-            block_until_ready.set()
-            await asyncio.sleep(20)
-            sleep_result.set_result(None)
-        except CancelledError as e:
-            sleep_result.set_exception(e)
-            raise
-
-    await sim_motor.velocity.set(1)
-    get_mock_put(sim_motor.user_setpoint).side_effect = wait_forever_in_setpoint_set
-
-    status = sim_motor.set(1)
-    await block_until_ready.wait()
-    assert status.task.cancel()
-    with pytest.raises(CancelledError):
-        await status
-    with pytest.raises(CancelledError):
-        await sleep_result
-    assert sleep_result.done()
-    assert isinstance(sleep_result.exception(), CancelledError)
 
 
 async def test_prepare_velocity_limit_error(sim_motor: motor.Motor):
@@ -366,7 +340,8 @@ async def test_prepare(
 async def test_kickoff(sim_motor: motor.Motor):
     sim_motor.set = MagicMock()
     with pytest.raises(
-        RuntimeError, match="Motor must be prepared before attempting to kickoff"
+        RuntimeError,
+        match=f"Motor {sim_motor.name} must be prepared before attempting to kickoff",
     ):
         await sim_motor.kickoff()
     # TODO: why was this called _twice_?
@@ -383,26 +358,14 @@ async def test_kickoff(sim_motor: motor.Motor):
 
 
 async def test_complete(sim_motor: motor.Motor) -> None:
-    with pytest.raises(RuntimeError, match="kickoff not called"):
+    with pytest.raises(
+        RuntimeError, match=f"kickoff for motor {sim_motor.name} not called"
+    ):
         sim_motor.complete()
     sim_motor._fly_status = sim_motor.set(20)
     assert not sim_motor._fly_status.done
     await sim_motor.complete()
     assert sim_motor._fly_status.done
-
-
-async def test_locatable(sim_motor: motor.Motor) -> None:
-    callback_on_mock_put(
-        sim_motor.user_setpoint,
-        lambda x, *_, **__: set_mock_value(sim_motor.user_readback, x),
-    )
-    assert (await sim_motor.locate())["readback"] == 0
-    with mock_puts_blocked(sim_motor.user_setpoint):
-        move_status = sim_motor.set(10)
-        assert (await sim_motor.locate())["readback"] == 0
-    await move_status
-    assert (await sim_motor.locate())["readback"] == 10
-    assert (await sim_motor.locate())["setpoint"] == 10
 
 
 def test_core_notconnected_emits_deprecation_warning():

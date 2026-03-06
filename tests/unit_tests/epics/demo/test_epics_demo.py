@@ -34,8 +34,11 @@ scalar_int_dtype = (
 
 @pytest.fixture
 async def mock_motor():
-    async with init_devices(mock=True):
-        mock_motor = demo.DemoMotor("BLxxI-MO-TABLE-01:X:")
+    # Connect with a plain LazyMock, rather than mock=True that will use
+    # a InstantMovableMock, so we can have full control of how the readback is set
+    # in the tests
+    mock_motor = demo.DemoMotor("BLxxI-MO-TABLE-01:X:", name="mock_motor")
+    await mock_motor.connect(mock=LazyMock())
     set_mock_value(mock_motor.units, "mm")
     set_mock_value(mock_motor.precision, 3)
     set_mock_value(mock_motor.velocity, 1)
