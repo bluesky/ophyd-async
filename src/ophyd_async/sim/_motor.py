@@ -35,6 +35,8 @@ class SimMotorMoveLogic(MovableLogic[float]):
     async def stop(self) -> None:
         """Stop the motion."""
         await self.setpoint.set(await self.readback.get_value())
+        if self._move_status is not None:
+            self._move_status.task.cancel()
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         """Return the units and precision."""
@@ -123,6 +125,8 @@ class SimMotorMoveLogic(MovableLogic[float]):
         units: str | None,
         precision: int | None,
     ) -> AsyncGenerator[WatcherUpdate[float], None]:
+        # Needed so stop can successfully stop the task.
+        self._move_status = move_status
         try:
             # If stop is called then this will raise a CancelledError, ignore it
             with contextlib.suppress(asyncio.CancelledError):
