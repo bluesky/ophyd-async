@@ -10,6 +10,9 @@ from ophyd_async.core import (
     CommandConnector,
     DEFAULT_TIMEOUT,
     NotConnectedError,
+    StrictEnum,
+    CalculatableTimeout,
+    CALCULATE_TIMEOUT
 )
 
 from ._converters import (
@@ -24,21 +27,25 @@ from ._tango_transport import(
     get_python_type
 )
 
-from ophyd_async.core._utils import P, T
+from ophyd_async.core._utils import P, T, _wait_for
 
 
 class TangoCommandBackend(CommandBackend[P, T]):
-    def __init__(self, trl: str, device_proxy: DeviceProxy | None = None, datatype: type[T] | None = None):
+    def __init__(self, datatype: type[T] | None, trl: str = "", device_proxy: DeviceProxy | None = None):
         self._trl = trl
         self.device_proxy = device_proxy
-        self.datatype: type[T] | None = datatype
         self._proxy: CommandProxy | None = None
         self._config: CommandInfo | None = None
         self._character: CommandProxyReadCharacter | None = None
         self._converter: TangoConverter | None = None
+        self._timeout = DEFAULT_TIMEOUT
+        super().__init__(datatype=datatype)
+
+    def set_timeout(self, timeout: float | CalculatableTimeout) -> None:
+        self._timeout = timeout
 
     def get_return_type(self) -> T | None:
-        return get_python_type(self._config)
+        return self.datatype
 
     def set_trl(self, trl: str) -> None:
         self._trl = trl
@@ -47,17 +54,21 @@ class TangoCommandBackend(CommandBackend[P, T]):
         return self._trl
 
     async def connect(self, timeout: float) -> None:
-        tp = await get_tango_trl(self._trl, self.device_proxy, timeout)
-        if not isinstance(tp, CommandProxy):
+        command_proxy = await get_tango_trl(self._trl, self.device_proxy, timeout)
+        if not isinstance(command_proxy, CommandProxy):
             raise NotConnectedError(f"{self._trl} is not a Tango Command")
-        self._proxy = tp
+        self._proxy = command_proxy
         await self._proxy.connect()
         self._config = await self._proxy.get_config()
         # Configure converters and character
         self._converter = make_converter(self._config, self.datatype)
         self._proxy.set_converter(self._converter)
         self._character = self._proxy._read_character  # set by connect()
-        self.datatype = self.get_return_type()
+        datatype = get_python_type(self._config)
+        if datatype is StrictEnum:
+            pass
+        elif datatype != self.datatype:
+            raise TypeError(f"Tango command {self._trl} has type {datatype}, not {self.datatype}")
 
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         if kwargs:
@@ -75,18 +86,8 @@ class TangoCommandBackend(CommandBackend[P, T]):
         value: T | None = args[0] if args else None
 
         # Execute
-        await self._proxy.put(value, timeout=None)
-
-        # Decide what to return
-        # If command has an output (READ or READ_WRITE), return the last reading's value
-        # Otherwise return None
-        if self._character in (
-            CommandProxyReadCharacter.READ,
-            CommandProxyReadCharacter.READ_WRITE,
-        ):
-            reading = await self._proxy.get_reading()
-            return cast(T, reading["value"])
-        return cast(T, None)
+        reply = await _wait_for(self._proxy.put(value), timeout=self._timeout, source=self._trl)
+        return cast(T, reply)
 
 class TangoCommandConnector(CommandConnector):
     pass

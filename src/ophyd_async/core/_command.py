@@ -18,10 +18,14 @@ from ._device import Device, DeviceConnector, LazyMock
 from ._soft_signal_backend import SoftConverter, make_converter
 from ._status import AsyncStatus
 from ._utils import DEFAULT_TIMEOUT, NotConnectedError, P, T, T_co, _wait_for
+from ._signal import SignalDatatypeT
 
 
 class CommandBackend(Generic[P, T_co]):
     """A backend for a Command."""
+
+    def __init__(self, datatype: type[SignalDatatypeT] | None):
+        self.datatype = datatype
 
     @abstractmethod
     def source(self, name: str) -> str:

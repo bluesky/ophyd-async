@@ -14,8 +14,6 @@ from ._tango_transport import (
     CommandInfo,
     CommandProxy,
     CommandProxyReadCharacter,
-    TangoDoubleStringTable,
-    TangoLongStringTable,
     TangoSignalBackend,
     ensure_proper_executor,
     get_command_character,
@@ -36,6 +34,8 @@ from ._utils import (
     get_device_trl_and_attr,
     get_full_attr_trl,
     try_to_cast_as_float,
+    TangoLongStringTable,
+    TangoDoubleStringTable,
 )
 from ._converters import (
     TangoConverter,
@@ -43,6 +43,8 @@ from ._converters import (
     TangoEnumArrayConverter,
     TangoDevStateConverter,
     TangoDevStateArrayConverter,
+    TangoLongStringTableConverter,
+    TangoDoubleStringTableConverter,
 )
 
 __all__ = [
@@ -72,7 +74,9 @@ __all__ = [
     "TangoPolling",
     "TangoDeviceConnector",
     "TangoLongStringTable",
+    "TangoLongStringTableConverter",
     "TangoDoubleStringTable",
+    "TangoDoubleStringTableConverter",
     "TangoConverter",
     "TangoEnumConverter",
     "TangoEnumArrayConverter",

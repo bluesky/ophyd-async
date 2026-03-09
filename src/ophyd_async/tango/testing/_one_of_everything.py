@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
 import numpy as np
-from tango import AttrDataFormat, AttrWriteType, DevState
+from tango import AttrDataFormat, AttrWriteType, DevState, CmdArgType
 from tango.server import Device, attribute, command
 
 from ophyd_async.core import (
@@ -21,7 +21,6 @@ class ExampleStrEnum(StrictEnum):
     A = "AAA"
     B = "BBB"
     C = "CCC"
-
 
 def int_image_value(
     dtype: type[DTypeScalar_co],
@@ -40,8 +39,6 @@ def float_image_value(
 
 
 def _valid_command(dformat: AttrDataFormat, dtype: str):
-    if dtype == "DevUChar":
-        return False
     if dformat != AttrDataFormat.SCALAR and dtype in ["DevState", "DevEnum"]:
         return False
     return True
@@ -110,6 +107,14 @@ class OneOfEverythingTangoDevice(Device):
         )
         self._add_attr(attr, initial_value)
 
+    def long_string_cmd(self, arg):
+        """Echo command for DevVarLongStringArray."""
+        return arg
+
+    def double_string_cmd(self, arg):
+        """Echo command for DevVarDoubleStringArray."""
+        return arg
+
     def add_array_attrs(self, name: str, dtype: str, initial_value: np.ndarray):
         spectrum_name = f"{name}_spectrum"
         if hasattr(initial_value, "shape"):
@@ -138,12 +143,29 @@ class OneOfEverythingTangoDevice(Device):
             max_dim_y=2,
             enum_labels=[e.value for e in ExampleStrEnum],
         )
+        # Arrays of enums are not supported, do not add their attribute data
+        if name in ["strenum", "my_state"]:
+            return
         self._add_attr(spectrum_attr, initial_value)
         # have image just be 2 of the initial spectrum stacked
         # String images are not supported, do not add their attribute data
-        if name in ["str", "strenum", "my_state"]:
+        if name in ["str"]:
             return
         self._add_attr(image_attr, np.vstack((initial_value, initial_value)))
+
+        long_string_table_cmd = command(
+            f=getattr(self, f"long_string_cmd"),
+            dtype_in=CmdArgType.DevVarLongStringArray,
+            dtype_out=CmdArgType.DevVarLongStringArray,
+        )
+        double_string_table_cmd = command(
+            f=getattr(self, f"double_string_cmd"),
+            dtype_in=CmdArgType.DevVarDoubleStringArray,
+            dtype_out=CmdArgType.DevVarDoubleStringArray,
+        )
+        self.add_command(long_string_table_cmd)
+        self.add_command(double_string_table_cmd)
+
 
     def add_scalar_command(self, name: str, dtype: str):
         if _valid_command(AttrDataFormat.SCALAR, dtype):
@@ -159,15 +181,24 @@ class OneOfEverythingTangoDevice(Device):
 
     def add_spectrum_command(self, name: str, dtype: str):
         if _valid_command(AttrDataFormat.SPECTRUM, dtype):
-            self.add_command(
-                command(
-                    f=getattr(self, f"{name}_spectrum_cmd"),
-                    dtype_in=dtype,
-                    dtype_out=dtype,
-                    dformat_in=AttrDataFormat.SPECTRUM,
-                    dformat_out=AttrDataFormat.SPECTRUM,
-                ),
-            )
+            if name in ["int8", "uint8"]:
+                self.add_command(
+                    command(
+                        f=getattr(self, f"{name}_spectrum_cmd"),
+                        dtype_in= CmdArgType.DevVarCharArray,
+                        dtype_out=CmdArgType.DevVarCharArray,
+                    ),
+                )
+            else:
+                self.add_command(
+                    command(
+                        f=getattr(self, f"{name}_spectrum_cmd"),
+                        dtype_in=dtype,
+                        dtype_out=dtype,
+                        dformat_in=AttrDataFormat.SPECTRUM,
+                        dformat_out=AttrDataFormat.SPECTRUM,
+                    ),
+                )
 
     def initialize_dynamic_attributes(self):
         for attr_data in _all_attribute_definitions:

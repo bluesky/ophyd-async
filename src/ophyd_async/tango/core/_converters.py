@@ -3,10 +3,11 @@ from typing import Any, Generic
 import numpy as np
 from numpy.typing import NDArray
 from tango import DevState
+from collections.abc import Sequence
 
 from ophyd_async.core import SignalDatatypeT
 
-from ._utils import DevStateEnum
+from ._utils import DevStateEnum, TangoLongStringTable, TangoDoubleStringTable
 
 
 class TangoConverter(Generic[SignalDatatypeT]):
@@ -75,3 +76,21 @@ class TangoDevStateArrayConverter(TangoConverter):
         vfunc = np.vectorize(self._convert)
         new_array = vfunc(value)
         return new_array
+
+class TangoLongStringTableConverter(TangoConverter[TangoLongStringTable]):
+    def write_value(self, value: TangoLongStringTable) -> tuple[NDArray[np.int32], Sequence[str]]:
+        """Convert from TangoLongStringTable to DevVarLongStringArray format."""
+        return (value.long, value.string)
+
+    def value(self, value: tuple[NDArray[np.int32], Sequence[str]]) -> TangoLongStringTable:
+        """Convert from DevVarLongStringArray format to TangoLongStringTable."""
+        return TangoLongStringTable(long=value[0], string=value[1])
+
+class TangoDoubleStringTableConverter(TangoConverter[TangoDoubleStringTable]):
+    def write_value(self, value: TangoDoubleStringTable) -> tuple[NDArray[np.float64], Sequence[str]]:
+        """Convert from TangoDoubleStringTable to DevVarDoubleStringArray format."""
+        return (value.double, value.string)
+
+    def value(self, value: tuple[NDArray[np.float64], Sequence[str]]) -> TangoDoubleStringTable:
+        """Convert from DevVarDoubleStringArray format to TangoDoubleStringTable."""
+        return TangoDoubleStringTable(double=value[0], string=value[1])

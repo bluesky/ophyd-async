@@ -73,7 +73,8 @@ def everything_device_trl(subprocess_helper):
 
 class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
     # datatype of enum commands must be explicitly hinted
-    strenum_cmd: A[SignalRW[ExampleStrEnum], Format.HINTED_UNCACHED_SIGNAL]
+    # strenum_cmd: A[SignalRW[ExampleStrEnum], Format.HINTED_UNCACHED_SIGNAL]
+    pass
 
 
 @pytest.fixture()

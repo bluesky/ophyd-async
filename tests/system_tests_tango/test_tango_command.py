@@ -23,38 +23,18 @@ from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
 )
-from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, DevStateEnum
-
-class MyStrictEnum(StrictEnum):
-    A = "A"
-    B = "B"
-
-
-class MySubsetEnum(SubsetEnum):
-    X = "X"
-    Y = "Y"
-
-
-class MySupersetEnum(SupersetEnum):
-    P = "P"
-    Q = "Q"
-
-
-class MyTable(Table):
-    a: Array1D[np.int32]
-    b: Sequence[str]
-
+from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, DevStateEnum, TangoLongStringTable, TangoDoubleStringTable, TangoCommandBackend
 
 TEST_PARAMS = [
     (bool, True, "bool_cmd"),
     (int, 42, "int32_cmd"),
     (float, 3.14, "float64_cmd"),
     (str, "hello", "str_cmd"),
-    (MyStrictEnum, MyStrictEnum.A, "strenum_cmd"),
-    (MySubsetEnum, MySubsetEnum.X, "strenum_cmd"),
-    (MySupersetEnum, MySupersetEnum.P, "strenum_cmd"),
+    (ExampleStrEnum, ExampleStrEnum.A, "strenum_cmd"),
+    (DevStateEnum, DevStateEnum.ON, "my_state_cmd"),
     (Array1D[np.bool_], np.array([True, False], dtype=np.bool_), "bool_spectrum_cmd"),
     (Array1D[np.int8], np.array([1, 2], dtype=np.int8), "int8_spectrum_cmd"),
+    (Array1D[np.uint8], np.array([1, 2], dtype=np.uint8), "uint8_spectrum_cmd"),
     (Array1D[np.int16], np.array([1, 2], dtype=np.int16), "int16_spectrum_cmd"),
     (Array1D[np.uint16], np.array([1, 2], dtype=np.uint16), "uint16_spectrum_cmd"),
     (Array1D[np.int32], np.array([1, 2], dtype=np.int32), "int32_spectrum_cmd"),
@@ -64,11 +44,9 @@ TEST_PARAMS = [
     (Array1D[np.float32], np.array([1.1, 2.2], dtype=np.float32), "float32_spectrum_cmd"),
     (Array1D[np.float64], np.array([1.1, 2.2], dtype=np.float64), "float64_spectrum_cmd"),
     (Sequence[str], ["a", "b"], "str_spectrum_cmd"),
-    (Sequence[MyStrictEnum], [MyStrictEnum.A, MyStrictEnum.B], "strenum_cmd"),
-    (Sequence[MySubsetEnum], [MySubsetEnum.X, MySubsetEnum.Y], "strenum_cmd"),
-    (Sequence[MySupersetEnum], [MySupersetEnum.P, MySupersetEnum.Q], "strenum_cmd"),
-    # TODO: Add Table case (DEV_LONGSTRINGARRAY and DEV_DOUBLESTRINGARRAY)
-    # (MyTable, MyTable(a=np.array([1], dtype=np.int32), b=["hi"]), ""),  # No exact match
+    # (Sequence[ExampleStrEnum], [ExampleStrEnum.A, ExampleStrEnum.B], "strenum_cmd"), not supported
+    (TangoLongStringTable, TangoLongStringTable(long=[1, 2], string=["a", "b"]), "long_string_cmd"),
+    (TangoDoubleStringTable, TangoDoubleStringTable(double=[1.1, 2.2], string=["a", "b"]), "double_string_cmd"),
 ]
 
 # --------------------------------------------------------------------
@@ -84,7 +62,9 @@ def everything_device_trl(subprocess_helper):
 
 class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
     # datatype of enum commands must be explicitly hinted
-    strenum_cmd: A[Command[ExampleStrEnum, ExampleStrEnum], Format.HINTED_UNCACHED_SIGNAL]
+    strenum_cmd: Command[[ExampleStrEnum], ExampleStrEnum]
+    bool_cmd: Command[[bool], bool]
+    float32_spectrum_cmd: Command[[Array1D[np.float32]], Array1D[np.float32]]
 
 
 @pytest.fixture()
@@ -104,6 +84,16 @@ async def test_tango_command(
         everything_signal_info,
 ):
     await everything_device.connect()
-    cmd = getattr(everything_device, "bool_cmd")
-    assert isinstance(cmd, Command)
-    assert bool == cmd._connector.backend.get_return_type()
+
+    for ctype, val, name in TEST_PARAMS:
+        cmd = getattr(everything_device, name)
+        assert isinstance(cmd, Command)
+        if name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
+            assert Array1D[np.dtype(np.uint8)] == cmd._connector.backend.get_return_type()
+        else:
+            assert ctype == cmd._connector.backend.get_return_type()
+        if isinstance(val, np.ndarray):
+            assert np.array_equal(val, await cmd.execute(val))
+        else:
+            assert val == await cmd.execute(val)
+

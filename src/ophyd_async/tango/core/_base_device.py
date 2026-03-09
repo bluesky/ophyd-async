@@ -97,7 +97,7 @@ class TangoDeviceConnector(DeviceConnector):
             # Create all devices, signals, and commands first
             list(self.filler.create_devices_from_annotations(filled=False))
             list(self.filler.create_signals_from_annotations(filled=False))
-            list(self.filler.create_commands_from_annotations(filled=False))  # Add this line
+            list(self.filler.create_commands_from_annotations(filled=False))
 
             # Then check if everything was created
             self.filler.check_created()
