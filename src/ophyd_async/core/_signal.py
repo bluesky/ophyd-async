@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import functools
 import inspect
 import time
@@ -521,14 +522,20 @@ async def observe_signals_value(
 
 
 class _ValueChecker(Generic[SignalDatatypeT]):
-    def __init__(self, matcher: Callable[[SignalDatatypeT], bool], matcher_name: str):
+    def __init__(self, match: SignalDatatypeT | Callable[[SignalDatatypeT], bool]):
+        self.got_first_value = asyncio.Event()
         self._last_value: SignalDatatypeT | None = None
-        self._matcher = matcher
-        self._matcher_name = matcher_name
+        if callable(match):
+            self._matcher = match
+            self._matcher_name = getattr(match, "__name__", f"<{type(match).__name__}>")
+        else:
+            self._matcher = lambda v: v == match
+            self._matcher_name = repr(match)
 
     async def _wait_for_value(self, signal: SignalR[SignalDatatypeT]):
         async for value in observe_value(signal):
             self._last_value = value
+            self.got_first_value.set()
             if self._matcher(value):
                 return
 
@@ -566,11 +573,7 @@ async def wait_for_value(
     await wait_for_value(device.num_captured, lambda v: v > 45, timeout=1)
     ```
     """
-    if callable(match):
-        checker = _ValueChecker(match, match.__name__)  # type: ignore
-    else:
-        checker = _ValueChecker(lambda v: v == match, repr(match))
-    await checker.wait_for_value(signal, timeout)
+    await _ValueChecker(match).wait_for_value(signal, timeout)
 
 
 async def set_and_wait_for_other_value(
@@ -578,7 +581,7 @@ async def set_and_wait_for_other_value(
     set_value: SignalDatatypeT,
     match_signal: SignalR[SignalDatatypeV],
     match_value: SignalDatatypeV | Callable[[SignalDatatypeV], bool],
-    timeout: float = DEFAULT_TIMEOUT,
+    timeout: float | None = DEFAULT_TIMEOUT,
     set_timeout: float | None = None,
     wait_for_set_completion: bool = True,
 ) -> AsyncStatus:
@@ -608,41 +611,29 @@ async def set_and_wait_for_other_value(
     ```
     """
     # Start monitoring before the set to avoid a race condition
-    values_gen = observe_value(match_signal)
+    checker = _ValueChecker(match_value)
+    wait_task = asyncio.create_task(
+        checker.wait_for_value(match_signal, timeout=timeout)
+    )
+    await checker.got_first_value.wait()
 
-    # Get the initial value from the monitor to make sure we've created it
-    current_value = await anext(values_gen)
-
+    # Now we can start the set
     status = set_signal.set(set_value, timeout=set_timeout)
 
-    if callable(match_value):
-        matcher: Callable[[SignalDatatypeV], bool] = match_value  # type: ignore
-    else:
-
-        def matcher(value):
-            return value == match_value
-
-        matcher.__name__ = f"equals_{match_value}"
-
-    # If the value was the same as before no need to wait for it to change
-    if not matcher(current_value):
-
-        async def _wait_for_value():
-            async for value in values_gen:
-                if matcher(value):
-                    break
-
+    if wait_for_set_completion:
+        # Wait for both to complete, so if the set raises an exception it
+        # is surfaced early
         try:
-            await asyncio.wait_for(_wait_for_value(), timeout)
-            if wait_for_set_completion:
-                await status
-        except TimeoutError as exc:
-            matcher_name = getattr(matcher, "__name__", f"<{type(matcher).__name__}>")
-            raise TimeoutError(
-                f"{match_signal.name} value didn't match value from"
-                f" {matcher_name}() in {timeout}s"
-            ) from exc
-
+            await asyncio.gather(wait_task, status)
+        except:
+            # Make sure the wait is not left dangling if there was an error
+            wait_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await wait_task
+            raise
+    else:
+        # Just wait for the match_signal to be at value
+        await wait_task
     return status
 
 

@@ -168,9 +168,21 @@ async def test_set_and_wait_for_value_same_set_and_read_times_out():
     signal = epics_signal_rw(int, "pva://pv", name="signal")
     await signal.connect(mock=True)
     assert await signal.get_value() == 0
-    callback_on_mock_put(signal, lambda v, _: v + 2)
+    callback_on_mock_put(signal, lambda v: v + 2)
 
     with pytest.raises(asyncio.TimeoutError):
+        await set_and_wait_for_value(signal, 1, timeout=0.1)
+
+
+async def test_set_and_wait_for_value_waits_for_error():
+    signal = epics_signal_rw(int, "pva://pv", name="signal")
+    await signal.connect(mock=True)
+
+    def fail(v):
+        raise RuntimeError("Bad")
+
+    callback_on_mock_put(signal, fail)
+    with pytest.raises(RuntimeError, match="Bad"):
         await set_and_wait_for_value(signal, 1, timeout=0.1)
 
 
@@ -272,6 +284,7 @@ async def test_status_of_set_and_wait_for_value():
     async def set_match_signal_after_delay(value: Any, **kwargs):
         await asyncio.sleep(0.3)
         await match_signal.set(value / 2)
+        await asyncio.sleep(0.001)
 
     await set_signal.connect(mock=True)
     await match_signal.connect(mock=True)

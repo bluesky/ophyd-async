@@ -37,7 +37,7 @@ async def test_arm_logic_trigger_internal_calls_acquire(
 async def test_arm_logic_when_arming_times_out(
     adbase_detector: adcore.AreaDetector[adcore.ADBaseIO],
 ):
-    async def sleep_for_a_bit(value, wait):
+    async def sleep_for_a_bit(value):
         await asyncio.sleep(0.02)
 
     callback_on_mock_put(adbase_detector.driver.acquire, sleep_for_a_bit)
@@ -46,8 +46,7 @@ async def test_arm_logic_when_arming_times_out(
         with pytest.raises(
             TimeoutError,
             match=re.escape(
-                "det-driver-acquire value didn't match value from equals_True() "
-                "in 0.02s"
+                "det-driver-acquire didn't match True in 0.02s, last value False"
             ),
         ):
             await adbase_detector.trigger()
