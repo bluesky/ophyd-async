@@ -361,10 +361,10 @@ async def test_given_callable_has_no_name_then_matcher_still_gives_timeout_error
 
     with pytest.raises(
         asyncio.TimeoutError,
-        match="m didn't match <NoNameCallable> in 0.01s, last value 0",
+        match="m didn't match <NoNameCallable> in 0.1s, last value 0",
     ):
         await set_and_wait_for_other_value(
-            set_signal, 20, match_signal, NoNameCallable(), timeout=0.01
+            set_signal, 20, match_signal, NoNameCallable(), timeout=0.1
         )
 
 
