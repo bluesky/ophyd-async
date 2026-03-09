@@ -1,4 +1,5 @@
 import asyncio
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Annotated as A
@@ -7,12 +8,15 @@ import numpy as np
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    AsyncStatus,
     MovableLogic,
     SignalR,
     SignalRW,
     SignalX,
     StandardMovable,
     StandardReadable,
+    WatcherUpdate,
+    observe_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.epics.core import EpicsDevice, PvSuffix
@@ -40,8 +44,33 @@ class DemoMotorMoveLogic(MovableLogic[float]):
             self.precision.get_value(),
         )
 
-    def has_reached(self, current_position: float, new_position: float) -> bool:
-        return bool(np.isclose(current_position, new_position))
+    async def move(
+        self,
+        move_status: AsyncStatus,
+        old_position: float,
+        new_position: float,
+        timeout: float | None,
+        units: str | None,
+        precision: int | None,
+    ) -> AsyncGenerator[WatcherUpdate[float], None]:
+
+        await move_status
+        # Observe the readback Signal, and on each new position...
+        async for current_position in observe_value(
+            self.readback, done_timeout=timeout
+        ):
+            # Emit a progress bar update
+            yield WatcherUpdate(
+                current=current_position,
+                initial=old_position,
+                target=new_position,
+                name=self.readback.name,
+                unit=units,
+                precision=precision,
+            )
+            # If we are at the desired position the break
+            if np.isclose(current_position, new_position):
+                break
 
 
 class DemoMotor(EpicsDevice, StandardReadable, StandardMovable):

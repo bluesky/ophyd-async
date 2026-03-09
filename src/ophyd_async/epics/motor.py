@@ -6,7 +6,6 @@ https://github.com/epics-modules/motor
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from functools import cached_property
 
@@ -25,11 +24,9 @@ from ophyd_async.core import (
     StandardReadable,
     StrictEnum,
     WatchableAsyncStatus,
-    WatcherUpdate,
     callback_on_mock_put,
     default_mock_class,
     error_if_none,
-    observe_value,
     set_mock_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
@@ -164,28 +161,6 @@ class MotorMoveLogic(MovableLogic[float]):
             self.motor_egu.get_value(),
             self.precision.get_value(),
         )
-
-    async def move(
-        self,
-        old_position: float,
-        new_position: float,
-        timeout: float | None,
-        units: str | None,
-        precision: int | None,
-    ) -> AsyncGenerator[WatcherUpdate[float], None]:
-        """Move the device and provide WatcherUpdates until device move complete."""
-        async with self.setpoint.set(new_position, timeout=timeout) as move_status:
-            async for current_position in observe_value(
-                self.readback, done_timeout=timeout, done_status=move_status
-            ):
-                yield WatcherUpdate(
-                    current=current_position,
-                    initial=old_position,
-                    target=new_position,
-                    name=self.readback.name,
-                    unit=units,
-                    precision=precision,
-                )
 
 
 class InstantMotorMock(DeviceMock["Motor"]):

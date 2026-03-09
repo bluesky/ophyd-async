@@ -17,7 +17,7 @@ from ._device import Device, DeviceMock, default_mock_class
 from ._mock_signal_utils import callback_on_mock_put, set_mock_value
 from ._signal import SignalR, SignalRW, observe_value
 from ._signal_backend import SignalDatatypeT
-from ._status import WatchableAsyncStatus
+from ._status import AsyncStatus, WatchableAsyncStatus
 from ._utils import (
     CALCULATE_TIMEOUT,
     CalculatableTimeout,
@@ -59,14 +59,15 @@ class MovableLogic(Generic[SignalDatatypeT]):
         """Optional hook to return the units and precision."""
         return None, None
 
-    def has_reached(
-        self, current_position: SignalDatatypeT, new_position: SignalDatatypeT
-    ) -> bool:
-        """Determine if the move is complete based on the current position."""
-        return current_position == new_position
+    def get_move_status(
+        self, new_position: SignalDatatypeT, timeout: float | None
+    ) -> AsyncStatus:
+        """Return the AsyncStatus for the move."""
+        return self.setpoint.set(new_position, timeout=timeout)
 
     async def move(
         self,
+        move_status: AsyncStatus,
         old_position: SignalDatatypeT,
         new_position: SignalDatatypeT,
         timeout: float | None,
@@ -74,20 +75,19 @@ class MovableLogic(Generic[SignalDatatypeT]):
         precision: int | None,
     ) -> AsyncGenerator[WatcherUpdate[SignalDatatypeT], None]:
         """Move the device and provide WatcherUpdates until device move complete."""
-        await self.setpoint.set(new_position)
-        async for current_position in observe_value(
-            self.readback, done_timeout=timeout
-        ):
-            yield WatcherUpdate(
-                current=current_position,
-                initial=old_position,
-                target=new_position,
-                name=self.readback.name,
-                unit=units,
-                precision=precision,
-            )
-            if self.has_reached(current_position, new_position):
-                break
+        async with move_status:
+            async for current_position in observe_value(
+                self.readback,
+                done_status=move_status,
+            ):
+                yield WatcherUpdate(
+                    current=current_position,
+                    initial=old_position,
+                    target=new_position,
+                    name=self.readback.name,
+                    unit=units,
+                    precision=precision,
+                )
 
 
 class InstantMovableMock(DeviceMock["StandardMovable"]):
@@ -136,19 +136,27 @@ class StandardMovable(
             self.movable_logic.get_units_precision(),
         )
         await self.movable_logic.check_move(old_position, new_position)
+
         if timeout == CALCULATE_TIMEOUT:
             move_timeout = await self.movable_logic.calculate_timeout(
                 old_position, new_position
             )
         else:
             move_timeout = timeout
+
+        move_status = self.movable_logic.get_move_status(
+            new_position, timeout=move_timeout
+        )
         async for update in self.movable_logic.move(
+            move_status=move_status,
             old_position=old_position,
             new_position=new_position,
             timeout=move_timeout,
             units=units,
             precision=precision,
         ):
+            if not self._set_success:
+                raise RuntimeError(f"Device {self.name} was stopped.")
             yield update
 
         if not self._set_success:
