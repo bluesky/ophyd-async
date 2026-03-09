@@ -543,7 +543,8 @@ class _ValueChecker(Generic[SignalDatatypeT]):
         self, signal: SignalR[SignalDatatypeT], timeout: float | None
     ):
         try:
-            await asyncio.wait_for(self._wait_for_value(signal), timeout)
+            async with asyncio.timeout(timeout):
+                await self._wait_for_value(signal)
         except TimeoutError as exc:
             raise TimeoutError(
                 f"{signal.name} didn't match {self._matcher_name} in {timeout}s, "
