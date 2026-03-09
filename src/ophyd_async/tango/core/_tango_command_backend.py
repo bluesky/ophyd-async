@@ -12,7 +12,8 @@ from ophyd_async.core import (
     NotConnectedError,
     StrictEnum,
     CalculatableTimeout,
-    CALCULATE_TIMEOUT
+    CALCULATE_TIMEOUT,
+    AsyncStatus,
 )
 
 from ._converters import (
@@ -70,6 +71,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
         elif datatype != self.datatype:
             raise TypeError(f"Tango command {self._trl} has type {datatype}, not {self.datatype}")
 
+    @AsyncStatus.wrap
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         if kwargs:
             raise TypeError("Tango commands do not support keyword arguments")
@@ -88,6 +90,11 @@ class TangoCommandBackend(CommandBackend[P, T]):
         # Execute
         reply = await _wait_for(self._proxy.put(value), timeout=self._timeout, source=self._trl)
         return cast(T, reply)
+
+    @AsyncStatus.wrap
+    async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
+        "Call execute with no arguments. Do not return a value."
+        await self.execute()
 
 class TangoCommandConnector(CommandConnector):
     pass
