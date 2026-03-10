@@ -1,6 +1,6 @@
 import asyncio
 import sys
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import pytest
 from bluesky.plans import spiral_square
@@ -68,7 +68,7 @@ async def test_move_profiles(setpoint, expected, m1: SimMotor):
 async def test_short_move_is_exactly_move_time(m2: SimMotor):
     with patch("asyncio.sleep") as mock_sleep:
         await m2.set(0.0032)
-    mock_sleep.assert_called_once_with(pytest.approx(0.08, abs=0.02))
+    mock_sleep.assert_has_calls([call(pytest.approx(0.08, abs=0.02))])
 
 
 @pytest.mark.timeout(3)
