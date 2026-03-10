@@ -519,6 +519,9 @@ async def observe_signals_value(
     finally:
         for signal, cb in cbs.items():
             signal.clear_sub(cb)
+        # Give the event loop a tick to finish cancelling any background tasks
+        # (e.g. poll tasks in the tango backend) that were cancelled by clear_sub.
+        await asyncio.sleep(0)
 
 
 class _ValueChecker(Generic[SignalDatatypeT]):
