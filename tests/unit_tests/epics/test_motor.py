@@ -59,6 +59,7 @@ async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.0, abs=0.1),
     )
+    await wait_for_pending_wakeups()
     assert 0.55 == await sim_motor.user_setpoint.get_value()
     assert not s.done
     await asyncio.sleep(0.1)

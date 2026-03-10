@@ -82,6 +82,7 @@ async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
         precision=3,
         time_elapsed=pytest.approx(0.0, abs=0.08),
     )
+    await wait_for_pending_wakeups()
     await assert_value(mock_motor.setpoint, 0.55)
     assert not s.done
     # Wait a bit and give it an update, checking that the watcher is called with it
