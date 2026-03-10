@@ -1,5 +1,4 @@
 import asyncio
-import sys
 from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
@@ -11,6 +10,7 @@ from ophyd_async.core import (
     Device,
     DeviceMock,
     FlyMotorInfo,
+    LazyMock,
     callback_on_mock_put,
     default_mock_class,
     get_mock_put,
@@ -29,8 +29,10 @@ from ophyd_async.testing import (
 
 @pytest.fixture
 async def sim_motor():
-    async with init_devices(mock=True):
-        sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X", name="sim_motor")
+    # Opt out of the default mocking behaviour so we can test it
+    # better below
+    sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X", name="sim_motor")
+    await sim_motor.connect(mock=LazyMock())
 
     set_mock_value(sim_motor.motor_egu, "mm")
     set_mock_value(sim_motor.precision, 3)
@@ -44,7 +46,6 @@ async def sim_motor():
     yield sim_motor
 
 
-@pytest.mark.xfail(reason="Flaky test")
 async def test_motor_moving_well(sim_motor: motor.Motor) -> None:
     set_mock_put_proceeds(sim_motor.user_setpoint, False)
     s = sim_motor.set(0.55)
@@ -101,10 +102,6 @@ async def test_motor_move_timeout(sim_motor: motor.Motor):
     )
 
 
-@pytest.mark.skipif(
-    sys.platform == "win32" and sys.version_info[:2] == (3, 11),
-    reason="Flaky on Windows Python 3.11 due to asyncio scheduling differences",
-)
 async def test_motor_moving_stopped(sim_motor: motor.Motor):
     set_mock_value(sim_motor.motor_done_move, False)
     set_mock_put_proceeds(sim_motor.user_setpoint, False)
@@ -120,7 +117,7 @@ async def test_motor_moving_stopped(sim_motor: motor.Motor):
     get_mock_put(sim_motor.motor_stop).assert_called_once_with(1)
 
     set_mock_put_proceeds(sim_motor.user_setpoint, True)
-    await wait_for_pending_wakeups()
+    await wait_for_pending_wakeups(max_yields=25)
 
     assert s.done
     assert s.success is False

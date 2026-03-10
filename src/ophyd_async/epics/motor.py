@@ -162,6 +162,10 @@ class MotorMoveLogic(MovableLogic[float]):
             self.precision.get_value(),
         )
 
+    async def move(self, new_position: float, timeout: float | None) -> None:
+        """Move the device, waiting for completion."""
+        await self.setpoint.set(new_position, timeout)
+
 
 class InstantMotorMock(DeviceMock["Motor"]):
     """Mock behaviour that instantly moves readback to setpoint."""
