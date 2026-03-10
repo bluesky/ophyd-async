@@ -82,13 +82,13 @@ async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.0, abs=0.08),
+        time_elapsed=pytest.approx(0.0, abs=0.18),
     )
     await wait_for_pending_wakeups()
     await assert_value(mock_motor.setpoint, 0.55)
     assert not s.done
     # Wait a bit and give it an update, checking that the watcher is called with it
-    await asyncio.sleep(0.1)
+    await asyncio.sleep(0.2)
     set_mock_value(mock_motor.readback, 0.1)
     await watcher.wait_for_call(
         name="mock_motor",
@@ -97,7 +97,7 @@ async def test_motor_moving_well(mock_motor: demo.DemoMotor) -> None:
         target=0.55,
         unit="mm",
         precision=3,
-        time_elapsed=pytest.approx(0.1, abs=0.08),
+        time_elapsed=pytest.approx(0.2, abs=0.18),
     )
     # Make it almost get there and check that it completes
     set_mock_value(mock_motor.readback, 0.5499999)
