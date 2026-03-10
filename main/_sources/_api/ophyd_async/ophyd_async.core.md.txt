@@ -1837,7 +1837,7 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 ```
 ````
 
-````{py:function} set_and_wait_for_other_value(set_signal: ~ophyd_async.core._signal.SignalW[~ophyd_async.core._signal_backend.SignalDatatypeT], set_value: ~ophyd_async.core._signal_backend.SignalDatatypeT, match_signal: ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeV], match_value: ~ophyd_async.core._signal_backend.SignalDatatypeV | ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeV], bool], timeout: float = DEFAULT_TIMEOUT, set_timeout: float | None = None, wait_for_set_completion: bool = True) -> ~ophyd_async.core._status.AsyncStatus
+````{py:function} set_and_wait_for_other_value(set_signal: ~ophyd_async.core._signal.SignalW[~ophyd_async.core._signal_backend.SignalDatatypeT], set_value: ~ophyd_async.core._signal_backend.SignalDatatypeT, match_signal: ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeV], match_value: ~ophyd_async.core._signal_backend.SignalDatatypeV | ~collections.abc.Callable[[~ophyd_async.core._signal_backend.SignalDatatypeV], bool], timeout: float | None = DEFAULT_TIMEOUT, set_timeout: float | None = None, wait_for_set_completion: bool = True) -> ~ophyd_async.core._status.AsyncStatus
 :canonical: ophyd_async.core._signal.set_and_wait_for_other_value
 :async:
 
