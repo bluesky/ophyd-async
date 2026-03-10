@@ -619,27 +619,30 @@ async def set_and_wait_for_other_value(
     wait_task = asyncio.create_task(
         checker.wait_for_value(match_signal, timeout=timeout)
     )
-    async with asyncio.timeout(timeout):
-        await checker.got_first_value.wait()
 
-    # Now we can start the set
-    status = set_signal.set(set_value, timeout=set_timeout)
+    # Put this in a try/except to ensure wait_task is cancelled when we exit
+    try:
+        async with asyncio.timeout(timeout):
+            await checker.got_first_value.wait()
 
-    if not wait_for_set_completion:
-        # Just wait for the match_signal to be at value
-        await wait_task
-    else:
-        # Wait for both to complete, so if the set raises an exception it
-        # is surfaced early
-        try:
-            await asyncio.gather(wait_task, status)
-        except Exception:
-            # Make sure the wait is not left dangling if there was an error
-            wait_task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await wait_task
-            raise
-    return status
+        # Now we can start the set
+        status = set_signal.set(set_value, timeout=set_timeout)
+
+        if not wait_for_set_completion:
+            # Just wait for the match_signal to be at value
+            await wait_task
+        else:
+            # Wait for both to complete, so if the set raises an exception it
+            # is surfaced early. Wait for the status task so if either errors
+            # the other is cancelled
+            await asyncio.gather(wait_task, status.task)
+        return status
+    except Exception:
+        # Make sure the wait is not left dangling if there was an error
+        wait_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await wait_task
+        raise
 
 
 async def set_and_wait_for_value(
