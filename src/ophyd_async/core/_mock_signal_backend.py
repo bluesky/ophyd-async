@@ -76,6 +76,12 @@ class MockSignalBackend(SignalBackend[SignalDatatypeT]):
         """Set the value of the signal."""
         self.soft_backend.set_value(value)
 
+    def set_units(self, units: str):
+        self.soft_backend.metadata["units"] = units
+
+    def set_precision(self, precision: int):
+        self.soft_backend.metadata["precision"] = precision
+
     def source(self, name: str, read: bool) -> str:
         return f"mock+{self.initial_backend.source(name, read)}"
 

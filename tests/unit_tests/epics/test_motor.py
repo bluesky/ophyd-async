@@ -16,7 +16,9 @@ from ophyd_async.core import (
     get_mock_put,
     init_devices,
     observe_value,
+    set_mock_precision,
     set_mock_put_proceeds,
+    set_mock_units,
     set_mock_value,
     soft_signal_rw,
 )
@@ -34,8 +36,8 @@ async def sim_motor():
     sim_motor = motor.Motor("BLxxI-MO-TABLE-01:X", name="sim_motor")
     await sim_motor.connect(mock=LazyMock())
 
-    set_mock_value(sim_motor.motor_egu, "mm")
-    set_mock_value(sim_motor.precision, 3)
+    set_mock_units(sim_motor.user_readback, "mm")
+    set_mock_precision(sim_motor.user_readback, 3)
     set_mock_value(sim_motor.velocity, 1)
     # Widen limits to accommodate ramp distances in fly scan trajectories
     # (Previously dial limits were 0,0 which skipped all limit checks)

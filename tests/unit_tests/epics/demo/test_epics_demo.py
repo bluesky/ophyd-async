@@ -14,6 +14,8 @@ from ophyd_async.core import (
     get_mock,
     get_mock_put,
     init_devices,
+    set_mock_precision,
+    set_mock_units,
     set_mock_value,
 )
 from ophyd_async.epics import demo
@@ -39,8 +41,8 @@ async def mock_motor():
     # in the tests
     mock_motor = demo.DemoMotor("BLxxI-MO-TABLE-01:X:", name="mock_motor")
     await mock_motor.connect(mock=LazyMock())
-    set_mock_value(mock_motor.units, "mm")
-    set_mock_value(mock_motor.precision, 3)
+    set_mock_units(mock_motor.readback, "mm")
+    set_mock_precision(mock_motor.readback, 3)
     set_mock_value(mock_motor.velocity, 1)
     yield mock_motor
 
@@ -157,11 +159,6 @@ async def test_read_motor(mock_motor: demo.DemoMotor):
     await assert_configuration(
         mock_motor,
         {
-            "mock_motor-units": {
-                "value": "mm",
-                "timestamp": ANY,
-                "alarm_severity": 0,
-            },
             "mock_motor-velocity": {
                 "value": 1.0,
                 "timestamp": ANY,

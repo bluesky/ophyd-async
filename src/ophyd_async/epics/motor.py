@@ -17,7 +17,6 @@ from ophyd_async.core import (
     DeviceMock,
     FlyMotorInfo,
     MovableLogic,
-    SignalR,
     SignalRW,
     SignalW,
     StandardMovable,
@@ -85,12 +84,10 @@ class MotorMoveLogic(MovableLogic[float]):
     motor_stop: SignalW[int]
     low_limit_travel: SignalRW[float]
     high_limit_travel: SignalRW[float]
-    motor_egu: SignalR[str]
     dial_low_limit_travel: SignalRW[float]
     dial_high_limit_travel: SignalRW[float]
     velocity: SignalRW[float]
     acceleration_time: SignalRW[float]
-    precision: SignalR[int]
 
     async def stop(self):
         """Request to stop moving."""
@@ -105,13 +102,13 @@ class MotorMoveLogic(MovableLogic[float]):
         (
             motor_lower_limit,
             motor_upper_limit,
-            egu,
+            (units, _),
             dial_lower_limit,
             dial_upper_limit,
         ) = await asyncio.gather(
             self.low_limit_travel.get_value(),
             self.high_limit_travel.get_value(),
-            self.motor_egu.get_value(),
+            self.get_units_precision(),
             self.dial_low_limit_travel.get_value(),
             self.dial_high_limit_travel.get_value(),
         )
@@ -129,11 +126,11 @@ class MotorMoveLogic(MovableLogic[float]):
             name = self.readback.name
             raise MotorLimitsError(
                 f"{name} motor trajectory for requested fly/move is from "
-                f"{old_position}{egu} to "
-                f"{new_position}{egu} but motor limits are "
-                f"{motor_lower_limit}{egu} <= x <= {motor_upper_limit}{egu} "
+                f"{old_position}{units} to "
+                f"{new_position}{units} but motor limits are "
+                f"{motor_lower_limit}{units} <= x <= {motor_upper_limit}{units} "
                 f"dial limits are "
-                f"{dial_lower_limit}{egu} <= x <= {dial_upper_limit}."
+                f"{dial_lower_limit}{units} <= x <= {dial_upper_limit}."
             )
 
     async def calculate_timeout(
@@ -155,12 +152,6 @@ class MotorMoveLogic(MovableLogic[float]):
         except ZeroDivisionError as error:
             msg = f"Motor {self.readback.name} has zero velocity."
             raise ValueError(msg) from error
-
-    async def get_units_precision(self) -> tuple[str | None, int | None]:
-        return await asyncio.gather(
-            self.motor_egu.get_value(),
-            self.precision.get_value(),
-        )
 
     async def move(self, new_position: float, timeout: float | None) -> None:
         """Move the device, waiting for completion."""
@@ -234,7 +225,7 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
         super().__init__(name)
 
     @cached_property
-    def movable_logic(self) -> MotorMoveLogic:
+    def movable_logic(self) -> MovableLogic:
         """Return MotorMoveLogic for this motor."""
         return MotorMoveLogic(
             readback=self.user_readback,
@@ -242,12 +233,10 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
             motor_stop=self.motor_stop,
             low_limit_travel=self.low_limit_travel,
             high_limit_travel=self.high_limit_travel,
-            motor_egu=self.motor_egu,
             dial_low_limit_travel=self.dial_low_limit_travel,
             dial_high_limit_travel=self.dial_high_limit_travel,
             velocity=self.velocity,
             acceleration_time=self.acceleration_time,
-            precision=self.precision,
         )
 
     async def check_motor_limit(self, abs_start_pos: float, abs_end_pos: float):

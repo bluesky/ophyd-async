@@ -48,7 +48,9 @@ from ._mock_signal_utils import (
     get_mock,
     get_mock_put,
     mock_puts_blocked,
+    set_mock_precision,
     set_mock_put_proceeds,
+    set_mock_units,
     set_mock_value,
     set_mock_values,
 )
@@ -217,6 +219,8 @@ __all__ = [
     "callback_on_mock_put",
     "mock_puts_blocked",
     "set_mock_put_proceeds",
+    "set_mock_units",
+    "set_mock_precision",
     # Signal utilities
     "observe_value",
     "observe_signals_value",

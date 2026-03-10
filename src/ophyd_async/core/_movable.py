@@ -57,7 +57,8 @@ class MovableLogic(Generic[SignalDatatypeT]):
 
     async def get_units_precision(self) -> tuple[str | None, int | None]:
         """Optional hook to return the units and precision."""
-        return None, None
+        datakey = (await self.readback.describe())[self.readback.name]
+        return datakey.get("units"), datakey.get("precision")
 
     async def move(self, new_position: SignalDatatypeT, timeout: float | None) -> None:
         """Move the device, waiting for completion."""
