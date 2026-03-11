@@ -6,11 +6,18 @@ from typing import Any, Generic, TypeVar
 from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
-from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock, Signal, Command
+from ophyd_async.core import (
+    Command,
+    Device,
+    DeviceConnector,
+    DeviceFiller,
+    LazyMock,
+    Signal,
+)
 
 from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
-from ._utils import get_full_attr_trl
 from ._tango_command_backend import TangoCommandBackend
+from ._utils import get_full_attr_trl
 
 T = TypeVar("T")
 

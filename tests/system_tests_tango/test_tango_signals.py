@@ -1,7 +1,6 @@
 import asyncio
 import time
 from collections.abc import Sequence
-from typing import Annotated as A
 from typing import TypeVar, get_origin
 
 import numpy as np
@@ -10,7 +9,6 @@ from tango.asyncio import DeviceProxy
 from test_base_device import TestDevice
 
 from ophyd_async.core import NotConnectedError, SignalRW, StandardReadable, StrictEnum
-from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import (
     DevStateEnum,
     TangoDevice,

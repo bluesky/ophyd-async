@@ -11,8 +11,8 @@ from tango import (
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ophyd_async.core import (
-    Command,
     DEFAULT_TIMEOUT,
+    Command,
     Signal,
     SignalDatatype,
     SignalDatatypeT,
@@ -23,9 +23,7 @@ from ophyd_async.core import (
 )
 
 from ._tango_transport import (
-    CommandProxyReadCharacter,
     TangoSignalBackend,
-    get_command_character,
     get_python_type,
 )
 from ._utils import get_device_trl_and_attr

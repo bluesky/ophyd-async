@@ -2,7 +2,7 @@ import asyncio
 import logging
 import re
 from collections.abc import Sequence
-from typing import Any, Tuple
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -24,6 +24,7 @@ from ophyd_async.core import (
 from ophyd_async.tango.core import (
     AttributeProxy,
     CommandProxy,
+    DevStateEnum,
     TangoDoubleStringTable,
     TangoLongStringTable,
     TangoSignalBackend,
@@ -33,7 +34,6 @@ from ophyd_async.tango.core import (
     get_python_type,
     get_tango_trl,
     try_to_cast_as_float,
-    DevStateEnum,
 )
 from ophyd_async.tango.testing import TestConfig
 
@@ -74,7 +74,8 @@ async def test_ensure_proper_executor():
 
 # --------------------------------------------------------------------
 
-EncodedType = Tuple[str, bytes]
+EncodedType = tuple[str, bytes]
+
 
 @pytest.mark.parametrize(
     "tango_type, tango_format, expected",
@@ -91,34 +92,106 @@ EncodedType = Tuple[str, bytes]
         (CmdArgType.DevULong, AttrDataFormat.SCALAR, int),
         (CmdArgType.DevULong64, AttrDataFormat.SCALAR, int),
         (CmdArgType.DevString, AttrDataFormat.SCALAR, str),
-        (CmdArgType.DevEncoded, AttrDataFormat.SCALAR, EncodedType), # not supported
+        (CmdArgType.DevEncoded, AttrDataFormat.SCALAR, EncodedType),  # not supported
         (CmdArgType.DevEnum, AttrDataFormat.SCALAR, StrictEnum),
         (CmdArgType.DevState, AttrDataFormat.SCALAR, DevStateEnum),
         (CmdArgType.ConstDevString, AttrDataFormat.SCALAR, str),
         (CmdArgType.DevVarBooleanArray, AttrDataFormat.SCALAR, bool),
         (CmdArgType.DevUChar, AttrDataFormat.SCALAR, int),
         # Array types
-        (CmdArgType.DevVarCharArray, AttrDataFormat.SPECTRUM, Array1D[np.dtype(np.uint8)]),
-        (CmdArgType.DevVarShortArray, AttrDataFormat.SPECTRUM, Array1D[np.dtype(np.int16)]),
-        (CmdArgType.DevVarShortArray, AttrDataFormat.IMAGE, npt.NDArray[np.dtype(np.int16)]),
-        (CmdArgType.DevVarLongArray, AttrDataFormat.SPECTRUM, Array1D[np.dtype(np.int32)]),
-        (CmdArgType.DevVarLongArray, AttrDataFormat.IMAGE, npt.NDArray[np.dtype(np.int32)]),
-        (CmdArgType.DevVarFloatArray, AttrDataFormat.SPECTRUM, Array1D[np.dtype(np.float32)]),
-        (CmdArgType.DevVarFloatArray, AttrDataFormat.IMAGE, npt.NDArray[np.dtype(np.float32)]),
-        (CmdArgType.DevVarDoubleArray, AttrDataFormat.SPECTRUM, Array1D[np.dtype(np.float64)]),
-        (CmdArgType.DevVarDoubleArray, AttrDataFormat.IMAGE, npt.NDArray[np.dtype(np.float64)]),
-        (CmdArgType.DevVarUShortArray, AttrDataFormat.SPECTRUM, Array1D[np.dtype(np.uint16)]),
-        (CmdArgType.DevVarUShortArray, AttrDataFormat.IMAGE, npt.NDArray[np.dtype(np.uint16)]),
-        (CmdArgType.DevVarULongArray, AttrDataFormat.SPECTRUM, Array1D[np.dtype(np.uint32)]),
-        (CmdArgType.DevVarULongArray, AttrDataFormat.IMAGE, npt.NDArray[np.dtype(np.uint32)]),
-        (CmdArgType.DevVarLong64Array, AttrDataFormat.SPECTRUM, Array1D[np.dtype(np.int64)]),
-        (CmdArgType.DevVarLong64Array, AttrDataFormat.IMAGE, npt.NDArray[np.dtype(np.int64)]),
-        (CmdArgType.DevVarULong64Array, AttrDataFormat.SPECTRUM, Array1D[np.dtype(np.uint64)]),
-        (CmdArgType.DevVarULong64Array, AttrDataFormat.IMAGE, npt.NDArray[np.dtype(np.uint64)]),
+        (
+            CmdArgType.DevVarCharArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.dtype(np.uint8)],
+        ),
+        (
+            CmdArgType.DevVarShortArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.dtype(np.int16)],
+        ),
+        (
+            CmdArgType.DevVarShortArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.dtype(np.int16)],
+        ),
+        (
+            CmdArgType.DevVarLongArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.dtype(np.int32)],
+        ),
+        (
+            CmdArgType.DevVarLongArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.dtype(np.int32)],
+        ),
+        (
+            CmdArgType.DevVarFloatArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.dtype(np.float32)],
+        ),
+        (
+            CmdArgType.DevVarFloatArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.dtype(np.float32)],
+        ),
+        (
+            CmdArgType.DevVarDoubleArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.dtype(np.float64)],
+        ),
+        (
+            CmdArgType.DevVarDoubleArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.dtype(np.float64)],
+        ),
+        (
+            CmdArgType.DevVarUShortArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.dtype(np.uint16)],
+        ),
+        (
+            CmdArgType.DevVarUShortArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.dtype(np.uint16)],
+        ),
+        (
+            CmdArgType.DevVarULongArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.dtype(np.uint32)],
+        ),
+        (
+            CmdArgType.DevVarULongArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.dtype(np.uint32)],
+        ),
+        (
+            CmdArgType.DevVarLong64Array,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.dtype(np.int64)],
+        ),
+        (
+            CmdArgType.DevVarLong64Array,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.dtype(np.int64)],
+        ),
+        (
+            CmdArgType.DevVarULong64Array,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.dtype(np.uint64)],
+        ),
+        (
+            CmdArgType.DevVarULong64Array,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.dtype(np.uint64)],
+        ),
         (CmdArgType.DevVarEncodedArray, AttrDataFormat.SPECTRUM, Sequence[EncodedType]),
         # String array types
         (CmdArgType.DevVarStringArray, AttrDataFormat.SPECTRUM, Sequence[str]),
-        (CmdArgType.DevVarStringArray, AttrDataFormat.IMAGE, Sequence[Sequence[str]]), # not supported
+        (
+            CmdArgType.DevVarStringArray,
+            AttrDataFormat.IMAGE,
+            Sequence[Sequence[str]],
+        ),  # not supported
         (
             CmdArgType.DevVarLongStringArray,
             AttrDataFormat.SPECTRUM,

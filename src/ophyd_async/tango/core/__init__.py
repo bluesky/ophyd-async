@@ -1,4 +1,13 @@
 from ._base_device import TangoDevice, TangoDeviceConnector, TangoPolling
+from ._converters import (
+    TangoConverter,
+    TangoDevStateArrayConverter,
+    TangoDevStateConverter,
+    TangoDoubleStringTableConverter,
+    TangoEnumArrayConverter,
+    TangoEnumConverter,
+    TangoLongStringTableConverter,
+)
 from ._signal import (
     infer_python_type,
     infer_signal_type,
@@ -8,15 +17,18 @@ from ._signal import (
     tango_signal_w,
     tango_signal_x,
 )
+from ._tango_command_backend import (
+    TangoCommandBackend,
+    TangoCommandConnector,
+    tango_command,
+)
 from ._tango_transport import (
     AttributeInfoEx,
     AttributeProxy,
     CommandInfo,
     CommandProxy,
-    CommandProxyReadCharacter,
     TangoSignalBackend,
     ensure_proper_executor,
-    get_command_character,
     get_dtype_extended,
     get_python_type,
     get_source_metadata,
@@ -24,27 +36,13 @@ from ._tango_transport import (
     make_converter,
     parse_precision,
 )
-from ._tango_command_backend import (
-    TangoCommandBackend,
-    TangoCommandConnector,
-    tango_command,
-)
 from ._utils import (
     DevStateEnum,
+    TangoDoubleStringTable,
+    TangoLongStringTable,
     get_device_trl_and_attr,
     get_full_attr_trl,
     try_to_cast_as_float,
-    TangoLongStringTable,
-    TangoDoubleStringTable,
-)
-from ._converters import (
-    TangoConverter,
-    TangoEnumConverter,
-    TangoEnumArrayConverter,
-    TangoDevStateConverter,
-    TangoDevStateArrayConverter,
-    TangoLongStringTableConverter,
-    TangoDoubleStringTableConverter,
 )
 
 __all__ = [
@@ -52,11 +50,9 @@ __all__ = [
     "AttributeProxy",
     "CommandInfo",
     "CommandProxy",
-    "CommandProxyReadCharacter",
     "DevStateEnum",
     "ensure_proper_executor",
     "TangoSignalBackend",
-    "get_command_character",
     "get_python_type",
     "get_dtype_extended",
     "get_source_metadata",
@@ -85,4 +81,7 @@ __all__ = [
     "try_to_cast_as_float",
     "get_device_trl_and_attr",
     "get_full_attr_trl",
+    "TangoCommandBackend",
+    "TangoCommandConnector",
+    "tango_command",
 ]

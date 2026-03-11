@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
 import numpy as np
-from tango import AttrDataFormat, AttrWriteType, DevState, CmdArgType
+from tango import AttrDataFormat, AttrWriteType, CmdArgType, DevState
 from tango.server import Device, attribute, command
 
 from ophyd_async.core import (
@@ -21,6 +21,7 @@ class ExampleStrEnum(StrictEnum):
     A = "AAA"
     B = "BBB"
     C = "CCC"
+
 
 def int_image_value(
     dtype: type[DTypeScalar_co],
@@ -154,18 +155,17 @@ class OneOfEverythingTangoDevice(Device):
         self._add_attr(image_attr, np.vstack((initial_value, initial_value)))
 
         long_string_table_cmd = command(
-            f=getattr(self, f"long_string_cmd"),
+            f=self.long_string_cmd,
             dtype_in=CmdArgType.DevVarLongStringArray,
             dtype_out=CmdArgType.DevVarLongStringArray,
         )
         double_string_table_cmd = command(
-            f=getattr(self, f"double_string_cmd"),
+            f=self.double_string_cmd,
             dtype_in=CmdArgType.DevVarDoubleStringArray,
             dtype_out=CmdArgType.DevVarDoubleStringArray,
         )
         self.add_command(long_string_table_cmd)
         self.add_command(double_string_table_cmd)
-
 
     def add_scalar_command(self, name: str, dtype: str):
         if _valid_command(AttrDataFormat.SCALAR, dtype):
@@ -185,7 +185,7 @@ class OneOfEverythingTangoDevice(Device):
                 self.add_command(
                     command(
                         f=getattr(self, f"{name}_spectrum_cmd"),
-                        dtype_in= CmdArgType.DevVarCharArray,
+                        dtype_in=CmdArgType.DevVarCharArray,
                         dtype_out=CmdArgType.DevVarCharArray,
                     ),
                 )

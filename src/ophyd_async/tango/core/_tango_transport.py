@@ -2,7 +2,6 @@ import asyncio
 import functools
 import logging
 import re
-import time
 from abc import abstractmethod
 from collections.abc import Callable, Coroutine, Sequence
 from typing import (
@@ -58,12 +57,18 @@ from ._converters import (
     TangoConverter,
     TangoDevStateArrayConverter,
     TangoDevStateConverter,
+    TangoDoubleStringTableConverter,
     TangoEnumArrayConverter,
     TangoEnumConverter,
     TangoLongStringTableConverter,
-    TangoDoubleStringTableConverter,
 )
-from ._utils import DevStateEnum, get_device_trl_and_attr, try_to_cast_as_float, TangoLongStringTable, TangoDoubleStringTable
+from ._utils import (
+    DevStateEnum,
+    TangoDoubleStringTable,
+    TangoLongStringTable,
+    get_device_trl_and_attr,
+    try_to_cast_as_float,
+)
 
 logger = logging.getLogger("ophyd_async")
 
@@ -105,60 +110,54 @@ TANGO_TO_PYTHON_TYPE = {
     CmdArgType.DevULong64: int,
     CmdArgType.DevString: str,
     CmdArgType.ConstDevString: str,
-
     CmdArgType.DevEnum: StrictEnum,
     CmdArgType.DevState: DevStateEnum,
-
     CmdArgType.DevVarBooleanArray: np.dtype(np.bool_),
     CmdArgType.DevVarCharArray: np.dtype(np.uint8),
-
     CmdArgType.DevVarShortArray: np.dtype(np.int16),
     CmdArgType.DevVarLongArray: np.dtype(np.int32),
     CmdArgType.DevVarUShortArray: np.dtype(np.uint16),
     CmdArgType.DevVarULongArray: np.dtype(np.uint32),
-
     CmdArgType.DevVarLong64Array: np.dtype(np.int64),
     CmdArgType.DevVarULong64Array: np.dtype(np.uint64),
-
     CmdArgType.DevVarFloatArray: np.dtype(np.float32),
     CmdArgType.DevVarDoubleArray: np.dtype(np.float64),
-
     CmdArgType.DevVarStringArray: str,
     CmdArgType.DevVarLongStringArray: TangoLongStringTable,
     CmdArgType.DevVarDoubleStringArray: TangoDoubleStringTable,
 }
 
 # Derived mappings for attributes and commands
-# For commands, it is easiest to pass the full signal type, not just the contents of Array1D
-TANGO_TO_ATTR_TYPE = TANGO_TO_PYTHON_TYPE  # Same as base for attributes
+# For commands, it is easiest to pass the full signal type,
+# not just the contents of Array1D
+TANGO_TO_ATTR_TYPE = TANGO_TO_PYTHON_TYPE
 TANGO_TO_CMD_TYPE = {
     **TANGO_TO_PYTHON_TYPE,
     CmdArgType.DevVarBooleanArray: Array1D[np.dtype(np.bool_)],
     CmdArgType.DevVarCharArray: Array1D[np.dtype(np.uint8)],
-
     CmdArgType.DevVarShortArray: Array1D[np.dtype(np.int16)],
     CmdArgType.DevVarUShortArray: Array1D[np.dtype(np.uint16)],
     CmdArgType.DevVarLongArray: Array1D[np.dtype(np.int32)],
     CmdArgType.DevVarULongArray: Array1D[np.dtype(np.uint32)],
-
     CmdArgType.DevVarLong64Array: Array1D[np.dtype(np.int64)],
     CmdArgType.DevVarULong64Array: Array1D[np.dtype(np.uint64)],
-
     CmdArgType.DevVarFloatArray: Array1D[np.dtype(np.float32)],
     CmdArgType.DevVarDoubleArray: Array1D[np.dtype(np.float64)],
-
     CmdArgType.DevVarStringArray: Sequence[str],
-
 }
 
+
 def get_python_type(
-        config: AttributeInfoEx | CommandInfo | TestConfig
+    config: AttributeInfoEx | CommandInfo | TestConfig,
 ) -> type[SignalDatatype] | None:
     """Convert Tango types to Python types based on the configuration."""
     tango_type, tango_format = _extract_tango_info(config)
 
     # Handle special cases first
-    if tango_type in (CmdArgType.DevVarLongStringArray, CmdArgType.DevVarDoubleStringArray):
+    if tango_type in (
+        CmdArgType.DevVarLongStringArray,
+        CmdArgType.DevVarDoubleStringArray,
+    ):
         return TANGO_TO_PYTHON_TYPE[tango_type]
 
     if tango_type not in TANGO_TO_PYTHON_TYPE:
@@ -183,23 +182,23 @@ def get_python_type(
         return _create_enum_type(config) if ptype is StrictEnum else ptype
     elif isinstance(config, AttributeInfoEx | AttributeInfo | TestConfig):
         raise TypeError("Unknown TangoFormat")
-    else: # Commands
+    else:  # Commands
         return TANGO_TO_CMD_TYPE[tango_type]
 
+
 def _extract_tango_info(
-        config: AttributeInfoEx | CommandInfo | TestConfig
+    config: AttributeInfoEx | CommandInfo | TestConfig,
 ) -> tuple[CmdArgType, AttrDataFormat | None]:
     """Extract Tango type and format from the configuration."""
     if isinstance(config, (AttributeInfoEx, AttributeInfo)):
         return config.data_type, config.data_format
     elif isinstance(config, CommandInfo):
-        read_character = get_command_character(config)
-        tango_type = config.out_type if read_character == CommandProxyReadCharacter.READ else config.in_type
-        return tango_type, None
+        return config.out_type, None
     elif isinstance(config, TestConfig):
         return config.data_type, config.data_format
     else:
         raise TypeError("Unrecognized Tango resource configuration")
+
 
 def _create_enum_type(config: AttributeInfoEx | CommandInfo) -> StrictEnum:
     """Create an Enum type from the configuration's enum labels."""
@@ -508,37 +507,12 @@ class AttributeProxy(TangoProxy):
         self._rel_change = rel_change
 
 
-class CommandProxyReadCharacter(StrictEnum):
-    """Enum to carry the read/write character of the CommandProxy."""
-
-    READ = "READ"
-    WRITE = "WRITE"
-    READ_WRITE = "READ_WRITE"
-    EXECUTE = "EXECUTE"
-
-
-def get_command_character(config: CommandInfo) -> CommandProxyReadCharacter:
-    """Return the command character for the given command config."""
-    in_type = config.in_type
-    out_type = config.out_type
-    if in_type == CmdArgType.DevVoid and out_type != CmdArgType.DevVoid:
-        read_character = CommandProxyReadCharacter.READ
-    elif in_type != CmdArgType.DevVoid and out_type == CmdArgType.DevVoid:
-        read_character = CommandProxyReadCharacter.WRITE
-    elif in_type == CmdArgType.DevVoid and out_type == CmdArgType.DevVoid:
-        read_character = CommandProxyReadCharacter.EXECUTE
-    else:
-        read_character = CommandProxyReadCharacter.READ_WRITE
-    return read_character
-
-
 class CommandProxy(TangoProxy):
     """Tango proxy for commands."""
 
     _last_reading: Reading
     _last_w_value: Any
     _config: CommandInfo
-    _read_character: CommandProxyReadCharacter
     device_proxy: DeviceProxy
     name: str
 
@@ -559,15 +533,17 @@ class CommandProxy(TangoProxy):
 
     async def connect(self) -> None:
         self._config = await self.device_proxy.get_command_config(self.name)  # type: ignore
-        self._read_character = get_command_character(self._config)
 
     @ensure_proper_executor
     async def put(  # type: ignore
-        self, value: object | None, timeout: float | None = None) -> Any:
+        self, value: object | None, timeout: float | None = None
+    ) -> Any:
         value = self._converter.write_value(value)
         try:
+
             async def _put():
                 return await self._proxy.command_inout(self._name, value)
+
             task = asyncio.create_task(_put())
             val = await asyncio.wait_for(task, timeout=None)
             self._last_w_value = value

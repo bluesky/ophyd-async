@@ -15,10 +15,19 @@ from typing import (
 from unittest.mock import AsyncMock
 
 from ._device import Device, DeviceConnector, LazyMock
+from ._signal import SignalDatatypeT
 from ._soft_signal_backend import SoftConverter, make_converter
 from ._status import AsyncStatus
-from ._utils import DEFAULT_TIMEOUT, NotConnectedError, P, T, T_co, _wait_for, CALCULATE_TIMEOUT, CalculatableTimeout
-from ._signal import SignalDatatypeT
+from ._utils import (
+    CALCULATE_TIMEOUT,
+    DEFAULT_TIMEOUT,
+    CalculatableTimeout,
+    NotConnectedError,
+    P,
+    T,
+    T_co,
+    _wait_for,
+)
 
 
 class CommandBackend(Generic[P, T_co]):
@@ -100,6 +109,7 @@ class Command(Device, Generic[P, T]):
     @AsyncStatus.wrap
     async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
         """Trigger the action and return a status saying when it's done.
+
         Calls execute() with no arguments and does not return a value.
         Included for to allow for drop-in replacement of a SignalX.
 

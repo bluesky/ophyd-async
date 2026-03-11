@@ -1,9 +1,14 @@
+import asyncio
 import re
-from typing import Any, Sequence
+from collections.abc import Awaitable, Sequence
+from typing import Any, ParamSpec, TypeVar
 
 import numpy as np
 
-from ophyd_async.core import StrictEnum, Table, Array1D
+from ophyd_async.core import Array1D, StrictEnum, Table
+
+T = TypeVar("T")
+P = ParamSpec("P")
 
 
 class DevStateEnum(StrictEnum):
@@ -70,6 +75,7 @@ class TangoLongStringTable(Table):
         string_equal = self.string == other.string
         return long_equal and string_equal
 
+
 class TangoDoubleStringTable(Table):
     double: Array1D[np.float64]
     string: Sequence[str]
@@ -80,3 +86,10 @@ class TangoDoubleStringTable(Table):
         double_equal = np.array_equal(self.double, other.double)
         string_equal = self.string == other.string
         return double_equal and string_equal
+
+
+async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
+    try:
+        return await asyncio.wait_for(coro, timeout)
+    except TimeoutError as exc:
+        raise TimeoutError(source) from exc

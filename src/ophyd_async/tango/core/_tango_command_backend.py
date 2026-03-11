@@ -5,39 +5,39 @@ from typing import cast
 from tango import CommandInfo, DeviceProxy
 
 from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    AsyncStatus,
+    CalculatableTimeout,
     Command,
     CommandBackend,
     CommandConnector,
-    DEFAULT_TIMEOUT,
     NotConnectedError,
     StrictEnum,
-    CalculatableTimeout,
-    CALCULATE_TIMEOUT,
-    AsyncStatus,
 )
 
 from ._converters import (
     TangoConverter,
 )
-
-from ._tango_transport import(
+from ._tango_transport import (
     CommandProxy,
-    CommandProxyReadCharacter,
+    get_python_type,
     get_tango_trl,
     make_converter,
-    get_python_type
 )
-
-from ophyd_async.core._utils import P, T, _wait_for
+from ._utils import P, T, _wait_for
 
 
 class TangoCommandBackend(CommandBackend[P, T]):
-    def __init__(self, datatype: type[T] | None, trl: str = "", device_proxy: DeviceProxy | None = None):
+    def __init__(
+        self,
+        datatype: type[T] | None,
+        trl: str = "",
+        device_proxy: DeviceProxy | None = None,
+    ):
         self._trl = trl
         self.device_proxy = device_proxy
         self._proxy: CommandProxy | None = None
         self._config: CommandInfo | None = None
-        self._character: CommandProxyReadCharacter | None = None
         self._converter: TangoConverter | None = None
         self._timeout = DEFAULT_TIMEOUT
         super().__init__(datatype=datatype)
@@ -64,12 +64,13 @@ class TangoCommandBackend(CommandBackend[P, T]):
         # Configure converters and character
         self._converter = make_converter(self._config, self.datatype)
         self._proxy.set_converter(self._converter)
-        self._character = self._proxy._read_character  # set by connect()
         datatype = get_python_type(self._config)
         if datatype is StrictEnum:
             pass
         elif datatype != self.datatype:
-            raise TypeError(f"Tango command {self._trl} has type {datatype}, not {self.datatype}")
+            raise TypeError(
+                f"Tango command {self._trl} has type {datatype}, not {self.datatype}"
+            )
 
     @AsyncStatus.wrap
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
@@ -88,11 +89,15 @@ class TangoCommandBackend(CommandBackend[P, T]):
         value: T | None = args[0] if args else None
 
         # Execute
-        reply = await _wait_for(self._proxy.put(value), timeout=self._timeout, source=self._trl)
+        reply = await _wait_for(
+            self._proxy.put(value), timeout=self._timeout, source=self._trl
+        )
         return cast(T, reply)
+
 
 class TangoCommandConnector(CommandConnector):
     pass
+
 
 def tango_command(
     trl: str,
@@ -102,5 +107,7 @@ def tango_command(
     timeout: float | None = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> Command[P, T]:
-    backend: TangoCommandBackend[P, T] = TangoCommandBackend(trl, device_proxy, datatype)
+    backend: TangoCommandBackend[P, T] = TangoCommandBackend(
+        trl, device_proxy, datatype
+    )
     return Command(backend, timeout=timeout, name=name)

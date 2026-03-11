@@ -1,29 +1,23 @@
-import pytest
-from typing import Annotated as A
-import numpy as np
 from collections.abc import Sequence
+
+import numpy as np
+import pytest
+
 from ophyd_async.core import (
     Array1D,
     Command,
-    DeviceMock,
-    NotConnectedError,
-    SoftCommandBackend,
-    StrictEnum,
-    SubsetEnum,
-    SupersetEnum,
-    Table,
-    make_converter,
-    soft_command,
-    SignalRW,
-    SignalR,
     StandardReadable,
-    StandardReadableFormat as Format,
+)
+from ophyd_async.tango.core import (
+    DevStateEnum,
+    TangoDevice,
+    TangoDoubleStringTable,
+    TangoLongStringTable,
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
 )
-from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, DevStateEnum, TangoLongStringTable, TangoDoubleStringTable, TangoCommandBackend
 
 TEST_PARAMS = [
     (bool, True, "bool_cmd"),
@@ -41,13 +35,29 @@ TEST_PARAMS = [
     (Array1D[np.uint32], np.array([1, 2], dtype=np.uint32), "uint32_spectrum_cmd"),
     (Array1D[np.int64], np.array([1, 2], dtype=np.int64), "int64_spectrum_cmd"),
     (Array1D[np.uint64], np.array([1, 2], dtype=np.uint64), "uint64_spectrum_cmd"),
-    (Array1D[np.float32], np.array([1.1, 2.2], dtype=np.float32), "float32_spectrum_cmd"),
-    (Array1D[np.float64], np.array([1.1, 2.2], dtype=np.float64), "float64_spectrum_cmd"),
+    (
+        Array1D[np.float32],
+        np.array([1.1, 2.2], dtype=np.float32),
+        "float32_spectrum_cmd",
+    ),
+    (
+        Array1D[np.float64],
+        np.array([1.1, 2.2], dtype=np.float64),
+        "float64_spectrum_cmd",
+    ),
     (Sequence[str], ["a", "b"], "str_spectrum_cmd"),
-    # (Sequence[ExampleStrEnum], [ExampleStrEnum.A, ExampleStrEnum.B], "strenum_cmd"), not supported
-    (TangoLongStringTable, TangoLongStringTable(long=[1, 2], string=["a", "b"]), "long_string_cmd"),
-    (TangoDoubleStringTable, TangoDoubleStringTable(double=[1.1, 2.2], string=["a", "b"]), "double_string_cmd"),
+    (
+        TangoLongStringTable,
+        TangoLongStringTable(long=[1, 2], string=["a", "b"]),
+        "long_string_cmd",
+    ),
+    (
+        TangoDoubleStringTable,
+        TangoDoubleStringTable(double=[1.1, 2.2], string=["a", "b"]),
+        "double_string_cmd",
+    ),
 ]
+
 
 # --------------------------------------------------------------------
 #               fixtures to run Echo device
@@ -71,6 +81,7 @@ class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
 async def everything_device(everything_device_trl):
     return TangoEverythingOphydDevice(everything_device_trl)
 
+
 @pytest.mark.asyncio
 async def test_tango_command_connect(everything_device: TangoDevice):
     await everything_device.connect()
@@ -78,10 +89,11 @@ async def test_tango_command_connect(everything_device: TangoDevice):
     for name in cmd_names:
         assert name in dir(everything_device)
 
+
 @pytest.mark.asyncio
 async def test_tango_command(
-        everything_device: TangoDevice,
-        everything_signal_info,
+    everything_device: TangoDevice,
+    everything_signal_info,
 ):
     await everything_device.connect()
 
@@ -89,11 +101,12 @@ async def test_tango_command(
         cmd = getattr(everything_device, name)
         assert isinstance(cmd, Command)
         if name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
-            assert Array1D[np.dtype(np.uint8)] == cmd._connector.backend.get_return_type()
+            assert (
+                Array1D[np.dtype(np.uint8)] == cmd._connector.backend.get_return_type()
+            )
         else:
             assert ctype == cmd._connector.backend.get_return_type()
         if isinstance(val, np.ndarray):
             assert np.array_equal(val, await cmd.execute(val))
         else:
             assert val == await cmd.execute(val)
-

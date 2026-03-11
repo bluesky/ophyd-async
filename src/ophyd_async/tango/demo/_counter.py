@@ -3,11 +3,10 @@ from typing import Annotated as A
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
+    Command,
     SignalR,
     SignalRW,
-    SignalX,
     StandardReadable,
-    Command
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice, TangoPolling
@@ -29,7 +28,7 @@ class TangoCounter(TangoDevice, StandardReadable):
     async def trigger(self) -> None:
         sample_time = await self.sample_time.get_value()
         timeout = sample_time + DEFAULT_TIMEOUT
-        await self.start.execute()
+        await self.start.trigger(timeout=timeout)
 
     @AsyncStatus.wrap
     async def reset(self) -> None:

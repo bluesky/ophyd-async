@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 import tango
 from bluesky import RunEngine
-from bluesky.protocols import Location
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -23,13 +22,11 @@ from tango.server import Device, attribute, command
 
 from ophyd_async.core import (
     Array1D,
+    Command,
     Ignore,
-    SignalR,
     SignalRW,
-    SignalW,
-    SignalX,
     StandardReadable,
-    init_devices, Command,
+    init_devices,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type

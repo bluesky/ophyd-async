@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import types
 from abc import abstractmethod
 from collections.abc import Callable, Iterator, Sequence
@@ -14,6 +15,7 @@ from typing import (
     get_args,
     runtime_checkable,
 )
+
 from ._command import Command, CommandBackend
 from ._device import Device, DeviceConnector, DeviceVector
 from ._signal import Ignore, Signal, SignalX
@@ -40,6 +42,7 @@ def _get_datatype(annotation: Any) -> type | None:
         return args[0]
 
     return None
+
 
 def _get_command_datatype(annotation: Any) -> type | None:
     """Extract input type from Command[[type_in], type_out] annotations."""
@@ -96,7 +99,10 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         device: Device,
         signal_backend_factory: Callable[[type[SignalDatatype] | None], SignalBackendT],
         device_connector_factory: Callable[[], DeviceConnectorT],
-        command_backend_factory: Callable[[type[SignalDatatype] | None], CommandBackendT] | None = None,
+        command_backend_factory: Callable[
+            [type[SignalDatatype] | None], CommandBackendT
+        ]
+        | None = None,
     ):
         self._device = device
         self._signal_backend_factory = signal_backend_factory
@@ -342,7 +348,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 device_annotation(self._device, command)
             setattr(self._device, name, command)
             dest = (
-                self._filled_command_backends if filled else self._unfilled_command_backends
+                self._filled_command_backends
+                if filled
+                else self._unfilled_command_backends
             )
             dest[_logical(name)] = (backend, child_type)
 
@@ -490,10 +498,10 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         return connector
 
     def fill_child_command(
-            self,
-            name: str,
-            command_type: type[Command] = Command,
-            vector_index: int | None = None,
+        self,
+        name: str,
+        command_type: type[Command] = Command,
+        vector_index: int | None = None,
     ) -> CommandBackendT:
         """Mark a Command as filled and return its backend.
 
