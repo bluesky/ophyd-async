@@ -74,8 +74,6 @@ async def test_ensure_proper_executor():
 
 # --------------------------------------------------------------------
 
-EncodedType = tuple[str, bytes]
-
 
 @pytest.mark.parametrize(
     "tango_type, tango_format, expected",
@@ -92,99 +90,107 @@ EncodedType = tuple[str, bytes]
         (CmdArgType.DevULong, AttrDataFormat.SCALAR, int),
         (CmdArgType.DevULong64, AttrDataFormat.SCALAR, int),
         (CmdArgType.DevString, AttrDataFormat.SCALAR, str),
-        (CmdArgType.DevEncoded, AttrDataFormat.SCALAR, EncodedType),  # not supported
+        (
+            CmdArgType.DevEncoded,
+            AttrDataFormat.SCALAR,
+            tuple[str, bytes],
+        ),  # not supported
         (CmdArgType.DevEnum, AttrDataFormat.SCALAR, StrictEnum),
         (CmdArgType.DevState, AttrDataFormat.SCALAR, DevStateEnum),
         (CmdArgType.ConstDevString, AttrDataFormat.SCALAR, str),
-        (CmdArgType.DevVarBooleanArray, AttrDataFormat.SCALAR, bool),
         (CmdArgType.DevUChar, AttrDataFormat.SCALAR, int),
         # Array types
+        (CmdArgType.DevVarBooleanArray, AttrDataFormat.SPECTRUM, Array1D[np.bool_]),
         (
             CmdArgType.DevVarCharArray,
             AttrDataFormat.SPECTRUM,
-            Array1D[np.dtype(np.uint8)],
+            Array1D[np.uint8],
         ),
         (
             CmdArgType.DevVarShortArray,
             AttrDataFormat.SPECTRUM,
-            Array1D[np.dtype(np.int16)],
+            Array1D[np.int16],
         ),
         (
             CmdArgType.DevVarShortArray,
             AttrDataFormat.IMAGE,
-            npt.NDArray[np.dtype(np.int16)],
+            npt.NDArray[np.int16],
         ),
         (
             CmdArgType.DevVarLongArray,
             AttrDataFormat.SPECTRUM,
-            Array1D[np.dtype(np.int32)],
+            Array1D[np.int32],
         ),
         (
             CmdArgType.DevVarLongArray,
             AttrDataFormat.IMAGE,
-            npt.NDArray[np.dtype(np.int32)],
+            npt.NDArray[np.int32],
         ),
         (
             CmdArgType.DevVarFloatArray,
             AttrDataFormat.SPECTRUM,
-            Array1D[np.dtype(np.float32)],
+            Array1D[np.float32],
         ),
         (
             CmdArgType.DevVarFloatArray,
             AttrDataFormat.IMAGE,
-            npt.NDArray[np.dtype(np.float32)],
+            npt.NDArray[np.float32],
         ),
         (
             CmdArgType.DevVarDoubleArray,
             AttrDataFormat.SPECTRUM,
-            Array1D[np.dtype(np.float64)],
+            Array1D[np.float64],
         ),
         (
             CmdArgType.DevVarDoubleArray,
             AttrDataFormat.IMAGE,
-            npt.NDArray[np.dtype(np.float64)],
+            npt.NDArray[np.float64],
         ),
         (
             CmdArgType.DevVarUShortArray,
             AttrDataFormat.SPECTRUM,
-            Array1D[np.dtype(np.uint16)],
+            Array1D[np.uint16],
         ),
         (
             CmdArgType.DevVarUShortArray,
             AttrDataFormat.IMAGE,
-            npt.NDArray[np.dtype(np.uint16)],
+            npt.NDArray[np.uint16],
         ),
         (
             CmdArgType.DevVarULongArray,
             AttrDataFormat.SPECTRUM,
-            Array1D[np.dtype(np.uint32)],
+            Array1D[np.uint32],
         ),
         (
             CmdArgType.DevVarULongArray,
             AttrDataFormat.IMAGE,
-            npt.NDArray[np.dtype(np.uint32)],
+            npt.NDArray[np.uint32],
         ),
         (
             CmdArgType.DevVarLong64Array,
             AttrDataFormat.SPECTRUM,
-            Array1D[np.dtype(np.int64)],
+            Array1D[np.int64],
         ),
         (
             CmdArgType.DevVarLong64Array,
             AttrDataFormat.IMAGE,
-            npt.NDArray[np.dtype(np.int64)],
+            npt.NDArray[np.int64],
         ),
         (
             CmdArgType.DevVarULong64Array,
             AttrDataFormat.SPECTRUM,
-            Array1D[np.dtype(np.uint64)],
+            Array1D[np.uint64],
         ),
         (
             CmdArgType.DevVarULong64Array,
             AttrDataFormat.IMAGE,
-            npt.NDArray[np.dtype(np.uint64)],
+            npt.NDArray[np.uint64],
         ),
-        (CmdArgType.DevVarEncodedArray, AttrDataFormat.SPECTRUM, Sequence[EncodedType]),
+        (
+            CmdArgType.DevVarEncodedArray,
+            AttrDataFormat.SPECTRUM,
+            Sequence[tuple[str, bytes]],
+        ),
         # String array types
         (CmdArgType.DevVarStringArray, AttrDataFormat.SPECTRUM, Sequence[str]),
         (
@@ -220,7 +226,7 @@ def test_get_python_type(tango_type, tango_format, expected):
     elif tango_format == "bad_format":
         with pytest.raises(TypeError) as exc:
             get_python_type(config)
-        assert str(exc.value) == "Unknown TangoFormat"
+        assert "Unknown Tango format" in str(exc.value)
         return
     elif tango_type is not float:
         if (

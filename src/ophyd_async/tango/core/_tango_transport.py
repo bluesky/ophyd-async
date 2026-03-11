@@ -96,7 +96,7 @@ def ensure_proper_executor(
 
 # Base mapping for Tango types to Python types
 # For attributes, it is useful to know the type carried by the array
-TANGO_TO_PYTHON_TYPE = {
+TANGO_TO_PYTHON_ATTR_TYPE = {
     CmdArgType.DevVoid: None,
     CmdArgType.DevBoolean: bool,
     CmdArgType.DevShort: int,
@@ -130,9 +130,9 @@ TANGO_TO_PYTHON_TYPE = {
 # Derived mappings for attributes and commands
 # For commands, it is easiest to pass the full signal type,
 # not just the contents of Array1D
-TANGO_TO_ATTR_TYPE = TANGO_TO_PYTHON_TYPE
-TANGO_TO_CMD_TYPE = {
-    **TANGO_TO_PYTHON_TYPE,
+TANGO_TO_ATTR_TYPE = TANGO_TO_PYTHON_ATTR_TYPE
+TANGO_TO_PYTHON_CMD_TYPE = {
+    **TANGO_TO_PYTHON_ATTR_TYPE,
     CmdArgType.DevVarBooleanArray: Array1D[np.bool_],
     CmdArgType.DevVarCharArray: Array1D[np.uint8],
     CmdArgType.DevVarShortArray: Array1D[np.int16],
@@ -158,34 +158,38 @@ def get_python_type(
         CmdArgType.DevVarLongStringArray,
         CmdArgType.DevVarDoubleStringArray,
     ):
-        return TANGO_TO_PYTHON_TYPE[tango_type]
+        return TANGO_TO_PYTHON_ATTR_TYPE[tango_type]
 
-    if tango_type not in TANGO_TO_PYTHON_TYPE:
+    if tango_type not in TANGO_TO_PYTHON_ATTR_TYPE:
         raise TypeError(f"Unsupported Tango type: {tango_type}")
 
-    ptype = TANGO_TO_PYTHON_TYPE[tango_type]
+    attr_type = TANGO_TO_PYTHON_ATTR_TYPE[tango_type]
 
     # Handle format-specific logic
     # Only attributes carry tango_format
     if tango_format == AttrDataFormat.IMAGE:
-        if ptype in (str, StrictEnum):
+        if attr_type in (str, StrictEnum):
             raise TypeError("Images of type str or enum are not supported")
-        return npt.NDArray[ptype]
+        return npt.NDArray[attr_type]
     elif tango_format == AttrDataFormat.SPECTRUM:
-        if ptype is str or ptype is np.str_:
+        if attr_type is str or attr_type is np.str_:
             return Sequence[str]
-        elif ptype is StrictEnum:
+        elif attr_type is StrictEnum:
             if not isinstance(config, (AttributeInfoEx, CommandInfo)):
                 raise TypeError(f"Cannot create enum type from {type(config).__name__}")
             return Sequence[_create_enum_type(config)]
         else:
-            return Array1D[ptype]
+            return Array1D[attr_type]
     elif tango_format == AttrDataFormat.SCALAR:
-        if ptype is StrictEnum:
-            if not isinstance(config, (AttributeInfoEx, CommandInfo)):
+        if attr_type is StrictEnum:
+            if not isinstance(config, (AttributeInfoEx, CommandInfo, TestConfig)):
                 raise TypeError(f"Cannot create enum type from {type(config).__name__}")
             return _create_enum_type(config)
-        return ptype
+        return attr_type
+    elif tango_format is None:
+        return TANGO_TO_PYTHON_CMD_TYPE[tango_type]
+    else:
+        raise TypeError(f"Unknown Tango format: {tango_format}")
 
 
 def _extract_tango_info(
@@ -202,9 +206,11 @@ def _extract_tango_info(
         raise TypeError("Unrecognized Tango resource configuration")
 
 
-def _create_enum_type(config: AttributeInfoEx | CommandInfo) -> type[StrictEnum]:
+def _create_enum_type(
+    config: AttributeInfoEx | CommandInfo | TestConfig,
+) -> type[StrictEnum]:
     """Create an Enum type from the configuration's enum labels."""
-    if isinstance(config, AttributeInfoEx):
+    if isinstance(config, AttributeInfoEx | TestConfig):
         enum_labels = config.enum_labels
     else:
         raise TypeError(f"Cannot create enum type from {type(config).__name__}")
