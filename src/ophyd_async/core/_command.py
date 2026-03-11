@@ -119,7 +119,7 @@ class Command(Device, Generic[P, T]):
             timeout = self._timeout
         source = self._connector.backend.source(self.name)
         self.log.debug(f"Putting default value to backend at source {source}")
-        await _wait_for(self.execute(), timeout, source)
+        await _wait_for(self.execute(*(), **{}), timeout, source)
         self.log.debug(f"Successfully put default value to backend at source {source}")
 
 
@@ -131,7 +131,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
         self._lock = asyncio.Lock()
         self._sig = inspect.signature(command_cb)
         self._params = list(self._sig.parameters.values())
-        self._return_type = self._sig.return_annotation
         for p in self._params:
             if p.kind in (
                 inspect.Parameter.VAR_POSITIONAL,
@@ -175,9 +174,10 @@ class SoftCommandBackend(CommandBackend[P, T]):
         if get_origin(inferred_return) in (Awaitable, asyncio.Future):
             inferred_return = get_args(inferred_return)[0]
         if inferred_return is None or inferred_return is type(None):
-            self._command_return: type[T] | None = None
+            _command_return: type[T] | None = None
         else:
-            self._command_return = cast(type[T], inferred_return)
+            _command_return = cast(type[T], inferred_return)
+        super().__init__(datatype=_command_return)
 
     def source(self, name: str) -> str:
         """Return the source of the command."""
@@ -186,6 +186,9 @@ class SoftCommandBackend(CommandBackend[P, T]):
     async def connect(self, timeout: float):
         """No-op for SoftCommandBackend."""
         pass
+
+    def get_return_type(self) -> type[T] | None:
+        return self.datatype
 
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute the configured callback and return its result."""
@@ -210,9 +213,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
             if inspect.isawaitable(result):
                 result = await result
             return cast(T, result)
-
-    def get_return_type(self) -> type[T] | None:
-        return self._command_return
 
 
 class MockCommandBackend(CommandBackend[P, T]):
