@@ -66,7 +66,6 @@ def _get_device_vector_child_datatype(vector: Device | type[Device]) -> type | N
             if origin is DeviceVector:
                 return _get_datatype(base)
 
-
     return None
 
 
@@ -214,7 +213,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # a DeviceVector (i.e., DeviceVector[SomeDevice]), which must be callable
             # and returns a DeviceVector.
             elif (isinstance(annotation, type) and issubclass(annotation, Device)) or (
-                    isinstance(annotation, types.GenericAlias) and callable(annotation)
+                isinstance(annotation, types.GenericAlias) and callable(annotation)
             ):
                 # Check for DeviceVector generic alias type hint
                 # If this is a plain `type`, then _get_datatype will return None
@@ -229,9 +228,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 # If it is not a sub-class, then its a Device, so continue
                 # if it is a sub-class, check for datatype, and raise if None
                 elif (
-                        isinstance(annotation, type)
-                        and issubclass(annotation, DeviceVector)
-                        and not _get_device_vector_child_datatype(annotation)
+                    isinstance(annotation, type)
+                    and issubclass(annotation, DeviceVector)
+                    and not _get_device_vector_child_datatype(annotation)
                 ):
                     # DeviceVector has no type parameter
                     self._raise(
