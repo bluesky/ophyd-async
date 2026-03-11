@@ -150,6 +150,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 name,
                 f"Expected SignalX or SignalR/W/RW[type], got {annotation}",
             )
+        return datatype
 
     def _store_signal_datatype(self, name: UniqueName, annotation: Any):
         datatype = self._validate_signal_datatype(name, annotation)
