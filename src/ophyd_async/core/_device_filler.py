@@ -153,12 +153,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     def _store_command_datatype(self, name: UniqueName, annotation: Any):
         origin = get_origin_class(annotation)
         datatype = _get_command_datatype(annotation)
-        if origin and issubclass(origin, Command) and datatype:
+        print(f"origin: {origin}, datatype: {datatype}")
+        if origin and issubclass(origin, Command):
             self._command_datatype[_logical(name)] = datatype
         else:
             self._raise(
                 name,
-                f"Expected Command[type] or Command[type, type], got {annotation}",
+                f"Expected Command or Command[[type], type], got {annotation}",
             )
 
     def _scan_for_annotations(self):

@@ -17,7 +17,7 @@ from unittest.mock import AsyncMock
 from ._device import Device, DeviceConnector, LazyMock
 from ._soft_signal_backend import SoftConverter, make_converter
 from ._status import AsyncStatus
-from ._utils import DEFAULT_TIMEOUT, NotConnectedError, P, T, T_co, _wait_for
+from ._utils import DEFAULT_TIMEOUT, NotConnectedError, P, T, T_co, _wait_for, CALCULATE_TIMEOUT, CalculatableTimeout
 from ._signal import SignalDatatypeT
 
 
@@ -96,6 +96,21 @@ class Command(Device, Generic[P, T]):
         )
         self.log.debug(f"Command {self.name} returned {result}")
         return result
+
+    @AsyncStatus.wrap
+    async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
+        """Trigger the action and return a status saying when it's done.
+        Calls execute() with no arguments and does not return a value.
+        Included for to allow for drop-in replacement of a SignalX.
+
+        :param timeout: The timeout for the trigger.
+        """
+        if timeout == CALCULATE_TIMEOUT:
+            timeout = self._timeout
+        source = self._connector.backend.source(self.name)
+        self.log.debug(f"Putting default value to backend at source {source}")
+        await _wait_for(self.execute(), timeout, source)
+        self.log.debug(f"Successfully put default value to backend at source {source}")
 
 
 class SoftCommandBackend(CommandBackend[P, T]):

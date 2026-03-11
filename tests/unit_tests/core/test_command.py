@@ -1,5 +1,7 @@
 import logging
 from collections.abc import Sequence
+from unittest.mock import AsyncMock
+import asyncio
 
 import numpy as np
 import pytest
@@ -7,6 +9,8 @@ import pytest
 from ophyd_async.core import (
     Array1D,
     Command,
+    CalculatableTimeout,
+    CALCULATE_TIMEOUT,
     DeviceMock,
     NotConnectedError,
     SoftCommandBackend,
@@ -272,3 +276,33 @@ async def test_command_logging(caplog):
     assert status.value == "42"
     assert "Executing command mycmd" in caplog.text
     assert "Command mycmd returned 42" in caplog.text
+
+async def test_command_trigger():
+    """Test Command.trigger with and without timeout."""
+    callback_called = False
+
+    async def callback() -> None:
+        nonlocal callback_called
+        callback_called = True
+        await asyncio.sleep(0.1)
+        return None
+
+    # Setup command
+    backend = SoftCommandBackend(callback)
+    cmd = Command(backend, timeout=5.0, name="test_cmd")
+    await cmd.connect()
+
+    # Test with default timeout (uses command's timeout)
+    status = cmd.trigger()
+    await status
+    assert callback_called
+
+    # Test with explicit timeout
+    callback_mock = False
+    status = cmd.trigger(timeout=10.0)
+    await status
+    assert callback_called
+
+    # Force a timeout
+    with pytest.raises(asyncio.TimeoutError):
+        await cmd.trigger(timeout=0.05)

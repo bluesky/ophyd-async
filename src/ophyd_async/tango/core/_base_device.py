@@ -94,19 +94,38 @@ class TangoDeviceConnector(DeviceConnector):
                 ),
                 command_backend_factory=TangoCommandBackend,
             )
-            # Create all devices, signals, and commands first
             list(self.filler.create_devices_from_annotations(filled=False))
-            list(self.filler.create_signals_from_annotations(filled=False))
-            list(self.filler.create_commands_from_annotations(filled=False))
-
-            # Then check if everything was created
-            self.filler.check_created()
-
-            # Then process the extras for signals
             for backend, annotations in self.filler.create_signals_from_annotations(
-                    filled=False
+                filled=False
             ):
                 fill_backend_with_polling(self._support_events, backend, annotations)
+            list(self.filler.create_commands_from_annotations(filled=False))
+
+            self.filler.check_created()
+
+    # def create_children_from_annotations(self, device: Device):
+    #     if not hasattr(self, "filler"):
+    #         self.filler = DeviceFiller(
+    #             device=device,
+    #             signal_backend_factory=TangoSignalBackend,
+    #             device_connector_factory=lambda: TangoDeviceConnector(
+    #                 None, self._support_events
+    #             ),
+    #             command_backend_factory=TangoCommandBackend,
+    #         )
+    #         # Create all devices, signals, and commands first
+    #         list(self.filler.create_devices_from_annotations(filled=False))
+    #         list(self.filler.create_signals_from_annotations(filled=False))
+    #         list(self.filler.create_commands_from_annotations(filled=False))
+    #
+    #         # Then check if everything was created
+    #         self.filler.check_created()
+    #
+    #         # Then process the extras for signals
+    #         for backend, annotations in self.filler.create_signals_from_annotations(
+    #                 filled=False
+    #         ):
+    #             fill_backend_with_polling(self._support_events, backend, annotations)
 
     async def connect_mock(self, device: Device, mock: LazyMock):
         # Make 2 entries for each DeviceVector

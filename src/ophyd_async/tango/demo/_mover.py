@@ -16,6 +16,7 @@ from ophyd_async.core import (
     WatcherUpdate,
     observe_value,
     wait_for_value,
+    Command
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
@@ -31,7 +32,7 @@ class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
     velocity: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
     state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
     # If a tango name clashes with a bluesky verb, add a trailing underscore
-    stop_: SignalX
+    stop_: Command
 
     def __init__(self, trl: str = "", name=""):
         super().__init__(trl, name=name)

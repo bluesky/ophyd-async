@@ -91,11 +91,6 @@ class TangoCommandBackend(CommandBackend[P, T]):
         reply = await _wait_for(self._proxy.put(value), timeout=self._timeout, source=self._trl)
         return cast(T, reply)
 
-    @AsyncStatus.wrap
-    async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
-        "Call execute with no arguments. Do not return a value."
-        await self.execute()
-
 class TangoCommandConnector(CommandConnector):
     pass
 

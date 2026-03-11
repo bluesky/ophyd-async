@@ -104,6 +104,7 @@ TANGO_TO_PYTHON_TYPE = {
     CmdArgType.DevULong: int,
     CmdArgType.DevULong64: int,
     CmdArgType.DevString: str,
+    CmdArgType.ConstDevString: str,
 
     CmdArgType.DevEnum: StrictEnum,
     CmdArgType.DevState: DevStateEnum,
@@ -180,6 +181,8 @@ def get_python_type(
             return Array1D[ptype]
     elif tango_format == AttrDataFormat.SCALAR:
         return _create_enum_type(config) if ptype is StrictEnum else ptype
+    elif isinstance(config, AttributeInfoEx | AttributeInfo | TestConfig):
+        raise TypeError("Unknown TangoFormat")
     else: # Commands
         return TANGO_TO_CMD_TYPE[tango_type]
 
@@ -560,7 +563,7 @@ class CommandProxy(TangoProxy):
 
     @ensure_proper_executor
     async def put(  # type: ignore
-        self, value: object | None) -> Any:
+        self, value: object | None, timeout: float | None = None) -> Any:
         value = self._converter.write_value(value)
         try:
             async def _put():
