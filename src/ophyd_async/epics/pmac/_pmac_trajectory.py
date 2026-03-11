@@ -14,6 +14,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     Device,
+    Reference,
     error_if_none,
     gather_dict,
     observe_value,
@@ -52,12 +53,16 @@ class PmacTrajectoryTriggerLogic(
     Flyable,
 ):
     def __init__(self, pmac: PmacIO, name: str = "") -> None:
-        self.pmac = pmac
+        self._pmac_ref = Reference(pmac)
         self._next_pvt: PVT | None
         self._loaded: int = 0
         self._trajectory_status: AsyncStatus | None = None
         self._prepare_context: PmacPrepareContext | None = None
         super().__init__(name=name)
+
+    @property
+    def pmac(self) -> PmacIO:
+        return self._pmac_ref()
 
     @AsyncStatus.wrap
     async def prepare(self, value: Spec[Motor]):
