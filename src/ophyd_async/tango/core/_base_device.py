@@ -164,9 +164,9 @@ class TangoDeviceConnector(DeviceConnector):
                 # TODO: strip attribute name
                 full_trl = get_full_attr_trl(self.trl, name)
                 signal_type = await infer_signal_type(full_trl, self.proxy)
-                if issubclass(signal_type, Signal):
+                if signal_type is not None and issubclass(signal_type, Signal):
                     backend = self.filler.fill_child_signal(name, signal_type)
-                elif issubclass(signal_type, Command):
+                elif signal_type is not None and issubclass(signal_type, Command):
                     backend = self.filler.fill_child_command(name)
                 else:
                     raise TypeError(

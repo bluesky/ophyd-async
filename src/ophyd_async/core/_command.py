@@ -15,7 +15,6 @@ from typing import (
 from unittest.mock import AsyncMock
 
 from ._device import Device, DeviceConnector, LazyMock
-from ._signal import SignalDatatypeT
 from ._soft_signal_backend import SoftConverter, make_converter
 from ._status import AsyncStatus
 from ._utils import (
@@ -33,7 +32,7 @@ from ._utils import (
 class CommandBackend(Generic[P, T_co]):
     """A backend for a Command."""
 
-    def __init__(self, datatype: type[SignalDatatypeT] | None):
+    def __init__(self, datatype: type[T_co] | None):
         self.datatype = datatype
 
     @abstractmethod
@@ -119,7 +118,7 @@ class Command(Device, Generic[P, T]):
             timeout = self._timeout
         source = self._connector.backend.source(self.name)
         self.log.debug(f"Putting default value to backend at source {source}")
-        await _wait_for(self.execute(*(), **{}), timeout, source)
+        await _wait_for(self.execute(), timeout, source)  # type: ignore
         self.log.debug(f"Successfully put default value to backend at source {source}")
 
 
@@ -183,12 +182,12 @@ class SoftCommandBackend(CommandBackend[P, T]):
         """Return the source of the command."""
         return f"softcmd://{name}"
 
-    async def connect(self, timeout: float):
+    async def connect(self, timeout: float) -> None:
         """No-op for SoftCommandBackend."""
         pass
 
     def get_return_type(self) -> type[T] | None:
-        return self.datatype
+        return cast("type[T] | None", self.datatype)
 
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute the configured callback and return its result."""
@@ -209,7 +208,7 @@ class SoftCommandBackend(CommandBackend[P, T]):
                     f"expected type {expected_type}: {exc}"
                 ) from exc
         async with self._lock:
-            result = self._command_cb(*bound.args, **kwargs)
+            result = self._command_cb(*bound.args, **bound.kwargs)
             if inspect.isawaitable(result):
                 result = await result
             return cast(T, result)
@@ -226,6 +225,7 @@ class MockCommandBackend(CommandBackend[P, T]):
         self._return_converter: SoftConverter | None = (
             make_converter(self._return_type) if self._return_type is not None else None
         )
+        super().__init__(datatype=self._return_type)
 
     def source(self, name: str) -> str:
         return f"mock+{self._initial_backend.source(name)}"
@@ -263,7 +263,7 @@ class MockCommandBackend(CommandBackend[P, T]):
             result = self._return_converter.write_value(None)
         return cast(T, result)
 
-    async def connect(self, timeout: float):
+    async def connect(self, timeout: float) -> None:
         """Mock backend does not support real connection."""
         raise NotConnectedError("It is not possible to connect a MockCommandBackend")
 

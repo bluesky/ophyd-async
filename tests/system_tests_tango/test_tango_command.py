@@ -102,7 +102,7 @@ async def test_tango_command(
         assert isinstance(cmd, Command)
         if name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
             assert (
-                Array1D[np.dtype(np.uint8)] == cmd._connector.backend.get_return_type()
+                Array1D[np.uint8] == cmd._connector.backend.get_return_type()
             )
         else:
             assert ctype == cmd._connector.backend.get_return_type()

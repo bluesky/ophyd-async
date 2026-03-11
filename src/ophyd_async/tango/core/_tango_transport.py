@@ -112,16 +112,16 @@ TANGO_TO_PYTHON_TYPE = {
     CmdArgType.ConstDevString: str,
     CmdArgType.DevEnum: StrictEnum,
     CmdArgType.DevState: DevStateEnum,
-    CmdArgType.DevVarBooleanArray: np.dtype(np.bool_),
-    CmdArgType.DevVarCharArray: np.dtype(np.uint8),
-    CmdArgType.DevVarShortArray: np.dtype(np.int16),
-    CmdArgType.DevVarLongArray: np.dtype(np.int32),
-    CmdArgType.DevVarUShortArray: np.dtype(np.uint16),
-    CmdArgType.DevVarULongArray: np.dtype(np.uint32),
-    CmdArgType.DevVarLong64Array: np.dtype(np.int64),
-    CmdArgType.DevVarULong64Array: np.dtype(np.uint64),
-    CmdArgType.DevVarFloatArray: np.dtype(np.float32),
-    CmdArgType.DevVarDoubleArray: np.dtype(np.float64),
+    CmdArgType.DevVarBooleanArray: np.bool_,
+    CmdArgType.DevVarCharArray: np.uint8,
+    CmdArgType.DevVarShortArray: np.int16,
+    CmdArgType.DevVarLongArray: np.int32,
+    CmdArgType.DevVarUShortArray: np.uint16,
+    CmdArgType.DevVarULongArray: np.uint32,
+    CmdArgType.DevVarLong64Array: np.int64,
+    CmdArgType.DevVarULong64Array: np.uint64,
+    CmdArgType.DevVarFloatArray: np.float32,
+    CmdArgType.DevVarDoubleArray: np.float64,
     CmdArgType.DevVarStringArray: str,
     CmdArgType.DevVarLongStringArray: TangoLongStringTable,
     CmdArgType.DevVarDoubleStringArray: TangoDoubleStringTable,
@@ -133,16 +133,16 @@ TANGO_TO_PYTHON_TYPE = {
 TANGO_TO_ATTR_TYPE = TANGO_TO_PYTHON_TYPE
 TANGO_TO_CMD_TYPE = {
     **TANGO_TO_PYTHON_TYPE,
-    CmdArgType.DevVarBooleanArray: Array1D[np.dtype(np.bool_)],
-    CmdArgType.DevVarCharArray: Array1D[np.dtype(np.uint8)],
-    CmdArgType.DevVarShortArray: Array1D[np.dtype(np.int16)],
-    CmdArgType.DevVarUShortArray: Array1D[np.dtype(np.uint16)],
-    CmdArgType.DevVarLongArray: Array1D[np.dtype(np.int32)],
-    CmdArgType.DevVarULongArray: Array1D[np.dtype(np.uint32)],
-    CmdArgType.DevVarLong64Array: Array1D[np.dtype(np.int64)],
-    CmdArgType.DevVarULong64Array: Array1D[np.dtype(np.uint64)],
-    CmdArgType.DevVarFloatArray: Array1D[np.dtype(np.float32)],
-    CmdArgType.DevVarDoubleArray: Array1D[np.dtype(np.float64)],
+    CmdArgType.DevVarBooleanArray: Array1D[np.bool_],
+    CmdArgType.DevVarCharArray: Array1D[np.uint8],
+    CmdArgType.DevVarShortArray: Array1D[np.int16],
+    CmdArgType.DevVarUShortArray: Array1D[np.uint16],
+    CmdArgType.DevVarLongArray: Array1D[np.int32],
+    CmdArgType.DevVarULongArray: Array1D[np.uint32],
+    CmdArgType.DevVarLong64Array: Array1D[np.int64],
+    CmdArgType.DevVarULong64Array: Array1D[np.uint64],
+    CmdArgType.DevVarFloatArray: Array1D[np.float32],
+    CmdArgType.DevVarDoubleArray: Array1D[np.float64],
     CmdArgType.DevVarStringArray: Sequence[str],
 }
 
@@ -175,15 +175,17 @@ def get_python_type(
         if ptype is str or ptype is np.str_:
             return Sequence[str]
         elif ptype is StrictEnum:
+            if not isinstance(config, (AttributeInfoEx, CommandInfo)):
+                raise TypeError(f"Cannot create enum type from {type(config).__name__}")
             return Sequence[_create_enum_type(config)]
         else:
             return Array1D[ptype]
     elif tango_format == AttrDataFormat.SCALAR:
-        return _create_enum_type(config) if ptype is StrictEnum else ptype
-    elif isinstance(config, AttributeInfoEx | AttributeInfo | TestConfig):
-        raise TypeError("Unknown TangoFormat")
-    else:  # Commands
-        return TANGO_TO_CMD_TYPE[tango_type]
+        if ptype is StrictEnum:
+            if not isinstance(config, (AttributeInfoEx, CommandInfo)):
+                raise TypeError(f"Cannot create enum type from {type(config).__name__}")
+            return _create_enum_type(config)
+        return ptype
 
 
 def _extract_tango_info(
@@ -191,19 +193,23 @@ def _extract_tango_info(
 ) -> tuple[CmdArgType, AttrDataFormat | None]:
     """Extract Tango type and format from the configuration."""
     if isinstance(config, (AttributeInfoEx, AttributeInfo)):
-        return config.data_type, config.data_format
+        return cast(CmdArgType, config.data_type), config.data_format
     elif isinstance(config, CommandInfo):
         return config.out_type, None
     elif isinstance(config, TestConfig):
-        return config.data_type, config.data_format
+        return cast(CmdArgType, config.data_type), config.data_format
     else:
         raise TypeError("Unrecognized Tango resource configuration")
 
 
-def _create_enum_type(config: AttributeInfoEx | CommandInfo) -> StrictEnum:
+def _create_enum_type(config: AttributeInfoEx | CommandInfo) -> type[StrictEnum]:
     """Create an Enum type from the configuration's enum labels."""
-    enum_dict = {label: str(label) for label in config.enum_labels}
-    return StrictEnum("TangoEnum", enum_dict)
+    if isinstance(config, AttributeInfoEx):
+        enum_labels = config.enum_labels
+    else:
+        raise TypeError(f"Cannot create enum type from {type(config).__name__}")
+    enum_dict = {label: str(label) for label in enum_labels}
+    return cast(type[StrictEnum], StrictEnum("TangoEnum", enum_dict))
 
 
 class TangoProxy:

@@ -86,7 +86,7 @@ class DeviceAnnotation(Protocol):
     def __call__(self, parent: Device, child: Device): ...
 
 
-class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
+class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
     """For filling signals on introspected devices.
 
     :param device: The device to fill.
@@ -159,7 +159,6 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     def _store_command_datatype(self, name: UniqueName, annotation: Any):
         origin = get_origin_class(annotation)
         datatype = _get_command_datatype(annotation)
-        print(f"origin: {origin}, datatype: {datatype}")
         if origin and issubclass(origin, Command):
             self._command_datatype[_logical(name)] = datatype
         else:
@@ -520,35 +519,39 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 "no command_backend_factory was provided to DeviceFiller"
             )
 
-        name = cast(LogicalName, name)
+        logical_name = cast(LogicalName, name)
 
         # First check unfilled command backends
-        if name in self._unfilled_command_backends:
-            backend, expected_command_type = self._unfilled_command_backends.pop(name)
-            self._filled_command_backends[name] = backend, expected_command_type
+        if logical_name in self._unfilled_command_backends:
+            backend, expected_command_type = self._unfilled_command_backends.pop(
+                logical_name
+            )
+            self._filled_command_backends[logical_name] = backend, expected_command_type
 
-        # Then check filled command backends (this was missing in the original)
-        elif name in self._filled_command_backends:
-            backend, expected_command_type = self._filled_command_backends[name]
+        # Then check filled command backends
+        elif logical_name in self._filled_command_backends:
+            backend, expected_command_type = self._filled_command_backends[logical_name]
 
         # Handle DeviceVector case
         elif vector_index:
-            vector = self._ensure_device_vector(name)
-            vector_command_type = self._vector_device_type[name] or command_type
+            vector = self._ensure_device_vector()
+            vector_command_type = (
+                self._vector_device_type.get(logical_name) or command_type
+            )
             if not issubclass(vector_command_type, Command):
                 msg = f"{vector_command_type} is not a Command"
                 raise TypeError(msg)
             backend = self._command_backend_factory(
-                self._command_datatype[_logical(name)]
+                self._command_datatype.get(logical_name)
             )
-            expected_command_type = vector_command_type
+            expected_command_type = cast(type[Command], vector_command_type)
             vector[vector_index] = vector_command_type(backend)
 
-        # Shadowing check moved to last position
+        # Shadowing check
         elif child := getattr(self._device, name, None):
             self._raise(name, f"Cannot make child as it would shadow {child}")
 
-        # Create new command if none of the above matched
+        # Create new command
         else:
             backend = self._command_backend_factory(None)
             expected_command_type = command_type
@@ -560,4 +563,4 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 f"is a {command_type.__name__} not a {expected_command_type.__name__}",
             )
 
-        return backend
+        return cast(CommandBackendT, backend)

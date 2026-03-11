@@ -7,7 +7,6 @@ from tango import CommandInfo, DeviceProxy
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    CalculatableTimeout,
     Command,
     CommandBackend,
     CommandConnector,
@@ -39,14 +38,14 @@ class TangoCommandBackend(CommandBackend[P, T]):
         self._proxy: CommandProxy | None = None
         self._config: CommandInfo | None = None
         self._converter: TangoConverter | None = None
-        self._timeout = DEFAULT_TIMEOUT
+        self._timeout: float | None = DEFAULT_TIMEOUT
         super().__init__(datatype=datatype)
 
-    def set_timeout(self, timeout: float | CalculatableTimeout) -> None:
+    def set_timeout(self, timeout: float | None) -> None:
         self._timeout = timeout
 
-    def get_return_type(self) -> T | None:
-        return self.datatype
+    def get_return_type(self) -> type[T] | None:
+        return cast("type[T] | None", self.datatype)
 
     def set_trl(self, trl: str) -> None:
         self._trl = trl
@@ -73,7 +72,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
             )
 
     @AsyncStatus.wrap
-    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
+    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:  # type: ignore[override]
         if kwargs:
             raise TypeError("Tango commands do not support keyword arguments")
         if self._proxy is None or self._config is None:
@@ -86,7 +85,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
             raise TypeError(
                 f"{self._trl} expected 0 or 1 positional argument, got {len(args)}"
             )
-        value: T | None = args[0] if args else None
+        value: T | None = cast("T | None", args[0]) if args else None
 
         # Execute
         reply = await _wait_for(
@@ -108,6 +107,6 @@ def tango_command(
     name: str = "",
 ) -> Command[P, T]:
     backend: TangoCommandBackend[P, T] = TangoCommandBackend(
-        trl, device_proxy, datatype
+        datatype, trl, device_proxy
     )
     return Command(backend, timeout=timeout, name=name)
