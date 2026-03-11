@@ -8,7 +8,9 @@ import pytest
 from ophyd_async.core import (
     Array1D,
     Command,
+    DeviceFiller,
     DeviceMock,
+    DeviceVector,
     NotConnectedError,
     SoftCommandBackend,
     StrictEnum,
@@ -303,3 +305,39 @@ async def test_command_trigger():
     # Force a timeout
     with pytest.raises(asyncio.TimeoutError):
         await cmd.trigger(timeout=0.05)
+
+
+async def test_fill_child_command_vector_index():
+    """Test fill_child_command when vector_index is provided."""
+
+    def backend_factory(datatype):
+        async def callback() -> int:
+            return 0
+
+        return SoftCommandBackend(callback)
+
+    vector: DeviceVector[Command[[], int]] = DeviceVector()
+    vector.__orig_class__ = DeviceVector[Command[[], int]]  # type: ignore
+
+    filler = DeviceFiller(
+        device=vector,
+        signal_backend_factory=lambda _: None,
+        device_connector_factory=lambda: None,
+        command_backend_factory=backend_factory,
+    )
+
+    for i in range(1, 4):
+        filler.fill_child_command(
+            name="my_cmd",
+            command_type=Command,
+            vector_index=i,
+        )
+
+    assert len(vector) == 3
+    for i in range(1, 4):
+        assert i in vector
+        cmd = vector[i]
+        assert isinstance(cmd, Command)
+        backend = cmd._connector._init_backend
+        assert isinstance(backend, SoftCommandBackend)
+        assert backend.get_return_type() is int
