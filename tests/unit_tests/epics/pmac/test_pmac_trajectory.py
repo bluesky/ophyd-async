@@ -227,18 +227,18 @@ async def test_pmac_trajectory_complete(sim_motors: tuple[PmacIO, Motor, Motor])
 async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    mock_pmac_trajectory_io = get_mock(pmac_trajectory.pmac.trajectory)
+    mock_pmac_trajectory_io = get_mock(pmac_trajectory.pmac_ref().trajectory)
     await pmac_trajectory.stage()
 
     # Check that all axes are then set not be used
     assert all(
         get_mock(axis).put.assert_called_once_with(False) is None
-        for axis in pmac_trajectory.pmac.trajectory.use_axis.values()
+        for axis in pmac_trajectory.pmac_ref().trajectory.use_axis.values()
     )
 
     # Check that an empty trajectory is then executed
     assert mock_pmac_trajectory_io.mock_calls[
-        len(pmac_trajectory.pmac.trajectory.use_axis) :
+        len(pmac_trajectory.pmac_ref().trajectory.use_axis) :
     ] == [
         call.time_array.put(np.array(0)),
         call.user_array.put(np.array(8)),
@@ -268,7 +268,7 @@ async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor
 
     # Mocking that trajectory is executing
     set_mock_value(
-        pmac_trajectory.pmac.trajectory.execute_state, PmacExecuteState.EXECUTING
+        pmac_trajectory.pmac_ref().trajectory.execute_state, PmacExecuteState.EXECUTING
     )
 
     # Method called as there is now a running trajectory
