@@ -24,6 +24,7 @@ from ophyd_async.core import (
 from ophyd_async.tango.core import (
     AttributeProxy,
     CommandProxy,
+    DevStateEnum,
     TangoDoubleStringTable,
     TangoLongStringTable,
     TangoSignalBackend,
@@ -89,33 +90,114 @@ async def test_ensure_proper_executor():
         (CmdArgType.DevULong, AttrDataFormat.SCALAR, int),
         (CmdArgType.DevULong64, AttrDataFormat.SCALAR, int),
         (CmdArgType.DevString, AttrDataFormat.SCALAR, str),
-        (CmdArgType.DevEncoded, AttrDataFormat.SCALAR, str),
+        (
+            CmdArgType.DevEncoded,
+            AttrDataFormat.SCALAR,
+            tuple[str, bytes],
+        ),  # not supported
         (CmdArgType.DevEnum, AttrDataFormat.SCALAR, StrictEnum),
-        (CmdArgType.DevState, AttrDataFormat.SCALAR, StrictEnum),
+        (CmdArgType.DevState, AttrDataFormat.SCALAR, DevStateEnum),
         (CmdArgType.ConstDevString, AttrDataFormat.SCALAR, str),
-        (CmdArgType.DevVarBooleanArray, AttrDataFormat.SCALAR, bool),
         (CmdArgType.DevUChar, AttrDataFormat.SCALAR, int),
         # Array types
-        (CmdArgType.DevVarCharArray, AttrDataFormat.SPECTRUM, Sequence[str]),
-        (CmdArgType.DevVarShortArray, AttrDataFormat.SPECTRUM, Array1D[int]),
-        (CmdArgType.DevVarShortArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
-        (CmdArgType.DevVarLongArray, AttrDataFormat.SPECTRUM, Array1D[int]),
-        (CmdArgType.DevVarLongArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
-        (CmdArgType.DevVarFloatArray, AttrDataFormat.SPECTRUM, Array1D[float]),
-        (CmdArgType.DevVarFloatArray, AttrDataFormat.IMAGE, npt.NDArray[float]),
-        (CmdArgType.DevVarDoubleArray, AttrDataFormat.SPECTRUM, Array1D[float]),
-        (CmdArgType.DevVarDoubleArray, AttrDataFormat.IMAGE, npt.NDArray[float]),
-        (CmdArgType.DevVarUShortArray, AttrDataFormat.SPECTRUM, Array1D[int]),
-        (CmdArgType.DevVarUShortArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
-        (CmdArgType.DevVarULongArray, AttrDataFormat.SPECTRUM, Array1D[int]),
-        (CmdArgType.DevVarULongArray, AttrDataFormat.IMAGE, npt.NDArray[int]),
-        (CmdArgType.DevVarLong64Array, AttrDataFormat.SPECTRUM, Array1D[int]),
-        (CmdArgType.DevVarLong64Array, AttrDataFormat.IMAGE, npt.NDArray[int]),
-        (CmdArgType.DevVarULong64Array, AttrDataFormat.SPECTRUM, Array1D[int]),
-        (CmdArgType.DevVarULong64Array, AttrDataFormat.IMAGE, npt.NDArray[int]),
+        (CmdArgType.DevVarBooleanArray, AttrDataFormat.SPECTRUM, Array1D[np.bool_]),
+        (
+            CmdArgType.DevVarCharArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.uint8],
+        ),
+        (
+            CmdArgType.DevVarShortArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.int16],
+        ),
+        (
+            CmdArgType.DevVarShortArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.int16],
+        ),
+        (
+            CmdArgType.DevVarLongArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.int32],
+        ),
+        (
+            CmdArgType.DevVarLongArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.int32],
+        ),
+        (
+            CmdArgType.DevVarFloatArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.float32],
+        ),
+        (
+            CmdArgType.DevVarFloatArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.float32],
+        ),
+        (
+            CmdArgType.DevVarDoubleArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.float64],
+        ),
+        (
+            CmdArgType.DevVarDoubleArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.float64],
+        ),
+        (
+            CmdArgType.DevVarUShortArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.uint16],
+        ),
+        (
+            CmdArgType.DevVarUShortArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.uint16],
+        ),
+        (
+            CmdArgType.DevVarULongArray,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.uint32],
+        ),
+        (
+            CmdArgType.DevVarULongArray,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.uint32],
+        ),
+        (
+            CmdArgType.DevVarLong64Array,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.int64],
+        ),
+        (
+            CmdArgType.DevVarLong64Array,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.int64],
+        ),
+        (
+            CmdArgType.DevVarULong64Array,
+            AttrDataFormat.SPECTRUM,
+            Array1D[np.uint64],
+        ),
+        (
+            CmdArgType.DevVarULong64Array,
+            AttrDataFormat.IMAGE,
+            npt.NDArray[np.uint64],
+        ),
+        (
+            CmdArgType.DevVarEncodedArray,
+            AttrDataFormat.SPECTRUM,
+            Sequence[tuple[str, bytes]],
+        ),
         # String array types
         (CmdArgType.DevVarStringArray, AttrDataFormat.SPECTRUM, Sequence[str]),
-        (CmdArgType.DevVarStringArray, AttrDataFormat.IMAGE, Sequence[Sequence[str]]),
+        (
+            CmdArgType.DevVarStringArray,
+            AttrDataFormat.IMAGE,
+            Sequence[Sequence[str]],
+        ),  # not supported
         (
             CmdArgType.DevVarLongStringArray,
             AttrDataFormat.SPECTRUM,
@@ -129,7 +211,7 @@ async def test_ensure_proper_executor():
         # Bad type
         (float, AttrDataFormat.SCALAR, (False, float, "number")),
         # Bad format
-        (float, "bad_format", (False, float, "format")),
+        (CmdArgType.DevVoid, "bad_format", None),
     ],
 )
 def test_get_python_type(tango_type, tango_format, expected):
@@ -141,10 +223,11 @@ def test_get_python_type(tango_type, tango_format, expected):
         py_type = get_python_type(config)
         assert issubclass(py_type, StrictEnum)
         assert [e.name for e in py_type] == ["A", "B", "C"]
-    elif tango_type is CmdArgType.DevState:
-        py_type = get_python_type(config)
-        assert issubclass(py_type, StrictEnum)
-        assert [e.name for e in py_type] == list(DevState.names.keys())
+    elif tango_format == "bad_format":
+        with pytest.raises(TypeError) as exc:
+            get_python_type(config)
+        assert "Unknown Tango format" in str(exc.value)
+        return
     elif tango_type is not float:
         if (
             tango_format is AttrDataFormat.IMAGE
@@ -153,19 +236,13 @@ def test_get_python_type(tango_type, tango_format, expected):
             with pytest.raises(TypeError) as exc:
                 get_python_type(config)
             assert str(exc.value) == "Images of type str or enum are not supported"
+        elif tango_type in [CmdArgType.DevEncoded, CmdArgType.DevVarEncodedArray]:
+            with pytest.raises(TypeError) as exc:
+                get_python_type(config)
+            assert "Unsupported Tango type" in str(exc.value)
         else:
             assert get_python_type(config) == expected
         return
-    else:
-        if tango_format == "bad_format":
-            with pytest.raises(TypeError) as exc:
-                get_python_type(config)
-            assert str(exc.value) == "Unknown TangoFormat"
-            return
-        # get_python_type should raise a TypeError
-        with pytest.raises(TypeError) as exc:
-            get_python_type(config)
-        assert str(exc.value) == "Unknown TangoType: <class 'float'>"
 
 
 # --------------------------------------------------------------------
@@ -467,53 +544,6 @@ async def test_attribute_poll_exceptions(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_command_proxy_put_wait(tango_test_device):
-    device_proxy = await DeviceProxy(tango_test_device)
-    cmd_proxy = CommandProxy(device_proxy, "echo")
-
-    cmd_proxy._last_reading = None
-    await cmd_proxy.put("test_message")
-    assert cmd_proxy._last_reading["value"] == "test_message"
-
-    # Force timeout
-    cmd_proxy = CommandProxy(device_proxy, "slow_command")
-    cmd_proxy._last_reading = None
-    with pytest.raises(TimeoutError) as exc:
-        await cmd_proxy.put(None, timeout=0.1)
-    assert "command failed" in str(exc.value)
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
-@pytest.mark.timeout(3.2)
-async def test_command_proxy_put_nowait(tango_test_device):
-    device_proxy = await DeviceProxy(tango_test_device)
-    cmd_proxy = CommandProxy(device_proxy, "slow_command")
-
-    # Reply before timeout
-    cmd_proxy._last_reading = None
-    status = cmd_proxy.put(None, timeout=0.5)
-    assert cmd_proxy._last_reading is None
-    await status
-    assert cmd_proxy._last_reading["value"] == "Completed slow command"
-
-    # Timeout
-    cmd_proxy._last_reading = None
-    status = cmd_proxy.put(None, timeout=0.1)
-    with pytest.raises(TimeoutError) as exc:
-        await status
-    assert "Timeout" in str(exc.value)
-
-    # No timeout
-    cmd_proxy._last_reading = None
-    status = cmd_proxy.put(None)
-    assert cmd_proxy._last_reading is None
-    await status
-    assert cmd_proxy._last_reading["value"] == "Completed slow command"
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
 @pytest.mark.parametrize("wait", [True, False])
 async def test_command_proxy_put_exceptions(tango_test_device, wait):
     device_proxy = await DeviceProxy(tango_test_device)
@@ -526,33 +556,11 @@ async def test_command_proxy_put_exceptions(tango_test_device, wait):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_command_get(tango_test_device):
-    device_proxy = await DeviceProxy(tango_test_device)
-    cmd_proxy = CommandProxy(device_proxy, "echo")
-    await cmd_proxy.connect()
-    await cmd_proxy.put("test_message", timeout=1.0)
-    value = await cmd_proxy.get()
-    assert value == "test_message"
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
 async def test_command_get_config(tango_test_device):
     device_proxy = await DeviceProxy(tango_test_device)
     cmd_proxy = CommandProxy(device_proxy, "clear")
     config = await cmd_proxy.get_config()
     assert config.out_type is not None
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
-async def test_command_get_reading(tango_test_device):
-    device_proxy = await DeviceProxy(tango_test_device)
-    cmd_proxy = CommandProxy(device_proxy, "echo")
-    await cmd_proxy.connect()
-    await cmd_proxy.put("test_message", timeout=1.0)
-    reading = await cmd_proxy.get_reading()
-    assert reading["value"] == "test_message"
 
 
 # --------------------------------------------------------------------

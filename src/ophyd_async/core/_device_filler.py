@@ -16,6 +16,7 @@ from typing import (
     runtime_checkable,
 )
 
+from ._command import Command, CommandBackend
 from ._device import Device, DeviceConnector, DeviceVector
 from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
@@ -23,6 +24,7 @@ from ._utils import cached_get_origin, cached_get_type_hints, get_origin_class
 
 SignalBackendT = TypeVar("SignalBackendT", bound=SignalBackend)
 DeviceConnectorT = TypeVar("DeviceConnectorT", bound=DeviceConnector)
+CommandBackendT = TypeVar("CommandBackendT", bound=CommandBackend)
 # Unique name possibly with trailing understore, the attribute name on the Device
 UniqueName = NewType("UniqueName", str)
 # Logical name without trailing underscore, the name in the control system
@@ -40,6 +42,12 @@ def _get_datatype(annotation: Any) -> type | None:
         return args[0]
 
     return None
+
+
+def _get_command_datatype(annotation: Any) -> type | None:
+    """Extract input type from Command[[type_in], type_out] annotations."""
+    args = get_args(annotation)
+    return args[1] if len(args) == 2 else None
 
 
 def _get_device_vector_child_datatype(vector: Device | type[Device]) -> type | None:
@@ -78,7 +86,7 @@ class DeviceAnnotation(Protocol):
     def __call__(self, parent: Device, child: Device): ...
 
 
-class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
+class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
     """For filling signals on introspected devices.
 
     :param device: The device to fill.
@@ -91,15 +99,22 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         device: Device,
         signal_backend_factory: Callable[[type[SignalDatatype] | None], SignalBackendT],
         device_connector_factory: Callable[[], DeviceConnectorT],
+        command_backend_factory: Callable[
+            [type[SignalDatatype] | None], CommandBackendT
+        ]
+        | None = None,
     ):
         self._device = device
         self._signal_backend_factory = signal_backend_factory
         self._device_connector_factory = device_connector_factory
+        self._command_backend_factory = command_backend_factory
         # Annotations stored ready for the creation phase
         self._uncreated_signals: dict[UniqueName, type[Signal]] = {}
+        self._uncreated_commands: dict[UniqueName, type[Command]] = {}
         self._uncreated_devices: dict[UniqueName, type[Device] | DeviceFactory] = {}
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
+        self._command_datatype: dict[LogicalName, type | None] = {}
         self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
         self._optional_devices: set[str] = set()
         self.ignored_signals: set[str] = set()
@@ -109,10 +124,16 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         ] = {}
         self._unfilled_connectors: dict[LogicalName, DeviceConnectorT] = {}
         # Once they are filled they go here in case we reconnect
+        self._unfilled_command_backends: dict[
+            LogicalName, tuple[CommandBackendT, type[Command]]
+        ] = {}
         self._filled_backends: dict[
             LogicalName, tuple[SignalBackendT, type[Signal]]
         ] = {}
         self._filled_connectors: dict[LogicalName, DeviceConnectorT] = {}
+        self._filled_command_backends: dict[
+            LogicalName, tuple[CommandBackendT, type[Command]]
+        ] = {}
         self._scan_for_annotations()
 
     def _raise(self, name: str, error: str) -> NoReturn:
@@ -134,6 +155,17 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     def _store_signal_datatype(self, name: UniqueName, annotation: Any):
         datatype = self._validate_signal_datatype(name, annotation)
         self._signal_datatype[_logical(name)] = datatype
+
+    def _store_command_datatype(self, name: UniqueName, annotation: Any):
+        origin = get_origin_class(annotation)
+        datatype = _get_command_datatype(annotation)
+        if origin and issubclass(origin, Command):
+            self._command_datatype[_logical(name)] = datatype
+        else:
+            self._raise(
+                name,
+                f"Expected Command or Command[[type], type], got {annotation}",
+            )
 
     def _scan_for_annotations(self):
         # Get type hints on the class, not the instance
@@ -174,6 +206,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             if issubclass(origin, Signal):
                 self._store_signal_datatype(name, annotation)
                 self._uncreated_signals[name] = origin
+            elif issubclass(origin, Command):
+                self._store_command_datatype(name, annotation)
+                self._uncreated_commands[name] = origin
             # We either have an annotation of a Device, or we have a generic alias of
             # a DeviceVector (i.e., DeviceVector[SomeDevice]), which must be callable
             # and returns a DeviceVector.
@@ -273,6 +308,51 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             dest = self._filled_connectors if filled else self._unfilled_connectors
             dest[_logical(name)] = connector
 
+    def create_commands_from_annotations(
+        self,
+        filled=True,
+    ) -> Iterator[tuple[CommandBackendT, list[Any]]]:
+        """Create all Command children from annotations.
+
+        :param filled: If True the Commands are considered already filled with
+            connection data.  If False then ``fill_child_command`` must be called
+            before the Command can be connected.
+        :yields: ``(command_backend, extras)``
+            The ``CommandBackend`` created for this Command and the list of extra
+            annotations that may be used to customise it.  Unhandled extras should
+            be left on the list so this class can handle them (e.g.
+            ``StandardReadableFormat`` instances).
+        :raises RuntimeError: If no ``command_backend_factory`` was supplied at
+            construction time.
+        """
+        if self._command_backend_factory is None:
+            uncreated = sorted(self._uncreated_commands)
+            if uncreated:
+                raise RuntimeError(
+                    f"{self._device.name}: has Command children {uncreated} but "
+                    "no command_backend_factory was provided to DeviceFiller"
+                )
+            return
+
+        for name in list(self._uncreated_commands):
+            child_type = self._uncreated_commands.pop(name)
+            backend = self._command_backend_factory(
+                self._command_datatype[_logical(name)]
+            )
+            extras = list(self._extras[name])
+            yield backend, extras
+            command = child_type(backend)
+            for anno in extras:
+                device_annotation = _check_device_annotation(annotation=anno)
+                device_annotation(self._device, command)
+            setattr(self._device, name, command)
+            dest = (
+                self._filled_command_backends
+                if filled
+                else self._unfilled_command_backends
+            )
+            dest[_logical(name)] = (backend, child_type)
+
     def create_device_vector_entries_to_mock(self, num: int):
         """Create num entries for each `DeviceVector`.
 
@@ -292,6 +372,8 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         for i in range(1, num + 1):
             if issubclass(base_cls, Signal):
                 self.fill_child_signal(self._device.name, hinted_child_cls, i)
+            elif issubclass(base_cls, Command):
+                self.fill_child_command(self._device.name, hinted_child_cls, i)
             elif issubclass(base_cls, Device):
                 self.fill_child_device(self._device.name, hinted_child_cls, i)
             else:
@@ -413,3 +495,72 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             connector = self._device_connector_factory()
             setattr(self._device, name, device_type(connector=connector))
         return connector
+
+    def fill_child_command(
+        self,
+        name: str,
+        command_type: type[Command] = Command,
+        vector_index: int | None = None,
+    ) -> CommandBackendT:
+        """Mark a Command as filled and return its backend.
+
+        This version prioritizes checking _filled_command_backends before the shadowing
+        check, matching the behavior of fill_child_signal.
+
+        :param name: Logical name (without trailing underscore).
+        :param command_type: The ``Command`` subclass to create.
+        :param vector_index: Index within a ``DeviceVector``, if applicable.
+        :return: The ``CommandBackend`` for the filled Command.
+        :raises RuntimeError: If no ``command_backend_factory`` was provided.
+        """
+        if self._command_backend_factory is None:
+            raise RuntimeError(
+                f"{self._device.name}: cannot fill Command child '{name}' — "
+                "no command_backend_factory was provided to DeviceFiller"
+            )
+
+        logical_name = cast(LogicalName, name)
+
+        # First check unfilled command backends
+        if logical_name in self._unfilled_command_backends:
+            backend, expected_command_type = self._unfilled_command_backends.pop(
+                logical_name
+            )
+            self._filled_command_backends[logical_name] = backend, expected_command_type
+
+        # Then check filled command backends
+        elif logical_name in self._filled_command_backends:
+            backend, expected_command_type = self._filled_command_backends[logical_name]
+
+        # Handle DeviceVector case
+        elif vector_index:
+            vector = self._ensure_device_vector()
+            vector_command_type = (
+                self._vector_device_type.get(logical_name) or command_type
+            )
+            if not issubclass(vector_command_type, Command):
+                msg = f"{vector_command_type} is not a Command"
+                raise TypeError(msg)
+            backend = self._command_backend_factory(
+                self._command_datatype.get(logical_name)
+            )
+            expected_command_type = cast(type[Command], vector_command_type)
+            vector[vector_index] = vector_command_type(backend)
+
+        # Shadowing check
+        elif child := getattr(self._device, name, None):
+            self._raise(name, f"Cannot make child as it would shadow {child}")
+
+        # Create new command
+        else:
+            backend = self._command_backend_factory(None)
+            expected_command_type = command_type
+            setattr(self._device, name, command_type(backend))
+
+        if command_type is not expected_command_type:
+            self._raise(
+                name,
+                f"is a {command_type.__name__} not a {expected_command_type.__name__}",
+            )
+
+        return cast(CommandBackendT, backend)

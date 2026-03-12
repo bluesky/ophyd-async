@@ -1,7 +1,14 @@
+import asyncio
 import re
-from typing import Any
+from collections.abc import Awaitable, Sequence
+from typing import Any, ParamSpec, TypeVar
 
-from ophyd_async.core import StrictEnum
+import numpy as np
+
+from ophyd_async.core import Array1D, StrictEnum, Table
+
+T = TypeVar("T")
+P = ParamSpec("P")
 
 
 class DevStateEnum(StrictEnum):
@@ -55,3 +62,34 @@ def try_to_cast_as_float(value: Any) -> float | None:
         return float(value)
     except (ValueError, TypeError):
         return None
+
+
+class TangoLongStringTable(Table):
+    long: Array1D[np.int32]
+    string: Sequence[str]
+
+    def __eq__(self, other):
+        if not isinstance(other, TangoLongStringTable):
+            return False
+        long_equal = np.array_equal(self.long, other.long)
+        string_equal = self.string == other.string
+        return long_equal and string_equal
+
+
+class TangoDoubleStringTable(Table):
+    double: Array1D[np.float64]
+    string: Sequence[str]
+
+    def __eq__(self, other):
+        if not isinstance(other, TangoDoubleStringTable):
+            return False
+        double_equal = np.array_equal(self.double, other.double)
+        string_equal = self.string == other.string
+        return double_equal and string_equal
+
+
+async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
+    try:
+        return await asyncio.wait_for(coro, timeout)
+    except TimeoutError as exc:
+        raise TimeoutError(source) from exc

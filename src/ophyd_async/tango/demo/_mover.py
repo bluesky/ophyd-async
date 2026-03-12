@@ -8,9 +8,9 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
+    Command,
     SignalR,
     SignalRW,
-    SignalX,
     StandardReadable,
     WatchableAsyncStatus,
     WatcherUpdate,
@@ -31,7 +31,7 @@ class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
     velocity: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
     state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
     # If a tango name clashes with a bluesky verb, add a trailing underscore
-    stop_: SignalX
+    stop_: Command
 
     def __init__(self, trl: str = "", name=""):
         super().__init__(trl, name=name)

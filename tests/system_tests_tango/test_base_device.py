@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 import tango
 from bluesky import RunEngine
-from bluesky.protocols import Location
 from tango import (
     AttrDataFormat,
     AttrQuality,
@@ -23,11 +22,9 @@ from tango.server import Device, attribute, command
 
 from ophyd_async.core import (
     Array1D,
+    Command,
     Ignore,
-    SignalR,
     SignalRW,
-    SignalW,
-    SignalX,
     StandardReadable,
     init_devices,
 )
@@ -496,25 +493,16 @@ async def test_command_autofill(tango_test_device):
     assert hasattr(test_device, "clear")
     clear = test_device.clear
 
-    assert isinstance(echo, SignalRW)
-    assert isinstance(set_msg, SignalW)
-    assert isinstance(get_msg, SignalR)
-    assert isinstance(clear, SignalX)
+    assert isinstance(echo, Command)
+    assert isinstance(set_msg, Command)
+    assert isinstance(get_msg, Command)
+    assert isinstance(clear, Command)
 
-    await echo.set("hello_world")
-    assert await echo.locate() == Location(
-        setpoint="hello_world", readback="hello_world"
-    )
-    assert await echo.get_value() == "hello_world"
+    reply = await echo.execute("hello_world")
+    assert reply == "hello_world"
 
-    assert await get_msg.get_value() == "Hello"
-    await set_msg.set("new message")
-    assert await get_msg.get_value() == "new message"
+    assert await get_msg.execute() == "Hello"
+    await set_msg.execute("new message")
+    assert await get_msg.execute() == "new message"
 
-    with pytest.raises(AttributeError) as exc:
-        await get_msg.set("new message")
-    assert "object has no attribute 'set'" in str(exc.value)
-
-    with pytest.raises(AttributeError) as exc:
-        await set_msg.get_value()
-    assert "object has no attribute 'get_value" in str(exc.value)
+    assert await clear.execute() is None

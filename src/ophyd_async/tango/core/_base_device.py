@@ -6,9 +6,17 @@ from typing import Any, Generic, TypeVar
 from tango import DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
-from ophyd_async.core import Device, DeviceConnector, DeviceFiller, LazyMock
+from ophyd_async.core import (
+    Command,
+    Device,
+    DeviceConnector,
+    DeviceFiller,
+    LazyMock,
+    Signal,
+)
 
 from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
+from ._tango_command_backend import TangoCommandBackend
 from ._utils import get_full_attr_trl
 
 T = TypeVar("T")
@@ -91,13 +99,40 @@ class TangoDeviceConnector(DeviceConnector):
                 device_connector_factory=lambda: TangoDeviceConnector(
                     None, self._support_events
                 ),
+                command_backend_factory=TangoCommandBackend,
             )
             list(self.filler.create_devices_from_annotations(filled=False))
             for backend, annotations in self.filler.create_signals_from_annotations(
                 filled=False
             ):
                 fill_backend_with_polling(self._support_events, backend, annotations)
+            list(self.filler.create_commands_from_annotations(filled=False))
+
             self.filler.check_created()
+
+    # def create_children_from_annotations(self, device: Device):
+    #     if not hasattr(self, "filler"):
+    #         self.filler = DeviceFiller(
+    #             device=device,
+    #             signal_backend_factory=TangoSignalBackend,
+    #             device_connector_factory=lambda: TangoDeviceConnector(
+    #                 None, self._support_events
+    #             ),
+    #             command_backend_factory=TangoCommandBackend,
+    #         )
+    #         # Create all devices, signals, and commands first
+    #         list(self.filler.create_devices_from_annotations(filled=False))
+    #         list(self.filler.create_signals_from_annotations(filled=False))
+    #         list(self.filler.create_commands_from_annotations(filled=False))
+    #
+    #         # Then check if everything was created
+    #         self.filler.check_created()
+    #
+    #         # Then process the extras for signals
+    #         for backend, annotations in self.filler.create_signals_from_annotations(
+    #                 filled=False
+    #         ):
+    #             fill_backend_with_polling(self._support_events, backend, annotations)
 
     async def connect_mock(self, device: Device, mock: LazyMock):
         # Make 2 entries for each DeviceVector
@@ -129,12 +164,18 @@ class TangoDeviceConnector(DeviceConnector):
                 # TODO: strip attribute name
                 full_trl = get_full_attr_trl(self.trl, name)
                 signal_type = await infer_signal_type(full_trl, self.proxy)
-                if signal_type:
+                if signal_type is not None and issubclass(signal_type, Signal):
                     backend = self.filler.fill_child_signal(name, signal_type)
-                    # don't overlaod datatype if provided by annotation
-                    if backend.datatype is None:
-                        backend.datatype = await infer_python_type(full_trl, self.proxy)
-                    backend.set_trl(full_trl)
+                elif signal_type is not None and issubclass(signal_type, Command):
+                    backend = self.filler.fill_child_command(name)
+                else:
+                    raise TypeError(
+                        f"Cannot infer type for {full_trl} (type {signal_type})"
+                    )
+                # don't overlaod datatype if provided by annotation
+                if backend.datatype is None:
+                    backend.datatype = await infer_python_type(full_trl, self.proxy)
+                backend.set_trl(full_trl)
 
         # Check that all the requested children have been filled
         self.filler.check_filled(f"{self.trl}: {children}")

@@ -12,6 +12,7 @@ from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    Command,
     Signal,
     SignalDatatype,
     SignalDatatypeT,
@@ -22,9 +23,7 @@ from ophyd_async.core import (
 )
 
 from ._tango_transport import (
-    CommandProxyReadCharacter,
     TangoSignalBackend,
-    get_command_character,
     get_python_type,
 )
 from ._utils import get_device_trl_and_attr
@@ -163,7 +162,7 @@ async def infer_python_type(
 
 async def infer_signal_type(
     trl, proxy: DeviceProxy | None = None
-) -> type[Signal] | None:
+) -> type[Signal] | type[Command] | None:
     device_trl, tr_name = get_device_trl_and_attr(trl)
     if proxy is None:
         dev_proxy = await AsyncDeviceProxy(device_trl)  # type: ignore
@@ -184,14 +183,5 @@ async def infer_signal_type(
             return SignalW
 
     if tr_name in dev_proxy.get_command_list():
-        config = await dev_proxy.get_command_config(tr_name)  # type: ignore
-        command_character = get_command_character(config)
-        if command_character == CommandProxyReadCharacter.READ:
-            return SignalR
-        elif command_character == CommandProxyReadCharacter.WRITE:
-            return SignalW
-        elif command_character == CommandProxyReadCharacter.READ_WRITE:
-            return SignalRW
-        elif command_character == CommandProxyReadCharacter.EXECUTE:
-            return SignalX
+        return Command
     raise RuntimeError(f"Unable to infer signal character for {trl}")

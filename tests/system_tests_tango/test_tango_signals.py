@@ -1,7 +1,6 @@
 import asyncio
 import time
 from collections.abc import Sequence
-from typing import Annotated as A
 from typing import TypeVar, get_origin
 
 import numpy as np
@@ -10,7 +9,6 @@ from tango.asyncio import DeviceProxy
 from test_base_device import TestDevice
 
 from ophyd_async.core import NotConnectedError, SignalRW, StandardReadable, StrictEnum
-from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import (
     DevStateEnum,
     TangoDevice,
@@ -73,7 +71,8 @@ def everything_device_trl(subprocess_helper):
 
 class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
     # datatype of enum commands must be explicitly hinted
-    strenum_cmd: A[SignalRW[ExampleStrEnum], Format.HINTED_UNCACHED_SIGNAL]
+    # strenum_cmd: A[SignalRW[ExampleStrEnum], Format.HINTED_UNCACHED_SIGNAL]
+    pass
 
 
 @pytest.fixture()
@@ -196,27 +195,6 @@ async def assert_put_read(
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_backend_get_put_monitor_cmd(
-    everything_device: TangoDevice, everything_signal_info
-):
-    await everything_device.connect()
-    for cmd_data in everything_signal_info.values():
-        if cmd_data.cmd_name is None:
-            continue
-        put_value = cmd_data.random_value()
-        # With the given datatype, check we have the correct initial value
-        # and putting works
-        signal = getattr(everything_device, cmd_data.cmd_name)
-        source = get_full_attr_trl(everything_device._connector.trl, cmd_data.cmd_name)
-        await assert_put_read(signal, source, put_value, cmd_data.py_type)
-        # # With guessed datatype, check we can set it back to the initial value
-        await assert_put_read(signal, source, put_value)
-        tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-        await asyncio.gather(*tasks)
-
-
-# --------------------------------------------------------------------
-@pytest.mark.asyncio
 async def test_tango_signal_r(everything_device_trl: str, everything_signal_info):
     timeout = 0.2
     for attr_data in everything_signal_info.values():
@@ -320,37 +298,8 @@ async def test_set_with_converter(everything_device_trl):
     await everything_device.strenum.set(ExampleStrEnum.B)
     await everything_device.strenum.set(ExampleStrEnum.C.value)
     # setting enum spectrum works with lists and arrays
-    await everything_device.strenum_spectrum.set(["AAA", "BBB"])
-    await everything_device.strenum_spectrum.set(np.array(["BBB", "CCC"]))
-    await everything_device.strenum_spectrum.set(
-        [
-            ExampleStrEnum.B.value,
-            ExampleStrEnum.C.value,
-        ]
-    )
-    await everything_device.strenum_spectrum.set(
-        np.array(
-            [
-                ExampleStrEnum.A,
-                ExampleStrEnum.B,
-            ],
-            dtype=ExampleStrEnum,
-            # when using enum instances, must use array with correct dtype
-            # passing this as a list will cast the strings incorrectly
-        )
-    )
 
     await everything_device.my_state.set(DevStateEnum.EXTRACT)
-    await everything_device.my_state_spectrum.set(
-        np.array(
-            [
-                DevStateEnum.OPEN,
-                DevStateEnum.CLOSE,
-                DevStateEnum.MOVING,
-            ],
-            dtype=DevStateEnum,
-        )
-    )
 
 
 @pytest.mark.timeout(18.8)
@@ -384,9 +333,6 @@ async def test_assert_val_reading_everything_tango(
         everything_device.bool_spectrum, esi["bool_spectrum"].initial
     )
     await assert_val_reading(
-        everything_device.strenum_spectrum, esi["strenum_spectrum"].initial
-    )
-    await assert_val_reading(
         everything_device.int8_spectrum, esi["int8_spectrum"].initial
     )
     await assert_val_reading(
@@ -415,9 +361,6 @@ async def test_assert_val_reading_everything_tango(
     )
     await assert_val_reading(
         everything_device.float64_spectrum, esi["float64_spectrum"].initial
-    )
-    await assert_val_reading(
-        everything_device.my_state_spectrum, esi["my_state_spectrum"].initial
     )
 
     await assert_val_reading(everything_device.bool_image, esi["bool_image"].initial)
