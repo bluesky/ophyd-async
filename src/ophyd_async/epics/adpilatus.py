@@ -4,6 +4,7 @@ https://github.com/areaDetector/ADPilatus
 """
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from enum import Enum
 from typing import Annotated as A
 
@@ -23,6 +24,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
+    trigger_info_from_num_images,
 )
 from .core import PvSuffix
 
@@ -66,16 +68,12 @@ class PilatusReadoutTime(float, Enum):
     PILATUS3 = 0.95e-3
 
 
+@dataclass
 class PilatusTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADPilatus detectors."""
 
-    def __init__(
-        self,
-        driver: PilatusDriverIO,
-        readout_time: PilatusReadoutTime,
-    ):
-        self.driver = driver
-        self.readout_time = readout_time
+    driver: PilatusDriverIO
+    readout_time: PilatusReadoutTime
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         return self.readout_time
@@ -91,6 +89,9 @@ class PilatusTriggerLogic(DetectorTriggerLogic):
     async def prepare_level(self, num: int):
         await self.driver.trigger_mode.set(PilatusTriggerMode.EXT_ENABLE)
         await prepare_exposures(self.driver, num or _MAX_NUM_IMAGE)
+
+    async def default_trigger_info(self):
+        return await trigger_info_from_num_images(self.driver)
 
 
 class PilatusDetector(AreaDetector[PilatusDriverIO]):
