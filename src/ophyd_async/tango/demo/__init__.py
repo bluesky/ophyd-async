@@ -1,12 +1,19 @@
-from ._counter import TangoCounter
-from ._detector import TangoDetector
-from ._mover import TangoMover
-from ._tango import DemoCounter, DemoMover
+from ._motor import DemoMotor
+from ._point_detector import DemoPointDetector
+from ._stage import DemoStage
+from ._tango import (
+    DemoMotorDevice,
+    DemoMultiChannelDetectorDevice,
+    DemoPointDetectorChannelDevice,
+    start_device_server_subprocess,
+)
 
 __all__ = [
-    "DemoCounter",
-    "DemoMover",
-    "TangoCounter",
-    "TangoMover",
-    "TangoDetector",
+    "start_device_server_subprocess",
+    "DemoMotor",
+    "DemoStage",
+    "DemoPointDetector",
+    "DemoMotorDevice",
+    "DemoPointDetectorChannelDevice",
+    "DemoMultiChannelDetectorDevice",
 ]
