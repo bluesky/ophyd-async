@@ -154,7 +154,7 @@ class MotorMoveLogic(MovableLogic[float]):
             raise ValueError(msg) from error
 
     async def move(self, new_position: float, timeout: float | None) -> None:
-        """Move the device, waiting for completion."""
+        """Move by setting the setpoint and waiting for put completion."""
         await self.setpoint.set(new_position, timeout)
 
 

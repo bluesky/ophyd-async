@@ -41,13 +41,17 @@ class MovableLogic(Generic[SignalDatatypeT]):
 
     async def stop(self) -> None:
         """Optional hook to add logic on how to stop the motion."""
-        return None
+        pass
 
     async def check_move(
         self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
     ) -> None:
-        """Optional hook to check the move is valid."""
-        return None
+        """Optional hook to validate the move.
+
+        Should raise an exception if the move is not valid, e.g. if the new
+        position is outside soft limits.
+        """
+        pass
 
     async def calculate_timeout(
         self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
@@ -61,7 +65,15 @@ class MovableLogic(Generic[SignalDatatypeT]):
         return datakey.get("units"), datakey.get("precision")
 
     async def move(self, new_position: SignalDatatypeT, timeout: float | None) -> None:
-        """Move the device, waiting for completion."""
+        """Move the device, waiting for the readback to reach the correct position.
+
+        ```{note}
+        The default implementation waits for the readback to be **exactly**
+        equal to ``new_position``. For floating-point positions this may never
+        be satisfied; override this method to use an appropriate tolerance
+        check (e.g. ``np.isclose``).
+        ```
+        """
         await set_and_wait_for_other_value(
             self.setpoint, new_position, self.readback, new_position, timeout=timeout
         )
@@ -98,7 +110,13 @@ class StandardMovable(
     @cached_property
     @abstractmethod
     def movable_logic(self) -> MovableLogic:
-        """Add movable logic for a device."""
+        """The logic object that describes how this device moves.
+
+        This is intentionally public so that mock helpers (e.g.
+        `InstantMovableMock`) and subclasses can access the `setpoint` and
+        `readback` signals directly. Subclasses must implement this as a
+        `@cached_property` that returns a `MovableLogic` instance.
+        """
 
     @WatchableAsyncStatus.wrap
     async def set(
