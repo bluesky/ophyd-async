@@ -421,17 +421,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 ````
 
-````{py:attribute} acquire
-:canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO.acquire
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Acquire'), EpicsOptions(wait=non_zero)]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDArrayBaseIO.acquire
-```
-
-````
-
 ````{py:attribute} array_size_x
 :canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO.array_size_x
 :type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('ArraySizeX_RBV')]
@@ -531,17 +520,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 ````
 
-````{py:attribute} wait_for_plugins
-:canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO.wait_for_plugins
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], PvSuffix('WaitForPlugins')]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDArrayBaseIO.wait_for_plugins
-```
-
-````
-
 ````{py:attribute} ad_core_version
 :canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO.ad_core_version
 :type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('ADCoreVersion_RBV')]
@@ -560,61 +538,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDArrayBaseIO.driver_version
-```
-
-````
-
-````{py:attribute} manufacturer
-:canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO.manufacturer
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('Manufacturer_RBV')]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDArrayBaseIO.manufacturer
-```
-
-````
-
-````{py:attribute} model
-:canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO.model
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('Model_RBV')]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDArrayBaseIO.model
-```
-
-````
-
-````{py:attribute} serial_number
-:canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO.serial_number
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('SerialNumber_RBV')]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDArrayBaseIO.serial_number
-```
-
-````
-
-````{py:attribute} sdk_version
-:canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO.sdk_version
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('SDKVersion_RBV')]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDArrayBaseIO.sdk_version
-```
-
-````
-
-````{py:attribute} firmware_version
-:canonical: ophyd_async.epics.adcore._io.NDArrayBaseIO.firmware_version
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('FirmwareVersion_RBV')]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._io.NDArrayBaseIO.firmware_version
 ```
 
 ````
@@ -840,6 +763,83 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDArrayBaseIO`
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._io.ADBaseIO.detector_state
+```
+
+````
+
+````{py:attribute} acquire
+:canonical: ophyd_async.epics.adcore._io.ADBaseIO.acquire
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], ophyd_async.epics.core.PvSuffix.rbv('Acquire'), EpicsOptions(wait=non_zero)]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.ADBaseIO.acquire
+```
+
+````
+
+````{py:attribute} wait_for_plugins
+:canonical: ophyd_async.epics.adcore._io.ADBaseIO.wait_for_plugins
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], PvSuffix('WaitForPlugins')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.ADBaseIO.wait_for_plugins
+```
+
+````
+
+````{py:attribute} manufacturer
+:canonical: ophyd_async.epics.adcore._io.ADBaseIO.manufacturer
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('Manufacturer_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.ADBaseIO.manufacturer
+```
+
+````
+
+````{py:attribute} model
+:canonical: ophyd_async.epics.adcore._io.ADBaseIO.model
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('Model_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.ADBaseIO.model
+```
+
+````
+
+````{py:attribute} serial_number
+:canonical: ophyd_async.epics.adcore._io.ADBaseIO.serial_number
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('SerialNumber_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.ADBaseIO.serial_number
+```
+
+````
+
+````{py:attribute} sdk_version
+:canonical: ophyd_async.epics.adcore._io.ADBaseIO.sdk_version
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('SDKVersion_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.ADBaseIO.sdk_version
+```
+
+````
+
+````{py:attribute} firmware_version
+:canonical: ophyd_async.epics.adcore._io.ADBaseIO.firmware_version
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('FirmwareVersion_RBV')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._io.ADBaseIO.firmware_version
 ```
 
 ````

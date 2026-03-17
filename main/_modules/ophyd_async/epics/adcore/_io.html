@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._io &#8212; ophyd-async 0.17a2.dev7+gb50a75cfc documentation</title>
+    <title>ophyd_async.epics.adcore._io &#8212; ophyd-async 0.17a2.dev8+gb36695e91 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../../_static/documentation_options.js?v=919bd768"></script>
+    <script src="../../../../_static/documentation_options.js?v=d13e86e2"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -562,8 +562,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev7+gb50a75cfc documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev7+gb50a75cfc documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
   
   
 </a></div>
@@ -945,7 +945,7 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="NDArrayBaseIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDArrayBaseIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDArrayBaseIO</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class responsible for passing detector data from drivers to pluglins.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class responsible for passing detector data from drivers to plugins.</span>
 
 <span class="sd">    This mirrors the interface provided by ADCore/db/NDArrayBase.template.</span>
 <span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDArray.html</span>
@@ -954,7 +954,6 @@ window.runMermaid = runMermaid;</script>
     <span class="n">port_name</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;PortName_RBV&quot;</span><span class="p">)]</span>
     <span class="n">unique_id</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;UniqueId_RBV&quot;</span><span class="p">)]</span>
     <span class="n">nd_attributes_file</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;NDAttributesFile&quot;</span><span class="p">)]</span>
-    <span class="n">acquire</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Acquire&quot;</span><span class="p">),</span> <span class="n">EpicsOptions</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">non_zero</span><span class="p">)]</span>
 
     <span class="c1"># The array_size_x/y/z signals are used when outputting an NDArray</span>
     <span class="c1"># (i.e. from a driver)</span>
@@ -971,17 +970,10 @@ window.runMermaid = runMermaid;</script>
     <span class="n">color_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">ADBaseColorMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ColorMode_RBV&quot;</span><span class="p">)]</span>
     <span class="n">data_type</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">ADBaseDataType</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;DataType_RBV&quot;</span><span class="p">)]</span>
     <span class="n">array_counter</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ArrayCounter&quot;</span><span class="p">)]</span>
-    <span class="c1"># There is no _RBV for this one</span>
-    <span class="n">wait_for_plugins</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;WaitForPlugins&quot;</span><span class="p">)]</span>
 
     <span class="c1"># Version information may be useful to include in metadata</span>
     <span class="n">ad_core_version</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;ADCoreVersion_RBV&quot;</span><span class="p">)]</span>
-    <span class="n">driver_version</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;DriverVersion_RBV&quot;</span><span class="p">)]</span>
-    <span class="n">manufacturer</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Manufacturer_RBV&quot;</span><span class="p">)]</span>
-    <span class="n">model</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Model_RBV&quot;</span><span class="p">)]</span>
-    <span class="n">serial_number</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;SerialNumber_RBV&quot;</span><span class="p">)]</span>
-    <span class="n">sdk_version</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;SDKVersion_RBV&quot;</span><span class="p">)]</span>
-    <span class="n">firmware_version</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;FirmwareVersion_RBV&quot;</span><span class="p">)]</span></div>
+    <span class="n">driver_version</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;DriverVersion_RBV&quot;</span><span class="p">)]</span></div>
 
 
 
@@ -1030,13 +1022,30 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">    This mirrors the interface provided by ADCore/db/ADBase.template.</span>
 <span class="sd">    See HTML docs at https://areadetector.github.io/areaDetector/ADCore/ADDriver.html</span>
+
+<span class="sd">    The interface deviates from the most up to date version of ADBase as it contains</span>
+<span class="sd">    some signals that are now in NDArrayBaseIO. This is to maintain backwards</span>
+<span class="sd">    compatibility with changes made in https://github.com/areaDetector/ADCore/blob/master/RELEASE.md#asynndarraydriver-addriver</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">acquire_time</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;AcquireTime&quot;</span><span class="p">)]</span>
     <span class="n">acquire_period</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;AcquirePeriod&quot;</span><span class="p">)]</span>
     <span class="n">num_images</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;NumImages&quot;</span><span class="p">)]</span>
     <span class="n">image_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">ADImageMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;ImageMode&quot;</span><span class="p">)]</span>
-    <span class="n">detector_state</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">ADState</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;DetectorState_RBV&quot;</span><span class="p">)]</span></div>
+    <span class="n">detector_state</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">ADState</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;DetectorState_RBV&quot;</span><span class="p">)]</span>
+
+    <span class="c1"># The following signals have been moved from NDArrayBaseIO for backwards</span>
+    <span class="c1"># compatibility</span>
+    <span class="n">acquire</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;Acquire&quot;</span><span class="p">),</span> <span class="n">EpicsOptions</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="n">non_zero</span><span class="p">)]</span>
+
+    <span class="c1"># There is no _RBV for this one</span>
+    <span class="n">wait_for_plugins</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;WaitForPlugins&quot;</span><span class="p">)]</span>
+
+    <span class="n">manufacturer</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Manufacturer_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Model_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">serial_number</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;SerialNumber_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">sdk_version</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;SDKVersion_RBV&quot;</span><span class="p">)]</span>
+    <span class="n">firmware_version</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;FirmwareVersion_RBV&quot;</span><span class="p">)]</span></div>
 
 
 
