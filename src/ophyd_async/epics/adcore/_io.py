@@ -124,7 +124,8 @@ class ADBaseIO(NDArrayBaseIO):
     image_mode: A[SignalRW[ADImageMode], PvSuffix.rbv("ImageMode")]
     detector_state: A[SignalR[ADState], PvSuffix("DetectorState_RBV")]
 
-    # The following signals have been moved from for backwards compatibility
+    # The following signals have been moved from NDArrayBaseIO for backwards
+    # compatibility
     acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire"), EpicsOptions(wait=non_zero)]
 
     # There is no _RBV for this one
