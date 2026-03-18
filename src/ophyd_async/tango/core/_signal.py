@@ -7,6 +7,7 @@ import logging
 from tango import (
     AttrWriteType,
     DeviceProxy,
+    CmdArgType
 )
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
 
@@ -20,6 +21,7 @@ from ophyd_async.core import (
     SignalRW,
     SignalW,
     SignalX,
+    TriggerableCommand,
 )
 
 from ._tango_transport import (
@@ -183,5 +185,8 @@ async def infer_signal_type(
             return SignalW
 
     if tr_name in dev_proxy.get_command_list():
+        config = await dev_proxy.get_command_config(tr_name)
+        if config.in_type is CmdArgType.DevVoid and config.out_type is CmdArgType.DevVoid:
+            return TriggerableCommand
         return Command
     raise RuntimeError(f"Unable to infer signal character for {trl}")

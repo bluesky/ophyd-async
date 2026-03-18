@@ -143,7 +143,7 @@ class TangoDeviceConnector(DeviceConnector):
                 if signal_type is not None and issubclass(signal_type, Signal):
                     backend = self.filler.fill_child_signal(name, signal_type)
                 elif signal_type is not None and issubclass(signal_type, Command):
-                    backend = self.filler.fill_child_command(name)
+                    backend = self.filler.fill_child_command(name, signal_type)
                 else:
                     raise TypeError(
                         f"Cannot infer type for {full_trl} (type {signal_type})"

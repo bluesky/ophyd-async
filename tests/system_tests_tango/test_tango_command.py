@@ -6,6 +6,7 @@ import pytest
 from ophyd_async.core import (
     Array1D,
     Command,
+    TriggerableCommand,
     StandardReadable,
 )
 from ophyd_async.tango.core import (
@@ -20,6 +21,7 @@ from ophyd_async.tango.testing import (
 )
 
 TEST_PARAMS = [
+    (None, None, "void_cmd"),
     (bool, True, "bool_cmd"),
     (int, 42, "int32_cmd"),
     (float, 3.14, "float64_cmd"),
@@ -99,7 +101,10 @@ async def test_tango_command(
 
     for ctype, val, name in TEST_PARAMS:
         cmd = getattr(everything_device, name)
-        assert isinstance(cmd, Command)
+        if name == "void_cmd":
+            assert isinstance(cmd, TriggerableCommand)
+        else:
+            assert isinstance(cmd, Command)
         if name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
             assert Array1D[np.uint8] == cmd.datatype
         else:

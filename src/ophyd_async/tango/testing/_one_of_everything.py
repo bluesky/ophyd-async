@@ -116,6 +116,10 @@ class OneOfEverythingTangoDevice(Device):
         """Echo command for DevVarDoubleStringArray."""
         return arg
 
+    def void_cmd(self):
+        """Command for DevVoid."""
+        return
+
     def add_array_attrs(self, name: str, dtype: str, initial_value: np.ndarray):
         spectrum_name = f"{name}_spectrum"
         if hasattr(initial_value, "shape"):
@@ -154,6 +158,12 @@ class OneOfEverythingTangoDevice(Device):
             return
         self._add_attr(image_attr, np.vstack((initial_value, initial_value)))
 
+        void_cmd = command(
+            f=self.void_cmd,
+            dtype_in=CmdArgType.DevVoid,
+            dtype_out=CmdArgType.DevVoid,
+        )
+
         long_string_table_cmd = command(
             f=self.long_string_cmd,
             dtype_in=CmdArgType.DevVarLongStringArray,
@@ -164,6 +174,7 @@ class OneOfEverythingTangoDevice(Device):
             dtype_in=CmdArgType.DevVarDoubleStringArray,
             dtype_out=CmdArgType.DevVarDoubleStringArray,
         )
+        self.add_command(void_cmd)
         self.add_command(long_string_table_cmd)
         self.add_command(double_string_table_cmd)
 
