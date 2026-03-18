@@ -62,14 +62,8 @@ class CommandConnector(DeviceConnector):
     async def connect_real(self, device: Device, timeout: float, force_reconnect: bool):
         """Connect the backend to real hardware."""
         self.backend = self._init_backend
-        source = self.backend.source(device.name)
-        device.log.debug(f"Connecting to {source}")
-        try:
-            await self.backend.connect(timeout)
-        except TimeoutError as exc:
-            raise NotConnectedError(f"Timeout connecting to {source}") from exc
-        except Exception as exc:
-            raise NotConnectedError(f"Error connecting to {source}: {exc}") from exc
+        device.log.debug(f"Connecting to {self.backend.source(device.name)}")
+        await self.backend.connect(timeout)
 
 
 class Command(Device, Generic[P, T]):
