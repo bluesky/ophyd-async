@@ -77,7 +77,7 @@ async def test_soft_command_execution(datatype, value):
 
     backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
-    assert cmd._connector.backend.get_return_type() == datatype
+    assert cmd.datatype == datatype
     await cmd.connect()
     status = cmd.execute(value)
     await status
@@ -217,7 +217,7 @@ async def test_mock_command_backend_properties():
     assert cmd._connector.backend.source("test") == "mock+softcmd://test"
 
     # Verify return type
-    assert cmd._connector.backend.get_return_type() is str
+    assert cmd.datatype is str
 
     # Verify connect raises error
     with pytest.raises(NotConnectedError):
@@ -340,4 +340,4 @@ async def test_fill_child_command_vector_index():
         assert isinstance(cmd, Command)
         backend = cmd._connector._init_backend
         assert isinstance(backend, SoftCommandBackend)
-        assert backend.get_return_type() is int
+        assert backend.datatype is int

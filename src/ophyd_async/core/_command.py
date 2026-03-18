@@ -47,10 +47,6 @@ class CommandBackend(Generic[P, T_co]):
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T_co:
         """Execute the command and return its result."""
 
-    @abstractmethod
-    def get_return_type(self) -> type[T_co] | None:
-        """Return the return type of the command, or None if it returns None."""
-
 
 class CommandConnector(DeviceConnector):
     """A connector for a Command."""
@@ -89,6 +85,10 @@ class Command(Device, Generic[P, T]):
     ):
         super().__init__(name=name, connector=CommandConnector(backend))
         self._timeout = timeout
+
+    @property
+    def datatype(self) -> type[T] | None:
+        return self._connector.backend.datatype
 
     @property
     def source(self) -> str:
@@ -186,9 +186,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
         """No-op for SoftCommandBackend."""
         pass
 
-    def get_return_type(self) -> type[T] | None:
-        return cast("type[T] | None", self.datatype)
-
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute the configured callback and return its result."""
         try:
@@ -221,7 +218,7 @@ class MockCommandBackend(CommandBackend[P, T]):
         self._initial_backend = initial_backend
         self._mock = mock
         self._mock_execute_callback: Callable[P, Awaitable[T]] | None = None
-        self._return_type = initial_backend.get_return_type()
+        self._return_type = initial_backend.datatype
         self._return_converter: SoftConverter | None = (
             make_converter(self._return_type) if self._return_type is not None else None
         )
@@ -229,9 +226,6 @@ class MockCommandBackend(CommandBackend[P, T]):
 
     def source(self, name: str) -> str:
         return f"mock+{self._initial_backend.source(name)}"
-
-    def get_return_type(self) -> type[T] | None:
-        return self._return_type
 
     def set_mock_execute_callback(self, callback: Callable[P, Awaitable[T]] | None):
         """Set a callback that will be called when the command is executed."""
