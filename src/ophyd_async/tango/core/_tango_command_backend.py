@@ -44,9 +44,6 @@ class TangoCommandBackend(CommandBackend[P, T]):
     def set_timeout(self, timeout: float | None) -> None:
         self._timeout = timeout
 
-    def get_return_type(self) -> type[T] | None:
-        return cast("type[T] | None", self.datatype)
-
     def set_trl(self, trl: str) -> None:
         self._trl = trl
 
@@ -92,11 +89,6 @@ class TangoCommandBackend(CommandBackend[P, T]):
             self._proxy.put(value), timeout=self._timeout, source=self._trl
         )
         return cast(T, reply)
-
-
-class TangoCommandConnector(CommandConnector):
-    pass
-
 
 def tango_command(
     trl: str,

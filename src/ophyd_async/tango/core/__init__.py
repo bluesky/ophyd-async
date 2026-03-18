@@ -19,7 +19,6 @@ from ._signal import (
 )
 from ._tango_command_backend import (
     TangoCommandBackend,
-    TangoCommandConnector,
     tango_command,
 )
 from ._tango_transport import (
@@ -82,6 +81,5 @@ __all__ = [
     "get_device_trl_and_attr",
     "get_full_attr_trl",
     "TangoCommandBackend",
-    "TangoCommandConnector",
     "tango_command",
 ]
