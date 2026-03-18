@@ -7,6 +7,7 @@ from ._command import (
     MockCommandBackend,
     SoftCommandBackend,
     soft_command,
+    TriggerableCommand
 )
 from ._data_providers import (
     ReadableDataProvider,
@@ -303,10 +304,12 @@ __all__ = [
     "OnOff",
     "YesNo",
     "TableSubclass",
+    # Commands
     "Command",
     "CommandBackend",
     "CommandConnector",
     "MockCommandBackend",
     "SoftCommandBackend",
     "soft_command",
+    "TriggerableCommand",
 ]

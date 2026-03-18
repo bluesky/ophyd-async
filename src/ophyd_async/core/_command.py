@@ -99,20 +99,20 @@ class Command(Device, Generic[P, T]):
         self.log.debug(f"Command {self.name} returned {result}")
         return result
 
+class TriggerableCommand(Command[[], None]):
+    """A Command that can be triggered without arguments and returns None."""
+
     @AsyncStatus.wrap
     async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
         """Trigger the action and return a status saying when it's done.
-
         Calls execute() with no arguments and does not return a value.
-        Included for to allow for drop-in replacement of a SignalX.
-
         :param timeout: The timeout for the trigger.
         """
         if timeout == CALCULATE_TIMEOUT:
             timeout = self._timeout
         source = self._connector.backend.source(self.name)
         self.log.debug(f"Putting default value to backend at source {source}")
-        await _wait_for(self._connector.backend.execute(), timeout, source)  # type: ignore
+        await _wait_for(self._connector.backend.execute(), timeout, source)
         self.log.debug(f"Successfully put default value to backend at source {source}")
 
 

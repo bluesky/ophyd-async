@@ -18,6 +18,7 @@ from ophyd_async.core import (
     SupersetEnum,
     Table,
     soft_command,
+    TriggerableCommand
 )
 
 from ophyd_async.core._soft_signal_backend import make_converter
@@ -289,7 +290,7 @@ async def test_command_trigger():
 
     # Setup command
     backend = SoftCommandBackend(callback)
-    cmd = Command(backend, timeout=5.0, name="test_cmd")
+    cmd = TriggerableCommand(backend, timeout=5.0, name="test_cmd")
     await cmd.connect()
 
     # Test with default timeout (uses command's timeout)
