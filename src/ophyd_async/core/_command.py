@@ -112,7 +112,7 @@ class Command(Device, Generic[P, T]):
             timeout = self._timeout
         source = self._connector.backend.source(self.name)
         self.log.debug(f"Putting default value to backend at source {source}")
-        await _wait_for(self.execute(), timeout, source)  # type: ignore
+        await _wait_for(self._connector.backend.execute(), timeout, source)  # type: ignore
         self.log.debug(f"Successfully put default value to backend at source {source}")
 
 
