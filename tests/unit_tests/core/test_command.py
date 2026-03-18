@@ -17,10 +17,10 @@ from ophyd_async.core import (
     SubsetEnum,
     SupersetEnum,
     Table,
-    make_converter,
     soft_command,
 )
 
+from ophyd_async.core._soft_signal_backend import make_converter
 
 class MyStrictEnum(StrictEnum):
     A = "A"
