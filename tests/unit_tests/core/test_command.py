@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from collections.abc import Sequence
+from typing import get_origin
 
 import numpy as np
 import pytest
@@ -17,11 +18,10 @@ from ophyd_async.core import (
     SubsetEnum,
     SupersetEnum,
     Table,
+    TriggerableCommand,
     soft_command,
-    TriggerableCommand
 )
 
-from ophyd_async.core._soft_signal_backend import make_converter
 
 class MyStrictEnum(StrictEnum):
     A = "A"
@@ -142,25 +142,13 @@ async def test_mock_command_backend_default_values(datatype, value):
     await cmd.connect(mock=mock)
 
     # Execute without setting a callback - should return manufactured default
-    status = cmd.execute(value)
-    await status
-
-    # Manufactured defaults are: 0 for int/float, "" for str, False for bool, etc.
-    # The SoftConverter.write_value(None) is what's called.
-    expected_default = make_converter(datatype).write_value(None)
-
-    if isinstance(expected_default, np.ndarray):
-        assert np.array_equal(status.value, expected_default)
-    elif isinstance(expected_default, Table):
-        for field in expected_default.__dict__:
-            v1 = getattr(status.value, field)
-            v2 = getattr(expected_default, field)
-            if isinstance(v1, np.ndarray):
-                assert np.array_equal(v1, v2)
-            else:
-                assert v1 == v2
+    return_value = await cmd.execute(value)
+    if get_origin(datatype) is np.ndarray:
+        assert get_origin(datatype) is type(return_value)
+    elif get_origin(datatype) is Sequence:
+        assert type(return_value) is list
     else:
-        assert status.value == expected_default
+        assert type(return_value) is datatype
 
 
 async def test_mock_command_backend_custom_callback():

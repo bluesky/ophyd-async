@@ -9,7 +9,6 @@ from ophyd_async.core import (
     AsyncStatus,
     Command,
     CommandBackend,
-    CommandConnector,
     NotConnectedError,
     StrictEnum,
 )
@@ -89,6 +88,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
             self._proxy.put(value), timeout=self._timeout, source=self._trl
         )
         return cast(T, reply)
+
 
 def tango_command(
     trl: str,

@@ -26,6 +26,14 @@ class DemoMover(Device):
         self._setpoint = new_position
         await self.move()
 
+    @command(dtype_in=float, dtype_out=bool)
+    async def move_to_position(self, new_position: float) -> bool:
+        if self.get_state() == DevState.ON:
+            self._setpoint = new_position
+            asyncio.create_task(self.move())
+            return True
+        return False
+
     @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
     async def velocity(self):
         return self._velocity

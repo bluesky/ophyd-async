@@ -6,8 +6,8 @@ from ._command import (
     CommandConnector,
     MockCommandBackend,
     SoftCommandBackend,
+    TriggerableCommand,
     soft_command,
-    TriggerableCommand
 )
 from ._data_providers import (
     ReadableDataProvider,

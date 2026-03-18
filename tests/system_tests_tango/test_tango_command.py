@@ -6,8 +6,8 @@ import pytest
 from ophyd_async.core import (
     Array1D,
     Command,
-    TriggerableCommand,
     StandardReadable,
+    TriggerableCommand,
 )
 from ophyd_async.tango.core import (
     DevStateEnum,

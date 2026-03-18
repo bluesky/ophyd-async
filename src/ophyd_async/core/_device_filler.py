@@ -544,7 +544,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             backend = self._command_backend_factory(
                 self._command_datatype.get(logical_name)
             )
-            expected_command_type = cast(type[command_type], vector_command_type)
+            expected_command_type = vector_command_type
             vector[vector_index] = vector_command_type(backend)
 
         # Shadowing check

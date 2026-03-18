@@ -3,10 +3,10 @@ from typing import Annotated as A
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
-    Command,
     SignalR,
     SignalRW,
     StandardReadable,
+    TriggerableCommand,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice, TangoPolling
@@ -20,9 +20,9 @@ class TangoCounter(TangoDevice, StandardReadable):
     # the parameters for ophyd to poll instead
     counts: A[SignalR[int], Format.HINTED_SIGNAL, TangoPolling(1.0, 0.1, 0.1)]
     sample_time: A[SignalRW[float], Format.CONFIG_SIGNAL, TangoPolling(0.1, 0.1, 0.1)]
-    start: Command
+    start: TriggerableCommand
     # If a tango name clashes with a bluesky verb, add a trailing underscore
-    reset_: Command
+    reset_: TriggerableCommand
 
     @AsyncStatus.wrap
     async def trigger(self) -> None:

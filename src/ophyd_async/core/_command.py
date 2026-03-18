@@ -99,15 +99,13 @@ class Command(Device, Generic[P, T]):
         self.log.debug(f"Command {self.name} returned {result}")
         return result
 
+
 class TriggerableCommand(Command[[], None]):
     """A Command that can be triggered without arguments and returns None."""
 
     @AsyncStatus.wrap
     async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
-        """Trigger the action and return a status saying when it's done.
-        Calls execute() with no arguments and does not return a value.
-        :param timeout: The timeout for the trigger.
-        """
+        """Trigger the action and return a status saying when it's done."""
         if timeout == CALCULATE_TIMEOUT:
             timeout = self._timeout
         source = self._connector.backend.source(self.name)

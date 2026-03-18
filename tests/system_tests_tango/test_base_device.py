@@ -461,6 +461,9 @@ async def test_tango_sim(sim_test_context_trls):
     assert all([set_status.done, stop_status.done])
     assert all([set_status.success, stop_status.success])
 
+    # Manually move motor
+    await detector.mover.move_me(0.9)
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("auto_fill_signals", [True, False])
