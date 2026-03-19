@@ -48,12 +48,29 @@ All EPICS areaDetector `TriggerLogic` subclasses implement `default_trigger_info
 to this function, reading back the current `num_images` value from the driver and returning it
 as `collections_per_event`. This preserves the hardware state rather than resetting it.
 
+### Opt-in via environment variable
+
+Because changing the default behaviour of `trigger()` is a breaking change for existing
+deployments, the new behaviour is opt-in. Set the environment variable
+`OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES`.
+
+When the variable is not set (or set to any value other than `YES`), `trigger()` without a prior
+`prepare()` falls back to the original `TriggerInfo()` default, preserving backward compatibility.
+
+The env-var approach was chosen to minimise the code change while still exposing the new behaviour
+as a supported path — `default_trigger_info()` is placed on the class that creates the
+`TriggerInfo` rather than on the detector itself, keeping the logic close to where it belongs.
+
 ## Consequences
 
 - **Step scans no longer reset `num_images`** on AD detectors when no explicit `prepare()` is
-  called, making ophyd-async a closer drop-in replacement for ophyd-sync.
+  called and `OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES` is set, making ophyd-async a closer
+  drop-in replacement for ophyd-sync.
 
 - A fly scan that leaves `num_images=500` on the driver will cause a subsequent implicit step
-  scan to capture 500 frames per trigger point instead of 1. This is the *correct* behaviour
-  (honour the hardware state) but may surprise users who expected the scan to reset the detector.
-  Plans that care about `num_images` should call `bps.prepare(det, TriggerInfo(...))` explicitly.
+  scan (with the env var set) to capture 500 frames per trigger point instead of 1. This is the
+  *correct* behaviour (honour the hardware state) but may surprise users who expected the scan
+  to reset the detector. Plans that care about `num_images` should call
+  `bps.prepare(det, TriggerInfo(...))` explicitly.
+
+- Without the environment variable the behaviour is unchanged from before.

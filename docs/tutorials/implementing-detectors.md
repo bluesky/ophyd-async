@@ -201,7 +201,7 @@ If we wanted to support external triggering, we would also implement:
 We could also implement:
 - `get_deadtime()` to calculate the minimum time between exposures based on configuration
 - `config_sigs()` to return signals that should appear in read_configuration()
-- `default_trigger_info()` to return the [](#TriggerInfo) used when `trigger()` is called without a preceding `prepare()`. If not implemented, the detector falls back to a bare `TriggerInfo()`.
+- `default_trigger_info()` to return the [](#TriggerInfo) to use when `trigger()` is called without a preceding `prepare()` (governed by [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE)).
 
 ### `BlobArmLogic`
 

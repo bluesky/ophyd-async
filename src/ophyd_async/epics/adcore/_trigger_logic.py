@@ -75,5 +75,8 @@ class ADContAcqTriggerLogic(_DetectorTriggerLogic):
         )
 
     async def default_trigger_info(self) -> TriggerInfo:
+        # Read post_count (not driver.num_images) because the CB plugin's
+        # post_count is what governs how many frames are buffered per trigger
+        # in continuous-acquisition mode, not the driver's num_images.
         num = await self.cb_plugin.post_count.get_value()
         return TriggerInfo(collections_per_event=max(1, num))

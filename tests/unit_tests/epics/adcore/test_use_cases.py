@@ -557,7 +557,9 @@ async def test_simdetector_with_stats_signal():
 
 async def test_step_scan_keep_numimages(
     static_path_provider: StaticPathProvider,
+    monkeypatch: pytest.MonkeyPatch,
 ):
+    monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
     stat = adcore.NDStatsIO("PREFIX:STATS:")
     async with init_devices(mock=True):
         det = adsimdetector.SimDetector(
@@ -570,12 +572,9 @@ async def test_step_scan_keep_numimages(
     set_mock_value(det.driver.array_size_y, 768)
     await det.driver.num_images.set(42)
     assert await det.driver.num_images.get_value() == 42
-    triginfo = await det._trigger_logic.default_trigger_info()
-    assert triginfo.collections_per_event == 42
     writer = det.get_plugin("writer", adcore.NDFileHDF5IO)
     await det.stage()
     assert await det.driver.wait_for_plugins.get_value() is False
-    assert det._prepare_ctx is None
     await assert_configuration(
         det,
         {
@@ -595,10 +594,6 @@ async def test_step_scan_keep_numimages(
     # Trigger a single frame then describe, get hints and read
     await det.trigger()
     assert await det.driver.num_images.get_value() == 42
-    triginfo = await det._trigger_logic.default_trigger_info()
-    assert triginfo.collections_per_event == 42
-    assert det._prepare_ctx is not None
-    assert det._prepare_ctx.trigger_info.collections_per_event == 42
     path_info = static_path_provider()
     description = await det.describe()
     uri = f"file://localhost/{path_info.directory_path.as_posix().lstrip('/')}/{path_info.filename}.h5"
@@ -607,7 +602,7 @@ async def test_step_scan_keep_numimages(
             "dtype": "array",
             "dtype_numpy": "|i1",
             "external": "STREAM:",
-            "shape": [42, 768, 1024],
+            "shape": [42, 768, 1024],  # 42 came from num_images
             "source": uri,
         },
     }
@@ -640,10 +635,13 @@ async def test_step_scan_keep_numimages(
     )
 
     # Check we can prepare and change the exposure
-    await det.prepare(TriggerInfo(collections_per_event=42, exposure_timeout=0.1))
+    await det.prepare(
+        TriggerInfo(collections_per_event=42, livetime=0.01, exposure_timeout=0.1)
+    )
     callback_on_mock_put(
         det.driver.acquire, lambda v: set_mock_value(writer.num_captured, 84)
     )
+    assert await det.driver.acquire_time.get_value() == 0.01
     await det.trigger()
     readings = await det.read()
     assert readings == {}

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ophyd_async.core import DetectorTriggerLogic
+from ophyd_async.core import DetectorTriggerLogic, TriggerInfo
 
 from ._pattern_generator import PatternGenerator
 
@@ -15,3 +15,6 @@ class BlobTriggerLogic(DetectorTriggerLogic):
             period=livetime + deadtime,
             number_of_frames=num,
         )
+
+    async def default_trigger_info(self):
+        return TriggerInfo()
