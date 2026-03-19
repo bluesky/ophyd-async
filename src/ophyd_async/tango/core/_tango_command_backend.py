@@ -124,7 +124,7 @@ def tango_command(
     timeout: float | None = DEFAULT_TIMEOUT,
     name: str = "",
     triggerable: bool = False,
-) -> Command[P, T]:
+) -> Command[P, T] | TriggerableCommand:
     """Factory function to create a Tango-backed command.
 
     Creates a `Command` or `TriggerableCommand` that executes a Tango device command.
