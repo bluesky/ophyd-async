@@ -44,7 +44,7 @@ class ADBaseColorMode(SupersetEnum):
 
 
 class NDArrayBaseIO(EpicsDevice):
-    """Class responsible for passing detector data from drivers to pluglins.
+    """Class responsible for passing detector data from drivers to plugins.
 
     This mirrors the interface provided by ADCore/db/NDArrayBase.template.
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDArray.html
@@ -53,7 +53,6 @@ class NDArrayBaseIO(EpicsDevice):
     port_name: A[SignalR[str], PvSuffix("PortName_RBV")]
     unique_id: A[SignalR[int], PvSuffix("UniqueId_RBV")]
     nd_attributes_file: A[SignalRW[str], PvSuffix("NDAttributesFile")]
-    acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire"), EpicsOptions(wait=non_zero)]
 
     # The array_size_x/y/z signals are used when outputting an NDArray
     # (i.e. from a driver)
@@ -70,17 +69,10 @@ class NDArrayBaseIO(EpicsDevice):
     color_mode: A[SignalR[ADBaseColorMode], PvSuffix("ColorMode_RBV")]
     data_type: A[SignalR[ADBaseDataType], PvSuffix("DataType_RBV")]
     array_counter: A[SignalRW[int], PvSuffix.rbv("ArrayCounter")]
-    # There is no _RBV for this one
-    wait_for_plugins: A[SignalRW[bool], PvSuffix("WaitForPlugins")]
 
     # Version information may be useful to include in metadata
     ad_core_version: A[SignalR[str], PvSuffix("ADCoreVersion_RBV")]
     driver_version: A[SignalR[str], PvSuffix("DriverVersion_RBV")]
-    manufacturer: A[SignalR[str], PvSuffix("Manufacturer_RBV")]
-    model: A[SignalR[str], PvSuffix("Model_RBV")]
-    serial_number: A[SignalR[str], PvSuffix("SerialNumber_RBV")]
-    sdk_version: A[SignalR[str], PvSuffix("SDKVersion_RBV")]
-    firmware_version: A[SignalR[str], PvSuffix("FirmwareVersion_RBV")]
 
 
 # Classes for drivers
@@ -120,6 +112,10 @@ class ADBaseIO(NDArrayBaseIO):
 
     This mirrors the interface provided by ADCore/db/ADBase.template.
     See HTML docs at https://areadetector.github.io/areaDetector/ADCore/ADDriver.html
+
+    The interface deviates from the most up to date version of ADBase as it contains
+    some signals that are now in NDArrayBaseIO. This is to maintain backwards
+    compatibility with changes made in https://github.com/areaDetector/ADCore/blob/master/RELEASE.md#asynndarraydriver-addriver
     """
 
     acquire_time: A[SignalRW[float], PvSuffix.rbv("AcquireTime")]
@@ -127,6 +123,19 @@ class ADBaseIO(NDArrayBaseIO):
     num_images: A[SignalRW[int], PvSuffix.rbv("NumImages")]
     image_mode: A[SignalRW[ADImageMode], PvSuffix.rbv("ImageMode")]
     detector_state: A[SignalR[ADState], PvSuffix("DetectorState_RBV")]
+
+    # The following signals have been moved from NDArrayBaseIO for backwards
+    # compatibility
+    acquire: A[SignalRW[bool], PvSuffix.rbv("Acquire"), EpicsOptions(wait=non_zero)]
+
+    # There is no _RBV for this one
+    wait_for_plugins: A[SignalRW[bool], PvSuffix("WaitForPlugins")]
+
+    manufacturer: A[SignalR[str], PvSuffix("Manufacturer_RBV")]
+    model: A[SignalR[str], PvSuffix("Model_RBV")]
+    serial_number: A[SignalR[str], PvSuffix("SerialNumber_RBV")]
+    sdk_version: A[SignalR[str], PvSuffix("SDKVersion_RBV")]
+    firmware_version: A[SignalR[str], PvSuffix("FirmwareVersion_RBV")]
 
 
 # Classes for plugins
