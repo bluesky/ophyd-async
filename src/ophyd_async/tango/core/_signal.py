@@ -181,7 +181,7 @@ async def infer_signal_type(
             return SignalW
 
     if tr_name in dev_proxy.get_command_list():
-        config = await dev_proxy.get_command_config(tr_name) # type: ignore
+        config = await dev_proxy.get_command_config(tr_name)  # type: ignore
         if (
             config.in_type is CmdArgType.DevVoid
             and config.out_type is CmdArgType.DevVoid

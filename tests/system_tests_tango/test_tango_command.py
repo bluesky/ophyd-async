@@ -14,7 +14,8 @@ from ophyd_async.tango.core import (
     TangoDevice,
     TangoDoubleStringTable,
     TangoLongStringTable,
-    tango_command, signature_from_type_args
+    signature_from_type_args,
+    tango_command,
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
@@ -115,6 +116,7 @@ async def test_tango_command(
         else:
             assert val == await cmd.execute(val)
 
+
 @pytest.mark.parametrize("ctype, val, name", TEST_PARAMS)
 @pytest.mark.asyncio
 async def test_tango_command_factory(
@@ -144,7 +146,13 @@ async def test_tango_command_factory(
         assert "Arrays of type np.int8 are not supported" in str(excinfo.value)
         return
     elif ctype is None:
-        cmd = tango_command(call_spec=call_sig, trl=trl, device_proxy=None, name=name, triggerable=is_triggerable)
+        cmd = tango_command(
+            call_spec=call_sig,
+            trl=trl,
+            device_proxy=None,
+            name=name,
+            triggerable=is_triggerable,
+        )
     else:
         cmd = tango_command(call_spec=call_sig, trl=trl, device_proxy=None, name=name)
 
@@ -161,4 +169,3 @@ async def test_tango_command_factory(
         assert np.array_equal(val, await cmd.execute(val))
     else:
         assert val == await cmd.execute(val)
-

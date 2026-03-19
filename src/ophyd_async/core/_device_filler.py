@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import types
 from abc import abstractmethod
 from collections.abc import Callable, Iterator, Sequence
@@ -13,10 +14,9 @@ from typing import (
     Union,
     cast,
     get_args,
+    get_origin,
     runtime_checkable,
-    get_origin
 )
-import inspect
 
 from ._command import Command, CommandBackend
 from ._device import Device, DeviceConnector, DeviceVector
@@ -58,7 +58,9 @@ def _get_command_signature(annotation: Any) -> inspect.Signature | None:
     if not isinstance(param_types, tuple):
         param_types = tuple(param_types)
     parameters = [
-        inspect.Parameter(f"arg{i}", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=t)
+        inspect.Parameter(
+            f"arg{i}", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=t
+        )
         for i, t in enumerate(param_types)
     ]
 
@@ -557,9 +559,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             if not issubclass(vector_command_type, Command):
                 msg = f"{vector_command_type} is not a Command"
                 raise TypeError(msg)
-            backend = self._command_backend_factory(
-                self._command_signature
-            )
+            backend = self._command_backend_factory(self._command_signature)
             expected_command_type = vector_command_type
             vector[vector_index] = vector_command_type(backend)
 

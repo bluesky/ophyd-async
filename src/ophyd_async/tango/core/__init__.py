@@ -41,8 +41,8 @@ from ._utils import (
     TangoLongStringTable,
     get_device_trl_and_attr,
     get_full_attr_trl,
+    signature_from_type_args,
     try_to_cast_as_float,
-    signature_from_type_args
 )
 
 __all__ = [

@@ -83,7 +83,7 @@ class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
         return self.stop_.trigger()
 
     async def move_me(self, value: float):
-        "An alternate way to move the motor using a command. Returns immediately."
+        """An alternate way to move the motor using a command. Returns immediately."""
         success = await self.move_to_position.execute(value)
         if not success:
             raise RuntimeError("Failed to move to position")

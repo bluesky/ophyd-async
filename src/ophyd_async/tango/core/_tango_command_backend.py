@@ -1,22 +1,20 @@
 from __future__ import annotations
 
-from typing import cast, Callable
-
 import inspect
-
-from tango import CommandInfo, DeviceProxy
+from typing import cast
 
 import numpy as np
+from tango import CommandInfo, DeviceProxy
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    Array1D,
     AsyncStatus,
     Command,
     CommandBackend,
     NotConnectedError,
     StrictEnum,
     TriggerableCommand,
-    Array1D
 )
 
 from ._converters import (
@@ -28,7 +26,7 @@ from ._tango_transport import (
     get_tango_trl,
     make_converter,
 )
-from ._utils import P, T, _wait_for, signature_from_type_args
+from ._utils import P, T, _wait_for
 
 
 class TangoCommandBackend(CommandBackend[P, T]):
@@ -41,7 +39,8 @@ class TangoCommandBackend(CommandBackend[P, T]):
     Args:
         call_spec (inspect.Signature): Type signature of the Tango command.
         trl (str): The Tango Resource Locator (TRL) of the command (e.g., `tango://host:port/device/command`).
-        device_proxy (DeviceProxy | None): An optional pre-configured Tango `DeviceProxy`.
+        device_proxy (DeviceProxy | None): An optional pre-configured Tango
+         `DeviceProxy`.
             If provided, it will be used to resolve the TRL.
 
     Raises:
@@ -49,13 +48,13 @@ class TangoCommandBackend(CommandBackend[P, T]):
         NotConnectedError: If the backend fails to connect to the Tango command.
         TypeError: If the Tango command's actual type does not match `datatype`.
     """
+
     def __init__(
         self,
         call_spec: inspect.Signature | None,
         trl: str = "",
         device_proxy: DeviceProxy | None = None,
     ):
-
         if call_spec is None:
             datatype = None
         else:
@@ -76,7 +75,10 @@ class TangoCommandBackend(CommandBackend[P, T]):
         self._timeout: float | None = DEFAULT_TIMEOUT
 
         if datatype == Array1D[np.int8]:
-            raise TypeError("Arrays of type np.int8 are not supported by tango. Use np.uint8 or np.int16.")
+            raise TypeError(
+                "Arrays of type np.int8 are not supported by tango."
+                " Use np.uint8 or np.int16."
+            )
 
         super().__init__(datatype=datatype)
 
@@ -146,17 +148,22 @@ def tango_command(
 
     Args:
         call_spec (inspect.Signature): Callable signature of the tango command.
-        trl (str): The Tango Resource Locator (TRL) of the command (e.g., `tango://host:port/device/command`).
-        device_proxy (DeviceProxy | None): An optional pre-configured Tango `DeviceProxy`.
+        trl (str): The Tango Resource Locator (TRL) of the command (e.g.,
+         `tango://host:port/device/command`).
+        device_proxy (DeviceProxy | None): An optional pre-configured Tango
+         `DeviceProxy`.
             If provided, it will be used to resolve the TRL.
-        timeout (float | None): Timeout (in seconds) for connecting to the Tango device.
+        timeout (float | None): Timeout (in seconds) for connecting to the Tango
+         device.
             Defaults to `DEFAULT_TIMEOUT`.
         name (str): Optional name for the command (used in logging and debugging).
-        triggerable (bool): If `True`, returns a command with a trigger method (no arguments, returns `None`).
+        triggerable (bool): If `True`, returns a command with a trigger method
+        (no arguments, returns `None`).
             Defaults to `False`.
 
     Returns:
-        Command[P, T] | TriggerableCommand: A command instance that can be executed asynchronously.
+        Command[P, T] | TriggerableCommand: A command instance that
+         can be executed asynchronously.
 
     """
     backend: TangoCommandBackend[P, T] = TangoCommandBackend(
