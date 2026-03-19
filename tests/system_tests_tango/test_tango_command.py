@@ -14,7 +14,7 @@ from ophyd_async.tango.core import (
     TangoDevice,
     TangoDoubleStringTable,
     TangoLongStringTable,
-    tango_command
+    tango_command, signature_from_type_args
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
@@ -115,34 +115,50 @@ async def test_tango_command(
         else:
             assert val == await cmd.execute(val)
 
+@pytest.mark.parametrize("ctype, val, name", TEST_PARAMS)
 @pytest.mark.asyncio
 async def test_tango_command_factory(
-        everything_device_trl: str,
+    everything_device_trl: str,
+    ctype,
+    val,
+    name,
 ):
-    for ctype, val, name in TEST_PARAMS:
-        if everything_device_trl.endswith("#dbase=no"):
-            trl = everything_device_trl[:-9] + f"/{name}" + everything_device_trl[-9:]
+    # Determine expected datatype and triggerable status based on name
+    if name == "void_cmd":
+        expected_datatype = None
+        is_triggerable = True
+    elif name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
+        expected_datatype = Array1D[np.uint8]
+        is_triggerable = False
+    else:
+        expected_datatype = ctype
+        is_triggerable = False
 
-        if ctype == Array1D[np.int8]:
-            with pytest.raises(TypeError) as excinfo:
-                cmd = tango_command(trl, device_proxy=None, datatype=ctype, name=name)
-            assert "Arrays of type np.int8 are not supported" in str(excinfo.value)
-            return
-        elif ctype is None:
-            cmd = tango_command(trl, device_proxy=None, datatype=ctype, name=name, triggerable=True)
-        else:
-            cmd = tango_command(trl, device_proxy=None, datatype=ctype, name=name)
-        await cmd.connect()
-        if name == "void_cmd":
-            assert isinstance(cmd, TriggerableCommand)
-        else:
-            assert isinstance(cmd, Command)
-        if name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
-            assert Array1D[np.uint8] == cmd.datatype
-        else:
-            assert ctype == cmd.datatype
-        if isinstance(val, np.ndarray):
-            assert np.array_equal(val, await cmd.execute(val))
-        else:
-            assert val == await cmd.execute(val)
+    call_sig = signature_from_type_args([ctype], ctype)
+    if everything_device_trl.endswith("#dbase=no"):
+        trl = everything_device_trl[:-9] + f"/{name}" + everything_device_trl[-9:]
+
+    if ctype == Array1D[np.int8]:
+        with pytest.raises(TypeError) as excinfo:
+            tango_command(call_spec=call_sig, trl=trl, device_proxy=None, name=name)
+        assert "Arrays of type np.int8 are not supported" in str(excinfo.value)
+        return
+    elif ctype is None:
+        cmd = tango_command(call_spec=call_sig, trl=trl, device_proxy=None, name=name, triggerable=is_triggerable)
+    else:
+        cmd = tango_command(call_spec=call_sig, trl=trl, device_proxy=None, name=name)
+
+    if name == "void_cmd":
+        assert isinstance(cmd, TriggerableCommand)
+    else:
+        assert isinstance(cmd, Command)
+
+    await cmd.connect()
+
+    assert expected_datatype == cmd.datatype
+
+    if isinstance(val, np.ndarray):
+        assert np.array_equal(val, await cmd.execute(val))
+    else:
+        assert val == await cmd.execute(val)
 

@@ -14,7 +14,9 @@ from typing import (
     cast,
     get_args,
     runtime_checkable,
+    get_origin
 )
+import inspect
 
 from ._command import Command, CommandBackend
 from ._device import Device, DeviceConnector, DeviceVector
@@ -44,10 +46,24 @@ def _get_datatype(annotation: Any) -> type | None:
     return None
 
 
-def _get_command_datatype(annotation: Any) -> type | None:
-    """Extract input type from Command[[type_in], type_out] annotations."""
+def _get_command_signature(annotation: Any) -> inspect.Signature | None:
+    """Extract Signature from Command[[type_in...], type_out] annotations."""
+    if get_origin(annotation) is not Command:
+        return None
     args = get_args(annotation)
-    return args[1] if len(args) == 2 else None
+    if len(args) != 2:
+        return None
+    param_types, return_type = args
+
+    if not isinstance(param_types, tuple):
+        param_types = tuple(param_types)
+    parameters = [
+        inspect.Parameter(f"arg{i}", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=t)
+        for i, t in enumerate(param_types)
+    ]
+
+    sig = inspect.Signature(parameters, return_annotation=return_type)
+    return sig
 
 
 def _get_device_vector_child_datatype(vector: Device | type[Device]) -> type | None:
@@ -114,7 +130,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         self._uncreated_devices: dict[UniqueName, type[Device] | DeviceFactory] = {}
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
-        self._command_datatype: dict[LogicalName, type | None] = {}
+        self._command_datatype: dict[LogicalName, inspect.Signature | None] = {}
         self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
         self._optional_devices: set[str] = set()
         self.ignored_signals: set[str] = set()
@@ -158,9 +174,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
 
     def _store_command_datatype(self, name: UniqueName, annotation: Any):
         origin = get_origin_class(annotation)
-        datatype = _get_command_datatype(annotation)
+        signature = _get_command_signature(annotation)
         if origin and issubclass(origin, Command):
-            self._command_datatype[_logical(name)] = datatype
+            self._command_datatype[_logical(name)] = signature
         else:
             self._raise(
                 name,
@@ -542,7 +558,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
                 msg = f"{vector_command_type} is not a Command"
                 raise TypeError(msg)
             backend = self._command_backend_factory(
-                self._command_datatype.get(logical_name)
+                self._command_signature
             )
             expected_command_type = vector_command_type
             vector[vector_index] = vector_command_type(backend)

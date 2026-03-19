@@ -2,6 +2,7 @@ import asyncio
 import re
 from collections.abc import Awaitable, Sequence
 from typing import Any, ParamSpec, TypeVar
+import inspect
 
 import numpy as np
 
@@ -93,3 +94,10 @@ async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T
         return await asyncio.wait_for(coro, timeout)
     except TimeoutError as exc:
         raise TimeoutError(source) from exc
+
+def signature_from_type_args(params, return_type):
+    parameters = [
+        inspect.Parameter(f"arg{i}", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=t)
+        for i, t in enumerate(params)
+    ]
+    return inspect.Signature(parameters, return_annotation=return_type)

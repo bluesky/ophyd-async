@@ -42,6 +42,7 @@ from ._utils import (
     get_device_trl_and_attr,
     get_full_attr_trl,
     try_to_cast_as_float,
+    signature_from_type_args
 )
 
 __all__ = [
@@ -61,6 +62,7 @@ __all__ = [
     "make_backend",
     "make_converter",
     "parse_precision",
+    "signature_from_type_args",
     "tango_signal_r",
     "tango_signal_rw",
     "tango_signal_w",

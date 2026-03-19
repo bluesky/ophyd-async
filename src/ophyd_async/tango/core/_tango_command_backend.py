@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import cast, Callable
+
+import inspect
 
 from tango import CommandInfo, DeviceProxy
 
@@ -26,7 +28,7 @@ from ._tango_transport import (
     get_tango_trl,
     make_converter,
 )
-from ._utils import P, T, _wait_for
+from ._utils import P, T, _wait_for, signature_from_type_args
 
 
 class TangoCommandBackend(CommandBackend[P, T]):
@@ -37,8 +39,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
     Tango's limitations (e.g., no keyword arguments, single positional argument).
 
     Args:
-        datatype (type[T] | None): The expected Python type of the command's return value.
-            If `None`, the type is inferred from the Tango command's configuration.
+        call_spec (inspect.Signature): Type signature of the Tango command.
         trl (str): The Tango Resource Locator (TRL) of the command (e.g., `tango://host:port/device/command`).
         device_proxy (DeviceProxy | None): An optional pre-configured Tango `DeviceProxy`.
             If provided, it will be used to resolve the TRL.
@@ -50,10 +51,23 @@ class TangoCommandBackend(CommandBackend[P, T]):
     """
     def __init__(
         self,
-        datatype: type[T] | None,
+        call_spec: inspect.Signature | None,
         trl: str = "",
         device_proxy: DeviceProxy | None = None,
     ):
+
+        if call_spec is None:
+            datatype = None
+        else:
+            # Extract input parameter types
+            input_types = []
+            for param in call_spec.parameters.values():
+                input_types.append(param.annotation)
+            self.param_types = input_types
+
+            # Extract return type
+            datatype = call_spec.return_annotation
+
         self._trl = trl
         self.device_proxy = device_proxy
         self._proxy: CommandProxy | None = None
@@ -117,9 +131,9 @@ class TangoCommandBackend(CommandBackend[P, T]):
 
 
 def tango_command(
+    call_spec: inspect.Signature,
     trl: str,
     device_proxy: DeviceProxy | None = None,
-    datatype: type[T] | None = None,
     *,
     timeout: float | None = DEFAULT_TIMEOUT,
     name: str = "",
@@ -131,11 +145,10 @@ def tango_command(
     The command can be configured to accept arguments and return a typed result.
 
     Args:
+        call_spec (inspect.Signature): Callable signature of the tango command.
         trl (str): The Tango Resource Locator (TRL) of the command (e.g., `tango://host:port/device/command`).
         device_proxy (DeviceProxy | None): An optional pre-configured Tango `DeviceProxy`.
             If provided, it will be used to resolve the TRL.
-        datatype (type[T] | None): The expected Python type of the command's return value.
-            If `None`, the type is inferred from the Tango command's configuration.
         timeout (float | None): Timeout (in seconds) for connecting to the Tango device.
             Defaults to `DEFAULT_TIMEOUT`.
         name (str): Optional name for the command (used in logging and debugging).
@@ -147,7 +160,7 @@ def tango_command(
 
     """
     backend: TangoCommandBackend[P, T] = TangoCommandBackend(
-        datatype, trl, device_proxy
+        call_spec, trl, device_proxy
     )
     if triggerable:
         return TriggerableCommand(backend, timeout=timeout, name=name)
