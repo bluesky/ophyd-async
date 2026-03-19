@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.17a2.dev8+gb36695e91 documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.17a2.dev9+g5f878e85d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=d13e86e2"></script>
+    <script src="../../../_static/documentation_options.js?v=2539b8e8"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -562,8 +562,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
   
   
 </a></div>
@@ -895,6 +895,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncIterator</span><span class="p">,</span> <span class="n">Awaitable</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
@@ -1093,6 +1094,13 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        :param exposures_per_collection:</span>
 <span class="sd">            number of exposures to process into each collection</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DetectorTriggerLogic.default_trigger_info">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic.default_trigger_info">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">default_trigger_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TriggerInfo</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fallback for the default TriggerInfo in plans without prepare.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 </div>
 
@@ -1540,9 +1548,40 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.trigger">[docs]</a>
     <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncIterator</span><span class="p">[</span><span class="n">WatcherUpdate</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Trigger a single exposure.</span>
+
+<span class="sd">        If [`prepare()`](#StandardDetector.prepare) has not been called since</span>
+<span class="sd">        the last [`stage()`](#StandardDetector.stage), an implicit prepare is</span>
+<span class="sd">        performed. When [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE) is `YES`</span>
+<span class="sd">        [](#DetectorTriggerLogic.default_trigger_info) is called to read current</span>
+<span class="sd">        hardware state; otherwise a bare [`TriggerInfo()`](#TriggerInfo) is</span>
+<span class="sd">        used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># If a prepare has not been done since stage, do an implicit one here</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">TriggerInfo</span><span class="p">())</span>
+            <span class="c1"># Opt-in: set OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES to have</span>
+            <span class="c1"># trigger() read back current hardware state (e.g. num_images) via</span>
+            <span class="c1"># default_trigger_info() instead of always falling back to TriggerInfo().</span>
+            <span class="c1"># See ADR 0013 for rationale.</span>
+            <span class="c1"># TODO: flip default to YES and remove this guard in a future PR once</span>
+            <span class="c1"># downstream code has had time to implement default_trigger_info().</span>
+            <span class="n">preserve_state</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OPHYD_ASYNC_PRESERVE_DETECTOR_STATE&quot;</span><span class="p">,</span> <span class="s2">&quot;NO&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+                <span class="o">==</span> <span class="s2">&quot;YES&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">preserve_state</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">_trigger_logic_supported</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">default_trigger_info</span>
+                <span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES is set but &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; has no default_trigger_info() - implement &quot;</span>
+                        <span class="s2">&quot;default_trigger_info() on your DetectorTriggerLogic subclass &quot;</span>
+                        <span class="s2">&quot;or unset the environment variable.&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">trigger_info</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_trigger_logic</span><span class="o">.</span><span class="n">default_trigger_info</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">trigger_info</span> <span class="o">=</span> <span class="n">TriggerInfo</span><span class="p">()</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">trigger_info</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Check the one that was provided is suitable for triggering</span>
             <span class="n">trigger_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="o">.</span><span class="n">trigger_info</span>

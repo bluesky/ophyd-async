@@ -81,13 +81,24 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 `````
 
-`````{py:class} KinetixTriggerLogic(driver: ~ophyd_async.epics.adkinetix.KinetixDriverIO)
+`````{py:class} KinetixTriggerLogic
 :canonical: ophyd_async.epics.adkinetix.KinetixTriggerLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ```{autodoc2-docstring} ophyd_async.epics.adkinetix.KinetixTriggerLogic
 ```
+
+````{py:attribute} driver
+:canonical: ophyd_async.epics.adkinetix.KinetixTriggerLogic.driver
+:type: ~ophyd_async.epics.adkinetix.KinetixDriverIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix.KinetixTriggerLogic.driver
+```
+
+````
 
 ````{py:method} get_deadtime(config_values: ~ophyd_async.core.SignalDict) -> float
 :canonical: ophyd_async.epics.adkinetix.KinetixTriggerLogic.get_deadtime
@@ -120,6 +131,15 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.adkinetix.KinetixTriggerLogic.prepare_level
+```
+
+````
+
+````{py:method} default_trigger_info()
+:canonical: ophyd_async.epics.adkinetix.KinetixTriggerLogic.default_trigger_info
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adkinetix.KinetixTriggerLogic.default_trigger_info
 ```
 
 ````

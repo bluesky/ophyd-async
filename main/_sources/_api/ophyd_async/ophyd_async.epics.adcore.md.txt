@@ -155,6 +155,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._trigger_logic.prepare_exposures
     :summary:
     ```
+* - {py:obj}`trigger_info_from_num_images <ophyd_async.epics.adcore._trigger_logic.trigger_info_from_num_images>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._trigger_logic.trigger_info_from_num_images
+    :summary:
+    ```
 * - {py:obj}`ndattributes_to_xml <ophyd_async.epics.adcore._ndattribute.ndattributes_to_xml>`
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._ndattribute.ndattributes_to_xml
     :summary:
@@ -1764,13 +1768,35 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginFileIO`
 ```
 ````
 
-`````{py:class} ADContAcqTriggerLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, cb_plugin: ~ophyd_async.epics.adcore._io.NDCircularBuffIO)
+`````{py:class} ADContAcqTriggerLogic
 :canonical: ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ```{autodoc2-docstring} ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic
 ```
+
+````{py:attribute} driver
+:canonical: ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic.driver
+:type: ~ophyd_async.epics.adcore._io.ADBaseIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic.driver
+```
+
+````
+
+````{py:attribute} cb_plugin
+:canonical: ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic.cb_plugin
+:type: ~ophyd_async.epics.adcore._io.NDCircularBuffIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic.cb_plugin
+```
+
+````
 
 ````{py:method} prepare_internal(num: int, livetime: float, deadtime: float)
 :canonical: ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic.prepare_internal
@@ -1781,7 +1807,24 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ````
 
+````{py:method} default_trigger_info() -> ~ophyd_async.core.TriggerInfo
+:canonical: ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic.default_trigger_info
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic.default_trigger_info
+```
+
+````
+
 `````
+
+````{py:function} trigger_info_from_num_images(driver: ~ophyd_async.epics.adcore._io.ADBaseIO) -> ~ophyd_async.core.TriggerInfo
+:canonical: ophyd_async.epics.adcore._trigger_logic.trigger_info_from_num_images
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._trigger_logic.trigger_info_from_num_images
+```
+````
 
 `````{py:class} ADArmLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, driver_armed_signal: ~ophyd_async.core.SignalR[bool] | None = None)
 :canonical: ophyd_async.epics.adcore._arm_logic.ADArmLogic

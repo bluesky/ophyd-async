@@ -77,13 +77,35 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 `````
 
-`````{py:class} AravisTriggerLogic(driver: ~ophyd_async.epics.adaravis.AravisDriverIO, override_deadtime: float | None = None)
+`````{py:class} AravisTriggerLogic
 :canonical: ophyd_async.epics.adaravis.AravisTriggerLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic
 ```
+
+````{py:attribute} driver
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.driver
+:type: ~ophyd_async.epics.adaravis.AravisDriverIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.driver
+```
+
+````
+
+````{py:attribute} override_deadtime
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.override_deadtime
+:type: float | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.override_deadtime
+```
+
+````
 
 ````{py:method} config_sigs() -> set[~ophyd_async.core.SignalR]
 :canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.config_sigs
@@ -115,6 +137,15 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.prepare_edge
+```
+
+````
+
+````{py:method} default_trigger_info()
+:canonical: ophyd_async.epics.adaravis.AravisTriggerLogic.default_trigger_info
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adaravis.AravisTriggerLogic.default_trigger_info
 ```
 
 ````

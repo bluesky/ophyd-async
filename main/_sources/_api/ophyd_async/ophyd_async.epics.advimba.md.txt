@@ -122,13 +122,35 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 `````
 
-`````{py:class} VimbaTriggerLogic(driver: ~ophyd_async.epics.advimba.VimbaDriverIO, override_deadtime: float | None = None)
+`````{py:class} VimbaTriggerLogic
 :canonical: ophyd_async.epics.advimba.VimbaTriggerLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic
 ```
+
+````{py:attribute} driver
+:canonical: ophyd_async.epics.advimba.VimbaTriggerLogic.driver
+:type: ~ophyd_async.epics.advimba.VimbaDriverIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic.driver
+```
+
+````
+
+````{py:attribute} override_deadtime
+:canonical: ophyd_async.epics.advimba.VimbaTriggerLogic.override_deadtime
+:type: float | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic.override_deadtime
+```
+
+````
 
 ````{py:method} config_sigs() -> set[~ophyd_async.core.SignalR]
 :canonical: ophyd_async.epics.advimba.VimbaTriggerLogic.config_sigs
@@ -169,6 +191,15 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic.prepare_level
+```
+
+````
+
+````{py:method} default_trigger_info()
+:canonical: ophyd_async.epics.advimba.VimbaTriggerLogic.default_trigger_info
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.advimba.VimbaTriggerLogic.default_trigger_info
 ```
 
 ````

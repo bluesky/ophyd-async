@@ -81,13 +81,35 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 `````
 
-`````{py:class} PilatusTriggerLogic(driver: ~ophyd_async.epics.adpilatus.PilatusDriverIO, readout_time: ~ophyd_async.epics.adpilatus.PilatusReadoutTime)
+`````{py:class} PilatusTriggerLogic
 :canonical: ophyd_async.epics.adpilatus.PilatusTriggerLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic
 ```
+
+````{py:attribute} driver
+:canonical: ophyd_async.epics.adpilatus.PilatusTriggerLogic.driver
+:type: ~ophyd_async.epics.adpilatus.PilatusDriverIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic.driver
+```
+
+````
+
+````{py:attribute} readout_time
+:canonical: ophyd_async.epics.adpilatus.PilatusTriggerLogic.readout_time
+:type: ~ophyd_async.epics.adpilatus.PilatusReadoutTime
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic.readout_time
+```
+
+````
 
 ````{py:method} get_deadtime(config_values: ~ophyd_async.core.SignalDict) -> float
 :canonical: ophyd_async.epics.adpilatus.PilatusTriggerLogic.get_deadtime
@@ -120,6 +142,15 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic.prepare_level
+```
+
+````
+
+````{py:method} default_trigger_info()
+:canonical: ophyd_async.epics.adpilatus.PilatusTriggerLogic.default_trigger_info
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adpilatus.PilatusTriggerLogic.default_trigger_info
 ```
 
 ````

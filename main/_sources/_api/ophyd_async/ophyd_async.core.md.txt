@@ -2239,6 +2239,16 @@ Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
 ````
 
+````{py:method} default_trigger_info() -> ~ophyd_async.core._detector.TriggerInfo
+:canonical: ophyd_async.core._detector.DetectorTriggerLogic.default_trigger_info
+:abstractmethod:
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._detector.DetectorTriggerLogic.default_trigger_info
+```
+
+````
+
 `````
 
 `````{py:class} DetectorArmLogic

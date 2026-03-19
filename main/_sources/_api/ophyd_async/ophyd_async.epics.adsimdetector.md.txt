@@ -37,7 +37,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epi
 
 ````
 
-`````{py:class} SimDetectorTriggerLogic(driver: ~ophyd_async.epics.adcore.ADBaseIO)
+`````{py:class} SimDetectorTriggerLogic
 :canonical: ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
@@ -45,11 +45,31 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 ```{autodoc2-docstring} ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic
 ```
 
+````{py:attribute} driver
+:canonical: ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.driver
+:type: ~ophyd_async.epics.adcore.ADBaseIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.driver
+```
+
+````
+
 ````{py:method} prepare_internal(num: int, livetime: float, deadtime: float)
 :canonical: ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.prepare_internal
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.prepare_internal
+```
+
+````
+
+````{py:method} default_trigger_info()
+:canonical: ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.default_trigger_info
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.default_trigger_info
 ```
 
 ````

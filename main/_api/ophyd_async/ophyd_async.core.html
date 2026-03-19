@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.core &#8212; ophyd-async 0.17a2.dev8+gb36695e91 documentation</title>
+    <title>ophyd_async.core &#8212; ophyd-async 0.17a2.dev9+g5f878e85d documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=d13e86e2"></script>
+    <script src="../../_static/documentation_options.js?v=2539b8e8"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
   
   
 </a></div>
@@ -452,6 +452,7 @@
 </details></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables.html">Environment Variables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
 </ul>
@@ -2954,6 +2955,12 @@ detector parameters.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.core.DetectorTriggerLogic.default_trigger_info">
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">default_trigger_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ophyd_async.core.TriggerInfo" title="ophyd_async.core._detector.TriggerInfo"><span class="pre">TriggerInfo</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_detector.html#DetectorTriggerLogic.default_trigger_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.DetectorTriggerLogic.default_trigger_info" title="Link to this definition">#</a></dt>
+<dd><p>Fallback for the default TriggerInfo in plans without prepare.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -3089,7 +3096,14 @@ that only work with step scans.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.StandardDetector.trigger">
 <span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">trigger</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncIterator" title="(in Python v3.14)"><span class="pre">AsyncIterator</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ophyd_async.core.WatcherUpdate" title="ophyd_async.core._utils.WatcherUpdate"><span class="pre">WatcherUpdate</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/ophyd_async/core/_detector.html#StandardDetector.trigger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.core.StandardDetector.trigger" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Trigger a single exposure.</p>
+<p>If <a class="reference internal" href="#ophyd_async.core.StandardDetector.prepare" title="ophyd_async.core.StandardDetector.prepare"><span class="xref myst py py-meth"><code class="docutils literal notranslate"><span class="pre">prepare()</span></code></span></a> has not been called since
+the last <a class="reference internal" href="#ophyd_async.core.StandardDetector.stage" title="ophyd_async.core.StandardDetector.stage"><span class="xref myst py py-meth"><code class="docutils literal notranslate"><span class="pre">stage()</span></code></span></a>, an implicit prepare is
+performed. When <a class="reference internal" href="../../reference/environment-variables.html#ophyd-async-preserve-detector-state"><span class="std std-ref">OPHYD_ASYNC_PRESERVE_DETECTOR_STATE</span></a> is <code class="docutils literal notranslate"><span class="pre">YES</span></code>
+<a class="reference internal" href="#ophyd_async.core.DetectorTriggerLogic.default_trigger_info" title="ophyd_async.core.DetectorTriggerLogic.default_trigger_info"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">DetectorTriggerLogic.default_trigger_info</span></code></a> is called to read current
+hardware state; otherwise a bare <a class="reference internal" href="#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><span class="xref myst py py-class"><code class="docutils literal notranslate"><span class="pre">TriggerInfo()</span></code></span></a> is
+used.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.core.StandardDetector.kickoff">
@@ -4535,6 +4549,7 @@ return value of <code class="docutils literal notranslate"><span class="pre">tra
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorTriggerLogic.prepare_edge"><code class="docutils literal notranslate"><span class="pre">DetectorTriggerLogic.prepare_edge()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorTriggerLogic.prepare_level"><code class="docutils literal notranslate"><span class="pre">DetectorTriggerLogic.prepare_level()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorTriggerLogic.prepare_exposures_per_collection"><code class="docutils literal notranslate"><span class="pre">DetectorTriggerLogic.prepare_exposures_per_collection()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorTriggerLogic.default_trigger_info"><code class="docutils literal notranslate"><span class="pre">DetectorTriggerLogic.default_trigger_info()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.core.DetectorArmLogic"><code class="docutils literal notranslate"><span class="pre">DetectorArmLogic</span></code></a><ul class="nav section-nav flex-column">

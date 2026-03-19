@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.17a2.dev8+gb36695e91 documentation</title>
+    <title>ophyd_async.epics.adcore &#8212; ophyd-async 0.17a2.dev9+g5f878e85d documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=d13e86e2"></script>
+    <script src="../../_static/documentation_options.js?v=2539b8e8"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
   
   
 </a></div>
@@ -452,6 +452,7 @@
 </details></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables.html">Environment Variables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
 </ul>
@@ -640,13 +641,16 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.prepare_exposures" title="ophyd_async.epics.adcore._trigger_logic.prepare_exposures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_exposures</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ndattributes_to_xml" title="ophyd_async.epics.adcore._ndattribute.ndattributes_to_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndattributes_to_xml</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.trigger_info_from_num_images" title="ophyd_async.epics.adcore._trigger_logic.trigger_info_from_num_images"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trigger_info_from_num_images</span></code></a></p></td>
+<td><p>Default TriggerInfo for AD detectors, reading num_images from the driver.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.ndattributes_to_xml" title="ophyd_async.epics.adcore._ndattribute.ndattributes_to_xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndattributes_to_xml</span></code></a></p></td>
 <td><p>Convert a set of NDAttribute params to XML.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.setup_ndattributes" title="ophyd_async.epics.adcore._plan_stubs.setup_ndattributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndattributes</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.setup_ndattributes" title="ophyd_async.epics.adcore._plan_stubs.setup_ndattributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndattributes</span></code></a></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.setup_ndstats_sum" title="ophyd_async.epics.adcore._plan_stubs.setup_ndstats_sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndstats_sum</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.epics.adcore.setup_ndstats_sum" title="ophyd_async.epics.adcore._plan_stubs.setup_ndstats_sum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_ndstats_sum</span></code></a></p></td>
 <td><p>Set up nd stats sum nd attribute for a detector.</p></td>
 </tr>
 </tbody>
@@ -1621,7 +1625,7 @@ See HTML docs at https://areadetector.github.io/areaDetector/ADCore/NDFileHDF5.h
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADContAcqTriggerLogic">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADContAcqTriggerLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore._io.ADBaseIO"><span class="pre">ADBaseIO</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cb_plugin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adcore.NDCircularBuffIO" title="ophyd_async.epics.adcore._io.NDCircularBuffIO"><span class="pre">NDCircularBuffIO</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_trigger_logic.html#ADContAcqTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">ADContAcqTriggerLogic</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_trigger_logic.html#ADContAcqTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic" title="ophyd_async.core.DetectorTriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.DetectorTriggerLogic</span></code></a></p>
 <p>Logic for configuring detector triggering modes.</p>
 <p>This class defines the interface for detector trigger configuration, handling
@@ -1641,6 +1645,18 @@ trigger modes and manage exposure parameters.</p>
 mode the detector supports, <code class="docutils literal notranslate"><span class="pre">get_deadtime</span></code> if it supports external
 triggering, and <code class="docutils literal notranslate"><span class="pre">config_sigs</span></code> if the deadtime would vary according to
 detector parameters.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADContAcqTriggerLogic.driver">
+<span class="sig-name descname"><span class="pre">driver</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore._io.ADBaseIO"><span class="pre">ADBaseIO</span></a></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic.driver" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADContAcqTriggerLogic.cb_plugin">
+<span class="sig-name descname"><span class="pre">cb_plugin</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.epics.adcore.NDCircularBuffIO" title="ophyd_async.epics.adcore._io.NDCircularBuffIO"><span class="pre">NDCircularBuffIO</span></a></span><a class="headerlink" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic.cb_plugin" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADContAcqTriggerLogic.prepare_internal">
 <span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">prepare_internal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">livetime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadtime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_trigger_logic.html#ADContAcqTriggerLogic.prepare_internal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic.prepare_internal" title="Link to this definition">#</a></dt>
@@ -1656,6 +1672,18 @@ detector parameters.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.ADContAcqTriggerLogic.default_trigger_info">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">default_trigger_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><span class="pre">TriggerInfo</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_trigger_logic.html#ADContAcqTriggerLogic.default_trigger_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic.default_trigger_info" title="Link to this definition">#</a></dt>
+<dd><p>Fallback for the default TriggerInfo in plans without prepare.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ophyd_async.epics.adcore.trigger_info_from_num_images">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adcore.</span></span><span class="sig-name descname"><span class="pre">trigger_info_from_num_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore._io.ADBaseIO"><span class="pre">ADBaseIO</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><span class="pre">TriggerInfo</span></a></span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adcore/_trigger_logic.html#trigger_info_from_num_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adcore.trigger_info_from_num_images" title="Link to this definition">#</a></dt>
+<dd><p>Default TriggerInfo for AD detectors, reading num_images from the driver.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -2578,9 +2606,13 @@ attributes – see the documentation for details.</p>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.prepare_exposures"><code class="docutils literal notranslate"><span class="pre">prepare_exposures()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic"><code class="docutils literal notranslate"><span class="pre">ADContAcqTriggerLogic</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic.driver"><code class="docutils literal notranslate"><span class="pre">ADContAcqTriggerLogic.driver</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic.cb_plugin"><code class="docutils literal notranslate"><span class="pre">ADContAcqTriggerLogic.cb_plugin</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic.prepare_internal"><code class="docutils literal notranslate"><span class="pre">ADContAcqTriggerLogic.prepare_internal()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADContAcqTriggerLogic.default_trigger_info"><code class="docutils literal notranslate"><span class="pre">ADContAcqTriggerLogic.default_trigger_info()</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.trigger_info_from_num_images"><code class="docutils literal notranslate"><span class="pre">trigger_info_from_num_images()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADArmLogic"><code class="docutils literal notranslate"><span class="pre">ADArmLogic</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADArmLogic.arm"><code class="docutils literal notranslate"><span class="pre">ADArmLogic.arm()</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adcore.ADArmLogic.wait_for_idle"><code class="docutils literal notranslate"><span class="pre">ADArmLogic.wait_for_idle()</span></code></a></li>

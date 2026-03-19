@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.epics.adsimdetector &#8212; ophyd-async 0.17a2.dev8+gb36695e91 documentation</title>
+    <title>ophyd_async.epics.adsimdetector &#8212; ophyd-async 0.17a2.dev9+g5f878e85d documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=d13e86e2"></script>
+    <script src="../../_static/documentation_options.js?v=2539b8e8"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
   
   
 </a></div>
@@ -452,6 +452,7 @@
 </details></li>
 </ul>
 </details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables.html">Environment Variables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/bluesky/ophyd-async/releases">Release Notes</a></li>
 </ul>
@@ -568,9 +569,15 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adsimdetector.</span></span><span class="sig-name descname"><span class="pre">SimDetectorTriggerLogic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore.ADBaseIO"><span class="pre">ADBaseIO</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adsimdetector.html#SimDetectorTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.epics.adsimdetector.</span></span><span class="sig-name descname"><span class="pre">SimDetectorTriggerLogic</span></span><a class="reference internal" href="../../_modules/ophyd_async/epics/adsimdetector.html#SimDetectorTriggerLogic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic" title="ophyd_async.core.DetectorTriggerLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.DetectorTriggerLogic</span></code></a></p>
 <p>Trigger logic for ADSimDetector.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.driver">
+<span class="sig-name descname"><span class="pre">driver</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADBaseIO" title="ophyd_async.epics.adcore.ADBaseIO"><span class="pre">ADBaseIO</span></a></span><a class="headerlink" href="#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.driver" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.prepare_internal">
 <span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">prepare_internal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">livetime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadtime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adsimdetector.html#SimDetectorTriggerLogic.prepare_internal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.prepare_internal" title="Link to this definition">#</a></dt>
@@ -584,6 +591,12 @@
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.default_trigger_info">
+<span class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">default_trigger_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/epics/adsimdetector.html#SimDetectorTriggerLogic.default_trigger_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.default_trigger_info" title="Link to this definition">#</a></dt>
+<dd><p>Fallback for the default TriggerInfo in plans without prepare.</p>
 </dd></dl>
 
 </dd></dl>
@@ -644,7 +657,9 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adsimdetector.SimDetector"><code class="docutils literal notranslate"><span class="pre">SimDetector</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic"><code class="docutils literal notranslate"><span class="pre">SimDetectorTriggerLogic</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.driver"><code class="docutils literal notranslate"><span class="pre">SimDetectorTriggerLogic.driver</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.prepare_internal"><code class="docutils literal notranslate"><span class="pre">SimDetectorTriggerLogic.prepare_internal()</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.epics.adsimdetector.SimDetectorTriggerLogic.default_trigger_info"><code class="docutils literal notranslate"><span class="pre">SimDetectorTriggerLogic.default_trigger_info()</span></code></a></li>
 </ul>
 </li>
 </ul>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.17a2.dev8+gb36695e91 documentation</title>
+    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.17a2.dev9+g5f878e85d documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=d13e86e2"></script>
+    <script src="../_static/documentation_options.js?v=2539b8e8"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -129,8 +129,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev8+gb36695e91 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a2.dev9+g5f878e85d documentation - Home"/>
   
   
 </a></div>
@@ -499,11 +499,13 @@
 </section>
 <section id="add-trigger-logic-for-detector-specific-triggering">
 <h2>Add Trigger Logic for detector-specific triggering<a class="headerlink" href="#add-trigger-logic-for-detector-specific-triggering" title="Link to this heading">#</a></h2>
-<p>Now you need a class that subclasses <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic" title="ophyd_async.core.DetectorTriggerLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorTriggerLogic</span></code></a>. This should implement methods for each trigger mode your detector supports:</p>
+<p>Now you need a class that subclasses <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorTriggerLogic" title="ophyd_async.core.DetectorTriggerLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DetectorTriggerLogic</span></code></a>. Decorate it with <code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> and declare the driver (and any other constructor arguments) as class-level annotated fields rather than writing an <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method.</p>
+<p>Implement methods for each trigger mode your detector supports:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">prepare_internal(num,</span> <span class="pre">livetime,</span> <span class="pre">deadtime)</span></code> - Setup for internal triggering (detector generates its own triggers)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">prepare_edge(num,</span> <span class="pre">livetime)</span></code> - Setup for external edge triggering (rising edge starts an internally-timed exposure)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">prepare_level(num)</span></code> - Setup for external level/gate triggering (high level duration determines exposure time)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prepare_level(num)</span></code> - Setup for external level/gate triggering (high level duration determines exposure time)
+Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.</p></li>
 </ul>
 <p>If the detector has configuration values that should be captured in the scan then implement:</p>
 <ul class="simple">
@@ -513,14 +515,29 @@
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">get_deadtime(config_values)</span></code> - Calculate the minimum time between exposures based on configuration values</p></li>
 </ul>
-<p>Only implement the prepare methods for trigger modes your detector actually supports. The detector will automatically report which trigger types are available based on which methods are implemented.</p>
+<p>To preserve hardware state in plans like <a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plans.count.html#bluesky.plans.count" title="bluesky 1.14.7.dev34+gb9f2635c3"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bp.count</span></code></span></a> and
+<a class="reference external" href="https://blueskyproject.io/bluesky/main/generated/bluesky.plan_stubs.trigger_and_read.html#bluesky.plan_stubs.trigger_and_read" title="bluesky 1.14.7.dev34+gb9f2635c3"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">bps.trigger_and_read</span></code></span></a> that call <code class="docutils literal notranslate"><span class="pre">trigger()</span></code>
+without a preceding <code class="docutils literal notranslate"><span class="pre">prepare()</span></code>, implement:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">default_trigger_info()</span></code> - Return the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.TriggerInfo" title="ophyd_async.core.TriggerInfo"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">TriggerInfo</span></code></a> to use for the implicit
+prepare. For AD detectors call <code class="docutils literal notranslate"><span class="pre">await</span> <span class="pre">trigger_info_from_num_images(self.driver)</span></code> to
+read back the current <code class="docutils literal notranslate"><span class="pre">num_images</span></code> from the driver rather than resetting it to 1.</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../reference/environment-variables.html"><span class="std std-doc">Environment variable reference</span></a> for
+<code class="docutils literal notranslate"><span class="pre">OPHYD_ASYNC_PRESERVE_DETECTOR_STATE</span></code>, which controls whether <code class="docutils literal notranslate"><span class="pre">default_trigger_info()</span></code>
+is called. See
+<a class="reference internal" href="../explanations/decisions/0013-preserve-hardware-state-in-step-scan.html"><span class="std std-doc">ADR 0013</span></a>
+for rationale.</p>
+</div>
 <p>For example, for ADAravis:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">AravisTriggerLogic</span><span class="p">(</span><span class="n">DetectorTriggerLogic</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">AravisTriggerLogic</span><span class="p">(</span><span class="n">DetectorTriggerLogic</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger logic for Aravis GigE and USB3 cameras.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">:</span> <span class="n">AravisDriverIO</span><span class="p">,</span> <span class="n">override_deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">driver</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">override_deadtime</span> <span class="o">=</span> <span class="n">override_deadtime</span>
+    <span class="n">driver</span><span class="p">:</span> <span class="n">AravisDriverIO</span>
+    <span class="n">override_deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">config_sigs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">model</span><span class="p">}</span>
@@ -544,6 +561,9 @@
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">OnOff</span><span class="o">.</span><span class="n">ON</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_source</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">AravisTriggerSource</span><span class="o">.</span><span class="n">LINE1</span><span class="p">)</span>
         <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">default_trigger_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="n">trigger_info_from_num_images</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

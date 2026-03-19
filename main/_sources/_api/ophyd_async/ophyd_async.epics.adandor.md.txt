@@ -77,13 +77,24 @@ Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
 
 `````
 
-`````{py:class} Andor2TriggerLogic(driver: ~ophyd_async.epics.adandor.Andor2DriverIO)
+`````{py:class} Andor2TriggerLogic
 :canonical: ophyd_async.epics.adandor.Andor2TriggerLogic
 
 Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 
 ```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic
 ```
+
+````{py:attribute} driver
+:canonical: ophyd_async.epics.adandor.Andor2TriggerLogic.driver
+:type: ~ophyd_async.epics.adandor.Andor2DriverIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic.driver
+```
+
+````
 
 ````{py:method} get_deadtime(config_values: ~ophyd_async.core.SignalDict) -> float
 :canonical: ophyd_async.epics.adandor.Andor2TriggerLogic.get_deadtime
@@ -107,6 +118,15 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_edge
+```
+
+````
+
+````{py:method} default_trigger_info()
+:canonical: ophyd_async.epics.adandor.Andor2TriggerLogic.default_trigger_info
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.adandor.Andor2TriggerLogic.default_trigger_info
 ```
 
 ````
