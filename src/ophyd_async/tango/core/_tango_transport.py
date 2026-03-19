@@ -890,7 +890,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             self.trl_configs[trl] = config
 
             # Perform signal verification
-            self._verify_datatype_matches(config)
+            if self.datatype is not None:
+                self._verify_datatype_matches(config)
 
             if isinstance(config, AttributeInfoEx):
                 if (
