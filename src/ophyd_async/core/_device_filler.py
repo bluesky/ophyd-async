@@ -118,7 +118,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         signal_backend_factory: Callable[[type[SignalDatatype] | None], SignalBackendT],
         device_connector_factory: Callable[[], DeviceConnectorT],
         command_backend_factory: Callable[
-            [type[SignalDatatype] | None], CommandBackendT
+            [inspect.Signature | None], CommandBackendT
         ]
         | None = None,
     ):
@@ -132,7 +132,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         self._uncreated_devices: dict[UniqueName, type[Device] | DeviceFactory] = {}
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
-        self._command_datatype: dict[LogicalName, inspect.Signature | None] = {}
+        self._command_signature: dict[LogicalName, inspect.Signature | None] = {}
         self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
         self._optional_devices: set[str] = set()
         self.ignored_signals: set[str] = set()
@@ -178,7 +178,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         origin = get_origin_class(annotation)
         signature = _get_command_signature(annotation)
         if origin and issubclass(origin, Command):
-            self._command_datatype[_logical(name)] = signature
+            self._command_signature[_logical(name)] = signature
         else:
             self._raise(
                 name,
@@ -355,7 +355,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         for name in list(self._uncreated_commands):
             child_type = self._uncreated_commands.pop(name)
             backend = self._command_backend_factory(
-                self._command_datatype[_logical(name)]
+                self._command_signature[_logical(name)]
             )
             extras = list(self._extras[name])
             yield backend, extras

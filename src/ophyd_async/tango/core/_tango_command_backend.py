@@ -140,7 +140,7 @@ def tango_command(
     timeout: float | None = DEFAULT_TIMEOUT,
     name: str = "",
     triggerable: bool = False,
-) -> Command[P, T] | TriggerableCommand:
+) -> Command[P, object] | TriggerableCommand:
     """Factory function to create a Tango-backed command.
 
     Creates a `Command` or `TriggerableCommand` that executes a Tango device command.
@@ -166,10 +166,14 @@ def tango_command(
          can be executed asynchronously.
 
     """
-    backend: TangoCommandBackend[P, T] = TangoCommandBackend(
+    backend: TangoCommandBackend[P, object] = TangoCommandBackend(
         call_spec, trl, device_proxy
     )
     if triggerable:
-        return TriggerableCommand(backend, timeout=timeout, name=name)
+        return TriggerableCommand(
+            cast("CommandBackend[[], None]", backend),
+            timeout=timeout,
+            name=name,
+        )
     else:
         return Command(backend, timeout=timeout, name=name)
