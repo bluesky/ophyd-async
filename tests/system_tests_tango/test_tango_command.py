@@ -6,8 +6,9 @@ import pytest
 from ophyd_async.core import (
     Array1D,
     Command,
+    NotConnectedError,
     StandardReadable,
-    TriggerableCommand, NotConnectedError,
+    TriggerableCommand,
 )
 from ophyd_async.tango.core import (
     DevStateEnum,
@@ -170,14 +171,14 @@ async def test_tango_command_factory(
     else:
         assert val == await cmd.execute(val)
 
+
 @pytest.mark.asyncio
 async def test_tango_command_validation(
-        everything_device_trl: str,
+    everything_device_trl: str,
 ):
-
     # This should pass
     call_sig = signature_from_type_args([float], float)
-    trl=""
+    trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
     cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
@@ -207,9 +208,10 @@ class TangoEverythingOphydDeviceWithBadAnnotation(TangoDevice, StandardReadable)
 async def everything_device_bad_anno(everything_device_trl):
     return TangoEverythingOphydDeviceWithBadAnnotation(everything_device_trl)
 
+
 @pytest.mark.asyncio
 async def test_tango_command_bad_annotation(
-        everything_device_bad_anno,
+    everything_device_bad_anno,
 ):
     with pytest.raises(NotConnectedError) as excinfo:
         await everything_device_bad_anno.connect()

@@ -117,9 +117,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         device: Device,
         signal_backend_factory: Callable[[type[SignalDatatype] | None], SignalBackendT],
         device_connector_factory: Callable[[], DeviceConnectorT],
-        command_backend_factory: Callable[
-            [inspect.Signature | None], CommandBackendT
-        ]
+        command_backend_factory: Callable[[inspect.Signature | None], CommandBackendT]
         | None = None,
     ):
         self._device = device
@@ -559,7 +557,9 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             if not issubclass(vector_command_type, Command):
                 msg = f"{vector_command_type} is not a Command"
                 raise TypeError(msg)
-            backend = self._command_backend_factory(self._command_signature.get(logical_name))
+            backend = self._command_backend_factory(
+                self._command_signature.get(logical_name)
+            )
             expected_command_type = vector_command_type
             vector[vector_index] = vector_command_type(backend)
 
