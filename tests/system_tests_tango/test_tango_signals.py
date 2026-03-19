@@ -591,5 +591,5 @@ async def everything_device_bad_anno(everything_device_trl):
 @pytest.mark.asyncio
 async def test_bad_annotation(everything_device_bad_anno):
     with pytest.raises(NotConnectedError) as exc:
-        proxy = await everything_device_bad_anno.connect()
+        await everything_device_bad_anno.connect()
     assert "expected <class 'NoneType'>" in str(exc.value)
