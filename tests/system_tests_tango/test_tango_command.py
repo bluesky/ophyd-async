@@ -7,7 +7,7 @@ from ophyd_async.core import (
     Array1D,
     Command,
     StandardReadable,
-    TriggerableCommand,
+    TriggerableCommand, NotConnectedError,
 )
 from ophyd_async.tango.core import (
     DevStateEnum,
@@ -169,3 +169,48 @@ async def test_tango_command_factory(
         assert np.array_equal(val, await cmd.execute(val))
     else:
         assert val == await cmd.execute(val)
+
+@pytest.mark.asyncio
+async def test_tango_command_validation(
+        everything_device_trl: str,
+):
+
+    # This should pass
+    call_sig = signature_from_type_args([float], float)
+    trl=""
+    if everything_device_trl.endswith("#dbase=no"):
+        trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
+    cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+    await cmd.connect()
+    ret = await cmd.execute(1.0)
+    assert ret == 1.0
+
+    # This should pass
+    call_sig = signature_from_type_args([float], None)
+    trl = ""
+    if everything_device_trl.endswith("#dbase=no"):
+        trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
+    cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+    await cmd.connect()
+    ret = await cmd.execute(1.0)
+    assert ret == 1.0
+
+
+class TangoEverythingOphydDeviceWithBadAnnotation(TangoDevice, StandardReadable):
+    # datatype of enum commands must be explicitly hinted
+    strenum_cmd: Command[[ExampleStrEnum], ExampleStrEnum]
+    bool_cmd: Command[[bool], None]
+    float32_spectrum_cmd: Command[[Array1D[np.float32]], Array1D[np.float32]]
+
+
+@pytest.fixture()
+async def everything_device_bad_anno(everything_device_trl):
+    return TangoEverythingOphydDeviceWithBadAnnotation(everything_device_trl)
+
+@pytest.mark.asyncio
+async def test_tango_command_bad_annotation(
+        everything_device_bad_anno,
+):
+    with pytest.raises(NotConnectedError) as excinfo:
+        await everything_device_bad_anno.connect()
+    assert "not <class 'NoneType'>" in str(excinfo.value)

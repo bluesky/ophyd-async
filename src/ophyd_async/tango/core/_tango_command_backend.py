@@ -102,6 +102,9 @@ class TangoCommandBackend(CommandBackend[P, T]):
         self._converter = make_converter(self._config, self.datatype)
         self._proxy.set_converter(self._converter)
         datatype = get_python_type(self._config)
+        # Skip type validation on connect if self.datatype is not specified
+        if self.datatype is None:
+            return
         if datatype is StrictEnum:
             pass
         elif datatype != self.datatype:
