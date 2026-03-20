@@ -7,6 +7,7 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
+    callback_on_mock_put,
     init_devices,
     set_mock_value,
 )
@@ -115,3 +116,24 @@ async def test_prepare_forever(
             call.num_images.put(999_999),
         ],
     )
+
+
+@pytest.mark.parametrize("num_images,expected_first_dim", [(7, 7), (0, 1)])
+async def test_trigger_uses_num_images(
+    test_adpilatus: adpilatus.PilatusDetector,
+    monkeypatch: pytest.MonkeyPatch,
+    num_images: int,
+    expected_first_dim: int,
+):
+    monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
+    detector = test_adpilatus
+    writer = detector.get_plugin("writer", adcore.NDFileHDF5IO)
+    set_mock_value(detector.driver.num_images, num_images)
+    await detector.stage()
+    callback_on_mock_put(
+        detector.driver.acquire,
+        lambda v: set_mock_value(writer.num_captured, expected_first_dim),
+    )
+    await detector.trigger()
+    description = await detector.describe()
+    assert description["detector"]["shape"][0] == expected_first_dim

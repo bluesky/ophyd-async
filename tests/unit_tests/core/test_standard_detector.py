@@ -43,6 +43,9 @@ class JustInternalTriggerLogic(DetectorTriggerLogic):
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         self.num, self.livetime, self.deadtime = num, livetime, deadtime
 
+    async def default_trigger_info(self) -> TriggerInfo:
+        return TriggerInfo()
+
 
 class AllTriggerTypesLogic(DetectorTriggerLogic):
     """Supports all types of triggering."""
@@ -430,6 +433,39 @@ async def test_trigger_after_multi_event_prepare_raises():
         await det.trigger()
 
 
+async def test_preserve_detector_state_requires_default_trigger_info(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """Test PRESERVE_DETECTOR_STATE=YES errors without default_trigger_info."""
+    monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
+    det = StandardDetector(name="mydet")
+    # AllTriggerTypesLogic intentionally does not implement default_trigger_info
+    det.add_detector_logics(AllTriggerTypesLogic())
+    await det.stage()
+
+    with pytest.raises(
+        RuntimeError,
+        match="OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES is set but 'mydet' has no "
+        "default_trigger_info\\(\\)",
+    ):
+        await det.trigger()
+
+
+async def test_preserve_detector_state_no_trigger_logic_falls_back(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """When OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES but there is no trigger logic,
+    trigger() silently falls back to a bare TriggerInfo() rather than raising.
+    A detector with no trigger logic has no hardware state to preserve."""
+    monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
+    det = StandardDetector(name="nodet")
+    await det.stage()
+    # Should not raise — no trigger logic means nothing to preserve
+    await det.trigger()
+    assert det._prepare_ctx is not None
+    assert det._prepare_ctx.trigger_info == TriggerInfo()
+
+
 async def test_kickoff_respects_prepare_bounds(tmp_path):
     """Test that multiple kickoff() calls respect prepared bounds."""
     det = StandardDetector()
@@ -573,6 +609,8 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
     # Yield so detector can get collections written, then set it so we complete
     await wait_for_pending_wakeups(raise_if_exceeded=False)
     await dl.collections_written.set(1)
+    assert status.done
+    assert status.success
     docs = [doc async for doc in det.collect_asset_docs()]
     assert docs == [
         (
@@ -599,7 +637,6 @@ async def test_streamable_supports_both_step_and_fly(tmp_path):
             },
         ),
     ]
-    assert status.done
     # Fly scan should also work
     await det.prepare(TriggerInfo(number_of_events=5))
     await det.kickoff()

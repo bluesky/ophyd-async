@@ -4,6 +4,7 @@ https://github.com/areaDetector/ADSimDetector.
 """
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from ophyd_async.core import (
     DetectorTriggerLogic,
@@ -18,6 +19,7 @@ from .adcore import (
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
+    trigger_info_from_num_images,
 )
 
 __all__ = [
@@ -26,14 +28,17 @@ __all__ = [
 ]
 
 
+@dataclass
 class SimDetectorTriggerLogic(DetectorTriggerLogic):
     """Trigger logic for ADSimDetector."""
 
-    def __init__(self, driver: ADBaseIO):
-        self.driver = driver
+    driver: ADBaseIO
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
         await prepare_exposures(self.driver, num, livetime, deadtime)
+
+    async def default_trigger_info(self):
+        return await trigger_info_from_num_images(self.driver)
 
 
 class SimDetector(AreaDetector[ADBaseIO]):
