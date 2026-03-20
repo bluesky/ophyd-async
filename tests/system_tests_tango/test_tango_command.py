@@ -100,6 +100,8 @@ async def test_tango_command(
     everything_device: TangoDevice,
     everything_signal_info,
 ):
+    for name in ["strenum_cmd", "bool_cmd", "float32_spectrum_cmd"]:
+        assert hasattr(everything_device, name)
     await everything_device.connect()
 
     for ctype, val, name in TEST_PARAMS:
@@ -110,8 +112,10 @@ async def test_tango_command(
             assert isinstance(cmd, Command)
         if name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
             assert Array1D[np.uint8] == cmd.datatype
+            assert Array1D[np.uint8] == cmd._connector.backend.param_types[0]
         else:
             assert ctype == cmd.datatype
+            assert ctype == cmd._connector.backend.param_types[0]
         if isinstance(val, np.ndarray):
             assert np.array_equal(val, await cmd.execute(val))
         else:
@@ -195,6 +199,36 @@ async def test_tango_command_validation(
     await cmd.connect()
     ret = await cmd.execute(1.0)
     assert ret == 1.0
+
+    # Multiple input params should fail
+    # Commands with more than one input parameter are not yet supported.
+    call_sig = signature_from_type_args([float, int], float)
+    trl = ""
+    if everything_device_trl.endswith("#dbase=no"):
+        trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
+    with pytest.raises(TypeError) as excinfo:
+        cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+    assert "Commands with more than one input parameter" in str(excinfo.value)
+
+    # Mistyped return type should fail unless it is None
+    call_sig = signature_from_type_args([float], int)
+    trl = ""
+    if everything_device_trl.endswith("#dbase=no"):
+        trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
+    cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+    with pytest.raises(TypeError) as excinfo:
+        await cmd.connect()
+    assert "not <class 'int'>" in str(excinfo.value)
+
+    # Mistyped input parameter should fail unless it is None
+    call_sig = signature_from_type_args([Array1D[np.float32]], float)
+    trl = ""
+    if everything_device_trl.endswith("#dbase=no"):
+        trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
+    cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+    with pytest.raises(TypeError) as excinfo:
+        await cmd.connect()
+    assert "has input parameter of type <class 'float'>, not" in str(excinfo.value)
 
 
 class TangoEverythingOphydDeviceWithBadAnnotation(TangoDevice, StandardReadable):

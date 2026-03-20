@@ -150,7 +150,16 @@ class TangoDeviceConnector(DeviceConnector):
                     )
                 # don't overlaod datatype if provided by annotation
                 if backend.datatype is None:
-                    backend.datatype = await infer_python_type(full_trl, self.proxy)
+                    in_out_types = await infer_python_type(full_trl, self.proxy)
+                    if issubclass(type(backend), TangoSignalBackend):
+                        backend.datatype = in_out_types[1]
+                    elif issubclass(type(backend), TangoCommandBackend):
+                        backend.datatype = in_out_types[1]
+                        # Pyright still thinks backend could be a
+                        # TangoSignalBackend somehow
+                        backend.param_types[0] = in_out_types[0]  # type: ignore
+                    else:
+                        raise TypeError(f"Unknown backend type {backend}")
                 backend.set_trl(full_trl)
 
         # Check that all the requested children have been filled

@@ -135,7 +135,7 @@ def tango_signal_x(
 
 async def infer_python_type(
     trl: str = "", proxy: DeviceProxy | None = None
-) -> type[SignalDatatype] | None:
+) -> tuple[type[SignalDatatype] | None, type[SignalDatatype] | None]:
     """Infers the python type from the TRL."""
     # TODO: work out if this is still needed
     device_trl, tr_name = get_device_trl_and_attr(trl)
@@ -143,19 +143,20 @@ async def infer_python_type(
         dev_proxy = await AsyncDeviceProxy(device_trl)  # type: ignore
     else:
         dev_proxy = proxy
-
+    input_type = None
     if tr_name in dev_proxy.get_command_list():
         # A Device proxy instantiated by awaiting
         # tango.asyncio.DeviceProxy is typed the same as the sync
         # despite having awaitable methods.
         config = await dev_proxy.get_command_config(tr_name)  # type: ignore
-        py_type = get_python_type(config)
+        return_type = get_python_type(config)
+        input_type = get_python_type(config, return_input_type=True)
     elif tr_name in dev_proxy.get_attribute_list():
         config = await dev_proxy.get_attribute_config(tr_name)  # type: ignore
-        py_type = get_python_type(config)
+        return_type = get_python_type(config)
     else:
         raise RuntimeError(f"Cannot find {tr_name} in {device_trl}")
-    return py_type
+    return input_type, return_type
 
 
 async def infer_signal_type(

@@ -13,6 +13,7 @@ from ophyd_async.core import (
     Command,
     CommandBackend,
     NotConnectedError,
+    SignalDatatype,
     StrictEnum,
     TriggerableCommand,
 )
@@ -49,14 +50,18 @@ class TangoCommandBackend(CommandBackend[P, T]):
         TypeError: If the Tango command's actual type does not match `datatype`.
     """
 
+    param_types: list[type[SignalDatatype] | None]
+
     def __init__(
         self,
         call_spec: inspect.Signature | None,
         trl: str = "",
         device_proxy: DeviceProxy | None = None,
     ):
+        self.param_types = []
         if call_spec is None:
             datatype = None
+            self.param_types = [None]
         else:
             # Extract input parameter types
             input_types = []
@@ -66,6 +71,11 @@ class TangoCommandBackend(CommandBackend[P, T]):
 
             # Extract return type
             datatype = call_spec.return_annotation
+
+        if len(self.param_types) > 1:
+            raise TypeError(
+                "Commands with more than one input parameter are not yet supported."
+            )
 
         self._trl = trl
         self.device_proxy = device_proxy
@@ -101,6 +111,16 @@ class TangoCommandBackend(CommandBackend[P, T]):
         # Configure converters and character
         self._converter = make_converter(self._config, self.datatype)
         self._proxy.set_converter(self._converter)
+
+        param = get_python_type(self._config, return_input_type=True)
+        if self.param_types[0] is not None:
+            if param is StrictEnum:
+                pass
+            elif param != self.param_types[0]:
+                raise TypeError(
+                    f"Tango command {self._trl} has input parameter of"
+                    f" type {param}, not {self.param_types[0]}"
+                )
         datatype = get_python_type(self._config)
         # Skip type validation on connect if self.datatype is not specified
         if self.datatype is None:

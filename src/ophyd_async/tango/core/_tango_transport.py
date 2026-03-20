@@ -149,9 +149,12 @@ TANGO_TO_PYTHON_CMD_TYPE = {
 
 def get_python_type(
     config: AttributeInfoEx | CommandInfo | TestConfig,
+    return_input_type: bool = False,
 ) -> type[SignalDatatype] | None:
     """Convert Tango types to Python types based on the configuration."""
-    tango_type, tango_format = _extract_tango_info(config)
+    tango_type, tango_format = _extract_tango_info(
+        config, return_input_type=return_input_type
+    )
 
     # Handle special cases first
     if tango_type in (
@@ -194,12 +197,16 @@ def get_python_type(
 
 def _extract_tango_info(
     config: AttributeInfoEx | CommandInfo | TestConfig,
+    return_input_type: bool = False,
 ) -> tuple[CmdArgType, AttrDataFormat | None]:
     """Extract Tango type and format from the configuration."""
     if isinstance(config, (AttributeInfoEx, AttributeInfo)):
         return cast(CmdArgType, config.data_type), config.data_format
     elif isinstance(config, CommandInfo):
-        return config.out_type, None
+        if return_input_type:
+            return config.in_type, None
+        else:
+            return config.out_type, None
     elif isinstance(config, TestConfig):
         return cast(CmdArgType, config.data_type), config.data_format
     else:
