@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
@@ -148,18 +149,22 @@ class TangoDeviceConnector(DeviceConnector):
                     raise TypeError(
                         f"Cannot infer type for {full_trl} (type {signal_type})"
                     )
-                # don't overlaod datatype if provided by annotation
-                if backend.datatype is None:
-                    in_out_types = await infer_python_type(full_trl, self.proxy)
-                    if issubclass(type(backend), TangoSignalBackend):
-                        backend.datatype = in_out_types[1]
-                    elif issubclass(type(backend), TangoCommandBackend):
-                        backend.datatype = in_out_types[1]
-                        # Pyright still thinks backend could be a
-                        # TangoSignalBackend somehow
-                        backend.param_types[0] = in_out_types[0]  # type: ignore
-                    else:
-                        raise TypeError(f"Unknown backend type {backend}")
+                # don't overload datatype if provided by annotation
+
+                if isinstance(backend, TangoCommandBackend):
+                    if backend.signature is None:
+                        in_type, out_type = await infer_python_type(full_trl, self.proxy)
+                        def stub(arg): ...
+                        stub.__annotations__ = {"arg": in_type, "return": out_type}
+                        # # Pyright still thinks backend could be a
+                        # # TangoSignalBackend somehow
+                        backend.signature = inspect.signature(stub) # type: ignore
+                elif isinstance(backend, TangoSignalBackend):
+                    if backend.datatype is None:
+                        _, out_type = await infer_python_type(full_trl, self.proxy)
+                        backend.datatype = out_type
+                else:
+                    raise TypeError(f"Unknown backend type {backend}")
                 backend.set_trl(full_trl)
 
         # Check that all the requested children have been filled

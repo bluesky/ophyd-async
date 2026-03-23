@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import inspect
 from collections.abc import Sequence
 from typing import get_origin
 
@@ -75,10 +76,11 @@ TEST_PARAMS = [
 async def test_soft_command_execution(datatype, value):
     def callback(v: datatype) -> datatype:
         return v
+    call_sig = inspect.signature(callback)
 
     backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
-    assert cmd.datatype == datatype
+    assert cmd.signature == call_sig
     await cmd.connect()
     status = cmd.execute(value)
     await status
@@ -196,6 +198,7 @@ async def test_mock_command_backend_properties():
 
     async def callback(a: int) -> str:
         return str(a)
+    call_sig = inspect.signature(callback)
 
     backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
@@ -206,7 +209,7 @@ async def test_mock_command_backend_properties():
     assert cmd._connector.backend.source("test") == "mock+softcmd://test"
 
     # Verify return type
-    assert cmd.datatype is str
+    assert cmd.signature.return_annotation is str
 
     # Verify connect raises error
     with pytest.raises(NotConnectedError):
@@ -308,6 +311,9 @@ async def test_fill_child_command_vector_index():
     vector: DeviceVector[Command[[], int]] = DeviceVector()
     vector.__orig_class__ = DeviceVector[Command[[], int]]  # type: ignore
 
+    def stub() -> int: ...
+    call_sig = inspect.signature(stub)
+
     filler = DeviceFiller(
         device=vector,
         signal_backend_factory=lambda _: None,
@@ -329,4 +335,4 @@ async def test_fill_child_command_vector_index():
         assert isinstance(cmd, Command)
         backend = cmd._connector._init_backend
         assert isinstance(backend, SoftCommandBackend)
-        assert backend.datatype is int
+        assert backend.signature.return_annotation is int

@@ -32,8 +32,8 @@ from ._utils import (
 class CommandBackend(Generic[P, T_co]):
     """A backend for a Command."""
 
-    def __init__(self, datatype: type[T_co] | None):
-        self.datatype = datatype
+    def __init__(self, signature: inspect.Signature | None):
+        self.signature = signature
 
     @abstractmethod
     def source(self, name: str) -> str:
@@ -81,8 +81,8 @@ class Command(Device, Generic[P, T]):
         self._timeout = timeout
 
     @property
-    def datatype(self) -> type[T] | None:
-        return self._connector.backend.datatype
+    def signature(self) -> inspect.Signature | None:
+        return self._connector.backend.signature
 
     @property
     def source(self) -> str:
@@ -168,7 +168,8 @@ class SoftCommandBackend(CommandBackend[P, T]):
             _command_return: type[T] | None = None
         else:
             _command_return = cast(type[T], inferred_return)
-        super().__init__(datatype=_command_return)
+
+        super().__init__(signature=inspect.signature(command_cb))
 
     def source(self, name: str) -> str:
         """Return the source of the command."""
@@ -210,11 +211,11 @@ class MockCommandBackend(CommandBackend[P, T]):
         self._initial_backend = initial_backend
         self._mock = mock
         self._mock_execute_callback: Callable[P, Awaitable[T]] | None = None
-        self._return_type = initial_backend.datatype
+        self._return_type: type[T] | None = initial_backend.signature.return_annotation
         self._return_converter: SoftConverter | None = (
             make_converter(self._return_type) if self._return_type is not None else None
         )
-        super().__init__(datatype=self._return_type)
+        super().__init__(signature=initial_backend.signature)
 
     def source(self, name: str) -> str:
         return f"mock+{self._initial_backend.source(name)}"

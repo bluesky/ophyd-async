@@ -50,33 +50,12 @@ class TangoCommandBackend(CommandBackend[P, T]):
         TypeError: If the Tango command's actual type does not match `datatype`.
     """
 
-    param_types: list[type[SignalDatatype] | None]
-
     def __init__(
         self,
         call_spec: inspect.Signature | None,
         trl: str = "",
         device_proxy: DeviceProxy | None = None,
     ):
-        self.param_types = []
-        if call_spec is None:
-            datatype = None
-            self.param_types = [None]
-        else:
-            # Extract input parameter types
-            input_types = []
-            for param in call_spec.parameters.values():
-                input_types.append(param.annotation)
-            self.param_types = input_types
-
-            # Extract return type
-            datatype = call_spec.return_annotation
-
-        if len(self.param_types) > 1:
-            raise TypeError(
-                "Commands with more than one input parameter are not yet supported."
-            )
-
         self._trl = trl
         self.device_proxy = device_proxy
         self._proxy: CommandProxy | None = None
@@ -84,13 +63,18 @@ class TangoCommandBackend(CommandBackend[P, T]):
         self._converter: TangoConverter | None = None
         self._timeout: float | None = DEFAULT_TIMEOUT
 
-        if datatype == Array1D[np.int8]:
-            raise TypeError(
-                "Arrays of type np.int8 are not supported by tango."
-                " Use np.uint8 or np.int16."
-            )
+        if isinstance(call_spec, inspect.Signature):
+            if len(call_spec.parameters) > 1:
+                raise TypeError(
+                    "Commands with more than one input parameter are not yet supported."
+                )
+            if call_spec.return_annotation == Array1D[np.int8]:
+                raise TypeError(
+                    "Arrays of type np.int8 are not supported by Tango."
+                    " Use np.uint8 or another signed integer type."
+                )
 
-        super().__init__(datatype=datatype)
+        super().__init__(signature=call_spec)
 
     def set_timeout(self, timeout: float | None) -> None:
         self._timeout = timeout
@@ -108,28 +92,39 @@ class TangoCommandBackend(CommandBackend[P, T]):
         self._proxy = command_proxy
         await self._proxy.connect()
         self._config = await self._proxy.get_config()
+
+        return_type = None
+        param_type = None
+        if self.signature is not None:
+            return_type = self.signature.return_annotation
+            for param in self.signature.parameters.values():
+                param_type = param.annotation
+                break
+
         # Configure converters and character
-        self._converter = make_converter(self._config, self.datatype)
+        self._converter = make_converter(self._config, return_type)
         self._proxy.set_converter(self._converter)
 
-        param = get_python_type(self._config, return_input_type=True)
-        if self.param_types[0] is not None:
-            if param is StrictEnum:
+        config_param = get_python_type(self._config, return_input_type=True)
+
+        # Skip type validation if typehint is None
+        if param_type is not None:
+            if config_param is StrictEnum:
                 pass
-            elif param != self.param_types[0]:
+            elif config_param != param_type:
                 raise TypeError(
                     f"Tango command {self._trl} has input parameter of"
-                    f" type {param}, not {self.param_types[0]}"
+                    f" type {config_param}, not {param_type}"
                 )
-        datatype = get_python_type(self._config)
-        # Skip type validation on connect if self.datatype is not specified
-        if self.datatype is None:
+
+        config_datatype = get_python_type(self._config)
+        if return_type is None:
             return
-        if datatype is StrictEnum:
+        if config_datatype is StrictEnum:
             pass
-        elif datatype != self.datatype:
+        elif config_datatype != return_type:
             raise TypeError(
-                f"Tango command {self._trl} has type {datatype}, not {self.datatype}"
+                f"Tango command {self._trl} has type {config_datatype}, not {return_type}"
             )
 
     @AsyncStatus.wrap

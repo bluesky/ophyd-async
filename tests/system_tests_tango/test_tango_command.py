@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-
+import inspect
 import numpy as np
 import pytest
 
@@ -111,11 +111,11 @@ async def test_tango_command(
         else:
             assert isinstance(cmd, Command)
         if name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
-            assert Array1D[np.uint8] == cmd.datatype
-            assert Array1D[np.uint8] == cmd._connector.backend.param_types[0]
+            assert Array1D[np.uint8] == cmd.signature.return_annotation
+            assert Array1D[np.uint8] == list(cmd.signature.parameters.values())[0].annotation
         else:
-            assert ctype == cmd.datatype
-            assert ctype == cmd._connector.backend.param_types[0]
+            assert ctype == cmd.signature.return_annotation
+            assert ctype == list(cmd.signature.parameters.values())[0].annotation
         if isinstance(val, np.ndarray):
             assert np.array_equal(val, await cmd.execute(val))
         else:
@@ -166,7 +166,10 @@ async def test_tango_command_factory(
 
     await cmd.connect()
 
-    assert expected_datatype == cmd.datatype
+    if name == "void_cmd":
+        assert cmd.signature is None
+    else:
+        assert expected_datatype == cmd.signature.return_annotation
 
     if isinstance(val, np.ndarray):
         assert np.array_equal(val, await cmd.execute(val))
