@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-import inspect
+
 import numpy as np
 import pytest
 
@@ -16,7 +16,7 @@ from ophyd_async.tango.core import (
     TangoDoubleStringTable,
     TangoLongStringTable,
     tango_command,
-    tango_triggerable_command
+    tango_triggerable_command,
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
@@ -112,7 +112,10 @@ async def test_tango_command(
             assert isinstance(cmd, Command)
         if name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
             assert Array1D[np.uint8] == cmd.signature.return_annotation
-            assert Array1D[np.uint8] == list(cmd.signature.parameters.values())[0].annotation
+            assert (
+                Array1D[np.uint8]
+                == list(cmd.signature.parameters.values())[0].annotation
+            )
         else:
             assert ctype == cmd.signature.return_annotation
             assert ctype == list(cmd.signature.parameters.values())[0].annotation
@@ -183,6 +186,7 @@ async def test_tango_command_validation(
 ):
     # This should pass
     def call_spec(x: float) -> float: ...
+
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
@@ -215,6 +219,7 @@ async def test_tango_command_validation(
 
     # Mistyped return type should fail unless it is None
     def call_spec(x: float) -> int: ...
+
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
@@ -225,6 +230,7 @@ async def test_tango_command_validation(
 
     # Mistyped input parameter should fail unless it is None
     def call_spec(x: Array1D[np.float32]) -> float: ...
+
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]

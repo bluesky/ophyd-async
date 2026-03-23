@@ -211,10 +211,14 @@ class MockCommandBackend(CommandBackend[P, T]):
         self._initial_backend = initial_backend
         self._mock = mock
         self._mock_execute_callback: Callable[P, Awaitable[T]] | None = None
-        self._return_type: type[T] | None = initial_backend.signature.return_annotation
         self._return_converter: SoftConverter | None = (
             make_converter(self._return_type) if self._return_type is not None else None
         )
+
+        self._return_type: type[T] | None = None
+        if initial_backend.signature:
+            self._return_type = initial_backend.signature.return_annotation
+
         super().__init__(signature=initial_backend.signature)
 
     def source(self, name: str) -> str:

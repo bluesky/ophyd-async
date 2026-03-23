@@ -20,7 +20,7 @@ from ._signal import (
 from ._tango_command_backend import (
     TangoCommandBackend,
     tango_command,
-    tango_triggerable_command
+    tango_triggerable_command,
 )
 from ._tango_transport import (
     AttributeInfoEx,
@@ -83,5 +83,5 @@ __all__ = [
     "get_full_attr_trl",
     "TangoCommandBackend",
     "tango_command",
-    "tango_triggerable_command"
+    "tango_triggerable_command",
 ]

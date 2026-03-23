@@ -1,4 +1,3 @@
-import inspect
 import re
 from collections.abc import Sequence
 from typing import Any, ParamSpec, TypeVar

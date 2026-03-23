@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import inspect
-from typing import cast, Callable
+from collections.abc import Callable
+from typing import cast
 
 import numpy as np
 from tango import CommandInfo, DeviceProxy
@@ -13,7 +14,6 @@ from ophyd_async.core import (
     Command,
     CommandBackend,
     NotConnectedError,
-    SignalDatatype,
     StrictEnum,
     TriggerableCommand,
 )
@@ -124,7 +124,8 @@ class TangoCommandBackend(CommandBackend[P, T]):
             pass
         elif config_datatype != return_type:
             raise TypeError(
-                f"Tango command {self._trl} has type {config_datatype}, not {return_type}"
+                f"Tango command {self._trl} has type {config_datatype},"
+                f" not {return_type}"
             )
 
     @AsyncStatus.wrap
@@ -146,6 +147,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
         reply = await self._proxy.put(value)
         return cast(T, reply)
 
+
 def tango_command(
     call_spec: Callable[P, T],
     trl: str,
@@ -160,7 +162,8 @@ def tango_command(
     The command can be configured to accept arguments and return a typed result.
 
     Args:
-        call_spec (Callable): A callable sharing the call signature of the tango command.
+        call_spec (Callable): A callable sharing the call signature of the tango
+         command.
         trl (str): The Tango Resource Locator (TRL) of the command (e.g.,
          `tango://host:port/device/command`).
         device_proxy (DeviceProxy | None): An optional pre-configured Tango
@@ -180,6 +183,7 @@ def tango_command(
         inspect.signature(call_spec), trl, device_proxy
     )
     return Command(backend, timeout=timeout, name=name)
+
 
 def tango_triggerable_command(
     trl: str,
@@ -209,12 +213,7 @@ def tango_triggerable_command(
          can be executed asynchronously.
 
     """
-
-    backend: TangoCommandBackend = TangoCommandBackend(
-        None,
-        trl,
-        device_proxy
-    )
+    backend: TangoCommandBackend = TangoCommandBackend(None, trl, device_proxy)
     return TriggerableCommand(
         cast("CommandBackend[[], None]", backend),
         timeout=timeout,

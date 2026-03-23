@@ -1,6 +1,6 @@
 import asyncio
-import logging
 import inspect
+import logging
 from collections.abc import Sequence
 from typing import get_origin
 
@@ -76,6 +76,7 @@ TEST_PARAMS = [
 async def test_soft_command_execution(datatype, value):
     def callback(v: datatype) -> datatype:
         return v
+
     call_sig = inspect.signature(callback)
 
     backend = SoftCommandBackend(callback)
@@ -198,7 +199,6 @@ async def test_mock_command_backend_properties():
 
     async def callback(a: int) -> str:
         return str(a)
-    call_sig = inspect.signature(callback)
 
     backend = SoftCommandBackend(callback)
     cmd = Command(backend, name="test_cmd")
@@ -310,9 +310,6 @@ async def test_fill_child_command_vector_index():
 
     vector: DeviceVector[Command[[], int]] = DeviceVector()
     vector.__orig_class__ = DeviceVector[Command[[], int]]  # type: ignore
-
-    def stub() -> int: ...
-    call_sig = inspect.signature(stub)
 
     filler = DeviceFiller(
         device=vector,

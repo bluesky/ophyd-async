@@ -153,12 +153,16 @@ class TangoDeviceConnector(DeviceConnector):
 
                 if isinstance(backend, TangoCommandBackend):
                     if backend.signature is None:
-                        in_type, out_type = await infer_python_type(full_trl, self.proxy)
+                        in_type, out_type = await infer_python_type(
+                            full_trl, self.proxy
+                        )
+
                         def stub(arg): ...
+
                         stub.__annotations__ = {"arg": in_type, "return": out_type}
                         # # Pyright still thinks backend could be a
                         # # TangoSignalBackend somehow
-                        backend.signature = inspect.signature(stub) # type: ignore
+                        backend.signature = inspect.signature(stub)  # type: ignore
                 elif isinstance(backend, TangoSignalBackend):
                     if backend.datatype is None:
                         _, out_type = await infer_python_type(full_trl, self.proxy)
