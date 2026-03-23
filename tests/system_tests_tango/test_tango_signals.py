@@ -1,6 +1,7 @@
 import asyncio
 import time
 from collections.abc import Sequence
+from typing import Annotated as A
 from typing import TypeVar, get_origin
 
 import numpy as np
@@ -8,7 +9,13 @@ import pytest
 from tango.asyncio import DeviceProxy
 from test_base_device import TestDevice
 
-from ophyd_async.core import NotConnectedError, SignalRW, StandardReadable, StrictEnum
+from ophyd_async.core import (
+    NotConnectedError,
+    SignalRW,
+    StandardReadable,
+    StrictEnum,
+)
+from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import (
     DevStateEnum,
     TangoDevice,
@@ -521,7 +528,7 @@ async def test_infer_python_type(everything_device_trl):
 
 class TangoEverythingOphydDeviceBadAnnotation(TangoDevice, StandardReadable):
     # datatype of enum commands must be explicitly hinted
-    strenum_cmd: A[SignalRW[None], Format.HINTED_UNCACHED_SIGNAL]
+    strenum: A[SignalRW[None], Format.HINTED_UNCACHED_SIGNAL]
 
 
 @pytest.fixture()

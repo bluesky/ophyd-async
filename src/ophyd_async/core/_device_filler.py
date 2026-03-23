@@ -536,7 +536,6 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             )
 
         logical_name = cast(LogicalName, name)
-
         # First check unfilled command backends
         if logical_name in self._unfilled_command_backends:
             backend, expected_command_type = self._unfilled_command_backends.pop(

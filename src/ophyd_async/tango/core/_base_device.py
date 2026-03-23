@@ -150,7 +150,6 @@ class TangoDeviceConnector(DeviceConnector):
                         f"Cannot infer type for {full_trl} (type {signal_type})"
                     )
                 # don't overload datatype if provided by annotation
-
                 if isinstance(backend, TangoCommandBackend):
                     if backend.signature is None:
                         in_type, out_type = await infer_python_type(
