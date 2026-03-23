@@ -442,7 +442,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         elif name in self._filled_backends:
             # We made it and filled it so return for validation
             backend, expected_signal_type = self._filled_backends[name]
-        elif vector_index:
+        elif vector_index is not None:
             # We need to add a new entry to a DeviceVector
             backend = self._signal_backend_factory(_get_datatype(signal_type))
             vector = self._ensure_device_vector()
@@ -549,7 +549,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             backend, expected_command_type = self._filled_command_backends[logical_name]
 
         # Handle DeviceVector case
-        elif vector_index:
+        elif vector_index is not None:
             vector = self._ensure_device_vector()
             vector_command_type = (
                 self._vector_device_type.get(logical_name) or command_type
