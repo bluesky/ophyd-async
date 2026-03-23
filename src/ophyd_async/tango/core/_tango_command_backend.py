@@ -27,7 +27,7 @@ from ._tango_transport import (
     get_tango_trl,
     make_converter,
 )
-from ._utils import P, T, _wait_for
+from ._utils import P, T
 
 
 class TangoCommandBackend(CommandBackend[P, T]):
@@ -148,12 +148,8 @@ class TangoCommandBackend(CommandBackend[P, T]):
             )
         value: T | None = cast("T | None", args[0]) if args else None
 
-        # Execute
-        reply = await _wait_for(
-            self._proxy.put(value), timeout=self._timeout, source=self._trl
-        )
+        reply = await self._proxy.put(value)
         return cast(T, reply)
-
 
 def tango_command(
     call_spec: inspect.Signature,
