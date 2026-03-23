@@ -1,7 +1,6 @@
-import asyncio
 import inspect
 import re
-from collections.abc import Awaitable, Sequence
+from collections.abc import Sequence
 from typing import Any, ParamSpec, TypeVar
 
 import numpy as np
@@ -87,14 +86,6 @@ class TangoDoubleStringTable(Table):
         double_equal = np.array_equal(self.double, other.double)
         string_equal = self.string == other.string
         return double_equal and string_equal
-
-
-async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
-    try:
-        return await asyncio.wait_for(coro, timeout)
-    except TimeoutError as exc:
-        raise TimeoutError(source) from exc
-
 
 def signature_from_type_args(params, return_type):
     parameters = [
