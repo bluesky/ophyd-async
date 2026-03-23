@@ -1,0 +1,233 @@
+# {py:mod}`ophyd_async.epics.admerlin`
+
+```{py:module} ophyd_async.epics.admerlin
+```
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin
+:allowtitles:
+```
+
+## Module Contents
+
+### Classes
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`MerlinDetector <ophyd_async.epics.admerlin.MerlinDetector>`
+  - ```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinDetector
+    :summary:
+    ```
+* - {py:obj}`MerlinDriverIO <ophyd_async.epics.admerlin.MerlinDriverIO>`
+  - ```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinDriverIO
+    :summary:
+    ```
+* - {py:obj}`MerlinTriggerLogic <ophyd_async.epics.admerlin.MerlinTriggerLogic>`
+  - ```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerLogic
+    :summary:
+    ```
+* - {py:obj}`MerlinTriggerMode <ophyd_async.epics.admerlin.MerlinTriggerMode>`
+  - ```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode
+    :summary:
+    ```
+````
+
+### API
+
+````{py:class} MerlinDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider | None = None, driver_suffix='cam1:', writer_type: ~ophyd_async.epics.adcore.ADWriterType | None = ADWriterType.HDF, writer_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+:canonical: ophyd_async.epics.admerlin.MerlinDetector
+
+Bases: {py:obj}`ophyd_async.epics.adcore.AreaDetector`\[{py:obj}`ophyd_async.epics.admerlin.MerlinDriverIO`\]
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinDetector
+```
+
+````
+
+`````{py:class} MerlinDriverIO(prefix: str, with_pvi: bool = False, name: str = '')
+:canonical: ophyd_async.epics.admerlin.MerlinDriverIO
+
+Bases: {py:obj}`ophyd_async.epics.adcore.ADBaseIO`
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinDriverIO
+```
+
+````{py:attribute} trigger_mode
+:canonical: ophyd_async.epics.admerlin.MerlinDriverIO.trigger_mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.epics.admerlin.MerlinTriggerMode], ophyd_async.epics.core.PvSuffix.rbv('TriggerMode')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinDriverIO.trigger_mode
+```
+
+````
+
+`````
+
+`````{py:class} MerlinTriggerLogic
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerLogic
+
+Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerLogic
+```
+
+````{py:attribute} driver
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerLogic.driver
+:type: ~ophyd_async.epics.admerlin.MerlinDriverIO
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerLogic.driver
+```
+
+````
+
+````{py:method} get_deadtime(config_values: ~ophyd_async.core.SignalDict) -> float
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerLogic.get_deadtime
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerLogic.get_deadtime
+```
+
+````
+
+````{py:method} prepare_internal(num: int, livetime: float, deadtime: float)
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerLogic.prepare_internal
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerLogic.prepare_internal
+```
+
+````
+
+````{py:method} prepare_edge(num: int, livetime: float)
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerLogic.prepare_edge
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerLogic.prepare_edge
+```
+
+````
+
+````{py:method} default_trigger_info()
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerLogic.default_trigger_info
+:async:
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerLogic.default_trigger_info
+```
+
+````
+
+`````
+
+`````{py:class} MerlinTriggerMode()
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode
+
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode
+```
+
+````{py:attribute} INTERNAL
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.INTERNAL
+:value: >
+   'Internal'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.INTERNAL
+```
+
+````
+
+````{py:attribute} TRIGGER_ENABLE
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.TRIGGER_ENABLE
+:value: >
+   'Trigger Enable'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.TRIGGER_ENABLE
+```
+
+````
+
+````{py:attribute} TRIGGER_START_RISING
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.TRIGGER_START_RISING
+:value: >
+   'Trigger start rising'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.TRIGGER_START_RISING
+```
+
+````
+
+````{py:attribute} TRIGGER_START_FALLING
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.TRIGGER_START_FALLING
+:value: >
+   'Trigger start falling'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.TRIGGER_START_FALLING
+```
+
+````
+
+````{py:attribute} TRIGGER_BOTH_RISING
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.TRIGGER_BOTH_RISING
+:value: >
+   'Trigger both rising'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.TRIGGER_BOTH_RISING
+```
+
+````
+
+````{py:attribute} LVDS_TRIG_ENABLE
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.LVDS_TRIG_ENABLE
+:value: >
+   'LVDS Trig Enable'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.LVDS_TRIG_ENABLE
+```
+
+````
+
+````{py:attribute} LVDS_TRIG_START_RISING
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.LVDS_TRIG_START_RISING
+:value: >
+   'LVDS Trig start rising'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.LVDS_TRIG_START_RISING
+```
+
+````
+
+````{py:attribute} LVDS_TRIG_START_FALLING
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.LVDS_TRIG_START_FALLING
+:value: >
+   'LVDS Trig start falling'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.LVDS_TRIG_START_FALLING
+```
+
+````
+
+````{py:attribute} LVDS_TRIG_BOTH_RISING
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.LVDS_TRIG_BOTH_RISING
+:value: >
+   'LVDS Trig both rising'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.LVDS_TRIG_BOTH_RISING
+```
+
+````
+
+````{py:attribute} SOFTWARE
+:canonical: ophyd_async.epics.admerlin.MerlinTriggerMode.SOFTWARE
+:value: >
+   'Software'
+
+```{autodoc2-docstring} ophyd_async.epics.admerlin.MerlinTriggerMode.SOFTWARE
+```
+
+````
+
+`````
