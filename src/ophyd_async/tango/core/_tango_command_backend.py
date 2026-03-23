@@ -158,8 +158,7 @@ def tango_command(
     *,
     timeout: float | None = DEFAULT_TIMEOUT,
     name: str = "",
-    triggerable: bool = False,
-) -> Command[P, T] | TriggerableCommand:
+) -> Command[P, T]:
     """Factory function to create a Tango-backed command.
 
     Creates a `Command` or `TriggerableCommand` that executes a Tango device command.
@@ -176,23 +175,53 @@ def tango_command(
          device.
             Defaults to `DEFAULT_TIMEOUT`.
         name (str): Optional name for the command (used in logging and debugging).
-        triggerable (bool): If `True`, returns a command with a trigger method
-        (no arguments, returns `None`).
-            Defaults to `False`.
 
     Returns:
-        Command[P, T] | TriggerableCommand: A command instance that
+        Command[P, T]: A command instance that
          can be executed asynchronously.
 
     """
     backend: TangoCommandBackend[P, T] = TangoCommandBackend(
         inspect.signature(call_spec), trl, device_proxy
     )
-    if triggerable:
-        return TriggerableCommand(
-            cast("CommandBackend[[], None]", backend),
-            timeout=timeout,
-            name=name,
-        )
-    else:
-        return Command(backend, timeout=timeout, name=name)
+    return Command(backend, timeout=timeout, name=name)
+
+def tango_triggerable_command(
+    trl: str,
+    device_proxy: DeviceProxy | None = None,
+    *,
+    timeout: float | None = DEFAULT_TIMEOUT,
+    name: str = "",
+) -> TriggerableCommand:
+    """Factory function to create a Tango-backed command.
+
+    Creates a `Command` or `TriggerableCommand` that executes a Tango device command.
+    The command can be configured to accept arguments and return a typed result.
+
+    Args:
+        trl (str): The Tango Resource Locator (TRL) of the command (e.g.,
+         `tango://host:port/device/command`).
+        device_proxy (DeviceProxy | None): An optional pre-configured Tango
+         `DeviceProxy`.
+            If provided, it will be used to resolve the TRL.
+        timeout (float | None): Timeout (in seconds) for connecting to the Tango
+         device.
+            Defaults to `DEFAULT_TIMEOUT`.
+        name (str): Optional name for the command (used in logging and debugging).
+
+    Returns:
+        TriggerableCommand: A command instance that
+         can be executed asynchronously.
+
+    """
+
+    backend: TangoCommandBackend = TangoCommandBackend(
+        None,
+        trl,
+        device_proxy
+    )
+    return TriggerableCommand(
+        cast("CommandBackend[[], None]", backend),
+        timeout=timeout,
+        name=name,
+    )

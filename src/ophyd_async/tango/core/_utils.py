@@ -86,12 +86,3 @@ class TangoDoubleStringTable(Table):
         double_equal = np.array_equal(self.double, other.double)
         string_equal = self.string == other.string
         return double_equal and string_equal
-
-def signature_from_type_args(params, return_type):
-    parameters = [
-        inspect.Parameter(
-            f"arg{i}", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=t
-        )
-        for i, t in enumerate(params)
-    ]
-    return inspect.Signature(parameters, return_annotation=return_type)

@@ -15,8 +15,8 @@ from ophyd_async.tango.core import (
     TangoDevice,
     TangoDoubleStringTable,
     TangoLongStringTable,
-    signature_from_type_args,
     tango_command,
+    tango_triggerable_command
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
@@ -133,13 +133,10 @@ async def test_tango_command_factory(
     # Determine expected datatype and triggerable status based on name
     if name == "void_cmd":
         expected_datatype = None
-        is_triggerable = True
     elif name in ["int8_spectrum_cmd", "uint8_spectrum_cmd"]:
         expected_datatype = Array1D[np.uint8]
-        is_triggerable = False
     else:
         expected_datatype = ctype
-        is_triggerable = False
 
     trl = ""
 
@@ -154,12 +151,10 @@ async def test_tango_command_factory(
         assert "Arrays of type np.int8 are not supported" in str(excinfo.value)
         return
     elif ctype is None:
-        cmd = tango_command(
-            call_spec=spec,
+        cmd = tango_triggerable_command(
             trl=trl,
             device_proxy=None,
             name=name,
-            triggerable=is_triggerable,
         )
     else:
         cmd = tango_command(call_spec=spec, trl=trl, device_proxy=None, name=name)

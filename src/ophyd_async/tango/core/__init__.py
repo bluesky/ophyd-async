@@ -20,6 +20,7 @@ from ._signal import (
 from ._tango_command_backend import (
     TangoCommandBackend,
     tango_command,
+    tango_triggerable_command
 )
 from ._tango_transport import (
     AttributeInfoEx,
@@ -41,7 +42,6 @@ from ._utils import (
     TangoLongStringTable,
     get_device_trl_and_attr,
     get_full_attr_trl,
-    signature_from_type_args,
     try_to_cast_as_float,
 )
 
@@ -62,7 +62,6 @@ __all__ = [
     "make_backend",
     "make_converter",
     "parse_precision",
-    "signature_from_type_args",
     "tango_signal_r",
     "tango_signal_rw",
     "tango_signal_w",
@@ -84,4 +83,5 @@ __all__ = [
     "get_full_attr_trl",
     "TangoCommandBackend",
     "tango_command",
+    "tango_triggerable_command"
 ]
