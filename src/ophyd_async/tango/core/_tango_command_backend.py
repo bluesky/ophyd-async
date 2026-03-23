@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import cast
+from typing import cast, Callable
 
 import numpy as np
 from tango import CommandInfo, DeviceProxy
@@ -152,21 +152,21 @@ class TangoCommandBackend(CommandBackend[P, T]):
         return cast(T, reply)
 
 def tango_command(
-    call_spec: inspect.Signature,
+    call_spec: Callable[P, T],
     trl: str,
     device_proxy: DeviceProxy | None = None,
     *,
     timeout: float | None = DEFAULT_TIMEOUT,
     name: str = "",
     triggerable: bool = False,
-) -> Command[P, object] | TriggerableCommand:
+) -> Command[P, T] | TriggerableCommand:
     """Factory function to create a Tango-backed command.
 
     Creates a `Command` or `TriggerableCommand` that executes a Tango device command.
     The command can be configured to accept arguments and return a typed result.
 
     Args:
-        call_spec (inspect.Signature): Callable signature of the tango command.
+        call_spec (Callable): A callable sharing the call signature of the tango command.
         trl (str): The Tango Resource Locator (TRL) of the command (e.g.,
          `tango://host:port/device/command`).
         device_proxy (DeviceProxy | None): An optional pre-configured Tango
@@ -185,8 +185,8 @@ def tango_command(
          can be executed asynchronously.
 
     """
-    backend: TangoCommandBackend[P, object] = TangoCommandBackend(
-        call_spec, trl, device_proxy
+    backend: TangoCommandBackend[P, T] = TangoCommandBackend(
+        inspect.signature(call_spec), trl, device_proxy
     )
     if triggerable:
         return TriggerableCommand(

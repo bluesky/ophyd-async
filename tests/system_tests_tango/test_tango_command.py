@@ -141,25 +141,28 @@ async def test_tango_command_factory(
         expected_datatype = ctype
         is_triggerable = False
 
-    call_sig = signature_from_type_args([ctype], ctype)
+    trl = ""
+
+    def spec(x: ctype) -> ctype: ...
+
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + f"/{name}" + everything_device_trl[-9:]
 
     if ctype == Array1D[np.int8]:
         with pytest.raises(TypeError) as excinfo:
-            tango_command(call_spec=call_sig, trl=trl, device_proxy=None, name=name)
+            tango_command(call_spec=spec, trl=trl, device_proxy=None, name=name)
         assert "Arrays of type np.int8 are not supported" in str(excinfo.value)
         return
     elif ctype is None:
         cmd = tango_command(
-            call_spec=call_sig,
+            call_spec=spec,
             trl=trl,
             device_proxy=None,
             name=name,
             triggerable=is_triggerable,
         )
     else:
-        cmd = tango_command(call_spec=call_sig, trl=trl, device_proxy=None, name=name)
+        cmd = tango_command(call_spec=spec, trl=trl, device_proxy=None, name=name)
 
     if name == "void_cmd":
         assert isinstance(cmd, TriggerableCommand)
@@ -181,51 +184,53 @@ async def test_tango_command_validation(
     everything_device_trl: str,
 ):
     # This should pass
-    call_sig = signature_from_type_args([float], float)
+    def call_spec(x: float) -> float: ...
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
-    cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+    cmd = tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
     await cmd.connect()
     ret = await cmd.execute(1.0)
     assert ret == 1.0
 
     # This should pass
-    call_sig = signature_from_type_args([float], None)
+    def call_spec(x: float) -> None: ...
+
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
-    cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+    cmd = tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
     await cmd.connect()
     ret = await cmd.execute(1.0)
     assert ret == 1.0
 
     # Multiple input params should fail
     # Commands with more than one input parameter are not yet supported.
-    call_sig = signature_from_type_args([float, int], float)
+    def call_spec(x: float, y: int) -> float: ...
+
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
     with pytest.raises(TypeError) as excinfo:
-        cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+        tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
     assert "Commands with more than one input parameter" in str(excinfo.value)
 
     # Mistyped return type should fail unless it is None
-    call_sig = signature_from_type_args([float], int)
+    def call_spec(x: float) -> int: ...
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
-    cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+    cmd = tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
     with pytest.raises(TypeError) as excinfo:
         await cmd.connect()
     assert "not <class 'int'>" in str(excinfo.value)
 
     # Mistyped input parameter should fail unless it is None
-    call_sig = signature_from_type_args([Array1D[np.float32]], float)
+    def call_spec(x: Array1D[np.float32]) -> float: ...
     trl = ""
     if everything_device_trl.endswith("#dbase=no"):
         trl = everything_device_trl[:-9] + "/float64_cmd" + everything_device_trl[-9:]
-    cmd = tango_command(call_spec=call_sig, trl=trl, name="float64_cmd")
+    cmd = tango_command(call_spec=call_spec, trl=trl, name="float64_cmd")
     with pytest.raises(TypeError) as excinfo:
         await cmd.connect()
     assert "has input parameter of type <class 'float'>, not" in str(excinfo.value)
