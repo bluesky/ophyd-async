@@ -42,6 +42,7 @@ from ._utils import (
     TangoLongStringTable,
     get_device_trl_and_attr,
     get_full_attr_trl,
+    sig_from_types,
     try_to_cast_as_float,
 )
 
@@ -84,4 +85,5 @@ __all__ = [
     "TangoCommandBackend",
     "tango_command",
     "tango_triggerable_command",
+    "sig_from_types",
 ]

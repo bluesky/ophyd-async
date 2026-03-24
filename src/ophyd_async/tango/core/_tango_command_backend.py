@@ -10,7 +10,6 @@ from tango import CommandInfo, DeviceProxy
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Array1D,
-    AsyncStatus,
     Command,
     CommandBackend,
     NotConnectedError,
@@ -61,7 +60,6 @@ class TangoCommandBackend(CommandBackend[P, T]):
         self._proxy: CommandProxy | None = None
         self._config: CommandInfo | None = None
         self._converter: TangoConverter | None = None
-        self._timeout: float | None = DEFAULT_TIMEOUT
 
         if isinstance(call_spec, inspect.Signature):
             if len(call_spec.parameters) > 1:
@@ -75,9 +73,6 @@ class TangoCommandBackend(CommandBackend[P, T]):
                 )
 
         super().__init__(signature=call_spec)
-
-    def set_timeout(self, timeout: float | None) -> None:
-        self._timeout = timeout
 
     def set_trl(self, trl: str) -> None:
         self._trl = trl
@@ -97,6 +92,8 @@ class TangoCommandBackend(CommandBackend[P, T]):
         param_type = None
         if self.signature is not None:
             return_type = self.signature.return_annotation
+            # We only need the first parameter type until Tango commands
+            # support multiple arguments.
             for param in self.signature.parameters.values():
                 param_type = param.annotation
                 break
@@ -128,8 +125,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
                 f" not {return_type}"
             )
 
-    @AsyncStatus.wrap
-    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:  # type: ignore[override]
+    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         if kwargs:
             raise TypeError("Tango commands do not support keyword arguments")
         if self._proxy is None or self._config is None:

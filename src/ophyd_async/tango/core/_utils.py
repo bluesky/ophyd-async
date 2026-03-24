@@ -1,10 +1,11 @@
+import inspect
 import re
 from collections.abc import Sequence
 from typing import Any, ParamSpec, TypeVar
 
 import numpy as np
 
-from ophyd_async.core import Array1D, StrictEnum, Table
+from ophyd_async.core import Array1D, SignalDatatype, StrictEnum, Table
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -85,3 +86,18 @@ class TangoDoubleStringTable(Table):
         double_equal = np.array_equal(self.double, other.double)
         string_equal = self.string == other.string
         return double_equal and string_equal
+
+
+def sig_from_types(
+    in_type: type[SignalDatatype] | None, out_type: type[SignalDatatype] | None
+):
+    params = (
+        [
+            inspect.Parameter(
+                "arg", inspect.Parameter.POSITIONAL_OR_KEYWORD, annotation=in_type
+            )
+        ]
+        if in_type not in (None, type(None))
+        else []
+    )
+    return inspect.Signature(params, return_annotation=out_type)

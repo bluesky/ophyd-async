@@ -82,6 +82,10 @@ class TangoEverythingOphydDevice(TangoDevice, StandardReadable):
     float32_spectrum_cmd: Command[[Array1D[np.float32]], Array1D[np.float32]]
 
 
+class TangoEverythingOphydDeviceTriggerableAnnotation(TangoDevice, StandardReadable):
+    void_cmd: TriggerableCommand
+
+
 @pytest.fixture()
 async def everything_device(everything_device_trl):
     return TangoEverythingOphydDevice(everything_device_trl)
@@ -118,7 +122,12 @@ async def test_tango_command(
             )
         else:
             assert ctype == cmd.signature.return_annotation
-            assert ctype == list(cmd.signature.parameters.values())[0].annotation
+            print(name, cmd.signature)
+            if name == "void_cmd":
+                assert not list(cmd.signature.parameters.values())
+            else:
+                assert ctype == list(cmd.signature.parameters.values())[0].annotation
+
         if isinstance(val, np.ndarray):
             assert np.array_equal(val, await cmd.execute(val))
         else:
@@ -252,6 +261,13 @@ async def everything_device_bad_anno(everything_device_trl):
     return TangoEverythingOphydDeviceWithBadAnnotation(everything_device_trl)
 
 
+@pytest.fixture()
+async def everything_device_triggerable(everything_device_trl):
+    return TangoEverythingOphydDeviceTriggerableAnnotation(
+        everything_device_trl, auto_fill_signals=False
+    )
+
+
 @pytest.mark.asyncio
 async def test_tango_command_bad_annotation(
     everything_device_bad_anno,
@@ -259,3 +275,11 @@ async def test_tango_command_bad_annotation(
     with pytest.raises(NotConnectedError) as excinfo:
         await everything_device_bad_anno.connect()
     assert "not <class 'NoneType'>" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_triggerable_command_annotation(everything_device_triggerable):
+    attr = everything_device_triggerable.void_cmd
+    assert isinstance(attr, TriggerableCommand)
+    await everything_device_triggerable.connect()
+    await attr.trigger()

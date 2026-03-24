@@ -8,8 +8,6 @@ from functools import cached_property
 from typing import (
     Generic,
     cast,
-    get_args,
-    get_origin,
     get_type_hints,
 )
 from unittest.mock import AsyncMock
@@ -52,8 +50,7 @@ class CommandConnector(DeviceConnector):
     """A connector for a Command."""
 
     def __init__(self, backend: CommandBackend):
-        self._init_backend = backend
-        self.backend = backend
+        self.backend = self._init_backend = backend
 
     async def connect_mock(self, device: Device, mock: LazyMock):
         """Connect the backend in mock mode."""
@@ -160,14 +157,6 @@ class SoftCommandBackend(CommandBackend[P, T]):
                     f"Cannot create converter for parameter '{name}' of type"
                     f" {expected_type}: {exc}"
                 ) from exc
-        # Handle return type
-        inferred_return = hints["return"]
-        if get_origin(inferred_return) in (Awaitable, asyncio.Future):
-            inferred_return = get_args(inferred_return)[0]
-        if inferred_return is None or inferred_return is type(None):
-            _command_return: type[T] | None = None
-        else:
-            _command_return = cast(type[T], inferred_return)
 
         super().__init__(signature=inspect.signature(command_cb))
 
@@ -239,12 +228,20 @@ class MockCommandBackend(CommandBackend[P, T]):
     @cached_property
     def execute_mock(self) -> AsyncMock:
         """Return the mock that will track calls to the command execution."""
+        default_return = None
+        if self._return_type is not None:
+            try:
+                default_return = self._return_type()
+            except (TypeError, ValueError):
+                pass
         execute_mock = AsyncMock(
             name="execute",
-            spec=Callable[P, Awaitable[T]],
+            spec=self._initial_backend.signature
+            if self._initial_backend.signature
+            else Callable[P, Awaitable[T]],
             side_effect=self._mock_execute_callback
             if self._mock_execute_callback
-            else lambda *args, **kwargs: None,
+            else lambda *args, **kwargs: default_return,
         )
         self._mock().attach_mock(execute_mock, "execute")
         return execute_mock

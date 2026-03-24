@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import inspect
 from dataclasses import dataclass
 from typing import Any, Generic, TypeVar
 
@@ -18,7 +17,7 @@ from ophyd_async.core import (
 
 from ._signal import TangoSignalBackend, infer_python_type, infer_signal_type
 from ._tango_command_backend import TangoCommandBackend
-from ._utils import get_full_attr_trl
+from ._utils import get_full_attr_trl, sig_from_types
 
 T = TypeVar("T")
 
@@ -155,13 +154,11 @@ class TangoDeviceConnector(DeviceConnector):
                         in_type, out_type = await infer_python_type(
                             full_trl, self.proxy
                         )
+                        sig = sig_from_types(in_type, out_type)
 
-                        def stub(arg): ...
-
-                        stub.__annotations__ = {"arg": in_type, "return": out_type}
                         # # Pyright still thinks backend could be a
                         # # TangoSignalBackend somehow
-                        backend.signature = inspect.signature(stub)  # type: ignore
+                        backend.signature = sig  # type: ignore
                 elif isinstance(backend, TangoSignalBackend):
                     if backend.datatype is None:
                         _, out_type = await infer_python_type(full_trl, self.proxy)
