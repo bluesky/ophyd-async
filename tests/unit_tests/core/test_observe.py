@@ -29,6 +29,24 @@ async def test_observe_value_working_correctly():
     await status
 
 
+async def test_observe_value_done_status_raises():
+    sig, setter = soft_signal_r_and_setter(float)
+
+    async def tick_then_fail():
+        await asyncio.sleep(0.01)
+        setter(1.0)
+        await asyncio.sleep(0.01)
+        raise ValueError("status failed")
+
+    recv = []
+    status = AsyncStatus(tick_then_fail())
+    with pytest.raises(ValueError, match="status failed"):
+        async for val in observe_value(sig, done_status=status):
+            recv.append(val)
+    # Received updates before the status failed
+    assert recv == [0.0, 1.0]
+
+
 async def test_observes_signals_values_working_correctly():
     sig1, setter1 = soft_signal_r_and_setter(float)
     sig2, setter2 = soft_signal_r_and_setter(float)

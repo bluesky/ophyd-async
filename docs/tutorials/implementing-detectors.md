@@ -191,7 +191,7 @@ First we have `BlobTriggerLogic`, a [](#DetectorTriggerLogic) subclass:
 :language: python
 ```
 
-Its job is to configure the detector for different trigger modes. In this case we only implement internal triggering:
+It is decorated with `@dataclass`, which generates `__init__` automatically from the class-level field annotations (here `pattern_generator`). Its job is to configure the detector for different trigger modes. In this case we only implement internal triggering:
 - `prepare_internal()` takes the number of frames, livetime (exposure), and deadtime, and sets up the pattern generator with those parameters.
 
 If we wanted to support external triggering, we would also implement:
@@ -201,6 +201,7 @@ If we wanted to support external triggering, we would also implement:
 We could also implement:
 - `get_deadtime()` to calculate the minimum time between exposures based on configuration
 - `config_sigs()` to return signals that should appear in read_configuration()
+- `default_trigger_info()` to return the [](#TriggerInfo) to use when `trigger()` is called without a preceding `prepare()` (governed by [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE)).
 
 ### `BlobArmLogic`
 

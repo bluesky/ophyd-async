@@ -576,3 +576,20 @@ async def test_infer_python_type(everything_device_trl):
     with pytest.raises(RuntimeError) as exc:
         await infer_python_type(trl=bad_attr, proxy=proxy)
     assert "Cannot find" in str(exc.value)
+
+
+class TangoEverythingOphydDeviceBadAnnotation(TangoDevice, StandardReadable):
+    # datatype of enum commands must be explicitly hinted
+    strenum_cmd: A[SignalRW[None], Format.HINTED_UNCACHED_SIGNAL]
+
+
+@pytest.fixture()
+async def everything_device_bad_anno(everything_device_trl):
+    return TangoEverythingOphydDeviceBadAnnotation(everything_device_trl)
+
+
+@pytest.mark.asyncio
+async def test_bad_annotation(everything_device_bad_anno):
+    with pytest.raises(NotConnectedError) as exc:
+        await everything_device_bad_anno.connect()
+    assert "expected <class 'NoneType'>" in str(exc.value)

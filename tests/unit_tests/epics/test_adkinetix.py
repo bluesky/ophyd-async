@@ -6,6 +6,7 @@ from ophyd_async.core import (
     DetectorTrigger,
     StaticPathProvider,
     TriggerInfo,
+    callback_on_mock_put,
     init_devices,
     set_mock_value,
 )
@@ -99,3 +100,24 @@ async def test_prepare_internal(
             call.acquire_time.put(0.3),
         ],
     )
+
+
+@pytest.mark.parametrize("num_images,expected_first_dim", [(10, 10), (0, 1)])
+async def test_trigger_uses_num_images(
+    test_adkinetix: adkinetix.KinetixDetector,
+    monkeypatch: pytest.MonkeyPatch,
+    num_images: int,
+    expected_first_dim: int,
+):
+    monkeypatch.setenv("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "YES")
+    detector = test_adkinetix
+    writer = detector.get_plugin("writer", adcore.NDFileHDF5IO)
+    set_mock_value(detector.driver.num_images, num_images)
+    await detector.stage()
+    callback_on_mock_put(
+        detector.driver.acquire,
+        lambda v: set_mock_value(writer.num_captured, expected_first_dim),
+    )
+    await detector.trigger()
+    description = await detector.describe()
+    assert description["detector"]["shape"][0] == expected_first_dim
