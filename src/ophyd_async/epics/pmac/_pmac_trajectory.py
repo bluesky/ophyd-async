@@ -51,6 +51,13 @@ class PmacPrepareContext:
     ramp_up_time: float
 
 
+@dataclass
+class PmacScanInfo:
+    spec: Spec[Motor]
+    ramp_time: float | None
+    turnaround_time: float | None
+
+
 class PmacTrajectoryTriggerLogic(
     Device,
     Stageable,
@@ -66,20 +73,25 @@ class PmacTrajectoryTriggerLogic(
         super().__init__(name=name)
 
     @AsyncStatus.wrap
-    async def prepare(self, value: Spec[Motor]):
-        path = Path(value.calculate())
+    async def prepare(self, value: PmacScanInfo):
+        spec = value.spec
+        ramp_time = value.ramp_time
+        turnaround_time = value.turnaround_time
+        path = Path(spec.calculate())
         slice = path.consume(SLICE_SIZE)
         path_length = len(path)
         motors = slice.axes()
         motor_info = await _PmacMotorInfo.from_motors(self.pmac_ref(), motors)
         ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
-            slice, motor_info, True
+            slice, motor_info, True, ramp_time
         )
         self._prepare_context = PmacPrepareContext(
             path=path, motor_info=motor_info, ramp_up_time=ramp_up_time
         )
         await asyncio.gather(
-            self._build_trajectory(motor_info, slice, path_length, ramp_up_time),
+            self._build_trajectory(
+                motor_info, slice, path_length, ramp_up_time, turnaround_time
+            ),
             self._move_to_start(motor_info, ramp_up_pos),
         )
 
@@ -172,9 +184,10 @@ class PmacTrajectoryTriggerLogic(
         slice: Slice,
         path_length: int,
         ramp_up_time: float,
+        turnaround_time: float | None = None,
     ):
         trajectory = await self._parse_trajectory(
-            slice, path_length, motor_info, ramp_up_time
+            slice, path_length, motor_info, ramp_up_time, turnaround_time
         )
         use_axis = {
             i: (i in motor_info.motor_cs_index.values()) for i in CS_INDEX.values()
@@ -198,12 +211,14 @@ class PmacTrajectoryTriggerLogic(
         path_length: int,
         motor_info: _PmacMotorInfo,
         ramp_up_time: float | None = None,
+        turnaround_time: float | None = None,
     ) -> Trajectory:
         trajectory, exit_pvt = Trajectory.from_slice(
             slice,
             motor_info,
             None if ramp_up_time else self._next_pvt,
             ramp_up_time=ramp_up_time,
+            turnaround_time=turnaround_time,
         )
 
         if path_length == 0:

@@ -112,6 +112,7 @@ class Trajectory:
         motor_info: _PmacMotorInfo,
         entry_pvt: PVT | None = None,
         ramp_up_time: float | None = None,
+        turnaround_time: float | None = None,
     ) -> tuple[Trajectory, PVT]:
         """Parse a trajectory from a slice.
 
@@ -167,6 +168,7 @@ class Trajectory:
             kwargs = {}
             if gap == 0 and ramp_up_time:
                 kwargs["ramp_up_time"] = ramp_up_time
+                kwargs["turnaround_time"] = turnaround_time
             sub_traj_funcs.append(
                 partial(
                     Trajectory.from_gap,
@@ -354,6 +356,7 @@ class Trajectory:
         slice: Slice,
         entry_pvt: PVT,
         ramp_up_time: float | None = None,
+        turnaround_time: float | None = None,
     ) -> tuple[Trajectory, PVT]:
         """Parse a trajectory from a gap.
 
@@ -376,6 +379,8 @@ class Trajectory:
         """
         slice_duration = error_if_none(slice.duration, "Slice must have a duration")
         half_durations = slice_duration / 2
+
+        print(f"user defined turnaround time = {turnaround_time}")
 
         # Initialise exit PVT
         exit_pvt = PVT.default(motors)
@@ -441,6 +446,7 @@ class Trajectory:
             entry_velocities,
             exit_velocities,
             distances,
+            turnaround_time,
         )
 
         # Calculate gap PVTs
@@ -502,6 +508,7 @@ def _get_velocity_profile(
     start_velocities: dict[Motor, np.float64],
     end_velocities: dict[Motor, np.float64],
     distances: dict[Motor, float],
+    turnaround_time: float | None = None,
 ) -> tuple[dict[Motor, npt.NDArray[np.float64]], dict[Motor, npt.NDArray[np.float64]]]:
     """Generate time and velocity profiles for motors across a gap.
 
@@ -531,7 +538,9 @@ def _get_velocity_profile(
     time_arrays = {}
     velocity_arrays = {}
 
-    min_time = MIN_TURNAROUND
+    min_time = MIN_TURNAROUND if turnaround_time is None else turnaround_time
+
+    print(f"min_time = {min_time}")
 
     iterations = 2
 
@@ -554,7 +563,7 @@ def _get_velocity_profile(
 
             profiles[motor] = p
             new_min_time = max(new_min_time, p.t_total)
-
+        print(f"new_min_time = {new_min_time}")
         # Check if all profiles have converged on min_time
         if np.isclose(new_min_time, min_time):
             for motor in motors:

@@ -13,6 +13,7 @@ from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_trajectory import (  # noqa: PLC2701
     PmacExecuteState,
+    PmacScanInfo,
     PmacTrajectoryTriggerLogic,
 )
 from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
@@ -23,8 +24,9 @@ from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
 async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, sim_x_motor, _ = sim_motors
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
+    value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    await pmac_trajectory.prepare(spec)
+    await pmac_trajectory.prepare(value)
 
     assert await pmac_io.coord[1].cs_axis_setpoint[7].get_value() == -1.2
 
@@ -102,9 +104,10 @@ async def test_pmac_trajectory_kickoff(
     pmac_io, sim_x_motor, sim_y_motor = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
     spec = Fly(2.0 @ (Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2)))
+    value = PmacScanInfo(spec=spec, ramp_time=None, turnaround_time=None)
     with patch("ophyd_async.epics.pmac._pmac_trajectory.SLICE_SIZE", 2):
         # This will prepare the buffer with 2 frames of info
-        await pmac_trajectory.prepare(spec)
+        await pmac_trajectory.prepare(value)
         # This will consume another 2 frames
         set_mock_value(
             pmac_io.trajectory.total_points, 2

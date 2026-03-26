@@ -163,7 +163,10 @@ class _PmacMotorInfo:
 
 
 def calculate_ramp_position_and_duration(
-    slice: Slice[Motor], motor_info: _PmacMotorInfo, is_up: bool
+    slice: Slice[Motor],
+    motor_info: _PmacMotorInfo,
+    is_up: bool,
+    ramp_up_time: float | None = None,
 ) -> tuple[dict[Motor, np.float64], float]:
     """Calculate the the required ramp position and duration of a trajectory.
 
@@ -196,9 +199,10 @@ def calculate_ramp_position_and_duration(
         velocities[axis] = velocity
         ramp_times.append(abs(velocity) / motor_info.motor_acceleration_rate[axis])
     ramp_times.append(
-        MIN_TURNAROUND
+        MIN_TURNAROUND if not ramp_up_time else ramp_up_time
     )  # Adding a 2ms ramp time as a min tournaround time
     max_ramp_time = max(ramp_times)
+    print(f"max_ramp_time = {max_ramp_time}")
 
     motor_to_ramp_position = {}
     sign = -1 if is_up else 1
