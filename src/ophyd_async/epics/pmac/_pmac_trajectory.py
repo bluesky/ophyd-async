@@ -75,22 +75,22 @@ class PmacTrajectoryTriggerLogic(
     @AsyncStatus.wrap
     async def prepare(self, value: PmacScanInfo):
         spec = value.spec
-        ramp_time = value.ramp_time
-        turnaround_time = value.turnaround_time
+        self._ramp_time = value.ramp_time
+        self._turnaround_time = value.turnaround_time
         path = Path(spec.calculate())
         slice = path.consume(SLICE_SIZE)
         path_length = len(path)
         motors = slice.axes()
         motor_info = await _PmacMotorInfo.from_motors(self.pmac_ref(), motors)
         ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
-            slice, motor_info, True, ramp_time
+            slice, motor_info, True, self._ramp_time
         )
         self._prepare_context = PmacPrepareContext(
             path=path, motor_info=motor_info, ramp_up_time=ramp_up_time
         )
         await asyncio.gather(
             self._build_trajectory(
-                motor_info, slice, path_length, ramp_up_time, turnaround_time
+                motor_info, slice, path_length, ramp_up_time, self._turnaround_time
             ),
             self._move_to_start(motor_info, ramp_up_pos),
         )
@@ -174,7 +174,9 @@ class PmacTrajectoryTriggerLogic(
     async def _append_trajectory(
         self, slice: Slice, path_length: int, motor_info: _PmacMotorInfo
     ):
-        trajectory = await self._parse_trajectory(slice, path_length, motor_info)
+        trajectory = await self._parse_trajectory(
+            slice, path_length, motor_info, None, self._turnaround_time
+        )
         await self._set_trajectory_arrays(trajectory, motor_info)
         await self.pmac_ref().trajectory.append_profile.trigger()
 

@@ -202,7 +202,6 @@ def calculate_ramp_position_and_duration(
         MIN_TURNAROUND if not ramp_up_time else ramp_up_time
     )  # Adding a 2ms ramp time as a min tournaround time
     max_ramp_time = max(ramp_times)
-    print(f"max_ramp_time = {max_ramp_time}")
 
     motor_to_ramp_position = {}
     sign = -1 if is_up else 1

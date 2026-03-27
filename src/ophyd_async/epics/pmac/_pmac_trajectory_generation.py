@@ -380,8 +380,6 @@ class Trajectory:
         slice_duration = error_if_none(slice.duration, "Slice must have a duration")
         half_durations = slice_duration / 2
 
-        print(f"user defined turnaround time = {turnaround_time}")
-
         # Initialise exit PVT
         exit_pvt = PVT.default(motors)
 
@@ -540,8 +538,6 @@ def _get_velocity_profile(
 
     min_time = MIN_TURNAROUND if turnaround_time is None else turnaround_time
 
-    print(f"min_time = {min_time}")
-
     iterations = 2
 
     while iterations > 0:
@@ -563,7 +559,7 @@ def _get_velocity_profile(
 
             profiles[motor] = p
             new_min_time = max(new_min_time, p.t_total)
-        print(f"new_min_time = {new_min_time}")
+
         # Check if all profiles have converged on min_time
         if np.isclose(new_min_time, min_time):
             for motor in motors:
