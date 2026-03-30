@@ -168,7 +168,7 @@ class Trajectory:
             kwargs = {}
             if gap == 0 and ramp_up_time:
                 kwargs["ramp_up_time"] = ramp_up_time
-                kwargs["turnaround_time"] = turnaround_time
+            kwargs["turnaround_time"] = turnaround_time
             sub_traj_funcs.append(
                 partial(
                     Trajectory.from_gap,
