@@ -252,20 +252,34 @@ class PmacTrajectoryTriggerLogic(
             {motor: motor.user_readback.get_value() for motor in ramp_up_position}
         )
 
-        move_times = [
-            abs(position - motor_readbacks[motor])
-            / motor_info.motor_max_velocity[motor]
-            for motor, position in ramp_up_position.items()
-        ]
+        longest_move_time = 0
+        for motor, final_position in ramp_up_position.items():
+            travel_distance = abs(final_position - motor_readbacks[motor])
+            peak_velocity = np.sqrt(
+                motor_info.motor_acceleration_rate[motor] * travel_distance
+            )
+            acceleration_time = (
+                peak_velocity / motor_info.motor_acceleration_rate[motor]
+            )
+            total_move_time = 2 * acceleration_time
 
-        longest_time = max(move_times)
+            if peak_velocity >= motor_info.motor_max_velocity[motor]:
+                # We cruise at vmax for some time
+                cruise_distance = travel_distance - (
+                    motor_info.motor_max_velocity[motor] ** 2
+                    / motor_info.motor_acceleration_rate[motor]
+                )
+                cruise_time = cruise_distance / motor_info.motor_max_velocity[motor]
+                total_move_time += cruise_time
+
+            longest_move_time = max(longest_move_time, total_move_time)
 
         for motor, position in ramp_up_position.items():
             coros.append(
                 set_and_wait_for_value(
                     coord.cs_axis_setpoint[motor_info.motor_cs_index[motor]],
                     position,
-                    set_timeout=longest_time + DEFAULT_TIMEOUT,
+                    set_timeout=longest_move_time + DEFAULT_TIMEOUT,
                     wait_for_set_completion=False,
                 )
             )
