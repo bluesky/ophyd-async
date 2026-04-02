@@ -6,6 +6,7 @@ from scanspec.specs import Fly, Line
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
+    callback_on_mock_put,
     get_mock,
     set_and_wait_for_value,
     set_mock_value,
@@ -14,6 +15,7 @@ from ophyd_async.epics.motor import Motor
 from ophyd_async.epics.pmac import PmacIO
 from ophyd_async.epics.pmac._pmac_trajectory import (  # noqa: PLC2701
     PmacExecuteState,
+    PmacExecuteStatus,
     PmacTrajectoryTriggerLogic,
 )
 from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
@@ -96,6 +98,16 @@ async def test_pmac_trajectory_kickoff(
     sim_motors: tuple[PmacIO, Motor, Motor],
 ):
     pmac_io, sim_x_motor, sim_y_motor = sim_motors
+
+    def set_execute_profile_to_false(value, **kwargs):
+        set_mock_value(pmac_io.trajectory.execute_profile, False)
+
+    # We append once, so mock successful execution after an append
+    callback_on_mock_put(
+        pmac_io.trajectory.append_profile, set_execute_profile_to_false
+    )
+    set_mock_value(pmac_io.trajectory.execute_status, PmacExecuteStatus.SUCCESS)
+
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
     spec = Fly(2.0 @ (Line(sim_y_motor, 1, 5, 2) * ~Line(sim_x_motor, 1, 5, 2)))
     with patch("ophyd_async.epics.pmac._pmac_trajectory.SLICE_SIZE", 2):
