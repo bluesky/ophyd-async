@@ -255,21 +255,25 @@ class PmacTrajectoryTriggerLogic(
         longest_move_time = 0
         for motor, final_position in ramp_up_position.items():
             travel_distance = abs(final_position - motor_readbacks[motor])
-            peak_velocity = np.sqrt(
-                motor_info.motor_acceleration_rate[motor] * travel_distance
-            )
-            acceleration_time = (
-                peak_velocity / motor_info.motor_acceleration_rate[motor]
-            )
+            a = motor_info.motor_acceleration_rate[motor]
+            vmax = motor_info.motor_max_velocity[motor]
+
+            if travel_distance == 0:
+                continue
+
+            peak_velocity = np.sqrt(2 * a * travel_distance)
+
+            # Limited by vmax
+            effective_peak_velocity = min(peak_velocity, vmax)
+            acceleration_time = effective_peak_velocity / a
+
+            # Assume symmetrical acceleration and deceleration
             total_move_time = 2 * acceleration_time
 
-            if peak_velocity >= motor_info.motor_max_velocity[motor]:
-                # We cruise at vmax for some time
-                cruise_distance = travel_distance - (
-                    motor_info.motor_max_velocity[motor] ** 2
-                    / motor_info.motor_acceleration_rate[motor]
-                )
-                cruise_time = cruise_distance / motor_info.motor_max_velocity[motor]
+            if peak_velocity > vmax:
+                # We cruise for some time between accelerations
+                cruise_distance = travel_distance - (vmax**2 / a)
+                cruise_time = cruise_distance / vmax
                 total_move_time += cruise_time
 
             longest_move_time = max(longest_move_time, total_move_time)
