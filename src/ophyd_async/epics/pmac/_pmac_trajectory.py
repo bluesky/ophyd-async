@@ -158,6 +158,18 @@ class PmacTrajectoryTriggerLogic(
 
         # Ensure execute_profile in valid end state first, to avoid race condition
         # when checking execute_status and execute_message
+        await self._ensure_trajectory_complete()
+
+        if (
+            end_status := await self.pmac_ref().trajectory.execute_status.get_value()
+        ) != PmacExecuteStatus.SUCCESS:
+            error_message = await self.pmac_ref().trajectory.execute_message.get_value()
+            raise ValueError(
+                f"Failed PMAC trajectory execution with '{end_status}' status "
+                f"and error message: '{error_message}'"
+            )
+
+    async def _ensure_trajectory_complete(self):
         pmac_status = None
         try:
             async for pmac_status in observe_value(
@@ -176,15 +188,6 @@ class PmacTrajectoryTriggerLogic(
                     f"Could not monitor PMAC state: "
                     f"{self.pmac_ref().trajectory.execute_profile.source} "
                 ) from exc
-
-        if (
-            end_status := await self.pmac_ref().trajectory.execute_status.get_value()
-        ) != PmacExecuteStatus.SUCCESS:
-            error_message = await self.pmac_ref().trajectory.execute_message.get_value()
-            raise ValueError(
-                f"Failed PMAC trajectory execution with '{end_status}' status "
-                f"and error message: '{error_message}'"
-            )
 
     async def _append_trajectory(
         self, slice: Slice, path_length: int, motor_info: _PmacMotorInfo

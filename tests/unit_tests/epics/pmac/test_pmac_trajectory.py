@@ -23,6 +23,17 @@ from ophyd_async.epics.pmac._utils import (  # noqa: PLC2701
 )
 
 
+async def null_observe_value(args, **kwargs):
+    yield None
+
+
+async def bad_observe_value(*args, **kwargs):
+    "Stub to simulate a disconnected ``observe_value()``."
+    if True:
+        raise TimeoutError()
+    yield None  # Make it a generator
+
+
 async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, sim_x_motor, _ = sim_motors
     spec = Fly(2.0 @ Line(sim_x_motor, 1, 5, 2))
@@ -218,6 +229,47 @@ async def test_pmac_trajectory_kickoff(
         ],
         1e-3,
     )
+
+
+async def test_pmac_trajectory_ensure_trajectory_complete_raises_if_invalid_final_state(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, _, _ = sim_motors
+    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    set_mock_value(pmac_io.trajectory.execute_profile, True)
+    with (
+        patch("ophyd_async.epics.pmac._pmac_trajectory.DEFAULT_TIMEOUT", 0.02),
+    ):
+        with pytest.raises(ValueError, match="not in valid end state of 'False'."):
+            await pmac_trajectory._ensure_trajectory_complete()
+
+
+async def test_pmac_ensure_trajectory_complete_raises_if_cannot_monitor(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, _, _ = sim_motors
+    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    with (
+        patch(
+            "ophyd_async.epics.pmac._pmac_trajectory.observe_value", bad_observe_value
+        ),
+    ):
+        with pytest.raises(TimeoutError, match="Could not monitor PMAC state"):
+            await pmac_trajectory._ensure_trajectory_complete()
+
+
+async def test_pmac_execute_trajectory_raises_if_no_success_status(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    pmac_io, _, _ = sim_motors
+    pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
+    with (
+        patch(
+            "ophyd_async.epics.pmac._pmac_trajectory.observe_value", null_observe_value
+        ),
+    ):
+        with pytest.raises(ValueError, match="Failed PMAC trajectory execution"):
+            await pmac_trajectory._execute_trajectory(AsyncMock(), AsyncMock())
 
 
 async def test_pmac_trajectory_kickoff_trajectory_raises_exception_if_no_prepare(
