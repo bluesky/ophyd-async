@@ -23,7 +23,7 @@ from ophyd_async.core import (
 )
 from ophyd_async.epics.motor import Motor
 
-from ._pmac_io import CS_INDEX, PmacExecuteState, PmacIO
+from ._pmac_io import CS_INDEX, PmacExecuteState, PmacExecuteStatus, PmacIO
 from ._pmac_trajectory_generation import PVT, Trajectory, UserProgram
 from ._utils import (
     _PmacMotorInfo,
@@ -145,6 +145,8 @@ class PmacTrajectoryTriggerLogic(
         async for current_point in observe_value(
             self.pmac_ref().trajectory.total_points,
             done_status=execute_status,
+            # Limit on PMAC is 4 seconds between points
+            # Thus this timeout is fine.
             timeout=DEFAULT_TIMEOUT,
         ):
             # Ensure we maintain a minimum buffer size, if we have more points to append
@@ -153,6 +155,39 @@ class PmacTrajectoryTriggerLogic(
                 next_slice = path.consume(SLICE_SIZE)
                 path_length = len(path)
                 await self._append_trajectory(next_slice, path_length, motor_info)
+
+        # Ensure execute_profile in valid end state first, to avoid race condition
+        # when checking execute_status and execute_message
+        await self._ensure_trajectory_complete()
+
+        if (
+            end_status := await self.pmac_ref().trajectory.execute_status.get_value()
+        ) != PmacExecuteStatus.SUCCESS:
+            error_message = await self.pmac_ref().trajectory.execute_message.get_value()
+            raise ValueError(
+                f"Failed PMAC trajectory execution with '{end_status}' status "
+                f"and error message: '{error_message}'"
+            )
+
+    async def _ensure_trajectory_complete(self):
+        pmac_status = None
+        try:
+            async for pmac_status in observe_value(
+                self.pmac_ref().trajectory.execute_profile, done_timeout=DEFAULT_TIMEOUT
+            ):
+                if pmac_status is False:
+                    break
+        except TimeoutError as exc:
+            if pmac_status is not None:
+                raise ValueError(
+                    f"PMAC profile execution state {pmac_status} "
+                    "not in valid end state of 'False'."
+                ) from exc
+            else:
+                raise TimeoutError(
+                    f"Could not monitor PMAC state: "
+                    f"{self.pmac_ref().trajectory.execute_profile.source} "
+                ) from exc
 
     async def _append_trajectory(
         self, slice: Slice, path_length: int, motor_info: _PmacMotorInfo

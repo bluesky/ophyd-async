@@ -15,6 +15,14 @@ class PmacExecuteState(SubsetEnum):
     EXECUTING = "Executing"
 
 
+class PmacExecuteStatus(SubsetEnum):
+    UNDEFINED = "Undefined"
+    SUCCESS = "Success"
+    FAILURE = "Failure"
+    ABORT = "Abort"
+    TIMEOUT = "Timeout"
+
+
 class PmacTrajectoryIO(StandardReadable):
     """Device that moves a PMAC Motor record.
 
@@ -56,6 +64,10 @@ class PmacTrajectoryIO(StandardReadable):
         self.execute_state = epics_signal_r(
             PmacExecuteState, prefix + "ProfileExecuteState_RBV"
         )
+        self.execute_status = epics_signal_r(
+            PmacExecuteStatus, prefix + "ProfileExecuteStatus_RBV"
+        )
+        self.execute_message = epics_signal_r(str, prefix + "ProfileExecuteMessage_RBV")
         self.abort_profile = epics_signal_x(prefix + "ProfileAbort")
         self.profile_cs_name = epics_signal_rw(str, prefix + "ProfileCsName")
         self.calculate_velocities = epics_signal_rw(bool, prefix + "ProfileCalcVel")
