@@ -47,9 +47,9 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     "x_pos, y_pos, expected_timeout",
     [
         # No cruise, just acceleration
-        (1.25, 1, 11),
+        (1.25, 1, 10.712),
         # Intermediate cruise
-        (-10, -5, 12),
+        (-10, -5, 12.004),
     ],
 )
 async def test_pmac_move_to_start(

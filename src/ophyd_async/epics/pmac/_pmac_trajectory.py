@@ -24,7 +24,12 @@ from ophyd_async.core import (
 from ophyd_async.epics.motor import Motor
 
 from ._pmac_io import CS_INDEX, PmacExecuteState, PmacIO
-from ._pmac_trajectory_generation import PVT, Trajectory, UserProgram
+from ._pmac_trajectory_generation import (
+    PVT,
+    Trajectory,
+    UserProgram,
+    _get_velocity_profile,
+)
 from ._utils import (
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
@@ -248,35 +253,28 @@ class PmacTrajectoryTriggerLogic(
         coros = []
         await coord.defer_moves.set(True)
 
+        motors = list(ramp_up_position.keys())
+
         motor_readbacks = await gather_dict(
-            {motor: motor.user_readback.get_value() for motor in ramp_up_position}
+            {motor: motor.user_readback.get_value() for motor in motors}
         )
 
-        longest_move_time = 0
-        for motor, final_position in ramp_up_position.items():
-            travel_distance = abs(final_position - motor_readbacks[motor])
-            a = motor_info.motor_acceleration_rate[motor]
-            vmax = motor_info.motor_max_velocity[motor]
+        start_and_end_velocities = {motor: np.float64(0) for motor in motors}
+        distances = {
+            motor: float(abs(final_position - motor_readbacks[motor]))
+            for motor, final_position in ramp_up_position.items()
+        }
+        time_arrays, _ = _get_velocity_profile(
+            motors=motors,
+            motor_info=motor_info,
+            start_velocities=start_and_end_velocities,
+            end_velocities=start_and_end_velocities,
+            distances=distances,
+        )
 
-            if travel_distance == 0:
-                continue
-
-            peak_velocity = np.sqrt(2 * a * travel_distance)
-
-            # Limited by vmax
-            effective_peak_velocity = min(peak_velocity, vmax)
-            acceleration_time = effective_peak_velocity / a
-
-            # Assume symmetrical acceleration and deceleration
-            total_move_time = 2 * acceleration_time
-
-            if peak_velocity > vmax:
-                # We cruise for some time between accelerations
-                cruise_distance = travel_distance - (vmax**2 / a)
-                cruise_time = cruise_distance / vmax
-                total_move_time += cruise_time
-
-            longest_move_time = max(longest_move_time, total_move_time)
+        # Get final timestamp for arbitrary motor
+        # as this is the total time required for all motors
+        longest_move_time = time_arrays[motors[0]][-1]
 
         for motor, position in ramp_up_position.items():
             coros.append(
