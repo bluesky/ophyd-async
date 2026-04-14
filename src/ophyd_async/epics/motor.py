@@ -93,7 +93,7 @@ class MotorMoveLogic(MovableLogic[float]):
         """Request to stop moving."""
         await self.motor_stop.set(1)
 
-    async def check_move(self, old_position: float, new_position: float):
+    async def check_move(self, new_position: float):
         """Check the positions are within limits.
 
         Will raise a MotorLimitsException if the given absolute positions will be
@@ -118,6 +118,7 @@ class MotorMoveLogic(MovableLogic[float]):
         if dial_lower_limit == 0 and dial_upper_limit == 0:
             return
 
+        old_position = await self.readback.get_value()
         # Use real motor limit(i.e. HLM and LLM) to check if the move is permissible
         if (
             not motor_upper_limit >= old_position >= motor_lower_limit
@@ -239,14 +240,6 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
             acceleration_time=self.acceleration_time,
         )
 
-    async def check_motor_limit(self, abs_start_pos: float, abs_end_pos: float):
-        """Check the positions are within limits.
-
-        Will raise a MotorLimitsException if the given absolute positions will be
-        outside the motor soft limits.
-        """
-        await self.movable_logic.check_move(abs_start_pos, abs_end_pos)
-
     @AsyncStatus.wrap
     async def prepare(self, value: FlyMotorInfo):
         """Move to the beginning of a suitable run-up distance ready for a fly scan."""
@@ -263,11 +256,13 @@ class Motor(StandardMovable, StandardReadable, Flyable, Preparable):
                 f"{self.name} with max speed of {max_speed} {egu}/s."
             )
 
+        # Check limits are okay
         acceleration_time = await self.acceleration_time.get_value()
         ramp_up_start_pos = value.ramp_up_start_pos(acceleration_time)
         ramp_down_end_pos = value.ramp_down_end_pos(acceleration_time)
-
-        await self.check_motor_limit(ramp_up_start_pos, ramp_down_end_pos)
+        await asyncio.gather(
+            self.check_value(ramp_up_start_pos), self.check_value(ramp_down_end_pos)
+        )
 
         # move to prepare position at maximum velocity
         await self.velocity.set(abs(max_speed))

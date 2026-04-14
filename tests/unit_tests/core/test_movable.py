@@ -45,6 +45,12 @@ def test_movable_logic_is_cached(movable: StandardMovableImpl):
     assert logic == logic2
 
 
+async def test_movable_check_value(movable: StandardMovableImpl):
+    movable.movable_logic.check_move = AsyncMock()
+    await movable.check_value(5)
+    movable.movable_logic.check_move.assert_awaited_once_with(5)
+
+
 async def test_locatable(movable: StandardMovableImpl) -> None:
     callback_on_mock_put(
         movable.setpoint,
@@ -135,7 +141,7 @@ async def test_movable_set_calls_movable_logic_check_move_and_calculate_timeout(
     )
     await movable.set(10)
 
-    mock_check_move.assert_awaited_once_with(0, 10)
+    mock_check_move.assert_awaited_once_with(10)
     mock_calculate_timeout.assert_awaited_once_with(0, 10)
 
 

@@ -5,6 +5,7 @@ from functools import cached_property
 from typing import Generic
 
 from bluesky.protocols import (
+    Checkable,
     Locatable,
     Location,
     Reading,
@@ -43,9 +44,7 @@ class MovableLogic(Generic[SignalDatatypeT]):
         """Optional hook to add logic on how to stop the motion."""
         pass
 
-    async def check_move(
-        self, old_position: SignalDatatypeT, new_position: SignalDatatypeT
-    ) -> None:
+    async def check_move(self, new_position: SignalDatatypeT) -> None:
         """Optional hook to validate the move.
 
         Should raise an exception if the move is not valid, e.g. if the new
@@ -95,6 +94,7 @@ class InstantMovableMock(DeviceMock["StandardMovable"]):
 class StandardMovable(
     Device,
     Locatable[SignalDatatypeT],
+    Checkable[SignalDatatypeT],
     Stoppable,
     Subscribable[SignalDatatypeT],
     Generic[SignalDatatypeT],
@@ -118,6 +118,11 @@ class StandardMovable(
         `@cached_property` that returns a `MovableLogic` instance.
         """
 
+    @AsyncStatus.wrap
+    async def check_value(self, value: SignalDatatypeT) -> None:
+        """Check the move is valid before doing it."""
+        await self.movable_logic.check_move(value)
+
     @WatchableAsyncStatus.wrap
     async def set(
         self,
@@ -130,7 +135,7 @@ class StandardMovable(
             self.movable_logic.readback.get_value(),
             self.movable_logic.get_units_precision(),
         )
-        await self.movable_logic.check_move(old_position, new_position)
+        await self.movable_logic.check_move(new_position)
 
         if timeout == CALCULATE_TIMEOUT:
             move_timeout = await self.movable_logic.calculate_timeout(
