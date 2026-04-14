@@ -5,7 +5,6 @@ import pytest
 from scanspec.specs import Fly, Line
 
 from ophyd_async.core import (
-    DEFAULT_TIMEOUT,
     get_mock,
     set_and_wait_for_value,
     set_mock_value,
@@ -44,7 +43,18 @@ async def test_pmac_prepare(sim_motors: tuple[PmacIO, Motor, Motor]):
     assert await pmac_io.trajectory.points_to_build.get_value() == 6
 
 
-async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
+@pytest.mark.parametrize(
+    "x_pos, y_pos, expected_timeout",
+    [
+        # No cruise, just acceleration
+        (1.25, 1, 10.712),
+        # Intermediate cruise
+        (-10, -5, 12.004),
+    ],
+)
+async def test_pmac_move_to_start(
+    x_pos, y_pos, expected_timeout, sim_motors: tuple[PmacIO, Motor, Motor]
+):
     pmac_io, sim_x_motor, sim_y_motor = sim_motors
     motor_info = _PmacMotorInfo(
         "CS1",
@@ -54,7 +64,7 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
         {sim_x_motor: 10, sim_y_motor: 10},
     )
     coord = pmac_io.coord[motor_info.cs_number]
-    ramp_up_position = {sim_x_motor: np.float64(-1.2), sim_y_motor: np.float64(-0.6)}
+    ramp_up_position = {sim_x_motor: np.float64(x_pos), sim_y_motor: np.float64(y_pos)}
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
 
     # Wrap set_and_wait_for_value to check passed arguments
@@ -69,21 +79,15 @@ async def test_pmac_move_to_start(sim_motors: tuple[PmacIO, Motor, Motor]):
         assert coord_mock_calls[0] == call.defer_moves.put(True)
         assert coord_mock_calls[1] == (
             "cs_axis_setpoint.7.put",
-            (np.float64(-1.2)),
+            (np.float64(x_pos)),
             {},
         )
         assert coord_mock_calls[2] == (
             "cs_axis_setpoint.8.put",
-            (np.float64(-0.6)),
+            (np.float64(y_pos)),
             {},
         )
         assert coord_mock_calls[3] == call.defer_moves.put(False)
-
-        # Longest move time should be sim_motor_x, so calculate this
-        expected_timeout = DEFAULT_TIMEOUT + (
-            abs(ramp_up_position[sim_x_motor])
-            / motor_info.motor_max_velocity[sim_x_motor]
-        )
 
         # All motors should have the same move timeout
         assert all(

@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import dataclass
 
 from ophyd_async.core import DetectorTriggerLogic, SignalDict
 
@@ -23,12 +24,9 @@ async def _prepare_detector(
     await asyncio.gather(*coros)
 
 
+@dataclass
 class EigerTriggerLogic(DetectorTriggerLogic):
-    def __init__(
-        self,
-        detector: EigerDetectorIO,
-    ) -> None:
-        self.detector = detector
+    detector: EigerDetectorIO
 
     def get_deadtime(self, config_values: SignalDict) -> float:
         # See https://media.dectris.com/filer_public/30/14/3014704e-5f3b-43ba-8ccf-8ef720e60d2a/240202_usermanual_eiger2.pdf

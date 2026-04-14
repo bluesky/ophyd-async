@@ -746,7 +746,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
     ):
         self.device_proxy = device_proxy
         self.read_trl = read_trl
-        self.write_trl = write_trl
+        self.write_trl = write_trl if write_trl else read_trl
         self.proxies: dict[str, TangoProxy | DeviceProxy | None] = {
             read_trl: self.device_proxy,
             write_trl: self.device_proxy,
@@ -890,7 +890,8 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             self.trl_configs[trl] = config
 
             # Perform signal verification
-            self._verify_datatype_matches(config)
+            if self.datatype is not None:
+                self._verify_datatype_matches(config)
 
             if isinstance(config, AttributeInfoEx):
                 if (

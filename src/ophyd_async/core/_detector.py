@@ -2,6 +2,7 @@
 
 import asyncio
 import functools
+import os
 import time
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
@@ -175,6 +176,10 @@ class DetectorTriggerLogic:
         :param exposures_per_collection:
             number of exposures to process into each collection
         """
+        raise NotImplementedError(self)
+
+    async def default_trigger_info(self) -> TriggerInfo:
+        """Fallback for the default TriggerInfo in plans without prepare."""
         raise NotImplementedError(self)
 
 
@@ -574,9 +579,40 @@ class StandardDetector(
 
     @WatchableAsyncStatus.wrap
     async def trigger(self) -> AsyncIterator[WatcherUpdate[int]]:
+        """Trigger a single exposure.
+
+        If [`prepare()`](#StandardDetector.prepare) has not been called since
+        the last [`stage()`](#StandardDetector.stage), an implicit prepare is
+        performed. When [](#OPHYD_ASYNC_PRESERVE_DETECTOR_STATE) is `YES`
+        [](#DetectorTriggerLogic.default_trigger_info) is called to read current
+        hardware state; otherwise a bare [`TriggerInfo()`](#TriggerInfo) is
+        used.
+        """
         if self._prepare_ctx is None:
-            # If a prepare has not been done since stage, do an implicit one here
-            await self.prepare(TriggerInfo())
+            # Opt-in: set OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES to have
+            # trigger() read back current hardware state (e.g. num_images) via
+            # default_trigger_info() instead of always falling back to TriggerInfo().
+            # See ADR 0013 for rationale.
+            # TODO: flip default to YES and remove this guard in a future PR once
+            # downstream code has had time to implement default_trigger_info().
+            preserve_state = (
+                os.environ.get("OPHYD_ASYNC_PRESERVE_DETECTOR_STATE", "NO").upper()
+                == "YES"
+            )
+            if preserve_state and self._trigger_logic is not None:
+                if not _trigger_logic_supported(
+                    self._trigger_logic.default_trigger_info
+                ):
+                    raise RuntimeError(
+                        f"OPHYD_ASYNC_PRESERVE_DETECTOR_STATE=YES is set but "
+                        f"'{self.name}' has no default_trigger_info() - implement "
+                        "default_trigger_info() on your DetectorTriggerLogic subclass "
+                        "or unset the environment variable."
+                    )
+                trigger_info = await self._trigger_logic.default_trigger_info()
+            else:
+                trigger_info = TriggerInfo()
+            await self.prepare(trigger_info)
         else:
             # Check the one that was provided is suitable for triggering
             trigger_info = self._prepare_ctx.trigger_info

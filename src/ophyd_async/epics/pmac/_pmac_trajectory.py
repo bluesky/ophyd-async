@@ -24,7 +24,12 @@ from ophyd_async.core import (
 from ophyd_async.epics.motor import Motor
 
 from ._pmac_io import CS_INDEX, PmacExecuteState, PmacIO
-from ._pmac_trajectory_generation import PVT, Trajectory, UserProgram
+from ._pmac_trajectory_generation import (
+    PVT,
+    Trajectory,
+    UserProgram,
+    _get_velocity_profile,
+)
 from ._utils import (
     _PmacMotorInfo,
     calculate_ramp_position_and_duration,
@@ -248,24 +253,35 @@ class PmacTrajectoryTriggerLogic(
         coros = []
         await coord.defer_moves.set(True)
 
+        motors = list(ramp_up_position.keys())
+
         motor_readbacks = await gather_dict(
-            {motor: motor.user_readback.get_value() for motor in ramp_up_position}
+            {motor: motor.user_readback.get_value() for motor in motors}
         )
 
-        move_times = [
-            abs(position - motor_readbacks[motor])
-            / motor_info.motor_max_velocity[motor]
-            for motor, position in ramp_up_position.items()
-        ]
+        start_and_end_velocities = {motor: np.float64(0) for motor in motors}
+        distances = {
+            motor: float(abs(final_position - motor_readbacks[motor]))
+            for motor, final_position in ramp_up_position.items()
+        }
+        time_arrays, _ = _get_velocity_profile(
+            motors=motors,
+            motor_info=motor_info,
+            start_velocities=start_and_end_velocities,
+            end_velocities=start_and_end_velocities,
+            distances=distances,
+        )
 
-        longest_time = max(move_times)
+        # Get final timestamp for arbitrary motor
+        # as this is the total time required for all motors
+        longest_move_time = time_arrays[motors[0]][-1]
 
         for motor, position in ramp_up_position.items():
             coros.append(
                 set_and_wait_for_value(
                     coord.cs_axis_setpoint[motor_info.motor_cs_index[motor]],
                     position,
-                    set_timeout=longest_time + DEFAULT_TIMEOUT,
+                    set_timeout=longest_move_time + DEFAULT_TIMEOUT,
                     wait_for_set_completion=False,
                 )
             )
