@@ -149,6 +149,7 @@ obj_ignore = [
     "ophyd_async.core._device_filler.CommandBackendT",
     "ophyd_async.core._derived_signal_backend.TransformT",
     "ophyd_async.core._mock_signal_backend.MockPutCallback",
+    "ophyd_async.core._command.MockExecuteCallback",
     "ophyd_async.core._protocol.C",
     "ophyd_async.core._signal_backend.SignalDatatypeV",
     "ophyd_async.core._status.AsyncStatusBase",

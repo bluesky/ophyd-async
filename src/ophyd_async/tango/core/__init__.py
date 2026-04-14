@@ -61,7 +61,6 @@ __all__ = [
     "infer_python_type",
     "infer_signal_type",
     "make_backend",
-    "make_converter",
     "parse_precision",
     "tango_signal_r",
     "tango_signal_rw",
@@ -86,4 +85,5 @@ __all__ = [
     "tango_command",
     "tango_triggerable_command",
     "sig_from_types",
+    "make_converter",
 ]

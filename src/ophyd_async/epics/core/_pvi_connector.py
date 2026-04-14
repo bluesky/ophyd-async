@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import re
 from collections.abc import Mapping
 
@@ -23,6 +24,7 @@ from ophyd_async.core import (
     SignalX,
     gather_dict,
 )
+from ophyd_async.epics.core._p4p import PvaCommandBackend
 
 from ._epics_connector import fill_backend_with_prefix
 from ._signal import PvaSignalBackend, pvget_with_timeout
@@ -53,10 +55,25 @@ class PviDeviceConnector(DeviceConnector):
 
     def create_children_from_annotations(self, device: Device):
         if not hasattr(self, "filler"):
+
+            def _command_backend_factory(
+                sig: inspect.Signature | None,
+            ) -> PvaCommandBackend:
+                # EPICS only supports void/void commands (plain PV put); typed
+                # Command[P, T] annotations are a mistake on an EPICS device.
+                if sig is not None:
+                    raise TypeError(
+                        f"{device.name}: EPICS only supports TriggerableCommand /"
+                        " Command[[], None]; typed Command with parameters is not"
+                        " yet supported over EPICS"
+                    )
+                return PvaCommandBackend()
+
             self.filler = DeviceFiller(
                 device=device,
                 signal_backend_factory=PvaSignalBackend,
                 device_connector_factory=PviDeviceConnector,
+                command_backend_factory=_command_backend_factory,
             )
             # Devices will be created with unfilled PviDeviceConnectors
             list(self.filler.create_devices_from_annotations(filled=False))

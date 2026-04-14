@@ -8,8 +8,10 @@ import numpy as np
 import pytest
 
 from ophyd_async.core import (
+    NO_ARG_VOID_SIGNATURE,
     Array1D,
     Command,
+    CommandBackend,
     DeviceFiller,
     DeviceMock,
     DeviceVector,
@@ -20,6 +22,8 @@ from ophyd_async.core import (
     SupersetEnum,
     Table,
     TriggerableCommand,
+    callback_on_mock_execute,
+    get_mock_execute,
     soft_command,
 )
 
@@ -77,11 +81,8 @@ async def test_soft_command_execution(datatype, value):
     def callback(v: datatype) -> datatype:
         return v
 
-    call_sig = inspect.signature(callback)
-
-    backend = SoftCommandBackend(callback)
-    cmd = Command(backend, name="test_cmd")
-    assert cmd.signature == call_sig
+    cmd = soft_command(callback, name="test_cmd")
+    assert cmd.signature == inspect.signature(callback, eval_str=True)
     await cmd.connect()
     status = cmd.execute(value)
     await status
@@ -98,26 +99,44 @@ def test_soft_command_init_validation(datatype, value):
         return v
 
     with pytest.raises(TypeError, match="missing type annotations for parameter"):
-        SoftCommandBackend(missing_param_annotation)
+        soft_command(missing_param_annotation)
 
     def missing_return_annotation(v: int):
         return v
 
     with pytest.raises(TypeError, match="missing a return type annotation"):
-        SoftCommandBackend(missing_return_annotation)
+        soft_command(missing_return_annotation)
 
     def incomplete_param_annotation(v: int, x) -> int:
         return v
 
     with pytest.raises(TypeError, match="missing type annotations for parameter"):
-        SoftCommandBackend(incomplete_param_annotation)
+        soft_command(incomplete_param_annotation)
+
+
+def test_soft_command_backend_raises_on_unannotated_sig_param():
+    """SoftCommandBackend must raise TypeError when the supplied sig has unannotated
+    parameters, not silently discard them.  Previously the constructor would just
+    omit the converter for those params, meaning no coercion would happen.
+    """
+    unannotated_sig = inspect.Signature(
+        [inspect.Parameter("v", inspect.Parameter.POSITIONAL_OR_KEYWORD)],
+        return_annotation=None,
+    )
+
+    async def cb(v):
+        return None
+
+    with pytest.raises(TypeError, match="missing type annotations for parameter"):
+        SoftCommandBackend(cb, unannotated_sig)
 
 
 async def test_execute_raises_typeerror_on_bad_arguments():
     async def callback(a: int, b: int) -> int:
         return a + b
 
-    backend = SoftCommandBackend(callback)
+    sig = inspect.signature(callback, eval_str=True)
+    backend = SoftCommandBackend(callback, sig)
     # Too few arguments
     with pytest.raises(TypeError, match="missing a required argument"):
         await backend.execute(1)
@@ -139,8 +158,7 @@ async def test_mock_command_backend_default_values(datatype, value):
     async def callback(v: datatype) -> datatype:
         return v
 
-    backend = SoftCommandBackend(callback)
-    cmd = Command(backend, name="test_cmd")
+    cmd = soft_command(callback, name="test_cmd")
     mock = DeviceMock()
     await cmd.connect(mock=mock)
 
@@ -160,17 +178,58 @@ async def test_mock_command_backend_custom_callback():
     async def async_callback(a: int, b: str) -> str:
         return f"{b}_{a}"
 
-    backend = SoftCommandBackend(async_callback)
-    cmd = Command(backend, name="test_cmd")
+    cmd = soft_command(async_callback, name="test_cmd")
     mock = DeviceMock()
     await cmd.connect(mock=mock)
 
-    # Set custom callback
-    cmd._connector.backend.set_mock_execute_callback(lambda a, b: f"mock_{b}_{a}")
-    status = cmd.execute(3, "test")
-    result = await status
+    # Use callback_on_mock_execute as a context manager
+    with callback_on_mock_execute(cmd, lambda a, b: f"mock_{b}_{a}"):
+        result = await cmd.execute(3, "test")
     assert result == "mock_test_3"
-    cmd._connector.backend.execute_mock.assert_awaited_once_with(3, "test")
+    get_mock_execute(cmd).assert_awaited_once_with(3, "test")
+
+    # After the context, the original function is restored
+    result2 = await cmd.execute(1, "x")
+    assert result2 == "x_1"
+
+
+async def test_soft_command_mock_calls_original_func():
+    """soft_command connected in mock mode should still call the original function."""
+    calls: list[int] = []
+
+    def callback(v: int) -> int:
+        calls.append(v)
+        return v * 2
+
+    cmd = soft_command(callback, name="test_cmd")
+    mock = DeviceMock()
+    await cmd.connect(mock=mock)
+
+    result = await cmd.execute(5)
+    assert result == 10
+    assert calls == [5]
+
+
+async def test_soft_command_mock_side_effect_overrides_func():
+    calls: list[int] = []
+
+    def callback(v: int) -> int:
+        calls.append(v)
+        return v * 2
+
+    cmd = soft_command(callback, name="test_cmd")
+    mock = DeviceMock()
+    await cmd.connect(mock=mock)
+
+    with callback_on_mock_execute(cmd, lambda v: 99):
+        result = await cmd.execute(5)
+    assert result == 99
+    assert calls == []
+
+    # Outside the context, the original function is called again
+    result2 = await cmd.execute(5)
+    assert result2 == 10
+    assert calls == [5]
 
 
 async def test_mock_command_backend_lazy_init():
@@ -179,8 +238,7 @@ async def test_mock_command_backend_lazy_init():
     async def callback(a: int) -> int:
         return a
 
-    backend = SoftCommandBackend(callback)
-    cmd = Command(backend, name="test_cmd")
+    cmd = soft_command(callback, name="test_cmd")
     mock = DeviceMock()
     await cmd.connect(mock=mock)
 
@@ -200,8 +258,7 @@ async def test_mock_command_backend_properties():
     async def callback(a: int) -> str:
         return str(a)
 
-    backend = SoftCommandBackend(callback)
-    cmd = Command(backend, name="test_cmd")
+    cmd = soft_command(callback, name="test_cmd")
     mock = DeviceMock()
     await cmd.connect(mock=mock)
 
@@ -280,7 +337,8 @@ async def test_command_trigger():
         return None
 
     # Setup command
-    backend = SoftCommandBackend(callback)
+    sig = inspect.signature(callback, eval_str=True)
+    backend = SoftCommandBackend(callback, sig)
     cmd = TriggerableCommand(backend, timeout=5.0, name="test_cmd")
     await cmd.connect()
 
@@ -306,7 +364,8 @@ async def test_fill_child_command_vector_index():
         async def callback() -> int:
             return 0
 
-        return SoftCommandBackend(callback)
+        sig = inspect.signature(callback, eval_str=True)
+        return SoftCommandBackend(callback, sig)
 
     vector: DeviceVector[Command[[], int]] = DeviceVector()
     vector.__orig_class__ = DeviceVector[Command[[], int]]  # type: ignore
@@ -333,3 +392,73 @@ async def test_fill_child_command_vector_index():
         backend = cmd._connector._init_backend
         assert isinstance(backend, SoftCommandBackend)
         assert backend.signature.return_annotation is int
+
+
+class _NullSigBackend(CommandBackend):
+    """Minimal hardware-like backend that passes signature=None at construction."""
+
+    def source(self, name: str) -> str:
+        return f"hw://{name}"
+
+    async def connect(self, timeout: float) -> None:
+        pass
+
+    async def execute(self) -> None:
+        pass
+
+
+async def test_mock_command_null_sig_backend_uses_no_arg_void_signature():
+    backend = _NullSigBackend(signature=None)
+    cmd = TriggerableCommand(backend, name="hw_cmd")
+    mock = DeviceMock()
+    await cmd.connect(mock=mock)
+
+    assert cmd.signature == NO_ARG_VOID_SIGNATURE
+    assert cmd.signature.return_annotation is None
+    assert list(cmd.signature.parameters) == []
+
+
+async def test_mock_triggerable_command_null_sig_backend():
+    backend = _NullSigBackend(signature=None)
+    cmd = TriggerableCommand(backend, name="hw_cmd")
+    mock = DeviceMock()
+    await cmd.connect(mock=mock)
+
+    # trigger() should call through to execute_mock and return None
+    await cmd.trigger()
+
+    execute_mock = get_mock_execute(cmd)
+    execute_mock.assert_awaited_once()
+
+
+@pytest.mark.parametrize(
+    "datatype, raw, expected",
+    [
+        (int, "42", 42),
+        (float, "3.14", 3.14),
+        (bool, 1, True),
+        (MyStrictEnum, "A", MyStrictEnum.A),
+    ],
+)
+async def test_mock_command_applies_conversion_like_soft(datatype, raw, expected):
+    """MockCommandBackend must apply the same type conversion as SoftCommandBackend.
+
+    When a hardware backend is mocked, calling cmd.execute(raw) with a value that
+    needs coercion (e.g. str "42" for int) should arrive at execute_mock already
+    converted, exactly as SoftCommandBackend.execute() would convert it.
+    """
+
+    def callback(v: datatype) -> datatype:
+        return v
+
+    cmd = soft_command(callback, name="test_cmd")
+    mock = DeviceMock()
+    await cmd.connect(mock=mock)
+
+    await cmd.execute(raw)
+
+    execute_mock = get_mock_execute(cmd)
+    # The value recorded by execute_mock must have been converted
+    (recorded,), _ = execute_mock.call_args
+    assert recorded == expected
+    assert type(recorded) is type(expected)

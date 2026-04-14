@@ -32,21 +32,16 @@ from ._utils import P, T
 class TangoCommandBackend(CommandBackend[P, T]):
     """A backend for executing commands on a Tango device.
 
-    This backend interfaces with a Tango device's command via a Tango `CommandProxy`.
-    It handles connection, type conversion, and execution of commands, while enforcing
-    Tango's limitations (e.g., no keyword arguments, single positional argument).
+    Interfaces with a Tango device command via a `CommandProxy`, handling
+    connection, type conversion, and execution while enforcing Tango's
+    limitations (no keyword arguments, single positional argument).
 
-    Args:
-        call_spec (inspect.Signature): Type signature of the Tango command.
-        trl (str): The Tango Resource Locator (TRL) of the command (e.g., `tango://host:port/device/command`).
-        device_proxy (DeviceProxy | None): An optional pre-configured Tango
-         `DeviceProxy`.
-            If provided, it will be used to resolve the TRL.
-
-    Raises:
-        TypeError: If `datatype` is `Array1D[np.int8]` (unsupported by Tango).
-        NotConnectedError: If the backend fails to connect to the Tango command.
-        TypeError: If the Tango command's actual type does not match `datatype`.
+    :param call_spec: Type signature of the Tango command, or `None` for
+        void/void commands.
+    :param trl: The Tango Resource Locator of the command, e.g.
+        `tango://host:port/device/command`.
+    :param device_proxy: An optional pre-configured `DeviceProxy` to use
+        instead of creating one from `trl`.
     """
 
     def __init__(
@@ -61,7 +56,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
         self._config: CommandInfo | None = None
         self._converter: TangoConverter | None = None
 
-        if isinstance(call_spec, inspect.Signature):
+        if call_spec is not None:
             if len(call_spec.parameters) > 1:
                 raise TypeError(
                     "Commands with more than one input parameter are not yet supported."
@@ -152,31 +147,22 @@ def tango_command(
     timeout: float | None = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> Command[P, T]:
-    """Factory function to create a Tango-backed command.
+    """Create a [](#Command) backed by a Tango device command.
 
-    Creates a `Command` or `TriggerableCommand` that executes a Tango device command.
-    The command can be configured to accept arguments and return a typed result.
+    For void/void Tango commands use [](#tango_triggerable_command)
+    instead.
 
-    Args:
-        call_spec (Callable): A callable sharing the call signature of the tango
-         command.
-        trl (str): The Tango Resource Locator (TRL) of the command (e.g.,
-         `tango://host:port/device/command`).
-        device_proxy (DeviceProxy | None): An optional pre-configured Tango
-         `DeviceProxy`.
-            If provided, it will be used to resolve the TRL.
-        timeout (float | None): Timeout (in seconds) for connecting to the Tango
-         device.
-            Defaults to `DEFAULT_TIMEOUT`.
-        name (str): Optional name for the command (used in logging and debugging).
-
-    Returns:
-        Command[P, T]: A command instance that
-         can be executed asynchronously.
-
+    :param call_spec: A callable whose signature matches that of the Tango command,
+        used to infer parameter and return types.
+    :param trl: The Tango Resource Locator of the command, e.g.
+        `tango://host:port/device/command`.
+    :param device_proxy: An optional pre-configured `DeviceProxy`; if omitted
+        one is created from `trl`.
+    :param timeout: Timeout in seconds for connecting to the Tango device.
+    :param name: Name for the command device node.
     """
     backend: TangoCommandBackend[P, T] = TangoCommandBackend(
-        inspect.signature(call_spec), trl, device_proxy
+        inspect.signature(call_spec, eval_str=True), trl, device_proxy
     )
     return Command(backend, timeout=timeout, name=name)
 
@@ -188,30 +174,19 @@ def tango_triggerable_command(
     timeout: float | None = DEFAULT_TIMEOUT,
     name: str = "",
 ) -> TriggerableCommand:
-    """Factory function to create a Tango-backed command.
+    """Create a [](#TriggerableCommand) backed by a void/void Tango device command.
 
-    Creates a `Command` or `TriggerableCommand` that executes a Tango device command.
-    The command can be configured to accept arguments and return a typed result.
+    Use this for Tango commands that take no arguments and return no value.
+    For commands with arguments or a return type use [](#tango_command).
 
-    Args:
-        trl (str): The Tango Resource Locator (TRL) of the command (e.g.,
-         `tango://host:port/device/command`).
-        device_proxy (DeviceProxy | None): An optional pre-configured Tango
-         `DeviceProxy`.
-            If provided, it will be used to resolve the TRL.
-        timeout (float | None): Timeout (in seconds) for connecting to the Tango
-         device.
-            Defaults to `DEFAULT_TIMEOUT`.
-        name (str): Optional name for the command (used in logging and debugging).
-
-    Returns:
-        TriggerableCommand: A command instance that
-         can be executed asynchronously.
-
+    :param trl: The Tango Resource Locator of the command, e.g.
+        `tango://host:port/device/command`.
+    :param device_proxy: An optional pre-configured `DeviceProxy`; if omitted
+        one is created from `trl`.
+    :param timeout: Timeout in seconds for connecting to the Tango device.
+    :param name: Name for the command device node.
     """
-    backend: TangoCommandBackend = TangoCommandBackend(None, trl, device_proxy)
-    return TriggerableCommand(
-        cast("CommandBackend[[], None]", backend),
-        timeout=timeout,
-        name=name,
+    backend: TangoCommandBackend[[], None] = TangoCommandBackend(
+        None, trl, device_proxy
     )
+    return TriggerableCommand(backend, timeout=timeout, name=name)

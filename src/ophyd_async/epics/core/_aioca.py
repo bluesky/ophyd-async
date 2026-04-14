@@ -37,6 +37,7 @@ from ophyd_async.core import (
 )
 
 from ._util import (
+    EpicsCommandBackend,
     EpicsOptions,
     EpicsSignalBackend,
     format_datatype,
@@ -185,15 +186,27 @@ _datatype_converter_from_dbr: dict[
     (dbr.DBR_DOUBLE, True): (Array1D[np.float64], CaArrayConverter),
 }
 
+# DBR types valid for a command trigger PV.  Float and double types
+# (DBR_FLOAT, DBR_DOUBLE) are intentionally excluded: PROC fields on process
+# records are always integer-typed, so a float PV indicates the wrong record
+# being used as a trigger rather than a signal.
+_SCALAR_NUMERIC_DBRS = frozenset(
+    {dbr.DBR_SHORT, dbr.DBR_CHAR, dbr.DBR_LONG, dbr.DBR_ENUM}
+)
+
+
+def _dbr_and_is_array(value: AugmentedValue) -> tuple[Dbr, bool]:
+    return cast(Dbr, value.datatype), value.element_count > 1
+
 
 def make_converter(
     datatype: type | None, values: dict[str, AugmentedValue]
 ) -> CaConverter:
     pv = list(values)[0]
-    pv_dbr = cast(
-        Dbr, get_unique({k: v.datatype for k, v in values.items()}, "datatypes")
+    pv_dbr, is_array = get_unique(
+        {k: _dbr_and_is_array(v) for k, v in values.items()},
+        "datatypes and element_count",
     )
-    is_array = bool([v for v in values.values() if v.element_count > 1])
     # Make the datatype canonical for the inference below
     if datatype == typing.Sequence[str]:
         datatype = Sequence[str]
@@ -374,3 +387,41 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
                 format=FORMAT_TIME,
                 all_updates=self._all_updates,
             )
+
+
+class CaCommandBackend(EpicsCommandBackend):
+    """Backend for a [](#TriggerableCommand) over Channel Access.
+
+    On `execute()`, writes `execute_value` to `write_pv`.
+
+    :param write_pv: The CA PV to write to. Can be set after construction
+        via `fill_command_with_prefix()`.
+    :param execute_value: The value to write when the command is triggered (default: 1).
+    """
+
+    def __init__(self, write_pv: str = "", execute_value: int = 1):
+        super().__init__(write_pv, execute_value)
+
+    def source(self, name: str) -> str:
+        return f"ca://{self.write_pv}"
+
+    async def connect(self, timeout: float) -> None:
+        try:
+            value = await caget(self.write_pv, format=FORMAT_CTRL, timeout=timeout)
+        except CANothing as exc:
+            raise NotConnectedError(f"ca://{self.write_pv}") from exc
+        pv_dbr, is_array = _dbr_and_is_array(value)
+        if is_array:
+            raise TypeError(
+                f"ca://{self.write_pv} is an array PV; "
+                "CaCommandBackend requires a scalar numeric PV"
+            )
+        if pv_dbr not in _SCALAR_NUMERIC_DBRS:
+            raise TypeError(
+                f"ca://{self.write_pv} is not a numeric PV "
+                f"(dbr={pv_dbr}); "
+                "CaCommandBackend requires a scalar numeric PV"
+            )
+
+    async def execute(self) -> None:
+        await caput(self.write_pv, self._execute_value, wait=True, timeout=None)

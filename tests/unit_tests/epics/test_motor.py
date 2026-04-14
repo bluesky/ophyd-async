@@ -227,7 +227,7 @@ async def test_cancellederror_in_set_ensures_motor_setpoint_set_task_is_cancelle
             raise
 
     await sim_motor.velocity.set(1)
-    get_mock_put(sim_motor.user_setpoint).side_effect = wait_forever_in_setpoint_set
+    callback_on_mock_put(sim_motor.user_setpoint, wait_forever_in_setpoint_set)
 
     status = sim_motor.set(1)
     await block_until_ready.wait()

@@ -1,6 +1,7 @@
 """The building blocks for making devices."""
 
 from ._command import (
+    NO_ARG_VOID_SIGNATURE,
     Command,
     CommandBackend,
     CommandConnector,
@@ -53,8 +54,10 @@ from ._flyer import FlyerController, FlyMotorInfo, StandardFlyer
 from ._log import config_ophyd_async_logging
 from ._mock_signal_backend import MockSignalBackend
 from ._mock_signal_utils import (
+    callback_on_mock_execute,
     callback_on_mock_put,
     get_mock,
+    get_mock_execute,
     get_mock_put,
     mock_puts_blocked,
     set_mock_put_proceeds,
@@ -219,7 +222,9 @@ __all__ = [
     "set_mock_value",
     "set_mock_values",
     "get_mock_put",
+    "get_mock_execute",
     "callback_on_mock_put",
+    "callback_on_mock_execute",
     "mock_puts_blocked",
     "set_mock_put_proceeds",
     # Signal utilities
@@ -309,6 +314,7 @@ __all__ = [
     "CommandBackend",
     "CommandConnector",
     "MockCommandBackend",
+    "NO_ARG_VOID_SIGNATURE",
     "SoftCommandBackend",
     "soft_command",
     "TriggerableCommand",

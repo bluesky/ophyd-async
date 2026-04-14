@@ -99,7 +99,11 @@ class Signal(Device, Generic[SignalDatatypeT]):
 
     @property
     def datatype(self) -> type[SignalDatatypeT] | None:
-        """Returns the datatype of the signal."""
+        """Returns the datatype of the signal.
+
+        This will return what was passed at construction time. None means the
+        backend will calculate it from the control system on connection.
+        """
         return self._connector.backend.datatype
 
 

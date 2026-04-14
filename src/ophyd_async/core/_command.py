@@ -5,11 +5,7 @@ import inspect
 from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 from functools import cached_property
-from typing import (
-    Generic,
-    cast,
-    get_type_hints,
-)
+from typing import Generic, cast
 from unittest.mock import AsyncMock
 
 from ._device import Device, DeviceConnector, LazyMock
@@ -22,13 +18,26 @@ from ._utils import (
     NotConnectedError,
     P,
     T,
-    T_co,
     _wait_for,
 )
 
+# Canonical signature for no-arg void commands.  Hardware backends (e.g. EPICS)
+# pass this instead of None so that mock mode always has a concrete signature to
+# work with.  `None` is reserved for "not yet known until connect time".
+NO_ARG_VOID_SIGNATURE = inspect.Signature([], return_annotation=None)
 
-class CommandBackend(Generic[P, T_co]):
-    """A backend for a Command."""
+
+MockExecuteCallback = Callable[P, T] | Callable[P, Awaitable[T]]
+
+
+class CommandBackend(Generic[P, T]):
+    """A backend for a Command.
+
+    :param signature: The Python signature of the command, or `None` if the
+        signature is not yet known until connect time (analogous to `datatype=None`
+        for signals).  Hardware backends that are unambiguously void/void should
+        pass `NO_ARG_VOID_SIGNATURE` instead.
+    """
 
     def __init__(self, signature: inspect.Signature | None):
         self.signature = signature
@@ -42,14 +51,14 @@ class CommandBackend(Generic[P, T_co]):
         """Connect to underlying hardware."""
 
     @abstractmethod
-    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T_co:
+    async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute the command and return its result."""
 
 
-class CommandConnector(DeviceConnector):
+class CommandConnector(DeviceConnector, Generic[P, T]):
     """A connector for a Command."""
 
-    def __init__(self, backend: CommandBackend):
+    def __init__(self, backend: CommandBackend[P, T]):
         self.backend = self._init_backend = backend
 
     async def connect_mock(self, device: Device, mock: LazyMock):
@@ -66,7 +75,7 @@ class CommandConnector(DeviceConnector):
 class Command(Device, Generic[P, T]):
     """A Device that can execute a command."""
 
-    _connector: CommandConnector
+    _connector: CommandConnector[P, T]
 
     def __init__(
         self,
@@ -112,53 +121,57 @@ class TriggerableCommand(Command[[], None]):
 
 
 class SoftCommandBackend(CommandBackend[P, T]):
-    """A backend for a Command that uses a Python callback."""
+    """A backend for a Command that uses a Python callback.
 
-    def __init__(self, command_cb: Callable[P, T | Awaitable[T]]):
-        self._command_cb = command_cb
+    Concurrent calls to `execute()` are serialised by an internal lock: a second
+    caller blocks until the first finishes.  This is intentional — hardware
+    commands should not run concurrently, and it prevents re-entrant callback
+    invocations.
+    """
+
+    signature: inspect.Signature
+
+    def __init__(
+        self,
+        command_cb: Callable[P, T] | Callable[P, Awaitable[T]],
+        sig: inspect.Signature,
+    ):
+        self.command_cb = command_cb
         self._lock = asyncio.Lock()
-        self._sig = inspect.signature(command_cb)
-        self._params = list(self._sig.parameters.values())
-        for p in self._params:
+        params = list(sig.parameters.values())
+        for p in params:
             if p.kind in (
                 inspect.Parameter.VAR_POSITIONAL,
                 inspect.Parameter.VAR_KEYWORD,
             ):
                 raise TypeError(
-                    f"{command_cb.__name__}() must not use"
-                    f" *args/**kwargs; "
+                    f"{command_cb.__name__}() must not use *args/**kwargs; "
                     f"got parameter {p.name!r}"
                 )
-        # Require full annotations
-        hints = get_type_hints(command_cb)
-        missing = [p.name for p in self._params if p.name not in hints]
+        missing = [p.name for p in params if p.annotation is inspect.Parameter.empty]
         if missing:
             raise TypeError(
-                f"{command_cb.__name__}() is missing type annotations for"
-                f" parameter(s) "
+                f"{command_cb.__name__}() missing type annotations for parameter(s) "
                 f"{missing}. All parameters must be annotated."
             )
-        if "return" not in hints:
+        if sig.return_annotation is inspect.Parameter.empty:
             raise TypeError(
-                f"{command_cb.__name__}() is missing a return type annotation. "
+                f"{command_cb.__name__}() missing a return type annotation. "
                 "The return type must be annotated."
             )
-        # Store expected param types by name (runtime contract)
         self._expected_param_types: dict[str, object] = {
-            p.name: hints[p.name] for p in self._params
+            p.name: p.annotation for p in params
         }
-        # Create converters for each parameter during initialization
         self._converters: dict[str, SoftConverter] = {}
         for name, expected_type in self._expected_param_types.items():
             try:
-                self._converters[name] = make_converter(expected_type or float)
+                self._converters[name] = make_converter(expected_type)
             except TypeError as exc:
                 raise TypeError(
                     f"Cannot create converter for parameter '{name}' of type"
                     f" {expected_type}: {exc}"
                 ) from exc
-
-        super().__init__(signature=inspect.signature(command_cb))
+        super().__init__(signature=sig)
 
     def source(self, name: str) -> str:
         """Return the source of the command."""
@@ -171,26 +184,25 @@ class SoftCommandBackend(CommandBackend[P, T]):
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
         """Execute the configured callback and return its result."""
         try:
-            bound = self._sig.bind(*args, **kwargs)
+            bound = self.signature.bind(*args, **kwargs)
         except TypeError as exc:
             raise TypeError(str(exc)) from exc
         bound.apply_defaults()
         for name, value in bound.arguments.items():
-            converter = self._converters[name]
             try:
-                converted_value = converter.write_value(value)
-                bound.arguments[name] = converted_value
+                bound.arguments[name] = self._converters[name].write_value(value)
             except (TypeError, ValueError) as exc:
                 expected_type = self._expected_param_types[name]
                 raise TypeError(
-                    f"Argument '{name}' with value {value!r} is not compatible with "
-                    f"expected type {expected_type}: {exc}"
+                    f"Argument '{name}' with value {value!r} is not compatible"
+                    f" with expected type {expected_type}: {exc}"
                 ) from exc
         async with self._lock:
-            result = self._command_cb(*bound.args, **bound.kwargs)
+            result = self.command_cb(*bound.args, **bound.kwargs)
             if inspect.isawaitable(result):
-                result = await result
-            return cast(T, result)
+                return await result
+            else:
+                return result
 
 
 class MockCommandBackend(CommandBackend[P, T]):
@@ -199,59 +211,62 @@ class MockCommandBackend(CommandBackend[P, T]):
     def __init__(self, initial_backend: CommandBackend[P, T], mock: LazyMock):
         self._initial_backend = initial_backend
         self._mock = mock
-        self._mock_execute_callback: Callable[P, Awaitable[T]] | None = None
-        self._return_converter: SoftConverter | None = (
-            make_converter(initial_backend.signature.return_annotation)
-            if initial_backend.signature is not None
-            else None
+        self._mock_execute_callback: MockExecuteCallback[P, T] | None = None
+        sig = initial_backend.signature or NO_ARG_VOID_SIGNATURE
+
+        # Build a SoftCommandBackend from the signature and a closure that
+        # forwards converted calls to execute_mock — same pattern as
+        # MockSignalBackend wrapping a SoftSignalBackend for type conversion.
+        # The lambda defers access to execute_mock to keep it lazy-initialised.
+        self._soft_backend: SoftCommandBackend[P, T] = SoftCommandBackend(
+            command_cb=lambda *args, **kwargs: self.execute_mock(*args, **kwargs),
+            sig=sig,
         )
 
-        self._return_type: type[T] | None = None
-        if initial_backend.signature:
-            self._return_type = initial_backend.signature.return_annotation
-
-        super().__init__(signature=initial_backend.signature)
+        self._return_converter: SoftConverter | None = (
+            make_converter(sig.return_annotation)
+            if sig.return_annotation not in (None, inspect.Parameter.empty)
+            else None
+        )
+        super().__init__(signature=sig)
 
     def source(self, name: str) -> str:
         return f"mock+{self._initial_backend.source(name)}"
 
-    def set_mock_execute_callback(self, callback: Callable[P, Awaitable[T]] | None):
-        """Set a callback that will be called when the command is executed."""
+    def set_mock_execute_callback(self, callback: MockExecuteCallback[P, T] | None):
+        """Set a callback that will be called when the command is executed.
+
+        Pass `None` to restore the default side effect (the original callable for
+        `SoftCommandBackend`, or a manufactured default for hardware backends).
+        """
+        self._mock_execute_callback = callback
         if "execute_mock" in self.__dict__:
-            # execute_mock cached property exists, so set the side effect on it
-            self.execute_mock.side_effect = callback
+            self.execute_mock.side_effect = self._make_side_effect()
+
+    def _make_side_effect(self) -> Callable[P, T] | Callable[P, Awaitable[T]]:
+        if self._mock_execute_callback is not None:
+            return self._mock_execute_callback
+        elif isinstance(self._initial_backend, SoftCommandBackend):
+            # Args arrive already converted by _soft_backend, so call _command_cb
+            # directly rather than going through execute() again (which would
+            # convert a second time and re-acquire the lock).
+            return self._initial_backend.command_cb
+        elif self._return_converter is None:
+            return lambda *args, **kwargs: cast(T, None)
         else:
-            # execute_mock doesn't exist, don't create it as that would be slow
-            # so just keep it internally
-            self._mock_execute_callback = callback
+            rc = self._return_converter
+            return lambda *args, **kwargs: rc.write_value(None)
 
     @cached_property
     def execute_mock(self) -> AsyncMock:
         """Return the mock that will track calls to the command execution."""
-        default_return = None
-        if self._return_type is not None:
-            try:
-                default_return = self._return_type()
-            except (TypeError, ValueError):
-                pass
-        execute_mock = AsyncMock(
-            name="execute",
-            spec=self._initial_backend.signature
-            if self._initial_backend.signature
-            else Callable[P, Awaitable[T]],
-            side_effect=self._mock_execute_callback
-            if self._mock_execute_callback
-            else lambda *args, **kwargs: default_return,
-        )
+        execute_mock = AsyncMock(name="execute", side_effect=self._make_side_effect())
         self._mock().attach_mock(execute_mock, "execute")
         return execute_mock
 
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Execute the mock command."""
-        result = await self.execute_mock(*args, **kwargs)
-        if result is None and self._return_converter is not None:
-            result = self._return_converter.write_value(None)
-        return cast(T, result)
+        """Execute the mock command converting arguments as SoftCommandBackend would."""
+        return await self._soft_backend.execute(*args, **kwargs)
 
     async def connect(self, timeout: float) -> None:
         """Mock backend does not support real connection."""
@@ -264,5 +279,8 @@ def soft_command(
     timeout: float | None = DEFAULT_TIMEOUT,
 ) -> Command[P, T]:
     """Create a Command with a SoftCommandBackend."""
-    backend: SoftCommandBackend[P, T] = SoftCommandBackend(command_cb)
+    # eval_str=True resolves forward-reference string annotations created by
+    # ``from __future__ import annotations`` in the caller's module.
+    sig = inspect.signature(command_cb, eval_str=True)
+    backend = SoftCommandBackend(command_cb, sig)
     return Command(backend, timeout, name)

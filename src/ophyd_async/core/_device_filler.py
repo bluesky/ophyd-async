@@ -22,7 +22,7 @@ from ._command import Command, CommandBackend
 from ._device import Device, DeviceConnector, DeviceVector
 from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
-from ._utils import cached_get_origin, cached_get_type_hints, get_origin_class
+from ._utils import T, V, cached_get_origin, cached_get_type_hints, get_origin_class
 
 SignalBackendT = TypeVar("SignalBackendT", bound=SignalBackend)
 DeviceConnectorT = TypeVar("DeviceConnectorT", bound=DeviceConnector)
@@ -117,8 +117,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         device: Device,
         signal_backend_factory: Callable[[type[SignalDatatype] | None], SignalBackendT],
         device_connector_factory: Callable[[], DeviceConnectorT],
-        command_backend_factory: Callable[[inspect.Signature | None], CommandBackendT]
-        | None = None,
+        command_backend_factory: Callable[[inspect.Signature | None], CommandBackendT],
     ):
         self._device = device
         self._signal_backend_factory = signal_backend_factory
@@ -256,10 +255,46 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
 
     def check_created(self):
         """Check that all Signals and Devices declared in annotations are created."""
-        uncreated = sorted(set(self._uncreated_signals).union(self._uncreated_devices))
+        uncreated = sorted(
+            set(self._uncreated_signals)
+            .union(self._uncreated_devices)
+            .union(self._uncreated_commands)
+        )
         if uncreated:
             raise RuntimeError(
                 f"{self._device.name}: {uncreated} have not been created yet"
+            )
+
+    def _apply_device_annotations(self, child: Device, extras: list[Any]) -> None:
+        for anno in extras:
+            _check_device_annotation(anno)(self._device, child)
+
+    def _create_children_iter(
+        self,
+        uncreated: dict[UniqueName, type],
+        factory: Callable[[T | None], V],
+        type_lookup: dict[LogicalName, T | None],
+        filled_dest: dict,
+        unfilled_dest: dict,
+        filled: bool,
+    ) -> Iterator[tuple[Any, list[Any]]]:
+        """Shared creation loop used by signals and commands.
+
+        Yields `(backend, extras)` to the caller, who may mutate `backend`
+        (e.g. set PV suffixes), then resumes to finish child construction and
+        registration.
+        """
+        for name in list(uncreated):
+            child_type = uncreated.pop(name)
+            backend = factory(type_lookup[_logical(name)])
+            extras = list(self._extras[name])
+            yield backend, extras
+            child = child_type(backend)
+            self._apply_device_annotations(child, extras)
+            setattr(self._device, name, child)
+            (filled_dest if filled else unfilled_dest)[_logical(name)] = (
+                backend,
+                child_type,
             )
 
     def create_signals_from_annotations(
@@ -281,26 +316,20 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             list so this class can handle them, e.g. `StandardReadableFormat`
             instances.
         """
-        for name in list(self._uncreated_signals):
-            child_type = self._uncreated_signals.pop(name)
-            backend = self._signal_backend_factory(
-                self._signal_datatype[_logical(name)]
-            )
-            extras = list(self._extras[name])
-            yield backend, extras
-            signal = child_type(backend)
-            for anno in extras:
-                device_annotation = _check_device_annotation(annotation=anno)
-                device_annotation(self._device, signal)
-            setattr(self._device, name, signal)
-            dest = self._filled_backends if filled else self._unfilled_backends
-            dest[_logical(name)] = (backend, child_type)
+        yield from self._create_children_iter(
+            self._uncreated_signals,
+            self._signal_backend_factory,
+            self._signal_datatype,
+            self._filled_backends,
+            self._unfilled_backends,
+            filled,
+        )
 
     def create_devices_from_annotations(
         self,
         filled=True,
     ) -> Iterator[tuple[DeviceConnectorT, list[Any]]]:
-        """Create all Signals from annotations.
+        """Create all Devices from annotations.
 
         :param filled:
             If True then the Devices created should be considered already filled
@@ -317,9 +346,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             extras = list(self._extras[name])
             yield connector, extras
             device = child_type(connector=connector)
-            for anno in extras:
-                device_annotation = _check_device_annotation(annotation=anno)
-                device_annotation(self._device, device)
+            self._apply_device_annotations(device, extras)
             setattr(self._device, name, device)
             dest = self._filled_connectors if filled else self._unfilled_connectors
             dest[_logical(name)] = connector
@@ -331,43 +358,24 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
         """Create all Command children from annotations.
 
         :param filled: If True the Commands are considered already filled with
-            connection data.  If False then ``fill_child_command`` must be called
+            connection data.  If False then `fill_child_command` must be called
             before the Command can be connected.
-        :yields: ``(command_backend, extras)``
-            The ``CommandBackend`` created for this Command and the list of extra
+        :yields: `(command_backend, extras)`
+            The `CommandBackend` created for this Command and the list of extra
             annotations that may be used to customise it.  Unhandled extras should
             be left on the list so this class can handle them (e.g.
-            ``StandardReadableFormat`` instances).
-        :raises RuntimeError: If no ``command_backend_factory`` was supplied at
+            `StandardReadableFormat` instances).
+        :raises RuntimeError: If no `command_backend_factory` was supplied at
             construction time.
         """
-        if self._command_backend_factory is None:
-            uncreated = sorted(self._uncreated_commands)
-            if uncreated:
-                raise RuntimeError(
-                    f"{self._device.name}: has Command children {uncreated} but "
-                    "no command_backend_factory was provided to DeviceFiller"
-                )
-            return
-
-        for name in list(self._uncreated_commands):
-            child_type = self._uncreated_commands.pop(name)
-            backend = self._command_backend_factory(
-                self._command_signature[_logical(name)]
-            )
-            extras = list(self._extras[name])
-            yield backend, extras
-            command = child_type(backend)
-            for anno in extras:
-                device_annotation = _check_device_annotation(annotation=anno)
-                device_annotation(self._device, command)
-            setattr(self._device, name, command)
-            dest = (
-                self._filled_command_backends
-                if filled
-                else self._unfilled_command_backends
-            )
-            dest[_logical(name)] = (backend, child_type)
+        yield from self._create_children_iter(
+            self._uncreated_commands,
+            self._command_backend_factory,
+            self._command_signature,
+            self._filled_command_backends,
+            self._unfilled_command_backends,
+            filled,
+        )
 
     def create_device_vector_entries_to_mock(self, num: int):
         """Create num entries for each `DeviceVector`.
@@ -484,7 +492,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
             # We made it above
             connector = self._unfilled_connectors.pop(name)
             self._filled_connectors[name] = connector
-        elif name in self._filled_backends:
+        elif name in self._filled_connectors:
             # We made it and filled it so return for validation
             connector = self._filled_connectors[name]
         elif vector_index is not None:
@@ -520,14 +528,11 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT, CommandBackendT]):
     ) -> CommandBackendT:
         """Mark a Command as filled and return its backend.
 
-        This version prioritizes checking _filled_command_backends before the shadowing
-        check, matching the behavior of fill_child_signal.
-
         :param name: Logical name (without trailing underscore).
-        :param command_type: The ``Command`` subclass to create.
-        :param vector_index: Index within a ``DeviceVector``, if applicable.
-        :return: The ``CommandBackend`` for the filled Command.
-        :raises RuntimeError: If no ``command_backend_factory`` was provided.
+        :param command_type: The `Command` subclass to create.
+        :param vector_index: Index within a `DeviceVector`, if applicable.
+        :return: The `CommandBackend` for the filled Command.
+        :raises RuntimeError: If no `command_backend_factory` was provided.
         """
         if self._command_backend_factory is None:
             raise RuntimeError(
