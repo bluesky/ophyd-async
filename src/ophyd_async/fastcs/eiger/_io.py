@@ -2,8 +2,8 @@ from ophyd_async.core import (
     Device,
     SignalR,
     SignalRW,
-    SignalX,
     StrictEnum,
+    TriggerableCommand,
 )
 
 
@@ -52,6 +52,6 @@ class EigerDetectorIO(Device):
     detector_distance: SignalRW[float]
     omega_start: SignalRW[float]
     omega_increment: SignalRW[float]
-    arm: SignalX
-    disarm: SignalX
-    trigger: SignalX
+    arm: TriggerableCommand
+    disarm: TriggerableCommand
+    trigger: TriggerableCommand

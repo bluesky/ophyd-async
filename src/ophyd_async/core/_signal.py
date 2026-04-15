@@ -5,6 +5,7 @@ import contextlib
 import functools
 import inspect
 import time
+import warnings
 from collections.abc import AsyncGenerator, Callable
 from typing import Any, Generic, TypeVar, cast
 
@@ -312,7 +313,24 @@ class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
 
 
 class SignalX(Signal):
-    """Signal that puts the default value."""
+    """Signal that puts the default value.
+
+    .. deprecated::
+        Use [](#TriggerableCommand) instead.
+    """
+
+    def __init__(
+        self,
+        backend: SignalBackend,
+        timeout: float | None = DEFAULT_TIMEOUT,
+        name: str = "",
+    ) -> None:
+        warnings.warn(
+            "SignalX is deprecated, use TriggerableCommand instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(backend, timeout=timeout, name=name)
 
     @AsyncStatus.wrap
     async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:

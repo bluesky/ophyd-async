@@ -53,7 +53,7 @@ async def test_prepare_internal_calls_correct_parameters(
             call.od.fp.file_prefix.put("filename.h5"),
             call.od.mw.file_prefix.put("filename.h5"),
             call.od.mw.acquisition_id.put("filename.h5"),
-            call.od.fp.start_writing.put(None),
+            call.od.fp.start_writing.execute(),
         ],
         reset_after=False,
     )

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import warnings
 
 from tango import AttrWriteType, CmdArgType, DeviceProxy
 from tango.asyncio import DeviceProxy as AsyncDeviceProxy
@@ -119,6 +120,9 @@ def tango_signal_x(
 ) -> SignalX:
     """Create a `SignalX` backed by 1 Tango Attribute/Command.
 
+    .. deprecated::
+        Use `tango_triggerable_command` instead.
+
     Parameters
     ----------
     write_trl:
@@ -129,8 +133,15 @@ def tango_signal_x(
         The name of the Signal
 
     """
+    warnings.warn(
+        "tango_signal_x is deprecated, use tango_triggerable_command instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     backend = make_backend(None, write_trl, write_trl)
-    return SignalX(backend, timeout=timeout, name=name)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        return SignalX(backend, timeout=timeout, name=name)
 
 
 async def infer_python_type(

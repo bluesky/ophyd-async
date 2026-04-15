@@ -243,4 +243,6 @@ def epics_signal_x(
         stacklevel=2,
     )
     backend = _epics_signal_backend(None, write_pv, write_pv)
-    return SignalX(backend, name=name, timeout=timeout)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        return SignalX(backend, name=name, timeout=timeout)
