@@ -5,7 +5,7 @@ import re
 
 import pytest
 
-from ophyd_async.core import Device, DeviceVector, Signal
+from ophyd_async.core import NO_ARG_VOID_SIGNATURE, Device, DeviceVector, Signal
 from ophyd_async.fastcs.core import fastcs_connector
 from ophyd_async.fastcs.panda import (
     PcapBlock,
@@ -87,7 +87,7 @@ async def test_panda_gets_types_from_common_class(panda_pva, panda_t):
     assert panda.seq[1].table._connector.backend.datatype is SeqTable
 
     # others are given the None datatype
-    assert panda.pcap.newsignal._connector.backend.datatype is None
+    assert panda.pcap.newsignal._connector.backend.signature == NO_ARG_VOID_SIGNATURE
 
 
 @pytest.mark.timeout(15.0 if os.name == "nt" else 4.5)

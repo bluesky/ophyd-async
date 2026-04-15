@@ -26,7 +26,7 @@ from ophyd_async.tango.core import (
     tango_signal_r,
     tango_signal_rw,
     tango_signal_w,
-    tango_signal_x,
+    tango_triggerable_command,
 )
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
@@ -274,17 +274,15 @@ async def test_tango_signal_rw(everything_device_trl: str, everything_signal_inf
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
 @pytest.mark.timeout(2.0)
-async def test_tango_signal_x(tango_test_device: str):
+async def test_tango_triggerable_command(tango_test_device: str):
     timeout = 0.2
-    signal = tango_signal_x(
-        write_trl=get_full_attr_trl(tango_test_device, "clear"),
+    signal = tango_triggerable_command(
+        trl=get_full_attr_trl(tango_test_device, "clear"),
         timeout=timeout,
         name="test_signal",
     )
     await signal.connect()
-    status = signal.trigger()
-    await status
-    assert status.done is True and status.success is True
+    await signal.execute()
 
 
 async def assert_val_reading(signal, value, name=""):
