@@ -123,7 +123,7 @@ class MockArmLogic(DetectorArmLogic):
         await asyncio.sleep(0.001)
         self.armed = False
 
-    async def disarm(self):
+    async def disarm(self, on_unstage: bool):
         self.armed = False
         self.disarm_count += 1
 
@@ -746,6 +746,46 @@ async def test_add_unknown_logic_type_raises():
 
     with pytest.raises(TypeError, match="Unknown logic type"):
         det.add_detector_logics(UnknownLogic())
+
+
+@pytest.mark.parametrize("initial_shutter_closed", [True, False])
+async def test_disarm_on_unstage_shutter_use_case(initial_shutter_closed: bool):
+    """Shutter use case: close the shutter only at the end of the scan.
+
+    A beamline detector needs the shutter to stay open between exposures during
+    a scan, but must always close it when the scan ends.  By branching on
+    ``on_unstage`` inside ``disarm()``, the arm logic can close the shutter in
+    ``unstage()`` without inadvertently closing it during ``stage()``.
+    """
+
+    class ShutterArmLogic(DetectorArmLogic):
+        def __init__(self, shutter_closed: bool):
+            self.shutter_closed = shutter_closed
+
+        async def arm(self):
+            self.shutter_closed = False  # open shutter when arming
+
+        async def wait_for_idle(self):
+            pass
+
+        async def disarm(self, on_unstage: bool):
+            if on_unstage:
+                self.shutter_closed = True
+
+    det = StandardDetector()
+    al = ShutterArmLogic(initial_shutter_closed)
+    det.add_detector_logics(al)
+
+    await det.stage()
+    assert (
+        al.shutter_closed is initial_shutter_closed
+    )  # stage() must not touch the shutter
+
+    await det.trigger()
+    assert al.shutter_closed is False  # arm() opens the shutter
+
+    await det.unstage()
+    assert al.shutter_closed is True  # unstage() must close the shutter
 
 
 async def test_multiple_collections_with_single_only_logic_raises():

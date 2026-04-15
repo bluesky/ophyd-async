@@ -19,7 +19,7 @@ class PandaArmLogic(DetectorArmLogic):
         # TODO: https://github.com/PandABlocks/PandABlocks-FPGA/issues/262
         pass
 
-    async def disarm(self):
+    async def disarm(self, on_unstage: bool):
         await set_and_wait_for_other_value(
             self.pcap.arm, False, self.pcap.active, False
         )

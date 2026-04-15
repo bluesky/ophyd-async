@@ -223,8 +223,14 @@ class DetectorArmLogic(ABC):
         """Wait for the detector to be disarmed or idle."""
 
     @abstractmethod
-    async def disarm(self):
-        """Disarm the detector, return detector to an idle state."""
+    async def disarm(self, on_unstage: bool):
+        """Disarm the detector, return detector to an idle state.
+
+        :param on_unstage: True if called from `unstage()`, False if called from
+            `stage()` before a new acquisition. Implementations can use this to
+            perform cleanup that should only happen at the end of a scan (for
+            example, closing a shutter that must stay open between exposures).
+        """
 
 
 def _all_the_same(collections_written: set[int]) -> int:
@@ -392,10 +398,10 @@ class StandardDetector(
         """
         self._config_signals = (*self._config_signals, *signals)
 
-    async def _disarm_and_stop(self):
+    async def _disarm_and_stop(self, on_unstage: bool = False):
         coros = [data_logic.stop() for data_logic in self._data_logics]
         if self._arm_logic:
-            coros.append(self._arm_logic.disarm())
+            coros.append(self._arm_logic.disarm(on_unstage=on_unstage))
         await asyncio.gather(*coros)
 
     async def get_trigger_deadtime(
@@ -426,7 +432,7 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def stage(self) -> None:
         """Make sure the detector is idle and ready to be used."""
-        await self._disarm_and_stop()
+        await self._disarm_and_stop(on_unstage=False)
         self._prepare_ctx = None
         self._kickoff_ctx = None
         await self.events_to_kickoff.set(0)
@@ -749,4 +755,4 @@ class StandardDetector(
     @AsyncStatus.wrap
     async def unstage(self) -> None:
         """Disarm the detector and stop file writing."""
-        await self._disarm_and_stop()
+        await self._disarm_and_stop(on_unstage=True)
