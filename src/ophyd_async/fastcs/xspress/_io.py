@@ -19,8 +19,7 @@ class XspressDetectorIO(Device):
     state: SignalR[str]
     num_images: SignalRW[int]
     exposure_time: SignalRW[float]
-    trigger_mode: SignalRW[str]
+    trigger_mode: SignalRW[int]
     acquisition_complete: SignalR[bool]
     start_acquisition: SignalX
     stop_acquisition: SignalX
-    bit_depth_image: SignalR[int]
