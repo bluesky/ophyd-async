@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>5. Respect black line length &#8212; ophyd-async 0.17a3.dev6+g891e30b28 documentation</title>
+    <title>14. Pass on_unstage to DetectorArmLogic.disarm &#8212; ophyd-async 0.17a3.dev6+g891e30b28 documentation</title>
   
   
   
@@ -48,7 +48,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=30646c52"></script>
     <script src="../../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'explanations/decisions/0005-respect-black-line-length';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'explanations/decisions/0014-disarm-on-unstage-flag';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.17.0';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -60,8 +60,8 @@
     <link rel="icon" href="../../_static/ophyd-favicon.svg"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="6. Procedural Device Definitions" href="0006-procedural-device-definitions.html" />
-    <link rel="prev" title="4. Repository Structure" href="0004-repository-structure.html" />
+    <link rel="next" title="Declarative vs Procedural Devices" href="../declarative-vs-procedural.html" />
+    <link rel="prev" title="13. Preserve Hardware State in Implicit Step-Scan Trigger" href="0013-preserve-hardware-state-in-step-scan.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -427,7 +427,7 @@
 <li class="toctree-l2"><a class="reference internal" href="0002-switched-to-python-copier-template.html">2. Adopt python-copier-template for project structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0003-ophyd-async-migration.html">3. Ophyd Async migration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0004-repository-structure.html">4. Repository Structure</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">5. Respect black line length</a></li>
+<li class="toctree-l2"><a class="reference internal" href="0005-respect-black-line-length.html">5. Respect black line length</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0006-procedural-device-definitions.html">6. Procedural Device Definitions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0007-subpackage-structure.html">7. Sub-package Structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0008-signal-types.html">8. Settle on Signal Types</a></li>
@@ -436,7 +436,7 @@
 <li class="toctree-l2"><a class="reference internal" href="0011-buffer-updates-camonitor.html">11. Buffer updates when using <code class="docutils literal notranslate"><span class="pre">camonitor</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="0012-detector-rewrite.html">12. Rewrite StandardDetector with Composition-Based Logic</a></li>
 <li class="toctree-l2"><a class="reference internal" href="0013-preserve-hardware-state-in-step-scan.html">13. Preserve Hardware State in Implicit Step-Scan Trigger</a></li>
-<li class="toctree-l2"><a class="reference internal" href="0014-disarm-on-unstage-flag.html">14. Pass <code class="docutils literal notranslate"><span class="pre">on_unstage</span></code> to <code class="docutils literal notranslate"><span class="pre">DetectorArmLogic.disarm</span></code></a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">14. Pass <code class="docutils literal notranslate"><span class="pre">on_unstage</span></code> to <code class="docutils literal notranslate"><span class="pre">DetectorArmLogic.disarm</span></code></a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../declarative-vs-procedural.html">Declarative vs Procedural Devices</a></li>
@@ -493,7 +493,7 @@
     
     <li class="breadcrumb-item"><a href="../decisions.html" class="nav-link">Architectural Decision Records</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">5. Respect black line length</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">14. Pass <code class="docutils literal notranslate"><span class="pre">on_unstage</span></code> to <code class="docutils literal notranslate"><span class="pre">DetectorArmLogic.disarm</span></code></span></li>
   </ul>
 </nav>
 </div>
@@ -510,28 +510,38 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="respect-black-line-length">
-<h1>5. Respect black line length<a class="headerlink" href="#respect-black-line-length" title="Link to this heading">#</a></h1>
-<p>Date: 2023-08-30</p>
+  <section id="pass-on-unstage-to-detectorarmlogic-disarm">
+<h1>14. Pass <code class="docutils literal notranslate"><span class="pre">on_unstage</span></code> to <code class="docutils literal notranslate"><span class="pre">DetectorArmLogic.disarm</span></code><a class="headerlink" href="#pass-on-unstage-to-detectorarmlogic-disarm" title="Link to this heading">#</a></h1>
+<p>Date: 2026-04-15</p>
 <section id="status">
 <h2>Status<a class="headerlink" href="#status" title="Link to this heading">#</a></h2>
 <p>Accepted</p>
 </section>
 <section id="context">
 <h2>Context<a class="headerlink" href="#context" title="Link to this heading">#</a></h2>
-<p>We should adhere to black’s default settings and line length.</p>
-<p>From black’s own documentation:
-&gt; “You probably noticed the peculiar default line length. Black defaults to 88 characters per line, which happens to be 10% over 80. This number was found to produce significantly shorter files than sticking with 80 (the most popular), or even 79 (used by the standard library). In general, 90-ish seems like the wise choice.
-… remember that people with sight disabilities find it harder to work with line lengths exceeding 100 characters. It also adversely affects side-by-side diff review on typical screen resolutions. Long lines also make it harder to present code neatly in documentation or talk slides.”</p>
+<p><code class="docutils literal notranslate"><span class="pre">StandardDetector._disarm_and_stop()</span></code> is called from both <code class="docutils literal notranslate"><span class="pre">stage()</span></code> (to reset
+the detector before a new scan) and <code class="docutils literal notranslate"><span class="pre">unstage()</span></code> (to clean up after a scan
+ends). Both call sites previously invoked <code class="docutils literal notranslate"><span class="pre">disarm()</span></code> identically, giving
+implementations no way to distinguish between them.</p>
+<p>This matters when a beamline embeds shutter logic inside a detector’s arm
+logic. For example, a detector may need a shutter to stay open between
+exposures during a scan, but the shutter must always be closed at the end.
+Closing the shutter inside <code class="docutils literal notranslate"><span class="pre">disarm()</span></code> without this context would close it at
+<code class="docutils literal notranslate"><span class="pre">stage()</span></code> too — potentially closing a shutter that should remain open.</p>
 </section>
 <section id="decision">
 <h2>Decision<a class="headerlink" href="#decision" title="Link to this heading">#</a></h2>
-<p>We have configured linting tools to use black’s default line length of 88.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DetectorArmLogic.disarm</span></code> now accepts <code class="docutils literal notranslate"><span class="pre">on_unstage:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></code>. The flag is
+<code class="docutils literal notranslate"><span class="pre">False</span></code> when called from <code class="docutils literal notranslate"><span class="pre">stage()</span></code> (setup before a scan) and <code class="docutils literal notranslate"><span class="pre">True</span></code> when
+called from <code class="docutils literal notranslate"><span class="pre">unstage()</span></code> (teardown after a scan). All existing implementations
+default to <code class="docutils literal notranslate"><span class="pre">False</span></code> and ignore the flag, preserving backward compatibility.</p>
 </section>
 <section id="consequences">
 <h2>Consequences<a class="headerlink" href="#consequences" title="Link to this heading">#</a></h2>
-<p>Linting tools for this repository are configured to accept black’s line length of 88 characters.
-Any additional linting tools should respect this.</p>
+<p>Implementations that need end-of-scan cleanup (such as closing a shutter) can
+branch on <code class="docutils literal notranslate"><span class="pre">on_unstage</span></code>. Existing <code class="docutils literal notranslate"><span class="pre">DetectorArmLogic</span></code> subclasses must be updated
+to add the <code class="docutils literal notranslate"><span class="pre">on_unstage:</span> <span class="pre">bool</span></code> parameter; the change is mechanical and the flag
+can be ignored by implementations that do not need it.</p>
 </section>
 </section>
 
@@ -546,20 +556,20 @@ Any additional linting tools should respect this.</p>
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="0004-repository-structure.html"
+       href="0013-preserve-hardware-state-in-step-scan.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">4. Repository Structure</p>
+        <p class="prev-next-title">13. Preserve Hardware State in Implicit Step-Scan Trigger</p>
       </div>
     </a>
     <a class="right-next"
-       href="0006-procedural-device-definitions.html"
+       href="../declarative-vs-procedural.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">6. Procedural Device Definitions</p>
+        <p class="prev-next-title">Declarative vs Procedural Devices</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -593,7 +603,7 @@ Any additional linting tools should respect this.</p>
 
   
   <div class="tocsection editthispage">
-    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/explanations/decisions/0005-respect-black-line-length.rst">
+    <a href="https://github.com/bluesky/ophyd-async/edit/main/docs/explanations/decisions/0014-disarm-on-unstage-flag.md">
       <i class="fa-solid fa-pencil"></i>
       
       
@@ -608,7 +618,7 @@ Any additional linting tools should respect this.</p>
   <div class="sidebar-secondary-item">
 
   <div class="tocsection sourcelink">
-    <a href="../../_sources/explanations/decisions/0005-respect-black-line-length.rst.txt">
+    <a href="../../_sources/explanations/decisions/0014-disarm-on-unstage-flag.md.txt">
       <i class="fa-solid fa-file-lines"></i> Show Source
     </a>
   </div>

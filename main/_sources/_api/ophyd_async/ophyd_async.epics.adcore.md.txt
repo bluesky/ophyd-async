@@ -1852,7 +1852,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorArmLogic`
 
 ````
 
-````{py:method} disarm()
+````{py:method} disarm(on_unstage: bool)
 :canonical: ophyd_async.epics.adcore._arm_logic.ADArmLogic.disarm
 :async:
 
@@ -1889,7 +1889,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorArmLogic`
 
 ````
 
-````{py:method} disarm()
+````{py:method} disarm(on_unstage: bool)
 :canonical: ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic.disarm
 :async:
 

@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._arm_logic &#8212; ophyd-async 0.17a3.dev5+gce5a76429 documentation</title>
+    <title>ophyd_async.epics.adcore._arm_logic &#8212; ophyd-async 0.17a3.dev6+g891e30b28 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
 
-    <script src="../../../../_static/documentation_options.js?v=b3d29d1d"></script>
+    <script src="../../../../_static/documentation_options.js?v=c8367661"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -567,8 +567,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a3.dev5+gce5a76429 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a3.dev5+gce5a76429 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a3.dev6+g891e30b28 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a3.dev6+g891e30b28 documentation - Home"/>
   
   
 </a></div>
@@ -949,7 +949,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="ADArmLogic.disarm">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADArmLogic.disarm">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">on_unstage</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="k">await</span> <span class="n">stop_busy_record</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">acquire</span><span class="p">)</span></div>
 </div>
 
@@ -983,7 +983,7 @@ window.runMermaid = runMermaid;</script>
 
 <div class="viewcode-block" id="ADContAcqArmLogic.disarm">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADContAcqArmLogic.disarm">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">on_unstage</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
         <span class="k">await</span> <span class="n">stop_busy_record</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cb_plugin</span><span class="o">.</span><span class="n">capture</span><span class="p">)</span></div>
 </div>
 

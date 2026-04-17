@@ -2279,7 +2279,7 @@ Bases: {py:obj}`abc.ABC`
 
 ````
 
-````{py:method} disarm()
+````{py:method} disarm(on_unstage: bool)
 :canonical: ophyd_async.core._detector.DetectorArmLogic.disarm
 :abstractmethod:
 :async:
