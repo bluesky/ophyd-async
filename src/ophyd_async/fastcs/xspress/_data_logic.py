@@ -29,10 +29,10 @@ class XspressOdinDataLogic(DetectorDataLogic):
         # Work out where to write
         path_info = self.path_provider(datakey_name)
         # Setup the HDF writer
-        filename = f"{path_info.filename}.h5"
+        filename = f"{path_info.filename}"
         await asyncio.gather(
             self.odin.fp.data_datatype.set("uint32"),
-            self.odin.fp.data_compression.set("BSLZ4"),
+            self.odin.fp.data_compression.set("blosc"),
             self.odin.fp.frames.set(0),
             self.odin.fp.process_frames_per_block.set(1000),
             self.odin.file_path.set(str(path_info.directory_path)),
@@ -56,7 +56,7 @@ class XspressOdinDataLogic(DetectorDataLogic):
             uri=f"{path_info.directory_uri}{filename}",
             resources=[resource],
             mimetype="application/x-hdf5",
-            collections_written_signal=self.odin.fp.frames_written,
+            collections_written_signal=self.odin.fp.total_frames_written,
         )
 
     async def stop(self) -> None:
