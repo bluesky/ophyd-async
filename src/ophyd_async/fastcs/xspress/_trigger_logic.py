@@ -3,12 +3,12 @@ from dataclasses import dataclass
 
 from ophyd_async.core import DetectorTriggerLogic, SignalDict
 
-from ._io import XspressDetectorIO, XspressTriggerMode
+from ._io import XspressDetectorIO
 
 
 async def _prepare_detector(
     detector: XspressDetectorIO,
-    trigger_mode: XspressTriggerMode,
+    trigger_mode: int,
     num: int,
     livetime: float = 0.0,
 ):
@@ -31,9 +31,7 @@ class XspressTriggerLogic(DetectorTriggerLogic):
         return 0.0001
 
     async def prepare_internal(self, num: int, livetime: float, deadtime: float):
-        await _prepare_detector(self.detector, XspressTriggerMode.BURST, num, livetime)
+        await _prepare_detector(self.detector, 2, num, livetime)
 
     async def prepare_edge(self, num: int, livetime: float):
-        await _prepare_detector(
-            self.detector, XspressTriggerMode.HARDWARE, num, livetime
-        )
+        await _prepare_detector(self.detector, 1, num, livetime)
