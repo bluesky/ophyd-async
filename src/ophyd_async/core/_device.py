@@ -325,6 +325,7 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
     def children(self) -> Iterator[tuple[str, Device]]:
         for key, child in self._children.items():
             yield str(key), child
+        yield from super().children()
 
     def __hash__(self):  # to allow DeviceVector to be used as dict keys and in sets
         return hash(id(self))
