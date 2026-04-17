@@ -16,7 +16,7 @@ class XspressFrameProcessorVectorIO(DeviceVector[XspressFrameProcessorIO]):
 
     start_writing: SignalX
     stop_writing: SignalX
-    frames_written: SignalR[int]
+    total_frames_written: SignalR[int]
     frames: SignalRW[int]
     data_dims_0: SignalRW[int]
     data_dims_1: SignalRW[int]
