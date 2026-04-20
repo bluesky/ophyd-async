@@ -1,9 +1,10 @@
 import inspect
 import re
 from collections.abc import Sequence
-from typing import Any, ParamSpec, TypeVar
+from typing import Any, ParamSpec, Protocol, TypeVar, runtime_checkable
 
 import numpy as np
+from tango import AttrDataFormat, AttributeAlarmInfo, CmdArgType, StdStringVector
 
 from ophyd_async.core import Array1D, SignalDatatype, StrictEnum, Table
 
@@ -101,3 +102,21 @@ def sig_from_types(
         else []
     )
     return inspect.Signature(params, return_annotation=out_type)
+
+
+@runtime_checkable
+class AttributeConfig(Protocol):
+    data_type: int
+    data_format: AttrDataFormat
+    enum_labels: StdStringVector | list[str]
+    format: str
+    min_value: str
+    max_value: str
+    alarms: AttributeAlarmInfo
+    unit: str
+
+
+@runtime_checkable
+class CommandConfig(Protocol):
+    in_type: CmdArgType
+    out_type: CmdArgType

@@ -22,6 +22,7 @@ from ophyd_async.core import (
     StrictEnum,
 )
 from ophyd_async.tango.core import (
+    AttributeConfig,
     AttributeProxy,
     CommandProxy,
     DevStateEnum,
@@ -35,7 +36,6 @@ from ophyd_async.tango.core import (
     get_tango_trl,
     try_to_cast_as_float,
 )
-from ophyd_async.tango.testing import TestConfig
 
 
 # --------------------------------------------------------------------
@@ -73,6 +73,18 @@ async def test_ensure_proper_executor():
 
 
 # --------------------------------------------------------------------
+
+
+class _TestConfig(AttributeConfig):
+    def __init__(self, **kwargs):
+        self.data_type = kwargs.pop("data_type", None)
+        self.data_format = kwargs.pop("data_format", None)
+        self.enum_labels = kwargs.pop("enum_labels", None)
+        self.format = kwargs.pop("format", None)
+        self.min_value = kwargs.pop("min_value", None)
+        self.max_value = kwargs.pop("max_value", None)
+        self.alarms = kwargs.pop("alarms", None)
+        self.unit = kwargs.pop("unit", None)
 
 
 @pytest.mark.parametrize(
@@ -215,9 +227,10 @@ async def test_ensure_proper_executor():
     ],
 )
 def test_get_python_type(tango_type, tango_format, expected):
-    config = TestConfig()
-    config.data_format = tango_format
-    config.data_type = tango_type
+    config = _TestConfig(
+        data_format=tango_format,
+        data_type=tango_type,
+    )
     if tango_type is CmdArgType.DevEnum:
         config.enum_labels = ["A", "B", "C"]
         py_type = get_python_type(config)

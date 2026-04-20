@@ -5,7 +5,7 @@ from collections.abc import Callable
 from typing import cast
 
 import numpy as np
-from tango import CommandInfo, DeviceProxy
+from tango import DeviceProxy
 
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
@@ -26,7 +26,7 @@ from ._tango_transport import (
     get_tango_trl,
     make_converter,
 )
-from ._utils import P, T
+from ._utils import CommandConfig, P, T
 
 
 class TangoCommandBackend(CommandBackend[P, T]):
@@ -53,7 +53,7 @@ class TangoCommandBackend(CommandBackend[P, T]):
         self._trl = trl
         self.device_proxy = device_proxy
         self._proxy: CommandProxy | None = None
-        self._config: CommandInfo | None = None
+        self._config: CommandConfig | None = None
         self._converter: TangoConverter | None = None
 
         if call_spec is not None:
@@ -83,6 +83,11 @@ class TangoCommandBackend(CommandBackend[P, T]):
         await self._proxy.connect()
         self._config = await self._proxy.get_config()
 
+        if self._config is None:
+            raise NotConnectedError(
+                f"Unable to acquire Tango configuration for {self._trl}"
+            )
+
         return_type = None
         param_type = None
         if self.signature is not None:
@@ -95,6 +100,10 @@ class TangoCommandBackend(CommandBackend[P, T]):
 
         # Configure converters and character
         self._converter = make_converter(self._config, return_type)
+        if self._converter is None:
+            raise RuntimeError(
+                f"No valid converter for {self._trl} with return type {return_type}"
+            )
         self._proxy.set_converter(self._converter)
 
         config_param = get_python_type(self._config, return_input_type=True)

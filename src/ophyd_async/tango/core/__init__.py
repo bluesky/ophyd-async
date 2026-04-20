@@ -23,9 +23,7 @@ from ._tango_command_backend import (
     tango_triggerable_command,
 )
 from ._tango_transport import (
-    AttributeInfoEx,
     AttributeProxy,
-    CommandInfo,
     CommandProxy,
     TangoSignalBackend,
     ensure_proper_executor,
@@ -37,6 +35,8 @@ from ._tango_transport import (
     parse_precision,
 )
 from ._utils import (
+    AttributeConfig,
+    CommandConfig,
     DevStateEnum,
     TangoDoubleStringTable,
     TangoLongStringTable,
@@ -47,10 +47,10 @@ from ._utils import (
 )
 
 __all__ = [
-    "AttributeInfoEx",
     "AttributeProxy",
-    "CommandInfo",
+    "AttributeConfig",
     "CommandProxy",
+    "CommandConfig",
     "DevStateEnum",
     "ensure_proper_executor",
     "TangoSignalBackend",

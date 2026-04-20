@@ -20,10 +20,7 @@ from event_model import DataKey, Limits, LimitsRange
 from event_model.documents.event_descriptor import RdsRange
 from tango import (
     AttrDataFormat,
-    AttributeInfo,
-    AttributeInfoEx,
     CmdArgType,
-    CommandInfo,
     DevFailed,  # type: ignore
     DeviceProxy,
     DevState,
@@ -51,7 +48,6 @@ from ophyd_async.core import (
     make_datakey,
     wait_for_connection,
 )
-from ophyd_async.tango.testing import TestConfig
 
 from ._converters import (
     TangoConverter,
@@ -63,6 +59,8 @@ from ._converters import (
     TangoLongStringTableConverter,
 )
 from ._utils import (
+    AttributeConfig,
+    CommandConfig,
     DevStateEnum,
     TangoDoubleStringTable,
     TangoLongStringTable,
@@ -148,7 +146,7 @@ TANGO_TO_PYTHON_CMD_TYPE = {
 
 
 def get_python_type(
-    config: AttributeInfoEx | CommandInfo | TestConfig,
+    config: AttributeConfig | CommandConfig,
     return_input_type: bool = False,
 ) -> type[SignalDatatype] | None:
     """Convert Tango types to Python types based on the configuration."""
@@ -178,14 +176,14 @@ def get_python_type(
         if attr_type is str or attr_type is np.str_:
             return Sequence[str]
         elif attr_type is StrictEnum:
-            if not isinstance(config, (AttributeInfoEx, CommandInfo)):
+            if not isinstance(config, (AttributeConfig, CommandConfig)):
                 raise TypeError(f"Cannot create enum type from {type(config).__name__}")
             return Sequence[_create_enum_type(config)]
         else:
             return Array1D[attr_type]
     elif tango_format == AttrDataFormat.SCALAR:
         if attr_type is StrictEnum:
-            if not isinstance(config, (AttributeInfoEx, CommandInfo, TestConfig)):
+            if not isinstance(config, (AttributeConfig, CommandConfig)):
                 raise TypeError(f"Cannot create enum type from {type(config).__name__}")
             return _create_enum_type(config)
         return attr_type
@@ -196,28 +194,26 @@ def get_python_type(
 
 
 def _extract_tango_info(
-    config: AttributeInfoEx | CommandInfo | TestConfig,
+    config: AttributeConfig | CommandConfig,
     return_input_type: bool = False,
 ) -> tuple[CmdArgType, AttrDataFormat | None]:
     """Extract Tango type and format from the configuration."""
-    if isinstance(config, (AttributeInfoEx, AttributeInfo)):
+    if isinstance(config, AttributeConfig):
         return cast(CmdArgType, config.data_type), config.data_format
-    elif isinstance(config, CommandInfo):
+    elif isinstance(config, CommandConfig):
         if return_input_type:
             return config.in_type, None
         else:
             return config.out_type, None
-    elif isinstance(config, TestConfig):
-        return cast(CmdArgType, config.data_type), config.data_format
     else:
         raise TypeError("Unrecognized Tango resource configuration")
 
 
 def _create_enum_type(
-    config: AttributeInfoEx | CommandInfo | TestConfig,
+    config: AttributeConfig | CommandConfig,
 ) -> type[StrictEnum]:
     """Create an Enum type from the configuration's enum labels."""
-    if isinstance(config, AttributeInfoEx | TestConfig):
+    if isinstance(config, AttributeConfig):
         enum_labels = config.enum_labels
     else:
         raise TypeError(f"Cannot create enum type from {type(config).__name__}")
@@ -256,7 +252,7 @@ class TangoProxy:
         """Put value to TRL."""
 
     @abstractmethod
-    async def get_config(self) -> AttributeInfoEx | CommandInfo:
+    async def get_config(self) -> AttributeConfig | CommandConfig:
         """Get TRL config async."""
 
     @abstractmethod
@@ -349,7 +345,7 @@ class AttributeProxy(TangoProxy):
             ) from de
 
     @ensure_proper_executor
-    async def get_config(self) -> AttributeInfoEx:  # type: ignore
+    async def get_config(self) -> AttributeConfig:  # type: ignore
         return await self._proxy.get_attribute_config(self._name)  # type: ignore
 
     @ensure_proper_executor
@@ -531,7 +527,7 @@ class CommandProxy(TangoProxy):
 
     _last_reading: Reading
     _last_w_value: Any
-    _config: CommandInfo
+    _config: CommandConfig
     device_proxy: DeviceProxy
     name: str
 
@@ -573,7 +569,7 @@ class CommandProxy(TangoProxy):
             ) from de
 
     @ensure_proper_executor
-    async def get_config(self) -> CommandInfo:  # type: ignore
+    async def get_config(self) -> CommandConfig:  # type: ignore
         return await self._proxy.get_command_config(self._name)  # type: ignore
 
     def set_polling(
@@ -589,7 +585,7 @@ class CommandProxy(TangoProxy):
 PRECISION_PATTERN = re.compile(r"%\d*\.(\d+)f")
 
 
-def parse_precision(config: AttributeInfoEx):
+def parse_precision(config: AttributeConfig):
     if config.format and (matches := PRECISION_PATTERN.findall(config.format)):
         return int(matches[0])
     return None
@@ -607,11 +603,11 @@ def get_dtype_extended(datatype) -> object | None:
 
 def get_source_metadata(
     tango_resource: str,
-    tr_configs: dict[str, AttributeInfoEx | CommandInfo],
+    tr_configs: dict[str, AttributeConfig | CommandConfig],
 ) -> SignalMetadata:
     metadata = {}
     for _, config in tr_configs.items():
-        if isinstance(config, AttributeInfoEx):
+        if isinstance(config, AttributeConfig):
             alarm_info = config.alarms
             _limits = Limits(
                 control=LimitsRange(
@@ -701,8 +697,8 @@ async def get_tango_trl(
     raise RuntimeError(f"{trl_name} cannot be found in {device_proxy.name()}")
 
 
-def make_converter(info: AttributeInfoEx | CommandInfo, datatype) -> TangoConverter:
-    if isinstance(info, AttributeInfoEx):
+def make_converter(info: AttributeConfig | CommandConfig, datatype) -> TangoConverter:
+    if isinstance(info, AttributeConfig):
         match info.data_type:
             case CmdArgType.DevEnum:
                 if datatype and issubclass(datatype, StrictEnum):
@@ -761,7 +757,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             read_trl: self.device_proxy,
             write_trl: self.device_proxy,
         }
-        self.trl_configs: dict[str, AttributeInfoEx | CommandInfo] = {}
+        self.trl_configs: dict[str, AttributeConfig | CommandConfig] = {}
         self._polling: tuple[bool, float, float | None, float | None] = (
             False,
             0.1,
@@ -856,18 +852,18 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             f"{tango_resource} has type {tr_dtype!r}, expected {self.datatype!r}"
         )
 
-    def _verify_datatype_matches(self, config: AttributeInfoEx | CommandInfo):
+    def _verify_datatype_matches(self, config: AttributeConfig | CommandConfig):
         """Verify that the datatype of the config matches the datatype of the signal."""
         tr_dtype = get_python_type(config)
         tango_resource = self.source(name="", read=True)
         signal_type = self.datatype
-        if isinstance(config, AttributeInfoEx | AttributeInfo):
+        if isinstance(config, AttributeConfig | AttributeConfig):
             tr_format = config.data_format
             if tr_format in [AttrDataFormat.SPECTRUM, AttrDataFormat.IMAGE]:
                 self._type_match_array(signal_type, tr_dtype, tango_resource)
             elif tr_format is AttrDataFormat.SCALAR:
                 self._type_match_scalar(signal_type, tr_dtype, tango_resource)
-        elif isinstance(config, CommandInfo):
+        elif isinstance(config, CommandConfig):
             if (
                 config.in_type != CmdArgType.DevVoid
                 and config.out_type != CmdArgType.DevVoid
@@ -903,7 +899,7 @@ class TangoSignalBackend(SignalBackend[SignalDatatypeT]):
             if self.datatype is not None:
                 self._verify_datatype_matches(config)
 
-            if isinstance(config, AttributeInfoEx):
+            if isinstance(config, AttributeConfig):
                 if (
                     config.data_type == CmdArgType.DevString
                     and config.data_format == AttrDataFormat.IMAGE
