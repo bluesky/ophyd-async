@@ -21,7 +21,7 @@ class BlobArmLogic(DetectorArmLogic):
         if self.task:
             await self.task
 
-    async def disarm(self):
+    async def disarm(self, on_unstage: bool):
         # Stop the background task and wait for it to finish
         if self.task:
             self.task.cancel()

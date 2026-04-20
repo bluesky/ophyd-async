@@ -13,5 +13,5 @@ class EigerArmLogic(DetectorArmLogic):
     async def wait_for_idle(self):
         await wait_for_value(self.detector.state, "idle", timeout=DEFAULT_TIMEOUT)
 
-    async def disarm(self):
+    async def disarm(self, on_unstage: bool):
         await self.detector.disarm.trigger()

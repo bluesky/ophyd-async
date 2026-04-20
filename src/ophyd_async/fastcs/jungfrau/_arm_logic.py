@@ -15,6 +15,6 @@ class JungfrauArmLogic(DetectorArmLogic):
             self.detector.detector_status, DetectorStatus.IDLE, timeout=DEFAULT_TIMEOUT
         )
 
-    async def disarm(self):
+    async def disarm(self, on_unstage: bool):
         await self.detector.acquisition_stop.trigger()
         await self.detector.pedestal_mode_state.set(PedestalMode.OFF)
