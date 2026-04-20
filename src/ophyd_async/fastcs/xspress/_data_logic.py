@@ -36,7 +36,6 @@ class XspressOdinDataLogic(DetectorDataLogic):
             self.odin.fp.frames.set(0),
             self.odin.fp.process_frames_per_block.set(1000),
             self.odin.file_path.set(str(path_info.directory_path)),
-            self.odin.file_prefix.set(filename),
         )
         # Start writing
         await self.odin.fp.start_writing.trigger()
