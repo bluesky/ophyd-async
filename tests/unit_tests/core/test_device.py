@@ -107,8 +107,19 @@ def test_device_children(parent: DummyDeviceGroup):
 def test_device_vector_children():
     parent = DummyDeviceGroup("root")
 
-    device_vector_children = list(parent.dict_with_children.items())
-    assert device_vector_children == [(123, parent.dict_with_children[123])]
+    vector_signal = soft_signal_rw(int, name="vector_signal")
+    parent.dict_with_children.vector_signal = vector_signal
+
+    indexed_children = list(parent.dict_with_children.items())
+    all_children = list(parent.dict_with_children.children())
+
+    # Indexed children
+    assert indexed_children == [(123, parent.dict_with_children[123])]
+    # Signals and indexed children
+    assert all_children == [
+        ("123", parent.dict_with_children[123]),
+        ("vector_signal", vector_signal),
+    ]
 
 
 async def test_children_of_device_have_set_names_and_get_connected(
