@@ -165,8 +165,7 @@ def epics_signal_r(
     :param timeout: A timeout to be used when reading (not connecting) this signal
     """
     backend = _epics_signal_backend(
-        datatype, read_pv, read_pv,
-        options=EpicsOptions(element_count=element_count)
+        datatype, read_pv, read_pv, options=EpicsOptions(element_count=element_count)
     )
     return SignalR(backend, name=name, timeout=timeout)
 

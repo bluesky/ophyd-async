@@ -304,8 +304,7 @@ class CaSignalBackend(EpicsSignalBackend[SignalDatatypeT]):
         if self.options.element_count is not None:
             kws["count"] = self.options.element_count
         return await caget(
-            pv, datatype=self.converter.read_dbr, format=format, timeout=None,
-            **kws
+            pv, datatype=self.converter.read_dbr, format=format, timeout=None, **kws
         )
 
     def _make_reading(self, value: AugmentedValue) -> Reading[SignalDatatypeT]:
