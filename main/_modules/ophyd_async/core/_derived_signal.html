@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._derived_signal &#8212; ophyd-async 0.17a4.dev1+g5900b7141 documentation</title>
+    <title>ophyd_async.core._derived_signal &#8212; ophyd-async 0.17a4.dev2+gce701f9c8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=7f76b32a3354e82990f2" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=7f76b32a3354e82990f2" />
 
-    <script src="../../../_static/documentation_options.js?v=6b4a44f4"></script>
+    <script src="../../../_static/documentation_options.js?v=b39cf6fb"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -567,8 +567,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a4.dev1+g5900b7141 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a4.dev1+g5900b7141 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a4.dev2+gce701f9c8 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a4.dev2+gce701f9c8 documentation - Home"/>
   
   
 </a></div>
@@ -1080,6 +1080,9 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a write only derived signal.</span>
 
+<span class="sd">        Note that there is a known bug where derived signals will timeout if setting the</span>
+<span class="sd">        underlying signal takes longer than 10s, see https://github.com/bluesky/ophyd-async/issues/1231.</span>
+
 <span class="sd">        :param datatype: The datatype of the derived signal value</span>
 <span class="sd">        :param name:</span>
 <span class="sd">            The name of the derived signal. Should be a key within the</span>
@@ -1100,6 +1103,9 @@ window.runMermaid = runMermaid;</script>
         <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a read-write derived signal.</span>
+
+<span class="sd">        Note that there is a known bug where derived signals will timeout if setting the</span>
+<span class="sd">        underlying signal takes longer than 10s, see https://github.com/bluesky/ophyd-async/issues/1231.</span>
 
 <span class="sd">        :param datatype: The datatype of the derived signal value</span>
 <span class="sd">        :param name:</span>
