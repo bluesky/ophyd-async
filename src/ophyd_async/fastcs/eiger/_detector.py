@@ -1,4 +1,4 @@
-from ophyd_async.core import PathProvider, SignalR, StandardDetector
+from ophyd_async.core import PathProvider, Reference, SignalR, SignalX, StandardDetector
 from ophyd_async.fastcs import odin
 from ophyd_async.fastcs.core import fastcs_connector
 
@@ -15,6 +15,7 @@ class EigerDetector(StandardDetector):
     stream: EigerStreamIO
     detector: EigerDetectorIO
     od: odin.OdinIO
+    arm_when_ready: SignalX
 
     def __init__(
         self,
@@ -26,7 +27,7 @@ class EigerDetector(StandardDetector):
         connector = fastcs_connector(prefix, self)
         self.add_detector_logics(
             EigerTriggerLogic(self.detector),
-            EigerArmLogic(self.detector),
+            EigerArmLogic(self.detector, Reference(self.arm_when_ready)),
             odin.OdinDataLogic(
                 path_provider=path_provider,
                 odin=self.od,
