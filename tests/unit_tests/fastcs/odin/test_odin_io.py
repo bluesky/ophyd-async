@@ -91,6 +91,7 @@ async def test_wait_for_active_and_file_names_before_capture_then_wait_for_writi
             call.acquisition_id.put("filename.h5"),
             call.file_path.put(str(tmp_path)),
             call.fp.data_compression.put("BSLZ4"),
+            call.fp.data_datatype.put("uint16"),
             call.fp.frames.put(0),
             call.fp.process_frames_per_block.put(1000),
             call.fp.start_writing.put(None),
