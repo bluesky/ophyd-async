@@ -46,6 +46,9 @@ class OdinDataLogic(DetectorDataLogic):
         # Start writing
         await self.odin.fp.start_writing.trigger()
         await wait_for_value(self.odin.writing, True, timeout=DEFAULT_TIMEOUT)
+        # Must ensure frames_written reset
+        # See issue: https://github.com/DiamondLightSource/fastcs-odin/issues/107
+        await wait_for_value(self.odin.fp.frames_written, 0, timeout=DEFAULT_TIMEOUT)
         # Return a provider that reflects what we have made
         data_shape = await asyncio.gather(
             self.odin.fp.data_dims_0.get_value(), self.odin.fp.data_dims_1.get_value()
