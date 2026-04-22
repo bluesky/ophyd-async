@@ -214,7 +214,7 @@ Next we have `BlobArmLogic`, a [](#DetectorArmLogic) subclass:
 Its job is to control the acquisition process on the detector, starting and stopping the collection of data:
 - `arm()` starts the acquisition process that has been prepared. In this case we create a background task that will write our simulation images to file.
 - `wait_for_idle()` waits for that acquisition process to be complete.
-- `disarm()` interrupts the acquisition process, and then waits for it to complete.
+- `disarm(on_unstage)` interrupts the acquisition process, and then waits for it to complete. The `on_unstage` flag is `True` when called at the end of a scan (from `unstage()`) and `False` when called at the start (from `stage()`). Implementations can use this to perform teardown that should only happen once per scan — for example, closing a shutter that must remain open between exposures but should always be closed when the scan ends.
 
 ### `BlobDataLogic`
 

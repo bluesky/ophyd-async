@@ -41,7 +41,7 @@ class ADArmLogic(DetectorArmLogic):
             timeout=DEFAULT_TIMEOUT,
         )
 
-    async def disarm(self):
+    async def disarm(self, on_unstage: bool):
         await stop_busy_record(self.driver.acquire)
 
 
@@ -63,5 +63,5 @@ class ADContAcqArmLogic(DetectorArmLogic):
         if self.acquire_status:
             await self.acquire_status
 
-    async def disarm(self):
+    async def disarm(self, on_unstage: bool):
         await stop_busy_record(self.cb_plugin.capture)
