@@ -39,6 +39,7 @@ class OdinDataLogic(DetectorDataLogic):
             self.odin.acquisition_id.set(filename),
             self.odin.file_path.set(str(path_info.directory_path)),
             self.odin.fp.data_compression.set("BSLZ4"),
+            self.odin.fp.data_datatype.set(datatype),
             self.odin.fp.frames.set(0),
             self.odin.fp.process_frames_per_block.set(1000),
         )
