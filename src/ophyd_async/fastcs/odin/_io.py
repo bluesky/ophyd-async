@@ -12,11 +12,11 @@ class MetaWriterIO(Device):
 
 
 class FrameProcessorIO(Device):
-    pass
+    """Ophyd-async implementation of a FrameProcessor Odin Subdevice."""
 
 
 class FrameProcessorVectorIO(DeviceVector[FrameProcessorIO]):
-    """Ophyd-async implementation of a FrameProcessor Odin Subdevice."""
+    """Ophyd-async implementation of a FrameProcessorAdapter Odin Subdevice."""
 
     start_writing: SignalX
     stop_writing: SignalX
