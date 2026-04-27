@@ -12,6 +12,7 @@ from bluesky.run_engine import RunEngine
 from ophyd_async.core import (
     LazyMock,
     get_mock,
+    get_mock_execute,
     get_mock_put,
     init_devices,
     set_mock_value,
@@ -51,16 +52,16 @@ async def mock_point_detector():
 
 async def test_motor_stopped(mock_motor: demo.DemoMotor):
     # Check it hasn't already been called
-    stop_mock = get_mock_put(mock_motor.stop_)
+    stop_mock = get_mock_execute(mock_motor.stop_)
     stop_mock.assert_not_called()
-    # Call stop and check it's called with the default value
+    # Call stop and check execute() is called with no arguments
     await mock_motor.stop()
-    stop_mock.assert_called_once_with(None)
-    # We can also track all the mock puts that have happened on the device
+    stop_mock.assert_awaited_once_with()
+    # We can also track all the mock calls that have happened on the device
     parent_mock = get_mock(mock_motor)
     await mock_motor.velocity.set(15)
     assert parent_mock.mock_calls == [
-        call.stop_.put(None),
+        call.stop_.execute(),
         call.velocity.put(15),
     ]
 

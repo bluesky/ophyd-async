@@ -2,6 +2,7 @@ from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from unittest.mock import AsyncMock, Mock
 
+from ._command import Command, CommandConnector, MockCommandBackend, MockExecuteCallback
 from ._device import Device, DeviceMock
 from ._mock_signal_backend import MockPutCallback, MockSignalBackend
 from ._signal import Signal, SignalConnector, SignalR
@@ -155,3 +156,44 @@ def mock_puts_blocked(*signals: Signal):
 def get_mock_put(signal: Signal) -> AsyncMock:
     """Get the mock associated with the put call on the signal."""
     return _get_mock_signal_backend(signal).put_mock
+
+
+def _get_mock_command_backend(command: Command) -> MockCommandBackend:
+    connector = command._connector  # noqa: SLF001
+    if not isinstance(connector, CommandConnector):
+        raise TypeError(f"Expected Command, got {command}")
+    if not isinstance(connector.backend, MockCommandBackend):
+        raise RuntimeError(f"Command {command} not connected in mock mode")
+    return connector.backend
+
+
+def get_mock_execute(command: Command) -> AsyncMock:
+    """Get the mock associated with the execute call on a command.
+
+    The command must have been connected in mock mode.
+    """
+    return _get_mock_command_backend(command).execute_mock
+
+
+@contextmanager
+def _unset_execute_callback_cm(backend: MockCommandBackend):
+    yield
+    backend.set_mock_execute_callback(None)
+
+
+def callback_on_mock_execute(command: Command, callback: MockExecuteCallback):
+    """Set a callback to be called whenever a Command is executed in mock mode.
+
+    Can either be used as a context manager, with the callback cleared on exit,
+    or as a plain function call for a persistent override.
+
+    When the initial backend is a `SoftCommandBackend` the original Python
+    function is used by default; set a callback here to suppress it and return
+    something else instead.
+
+    :param command: A command connected in mock mode.
+    :param callback: The callback to call when the command is executed.
+    """
+    backend = _get_mock_command_backend(command)
+    backend.set_mock_execute_callback(callback)
+    return _unset_execute_callback_cm(backend)

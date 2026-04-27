@@ -5,7 +5,8 @@ import contextlib
 import functools
 import inspect
 import time
-from collections.abc import AsyncGenerator, Awaitable, Callable
+import warnings
+from collections.abc import AsyncGenerator, Callable
 from typing import Any, Generic, TypeVar, cast
 
 from bluesky.protocols import (
@@ -31,16 +32,9 @@ from ._utils import (
     DEFAULT_TIMEOUT,
     CalculatableTimeout,
     Callback,
-    T,
+    _wait_for,
     error_if_none,
 )
-
-
-async def _wait_for(coro: Awaitable[T], timeout: float | None, source: str) -> T:
-    try:
-        return await asyncio.wait_for(coro, timeout)
-    except TimeoutError as exc:
-        raise TimeoutError(source) from exc
 
 
 def _add_timeout(func):
@@ -106,7 +100,11 @@ class Signal(Device, Generic[SignalDatatypeT]):
 
     @property
     def datatype(self) -> type[SignalDatatypeT] | None:
-        """Returns the datatype of the signal."""
+        """Returns the datatype of the signal.
+
+        This will return what was passed at construction time. None means the
+        backend will calculate it from the control system on connection.
+        """
         return self._connector.backend.datatype
 
 
@@ -315,7 +313,24 @@ class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
 
 
 class SignalX(Signal):
-    """Signal that puts the default value."""
+    """Signal that puts the default value.
+
+    .. deprecated::
+        Use [](#TriggerableCommand) instead.
+    """
+
+    def __init__(
+        self,
+        backend: SignalBackend,
+        timeout: float | None = DEFAULT_TIMEOUT,
+        name: str = "",
+    ) -> None:
+        warnings.warn(
+            "SignalX is deprecated, use TriggerableCommand instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(backend, timeout=timeout, name=name)
 
     @AsyncStatus.wrap
     async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:

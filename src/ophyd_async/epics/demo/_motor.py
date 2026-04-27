@@ -10,8 +10,8 @@ from ophyd_async.core import (
     CalculatableTimeout,
     SignalR,
     SignalRW,
-    SignalX,
     StandardReadable,
+    TriggerableCommand,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
@@ -32,7 +32,7 @@ class DemoMotor(EpicsDevice, StandardReadable, Movable, Stoppable):
     setpoint: A[SignalRW[float], PvSuffix("Setpoint")]
     precision: A[SignalR[int], PvSuffix("Readback.PREC")]
     # If a signal name clashes with a bluesky verb add _ to the attribute name
-    stop_: A[SignalX, PvSuffix("Stop.PROC")]
+    stop_: A[TriggerableCommand, PvSuffix("Stop.PROC")]
 
     def set_name(self, name: str, *, child_name_separator: str | None = None) -> None:
         super().set_name(name, child_name_separator=child_name_separator)
