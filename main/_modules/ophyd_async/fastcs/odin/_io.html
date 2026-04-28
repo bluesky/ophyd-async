@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.odin._io &#8212; ophyd-async 0.17a4.dev3+g195b6a289 documentation</title>
+    <title>ophyd_async.fastcs.odin._io &#8212; ophyd-async 0.17a4.dev4+g41962f2bd documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=3861e222"></script>
+    <script src="../../../../_static/documentation_options.js?v=06257448"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a4.dev3+g195b6a289 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a4.dev3+g195b6a289 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a4.dev4+g41962f2bd documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a4.dev4+g41962f2bd documentation - Home"/>
   
   
 </a></div>
@@ -898,7 +898,7 @@ window.runMermaid = runMermaid;</script>
                 <article class="bd-article">
                   
   <h1>Source code for ophyd_async.fastcs.odin._io</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">SignalX</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">SignalX</span>
 
 
 <div class="viewcode-block" id="MetaWriterIO">
@@ -917,7 +917,14 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="FrameProcessorIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.FrameProcessorIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FrameProcessorIO</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ophyd-async implementation of a FrameProcessor Odin Subdevice.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ophyd-async implementation of a FrameProcessor Odin Subdevice.&quot;&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="FrameProcessorVectorIO">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.FrameProcessorVectorIO">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FrameProcessorVectorIO</span><span class="p">(</span><span class="n">DeviceVector</span><span class="p">[</span><span class="n">FrameProcessorIO</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ophyd-async implementation of a FrameProcessorAdapter Odin Subdevice.&quot;&quot;&quot;</span>
 
     <span class="n">start_writing</span><span class="p">:</span> <span class="n">SignalX</span>
     <span class="n">stop_writing</span><span class="p">:</span> <span class="n">SignalX</span>
@@ -940,8 +947,13 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="OdinIO">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.OdinIO">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">OdinIO</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-    <span class="n">fp</span><span class="p">:</span> <span class="n">FrameProcessorIO</span>
-    <span class="n">mw</span><span class="p">:</span> <span class="n">MetaWriterIO</span></div>
+    <span class="n">fp</span><span class="p">:</span> <span class="n">FrameProcessorVectorIO</span>
+    <span class="n">mw</span><span class="p">:</span> <span class="n">MetaWriterIO</span>
+    <span class="n">writing</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
+    <span class="n">file_path</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">file_prefix</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">acquisition_id</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">block_size</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
 
 </pre></div>
 

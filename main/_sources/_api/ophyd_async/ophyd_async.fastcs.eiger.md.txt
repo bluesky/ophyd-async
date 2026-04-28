@@ -102,6 +102,17 @@ Bases: {py:obj}`ophyd_async.core.StandardDetector`
 
 ````
 
+````{py:attribute} arm_when_ready
+:canonical: ophyd_async.fastcs.eiger._detector.EigerDetector.arm_when_ready
+:type: ~ophyd_async.core.SignalX
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.eiger._detector.EigerDetector.arm_when_ready
+```
+
+````
+
 `````
 
 `````{py:class} EigerDetectorIO(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)

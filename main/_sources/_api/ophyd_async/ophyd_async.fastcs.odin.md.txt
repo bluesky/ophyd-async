@@ -15,6 +15,10 @@
 :class: autosummary longtable
 :align: left
 
+* - {py:obj}`FrameProcessorVectorIO <ophyd_async.fastcs.odin._io.FrameProcessorVectorIO>`
+  - ```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO
+    :summary:
+    ```
 * - {py:obj}`FrameProcessorIO <ophyd_async.fastcs.odin._io.FrameProcessorIO>`
   - ```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO
     :summary:
@@ -35,7 +39,182 @@
 
 ### API
 
-`````{py:class} FrameProcessorIO(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+`````{py:class} FrameProcessorVectorIO(children: ~collections.abc.Mapping[int, ~ophyd_async.core._device.DeviceT] | None = None, name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO
+
+Bases: {py:obj}`ophyd_async.core.DeviceVector`\[{py:obj}`ophyd_async.fastcs.odin._io.FrameProcessorIO`\]
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO
+```
+
+````{py:attribute} start_writing
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.start_writing
+:type: ~ophyd_async.core.SignalX
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.start_writing
+```
+
+````
+
+````{py:attribute} stop_writing
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.stop_writing
+:type: ~ophyd_async.core.SignalX
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.stop_writing
+```
+
+````
+
+````{py:attribute} writing
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.writing
+:type: ~ophyd_async.core.SignalR[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.writing
+```
+
+````
+
+````{py:attribute} frames_written
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.frames_written
+:type: ~ophyd_async.core.SignalR[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.frames_written
+```
+
+````
+
+````{py:attribute} frames
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.frames
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.frames
+```
+
+````
+
+````{py:attribute} data_dims_0
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_dims_0
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_dims_0
+```
+
+````
+
+````{py:attribute} data_dims_1
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_dims_1
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_dims_1
+```
+
+````
+
+````{py:attribute} data_chunks_0
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_chunks_0
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_chunks_0
+```
+
+````
+
+````{py:attribute} data_chunks_1
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_chunks_1
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_chunks_1
+```
+
+````
+
+````{py:attribute} data_chunks_2
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_chunks_2
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_chunks_2
+```
+
+````
+
+````{py:attribute} file_path
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.file_path
+:type: ~ophyd_async.core.SignalRW[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.file_path
+```
+
+````
+
+````{py:attribute} file_prefix
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.file_prefix
+:type: ~ophyd_async.core.SignalRW[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.file_prefix
+```
+
+````
+
+````{py:attribute} data_datatype
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_datatype
+:type: ~ophyd_async.core.SignalRW[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_datatype
+```
+
+````
+
+````{py:attribute} data_compression
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_compression
+:type: ~ophyd_async.core.SignalRW[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.data_compression
+```
+
+````
+
+````{py:attribute} process_frames_per_block
+:canonical: ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.process_frames_per_block
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorVectorIO.process_frames_per_block
+```
+
+````
+
+`````
+
+````{py:class} FrameProcessorIO(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
 :canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO
 
 Bases: {py:obj}`ophyd_async.core.Device`
@@ -43,172 +222,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 ```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO
 ```
 
-````{py:attribute} start_writing
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.start_writing
-:type: ~ophyd_async.core.SignalX
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.start_writing
-```
-
 ````
-
-````{py:attribute} stop_writing
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.stop_writing
-:type: ~ophyd_async.core.SignalX
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.stop_writing
-```
-
-````
-
-````{py:attribute} writing
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.writing
-:type: ~ophyd_async.core.SignalR[bool]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.writing
-```
-
-````
-
-````{py:attribute} frames_written
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.frames_written
-:type: ~ophyd_async.core.SignalR[int]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.frames_written
-```
-
-````
-
-````{py:attribute} frames
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.frames
-:type: ~ophyd_async.core.SignalRW[int]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.frames
-```
-
-````
-
-````{py:attribute} data_dims_0
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.data_dims_0
-:type: ~ophyd_async.core.SignalRW[int]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.data_dims_0
-```
-
-````
-
-````{py:attribute} data_dims_1
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.data_dims_1
-:type: ~ophyd_async.core.SignalRW[int]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.data_dims_1
-```
-
-````
-
-````{py:attribute} data_chunks_0
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.data_chunks_0
-:type: ~ophyd_async.core.SignalRW[int]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.data_chunks_0
-```
-
-````
-
-````{py:attribute} data_chunks_1
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.data_chunks_1
-:type: ~ophyd_async.core.SignalRW[int]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.data_chunks_1
-```
-
-````
-
-````{py:attribute} data_chunks_2
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.data_chunks_2
-:type: ~ophyd_async.core.SignalRW[int]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.data_chunks_2
-```
-
-````
-
-````{py:attribute} file_path
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.file_path
-:type: ~ophyd_async.core.SignalRW[str]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.file_path
-```
-
-````
-
-````{py:attribute} file_prefix
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.file_prefix
-:type: ~ophyd_async.core.SignalRW[str]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.file_prefix
-```
-
-````
-
-````{py:attribute} data_datatype
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.data_datatype
-:type: ~ophyd_async.core.SignalRW[str]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.data_datatype
-```
-
-````
-
-````{py:attribute} data_compression
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.data_compression
-:type: ~ophyd_async.core.SignalRW[str]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.data_compression
-```
-
-````
-
-````{py:attribute} process_frames_per_block
-:canonical: ophyd_async.fastcs.odin._io.FrameProcessorIO.process_frames_per_block
-:type: ~ophyd_async.core.SignalRW[int]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.fastcs.odin._io.FrameProcessorIO.process_frames_per_block
-```
-
-````
-
-`````
 
 `````{py:class} MetaWriterIO(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
 :canonical: ophyd_async.fastcs.odin._io.MetaWriterIO
@@ -285,7 +299,7 @@ Bases: {py:obj}`ophyd_async.core.Device`
 
 ````{py:attribute} fp
 :canonical: ophyd_async.fastcs.odin._io.OdinIO.fp
-:type: ~ophyd_async.fastcs.odin._io.FrameProcessorIO
+:type: ~ophyd_async.fastcs.odin._io.FrameProcessorVectorIO
 :value: >
    None
 
@@ -301,6 +315,61 @@ Bases: {py:obj}`ophyd_async.core.Device`
    None
 
 ```{autodoc2-docstring} ophyd_async.fastcs.odin._io.OdinIO.mw
+```
+
+````
+
+````{py:attribute} writing
+:canonical: ophyd_async.fastcs.odin._io.OdinIO.writing
+:type: ~ophyd_async.core.SignalR[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.OdinIO.writing
+```
+
+````
+
+````{py:attribute} file_path
+:canonical: ophyd_async.fastcs.odin._io.OdinIO.file_path
+:type: ~ophyd_async.core.SignalRW[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.OdinIO.file_path
+```
+
+````
+
+````{py:attribute} file_prefix
+:canonical: ophyd_async.fastcs.odin._io.OdinIO.file_prefix
+:type: ~ophyd_async.core.SignalRW[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.OdinIO.file_prefix
+```
+
+````
+
+````{py:attribute} acquisition_id
+:canonical: ophyd_async.fastcs.odin._io.OdinIO.acquisition_id
+:type: ~ophyd_async.core.SignalRW[str]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.OdinIO.acquisition_id
+```
+
+````
+
+````{py:attribute} block_size
+:canonical: ophyd_async.fastcs.odin._io.OdinIO.block_size
+:type: ~ophyd_async.core.SignalRW[int]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.fastcs.odin._io.OdinIO.block_size
 ```
 
 ````

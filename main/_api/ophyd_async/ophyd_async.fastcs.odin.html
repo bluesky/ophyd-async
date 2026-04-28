@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>ophyd_async.fastcs.odin &#8212; ophyd-async 0.17a4.dev3+g195b6a289 documentation</title>
+    <title>ophyd_async.fastcs.odin &#8212; ophyd-async 0.17a4.dev4+g41962f2bd documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../_static/documentation_options.js?v=3861e222"></script>
+    <script src="../../_static/documentation_options.js?v=06257448"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a4.dev3+g195b6a289 documentation - Home"/>
-    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a4.dev3+g195b6a289 documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a4.dev4+g41962f2bd documentation - Home"/>
+    <img src="../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a4.dev4+g41962f2bd documentation - Home"/>
   
   
 </a></div>
@@ -546,16 +546,19 @@
 <h3>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h3>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table table-left">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.odin.FrameProcessorIO" title="ophyd_async.fastcs.odin._io.FrameProcessorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FrameProcessorIO</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO" title="ophyd_async.fastcs.odin._io.FrameProcessorVectorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FrameProcessorVectorIO</span></code></a></p></td>
+<td><p>Ophyd-async implementation of a FrameProcessorAdapter Odin Subdevice.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.odin.FrameProcessorIO" title="ophyd_async.fastcs.odin._io.FrameProcessorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FrameProcessorIO</span></code></a></p></td>
 <td><p>Ophyd-async implementation of a FrameProcessor Odin Subdevice.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.odin.MetaWriterIO" title="ophyd_async.fastcs.odin._io.MetaWriterIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetaWriterIO</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.odin.MetaWriterIO" title="ophyd_async.fastcs.odin._io.MetaWriterIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetaWriterIO</span></code></a></p></td>
 <td><p>Ophyd-async implementation of a MetaWriter Odin Subdevice.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.odin.OdinIO" title="ophyd_async.fastcs.odin._io.OdinIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OdinIO</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.odin.OdinIO" title="ophyd_async.fastcs.odin._io.OdinIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OdinIO</span></code></a></p></td>
 <td><p>Common base class for all Ophyd Async Devices.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ophyd_async.fastcs.odin.OdinDataLogic" title="ophyd_async.fastcs.odin._data_logic.OdinDataLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OdinDataLogic</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ophyd_async.fastcs.odin.OdinDataLogic" title="ophyd_async.fastcs.odin._data_logic.OdinDataLogic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OdinDataLogic</span></code></a></p></td>
 <td><p>Abstract base class for detector data logic and handling.</p></td>
 </tr>
 </tbody>
@@ -565,100 +568,107 @@
 <section id="api">
 <h3>API<a class="headerlink" href="#api" title="Link to this heading">#</a></h3>
 <dl class="py class">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.odin.</span></span><span class="sig-name descname"><span class="pre">FrameProcessorVectorIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DeviceT</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/odin/_io.html#FrameProcessorVectorIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceVector" title="ophyd_async.core.DeviceVector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.DeviceVector</span></code></a>[<a class="reference internal" href="#ophyd_async.fastcs.odin.FrameProcessorIO" title="ophyd_async.fastcs.odin._io.FrameProcessorIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.fastcs.odin._io.FrameProcessorIO</span></code></a>]</p>
+<p>Ophyd-async implementation of a FrameProcessorAdapter Odin Subdevice.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.start_writing">
+<span class="sig-name descname"><span class="pre">start_writing</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><span class="pre">SignalX</span></a></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.start_writing" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.stop_writing">
+<span class="sig-name descname"><span class="pre">stop_writing</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><span class="pre">SignalX</span></a></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.stop_writing" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.writing">
+<span class="sig-name descname"><span class="pre">writing</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.writing" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.frames_written">
+<span class="sig-name descname"><span class="pre">frames_written</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.frames_written" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.frames">
+<span class="sig-name descname"><span class="pre">frames</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.frames" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_dims_0">
+<span class="sig-name descname"><span class="pre">data_dims_0</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_dims_0" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_dims_1">
+<span class="sig-name descname"><span class="pre">data_dims_1</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_dims_1" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_chunks_0">
+<span class="sig-name descname"><span class="pre">data_chunks_0</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_chunks_0" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_chunks_1">
+<span class="sig-name descname"><span class="pre">data_chunks_1</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_chunks_1" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_chunks_2">
+<span class="sig-name descname"><span class="pre">data_chunks_2</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_chunks_2" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.file_path">
+<span class="sig-name descname"><span class="pre">file_path</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.file_path" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.file_prefix">
+<span class="sig-name descname"><span class="pre">file_prefix</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.file_prefix" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_datatype">
+<span class="sig-name descname"><span class="pre">data_datatype</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_datatype" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_compression">
+<span class="sig-name descname"><span class="pre">data_compression</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_compression" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorVectorIO.process_frames_per_block">
+<span class="sig-name descname"><span class="pre">process_frames_per_block</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.process_frames_per_block" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ophyd_async.fastcs.odin.</span></span><span class="sig-name descname"><span class="pre">FrameProcessorIO</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connector</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.DeviceConnector" title="ophyd_async.core._device.DeviceConnector"><span class="pre">DeviceConnector</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ophyd_async/fastcs/odin/_io.html#FrameProcessorIO"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.Device" title="ophyd_async.core.Device"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ophyd_async.core.Device</span></code></a></p>
 <p>Ophyd-async implementation of a FrameProcessor Odin Subdevice.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.start_writing">
-<span class="sig-name descname"><span class="pre">start_writing</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><span class="pre">SignalX</span></a></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.start_writing" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.stop_writing">
-<span class="sig-name descname"><span class="pre">stop_writing</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalX" title="ophyd_async.core.SignalX"><span class="pre">SignalX</span></a></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.stop_writing" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.writing">
-<span class="sig-name descname"><span class="pre">writing</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.writing" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.frames_written">
-<span class="sig-name descname"><span class="pre">frames_written</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.frames_written" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.frames">
-<span class="sig-name descname"><span class="pre">frames</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.frames" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.data_dims_0">
-<span class="sig-name descname"><span class="pre">data_dims_0</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_dims_0" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.data_dims_1">
-<span class="sig-name descname"><span class="pre">data_dims_1</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_dims_1" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.data_chunks_0">
-<span class="sig-name descname"><span class="pre">data_chunks_0</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_chunks_0" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.data_chunks_1">
-<span class="sig-name descname"><span class="pre">data_chunks_1</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_chunks_1" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.data_chunks_2">
-<span class="sig-name descname"><span class="pre">data_chunks_2</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_chunks_2" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.file_path">
-<span class="sig-name descname"><span class="pre">file_path</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.file_path" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.file_prefix">
-<span class="sig-name descname"><span class="pre">file_prefix</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.file_prefix" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.data_datatype">
-<span class="sig-name descname"><span class="pre">data_datatype</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_datatype" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.data_compression">
-<span class="sig-name descname"><span class="pre">data_compression</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_compression" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.FrameProcessorIO.process_frames_per_block">
-<span class="sig-name descname"><span class="pre">process_frames_per_block</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.FrameProcessorIO.process_frames_per_block" title="Link to this definition">#</a></dt>
-<dd><p>None</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -713,13 +723,43 @@
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.odin.OdinIO.fp">
-<span class="sig-name descname"><span class="pre">fp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.fastcs.odin.FrameProcessorIO" title="ophyd_async.fastcs.odin._io.FrameProcessorIO"><span class="pre">FrameProcessorIO</span></a></span><a class="headerlink" href="#ophyd_async.fastcs.odin.OdinIO.fp" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">fp</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO" title="ophyd_async.fastcs.odin._io.FrameProcessorVectorIO"><span class="pre">FrameProcessorVectorIO</span></a></span><a class="headerlink" href="#ophyd_async.fastcs.odin.OdinIO.fp" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ophyd_async.fastcs.odin.OdinIO.mw">
 <span class="sig-name descname"><span class="pre">mw</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ophyd_async.fastcs.odin.MetaWriterIO" title="ophyd_async.fastcs.odin._io.MetaWriterIO"><span class="pre">MetaWriterIO</span></a></span><a class="headerlink" href="#ophyd_async.fastcs.odin.OdinIO.mw" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.OdinIO.writing">
+<span class="sig-name descname"><span class="pre">writing</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalR" title="ophyd_async.core.SignalR"><span class="pre">SignalR</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.OdinIO.writing" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.OdinIO.file_path">
+<span class="sig-name descname"><span class="pre">file_path</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.OdinIO.file_path" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.OdinIO.file_prefix">
+<span class="sig-name descname"><span class="pre">file_prefix</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.OdinIO.file_prefix" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.OdinIO.acquisition_id">
+<span class="sig-name descname"><span class="pre">acquisition_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.OdinIO.acquisition_id" title="Link to this definition">#</a></dt>
+<dd><p>None</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ophyd_async.fastcs.odin.OdinIO.block_size">
+<span class="sig-name descname"><span class="pre">block_size</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="ophyd_async.core.html#ophyd_async.core.SignalRW" title="ophyd_async.core.SignalRW"><span class="pre">SignalRW</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ophyd_async.fastcs.odin.OdinIO.block_size" title="Link to this definition">#</a></dt>
 <dd><p>None</p>
 </dd></dl>
 
@@ -807,24 +847,25 @@ that only work with step scans.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#package-contents">Package Contents</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">API</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.start_writing"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.start_writing</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.stop_writing"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.stop_writing</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.writing"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.writing</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.frames_written"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.frames_written</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.frames"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.frames</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_dims_0"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.data_dims_0</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_dims_1"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.data_dims_1</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_chunks_0"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.data_chunks_0</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_chunks_1"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.data_chunks_1</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_chunks_2"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.data_chunks_2</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.file_path"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.file_path</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.file_prefix"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.file_prefix</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_datatype"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.data_datatype</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.data_compression"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.data_compression</span></code></a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO.process_frames_per_block"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO.process_frames_per_block</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.start_writing"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.start_writing</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.stop_writing"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.stop_writing</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.writing"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.writing</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.frames_written"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.frames_written</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.frames"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.frames</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_dims_0"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.data_dims_0</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_dims_1"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.data_dims_1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_chunks_0"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.data_chunks_0</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_chunks_1"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.data_chunks_1</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_chunks_2"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.data_chunks_2</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.file_path"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.file_path</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.file_prefix"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.file_prefix</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_datatype"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.data_datatype</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.data_compression"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.data_compression</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorVectorIO.process_frames_per_block"><code class="docutils literal notranslate"><span class="pre">FrameProcessorVectorIO.process_frames_per_block</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.FrameProcessorIO"><code class="docutils literal notranslate"><span class="pre">FrameProcessorIO</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.MetaWriterIO"><code class="docutils literal notranslate"><span class="pre">MetaWriterIO</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.MetaWriterIO.stop"><code class="docutils literal notranslate"><span class="pre">MetaWriterIO.stop</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.MetaWriterIO.file_prefix"><code class="docutils literal notranslate"><span class="pre">MetaWriterIO.file_prefix</span></code></a></li>
@@ -836,6 +877,11 @@ that only work with step scans.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.OdinIO"><code class="docutils literal notranslate"><span class="pre">OdinIO</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.OdinIO.fp"><code class="docutils literal notranslate"><span class="pre">OdinIO.fp</span></code></a></li>
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.OdinIO.mw"><code class="docutils literal notranslate"><span class="pre">OdinIO.mw</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.OdinIO.writing"><code class="docutils literal notranslate"><span class="pre">OdinIO.writing</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.OdinIO.file_path"><code class="docutils literal notranslate"><span class="pre">OdinIO.file_path</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.OdinIO.file_prefix"><code class="docutils literal notranslate"><span class="pre">OdinIO.file_prefix</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.OdinIO.acquisition_id"><code class="docutils literal notranslate"><span class="pre">OdinIO.acquisition_id</span></code></a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.OdinIO.block_size"><code class="docutils literal notranslate"><span class="pre">OdinIO.block_size</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#ophyd_async.fastcs.odin.OdinDataLogic"><code class="docutils literal notranslate"><span class="pre">OdinDataLogic</span></code></a><ul class="nav section-nav flex-column">
