@@ -73,3 +73,5 @@ class ADContAcqArmLogic(DetectorArmLogic):
 
     async def disarm(self, on_unstage: bool):
         await stop_busy_record(self.cb_plugin.capture)
+        if self.trigger_status:
+            await self.trigger_status
