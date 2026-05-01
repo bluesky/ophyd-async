@@ -536,7 +536,11 @@ def _get_velocity_profile(
     time_arrays = {}
     velocity_arrays = {}
 
-    min_time = MIN_TURNAROUND if turnaround_time is None else turnaround_time
+    min_time = (
+        MIN_TURNAROUND
+        if turnaround_time is None
+        else (turnaround_time - 2 * MIN_INTERVAL)
+    )
 
     iterations = 2
 
