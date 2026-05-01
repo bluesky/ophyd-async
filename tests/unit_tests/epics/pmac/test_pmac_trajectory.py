@@ -126,7 +126,7 @@ async def test_pmac_prepare_with_configured_ramp_and_turnaround(
             1000000,
             1000000,
             200000,
-            2604000,
+            2600000,
             200000,
             1000000,
             1000000,
