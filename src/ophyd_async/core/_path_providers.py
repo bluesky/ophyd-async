@@ -2,34 +2,36 @@ import re
 import uuid
 from abc import abstractmethod
 from collections.abc import Callable
-from dataclasses import dataclass
 from datetime import date
 from pathlib import Path, PurePath, PureWindowsPath
-from typing import Any, Protocol
-from urllib.parse import urlunparse, urlparse
-from pydantic import Field, field_validator, ValidationInfo
+from typing import Protocol
+from urllib.parse import urlparse, urlunparse
+
+from pydantic import Field, field_validator
+
 from ._utils import ConfinedModel
 
+
 def generate_directory_uri(directory_path: PurePath) -> str:
-    """If directory_uri is not provided, generate it from the directory_path. 
-    
+    """If directory_uri is not provided, generate it from the directory_path.
+
     If it is provided, ensure it ends with a slash.
-    
+
     :param directory_uri: The directory URI to validate or generate
     :param info: Validation info containing the other fields of the model
     :return: The validated or generated directory URI
     """
-
     return urlunparse(
-            (
-                "file",
-                "localhost",
-                f"{directory_path.as_posix()}/",
-                "",
-                "",
-                None,
-            )
+        (
+            "file",
+            "localhost",
+            f"{directory_path.as_posix()}/",
+            "",
+            "",
+            None,
         )
+    )
+
 
 class PathInfo(ConfinedModel):
     """Information about where and how to write a file.
@@ -53,26 +55,26 @@ class PathInfo(ConfinedModel):
     """Optional depth of directories to create if they do not exist.
     The value represents the index after which directories should be created, if
     the directory path is split by the separator. For example, if the directory path
-    is "/path/to/data" and create_dir_depth is 1, then "to/data" will be created if 
+    is "/path/to/data" and create_dir_depth is 1, then "to/data" will be created if
     it does not exist. If create_dir_depth is -1, we use python-style negative indexing,
     so in the same example, just "data" would be created if it does not exist.
     """
 
-    directory_uri: str = Field(default_factory=lambda d: generate_directory_uri(d["directory_path"]))
+    directory_uri: str = Field(
+        default_factory=lambda d: generate_directory_uri(d["directory_path"])
+    )
     """Optional URI to use for reading back resources. If not set, it will be generated
     from the directory path. If set, will be ensured to end with a trailing slash."""
-
 
     @field_validator("directory_path")
     @classmethod
     def validate_directory_path(cls, directory_path: PurePath) -> PurePath:
         """Ensure that the provided directory path is absolute.
-        
+
         :param directory_path: The directory path to validate
         :return: The validated directory path if it is absolute
         :raises ValueError: If the directory path is not absolute
         """
-
         if not directory_path.is_absolute():
             raise ValueError(
                 f"directory_path must be an absolute path, got {directory_path}"
@@ -85,10 +87,12 @@ class PathInfo(ConfinedModel):
         if not directory_uri.endswith("/"):
             directory_uri += "/"
 
-        try:
-            urlparse(directory_uri)
-        except ValueError as e:
-            raise ValueError(f"Directory URI must be a valid URI, got {directory_uri}") from e
+        parsed = urlparse(directory_uri)
+        if not all([parsed.scheme, parsed.netloc, parsed.path]):
+            raise ValueError(
+                "Directory URI must include a scheme, netlocation, and path."
+                f" Got: {directory_uri}"
+            )
 
         return directory_uri
 
@@ -357,7 +361,9 @@ class AutoIncrementingPathProvider(PathProvider):
         }
 
         if self._base_directory_uri is not None:
-            path_info_kwargs["directory_uri"] = f"{self._base_directory_uri}{auto_inc_dir_name}"
+            path_info_kwargs["directory_uri"] = (
+                f"{self._base_directory_uri}{auto_inc_dir_name}"
+            )
 
         return PathInfo(**path_info_kwargs)
 
@@ -414,6 +420,8 @@ class YMDPathProvider(PathProvider):
         }
 
         if self._base_directory_uri is not None:
-            path_info_kwargs["directory_uri"] = f"{self._base_directory_uri}{ymd_dir_path}"
+            path_info_kwargs["directory_uri"] = (
+                f"{self._base_directory_uri}{ymd_dir_path}"
+            )
 
         return PathInfo(**path_info_kwargs)

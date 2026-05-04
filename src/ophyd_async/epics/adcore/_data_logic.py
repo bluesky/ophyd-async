@@ -279,7 +279,7 @@ class ADMultipartDataLogic(DetectorDataLogic):
         return StreamResourceDataProvider(
             # TODO: remove the type ignore after
             # https://github.com/bluesky/ophyd-async/issues/1186
-            uri=path_info.directory_uri,  # type: ignore
+            uri=path_info.directory_uri,
             resources=[main_dataset],
             mimetype=self.mimetype,
             collections_written_signal=self.writer.num_captured,
