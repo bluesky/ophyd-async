@@ -15,7 +15,6 @@ longstr: a string that is just longer than forty characters
 longstr2: a string that is just longer than forty characters
 a_bool: true
 mbb_direct_bit: False
-mbb_direct_bit_r: False
 a_float: 3.141
 a_int: 42
 a_str: hello
