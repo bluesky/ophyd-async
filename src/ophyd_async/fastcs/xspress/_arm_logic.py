@@ -15,5 +15,5 @@ class XspressArmLogic(DetectorArmLogic):
             self.detector.acquisition_complete, True, timeout=DEFAULT_TIMEOUT
         )
 
-    async def disarm(self):
+    async def disarm(self, on_unstage: bool):
         await self.detector.stop_acquisition.trigger()
