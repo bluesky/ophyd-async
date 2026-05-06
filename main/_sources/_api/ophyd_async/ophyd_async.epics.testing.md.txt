@@ -95,7 +95,7 @@
 
 ````
 
-`````{py:class} EpicsTestCaDevice(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} EpicsTestCaDevice(prefix: str, name: str = '')
 :canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice
 
 Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
@@ -334,6 +334,28 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`
 
 ````
 
+````{py:attribute} mbb_direct_bit_r
+:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.mbb_direct_bit_r
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[bool], PvSuffix('~mbb_direct.B0')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.mbb_direct_bit_r
+```
+
+````
+
+````{py:attribute} mbb_direct_bit
+:canonical: ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.mbb_direct_bit
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[bool], PvSuffix('~mbb_direct_rw.B0')]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice.mbb_direct_bit
+```
+
+````
+
 `````
 
 `````{py:class} EpicsTestEnum()
@@ -406,7 +428,7 @@ Bases: {py:obj}`ophyd_async.core.SubsetEnum`
 
 `````
 
-`````{py:class} EpicsTestPvaDevice(prefix: str, with_pvi: bool = False, name: str = '')
+`````{py:class} EpicsTestPvaDevice(prefix: str, name: str = '')
 :canonical: ophyd_async.epics.testing._example_ioc.EpicsTestPvaDevice
 
 Bases: {py:obj}`ophyd_async.epics.testing._example_ioc.EpicsTestCaDevice`
