@@ -20,7 +20,7 @@ from ophyd_async.core import (
 from ophyd_async.epics.core import PvSuffix
 
 from .adcore import (
-    ADArmLogic,
+    ADAcquireLogic,
     ADBaseIO,
     ADWriterType,
     AreaDetector,
@@ -165,7 +165,7 @@ class VimbaDetector(AreaDetector[VimbaDriverIO]):
         super().__init__(
             prefix=prefix,
             driver=driver,
-            arm_logic=ADArmLogic(driver),
+            acquire_logic=ADAcquireLogic(driver),
             trigger_logic=VimbaTriggerLogic(driver, override_deadtime),
             path_provider=path_provider,
             writer_type=writer_type,

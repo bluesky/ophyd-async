@@ -2,14 +2,14 @@ from collections.abc import Mapping, Sequence
 from typing import Generic
 
 from ophyd_async.core import (
-    DetectorArmLogic,
+    DetectorAcquireLogic,
     DetectorTriggerLogic,
     PathProvider,
     SignalR,
     StandardDetector,
 )
 
-from ._arm_logic import ADContAcqArmLogic
+from ._acquire_logic import ADContAcqAcquireLogic
 from ._data_logic import ADWriterType, make_writer_data_logic
 from ._io import ADBaseIO, ADBaseIOT, NDCircularBuffIO, NDPluginBaseIO, NDPluginBaseIOT
 from ._trigger_logic import ADContAcqTriggerLogic
@@ -19,7 +19,7 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
     def __init__(
         self,
         driver: ADBaseIOT,
-        arm_logic: DetectorArmLogic | None = None,
+        acquire_logic: DetectorAcquireLogic | None = None,
         trigger_logic: DetectorTriggerLogic | None = None,
         path_provider: PathProvider | None = None,
         writer_type: ADWriterType | None = ADWriterType.HDF,
@@ -35,8 +35,8 @@ class AreaDetector(StandardDetector, Generic[ADBaseIOT]):
                 setattr(self, plugin_name, plugin)
         if trigger_logic:
             self.add_detector_logics(trigger_logic)
-        if arm_logic:
-            self.add_detector_logics(arm_logic)
+        if acquire_logic:
+            self.add_detector_logics(acquire_logic)
         if writer_type:
             if path_provider is None:
                 raise ValueError("PathProvider required to add a writer")
@@ -99,7 +99,7 @@ class ContAcqDetector(AreaDetector[ADBaseIO]):
         super().__init__(
             prefix=prefix,
             driver=driver,
-            arm_logic=ADContAcqArmLogic(driver, cb_plugin),
+            acquire_logic=ADContAcqAcquireLogic(driver, cb_plugin),
             trigger_logic=ADContAcqTriggerLogic(driver, cb_plugin),
             path_provider=path_provider,
             writer_type=writer_type,
