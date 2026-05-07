@@ -180,6 +180,7 @@ def calculate_ramp_position_and_duration(
     :param slice: Information about a series of scan frames along a number of axes
     :param motor_info: Instance of _PmacMotorInfo
     :param is_up: Boolean representing ramping up into a frame or down out of a frame
+    :param ramp_up_time: Information about how long the movement should take.
     :returns tuple: A tuple containing:
         dict: Motor to ramp positions
         float: Ramp time required for all motors
