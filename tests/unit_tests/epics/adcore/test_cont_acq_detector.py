@@ -91,5 +91,6 @@ async def test_cont_acq_controller_success(
             call.cb.preset_trigger_count.put(1),
             call.cb.flush_on_soft_trg.put(adcore.NDCBFlushOnSoftTrgMode.ON_NEW_IMAGE),
             call.cb.capture.put(True),
+            call.cb.trigger.put(True),
         ],
     )

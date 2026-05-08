@@ -50,6 +50,7 @@ class ADContAcqArmLogic(DetectorArmLogic):
         self.driver = driver
         self.cb_plugin = cb_plugin
         self.acquire_status: AsyncStatus | None = None
+        self.trigger_status: AsyncStatus | None = None
 
     async def arm(self):
         self.acquire_status = await set_and_wait_for_value(
@@ -59,9 +60,18 @@ class ADContAcqArmLogic(DetectorArmLogic):
             timeout=DEFAULT_TIMEOUT,
         )
 
+        self.trigger_status = await set_and_wait_for_value(
+            self.cb_plugin.trigger,
+            True,
+            timeout=DEFAULT_TIMEOUT,
+            wait_for_set_completion=False,
+        )
+
     async def wait_for_idle(self):
         if self.acquire_status:
             await self.acquire_status
 
     async def disarm(self, on_unstage: bool):
         await stop_busy_record(self.cb_plugin.capture)
+        if self.trigger_status:
+            await self.trigger_status
