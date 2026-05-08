@@ -184,22 +184,18 @@ class StaticPathProvider(PathProvider):
     ) -> None:
         self._filename_provider = filename_provider
         self._directory_path = directory_path
-        self._directory_uri = directory_uri
+        self._directory_uri = directory_uri or generate_directory_uri(directory_path)
         self._create_dir_depth = create_dir_depth
 
     def __call__(self, datakey_name: str | None = None) -> PathInfo:
         filename = self._filename_provider(datakey_name)
 
-        path_info_kwargs = {
-            "directory_path": self._directory_path,
-            "filename": filename,
-            "create_dir_depth": self._create_dir_depth,
-        }
-
-        if self._directory_uri is not None:
-            path_info_kwargs["directory_uri"] = self._directory_uri
-
-        return PathInfo(**path_info_kwargs)
+        return PathInfo(
+            directory_path=self._directory_path,
+            filename=filename,
+            create_dir_depth=self._create_dir_depth,
+            directory_uri=self._directory_uri,
+        )
 
 
 class AutoMaxIncrementingPathProvider(PathProvider):
@@ -286,12 +282,11 @@ class AutoMaxIncrementingPathProvider(PathProvider):
         full_path = (
             path / f"{padded_counter}_{filename.strip('_')}" / filename.rstrip("_")
         )
-        path_info_kwargs = {
-            "directory_path": full_path.parent,
-            "filename": full_path.name,
-            "create_dir_depth": 0,
-        }
-        return PathInfo(**path_info_kwargs)
+        return PathInfo(
+            directory_path=full_path.parent,
+            filename=full_path.name,
+            create_dir_depth=0,
+        )
 
 
 class AutoIncrementingPathProvider(PathProvider):
@@ -312,11 +307,10 @@ class AutoIncrementingPathProvider(PathProvider):
     ) -> None:
         self._filename_provider = filename_provider
         self._base_directory_path = base_directory_path
-        self._base_directory_uri = base_directory_uri
-        if (
-            self._base_directory_uri is not None
-            and not self._base_directory_uri.endswith("/")
-        ):
+        self._base_directory_uri = base_directory_uri or generate_directory_uri(
+            base_directory_path
+        )
+        if not self._base_directory_uri.endswith("/"):
             self._base_directory_uri += "/"
         self._create_dir_depth = create_dir_depth
         self._base_name = base_name
@@ -346,18 +340,12 @@ class AutoIncrementingPathProvider(PathProvider):
             self._inc_counter = 0
             self._current_value += self._increment
 
-        path_info_kwargs = {
-            "directory_path": self._base_directory_path / auto_inc_dir_name,
-            "filename": filename,
-            "create_dir_depth": self._create_dir_depth,
-        }
-
-        if self._base_directory_uri is not None:
-            path_info_kwargs["directory_uri"] = (
-                f"{self._base_directory_uri}{auto_inc_dir_name}"
-            )
-
-        return PathInfo(**path_info_kwargs)
+        return PathInfo(
+            directory_path=self._base_directory_path / auto_inc_dir_name,
+            filename=filename,
+            create_dir_depth=self._create_dir_depth,
+            directory_uri=f"{self._base_directory_uri}{auto_inc_dir_name}",
+        )
 
 
 class YMDPathProvider(PathProvider):
@@ -373,11 +361,10 @@ class YMDPathProvider(PathProvider):
     ) -> None:
         self._filename_provider = filename_provider
         self._base_directory_path = base_directory_path
-        self._base_directory_uri = base_directory_uri
-        if (
-            self._base_directory_uri is not None
-            and not self._base_directory_uri.endswith("/")
-        ):
+        self._base_directory_uri = base_directory_uri or generate_directory_uri(
+            base_directory_path
+        )
+        if not self._base_directory_uri.endswith("/"):
             self._base_directory_uri += "/"
         self._create_dir_depth = create_dir_depth
         self._datakey_name_as_base_dir = datakey_name_as_base_dir
@@ -405,15 +392,9 @@ class YMDPathProvider(PathProvider):
 
         filename = self._filename_provider(datakey_name)
 
-        path_info_kwargs = {
-            "directory_path": self._base_directory_path / ymd_dir_path,
-            "filename": filename,
-            "create_dir_depth": self._create_dir_depth,
-        }
-
-        if self._base_directory_uri is not None:
-            path_info_kwargs["directory_uri"] = (
-                f"{self._base_directory_uri}{ymd_dir_path}"
-            )
-
-        return PathInfo(**path_info_kwargs)
+        return PathInfo(
+            directory_path=self._base_directory_path / ymd_dir_path,
+            filename=filename,
+            create_dir_depth=self._create_dir_depth,
+            directory_uri=f"{self._base_directory_uri}{ymd_dir_path}",
+        )
