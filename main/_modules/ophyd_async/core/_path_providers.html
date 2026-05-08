@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._path_providers &#8212; ophyd-async 0.17a5.dev3+g2fe6742c0 documentation</title>
+    <title>ophyd_async.core._path_providers &#8212; ophyd-async 0.17a5.dev4+ga910d3a5a documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=4c0c6008"></script>
+    <script src="../../../_static/documentation_options.js?v=c27f4401"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a5.dev3+g2fe6742c0 documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a5.dev3+g2fe6742c0 documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a5.dev4+ga910d3a5a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a5.dev4+ga910d3a5a documentation - Home"/>
   
   
 </a></div>
@@ -902,53 +902,99 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span><span class="p">,</span> <span class="n">PurePath</span><span class="p">,</span> <span class="n">PureWindowsPath</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlunparse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span><span class="p">,</span> <span class="n">urlunparse</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">field_validator</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConfinedModel</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_directory_uri</span><span class="p">(</span><span class="n">directory_path</span><span class="p">:</span> <span class="n">PurePath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a directory URI from a given directory path.</span>
+
+<span class="sd">    :param directory_path: The directory path to generate the URI from</span>
+<span class="sd">    :return: The generated directory URI</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">urlunparse</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="s2">&quot;file&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">directory_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
 
 
 <div class="viewcode-block" id="PathInfo">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.PathInfo">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">PathInfo</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about where and how to write a file.</span>
-
-<span class="sd">    :param directory_path: Directory into which files should be written</span>
-<span class="sd">    :param filename: Base filename to use generated by FilenameProvider, w/o extension</span>
-<span class="sd">    :param create_dir_depth: Optional depth of directories to create if they do not</span>
-<span class="sd">                             exist</span>
-<span class="sd">    :param directory_uri: Optional URI to use for reading back resources. If not set,</span>
-<span class="sd">                          it will be generated from the directory path.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PathInfo</span><span class="p">(</span><span class="n">ConfinedModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about where and how to write a file.&quot;&quot;&quot;</span>
 
     <span class="n">directory_path</span><span class="p">:</span> <span class="n">PurePath</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Directory into which files should be written. Must be an absolute path.&quot;&quot;&quot;</span>
+
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">create_dir_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">directory_uri</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base filename to use generated by FilenameProvider, w/o extension.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory_path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
+    <span class="n">create_dir_depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Optional depth of directories to create if they do not exist.</span>
+<span class="sd">    The value represents the index after which directories should be created, provided</span>
+<span class="sd">    the directory path is split by the separator. For example, if the directory path</span>
+<span class="sd">    is &quot;/path/to/data&quot;, it splits to [&quot;path&quot;, &quot;to&quot;, &quot;data&quot;] and a create_dir_depth of</span>
+<span class="sd">    1 would mean anything below index 1 inclusive would be created (&quot;to/data&quot;).</span>
+<span class="sd">    If create_dir_depth is -1, we use python-style negative indexing, so in the same</span>
+<span class="sd">    example, the path member at index -1 is &quot;data&quot;, meaning just that last directory</span>
+<span class="sd">    would be created if it does not exist.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">directory_uri</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">generate_directory_uri</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;directory_path&quot;</span><span class="p">])</span>
+    <span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Optional URI to use for reading back resources. If not set, it will be generated</span>
+<span class="sd">    from the directory path. If set, will be ensured to end with a trailing slash.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PathInfo.validate_directory_path">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.PathInfo.validate_directory_path">[docs]</a>
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;directory_path&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_directory_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">directory_path</span><span class="p">:</span> <span class="n">PurePath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PurePath</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure that the provided directory path is absolute.</span>
+
+<span class="sd">        :param directory_path: The directory path to validate</span>
+<span class="sd">        :return: The validated directory path if it is absolute</span>
+<span class="sd">        :raises ValueError: If the directory path is not absolute</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">directory_path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;directory_path must be an absolute path, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">directory_path</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;directory_path must be an absolute path, got </span><span class="si">{</span><span class="n">directory_path</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">directory_path</span></div>
+
+
+<div class="viewcode-block" id="PathInfo.validate_directory_uri">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.PathInfo.validate_directory_uri">[docs]</a>
+    <span class="nd">@field_validator</span><span class="p">(</span><span class="s2">&quot;directory_uri&quot;</span><span class="p">)</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validate_directory_uri</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">directory_uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure that the provided directory URI ends with a slash and is valid.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">directory_uri</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="n">directory_uri</span> <span class="o">+=</span> <span class="s2">&quot;/&quot;</span>
+
+        <span class="n">parsed</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">directory_uri</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">parsed</span><span class="o">.</span><span class="n">scheme</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">netloc</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">path</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Directory URI must include a scheme, netlocation, and path.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; Got: </span><span class="si">{</span><span class="n">directory_uri</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-        <span class="c1"># If directory uri is not set, set it using the directory path.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory_uri</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">directory_uri</span> <span class="o">=</span> <span class="n">urlunparse</span><span class="p">(</span>
-                <span class="p">(</span>
-                    <span class="s2">&quot;file&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">directory_path</span><span class="o">.</span><span class="n">as_posix</span><span class="p">()</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                    <span class="kc">None</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">directory_uri</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
-            <span class="c1"># Ensure the directory URI ends with a slash.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">directory_uri</span> <span class="o">+=</span> <span class="s2">&quot;/&quot;</span></div>
+        <span class="k">return</span> <span class="n">directory_uri</span></div>
+</div>
 
 
 
@@ -1064,7 +1110,7 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span> <span class="o">=</span> <span class="n">filename_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_directory_path</span> <span class="o">=</span> <span class="n">directory_path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_directory_uri</span> <span class="o">=</span> <span class="n">directory_uri</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_directory_uri</span> <span class="o">=</span> <span class="n">directory_uri</span> <span class="ow">or</span> <span class="n">generate_directory_uri</span><span class="p">(</span><span class="n">directory_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span> <span class="o">=</span> <span class="n">create_dir_depth</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datakey_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PathInfo</span><span class="p">:</span>
@@ -1072,9 +1118,9 @@ window.runMermaid = runMermaid;</script>
 
         <span class="k">return</span> <span class="n">PathInfo</span><span class="p">(</span>
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory_path</span><span class="p">,</span>
-            <span class="n">directory_uri</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory_uri</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span><span class="p">,</span>
+            <span class="n">directory_uri</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_directory_uri</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -1167,7 +1213,6 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">PathInfo</span><span class="p">(</span>
             <span class="n">directory_path</span><span class="o">=</span><span class="n">full_path</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span>
-            <span class="n">directory_uri</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">full_path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -1194,11 +1239,10 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span> <span class="o">=</span> <span class="n">filename_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">=</span> <span class="n">base_directory_path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="o">=</span> <span class="n">base_directory_uri</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-        <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="o">=</span> <span class="n">base_directory_uri</span> <span class="ow">or</span> <span class="n">generate_directory_uri</span><span class="p">(</span>
+            <span class="n">base_directory_path</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="o">+=</span> <span class="s2">&quot;/&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span> <span class="o">=</span> <span class="n">create_dir_depth</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_name</span> <span class="o">=</span> <span class="n">base_name</span>
@@ -1228,15 +1272,11 @@ window.runMermaid = runMermaid;</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">_inc_counter</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_current_value</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_increment</span>
 
-        <span class="n">directory_uri</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">directory_uri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span><span class="si">}{</span><span class="n">auto_inc_dir_name</span><span class="si">}</span><span class="s2">&quot;</span>
-
         <span class="k">return</span> <span class="n">PathInfo</span><span class="p">(</span>
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">/</span> <span class="n">auto_inc_dir_name</span><span class="p">,</span>
-            <span class="n">directory_uri</span><span class="o">=</span><span class="n">directory_uri</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span><span class="p">,</span>
+            <span class="n">directory_uri</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span><span class="si">}{</span><span class="n">auto_inc_dir_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -1256,11 +1296,10 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span> <span class="o">=</span> <span class="n">filename_provider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">=</span> <span class="n">base_directory_path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="o">=</span> <span class="n">base_directory_uri</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-        <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="o">=</span> <span class="n">base_directory_uri</span> <span class="ow">or</span> <span class="n">generate_directory_uri</span><span class="p">(</span>
+            <span class="n">base_directory_path</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="o">+=</span> <span class="s2">&quot;/&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span> <span class="o">=</span> <span class="n">create_dir_depth</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datakey_name_as_base_dir</span> <span class="o">=</span> <span class="n">datakey_name_as_base_dir</span>
@@ -1288,15 +1327,11 @@ window.runMermaid = runMermaid;</script>
 
         <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename_provider</span><span class="p">(</span><span class="n">datakey_name</span><span class="p">)</span>
 
-        <span class="n">directory_uri</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">directory_uri</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span><span class="si">}{</span><span class="n">ymd_dir_path</span><span class="si">}</span><span class="s2">&quot;</span>
-
         <span class="k">return</span> <span class="n">PathInfo</span><span class="p">(</span>
             <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_path</span> <span class="o">/</span> <span class="n">ymd_dir_path</span><span class="p">,</span>
-            <span class="n">directory_uri</span><span class="o">=</span><span class="n">directory_uri</span><span class="p">,</span>
             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
             <span class="n">create_dir_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_create_dir_depth</span><span class="p">,</span>
+            <span class="n">directory_uri</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_directory_uri</span><span class="si">}{</span><span class="n">ymd_dir_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 </pre></div>

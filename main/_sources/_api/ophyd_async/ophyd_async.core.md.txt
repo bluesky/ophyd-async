@@ -2515,8 +2515,10 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 
 `````
 
-`````{py:class} PathInfo
+`````{py:class} PathInfo(/, **data: ~typing.Any)
 :canonical: ophyd_async.core._path_providers.PathInfo
+
+Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
 ```{autodoc2-docstring} ophyd_async.core._path_providers.PathInfo
 ```
@@ -2547,7 +2549,7 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 :canonical: ophyd_async.core._path_providers.PathInfo.create_dir_depth
 :type: int
 :value: >
-   0
+   'Field(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._path_providers.PathInfo.create_dir_depth
 ```
@@ -2556,11 +2558,29 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 
 ````{py:attribute} directory_uri
 :canonical: ophyd_async.core._path_providers.PathInfo.directory_uri
-:type: str | None
+:type: str
 :value: >
-   None
+   'Field(...)'
 
 ```{autodoc2-docstring} ophyd_async.core._path_providers.PathInfo.directory_uri
+```
+
+````
+
+````{py:method} validate_directory_path(directory_path: ~pathlib.PurePath) -> ~pathlib.PurePath
+:canonical: ophyd_async.core._path_providers.PathInfo.validate_directory_path
+:classmethod:
+
+```{autodoc2-docstring} ophyd_async.core._path_providers.PathInfo.validate_directory_path
+```
+
+````
+
+````{py:method} validate_directory_uri(directory_uri: str) -> str
+:canonical: ophyd_async.core._path_providers.PathInfo.validate_directory_uri
+:classmethod:
+
+```{autodoc2-docstring} ophyd_async.core._path_providers.PathInfo.validate_directory_uri
 ```
 
 ````
