@@ -64,7 +64,17 @@ In [1]:
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```
+$ ipython --matplotlib=qt6 -i -m ophyd_async.tango.demo
+Python 3.12.3 (main, Mar  3 2026, 12:15:18) [GCC 13.3.0]
+Type 'copyright', 'credits' or 'license' for more information
+IPython 9.9.0 -- An enhanced Interactive Python. Type '?' for help.
+Tip: Use `F2` or %edit with no arguments to open an empty editor with a temporary file.
+Can't create notifd event supplier. Notifd event not available
+Ready to accept request
+
+In [1]: 
+```
 
 :::
 
@@ -130,7 +140,18 @@ There is no introspection of PVs in a device in EPICS, if we tell the IOC to mak
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/__main__.py
+:language: python
+:emphasize-lines: 20-
+```
+
+Here we start the TANGO device server application with a device name prefix and add all of the devices into a `MultiDeviceTestContext` which allows us to run without an external TANGO database.  Starting this device server here is done just for the demo, in production the application would already be running before you started bluesky.
+
+We then pass the same device Tango Resource Locator (TRL) for each Device down using prior knowledge about the attributes that these particular devices will create. For example, we know that there will be a `DemoStage`, and the device names will start with `prefix + "/X"` and `prefix + "/Y"`.
+
+```{note}
+There is no introspection of attributes in a device in TANGO, if we tell the device server to make 3 channels on the point detector, we must also tell the ophyd-async device that the point detector has 3 channels.
+```
 
 :::
 
@@ -191,8 +212,11 @@ When the Device is instantiated, the [](#EpicsDevice) baseclass will look at all
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/_point_detector_channel.py
+:language: python
+```
 
+When the Device is instantiated, the [](#TangoDevice) baseclass will look at all the signals and construct a full TRL for each signal from the supplied device TRL and the signal name.  In this case if we made a `DemoPointDetectorChannel(trl="test/device/C1")`, then the signal `value` would have TRL `test/device/C1/value`. If the server doesn't support events, then using the TangoPolling annotation gives the parameters for ophyd to poll instead.
 :::
 
 :::{tab-item} FastCS
@@ -237,7 +261,13 @@ Whilst it is not required for the call to `super().__init__` to be after all sig
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/_point_detector.py
+:language: python
+```
+
+Although the Signals are declared via type hints, the DeviceVector requires explicit instantiation in an `__init__` method. This is because it requires a list of TRLs to be passed in to the constructor to know how many channels require creation, and how to connect to each channel through the channel's TRL. We also register them with `StandardReadable` in a different way, adding them within a [](#StandardReadable.add_children_as_readables) context manager which adds all the children created within its body.
+
+Whilst it is not required for the call to `super().__init__` to be made after all signals have been created it is more efficient to do so. However, there may be some edge cases where signals need to be created after this e.g. for [derived signals](../how-to/derive-one-signal-from-others.md) that depend on their parent.
 
 :::
 
@@ -289,7 +319,10 @@ Finally, we implement [`Stoppable`](#bluesky.protocols.Stoppable) which tells bl
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/_motor.py
+:language: python
+```
+
 
 :::
 
@@ -322,7 +355,10 @@ Like `DemoPointDetector`, the PV concatenation is done explicitly in code, and t
 :::{tab-item} Tango
 :sync: tango
 
-TODO
+```{literalinclude} ../../src/ophyd_async/tango/demo/_stage.py
+:language: python
+```
+Like `DemoPointDetector`, the TRLs are specified explicitly in code and passed into the constructor, and the children are added within a [](#StandardReadable.add_children_as_readables) context manager.
 
 :::
 

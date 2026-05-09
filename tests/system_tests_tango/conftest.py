@@ -49,14 +49,14 @@ class TangoSubprocessHelper:
 
     def __enter__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("", 0))
+        self.sock.bind(("127.0.0.1", 0))
         port = str(self.sock.getsockname()[1])
         self.sock.listen(1)
         subprocess_path = str(Path(__file__).parent / "context_subprocess.py")
         self.process = subprocess.Popen([sys.executable, subprocess_path, port])
         self.conn, _ = self.sock.accept()
         self.conn.send(pickle.dumps(self._args))
-        self.trls = pickle.loads(self.conn.recv(1024))
+        self.trls = pickle.loads(self.conn.recv(2048))
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
