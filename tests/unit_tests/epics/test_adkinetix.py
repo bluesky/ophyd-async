@@ -1,5 +1,6 @@
 from unittest.mock import call
 
+import bluesky.plan_stubs as bps
 import pytest
 
 from ophyd_async.core import (
@@ -29,7 +30,7 @@ def test_pvs_correct(test_adkinetix: adkinetix.KinetixDetector):
     assert test_adkinetix.driver.acquire.source == "mock+ca://PREFIX:cam1:Acquire_RBV"
     assert (
         test_adkinetix.driver.readout_port_idx.source
-        == "mock+ca://PREFIX:cam1:ReadoutPortIdx"
+        == "mock+ca://PREFIX:cam1:ReadoutPortIdx_RBV"
     )
 
 
@@ -121,3 +122,70 @@ async def test_trigger_uses_num_images(
     await detector.trigger()
     description = await detector.describe()
     assert description["detector"]["shape"][0] == expected_first_dim
+
+
+async def test_switch_readout_mode(test_adkinetix: adkinetix.KinetixDetector):
+    set_mock_value(
+        test_adkinetix.driver.readout_port_idx, adkinetix.KinetixReadoutMode.SENSITIVITY
+    )
+    set_mock_value(test_adkinetix.driver.gain_idx, adkinetix.KinetixSpeedTableIdx.IDX_0)
+    set_mock_value(
+        test_adkinetix.driver.speed_idx, adkinetix.KinetixSpeedTableIdx.IDX_0
+    )
+
+    assert (
+        await test_adkinetix.driver.readout_port_idx.get_value()
+        == adkinetix.KinetixReadoutMode.SENSITIVITY
+    )
+
+    callback_on_mock_put(
+        test_adkinetix.driver.readout_port_idx,
+        lambda v: set_mock_value(test_adkinetix.driver.readout_mode_valid, True),
+    )
+
+    await test_adkinetix.set(adkinetix.KinetixReadoutMode.SPEED)
+    assert (
+        await test_adkinetix.driver.readout_port_idx.get_value()
+        == adkinetix.KinetixReadoutMode.SPEED
+    )
+    assert (
+        await test_adkinetix.driver.gain_idx.get_value()
+        == adkinetix.KinetixSpeedTableIdx.IDX_0
+    )
+    assert (
+        await test_adkinetix.driver.speed_idx.get_value()
+        == adkinetix.KinetixSpeedTableIdx.IDX_0
+    )
+
+    callback_on_mock_put(
+        test_adkinetix.driver.readout_port_idx,
+        lambda v: set_mock_value(test_adkinetix.driver.readout_mode_valid, False),
+    )
+
+    with pytest.raises(
+        RuntimeError, match="Failed to switch to readout mode SUB_ELECTRON!"
+    ):
+        await test_adkinetix.set(adkinetix.KinetixReadoutMode.SUB_ELECTRON)
+
+
+async def test_switch_readout_mode_in_plan(
+    test_adkinetix: adkinetix.KinetixDetector, RE
+):
+    set_mock_value(
+        test_adkinetix.driver.readout_port_idx, adkinetix.KinetixReadoutMode.SENSITIVITY
+    )
+    set_mock_value(test_adkinetix.driver.gain_idx, adkinetix.KinetixSpeedTableIdx.IDX_0)
+    set_mock_value(
+        test_adkinetix.driver.speed_idx, adkinetix.KinetixSpeedTableIdx.IDX_0
+    )
+
+    callback_on_mock_put(
+        test_adkinetix.driver.readout_port_idx,
+        lambda v: set_mock_value(test_adkinetix.driver.readout_mode_valid, True),
+    )
+
+    RE(bps.mv(test_adkinetix, adkinetix.KinetixReadoutMode.SPEED))
+    assert (
+        await test_adkinetix.driver.readout_port_idx.get_value()
+        == adkinetix.KinetixReadoutMode.SPEED
+    )
