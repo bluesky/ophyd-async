@@ -1,6 +1,13 @@
 from pydantic import Field, PositiveInt
 
-from ophyd_async.core import AsyncStatus, PathProvider, StandardDetector, TriggerInfo
+from ophyd_async.core import (
+    DEFAULT_TIMEOUT,
+    AsyncStatus,
+    PathProvider,
+    StandardDetector,
+    TriggerInfo,
+    wait_for_value,
+)
 from ophyd_async.fastcs.core import fastcs_connector
 
 from ._arm_logic import XspressArmLogic
@@ -39,11 +46,15 @@ class XspressDetector(StandardDetector):
         super().__init__(name=name, connector=connector)
 
     @AsyncStatus.wrap
-    async def prepare(self, value: XspressTriggerInfo) -> None:
+    async def prepare(self, value: XspressTriggerInfo) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         datakey_name = self.name + self._data_logics[0].datakey_suffix
 
         await self.od.file_prefix.set(
             self._data_logics[0].path_provider(datakey_name).filename  # pyright: ignore[reportAttributeAccessIssue]
         )
         await self.od.fp.chunks.set(value.chunk)
+        # Wait for all the datasets to have changed their chunk sizes
+        await wait_for_value(
+            self.od.fp.data_chunks_0, value.chunk, timeout=DEFAULT_TIMEOUT
+        )
         await super().prepare(value)
