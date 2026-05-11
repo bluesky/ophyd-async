@@ -12,7 +12,7 @@ class XspressFrameProcessorIO(Device):
 
 
 class XspressFrameProcessorVectorIO(DeviceVector[XspressFrameProcessorIO]):
-    """Ophyd-async implementation of a FrameProcessor Odin Subdevice."""
+    """Implementation of a XspressFrameProcessor Odin Subdevice."""
 
     start_writing: SignalX
     stop_writing: SignalX

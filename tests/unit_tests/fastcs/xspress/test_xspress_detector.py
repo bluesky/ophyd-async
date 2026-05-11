@@ -30,6 +30,8 @@ def detector(RE, tmp_path):
 async def test_prepare_internal_calls_correct_parameters(
     detector: XspressDetector, tmp_path
 ):
+    # Need to mock this value as it's a summary of the datsets chunk_0
+    set_mock_value(detector.od.fp.data_chunks_0, 10)
     await detector.prepare(
         XspressTriggerInfo(
             number_of_events=100,
