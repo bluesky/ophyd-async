@@ -55,12 +55,13 @@ For example, for ADAravis:
 :pyobject: AravisTriggerLogic
 ```
 
-## Use ADArmLogic or create custom Arm Logic
+## Use ADAcquireLogic or create custom Acquire Logic
 
-Most areaDetectors can use the standard [](#adcore.ADArmLogic) which handles arming and disarming via the driver's `acquire` signal. If your detector requires custom arming behavior (e.g., waiting for a specific ready signal), create a [](#DetectorArmLogic) subclass with:
-- `arm()` - Start acquisition
+Most areaDetectors can use the standard [](#adcore.ADAcquireLogic) which handles starting and stopping acquisition via the driver's `acquire` signal. If your detector requires custom acquisition behaviour (e.g., waiting for a specific ready signal), create a [](#DetectorAcquireLogic) subclass with:
+- `start_acquiring()` - Start acquisition
 - `wait_for_idle()` - Wait until acquisition is complete
-- `disarm()` - Stop acquisition
+- `ensure_stopped()` - Stop acquisition
+- `ensure_ready()` - (optional) Override if stage-time reset differs from `ensure_stopped`
 
 ## Add a Detector that puts it all together
 
@@ -147,7 +148,7 @@ driver = adcore.ADBaseIO("PREFIX:DRV:")
 cb_plugin = adcore.NDCircularBuffIO("PREFIX:CB1:")
 det = adcore.AreaDetector(
     driver=driver,
-    arm_logic=adcore.ADContAcqArmLogic(driver, cb_plugin),
+    acquire_logic=adcore.ADContAcqAcquireLogic(driver, cb_plugin),
     trigger_logic=adcore.ADContAcqTriggerLogic(driver, cb_plugin),
     path_provider=path_provider,
     plugins={"cb1": cb_plugin},

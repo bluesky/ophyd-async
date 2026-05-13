@@ -91,12 +91,12 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._trigger_logic.ADContAcqTriggerLogic
     :summary:
     ```
-* - {py:obj}`ADArmLogic <ophyd_async.epics.adcore._arm_logic.ADArmLogic>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADArmLogic
+* - {py:obj}`ADAcquireLogic <ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic
     :summary:
     ```
-* - {py:obj}`ADContAcqArmLogic <ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic
+* - {py:obj}`ADContAcqAcquireLogic <ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic
     :summary:
     ```
 * - {py:obj}`NDArrayDescription <ophyd_async.epics.adcore._data_logic.NDArrayDescription>`
@@ -1826,74 +1826,74 @@ Bases: {py:obj}`ophyd_async.core.DetectorTriggerLogic`
 ```
 ````
 
-`````{py:class} ADArmLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, driver_armed_signal: ~ophyd_async.core.SignalR[bool] | None = None)
-:canonical: ophyd_async.epics.adcore._arm_logic.ADArmLogic
+`````{py:class} ADAcquireLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, driver_armed_signal: ~ophyd_async.core.SignalR[bool] | None = None)
+:canonical: ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic
 
-Bases: {py:obj}`ophyd_async.core.DetectorArmLogic`
+Bases: {py:obj}`ophyd_async.core.DetectorAcquireLogic`
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADArmLogic
+```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic
 ```
 
-````{py:method} arm()
-:canonical: ophyd_async.epics.adcore._arm_logic.ADArmLogic.arm
+````{py:method} start_acquiring()
+:canonical: ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic.start_acquiring
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADArmLogic.arm
+```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic.start_acquiring
 ```
 
 ````
 
 ````{py:method} wait_for_idle()
-:canonical: ophyd_async.epics.adcore._arm_logic.ADArmLogic.wait_for_idle
+:canonical: ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic.wait_for_idle
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADArmLogic.wait_for_idle
+```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic.wait_for_idle
 ```
 
 ````
 
-````{py:method} disarm(on_unstage: bool)
-:canonical: ophyd_async.epics.adcore._arm_logic.ADArmLogic.disarm
+````{py:method} ensure_stopped()
+:canonical: ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic.ensure_stopped
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADArmLogic.disarm
+```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADAcquireLogic.ensure_stopped
 ```
 
 ````
 
 `````
 
-`````{py:class} ADContAcqArmLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, cb_plugin: ~ophyd_async.epics.adcore._io.NDCircularBuffIO)
-:canonical: ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic
+`````{py:class} ADContAcqAcquireLogic(driver: ~ophyd_async.epics.adcore._io.ADBaseIO, cb_plugin: ~ophyd_async.epics.adcore._io.NDCircularBuffIO)
+:canonical: ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic
 
-Bases: {py:obj}`ophyd_async.core.DetectorArmLogic`
+Bases: {py:obj}`ophyd_async.core.DetectorAcquireLogic`
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic
+```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic
 ```
 
-````{py:method} arm()
-:canonical: ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic.arm
+````{py:method} start_acquiring()
+:canonical: ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic.start_acquiring
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic.arm
+```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic.start_acquiring
 ```
 
 ````
 
 ````{py:method} wait_for_idle()
-:canonical: ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic.wait_for_idle
+:canonical: ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic.wait_for_idle
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic.wait_for_idle
+```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic.wait_for_idle
 ```
 
 ````
 
-````{py:method} disarm(on_unstage: bool)
-:canonical: ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic.disarm
+````{py:method} ensure_stopped()
+:canonical: ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic.ensure_stopped
 :async:
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._arm_logic.ADContAcqArmLogic.disarm
+```{autodoc2-docstring} ophyd_async.epics.adcore._acquire_logic.ADContAcqAcquireLogic.ensure_stopped
 ```
 
 ````
@@ -2243,7 +2243,7 @@ Bases: {py:obj}`enum.Enum`
 
 `````
 
-`````{py:class} AreaDetector(driver: ~ophyd_async.epics.adcore._io.ADBaseIOT, arm_logic: ~ophyd_async.core.DetectorArmLogic | None = None, trigger_logic: ~ophyd_async.core.DetectorTriggerLogic | None = None, path_provider: ~ophyd_async.core.PathProvider | None = None, writer_type: ~ophyd_async.epics.adcore._data_logic.ADWriterType | None = ADWriterType.HDF, prefix: str = '', writer_suffix: str | None = None, plugins: ~collections.abc.Mapping[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+`````{py:class} AreaDetector(driver: ~ophyd_async.epics.adcore._io.ADBaseIOT, acquire_logic: ~ophyd_async.core.DetectorAcquireLogic | None = None, trigger_logic: ~ophyd_async.core.DetectorTriggerLogic | None = None, path_provider: ~ophyd_async.core.PathProvider | None = None, writer_type: ~ophyd_async.epics.adcore._data_logic.ADWriterType | None = ADWriterType.HDF, prefix: str = '', writer_suffix: str | None = None, plugins: ~collections.abc.Mapping[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
 :canonical: ophyd_async.epics.adcore._detector.AreaDetector
 
 Bases: {py:obj}`ophyd_async.core.StandardDetector`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._io.ADBaseIOT`\]

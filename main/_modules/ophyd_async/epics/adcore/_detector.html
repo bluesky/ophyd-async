@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._detector &#8212; ophyd-async 0.17a5.dev4+ga910d3a5a documentation</title>
+    <title>ophyd_async.epics.adcore._detector &#8212; ophyd-async 0.17a5.dev5+ge8f6788df documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=c27f4401"></script>
+    <script src="../../../../_static/documentation_options.js?v=376142c8"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a5.dev4+ga910d3a5a documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a5.dev4+ga910d3a5a documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a5.dev5+ge8f6788df documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a5.dev5+ge8f6788df documentation - Home"/>
   
   
 </a></div>
@@ -902,14 +902,14 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">DetectorArmLogic</span><span class="p">,</span>
+    <span class="n">DetectorAcquireLogic</span><span class="p">,</span>
     <span class="n">DetectorTriggerLogic</span><span class="p">,</span>
     <span class="n">PathProvider</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">StandardDetector</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._arm_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADContAcqArmLogic</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._acquire_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADContAcqAcquireLogic</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._data_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADWriterType</span><span class="p">,</span> <span class="n">make_writer_data_logic</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._io</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">ADBaseIOT</span><span class="p">,</span> <span class="n">NDCircularBuffIO</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">,</span> <span class="n">NDPluginBaseIOT</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._trigger_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ADContAcqTriggerLogic</span>
@@ -921,7 +921,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIOT</span><span class="p">,</span>
-        <span class="n">arm_logic</span><span class="p">:</span> <span class="n">DetectorArmLogic</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">acquire_logic</span><span class="p">:</span> <span class="n">DetectorAcquireLogic</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">trigger_logic</span><span class="p">:</span> <span class="n">DetectorTriggerLogic</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">writer_type</span><span class="p">:</span> <span class="n">ADWriterType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">ADWriterType</span><span class="o">.</span><span class="n">HDF</span><span class="p">,</span>
@@ -937,8 +937,8 @@ window.runMermaid = runMermaid;</script>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plugin_name</span><span class="p">,</span> <span class="n">plugin</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">trigger_logic</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_detector_logics</span><span class="p">(</span><span class="n">trigger_logic</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">arm_logic</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">add_detector_logics</span><span class="p">(</span><span class="n">arm_logic</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">acquire_logic</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_detector_logics</span><span class="p">(</span><span class="n">acquire_logic</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">writer_type</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">path_provider</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;PathProvider required to add a writer&quot;</span><span class="p">)</span>
@@ -1007,7 +1007,7 @@ window.runMermaid = runMermaid;</script>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
             <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
-            <span class="n">arm_logic</span><span class="o">=</span><span class="n">ADContAcqArmLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">),</span>
+            <span class="n">acquire_logic</span><span class="o">=</span><span class="n">ADContAcqAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">),</span>
             <span class="n">trigger_logic</span><span class="o">=</span><span class="n">ADContAcqTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">cb_plugin</span><span class="p">),</span>
             <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
             <span class="n">writer_type</span><span class="o">=</span><span class="n">writer_type</span><span class="p">,</span>

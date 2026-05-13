@@ -159,8 +159,8 @@
   - ```{autodoc2-docstring} ophyd_async.core._detector.DetectorTriggerLogic
     :summary:
     ```
-* - {py:obj}`DetectorArmLogic <ophyd_async.core._detector.DetectorArmLogic>`
-  - ```{autodoc2-docstring} ophyd_async.core._detector.DetectorArmLogic
+* - {py:obj}`DetectorAcquireLogic <ophyd_async.core._detector.DetectorAcquireLogic>`
+  - ```{autodoc2-docstring} ophyd_async.core._detector.DetectorAcquireLogic
     :summary:
     ```
 * - {py:obj}`DetectorDataLogic <ophyd_async.core._detector.DetectorDataLogic>`
@@ -2251,40 +2251,49 @@ Bases: {py:obj}`ophyd_async.core._utils.ConfinedModel`
 
 `````
 
-`````{py:class} DetectorArmLogic
-:canonical: ophyd_async.core._detector.DetectorArmLogic
+`````{py:class} DetectorAcquireLogic
+:canonical: ophyd_async.core._detector.DetectorAcquireLogic
 
 Bases: {py:obj}`abc.ABC`
 
-```{autodoc2-docstring} ophyd_async.core._detector.DetectorArmLogic
+```{autodoc2-docstring} ophyd_async.core._detector.DetectorAcquireLogic
 ```
 
-````{py:method} arm()
-:canonical: ophyd_async.core._detector.DetectorArmLogic.arm
+````{py:method} ensure_ready()
+:canonical: ophyd_async.core._detector.DetectorAcquireLogic.ensure_ready
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._detector.DetectorAcquireLogic.ensure_ready
+```
+
+````
+
+````{py:method} start_acquiring()
+:canonical: ophyd_async.core._detector.DetectorAcquireLogic.start_acquiring
 :abstractmethod:
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._detector.DetectorArmLogic.arm
+```{autodoc2-docstring} ophyd_async.core._detector.DetectorAcquireLogic.start_acquiring
 ```
 
 ````
 
 ````{py:method} wait_for_idle()
-:canonical: ophyd_async.core._detector.DetectorArmLogic.wait_for_idle
+:canonical: ophyd_async.core._detector.DetectorAcquireLogic.wait_for_idle
 :abstractmethod:
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._detector.DetectorArmLogic.wait_for_idle
+```{autodoc2-docstring} ophyd_async.core._detector.DetectorAcquireLogic.wait_for_idle
 ```
 
 ````
 
-````{py:method} disarm(on_unstage: bool)
-:canonical: ophyd_async.core._detector.DetectorArmLogic.disarm
+````{py:method} ensure_stopped()
+:canonical: ophyd_async.core._detector.DetectorAcquireLogic.ensure_stopped
 :abstractmethod:
 :async:
 
-```{autodoc2-docstring} ophyd_async.core._detector.DetectorArmLogic.disarm
+```{autodoc2-docstring} ophyd_async.core._detector.DetectorAcquireLogic.ensure_stopped
 ```
 
 ````
@@ -2362,7 +2371,7 @@ Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Sta
 
 ````
 
-````{py:method} add_detector_logics(*logics: ~ophyd_async.core._detector.DetectorTriggerLogic | ~ophyd_async.core._detector.DetectorArmLogic | ~ophyd_async.core._detector.DetectorDataLogic) -> None
+````{py:method} add_detector_logics(*logics: ~ophyd_async.core._detector.DetectorTriggerLogic | ~ophyd_async.core._detector.DetectorAcquireLogic | ~ophyd_async.core._detector.DetectorDataLogic) -> None
 :canonical: ophyd_async.core._detector.StandardDetector.add_detector_logics
 
 ```{autodoc2-docstring} ophyd_async.core._detector.StandardDetector.add_detector_logics

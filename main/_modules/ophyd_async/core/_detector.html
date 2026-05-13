@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.core._detector &#8212; ophyd-async 0.17a5.dev4+ga910d3a5a documentation</title>
+    <title>ophyd_async.core._detector &#8212; ophyd-async 0.17a5.dev5+ge8f6788df documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../_static/documentation_options.js?v=c27f4401"></script>
+    <script src="../../../_static/documentation_options.js?v=376142c8"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a5.dev4+ga910d3a5a documentation - Home"/>
-    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a5.dev4+ga910d3a5a documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a5.dev5+ge8f6788df documentation - Home"/>
+    <img src="../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a5.dev5+ge8f6788df documentation - Home"/>
   
   
 </a></div>
@@ -1136,40 +1136,70 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">supported_triggers</span>
 
 
-<div class="viewcode-block" id="DetectorArmLogic">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorArmLogic">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">DetectorArmLogic</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for detector arming and disarming logic.</span>
+<div class="viewcode-block" id="DetectorAcquireLogic">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorAcquireLogic">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DetectorAcquireLogic</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for detector acquisition lifecycle hooks.</span>
 
-<span class="sd">    Implementations must provide methods to arm the detector, wait for it to become</span>
-<span class="sd">    idle, and disarm it. This interface allows for detector-specific behavior during</span>
-<span class="sd">    the arm/disarm lifecycle.</span>
+<span class="sd">    Subclasses implement four hooks that are called at defined points in the</span>
+<span class="sd">    `[](#StandardDetector)` lifecycle:</span>
+
+<span class="sd">    - `ensure_ready` — called from `stage()` to put the detector into a known</span>
+<span class="sd">      idle state before a scan begins.</span>
+<span class="sd">    - `start_acquiring` — called from `prepare()`, `kickoff()`, or `trigger()`</span>
+<span class="sd">      to start the detector acquiring.</span>
+<span class="sd">    - `wait_for_idle` — called after the final collection completes to confirm</span>
+<span class="sd">      the detector has returned to idle.</span>
+<span class="sd">    - `ensure_stopped` — called from `unstage()` to stop the detector and</span>
+<span class="sd">      perform any end-of-scan cleanup.</span>
+
+<span class="sd">    The default `ensure_ready` delegates to `ensure_stopped`, which is correct</span>
+<span class="sd">    for detectors where stage-time reset and scan-end teardown are identical.</span>
+<span class="sd">    Override `ensure_ready` when the two phases require different behaviour</span>
+<span class="sd">    (e.g. arming the detector once at stage time while keeping it armed across</span>
+<span class="sd">    multiple kickoff/complete cycles).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="DetectorArmLogic.arm">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorArmLogic.arm">[docs]</a>
+<div class="viewcode-block" id="DetectorAcquireLogic.ensure_ready">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorAcquireLogic.ensure_ready">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ensure_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure the detector is idle before a scan.</span>
+
+<span class="sd">        Called from `stage()`. The default implementation delegates to</span>
+<span class="sd">        `ensure_stopped`, which is sufficient for detectors that perform the</span>
+<span class="sd">        same reset at stage time as at unstage time. Override this method when</span>
+<span class="sd">        a different action is required at stage time (for example, arming the</span>
+<span class="sd">        detector once so it is ready for multiple kickoff/complete cycles</span>
+<span class="sd">        without re-arming).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_stopped</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="DetectorAcquireLogic.start_acquiring">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorAcquireLogic.start_acquiring">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">arm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Arm the detector, waiting until it is armed.&quot;&quot;&quot;</span></div>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_acquiring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the detector acquiring.</span>
+
+<span class="sd">        Called from `prepare()` for external-trigger modes, and from</span>
+<span class="sd">        `kickoff()` / `trigger()` for internal-trigger modes.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DetectorArmLogic.wait_for_idle">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorArmLogic.wait_for_idle">[docs]</a>
+<div class="viewcode-block" id="DetectorAcquireLogic.wait_for_idle">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorAcquireLogic.wait_for_idle">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait_for_idle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait for the detector to be disarmed or idle.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wait for the detector to return to idle after the final collection.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="DetectorArmLogic.disarm">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorArmLogic.disarm">[docs]</a>
+<div class="viewcode-block" id="DetectorAcquireLogic.ensure_stopped">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DetectorAcquireLogic.ensure_stopped">[docs]</a>
     <span class="nd">@abstractmethod</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">disarm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">on_unstage</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disarm the detector, return detector to an idle state.</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">ensure_stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the detector and perform end-of-scan cleanup.</span>
 
-<span class="sd">        :param on_unstage: True if called from `unstage()`, False if called from</span>
-<span class="sd">            `stage()` before a new acquisition. Implementations can use this to</span>
-<span class="sd">            perform cleanup that should only happen at the end of a scan (for</span>
-<span class="sd">            example, closing a shutter that must stay open between exposures).</span>
+<span class="sd">        Called from `unstage()`.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 </div>
 
@@ -1301,7 +1331,7 @@ window.runMermaid = runMermaid;</script>
 
     <span class="c1"># Logic for the detector</span>
     <span class="n">_trigger_logic</span><span class="p">:</span> <span class="n">DetectorTriggerLogic</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">_arm_logic</span><span class="p">:</span> <span class="n">DetectorArmLogic</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_acquire_logic</span><span class="p">:</span> <span class="n">DetectorAcquireLogic</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_data_logics</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">DetectorDataLogic</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
     <span class="c1"># Signals to include in read_configuration</span>
     <span class="n">_config_signals</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
@@ -1328,9 +1358,9 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="StandardDetector.add_detector_logics">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.add_detector_logics">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_detector_logics</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">logics</span><span class="p">:</span> <span class="n">DetectorTriggerLogic</span> <span class="o">|</span> <span class="n">DetectorArmLogic</span> <span class="o">|</span> <span class="n">DetectorDataLogic</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">logics</span><span class="p">:</span> <span class="n">DetectorTriggerLogic</span> <span class="o">|</span> <span class="n">DetectorAcquireLogic</span> <span class="o">|</span> <span class="n">DetectorDataLogic</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add arm, trigger or data logic to the detector.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add acquire, trigger or data logic to the detector.</span>
 
 <span class="sd">        :param logic: The logic to add</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1343,10 +1373,10 @@ window.runMermaid = runMermaid;</script>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_supported_triggers</span> <span class="o">=</span> <span class="n">_get_supported_triggers</span><span class="p">(</span><span class="n">logic</span><span class="p">)</span>
                 <span class="c1"># Add the config signals it needs</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add_config_signals</span><span class="p">(</span><span class="o">*</span><span class="n">logic</span><span class="o">.</span><span class="n">config_sigs</span><span class="p">())</span>
-            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logic</span><span class="p">,</span> <span class="n">DetectorArmLogic</span><span class="p">):</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Detector already has arm logic&quot;</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="o">=</span> <span class="n">logic</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logic</span><span class="p">,</span> <span class="n">DetectorAcquireLogic</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Detector already has acquire logic&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span> <span class="o">=</span> <span class="n">logic</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logic</span><span class="p">,</span> <span class="n">DetectorDataLogic</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">,</span> <span class="n">logic</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -1362,12 +1392,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_signals</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_config_signals</span><span class="p">,</span> <span class="o">*</span><span class="n">signals</span><span class="p">)</span></div>
 
-
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_disarm_and_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">on_unstage</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-        <span class="n">coros</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_logic</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="k">for</span> <span class="n">data_logic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="p">:</span>
-            <span class="n">coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">disarm</span><span class="p">(</span><span class="n">on_unstage</span><span class="o">=</span><span class="n">on_unstage</span><span class="p">))</span>
-        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StandardDetector.get_trigger_deadtime">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.get_trigger_deadtime">[docs]</a>
@@ -1402,7 +1426,10 @@ window.runMermaid = runMermaid;</script>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make sure the detector is idle and ready to be used.&quot;&quot;&quot;</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_disarm_and_stop</span><span class="p">(</span><span class="n">on_unstage</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">coros</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_logic</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="k">for</span> <span class="n">data_logic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span><span class="p">:</span>
+            <span class="n">coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span><span class="o">.</span><span class="n">ensure_ready</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kickoff_ctx</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_to_kickoff</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
@@ -1493,8 +1520,8 @@ window.runMermaid = runMermaid;</script>
                 <span class="p">)</span>
                 <span class="k">if</span> <span class="n">collections_written</span> <span class="o">&gt;=</span> <span class="n">target_collections_written</span><span class="p">:</span>
                     <span class="k">break</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="ow">and</span> <span class="n">wait_for_idle</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">wait_for_idle</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span> <span class="ow">and</span> <span class="n">wait_for_idle</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span><span class="o">.</span><span class="n">wait_for_idle</span><span class="p">()</span>
 
 <div class="viewcode-block" id="StandardDetector.prepare">
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.prepare">[docs]</a>
@@ -1552,9 +1579,9 @@ window.runMermaid = runMermaid;</script>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_prepare_context</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="c1"># Tell people how many collections we will acquire for</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_to_kickoff</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">number_of_events</span><span class="p">)</span>
-        <span class="c1"># External triggering can arm now</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span></div>
+        <span class="c1"># External triggering can start acquiring now</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">trigger</span> <span class="o">!=</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span><span class="o">.</span><span class="n">start_acquiring</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.trigger">
@@ -1607,9 +1634,9 @@ window.runMermaid = runMermaid;</script>
             <span class="c1"># Ensure the data provider is still usable</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_prepare_context</span><span class="p">(</span><span class="n">trigger_info</span><span class="p">)</span>
         <span class="n">ctx</span> <span class="o">=</span> <span class="n">error_if_none</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_ctx</span><span class="p">,</span> <span class="s2">&quot;Prepare should have been run&quot;</span><span class="p">)</span>
-        <span class="c1"># Arm the detector and wait for it to finish.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span>
+        <span class="c1"># Start the detector acquiring and wait for it to finish.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span><span class="o">.</span><span class="n">start_acquiring</span><span class="p">()</span>
         <span class="k">async</span> <span class="k">for</span> <span class="n">update</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_for_index</span><span class="p">(</span>
             <span class="n">data_providers</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">streamable_data_providers</span><span class="p">,</span>
             <span class="n">trigger_info</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="p">,</span>
@@ -1653,9 +1680,9 @@ window.runMermaid = runMermaid;</script>
             <span class="n">collections_requested</span><span class="o">=</span><span class="n">collections_requested</span><span class="p">,</span>
             <span class="n">is_last_kickoff</span><span class="o">=</span><span class="n">last_requested_collection</span> <span class="o">==</span> <span class="n">last_expected_collection</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="c1"># External trigering has been armed already, internal should arm now</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span> <span class="ow">and</span> <span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="o">==</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arm_logic</span><span class="o">.</span><span class="n">arm</span><span class="p">()</span></div>
+        <span class="c1"># External triggering has already started; internal starts now</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span> <span class="ow">and</span> <span class="n">ctx</span><span class="o">.</span><span class="n">trigger_info</span><span class="o">.</span><span class="n">trigger</span> <span class="o">==</span> <span class="n">DetectorTrigger</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span><span class="o">.</span><span class="n">start_acquiring</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="StandardDetector.complete">
@@ -1760,8 +1787,11 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector.unstage">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">unstage</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disarm the detector and stop file writing.&quot;&quot;&quot;</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_disarm_and_stop</span><span class="p">(</span><span class="n">on_unstage</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the detector and file writing.&quot;&quot;&quot;</span>
+        <span class="n">coros</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_logic</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span> <span class="k">for</span> <span class="n">data_logic</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_logics</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span><span class="p">:</span>
+            <span class="n">coros</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_acquire_logic</span><span class="o">.</span><span class="n">ensure_stopped</span><span class="p">())</span>
+        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">coros</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
