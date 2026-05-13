@@ -18,7 +18,7 @@ from ophyd_async.core import (
 )
 
 from .adcore import (
-    ADArmLogic,
+    ADAcquireLogic,
     ADBaseIO,
     ADWriterType,
     AreaDetector,
@@ -119,7 +119,7 @@ class AravisDetector(AreaDetector[AravisDriverIO]):
         super().__init__(
             prefix=prefix,
             driver=driver,
-            arm_logic=ADArmLogic(driver),
+            acquire_logic=ADAcquireLogic(driver),
             trigger_logic=AravisTriggerLogic(driver, override_deadtime),
             path_provider=path_provider,
             writer_type=writer_type,
