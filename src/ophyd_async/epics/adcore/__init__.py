@@ -7,7 +7,7 @@ from ._acquire_logic import ADAcquireLogic, ADContAcqAcquireLogic
 from ._data_logic import (
     ADHDFDataLogic,
     ADMultipartDataLogic,
-    ADWriterType,
+    ADWriterFactory,
     NDArrayDescription,
     PluginSignalDataLogic,
 )
@@ -78,7 +78,7 @@ __all__ = [
     "PluginSignalDataLogic",
     "ADHDFDataLogic",
     "ADMultipartDataLogic",
-    "ADWriterType",
+    "ADWriterFactory",
     # Detector
     "AreaDetector",
     "ContAcqDetector",
