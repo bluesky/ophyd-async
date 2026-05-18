@@ -163,7 +163,10 @@ class _PmacMotorInfo:
 
 
 def calculate_ramp_position_and_duration(
-    slice: Slice[Motor], motor_info: _PmacMotorInfo, is_up: bool
+    slice: Slice[Motor],
+    motor_info: _PmacMotorInfo,
+    is_up: bool,
+    ramp_up_time: float | None = None,
 ) -> tuple[dict[Motor, np.float64], float]:
     """Calculate the the required ramp position and duration of a trajectory.
 
@@ -177,6 +180,7 @@ def calculate_ramp_position_and_duration(
     :param slice: Information about a series of scan frames along a number of axes
     :param motor_info: Instance of _PmacMotorInfo
     :param is_up: Boolean representing ramping up into a frame or down out of a frame
+    :param ramp_up_time: Information about how long the movement should take.
     :returns tuple: A tuple containing:
         dict: Motor to ramp positions
         float: Ramp time required for all motors
@@ -196,7 +200,7 @@ def calculate_ramp_position_and_duration(
         velocities[axis] = velocity
         ramp_times.append(abs(velocity) / motor_info.motor_acceleration_rate[axis])
     ramp_times.append(
-        MIN_TURNAROUND
+        MIN_TURNAROUND if not ramp_up_time else ramp_up_time
     )  # Adding a 2ms ramp time as a min tournaround time
     max_ramp_time = max(ramp_times)
 
