@@ -2033,7 +2033,7 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 ````{py:attribute} driver
 :canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.driver
-:type: ~ophyd_async.epics.adcore._io.ADBaseIO
+:type: ~ophyd_async.epics.adcore._io.NDArrayBaseIO
 :value: >
    None
 
