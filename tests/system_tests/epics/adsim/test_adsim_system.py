@@ -27,6 +27,7 @@ from ophyd_async.core import (
     YamlSettingsProvider,
     init_devices,
 )
+from ophyd_async.epics import adcore
 from ophyd_async.epics.adcore import AreaDetector
 from ophyd_async.epics.adsimdetector import SimDetector
 from ophyd_async.plan_stubs import (
@@ -69,9 +70,8 @@ def adsim(RE: RunEngine, tmp_path) -> AreaDetector:
     with init_devices():
         adsim = SimDetector(
             f"{prefix}-DI-CAM-01:",
-            path_provider=provider,
+            adcore.ADWriterFactory.hdf(provider, writer_suffix="HDF5:"),
             driver_suffix="DET:",
-            writer_suffix="HDF5:",
         )
 
     RE(apply_baseline_settings(adsim))
