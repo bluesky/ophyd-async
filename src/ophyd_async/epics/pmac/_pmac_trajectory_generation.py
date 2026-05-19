@@ -59,6 +59,22 @@ class Trajectory:
     def __len__(self) -> int:
         return len(self.user_programs)
 
+    def check_velocities(self, motors: list[Motor], motor_info: _PmacMotorInfo):
+        for motor in motors:
+            max_v = motor_info.motor_max_velocity[motor]
+            if any(v > max_v for v in self.velocities[motor]):
+                raise RuntimeError("Max velocity exceeded.")
+
+    def check_positions(
+        self,
+        motors: list[Motor],
+        limits: dict[Motor, tuple[float, float]],
+    ):
+        for motor in motors:
+            h_limit, l_limit = limits[motor]
+            if any(p >= h_limit or p <= l_limit for p in self.positions[motor]):
+                raise RuntimeError("Position exceeded one of the software limits.")
+
     def with_ramp_down(
         self,
         entry_pvt: PVT,
