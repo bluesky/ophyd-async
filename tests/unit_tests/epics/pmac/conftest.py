@@ -27,9 +27,13 @@ async def sim_motors():
     set_mock_value(sim_x_motor.acceleration_time, 0.5)
     set_mock_value(sim_x_motor.velocity, 1)
     set_mock_value(sim_x_motor.max_velocity, 5)
+    set_mock_value(sim_x_motor.low_limit_travel, -10)
+    set_mock_value(sim_x_motor.high_limit_travel, 10)
     set_mock_value(sim_y_motor.acceleration_time, 0.5)
     set_mock_value(sim_y_motor.velocity, 1)
     set_mock_value(sim_y_motor.max_velocity, 10)
+    set_mock_value(sim_y_motor.low_limit_travel, -10)
+    set_mock_value(sim_y_motor.high_limit_travel, 10)
     yield (sim_pmac, sim_x_motor, sim_y_motor)
 
 
