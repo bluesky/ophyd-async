@@ -43,7 +43,7 @@ class OdinDataLogic(DetectorDataLogic):
             self.odin.fp.frames.set(0),
             self.odin.block_size.set(
                 100000  # Needed temporarily, see https://github.com/bluesky/ophyd-async/issues/1272
-            ),  # Need to check if this propogates to odin.fp.process_frames_per_block
+            ),
         )
         # Start writing
         await self.odin.fp.start_writing.trigger()
