@@ -182,9 +182,23 @@ class PmacTrajectoryTriggerLogic(
         path_length: int,
         ramp_up_time: float,
     ):
+        limits: dict[Motor, tuple[float, float]] = {}
+        for motor in slice.axes():
+            (
+                h_limit,
+                l_limit,
+            ) = await asyncio.gather(
+                motor.high_limit_travel.get_value(),
+                motor.low_limit_travel.get_value(),
+            )
+            limits[motor] = (h_limit, l_limit)
+
         trajectory = await self._parse_trajectory(
             slice, path_length, motor_info, ramp_up_time
         )
+
+        trajectory.check_velocities(motors=slice.axes(), motor_info=motor_info)
+        trajectory.check_positions(motors=slice.axes(), limits=limits)
         use_axis = {
             i: (i in motor_info.motor_cs_index.values()) for i in CS_INDEX.values()
         }
