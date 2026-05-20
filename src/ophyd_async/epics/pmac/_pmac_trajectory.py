@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 import numpy as np
 from bluesky.protocols import (
-    Preparable,
     Stageable,
 )
 from scanspec.core import Path, Slice
@@ -51,12 +50,7 @@ class PmacPrepareContext:
     ramp_up_time: float
 
 
-class PmacTrajectoryTriggerLogic(
-    Device,
-    Stageable,
-    Preparable,
-    FlyerController[Spec[Motor]]
-):
+class PmacTrajectoryTriggerLogic(Device, Stageable, FlyerController[Spec[Motor]]):
     def __init__(self, pmac: PmacIO, name: str = "") -> None:
         self.pmac_ref = Reference(pmac)
         self._next_pvt: PVT | None
@@ -65,7 +59,6 @@ class PmacTrajectoryTriggerLogic(
         self._prepare_context: PmacPrepareContext | None = None
         super().__init__(name=name)
 
-    @AsyncStatus.wrap
     async def prepare(self, value: Spec[Motor]):
         path = Path(value.calculate())
         slice = path.consume(SLICE_SIZE)
@@ -83,7 +76,6 @@ class PmacTrajectoryTriggerLogic(
             self._move_to_start(motor_info, ramp_up_pos),
         )
 
-    @AsyncStatus.wrap
     async def kickoff(self):
         prepare_context = error_if_none(
             self._prepare_context, "Cannot kickoff. Must call prepare first."
@@ -99,7 +91,6 @@ class PmacTrajectoryTriggerLogic(
             prepare_context.ramp_up_time + DEFAULT_TIMEOUT,
         )
 
-    @AsyncStatus.wrap
     async def complete(self):
         trajectory_status = error_if_none(
             self._trajectory_status, "Cannot complete. Must call kickoff first."
@@ -137,7 +128,6 @@ class PmacTrajectoryTriggerLogic(
         ):
             await self.pmac_ref().trajectory.abort_profile.trigger()
 
-    @AsyncStatus.wrap
     async def stop(self):
         await self._stop_if_running()
 
