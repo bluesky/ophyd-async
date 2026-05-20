@@ -118,7 +118,6 @@ class StandardMovable(
         `@cached_property` that returns a `MovableLogic` instance.
         """
 
-    @AsyncStatus.wrap
     async def check_value(self, value: SignalDatatypeT) -> None:
         """Check the move is valid before doing it."""
         await self.movable_logic.check_move(value)
