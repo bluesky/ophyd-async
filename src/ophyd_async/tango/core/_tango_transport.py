@@ -551,7 +551,7 @@ class CommandProxy(TangoProxy):
 
     @ensure_proper_executor
     async def put(  # type: ignore
-        self, value: object | None, timeout: float | None = None
+        self, value: object | None
     ) -> Any:
         value = self._converter.write_value(value)
         try:
