@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.odin._data_logic &#8212; ophyd-async 0.17a5.dev6+gb1ae1843a documentation</title>
+    <title>ophyd_async.fastcs.odin._data_logic &#8212; ophyd-async 0.17a6.dev1+g35a0baa1d documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=056fbf0c"></script>
+    <script src="../../../../_static/documentation_options.js?v=9d2834cc"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a5.dev6+gb1ae1843a documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a5.dev6+gb1ae1843a documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a6.dev1+g35a0baa1d documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a6.dev1+g35a0baa1d documentation - Home"/>
   
   
 </a></div>
@@ -945,7 +945,9 @@ window.runMermaid = runMermaid;</script>
             <span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">fp</span><span class="o">.</span><span class="n">data_compression</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;BSLZ4&quot;</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">fp</span><span class="o">.</span><span class="n">data_datatype</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">datatype</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">fp</span><span class="o">.</span><span class="n">frames</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">fp</span><span class="o">.</span><span class="n">process_frames_per_block</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mi">1000</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">block_size</span><span class="o">.</span><span class="n">set</span><span class="p">(</span>
+                <span class="mi">100000</span>  <span class="c1"># Needed temporarily, see https://github.com/bluesky/ophyd-async/issues/1272</span>
+            <span class="p">),</span>
         <span class="p">)</span>
         <span class="c1"># Start writing</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">fp</span><span class="o">.</span><span class="n">start_writing</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
@@ -965,7 +967,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;/data&quot;</span><span class="p">},</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">StreamResourceDataProvider</span><span class="p">(</span>
-            <span class="n">uri</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_uri</span><span class="si">}{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="c1"># Should be _vds instead of _000001, see https://github.com/bluesky/ophyd-async/issues/1272</span>
+            <span class="n">uri</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path_info</span><span class="o">.</span><span class="n">directory_uri</span><span class="si">}{</span><span class="n">filename</span><span class="si">}</span><span class="s2">_000001.h5&quot;</span><span class="p">,</span>
             <span class="n">resources</span><span class="o">=</span><span class="p">[</span><span class="n">resource</span><span class="p">],</span>
             <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;application/x-hdf5&quot;</span><span class="p">,</span>
             <span class="n">collections_written_signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">odin</span><span class="o">.</span><span class="n">fp</span><span class="o">.</span><span class="n">frames_written</span><span class="p">,</span>
