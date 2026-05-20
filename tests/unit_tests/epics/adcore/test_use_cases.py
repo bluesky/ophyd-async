@@ -427,7 +427,7 @@ async def test_2_rois_with_hdf(tmp_path):
     async with init_devices(mock=True):
         det = adcore.AreaDetector(
             driver,
-            arm_logic=adcore.ADArmLogic(driver),
+            acquire_logic=adcore.ADAcquireLogic(driver),
             writer_type=None,
             plugins={
                 "hdf1": hdfs[0],

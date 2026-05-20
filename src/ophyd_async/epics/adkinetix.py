@@ -17,7 +17,7 @@ from ophyd_async.core import (
 )
 
 from .adcore import (
-    ADArmLogic,
+    ADAcquireLogic,
     ADBaseIO,
     ADWriterType,
     AreaDetector,
@@ -113,7 +113,7 @@ class KinetixDetector(AreaDetector[KinetixDriverIO]):
         super().__init__(
             prefix=prefix,
             driver=driver,
-            arm_logic=ADArmLogic(driver),
+            acquire_logic=ADAcquireLogic(driver),
             trigger_logic=KinetixTriggerLogic(driver),
             path_provider=path_provider,
             writer_type=writer_type,

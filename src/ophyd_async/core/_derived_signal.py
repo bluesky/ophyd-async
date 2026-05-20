@@ -175,6 +175,9 @@ class DerivedSignalFactory(Generic[TransformT]):
     ) -> SignalW[SignalDatatypeT]:
         """Create a write only derived signal.
 
+        Note that there is a known bug where derived signals will timeout if setting the
+        underlying signal takes longer than 10s, see https://github.com/bluesky/ophyd-async/issues/1231.
+
         :param datatype: The datatype of the derived signal value
         :param name:
             The name of the derived signal. Should be a key within the
@@ -192,6 +195,9 @@ class DerivedSignalFactory(Generic[TransformT]):
         precision: int | None = None,
     ) -> SignalRW[SignalDatatypeT]:
         """Create a read-write derived signal.
+
+        Note that there is a known bug where derived signals will timeout if setting the
+        underlying signal takes longer than 10s, see https://github.com/bluesky/ophyd-async/issues/1231.
 
         :param datatype: The datatype of the derived signal value
         :param name:

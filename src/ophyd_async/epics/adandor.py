@@ -16,7 +16,7 @@ from ophyd_async.core import (
     StrictEnum,
 )
 from ophyd_async.epics.adcore import (
-    ADArmLogic,
+    ADAcquireLogic,
     ADBaseIO,
     ADWriterType,
     AreaDetector,
@@ -111,7 +111,7 @@ class AndorDetector(AreaDetector[Andor2DriverIO]):
         super().__init__(
             prefix=prefix,
             driver=driver,
-            arm_logic=ADArmLogic(driver),
+            acquire_logic=ADAcquireLogic(driver),
             trigger_logic=Andor2TriggerLogic(driver),
             path_provider=path_provider,
             writer_type=writer_type,
