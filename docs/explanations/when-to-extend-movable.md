@@ -27,9 +27,9 @@ This covers a wide range of hardware:
 - Simulation motors
 - Any Tango or EPICS device that follows the same setpoint/readback pattern
 
-`StandardMovable` handles the full bluesky protocol surface (`Locatable`, `Stoppable`,
-`Subscribable`) as well as the `WatcherUpdate` machinery for progress bars. You only
-need to describe what is device-specific.
+`StandardMovable` handles the full bluesky protocol surface (`Locatable`, `Checkable`,
+`Stoppable`, `Subscribable`) as well as the `WatcherUpdate` machinery for progress bars.
+You only need to describe what is device-specific.
 
 ### Implementing MovableLogic
 
@@ -45,7 +45,7 @@ The available hooks are:
 | Method | Default behaviour | Override to… |
 |--------|-------------------|--------------|
 | `stop()` | no-op | trigger a stop signal or cancel an in-flight command |
-| `check_move(old, new)` | no-op | validate soft limits before the move begins |
+| `check_move(new)` | no-op | validate soft limits before the move begins |
 | `calculate_timeout(old, new)` | `DEFAULT_TIMEOUT` | derive a velocity-based or distance-based timeout |
 | `get_units_precision()` | reads from `readback.describe()` | supply units and precision from dedicated signals |
 | `move(new_position, timeout)` | `set_and_wait_for_other_value` | write the setpoint and wait in a device-specific way |

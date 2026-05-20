@@ -16,7 +16,7 @@ independently implement:
 - gathering current position, calculating a timeout, and watching the readback
 - emitting `WatcherUpdate` progress events
 - handling a `stop()` that marks the move as failed
-- the `Locatable`, `Stoppable`, and `Subscribable` bluesky protocols
+- the `Locatable`, `Checkable`, `Stoppable`, and `Subscribable` bluesky protocols
 
 `Motor` also interleaved motor-record-specific logic (soft limits, velocity-based
 timeout, STOP PV) with generic setpoint/readback logic, making neither reusable.
@@ -59,12 +59,12 @@ methods with safe defaults:
 | `setpoint: SignalRW[T]` | required |
 | `readback: SignalR[T]` | required |
 | `stop()` | no-op |
-| `check_move(old, new)` | no-op |
+| `check_move(new)` | no-op |
 | `calculate_timeout(old, new)` | `DEFAULT_TIMEOUT` |
 | `get_units_precision()` | reads from `readback.describe()` |
 | `move(new_position, timeout)` | `set_and_wait_for_other_value(setpoint, new_position, readback)` |
 
-`StandardMovable` inherits `Device` and implements `Locatable[T]`, `Stoppable`, and
+`StandardMovable` inherits `Device` and implements `Locatable[T]`, `Checkable[T]`, `Stoppable`, and
 `Subscribable[T]`. Its `set()` reads the current position and units/precision in
 parallel, calls `check_move`, resolves the timeout, runs `movable_logic.move()` inside
 an `AsyncStatus`, emits `WatcherUpdate` events as the readback changes, and raises
