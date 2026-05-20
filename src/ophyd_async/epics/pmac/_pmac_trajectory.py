@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 import numpy as np
 from bluesky.protocols import (
-    Flyable,
     Preparable,
     Stageable,
 )
@@ -14,6 +13,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     Device,
+    FlyerController,
     Reference,
     error_if_none,
     gather_dict,
@@ -55,7 +55,7 @@ class PmacTrajectoryTriggerLogic(
     Device,
     Stageable,
     Preparable,
-    Flyable,
+    FlyerController[Spec[Motor]]
 ):
     def __init__(self, pmac: PmacIO, name: str = "") -> None:
         self.pmac_ref = Reference(pmac)
@@ -136,6 +136,10 @@ class PmacTrajectoryTriggerLogic(
             == PmacExecuteState.EXECUTING
         ):
             await self.pmac_ref().trajectory.abort_profile.trigger()
+
+    @AsyncStatus.wrap
+    async def stop(self):
+        await self._stop_if_running()
 
     @AsyncStatus.wrap
     async def _execute_trajectory(self, path: Path, motor_info: _PmacMotorInfo):
