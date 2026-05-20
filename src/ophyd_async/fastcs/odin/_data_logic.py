@@ -36,20 +36,19 @@ class OdinDataLogic(DetectorDataLogic):
         # Setup the HDF writer
         filename = f"{path_info.filename}.h5"
         await asyncio.gather(
-            self.odin.fp.data_datatype.set(datatype),
+            self.odin.acquisition_id.set(filename),
+            self.odin.file_path.set(str(path_info.directory_path)),
             self.odin.fp.data_compression.set("BSLZ4"),
+            self.odin.fp.data_datatype.set(datatype),
             self.odin.fp.frames.set(0),
             self.odin.fp.process_frames_per_block.set(1000),
-            self.odin.fp.file_path.set(str(path_info.directory_path)),
-            self.odin.mw.directory.set(str(path_info.directory_path)),
-            self.odin.fp.file_prefix.set(filename),
-            self.odin.mw.file_prefix.set(filename),
-            self.odin.mw.acquisition_id.set(filename),
         )
         # Start writing
         await self.odin.fp.start_writing.trigger()
-        await wait_for_value(self.odin.fp.writing, True, timeout=DEFAULT_TIMEOUT)
-        await wait_for_value(self.odin.mw.writing, True, timeout=DEFAULT_TIMEOUT)
+        await wait_for_value(self.odin.writing, True, timeout=DEFAULT_TIMEOUT)
+        # Must ensure frames_written reset
+        # See issue: https://github.com/DiamondLightSource/fastcs-odin/issues/107
+        await wait_for_value(self.odin.fp.frames_written, 0, timeout=DEFAULT_TIMEOUT)
         # Return a provider that reflects what we have made
         data_shape = await asyncio.gather(
             self.odin.fp.data_dims_0.get_value(), self.odin.fp.data_dims_1.get_value()

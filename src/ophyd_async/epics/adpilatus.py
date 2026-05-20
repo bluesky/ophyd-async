@@ -18,7 +18,7 @@ from ophyd_async.core import (
 )
 
 from .adcore import (
-    ADArmLogic,
+    ADAcquireLogic,
     ADBaseIO,
     ADWriterType,
     AreaDetector,
@@ -124,7 +124,7 @@ class PilatusDetector(AreaDetector[PilatusDriverIO]):
         super().__init__(
             prefix=prefix,
             driver=driver,
-            arm_logic=ADArmLogic(driver, driver_armed_signal=driver.armed),
+            acquire_logic=ADAcquireLogic(driver, driver_armed_signal=driver.armed),
             trigger_logic=PilatusTriggerLogic(driver, readout_time),
             path_provider=path_provider,
             writer_type=writer_type,

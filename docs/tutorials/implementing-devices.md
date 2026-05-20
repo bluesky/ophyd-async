@@ -213,7 +213,7 @@ Moving up a level, we have the point detector itself. This also has some Signals
 
 We also have a [](#DeviceVector) called `channel` with `DemoPointDetectorChannel` instances within it. These will all contribute their configuration values at the start of scan, and their values at every point in the scan.
 
-Finally, we need to communicate to bluesky that it has to `trigger()` and acquisition before it can `read()` from the underlying channels. We do this by implementing the [`Triggerable`](#bluesky.protocols.Triggerable) protocol. This involves writing a `trigger()` method with the logic that must be run, calling [](#SignalX.trigger), [](#SignalW.set) and [](#SignalR.get_value) to manipulate the values of the underlying Signals, returning when complete. This is wrapped in an [](#AsyncStatus), which is used by bluesky to run this operation in the background and know when it is complete.
+Finally, we need to communicate to bluesky that it has to `trigger()` an acquisition before it can `read()` from the underlying channels. We do this by implementing the [`Triggerable`](#bluesky.protocols.Triggerable) protocol. This involves writing a `trigger()` method with the logic that must be run, calling [](#SignalX.trigger), [](#SignalW.set) and [](#SignalR.get_value) to manipulate the values of the underlying Signals, returning when complete. This is wrapped in an [](#AsyncStatus), which is used by bluesky to run this operation in the background and know when it is complete.
 
 ```{seealso}
 [](../how-to/interact-with-signals)

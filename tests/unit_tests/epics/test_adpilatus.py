@@ -53,7 +53,7 @@ async def test_times_out_if_not_armed(
 ):
     set_mock_value(test_adpilatus.driver.armed, False)
     with patch(
-        "ophyd_async.epics.adcore._arm_logic.DEFAULT_TIMEOUT",
+        "ophyd_async.epics.adcore._acquire_logic.DEFAULT_TIMEOUT",
         0.01,
     ):
         with pytest.raises(TimeoutError):

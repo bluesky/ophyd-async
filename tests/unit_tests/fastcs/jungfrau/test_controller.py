@@ -31,8 +31,7 @@ def jungfrau(RE: RunEngine, tmp_path):
         detector = JungfrauDetector("prefix", path_provider, "", "", "jungfrau")
 
     # Enough to satisfy the odin writer
-    set_mock_value(detector.odin.fp.writing, True)
-    set_mock_value(detector.odin.mw.writing, True)
+    set_mock_value(detector.odin.writing, True)
     set_mock_value(detector.detector.bit_depth, 8)
     return detector
 

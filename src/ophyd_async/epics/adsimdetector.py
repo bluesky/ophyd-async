@@ -13,7 +13,7 @@ from ophyd_async.core import (
 )
 
 from .adcore import (
-    ADArmLogic,
+    ADAcquireLogic,
     ADBaseIO,
     ADWriterType,
     AreaDetector,
@@ -69,7 +69,7 @@ class SimDetector(AreaDetector[ADBaseIO]):
         super().__init__(
             prefix=prefix,
             driver=driver,
-            arm_logic=ADArmLogic(driver),
+            acquire_logic=ADAcquireLogic(driver),
             trigger_logic=SimDetectorTriggerLogic(driver),
             path_provider=path_provider,
             writer_type=writer_type,

@@ -21,8 +21,7 @@ def detector(RE, tmp_path):
         detector = EigerDetector("BL03I", path_provider)
 
     # Enough to satisfy the odin writer
-    set_mock_value(detector.od.fp.writing, True)
-    set_mock_value(detector.od.mw.writing, True)
+    set_mock_value(detector.od.writing, True)
     set_mock_value(detector.detector.bit_depth_image, 16)
     return detector
 
@@ -44,15 +43,12 @@ async def test_prepare_internal_calls_correct_parameters(
             call.detector.nimages.put(10),
             call.detector.count_time.put(0.1),
             call.detector.frame_time.put(0.1),
-            call.od.fp.data_datatype.put("uint16"),
+            call.od.acquisition_id.put("filename.h5"),
+            call.od.file_path.put(str(tmp_path)),
             call.od.fp.data_compression.put("BSLZ4"),
+            call.od.fp.data_datatype.put("uint16"),
             call.od.fp.frames.put(0),
             call.od.fp.process_frames_per_block.put(1000),
-            call.od.fp.file_path.put(str(tmp_path)),
-            call.od.mw.directory.put(str(tmp_path)),
-            call.od.fp.file_prefix.put("filename.h5"),
-            call.od.mw.file_prefix.put("filename.h5"),
-            call.od.mw.acquisition_id.put("filename.h5"),
             call.od.fp.start_writing.put(None),
         ],
         reset_after=False,
