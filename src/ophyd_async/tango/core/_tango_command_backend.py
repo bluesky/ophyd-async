@@ -159,7 +159,8 @@ def tango_command(
     """Create a [](#Command) backed by a Tango device command.
 
     For void/void Tango commands use [](#tango_triggerable_command)
-    instead.
+    instead.  Tango commands only accept positional arguments; passing
+    keyword arguments raises `TypeError`.
 
     :param call_spec: A callable whose signature matches that of the Tango command,
         used to infer parameter and return types.

@@ -73,7 +73,22 @@ class CommandConnector(DeviceConnector, Generic[P, T]):
 
 
 class Command(Device, Generic[P, T]):
-    """A Device that can execute a command."""
+    """A Device that can execute a typed remote-procedure command.
+
+    `Command[P, T]` wraps a remote procedure call where `P` is the
+    `ParamSpec` for the arguments and `T` is the return type.
+    Use [](#TriggerableCommand) when the command takes no arguments and
+    returns nothing.
+
+    The return value is stored on the resulting status object and is available
+    via `status.value` once the status completes:
+
+    ```python
+    status = device.move_to.execute(0.5)
+    await status
+    result = status.value  # T
+    ```
+    """
 
     _connector: CommandConnector[P, T]
 
@@ -97,7 +112,18 @@ class Command(Device, Generic[P, T]):
 
     @AsyncStatus.wrap
     async def execute(self, *args: P.args, **kwargs: P.kwargs) -> T:
-        """Implementation for executing the backend (awaited by AsyncStatus)."""
+        """Execute the command, returning an [](#AsyncStatus).
+
+        The status resolves to the result `T`.
+
+        After the status completes the return value is available via `status.value`:
+
+        ```python
+        status = device.cmd.execute(arg)
+        await status
+        result = status.value
+        ```
+        """
         self.log.debug(f"Executing command {self.name}")
         result = await _wait_for(
             self._connector.backend.execute(*args, **kwargs), self._timeout, self.source
@@ -107,7 +133,33 @@ class Command(Device, Generic[P, T]):
 
 
 class TriggerableCommand(Command[[], None]):
-    """A Command that can be triggered without arguments and returns None."""
+    """A Command that can be triggered without arguments and returns nothing.
+
+    Use this when the control system exposes a no-argument, no-return action —
+    for example an EPICS `.PROC` field or a void/void Tango command.  Unlike
+    a [](#Signal) there is no readable value: the hardware fires an action
+    when written to.
+
+    Declarative EPICS usage:
+
+    ```python
+    from typing import Annotated as A
+    from ophyd_async.epics.core import EpicsDevice, PvSuffix
+
+    class MyDevice(EpicsDevice):
+        reset: A[TriggerableCommand, PvSuffix("Reset.PROC")]
+    ```
+
+    Procedural EPICS usage:
+
+    ```python
+    reset = epics_triggerable_command("PREFIX:Reset.PROC")
+    ```
+
+    Satisfies the [Triggerable](#bluesky.protocols.Triggerable) protocol so
+    bluesky plans can call `.trigger()` on it directly.  It is the replacement
+    for the deprecated [](#SignalX).
+    """
 
     @AsyncStatus.wrap
     async def trigger(self, timeout: CalculatableTimeout = CALCULATE_TIMEOUT) -> None:
@@ -278,7 +330,24 @@ def soft_command(
     name: str = "",
     timeout: float | None = DEFAULT_TIMEOUT,
 ) -> Command[P, T]:
-    """Create a Command with a SoftCommandBackend."""
+    """Create a [](#Command) backed by a Python callable.
+
+    :param command_cb: Callable to wrap — may be sync or async.
+    :param name: Optional name for the command node.
+    :param timeout: Timeout in seconds, or `None` for no timeout.
+
+    Unlike hardware-backed commands, [](#soft_command) accepts positional,
+    keyword, and mixed arguments:
+
+    ```python
+    async def move(x: float, speed: float = 1.0) -> bool: ...
+
+    cmd = soft_command(move, name="move")
+    await cmd.execute(0.5)             # positional
+    await cmd.execute(x=0.5)           # keyword
+    await cmd.execute(0.5, speed=2.0)  # mixed
+    ```
+    """
     # eval_str=True resolves forward-reference string annotations created by
     # ``from __future__ import annotations`` in the caller's module.
     sig = inspect.signature(command_cb, eval_str=True)
