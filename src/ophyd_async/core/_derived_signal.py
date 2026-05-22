@@ -91,30 +91,21 @@ class DerivedSignalFactory(Generic[TransformT]):
                     raise TypeError(msg)
 
                 for k in set(expected.keys()):
-                    expected_type = expected[k]
-                    received_type = received[k]
-
-                    expected_origin = get_origin(expected_type)
-                    if expected_origin is not None:
-                        expected_type = expected_origin
-
-                    received_origin = get_origin(received_type)
-                    if received_origin is not None:
-                        received_type = received_origin
-
-                    if isinstance(expected_type, type):
-                        if not isinstance(received_type, type):
-                            continue
-
-                        if not issubclass(received_type, expected_type):
+                    if isinstance(expected[k], TypeVar):
+                        bound = expected[k].__bound__
+                        if isinstance(bound, type) and not issubclass(
+                            received[k], bound
+                        ):
                             raise TypeError(msg)
-
-                    elif isinstance(expected_type, TypeVar):
-                        bound = expected_type.__bound__
-
-                        if isinstance(bound, type) and isinstance(received_type, type):
-                            if not issubclass(received_type, bound):
-                                raise TypeError(msg)
+                    if isinstance(received[k], TypeVar):
+                        bound = received[k].__bound__
+                        if isinstance(bound, type) and not issubclass(
+                            expected[k], bound
+                        ):
+                            raise TypeError(msg)
+                    if isinstance(received[k], type) and isinstance(expected[k], type):
+                        if not issubclass(received[k], expected[k]):
+                            raise TypeError(msg)
 
         self._set_derived_takes_dict = (
             is_typeddict(_get_first_arg_datatype(set_derived)) if set_derived else False
