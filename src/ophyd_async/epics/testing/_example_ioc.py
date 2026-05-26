@@ -5,7 +5,10 @@ from typing import Annotated as A
 import numpy as np
 
 from ophyd_async.core import Array1D, SignalR, SignalRW, StrictEnum, SubsetEnum, Table
-from ophyd_async.epics.core import EpicsDevice, PvSuffix
+from ophyd_async.epics.core import (
+    EpicsDevice,
+    PvSuffix,
+)
 
 from ._utils import TestingIOC, generate_random_pv_prefix
 
@@ -61,6 +64,11 @@ class EpicsTestCaDevice(EpicsDevice):
     float32a: A[SignalRW[Array1D[np.float32]], PvSuffix("float32a")]
     float64a: A[SignalRW[Array1D[np.float64]], PvSuffix("float64a")]
     stra: A[SignalRW[Sequence[str]], PvSuffix("stra")]
+    mbb_direct_bit_r: A[SignalR[bool], PvSuffix("mbb_direct.B0")]
+    mbb_direct_bit: A[SignalRW[bool], PvSuffix("mbb_direct_rw.B0")]
+
+    def __init__(self, prefix: str, name: str = ""):
+        super().__init__(prefix, name=name)
 
 
 class EpicsTestPvaDevice(EpicsTestCaDevice):

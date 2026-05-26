@@ -41,7 +41,9 @@ class OdinDataLogic(DetectorDataLogic):
             self.odin.fp.data_compression.set("BSLZ4"),
             self.odin.fp.data_datatype.set(datatype),
             self.odin.fp.frames.set(0),
-            self.odin.fp.process_frames_per_block.set(1000),
+            self.odin.block_size.set(
+                100000  # Needed temporarily, see https://github.com/bluesky/ophyd-async/issues/1272
+            ),
         )
         # Start writing
         await self.odin.fp.start_writing.trigger()
@@ -61,7 +63,8 @@ class OdinDataLogic(DetectorDataLogic):
             parameters={"dataset": "/data"},
         )
         return StreamResourceDataProvider(
-            uri=f"{path_info.directory_uri}{filename}",
+            # Should be _vds instead of _000001, see https://github.com/bluesky/ophyd-async/issues/1272
+            uri=f"{path_info.directory_uri}{filename}_000001.h5",
             resources=[resource],
             mimetype="application/x-hdf5",
             collections_written_signal=self.odin.fp.frames_written,

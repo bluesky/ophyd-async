@@ -16,7 +16,7 @@ from ._derived_signal import (
 )
 from ._derived_signal_backend import Transform, merge_gathered_dicts
 from ._detector import (
-    DetectorArmLogic,
+    DetectorAcquireLogic,
     DetectorDataLogic,
     DetectorTrigger,
     DetectorTriggerLogic,
@@ -231,7 +231,7 @@ __all__ = [
     "DetectorTrigger",
     "TriggerInfo",
     "DetectorTriggerLogic",
-    "DetectorArmLogic",
+    "DetectorAcquireLogic",
     "DetectorDataLogic",
     "StandardDetector",
     # Path
