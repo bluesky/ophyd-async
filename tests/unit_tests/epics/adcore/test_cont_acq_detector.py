@@ -17,7 +17,7 @@ from ophyd_async.testing import assert_has_calls
 @pytest.fixture
 async def cont_acq_detector() -> adcore.AreaDetector[adcore.ADBaseIO]:
     async with init_devices(mock=True):
-        det = adcore.ContAcqDetector(prefix="PREFIX:", writer_type=None)
+        det = adcore.ContAcqDetector(prefix="PREFIX:")
 
     set_mock_value(
         det.driver.image_mode,
