@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.17a6.dev2+g40dce8515 documentation</title>
+    <title>How to implement a Device for an EPICS areaDetector &#8212; ophyd-async 0.17a6.dev3+g1e07267fb documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=ed14cd4a"></script>
+    <script src="../_static/documentation_options.js?v=98582b4a"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a6.dev2+g40dce8515 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a6.dev2+g40dce8515 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a6.dev3+g1e07267fb documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a6.dev3+g1e07267fb documentation - Home"/>
   
   
 </a></div>
@@ -602,10 +602,8 @@ for rationale.</p>
 <p>The constructor parameters should include:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">prefix</span></code>: The PV prefix for the driver and plugins</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">path_provider</span></code>: A <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.PathProvider" title="ophyd_async.core.PathProvider"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">PathProvider</span></code></a> that tells the detector where to write data (optional if <code class="docutils literal notranslate"><span class="pre">writer_type=None</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">*writer_factories</span></code>: Zero or more <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterFactory" title="ophyd_async.epics.adcore.ADWriterFactory"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.ADWriterFactory</span></code></a> instances (e.g. <code class="docutils literal notranslate"><span class="pre">ADWriterFactory.hdf(path_provider)</span></code>); omit entirely to skip file writing</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">driver_suffix</span></code>: A PV suffix for the driver, defaulting to <code class="docutils literal notranslate"><span class="pre">&quot;cam1:&quot;</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">writer_type</span></code>: An <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterType" title="ophyd_async.epics.adcore.ADWriterType"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.ADWriterType</span></code></a> enum value (HDF, TIFF, JPEG) or None to skip file writing</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">writer_suffix</span></code>: An optional PV suffix for the file writer plugin</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">plugins</span></code>: An optional mapping of {<code class="docutils literal notranslate"><span class="pre">name</span></code>: <a class="reference internal" href="../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDPluginBaseIO" title="ophyd_async.epics.adcore.NDPluginBaseIO"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">adcore.NDPluginBaseIO</span></code></a>} for additional plugins</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">config_sigs</span></code>: Additional signals to report in configuration (beyond the standard acquire_time and acquire_period)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: An optional name for the device</p></li>
@@ -616,13 +614,11 @@ for rationale.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an ADAravis AreaDetector instance.</span>
 
 <span class="sd">    :param prefix: EPICS PV prefix for the detector</span>
-<span class="sd">    :param path_provider: Provider for file paths during acquisition</span>
+<span class="sd">    :param writer_factories: Factories for file writer plugins and their data logics</span>
 <span class="sd">    :param driver_suffix: Suffix for the driver PV, defaults to &quot;cam1:&quot;</span>
 <span class="sd">    :param override_deadtime:</span>
 <span class="sd">        If provided, this value is used for deadtime instead of looking up</span>
 <span class="sd">        based on camera model.</span>
-<span class="sd">    :param writer_type: Type of file writer (HDF or TIFF)</span>
-<span class="sd">    :param writer_suffix: Suffix for the writer PV</span>
 <span class="sd">    :param plugins: Additional areaDetector plugins to include</span>
 <span class="sd">    :param config_sigs: Additional signals to include in configuration</span>
 <span class="sd">    :param name: Name for the detector device</span>
@@ -631,24 +627,20 @@ for rationale.</p>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">writer_factories</span><span class="p">:</span> <span class="n">ADWriterFactory</span><span class="p">,</span>
         <span class="n">driver_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
         <span class="n">override_deadtime</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">writer_type</span><span class="p">:</span> <span class="n">ADWriterType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">ADWriterType</span><span class="o">.</span><span class="n">HDF</span><span class="p">,</span>
-        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">plugins</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">driver</span> <span class="o">=</span> <span class="n">AravisDriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
-            <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
+            <span class="n">driver</span><span class="p">,</span>
+            <span class="n">prefix</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">writer_factories</span><span class="p">,</span>
             <span class="n">acquire_logic</span><span class="o">=</span><span class="n">ADAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
             <span class="n">trigger_logic</span><span class="o">=</span><span class="n">AravisTriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">,</span> <span class="n">override_deadtime</span><span class="p">),</span>
-            <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
-            <span class="n">writer_type</span><span class="o">=</span><span class="n">writer_type</span><span class="p">,</span>
-            <span class="n">writer_suffix</span><span class="o">=</span><span class="n">writer_suffix</span><span class="p">,</span>
             <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
             <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -659,7 +651,7 @@ for rationale.</p>
 <ul class="simple">
 <li><p>Store the driver as <code class="docutils literal notranslate"><span class="pre">self.driver</span></code></p></li>
 <li><p>Call <code class="docutils literal notranslate"><span class="pre">add_detector_logics()</span></code> to register your trigger and arm logic</p></li>
-<li><p>Create and register a data logic for file writing if <code class="docutils literal notranslate"><span class="pre">writer_type</span></code> is not None</p></li>
+<li><p>Create and register a data logic for file writing for each factory in <code class="docutils literal notranslate"><span class="pre">writer_factories</span></code></p></li>
 <li><p>Add configuration signals (driver.acquire_time, driver.acquire_period, and any you specify)</p></li>
 <li><p>Store any plugins as attributes on the detector</p></li>
 </ul>
@@ -698,15 +690,41 @@ for rationale.</p>
 </section>
 <section id="multiple-hdf-writers-for-different-rois">
 <h3>Multiple HDF writers for different ROIs<a class="headerlink" href="#multiple-hdf-writers-for-different-rois" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Don&#39;t create default writer</span>
-<span class="n">det</span> <span class="o">=</span> <span class="n">adaravis</span><span class="o">.</span><span class="n">AravisDetector</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">writer_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  
-<span class="c1"># Add separate writers for each ROI</span>
-<span class="n">det</span><span class="o">.</span><span class="n">add_detector_logics</span><span class="p">(</span>
-    <span class="n">adcore</span><span class="o">.</span><span class="n">ADHDFDataLogic</span><span class="p">(</span><span class="n">path_provider</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">roi1_plugin</span><span class="p">,</span> <span class="n">datakey_suffix</span><span class="o">=</span><span class="s2">&quot;-roi1&quot;</span><span class="p">),</span>
-    <span class="n">adcore</span><span class="o">.</span><span class="n">ADHDFDataLogic</span><span class="p">(</span><span class="n">path_provider</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">det</span><span class="o">.</span><span class="n">roi2_plugin</span><span class="p">,</span> <span class="n">datakey_suffix</span><span class="o">=</span><span class="s2">&quot;-roi2&quot;</span><span class="p">),</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">roi1</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDROIIO</span><span class="p">(</span><span class="s2">&quot;PREFIX:ROI1:&quot;</span><span class="p">)</span>
+<span class="n">roi2</span> <span class="o">=</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDROIIO</span><span class="p">(</span><span class="s2">&quot;PREFIX:ROI2:&quot;</span><span class="p">)</span>
+<span class="n">det</span> <span class="o">=</span> <span class="n">adaravis</span><span class="o">.</span><span class="n">AravisDetector</span><span class="p">(</span>
+    <span class="s2">&quot;PREFIX:&quot;</span><span class="p">,</span>
+    <span class="n">adcore</span><span class="o">.</span><span class="n">ADWriterFactory</span><span class="o">.</span><span class="n">hdf</span><span class="p">(</span>
+        <span class="n">path_provider</span><span class="p">,</span>
+        <span class="n">writer_suffix</span><span class="o">=</span><span class="s2">&quot;HDF1:&quot;</span><span class="p">,</span>
+        <span class="n">writer_name</span><span class="o">=</span><span class="s2">&quot;hdf1&quot;</span><span class="p">,</span>
+        <span class="n">datakey_suffix</span><span class="o">=</span><span class="s2">&quot;-roi1&quot;</span><span class="p">,</span>
+        <span class="n">array_description</span><span class="o">=</span><span class="k">lambda</span> <span class="n">driver</span><span class="p">:</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDArrayDescription</span><span class="p">(</span>
+            <span class="n">shape_signals</span><span class="o">=</span><span class="p">(</span><span class="n">roi1</span><span class="o">.</span><span class="n">size_y</span><span class="p">,</span> <span class="n">roi1</span><span class="o">.</span><span class="n">size_x</span><span class="p">),</span>
+            <span class="n">data_type_signal</span><span class="o">=</span><span class="n">driver</span><span class="o">.</span><span class="n">data_type</span><span class="p">,</span>
+            <span class="n">color_mode_signal</span><span class="o">=</span><span class="n">driver</span><span class="o">.</span><span class="n">color_mode</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">adcore</span><span class="o">.</span><span class="n">ADWriterFactory</span><span class="o">.</span><span class="n">hdf</span><span class="p">(</span>
+        <span class="n">path_provider</span><span class="p">,</span>
+        <span class="n">writer_suffix</span><span class="o">=</span><span class="s2">&quot;HDF2:&quot;</span><span class="p">,</span>
+        <span class="n">writer_name</span><span class="o">=</span><span class="s2">&quot;hdf2&quot;</span><span class="p">,</span>
+        <span class="n">datakey_suffix</span><span class="o">=</span><span class="s2">&quot;-roi2&quot;</span><span class="p">,</span>
+        <span class="n">array_description</span><span class="o">=</span><span class="k">lambda</span> <span class="n">driver</span><span class="p">:</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDArrayDescription</span><span class="p">(</span>
+            <span class="n">shape_signals</span><span class="o">=</span><span class="p">(</span><span class="n">roi2</span><span class="o">.</span><span class="n">size_y</span><span class="p">,</span> <span class="n">roi2</span><span class="o">.</span><span class="n">size_x</span><span class="p">),</span>
+            <span class="n">data_type_signal</span><span class="o">=</span><span class="n">driver</span><span class="o">.</span><span class="n">data_type</span><span class="p">,</span>
+            <span class="n">color_mode_signal</span><span class="o">=</span><span class="n">driver</span><span class="o">.</span><span class="n">color_mode</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">plugins</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;roi1&quot;</span><span class="p">:</span> <span class="n">roi1</span><span class="p">,</span> <span class="s2">&quot;roi2&quot;</span><span class="p">:</span> <span class="n">roi2</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">array_description</span></code> callable receives the fully-constructed driver at detector
+initialisation time, which is the earliest point at which <code class="docutils literal notranslate"><span class="pre">driver.data_type</span></code> and
+<code class="docutils literal notranslate"><span class="pre">driver.color_mode</span></code> are available.  This also lets plugins that override
+<code class="docutils literal notranslate"><span class="pre">data_type</span></code> or <code class="docutils literal notranslate"><span class="pre">color_mode</span></code> (e.g. a processing plugin) pass their own signals
+instead of the driver’s.</p>
 </section>
 </section>
 <section id="continuously-acquiring-detector">
@@ -748,8 +766,10 @@ for rationale.</p>
     <span class="n">static_path_provider</span><span class="p">:</span> <span class="n">StaticPathProvider</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">adaravis</span><span class="o">.</span><span class="n">AravisDetector</span><span class="p">:</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">init_devices</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">detector</span> <span class="o">=</span> <span class="n">adaravis</span><span class="o">.</span><span class="n">AravisDetector</span><span class="p">(</span><span class="s2">&quot;PREFIX:&quot;</span><span class="p">,</span> <span class="n">static_path_provider</span><span class="p">)</span>
-    <span class="n">writer</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">get_plugin</span><span class="p">(</span><span class="s2">&quot;writer&quot;</span><span class="p">,</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDPluginFileIO</span><span class="p">)</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="n">adaravis</span><span class="o">.</span><span class="n">AravisDetector</span><span class="p">(</span>
+            <span class="s2">&quot;PREFIX:&quot;</span><span class="p">,</span> <span class="n">adcore</span><span class="o">.</span><span class="n">ADWriterFactory</span><span class="o">.</span><span class="n">hdf</span><span class="p">(</span><span class="n">static_path_provider</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">detector</span><span class="o">.</span><span class="n">get_plugin</span><span class="p">(</span><span class="s2">&quot;hdf&quot;</span><span class="p">,</span> <span class="n">adcore</span><span class="o">.</span><span class="n">NDPluginFileIO</span><span class="p">)</span>
     <span class="n">set_mock_value</span><span class="p">(</span><span class="n">writer</span><span class="o">.</span><span class="n">file_path_exists</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">detector</span>
 </pre></div>

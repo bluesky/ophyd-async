@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.17a6.dev2+g40dce8515 documentation</title>
+    <title>ophyd_async.epics.adcore._data_logic &#8212; ophyd-async 0.17a6.dev3+g1e07267fb documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=ed14cd4a"></script>
+    <script src="../../../../_static/documentation_options.js?v=98582b4a"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a6.dev2+g40dce8515 documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a6.dev2+g40dce8515 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a6.dev3+g1e07267fb documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a6.dev3+g1e07267fb documentation - Home"/>
   
   
 </a></div>
@@ -899,11 +899,10 @@ window.runMermaid = runMermaid;</script>
                   
   <h1>Source code for ophyd_async.epics.adcore._data_logic</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">PureWindowsPath</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Generic</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xml.etree</span><span class="w"> </span><span class="kn">import</span> <span class="n">ElementTree</span> <span class="k">as</span> <span class="n">ET</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -931,6 +930,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">NDFileHDF5IO</span><span class="p">,</span>
     <span class="n">NDPluginBaseIO</span><span class="p">,</span>
     <span class="n">NDPluginFileIO</span><span class="p">,</span>
+    <span class="n">NDPluginFileIOT</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._ndattribute</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDAttributeDataType</span><span class="p">,</span> <span class="n">NDAttributePvDbrType</span>
 
@@ -964,6 +964,15 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDArrayDescription">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">NDArrayDescription</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Signals that describe the shape and data type of an NDArray frame.</span>
+
+<span class="sd">    :param shape_signals: Signals providing the frame dimensions (e.g.</span>
+<span class="sd">        ``size_y``, ``size_x``).  Zero-valued entries are filtered out, so it</span>
+<span class="sd">        is safe to include ``array_size_z`` for 2-D detectors.</span>
+<span class="sd">    :param data_type_signal: Signal providing the pixel data type.</span>
+<span class="sd">    :param color_mode_signal: Signal providing the colour mode (MONO or RGB1).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">shape_signals</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span>
     <span class="n">data_type_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">ADBaseDataType</span><span class="p">]</span>
     <span class="n">color_mode_signal</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">ADBaseColorMode</span><span class="p">]</span></div>
@@ -971,22 +980,23 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_ndarray_resource_info</span><span class="p">(</span>
-    <span class="n">description</span><span class="p">:</span> <span class="n">NDArrayDescription</span><span class="p">,</span>
+    <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span><span class="p">,</span>
     <span class="n">data_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">parameters</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="n">frames_per_chunk</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamResourceInfo</span><span class="p">:</span>
     <span class="c1"># Grab the dimensions and datatype of the NDArray</span>
     <span class="n">shape</span><span class="p">,</span> <span class="n">datatype</span><span class="p">,</span> <span class="n">color_mode</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-        <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">sig</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="n">description</span><span class="o">.</span><span class="n">shape_signals</span><span class="p">]),</span>
-        <span class="n">description</span><span class="o">.</span><span class="n">data_type_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
-        <span class="n">description</span><span class="o">.</span><span class="n">color_mode_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">sig</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="n">array_description</span><span class="o">.</span><span class="n">shape_signals</span><span class="p">]),</span>
+        <span class="n">array_description</span><span class="o">.</span><span class="n">data_type_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+        <span class="n">array_description</span><span class="o">.</span><span class="n">color_mode_signal</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
     <span class="p">)</span>
     <span class="c1"># Remove entries in shape that are zero</span>
     <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">shape</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">datatype</span> <span class="ow">is</span> <span class="n">ADBaseDataType</span><span class="o">.</span><span class="n">UNDEFINED</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">description</span><span class="o">.</span><span class="n">data_type_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> is blank, this is not supported&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">array_description</span><span class="o">.</span><span class="n">data_type_signal</span><span class="o">.</span><span class="n">source</span><span class="si">}</span><span class="s2"> is blank, &quot;</span>
+            <span class="s2">&quot;this is not supported&quot;</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">color_mode</span> <span class="o">==</span> <span class="n">ADBaseColorMode</span><span class="o">.</span><span class="n">RGB1</span><span class="p">:</span>
         <span class="n">shape</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="o">*</span><span class="n">shape</span><span class="p">]</span>
@@ -1069,8 +1079,7 @@ window.runMermaid = runMermaid;</script>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADHDFDataLogic</span><span class="p">(</span><span class="n">DetectorDataLogic</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Data logic for AreaDetector HDF5 writer plugin.</span>
 
-<span class="sd">    :param shape_signals: Signals that provide the shape of the NDArray.</span>
-<span class="sd">    :param data_type_signal: Signal that provides the data type of the NDArray.</span>
+<span class="sd">    :param array_description: Signals describing the NDArray shape and data type.</span>
 <span class="sd">    :param path_provider: Callable that provides path information for file writing.</span>
 <span class="sd">    :param driver: The AreaDetector driver instance.</span>
 <span class="sd">    :param writer: The NDFileHDFIO plugin instance.</span>
@@ -1078,7 +1087,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param datakey_suffix: Suffix to append to the data key for the main dataset</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
+    <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
     <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span>
     <span class="n">driver</span><span class="p">:</span> <span class="n">NDArrayBaseIO</span>
     <span class="n">writer</span><span class="p">:</span> <span class="n">NDFileHDF5IO</span>
@@ -1115,7 +1124,7 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span>
         <span class="c1"># Return a provider that reflects what we have made</span>
         <span class="n">main_dataset</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_ndarray_resource_info</span><span class="p">(</span>
-            <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="n">array_description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">array_description</span><span class="p">,</span>
             <span class="n">data_key</span><span class="o">=</span><span class="n">datakey_name</span><span class="p">,</span>
             <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;/entry/data/data&quot;</span><span class="p">},</span>
             <span class="n">frames_per_chunk</span><span class="o">=</span><span class="n">frames_per_chunk</span><span class="p">,</span>
@@ -1166,8 +1175,7 @@ window.runMermaid = runMermaid;</script>
 <span class="k">class</span><span class="w"> </span><span class="nc">ADMultipartDataLogic</span><span class="p">(</span><span class="n">DetectorDataLogic</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Data logic for multipart AreaDetector file writers (e.g. JPEG, TIFF).</span>
 
-<span class="sd">    :param shape_signals: Signals that provide the shape of the NDArray.</span>
-<span class="sd">    :param data_type_signal: Signal that provides the data type of the NDArray.</span>
+<span class="sd">    :param array_description: Signals describing the NDArray shape and data type.</span>
 <span class="sd">    :param path_provider: Callable that provides path information for file writing.</span>
 <span class="sd">    :param writer: The NDFilePluginIO instance.</span>
 <span class="sd">    :param extension: File extension for the written files (e.g. &quot;.jpg&quot;, &quot;.tiff&quot;).</span>
@@ -1176,7 +1184,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    :param datakey_suffix: Suffix to append to the data key for the main dataset</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
+    <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
     <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span>
     <span class="n">writer</span><span class="p">:</span> <span class="n">NDPluginFileIO</span>
     <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span>
@@ -1200,7 +1208,7 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span>
         <span class="c1"># Return a provider that reflects what we have made</span>
         <span class="n">main_dataset</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_ndarray_resource_info</span><span class="p">(</span>
-            <span class="n">description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="n">array_description</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">array_description</span><span class="p">,</span>
             <span class="n">data_key</span><span class="o">=</span><span class="n">datakey_name</span><span class="p">,</span>
             <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;template&quot;</span><span class="p">:</span> <span class="n">path_info</span><span class="o">.</span><span class="n">filename</span> <span class="o">+</span> <span class="s2">&quot;_</span><span class="si">{:06d}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span><span class="p">},</span>
         <span class="p">)</span>
@@ -1229,60 +1237,216 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<div class="viewcode-block" id="ADWriterType">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterType">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ADWriterType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="n">HDF</span> <span class="o">=</span> <span class="s2">&quot;HDF&quot;</span>
-    <span class="n">JPEG</span> <span class="o">=</span> <span class="s2">&quot;JPEG&quot;</span>
-    <span class="n">TIFF</span> <span class="o">=</span> <span class="s2">&quot;TIFF&quot;</span></div>
+<div class="viewcode-block" id="ADWriterFactory">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterFactory">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ADWriterFactory</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">NDPluginFileIOT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory that creates a file-writer plugin and its matching data logic.</span>
 
+<span class="sd">    Construct using the classmethods `hdf`, `jpeg`, or `tiff`, then pass one</span>
+<span class="sd">    or more instances to `AreaDetector` as positional `*writer_factories`</span>
+<span class="sd">    arguments.  When the detector is initialised `__call__` is invoked with</span>
+<span class="sd">    the detector&#39;s PV `prefix`, its `driver`, and the flat list of extra</span>
+<span class="sd">    `plugins`; it returns the writer device and the corresponding</span>
+<span class="sd">    `DetectorDataLogic`.</span>
 
+<span class="sd">    :param writer_cls: Concrete `NDPluginFileIO` subclass to instantiate.</span>
+<span class="sd">    :param writer_suffix: PV suffix appended to *prefix* to form the writer&#39;s PV prefix.</span>
+<span class="sd">    :param writer_name:</span>
+<span class="sd">        Attribute name under which the writer device is stored on the</span>
+<span class="sd">        `AreaDetector` instance.  Each static method defaults to its own name</span>
+<span class="sd">        (``&quot;hdf&quot;``, ``&quot;jpeg&quot;``, ``&quot;tiff&quot;``); override when passing multiple</span>
+<span class="sd">        factories so each writer gets a distinct name.</span>
+<span class="sd">    :param datakey_suffix: Suffix appended to the datakey name in stream resources.</span>
+<span class="sd">    :param array_description:</span>
+<span class="sd">        Override the array shape/type description built from the driver.</span>
+<span class="sd">        May be an `NDArrayDescription` instance or a callable</span>
+<span class="sd">        ``(driver) → NDArrayDescription``; use a callable when the description</span>
+<span class="sd">        depends on signals that are only available once the driver has been</span>
+<span class="sd">        constructed (e.g. inside a detector subclass that creates its own driver).</span>
+<span class="sd">    :param data_logic_factory:</span>
+<span class="sd">        Callable ``(writer, array_description, driver, plugins) → DetectorDataLogic``</span>
+<span class="sd">        that builds the data logic given the already-constructed writer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">make_writer_data_logic</span><span class="p">(</span>
-    <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
-    <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span>
-    <span class="n">writer_type</span><span class="p">:</span> <span class="n">ADWriterType</span><span class="p">,</span>
-    <span class="n">plugins</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDPluginFileIO</span><span class="p">,</span> <span class="n">DetectorDataLogic</span><span class="p">]:</span>
-    <span class="n">plugins</span> <span class="o">=</span> <span class="n">plugins</span> <span class="ow">or</span> <span class="p">{}</span>
-    <span class="n">description</span> <span class="o">=</span> <span class="n">NDArrayDescription</span><span class="p">(</span>
-        <span class="n">shape_signals</span><span class="o">=</span><span class="p">[</span><span class="n">driver</span><span class="o">.</span><span class="n">array_size_z</span><span class="p">,</span> <span class="n">driver</span><span class="o">.</span><span class="n">array_size_y</span><span class="p">,</span> <span class="n">driver</span><span class="o">.</span><span class="n">array_size_x</span><span class="p">],</span>
-        <span class="n">data_type_signal</span><span class="o">=</span><span class="n">driver</span><span class="o">.</span><span class="n">data_type</span><span class="p">,</span>
-        <span class="n">color_mode_signal</span><span class="o">=</span><span class="n">driver</span><span class="o">.</span><span class="n">color_mode</span><span class="p">,</span>
+    <span class="n">writer_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">NDPluginFileIOT</span><span class="p">]</span>
+    <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">array_description</span><span class="p">:</span> <span class="p">(</span>
+        <span class="n">NDArrayDescription</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ADBaseIO</span><span class="p">],</span> <span class="n">NDArrayDescription</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="p">)</span>
-    <span class="k">match</span> <span class="n">writer_type</span><span class="p">:</span>
-        <span class="k">case</span> <span class="n">ADWriterType</span><span class="o">.</span><span class="n">HDF</span><span class="p">:</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">NDFileHDF5IO</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">writer_suffix</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;HDF1:&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">data_logic</span> <span class="o">=</span> <span class="n">ADHDFDataLogic</span><span class="p">(</span>
-                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+    <span class="n">data_logic_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
+        <span class="p">[</span><span class="n">NDPluginFileIOT</span><span class="p">,</span> <span class="n">NDArrayDescription</span><span class="p">,</span> <span class="n">ADBaseIO</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDPluginBaseIO</span><span class="p">]],</span>
+        <span class="n">DetectorDataLogic</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">driver</span><span class="p">:</span> <span class="n">ADBaseIO</span><span class="p">,</span>
+        <span class="n">plugins</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDPluginBaseIO</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDPluginFileIOT</span><span class="p">,</span> <span class="n">DetectorDataLogic</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate the writer plugin and build the data logic.</span>
+
+<span class="sd">        :param prefix: EPICS PV prefix for the detector (same as `AreaDetector.prefix`).</span>
+<span class="sd">        :param driver: The detector driver, used to read array shape/type metadata.</span>
+<span class="sd">        :param plugins: Additional plugins whose NDAttribute XML files should be</span>
+<span class="sd">            included in HDF5 metadata.</span>
+<span class="sd">        :return: ``(writer, data_logic)`` tuple ready to attach to the detector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">writer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer_cls</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer_suffix</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">array_description</span><span class="p">):</span>
+            <span class="n">array_description</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array_description</span><span class="p">(</span><span class="n">driver</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">array_description</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">array_description</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">array_description</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">array_description</span> <span class="o">=</span> <span class="n">NDArrayDescription</span><span class="p">(</span>
+                <span class="n">shape_signals</span><span class="o">=</span><span class="p">[</span>
+                    <span class="n">driver</span><span class="o">.</span><span class="n">array_size_z</span><span class="p">,</span>
+                    <span class="n">driver</span><span class="o">.</span><span class="n">array_size_y</span><span class="p">,</span>
+                    <span class="n">driver</span><span class="o">.</span><span class="n">array_size_x</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">data_type_signal</span><span class="o">=</span><span class="n">driver</span><span class="o">.</span><span class="n">data_type</span><span class="p">,</span>
+                <span class="n">color_mode_signal</span><span class="o">=</span><span class="n">driver</span><span class="o">.</span><span class="n">color_mode</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">data_logic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_logic_factory</span><span class="p">(</span><span class="n">writer</span><span class="p">,</span> <span class="n">array_description</span><span class="p">,</span> <span class="n">driver</span><span class="p">,</span> <span class="n">plugins</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">writer</span><span class="p">,</span> <span class="n">data_logic</span>
+
+<div class="viewcode-block" id="ADWriterFactory.hdf">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterFactory.hdf">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hdf</span><span class="p">(</span>
+        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
+        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;HDF1:&quot;</span><span class="p">,</span>
+        <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;hdf&quot;</span><span class="p">,</span>
+        <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
+        <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ADBaseIO</span><span class="p">],</span> <span class="n">NDArrayDescription</span><span class="p">]</span>
+        <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ADWriterFactory[NDFileHDF5IO]&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a factory for an HDF5 file writer.</span>
+
+<span class="sd">        :param path_provider: Provides file path information for each acquisition.</span>
+<span class="sd">        :param writer_suffix: PV suffix for the NDFileHDF5 plugin, defaults to</span>
+<span class="sd">            ``HDF1:``.</span>
+<span class="sd">        :param writer_name:</span>
+<span class="sd">            Attribute name for the writer on the detector, defaults to</span>
+<span class="sd">            ``&quot;hdf&quot;``.</span>
+<span class="sd">        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``&quot;&quot;``.</span>
+<span class="sd">        :param array_description:</span>
+<span class="sd">            Override the array shape/type description built from the driver.</span>
+<span class="sd">            Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``</span>
+<span class="sd">            when the shape/type comes from a plugin rather than the main driver</span>
+<span class="sd">            (e.g. an ROI plugin).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ADWriterFactory</span><span class="p">(</span>
+            <span class="n">writer_cls</span><span class="o">=</span><span class="n">NDFileHDF5IO</span><span class="p">,</span>
+            <span class="n">writer_suffix</span><span class="o">=</span><span class="n">writer_suffix</span><span class="p">,</span>
+            <span class="n">writer_name</span><span class="o">=</span><span class="n">writer_name</span><span class="p">,</span>
+            <span class="n">datakey_suffix</span><span class="o">=</span><span class="n">datakey_suffix</span><span class="p">,</span>
+            <span class="n">array_description</span><span class="o">=</span><span class="n">array_description</span><span class="p">,</span>
+            <span class="n">data_logic_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">writer</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">driver</span><span class="p">,</span> <span class="n">plugins</span><span class="p">:</span> <span class="n">ADHDFDataLogic</span><span class="p">(</span>
+                <span class="n">array_description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span>
                 <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
                 <span class="n">driver</span><span class="o">=</span><span class="n">driver</span><span class="p">,</span>
                 <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
-                <span class="n">plugins</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">plugins</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
-            <span class="p">)</span>
-        <span class="k">case</span> <span class="n">ADWriterType</span><span class="o">.</span><span class="n">JPEG</span><span class="p">:</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">NDPluginFileIO</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">writer_suffix</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;JPEG1:&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">data_logic</span> <span class="o">=</span> <span class="n">ADMultipartDataLogic</span><span class="p">(</span>
-                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
-                <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
-                <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
-                <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.jpg&quot;</span><span class="p">,</span>
-                <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;multipart/related;type=image/jpeg&quot;</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">case</span> <span class="n">ADWriterType</span><span class="o">.</span><span class="n">TIFF</span><span class="p">:</span>
-            <span class="n">writer</span> <span class="o">=</span> <span class="n">NDPluginFileIO</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">writer_suffix</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;TIFF1:&#39;</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">data_logic</span> <span class="o">=</span> <span class="n">ADMultipartDataLogic</span><span class="p">(</span>
-                <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
-                <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
-                <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
-                <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.tiff&quot;</span><span class="p">,</span>
-                <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;multipart/related;type=image/tiff&quot;</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Not implemented&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">writer</span><span class="p">,</span> <span class="n">data_logic</span>
+                <span class="n">plugins</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">plugins</span><span class="p">),</span>
+                <span class="n">datakey_suffix</span><span class="o">=</span><span class="n">datakey_suffix</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ADWriterFactory.jpeg">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterFactory.jpeg">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">jpeg</span><span class="p">(</span>
+        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
+        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;JPEG1:&quot;</span><span class="p">,</span>
+        <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span>
+        <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
+        <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ADBaseIO</span><span class="p">],</span> <span class="n">NDArrayDescription</span><span class="p">]</span>
+        <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ADWriterFactory[NDPluginFileIO]&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a factory for a JPEG file writer.</span>
+
+<span class="sd">        :param path_provider: Provides file path information for each acquisition.</span>
+<span class="sd">        :param writer_suffix: PV suffix for the NDPluginFile plugin, defaults to</span>
+<span class="sd">            ``JPEG1:``.</span>
+<span class="sd">        :param writer_name:</span>
+<span class="sd">            Attribute name for the writer on the detector, defaults to</span>
+<span class="sd">            ``&quot;jpeg&quot;``.</span>
+<span class="sd">        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``&quot;&quot;``.</span>
+<span class="sd">        :param array_description:</span>
+<span class="sd">            Override the array shape/type description built from the driver.</span>
+<span class="sd">            Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``</span>
+<span class="sd">            when the shape/type comes from a plugin.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ADWriterFactory</span><span class="p">(</span>
+            <span class="n">writer_cls</span><span class="o">=</span><span class="n">NDPluginFileIO</span><span class="p">,</span>
+            <span class="n">writer_suffix</span><span class="o">=</span><span class="n">writer_suffix</span><span class="p">,</span>
+            <span class="n">writer_name</span><span class="o">=</span><span class="n">writer_name</span><span class="p">,</span>
+            <span class="n">datakey_suffix</span><span class="o">=</span><span class="n">datakey_suffix</span><span class="p">,</span>
+            <span class="n">array_description</span><span class="o">=</span><span class="n">array_description</span><span class="p">,</span>
+            <span class="n">data_logic_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">writer</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">driver</span><span class="p">,</span> <span class="n">plugins</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">ADMultipartDataLogic</span><span class="p">(</span>
+                    <span class="n">array_description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span>
+                    <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
+                    <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
+                    <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.jpg&quot;</span><span class="p">,</span>
+                    <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;multipart/related;type=image/jpeg&quot;</span><span class="p">,</span>
+                    <span class="n">datakey_suffix</span><span class="o">=</span><span class="n">datakey_suffix</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ADWriterFactory.tiff">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADWriterFactory.tiff">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tiff</span><span class="p">(</span>
+        <span class="n">path_provider</span><span class="p">:</span> <span class="n">PathProvider</span><span class="p">,</span>
+        <span class="n">writer_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;TIFF1:&quot;</span><span class="p">,</span>
+        <span class="n">writer_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tiff&quot;</span><span class="p">,</span>
+        <span class="n">datakey_suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">array_description</span><span class="p">:</span> <span class="n">NDArrayDescription</span>
+        <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ADBaseIO</span><span class="p">],</span> <span class="n">NDArrayDescription</span><span class="p">]</span>
+        <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ADWriterFactory[NDPluginFileIO]&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a factory for a TIFF file writer.</span>
+
+<span class="sd">        :param path_provider: Provides file path information for each acquisition.</span>
+<span class="sd">        :param writer_suffix: PV suffix for the NDPluginFile plugin, defaults to</span>
+<span class="sd">            ``TIFF1:``.</span>
+<span class="sd">        :param writer_name:</span>
+<span class="sd">            Attribute name for the writer on the detector, defaults to</span>
+<span class="sd">            ``&quot;tiff&quot;``.</span>
+<span class="sd">        :param datakey_suffix: Suffix appended to the datakey name, defaults to ``&quot;&quot;``.</span>
+<span class="sd">        :param array_description:</span>
+<span class="sd">            Override the array shape/type description built from the driver.</span>
+<span class="sd">            Pass an `NDArrayDescription` or a callable ``(driver) → NDArrayDescription``</span>
+<span class="sd">            when the shape/type comes from a plugin.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ADWriterFactory</span><span class="p">(</span>
+            <span class="n">writer_cls</span><span class="o">=</span><span class="n">NDPluginFileIO</span><span class="p">,</span>
+            <span class="n">writer_suffix</span><span class="o">=</span><span class="n">writer_suffix</span><span class="p">,</span>
+            <span class="n">writer_name</span><span class="o">=</span><span class="n">writer_name</span><span class="p">,</span>
+            <span class="n">datakey_suffix</span><span class="o">=</span><span class="n">datakey_suffix</span><span class="p">,</span>
+            <span class="n">array_description</span><span class="o">=</span><span class="n">array_description</span><span class="p">,</span>
+            <span class="n">data_logic_factory</span><span class="o">=</span><span class="k">lambda</span> <span class="n">writer</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">driver</span><span class="p">,</span> <span class="n">plugins</span><span class="p">:</span> <span class="p">(</span>
+                <span class="n">ADMultipartDataLogic</span><span class="p">(</span>
+                    <span class="n">array_description</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span>
+                    <span class="n">path_provider</span><span class="o">=</span><span class="n">path_provider</span><span class="p">,</span>
+                    <span class="n">writer</span><span class="o">=</span><span class="n">writer</span><span class="p">,</span>
+                    <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.tiff&quot;</span><span class="p">,</span>
+                    <span class="n">mimetype</span><span class="o">=</span><span class="s2">&quot;multipart/related;type=image/tiff&quot;</span><span class="p">,</span>
+                    <span class="n">datakey_suffix</span><span class="o">=</span><span class="n">datakey_suffix</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">)</span></div>
+</div>
+
 </pre></div>
 
                 </article>

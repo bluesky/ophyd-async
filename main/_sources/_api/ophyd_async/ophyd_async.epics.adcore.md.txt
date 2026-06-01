@@ -115,8 +115,8 @@
   - ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic
     :summary:
     ```
-* - {py:obj}`ADWriterType <ophyd_async.epics.adcore._data_logic.ADWriterType>`
-  - ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterType
+* - {py:obj}`ADWriterFactory <ophyd_async.epics.adcore._data_logic.ADWriterFactory>`
+  - ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory
     :summary:
     ```
 * - {py:obj}`AreaDetector <ophyd_async.epics.adcore._detector.AreaDetector>`
@@ -2009,13 +2009,13 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADHDFDataLogic
 ```
 
-````{py:attribute} description
-:canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.description
+````{py:attribute} array_description
+:canonical: ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.array_description
 :type: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.description
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADHDFDataLogic.array_description
 ```
 
 ````
@@ -2110,13 +2110,13 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 ```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic
 ```
 
-````{py:attribute} description
-:canonical: ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.description
+````{py:attribute} array_description
+:canonical: ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.array_description
 :type: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.description
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADMultipartDataLogic.array_description
 ```
 
 ````
@@ -2203,47 +2203,110 @@ Bases: {py:obj}`ophyd_async.core.DetectorDataLogic`
 
 `````
 
-`````{py:class} ADWriterType(*args, **kwds)
-:canonical: ophyd_async.epics.adcore._data_logic.ADWriterType
+`````{py:class} ADWriterFactory
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory
 
-Bases: {py:obj}`enum.Enum`
+Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._io.NDPluginFileIOT`\]
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterType
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory
 ```
 
-````{py:attribute} HDF
-:canonical: ophyd_async.epics.adcore._data_logic.ADWriterType.HDF
+````{py:attribute} writer_cls
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.writer_cls
+:type: type[~ophyd_async.epics.adcore._io.NDPluginFileIOT]
 :value: >
-   'HDF'
+   None
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterType.HDF
-```
-
-````
-
-````{py:attribute} JPEG
-:canonical: ophyd_async.epics.adcore._data_logic.ADWriterType.JPEG
-:value: >
-   'JPEG'
-
-```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterType.JPEG
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory.writer_cls
 ```
 
 ````
 
-````{py:attribute} TIFF
-:canonical: ophyd_async.epics.adcore._data_logic.ADWriterType.TIFF
+````{py:attribute} writer_suffix
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.writer_suffix
+:type: str
 :value: >
-   'TIFF'
+   None
 
-```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterType.TIFF
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory.writer_suffix
+```
+
+````
+
+````{py:attribute} writer_name
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.writer_name
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory.writer_name
+```
+
+````
+
+````{py:attribute} datakey_suffix
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.datakey_suffix
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory.datakey_suffix
+```
+
+````
+
+````{py:attribute} array_description
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.array_description
+:type: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory.array_description
+```
+
+````
+
+````{py:attribute} data_logic_factory
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.data_logic_factory
+:type: ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.NDPluginFileIOT, ~ophyd_async.epics.adcore._data_logic.NDArrayDescription, ~ophyd_async.epics.adcore._io.ADBaseIO, ~collections.abc.Sequence[~ophyd_async.epics.adcore._io.NDPluginBaseIO]], ~ophyd_async.core.DetectorDataLogic]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory.data_logic_factory
+```
+
+````
+
+````{py:method} hdf(path_provider: ~ophyd_async.core.PathProvider, writer_suffix: str = 'HDF1:', writer_name: str = 'hdf', datakey_suffix: str = '', array_description: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None = None) -> ADWriterFactory[NDFileHDF5IO]
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.hdf
+:staticmethod:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory.hdf
+```
+
+````
+
+````{py:method} jpeg(path_provider: ~ophyd_async.core.PathProvider, writer_suffix: str = 'JPEG1:', writer_name: str = 'jpeg', datakey_suffix: str = '', array_description: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None = None) -> ADWriterFactory[NDPluginFileIO]
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.jpeg
+:staticmethod:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory.jpeg
+```
+
+````
+
+````{py:method} tiff(path_provider: ~ophyd_async.core.PathProvider, writer_suffix: str = 'TIFF1:', writer_name: str = 'tiff', datakey_suffix: str = '', array_description: ~ophyd_async.epics.adcore._data_logic.NDArrayDescription | ~collections.abc.Callable[[~ophyd_async.epics.adcore._io.ADBaseIO], ~ophyd_async.epics.adcore._data_logic.NDArrayDescription] | None = None) -> ADWriterFactory[NDPluginFileIO]
+:canonical: ophyd_async.epics.adcore._data_logic.ADWriterFactory.tiff
+:staticmethod:
+
+```{autodoc2-docstring} ophyd_async.epics.adcore._data_logic.ADWriterFactory.tiff
 ```
 
 ````
 
 `````
 
-`````{py:class} AreaDetector(driver: ~ophyd_async.epics.adcore._io.ADBaseIOT, acquire_logic: ~ophyd_async.core.DetectorAcquireLogic | None = None, trigger_logic: ~ophyd_async.core.DetectorTriggerLogic | None = None, path_provider: ~ophyd_async.core.PathProvider | None = None, writer_type: ~ophyd_async.epics.adcore._data_logic.ADWriterType | None = ADWriterType.HDF, prefix: str = '', writer_suffix: str | None = None, plugins: ~collections.abc.Mapping[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+`````{py:class} AreaDetector(driver: ~ophyd_async.epics.adcore._io.ADBaseIOT, prefix: str | None = None, *writer_factories: ~ophyd_async.epics.adcore._data_logic.ADWriterFactory, acquire_logic: ~ophyd_async.core.DetectorAcquireLogic | None = None, trigger_logic: ~ophyd_async.core.DetectorTriggerLogic | None = None, plugins: ~collections.abc.Mapping[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
 :canonical: ophyd_async.epics.adcore._detector.AreaDetector
 
 Bases: {py:obj}`ophyd_async.core.StandardDetector`, {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.epics.adcore._io.ADBaseIOT`\]
@@ -2261,7 +2324,7 @@ Bases: {py:obj}`ophyd_async.core.StandardDetector`, {py:obj}`typing.Generic`\[{p
 
 `````
 
-````{py:class} ContAcqDetector(prefix: str, path_provider: ~ophyd_async.core.PathProvider | None = None, driver_suffix='cam1:', cb_suffix='CB1:', writer_type: ~ophyd_async.epics.adcore._data_logic.ADWriterType | None = ADWriterType.HDF, writer_suffix: str | None = None, plugins: dict[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
+````{py:class} ContAcqDetector(prefix: str, *writer_factories: ~ophyd_async.epics.adcore._data_logic.ADWriterFactory, driver_suffix='cam1:', cb_suffix='CB1:', plugins: dict[str, ~ophyd_async.epics.adcore._io.NDPluginBaseIO] | None = None, config_sigs: ~collections.abc.Sequence[~ophyd_async.core.SignalR] = (), name: str = '')
 :canonical: ophyd_async.epics.adcore._detector.ContAcqDetector
 
 Bases: {py:obj}`ophyd_async.epics.adcore._detector.AreaDetector`\[{py:obj}`ophyd_async.epics.adcore._io.ADBaseIO`\]
