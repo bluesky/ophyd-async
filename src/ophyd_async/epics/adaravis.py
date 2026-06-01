@@ -10,7 +10,6 @@ from typing import Annotated as A
 from ophyd_async.core import (
     DetectorTriggerLogic,
     OnOff,
-    PathProvider,
     SignalDict,
     SignalR,
     SignalRW,
@@ -20,7 +19,7 @@ from ophyd_async.core import (
 from .adcore import (
     ADAcquireLogic,
     ADBaseIO,
-    ADWriterType,
+    ADWriterFactory,
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
@@ -91,13 +90,11 @@ class AravisDetector(AreaDetector[AravisDriverIO]):
     """Create an ADAravis AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector
-    :param path_provider: Provider for file paths during acquisition
+    :param writer_factories: Factories for file writer plugins and their data logics
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
     :param override_deadtime:
         If provided, this value is used for deadtime instead of looking up
         based on camera model.
-    :param writer_type: Type of file writer (HDF or TIFF)
-    :param writer_suffix: Suffix for the writer PV
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
@@ -106,24 +103,20 @@ class AravisDetector(AreaDetector[AravisDriverIO]):
     def __init__(
         self,
         prefix: str,
-        path_provider: PathProvider | None = None,
+        *writer_factories: ADWriterFactory,
         driver_suffix="cam1:",
         override_deadtime: float | None = None,
-        writer_type: ADWriterType | None = ADWriterType.HDF,
-        writer_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = AravisDriverIO(prefix + driver_suffix)
         super().__init__(
-            prefix=prefix,
-            driver=driver,
+            driver,
+            prefix,
+            *writer_factories,
             acquire_logic=ADAcquireLogic(driver),
             trigger_logic=AravisTriggerLogic(driver, override_deadtime),
-            path_provider=path_provider,
-            writer_type=writer_type,
-            writer_suffix=writer_suffix,
             plugins=plugins,
             config_sigs=config_sigs,
             name=name,

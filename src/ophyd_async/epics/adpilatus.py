@@ -10,7 +10,6 @@ from typing import Annotated as A
 
 from ophyd_async.core import (
     DetectorTriggerLogic,
-    PathProvider,
     SignalDict,
     SignalR,
     SignalRW,
@@ -20,7 +19,7 @@ from ophyd_async.core import (
 from .adcore import (
     ADAcquireLogic,
     ADBaseIO,
-    ADWriterType,
+    ADWriterFactory,
     AreaDetector,
     NDPluginBaseIO,
     prepare_exposures,
@@ -98,11 +97,9 @@ class PilatusDetector(AreaDetector[PilatusDriverIO]):
     """Create an ADPilatus AreaDetector instance.
 
     :param prefix: EPICS PV prefix for the detector
-    :param path_provider: Provider for file paths during acquisition
+    :param writer_factories: Factories for file writer plugins and their data logics
     :param readout_time: Readout time for the specific Pilatus model
     :param driver_suffix: Suffix for the driver PV, defaults to "cam1:"
-    :param writer_type: Type of file writer (HDF or TIFF)
-    :param writer_suffix: Suffix for the writer PV
     :param plugins: Additional areaDetector plugins to include
     :param config_sigs: Additional signals to include in configuration
     :param name: Name for the detector device
@@ -111,24 +108,20 @@ class PilatusDetector(AreaDetector[PilatusDriverIO]):
     def __init__(
         self,
         prefix: str,
-        path_provider: PathProvider | None = None,
+        *writer_factories: ADWriterFactory,
         readout_time: PilatusReadoutTime = PilatusReadoutTime.PILATUS3,
         driver_suffix="cam1:",
-        writer_type: ADWriterType | None = ADWriterType.HDF,
-        writer_suffix: str | None = None,
         plugins: dict[str, NDPluginBaseIO] | None = None,
         config_sigs: Sequence[SignalR] = (),
         name: str = "",
     ) -> None:
         driver = PilatusDriverIO(prefix + driver_suffix)
         super().__init__(
-            prefix=prefix,
-            driver=driver,
+            driver,
+            prefix,
+            *writer_factories,
             acquire_logic=ADAcquireLogic(driver, driver_armed_signal=driver.armed),
             trigger_logic=PilatusTriggerLogic(driver, readout_time),
-            path_provider=path_provider,
-            writer_type=writer_type,
-            writer_suffix=writer_suffix,
             plugins=plugins,
             config_sigs=config_sigs,
             name=name,
