@@ -88,12 +88,8 @@ async def test_get_ndarray_resource_info_undefined_datatype(
             adcore.ADWriterFactory.hdf(static_path_provider),
             name="det",
         )
-    set_mock_value(det.driver.array_size_x, 10)
-    set_mock_value(det.driver.array_size_y, 10)
     set_mock_value(det.driver.data_type, adcore.ADBaseDataType.UNDEFINED)
-    set_mock_value(det.driver.color_mode, adcore.ADBaseColorMode.MONO)
     set_mock_value(det.get_plugin("hdf", adcore.NDFileHDF5IO).file_path_exists, True)
-    await det.stage()
     with pytest.raises(
         ValueError,
         match=r"^mock\+ca://PREFIX:DRV:DataType_RBV is blank, this is not supported$",
@@ -111,12 +107,8 @@ async def test_get_ndarray_resource_info_unsupported_color_mode(
             adcore.ADWriterFactory.hdf(static_path_provider),
             name="det",
         )
-    set_mock_value(det.driver.array_size_x, 10)
-    set_mock_value(det.driver.array_size_y, 10)
-    set_mock_value(det.driver.data_type, adcore.ADBaseDataType.UINT8)
     set_mock_value(det.driver.color_mode, adcore.ADBaseColorMode.BAYER)
     set_mock_value(det.get_plugin("hdf", adcore.NDFileHDF5IO).file_path_exists, True)
-    await det.stage()
     with pytest.raises(
         RuntimeError,
         match=r"^Unsupported ColorMode Bayer! Only Mono and RGB1 are supported\.$",
