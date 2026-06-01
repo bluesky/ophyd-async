@@ -979,7 +979,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 ````{py:attribute} total
 :canonical: ophyd_async.epics.adcore._io.NDStatsIO.total
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[float], ophyd_async.epics.core.PvSuffix.rbv('Total')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[float], PvSuffix('Total_RBV')]
 :value: >
    None
 
@@ -1023,7 +1023,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 ````{py:attribute} profile_size_x
 :canonical: ophyd_async.epics.adcore._io.NDStatsIO.profile_size_x
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], ophyd_async.epics.core.PvSuffix.rbv('ProfileSizeX')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('ProfileSizeX_RBV')]
 :value: >
    None
 
@@ -1034,7 +1034,7 @@ Bases: {py:obj}`ophyd_async.epics.adcore._io.NDPluginBaseIO`
 
 ````{py:attribute} profile_size_y
 :canonical: ophyd_async.epics.adcore._io.NDStatsIO.profile_size_y
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], ophyd_async.epics.core.PvSuffix.rbv('ProfileSizeY')]
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('ProfileSizeY_RBV')]
 :value: >
    None
 
