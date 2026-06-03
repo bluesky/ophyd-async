@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 import time
 import typing
 from abc import abstractmethod
-from collections.abc import Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any, Generic, get_args
@@ -29,9 +30,6 @@ from ._utils import Callback, cached_get_origin, get_dtype, get_enum_cls
 
 
 class SoftConverter(Generic[SignalDatatypeT]):
-    # This is Any -> SignalDatatypeT because we support coercing
-    # value types to SignalDatatype to allow people to do things like
-    # SignalRW[Enum].set("enum value")
     @abstractmethod
     def write_value(self, value: Any) -> SignalDatatypeT: ...
 
@@ -114,6 +112,10 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     raise TypeError(f"Can't make converter for {datatype}")
 
 
+Setter = Callable[[Any], SignalDatatypeT | None | Awaitable[SignalDatatypeT | None]]
+Getter = Callable[[], SignalDatatypeT | Awaitable[SignalDatatypeT]]
+
+
 class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     """An backend to a soft Signal, for test signals see [](#MockSignalBackend).
 
@@ -124,6 +126,16 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     :param units: The units for numeric datatypes.
     :param precision:
         The number of digits after the decimal place to display for a float datatype.
+    :param getter:
+        Optional callable returning the current device value, called on
+        get_value/get_reading and periodically if poll_period is set.
+    :param setter:
+        Optional callable performing the set action. May return the settled
+        value; if it returns None and a getter is configured, the getter is
+        called to refresh the cache.
+    :param poll_period:
+        How often (seconds) to call the getter while a subscription is active.
+        Requires getter to be set.
     """
 
     def __init__(
@@ -132,17 +144,50 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         initial_value: SignalDatatypeT | None = None,
         units: str | None = None,
         precision: int | None = None,
+        *,
+        getter: Getter[SignalDatatypeT] | None = None,
+        setter: Setter[SignalDatatypeT] | None = None,
+        poll_period: float | None = None,
     ):
-        # Create the right converter for the datatype
+        if poll_period is not None and getter is None:
+            raise ValueError("poll_period requires a getter to be set")
         self.converter = make_converter(datatype or float)
-        # Add the extra static metadata to the dictionary
         self.metadata = make_metadata(datatype, units, precision)
-        # Create and set the initial value
         self.initial_value = self.converter.write_value(initial_value)
         self.reading: Reading[SignalDatatypeT]
         self.callback: Callback[Reading[SignalDatatypeT]] | None = None
+        self._getter = getter
+        self._setter = setter
+        self._poll_period = poll_period
+        self._poll_task: asyncio.Task | None = None
         self.set_value(self.initial_value)
         super().__init__(datatype)
+
+    async def _call_getter(self) -> SignalDatatypeT:
+        if self._getter is None:
+            raise RuntimeError("No getter configured")
+        result = self._getter()
+        if isinstance(result, Awaitable):
+            result = await result
+        return self.converter.write_value(result)
+
+    async def _call_setter(self, value: Any) -> SignalDatatypeT | None:
+        if self._setter is None:
+            raise RuntimeError("No setter configured")
+        result = self._setter(value)
+        if isinstance(result, Awaitable):
+            result = await result
+        return result
+
+    async def _poll(self) -> None:
+        if self._poll_period is None:
+            raise RuntimeError("No poll_period configured")
+        while True:
+            await asyncio.sleep(self._poll_period)
+            try:
+                self.set_value(await self._call_getter())
+            except Exception:
+                continue
 
     def set_value(self, value: SignalDatatypeT):
         """Set the current value, alarm and timestamp."""
@@ -160,9 +205,18 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     async def connect(self, timeout: float):
         pass
 
-    async def put(self, value: SignalDatatypeT | None) -> None:
+    async def put(self, value: Any) -> None:
         write_value = self.initial_value if value is None else value
-        self.set_value(write_value)
+        if self._setter is not None:
+            settled = await self._call_setter(write_value)
+            if settled is not None:
+                self.set_value(self.converter.write_value(settled))
+            elif self._getter is not None:
+                self.set_value(await self._call_getter())
+            else:
+                self.set_value(self.converter.write_value(write_value))
+        else:
+            self.set_value(write_value)
 
     async def get_datakey(self, source: str) -> DataKey:
         return make_datakey(
@@ -170,9 +224,13 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         )
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
+        if self._getter is not None:
+            self.set_value(await self._call_getter())
         return self.reading
 
     async def get_value(self) -> SignalDatatypeT:
+        if self._getter is not None:
+            self.set_value(await self._call_getter())
         return self.reading["value"]
 
     async def get_setpoint(self) -> SignalDatatypeT:
@@ -184,4 +242,10 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
             raise RuntimeError("Cannot set a callback when one is already set")
         if callback:
             callback(self.reading)
+            if self._poll_period is not None:
+                self._poll_task = asyncio.get_event_loop().create_task(self._poll())
+        else:
+            if self._poll_task is not None:
+                self._poll_task.cancel()
+                self._poll_task = None
         self.callback = callback
