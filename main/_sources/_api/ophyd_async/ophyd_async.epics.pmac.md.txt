@@ -35,6 +35,10 @@
   - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic
     :summary:
     ```
+* - {py:obj}`PmacScanInfo <ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo>`
+  - ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo
+    :summary:
+    ```
 ````
 
 ### API
@@ -87,7 +91,7 @@ Bases: {py:obj}`ophyd_async.core.Device`, {py:obj}`bluesky.protocols.Stageable`,
 ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic
 ```
 
-````{py:method} prepare(value: ~scanspec.specs.Spec[~ophyd_async.epics.motor.Motor])
+````{py:method} prepare(value: ~ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo)
 :canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.prepare
 :async:
 
@@ -128,6 +132,47 @@ Bases: {py:obj}`ophyd_async.core.Device`, {py:obj}`bluesky.protocols.Stageable`,
 :async:
 
 ```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacTrajectoryTriggerLogic.unstage
+```
+
+````
+
+`````
+
+`````{py:class} PmacScanInfo
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo
+```
+
+````{py:attribute} spec
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo.spec
+:type: ~scanspec.specs.Spec[~ophyd_async.epics.motor.Motor]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo.spec
+```
+
+````
+
+````{py:attribute} ramp_time
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo.ramp_time
+:type: float | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo.ramp_time
+```
+
+````
+
+````{py:attribute} turnaround_time
+:canonical: ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo.turnaround_time
+:type: float | None
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.epics.pmac._pmac_trajectory.PmacScanInfo.turnaround_time
 ```
 
 ````

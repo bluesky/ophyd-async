@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.pmac._pmac_trajectory &#8212; ophyd-async 0.17a6.dev3+g1e07267fb documentation</title>
+    <title>ophyd_async.epics.pmac._pmac_trajectory &#8212; ophyd-async 0.17a7.dev1+gfab63a8a8 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=98582b4a"></script>
+    <script src="../../../../_static/documentation_options.js?v=b9881f17"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a6.dev3+g1e07267fb documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a6.dev3+g1e07267fb documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
   
   
 </a></div>
@@ -951,6 +951,16 @@ window.runMermaid = runMermaid;</script>
     <span class="n">ramp_up_time</span><span class="p">:</span> <span class="nb">float</span>
 
 
+<div class="viewcode-block" id="PmacScanInfo">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacScanInfo">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PmacScanInfo</span><span class="p">:</span>
+    <span class="n">spec</span><span class="p">:</span> <span class="n">Spec</span><span class="p">[</span><span class="n">Motor</span><span class="p">]</span>
+    <span class="n">ramp_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">turnaround_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span></div>
+
+
+
 <div class="viewcode-block" id="PmacTrajectoryTriggerLogic">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PmacTrajectoryTriggerLogic</span><span class="p">(</span>
@@ -970,14 +980,16 @@ window.runMermaid = runMermaid;</script>
 <div class="viewcode-block" id="PmacTrajectoryTriggerLogic.prepare">
 <a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.epics.pmac.html#ophyd_async.epics.pmac.PmacTrajectoryTriggerLogic.prepare">[docs]</a>
     <span class="nd">@AsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Spec</span><span class="p">[</span><span class="n">Motor</span><span class="p">]):</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">calculate</span><span class="p">())</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">PmacScanInfo</span><span class="p">):</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">spec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_turnaround_time</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">turnaround_time</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">calculate</span><span class="p">())</span>
         <span class="nb">slice</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">consume</span><span class="p">(</span><span class="n">SLICE_SIZE</span><span class="p">)</span>
         <span class="n">path_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">motors</span> <span class="o">=</span> <span class="nb">slice</span><span class="o">.</span><span class="n">axes</span><span class="p">()</span>
         <span class="n">motor_info</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_PmacMotorInfo</span><span class="o">.</span><span class="n">from_motors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pmac_ref</span><span class="p">(),</span> <span class="n">motors</span><span class="p">)</span>
         <span class="n">ramp_up_pos</span><span class="p">,</span> <span class="n">ramp_up_time</span> <span class="o">=</span> <span class="n">calculate_ramp_position_and_duration</span><span class="p">(</span>
-            <span class="nb">slice</span><span class="p">,</span> <span class="n">motor_info</span><span class="p">,</span> <span class="kc">True</span>
+            <span class="nb">slice</span><span class="p">,</span> <span class="n">motor_info</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">ramp_time</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_context</span> <span class="o">=</span> <span class="n">PmacPrepareContext</span><span class="p">(</span>
             <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">motor_info</span><span class="o">=</span><span class="n">motor_info</span><span class="p">,</span> <span class="n">ramp_up_time</span><span class="o">=</span><span class="n">ramp_up_time</span>
@@ -1079,7 +1091,7 @@ window.runMermaid = runMermaid;</script>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_append_trajectory</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="nb">slice</span><span class="p">:</span> <span class="n">Slice</span><span class="p">,</span> <span class="n">path_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">motor_info</span><span class="p">:</span> <span class="n">_PmacMotorInfo</span>
     <span class="p">):</span>
-        <span class="n">trajectory</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_trajectory</span><span class="p">(</span><span class="nb">slice</span><span class="p">,</span> <span class="n">path_length</span><span class="p">,</span> <span class="n">motor_info</span><span class="p">)</span>
+        <span class="n">trajectory</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_trajectory</span><span class="p">(</span><span class="nb">slice</span><span class="p">,</span> <span class="n">path_length</span><span class="p">,</span> <span class="n">motor_info</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_trajectory_arrays</span><span class="p">(</span><span class="n">trajectory</span><span class="p">,</span> <span class="n">motor_info</span><span class="p">)</span>
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmac_ref</span><span class="p">()</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">append_profile</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
 
@@ -1121,6 +1133,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">motor_info</span><span class="p">,</span>
             <span class="kc">None</span> <span class="k">if</span> <span class="n">ramp_up_time</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_pvt</span><span class="p">,</span>
             <span class="n">ramp_up_time</span><span class="o">=</span><span class="n">ramp_up_time</span><span class="p">,</span>
+            <span class="n">turnaround_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_turnaround_time</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">path_length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
