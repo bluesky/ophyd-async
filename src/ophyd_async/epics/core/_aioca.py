@@ -211,6 +211,10 @@ def make_converter(
         if pv_num_choices != 2:
             raise TypeError(f"{pv} has {pv_num_choices} choices, can't map to bool")
         return CaBoolConverter()
+    elif not is_array and pv_dbr in (dbr.DBR_CHAR, dbr.DBR_SHORT) and datatype is bool:
+        # If we specifically ask for bool and the type is CHAR or SHORT, allow
+        # it as an integer with boolean semantics (0 is False, 1 is True)
+        return CaBoolConverter()
     elif not is_array and pv_dbr == dbr.DBR_ENUM:
         pv_choices = get_unique(
             {k: tuple(v.enums) for k, v in values.items()}, "choices"

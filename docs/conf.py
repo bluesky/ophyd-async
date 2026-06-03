@@ -141,8 +141,6 @@ nitpicky = True
 obj_ignore = [
     "ophyd_async.core._derived_signal_backend.RawT",
     "ophyd_async.core._derived_signal_backend.DerivedT",
-    "ophyd_async.core._detector.DetectorControllerT",
-    "ophyd_async.core._detector.DetectorWriterT",
     "ophyd_async.core._device.DeviceT",
     "ophyd_async.core._device_filler.SignalBackendT",
     "ophyd_async.core._device_filler.DeviceConnectorT",
@@ -156,6 +154,7 @@ obj_ignore = [
     "ophyd_async.core._utils.V",
     "ophyd_async.epics.adcore._io.ADBaseIOT",
     "ophyd_async.epics.adcore._io.NDPluginBaseIOT",
+    "ophyd_async.epics.adcore._io.NDPluginFileIOT",
     "ophyd_async.tango.core._base_device.T",
     "ophyd_async.tango.core._tango_transport.P",
     "ophyd_async.tango.core._tango_transport.R",

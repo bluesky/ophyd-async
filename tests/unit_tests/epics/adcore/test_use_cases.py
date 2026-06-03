@@ -3,7 +3,6 @@ from unittest.mock import ANY
 import pytest
 
 from ophyd_async.core import (
-    DetectorDataLogic,
     StaticPathProvider,
     TriggerInfo,
     callback_on_mock_put,
@@ -21,7 +20,9 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
     stat = adcore.NDStatsIO("PREFIX:STATS:")
     async with init_devices(mock=True):
         det = adsimdetector.SimDetector(
-            "PREFIX:", static_path_provider, plugins={"stats": stat}
+            "PREFIX:",
+            adcore.ADWriterFactory.hdf(static_path_provider),
+            plugins={"stats": stat},
         )
         temp = epics_signal_r(float, "SAMP:TEMP:RBV")
     ndattributes = [
@@ -39,7 +40,7 @@ async def test_step_scan_hdf_detector_with_stats_and_temp(
         ),
     ]
     set_mock_value(stat.nd_attributes_file, adcore.ndattributes_to_xml(ndattributes))
-    writer = det.get_plugin("writer", adcore.NDFileHDF5IO)
+    writer = det.get_plugin("hdf", adcore.NDFileHDF5IO)
     set_mock_value(det.driver.acquire_period, 0.1)
     set_mock_value(det.driver.acquire_time, 0.05)
     set_mock_value(det.driver.array_size_x, 1024)
@@ -199,10 +200,10 @@ async def test_step_scan_tiff_detector(
 ):
     async with init_devices(mock=True):
         det = adsimdetector.SimDetector(
-            "PREFIX:", static_path_provider, writer_type=adcore.ADWriterType.TIFF
+            "PREFIX:", adcore.ADWriterFactory.tiff(static_path_provider)
         )
 
-    writer = det.get_plugin("writer", adcore.NDPluginFileIO)
+    writer = det.get_plugin("tiff", adcore.NDPluginFileIO)
     set_mock_value(det.driver.array_size_x, 1024)
     set_mock_value(det.driver.array_size_y, 768)
 
@@ -264,9 +265,11 @@ async def test_step_scan_tiff_detector(
 
 async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider):
     async with init_devices(mock=True):
-        det = adaravis.AravisDetector("PREFIX:", static_path_provider)
+        det = adaravis.AravisDetector(
+            "PREFIX:", adcore.ADWriterFactory.hdf(static_path_provider)
+        )
 
-    writer = det.get_plugin("writer", adcore.NDPluginFileIO)
+    writer = det.get_plugin("hdf", adcore.NDPluginFileIO)
     set_mock_value(det.driver.model, "A funny model")
     set_mock_value(det.driver.acquire_period, 0.1)
     set_mock_value(det.driver.acquire_time, 0.05)
@@ -400,58 +403,54 @@ async def test_flyscan_aravis_detector(static_path_provider: StaticPathProvider)
 
 async def test_2_rois_with_hdf(tmp_path):
     path_provider = StaticPathProvider(
-        lambda device_name=None: str(device_name), tmp_path
+        lambda datakey_name=None: str(datakey_name), tmp_path
     )
-    driver = adcore.ADBaseIO("PREFIX:DRV:")
-    rois: list[adcore.NDROIIO] = []
-    hdfs: list[adcore.NDFileHDF5IO] = []
-    logics: list[DetectorDataLogic] = []
-    for i in range(1, 3):
-        roi = adcore.NDROIIO(f"PREFIX:ROI{i}")
-        hdf = adcore.NDFileHDF5IO(f"PREFIX:HDF{i}")
-        rois.append(roi)
-        hdfs.append(hdf)
-        logics.append(
-            adcore.ADHDFDataLogic(
-                description=adcore.NDArrayDescription(
-                    shape_signals=(roi.size_y, roi.size_x),
+    roi1 = adcore.NDROIIO("PREFIX:ROI1")
+    roi2 = adcore.NDROIIO("PREFIX:ROI2")
+    async with init_devices(mock=True):
+        det = adaravis.AravisDetector(
+            "PREFIX:",
+            adcore.ADWriterFactory.hdf(
+                path_provider,
+                writer_suffix="HDF1:",
+                writer_name="hdf1",
+                datakey_suffix="-roi1",
+                array_description=lambda driver: adcore.NDArrayDescription(
+                    shape_signals=(roi1.size_y, roi1.size_x),
                     data_type_signal=driver.data_type,
                     color_mode_signal=driver.color_mode,
                 ),
-                path_provider=path_provider,
-                driver=driver,
-                writer=hdf,
-                datakey_suffix=f"-roi{i}",
-            )
+            ),
+            adcore.ADWriterFactory.hdf(
+                path_provider,
+                writer_suffix="HDF2:",
+                writer_name="hdf2",
+                datakey_suffix="-roi2",
+                array_description=lambda driver: adcore.NDArrayDescription(
+                    shape_signals=(roi2.size_y, roi2.size_x),
+                    data_type_signal=driver.data_type,
+                    color_mode_signal=driver.color_mode,
+                ),
+            ),
+            plugins={"roi1": roi1, "roi2": roi2},
         )
-    async with init_devices(mock=True):
-        det = adcore.AreaDetector(
-            driver,
-            arm_logic=adcore.ADArmLogic(driver),
-            writer_type=None,
-            plugins={
-                "hdf1": hdfs[0],
-                "hdf2": hdfs[1],
-                "roi1": rois[0],
-                "roi2": rois[1],
-            },
-        )
-        det.add_detector_logics(*logics)
+    hdf1 = det.get_plugin("hdf1", adcore.NDFileHDF5IO)
+    hdf2 = det.get_plugin("hdf2", adcore.NDFileHDF5IO)
     await det.stage()
 
     # When arm is pressed, then make a single frame on each HDF
     def publish_captured(v):
-        for hdf in hdfs:
-            set_mock_value(hdf.num_captured, 1)
+        set_mock_value(hdf1.num_captured, 1)
+        set_mock_value(hdf2.num_captured, 1)
 
     callback_on_mock_put(det.driver.acquire, publish_captured)
     # Setup the size of the rois and say the directory exists
-    set_mock_value(rois[0].size_x, 400)
-    set_mock_value(rois[0].size_y, 300)
-    set_mock_value(rois[1].size_x, 200)
-    set_mock_value(rois[1].size_y, 100)
-    set_mock_value(hdfs[0].file_path_exists, True)
-    set_mock_value(hdfs[1].file_path_exists, True)
+    set_mock_value(roi1.size_x, 400)
+    set_mock_value(roi1.size_y, 300)
+    set_mock_value(roi2.size_x, 200)
+    set_mock_value(roi2.size_y, 100)
+    set_mock_value(hdf1.file_path_exists, True)
+    set_mock_value(hdf2.file_path_exists, True)
     # Trigger a single frame then describe and read
     await det.trigger()
     description = await det.describe()
@@ -533,9 +532,7 @@ async def test_2_rois_with_hdf(tmp_path):
 async def test_simdetector_with_stats_signal():
     stat = adcore.NDStatsIO("PREFIX:STAT:")
     async with init_devices(mock=True):
-        det = adsimdetector.SimDetector(
-            "PREFIX:", writer_type=None, plugins={"stats": stat}
-        )
+        det = adsimdetector.SimDetector("PREFIX:", plugins={"stats": stat})
         det.add_detector_logics(adcore.PluginSignalDataLogic(det.driver, stat.total))
     set_mock_value(stat.total, 1.8)
     await det.stage()
@@ -563,7 +560,9 @@ async def test_step_scan_keep_numimages(
     stat = adcore.NDStatsIO("PREFIX:STATS:")
     async with init_devices(mock=True):
         det = adsimdetector.SimDetector(
-            "PREFIX:", static_path_provider, plugins={"stats": stat}
+            "PREFIX:",
+            adcore.ADWriterFactory.hdf(static_path_provider),
+            plugins={"stats": stat},
         )
 
     set_mock_value(det.driver.acquire_period, 0.1)
@@ -572,9 +571,7 @@ async def test_step_scan_keep_numimages(
     set_mock_value(det.driver.array_size_y, 768)
     await det.driver.num_images.set(42)
     assert await det.driver.num_images.get_value() == 42
-    writer = det.get_plugin("writer", adcore.NDFileHDF5IO)
-    await det.stage()
-    assert await det.driver.wait_for_plugins.get_value() is False
+    writer = det.get_plugin("hdf", adcore.NDFileHDF5IO)
     await assert_configuration(
         det,
         {
