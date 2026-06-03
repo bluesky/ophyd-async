@@ -248,7 +248,11 @@ async def test_soft_signal_backend_getter_does_not_affect_setpoint():
 
 async def test_soft_signal_backend_setter_homogeneous_types():
     store = [0.0]
-    backend = SoftSignalBackend(float, setter=lambda v: store.__setitem__(0, v))
+
+    def setter(v):
+        store[0] = v
+
+    backend = SoftSignalBackend(float, setter=setter)
     await backend.connect(timeout=1)
     await backend.put(7.0)
     assert store[0] == 7.0

@@ -163,21 +163,13 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         self.set_value(self.initial_value)
         super().__init__(datatype)
 
-    async def _call_getter(self) -> SignalDatatypeT:
+    async def _update_value_from_getter(self) -> SignalDatatypeT | None:
         if self._getter is None:
-            raise RuntimeError("No getter configured")
+            return
         result = self._getter()
         if isinstance(result, Awaitable):
             result = await result
-        return self.converter.write_value(result)
-
-    async def _call_setter(self, value: Any) -> SignalDatatypeT | None:
-        if self._setter is None:
-            raise RuntimeError("No setter configured")
-        result = self._setter(value)
-        if isinstance(result, Awaitable):
-            result = await result
-        return result
+        self.set_value(result)
 
     async def _poll(self) -> None:
         if self._poll_period is None:
@@ -185,7 +177,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         while True:
             await asyncio.sleep(self._poll_period)
             try:
-                self.set_value(await self._call_getter())
+                await self._update_value_from_getter()
             except Exception:
                 continue
 
@@ -208,13 +200,16 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     async def put(self, value: Any) -> None:
         write_value = self.initial_value if value is None else value
         if self._setter is not None:
-            settled = await self._call_setter(write_value)
+            result = self._setter(value)
+            if isinstance(result, Awaitable):
+                result = await result
+            settled = result
             if settled is not None:
-                self.set_value(self.converter.write_value(settled))
+                self.set_value(settled)
             elif self._getter is not None:
-                self.set_value(await self._call_getter())
+                await self._update_value_from_getter()
             else:
-                self.set_value(self.converter.write_value(write_value))
+                self.set_value(write_value)
         else:
             self.set_value(write_value)
 
@@ -225,12 +220,12 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
 
     async def get_reading(self) -> Reading[SignalDatatypeT]:
         if self._getter is not None:
-            self.set_value(await self._call_getter())
+            await self._update_value_from_getter()
         return self.reading
 
     async def get_value(self) -> SignalDatatypeT:
         if self._getter is not None:
-            self.set_value(await self._call_getter())
+            await self._update_value_from_getter()
         return self.reading["value"]
 
     async def get_setpoint(self) -> SignalDatatypeT:
@@ -243,7 +238,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         if callback:
             callback(self.reading)
             if self._poll_period is not None:
-                self._poll_task = asyncio.get_event_loop().create_task(self._poll())
+                self._poll_task = asyncio.create_task(self._poll())
         else:
             if self._poll_task is not None:
                 self._poll_task.cancel()
