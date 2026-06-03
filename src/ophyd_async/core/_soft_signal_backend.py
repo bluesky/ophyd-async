@@ -146,7 +146,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         precision: int | None = None,
         *,
         getter: Getter[SignalDatatypeT] | None = None,
-        setter: Setter[SignalDatatypeT] | None = None,
+        setter: Setter[Any] | None = None,
         poll_period: float | None = None,
     ):
         if poll_period is not None and getter is None:
