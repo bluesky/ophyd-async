@@ -112,6 +112,7 @@ class Trajectory:
         motor_info: _PmacMotorInfo,
         entry_pvt: PVT | None = None,
         ramp_up_time: float | None = None,
+        turnaround_time: float | None = None,
     ) -> tuple[Trajectory, PVT]:
         """Parse a trajectory from a slice.
 
@@ -196,6 +197,7 @@ class Trajectory:
             kwargs = {}
             if gap == 0 and ramp_up_time:
                 kwargs["ramp_up_time"] = ramp_up_time
+            kwargs["turnaround_time"] = turnaround_time
             sub_traj_funcs.append(
                 partial(
                     Trajectory.from_gap,
@@ -383,6 +385,7 @@ class Trajectory:
         slice: Slice,
         entry_pvt: PVT,
         ramp_up_time: float | None = None,
+        turnaround_time: float | None = None,
     ) -> tuple[Trajectory, PVT]:
         """Parse a trajectory from a gap.
 
@@ -470,6 +473,7 @@ class Trajectory:
             entry_velocities,
             exit_velocities,
             distances,
+            turnaround_time,
         )
 
         # Calculate gap PVTs
@@ -531,6 +535,7 @@ def _get_velocity_profile(
     start_velocities: dict[Motor, np.float64],
     end_velocities: dict[Motor, np.float64],
     distances: dict[Motor, float],
+    turnaround_time: float | None = None,
 ) -> tuple[dict[Motor, npt.NDArray[np.float64]], dict[Motor, npt.NDArray[np.float64]]]:
     """Generate time and velocity profiles for motors across a gap.
 
@@ -560,7 +565,11 @@ def _get_velocity_profile(
     time_arrays = {}
     velocity_arrays = {}
 
-    min_time = MIN_TURNAROUND
+    min_time = (
+        MIN_TURNAROUND
+        if turnaround_time is None
+        else (turnaround_time - 2 * MIN_INTERVAL)
+    )
 
     iterations = 2
 
