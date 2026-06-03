@@ -11,6 +11,7 @@ from typing import Any, Generic, get_args
 
 import numpy as np
 from bluesky.protocols import Reading
+from bluesky.utils import maybe_await
 from event_model import DataKey
 
 from ._datatypes import Table
@@ -166,9 +167,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     async def _update_value_from_getter(self) -> SignalDatatypeT | None:
         if self._getter is None:
             return
-        result = self._getter()
-        if isinstance(result, Awaitable):
-            result = await result
+        result = await maybe_await(self._getter())
         self.set_value(result)
 
     async def _poll(self) -> None:
@@ -200,9 +199,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
     async def put(self, value: Any) -> None:
         write_value = self.initial_value if value is None else value
         if self._setter is not None:
-            result = self._setter(value)
-            if isinstance(result, Awaitable):
-                result = await result
+            result = await maybe_await(self._setter(value))
             settled = result
             if settled is not None:
                 self.set_value(settled)
