@@ -1,5 +1,5 @@
 from ._pmac_io import PmacAxisAssignmentIO, PmacCoordIO, PmacIO, PmacTrajectoryIO
-from ._pmac_trajectory import PmacTrajectoryTriggerLogic
+from ._pmac_trajectory import PmacScanInfo, PmacTrajectoryTriggerLogic
 
 __all__ = [
     "PmacAxisAssignmentIO",
@@ -7,4 +7,5 @@ __all__ = [
     "PmacIO",
     "PmacTrajectoryIO",
     "PmacTrajectoryTriggerLogic",
+    "PmacScanInfo",
 ]

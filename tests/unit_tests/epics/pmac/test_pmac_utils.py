@@ -37,6 +37,40 @@ async def test_calculate_ramp_position_and_duration(
     assert ramp_down_time == 0.1
 
 
+async def test_calculate_configured_ramp_position_and_duration(
+    sim_motors: tuple[PmacIO, Motor, Motor],
+):
+    sim_pmac, sim_x_motor, _ = sim_motors
+    spec = Fly(1.0 @ ~Line(sim_x_motor, 1, 5, 5))
+    slice = Path(spec.calculate()).consume()
+
+    motor_info = await _PmacMotorInfo.from_motors(sim_pmac, [sim_x_motor])
+
+    ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
+        slice, motor_info, True, 1
+    )
+    ramp_down_pos, ramp_down_time = calculate_ramp_position_and_duration(
+        slice, motor_info, False, 1
+    )
+
+    assert ramp_up_pos[sim_x_motor] == 0
+    assert ramp_up_time == 1
+    assert ramp_down_pos[sim_x_motor] == 6
+    assert ramp_down_time == 1
+
+    ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
+        slice, motor_info, True, 2
+    )
+    ramp_down_pos, ramp_down_time = calculate_ramp_position_and_duration(
+        slice, motor_info, False, 2
+    )
+
+    assert ramp_up_pos[sim_x_motor] == -0.5
+    assert ramp_up_time == 2
+    assert ramp_down_pos[sim_x_motor] == 6.5
+    assert ramp_down_time == 2
+
+
 async def test_motor_info_from_cs_motors(sim_cs_motors: tuple[PmacIO, Motor, Motor]):
     pmac, sim_cs_x_motor, sim_cs_y_motor = sim_cs_motors
     motor_info = await _PmacMotorInfo.from_motors(
