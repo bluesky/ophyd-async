@@ -6,8 +6,8 @@ Ophyd async has two styles of creating Devices, Declarative and Procedural. This
 
 The procedural style mirrors how you would create a traditional python class, you define an `__init__` method, add some class members, then call the superclass `__init__` method. In the case of ophyd async those class members are likely to be Signals and other Devices. For example, in the `ophyd_async.sim.SimMotor` we create its soft signal children in an `__init__` method:
 ```{literalinclude} ../../src/ophyd_async/sim/_motor.py
-:start-after: class SimMotor
-:end-before: def set_name
+:start-after: class SimMotor(
+:end-before: self._fly_info
 ```
 It is explicit and obvious, but verbose. It also allows you to embed arbitrary python logic in the creation of signals, so is required for making soft signals and DeviceVectors with contents based on an argument passed to `__init__`. It also allows you to use the [](#StandardReadable.add_children_as_readables) context manager which can save some typing.
 
@@ -27,8 +27,8 @@ It is compact and has the minimum amount of boilerplate, but is limited in its s
 
 There is quite a large segment of Devices that could be written both ways, for instance `ophyd_async.epics.demo.DemoMotor`. This could be written in either style with roughly the same legibility, so is a matter of taste:
 ```{literalinclude} ../../src/ophyd_async/epics/demo/_motor.py
-:start-after: class DemoMotor
-:end-before: def set_name
+:start-after: class DemoMotor(
+:end-before: cached_property
 ```
 
 ## Conclusion

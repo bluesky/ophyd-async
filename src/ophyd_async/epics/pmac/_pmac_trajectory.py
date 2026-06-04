@@ -51,6 +51,13 @@ class PmacPrepareContext:
     ramp_up_time: float
 
 
+@dataclass
+class PmacScanInfo:
+    spec: Spec[Motor]
+    ramp_time: float | None
+    turnaround_time: float | None
+
+
 class PmacTrajectoryTriggerLogic(
     Device,
     Stageable,
@@ -66,14 +73,16 @@ class PmacTrajectoryTriggerLogic(
         super().__init__(name=name)
 
     @AsyncStatus.wrap
-    async def prepare(self, value: Spec[Motor]):
-        path = Path(value.calculate())
+    async def prepare(self, value: PmacScanInfo):
+        spec = value.spec
+        self._turnaround_time = value.turnaround_time
+        path = Path(spec.calculate())
         slice = path.consume(SLICE_SIZE)
         path_length = len(path)
         motors = slice.axes()
         motor_info = await _PmacMotorInfo.from_motors(self.pmac_ref(), motors)
         ramp_up_pos, ramp_up_time = calculate_ramp_position_and_duration(
-            slice, motor_info, True
+            slice, motor_info, True, value.ramp_time
         )
         self._prepare_context = PmacPrepareContext(
             path=path, motor_info=motor_info, ramp_up_time=ramp_up_time
@@ -162,7 +171,7 @@ class PmacTrajectoryTriggerLogic(
     async def _append_trajectory(
         self, slice: Slice, path_length: int, motor_info: _PmacMotorInfo
     ):
-        trajectory = await self._parse_trajectory(slice, path_length, motor_info)
+        trajectory = await self._parse_trajectory(slice, path_length, motor_info, None)
         await self._set_trajectory_arrays(trajectory, motor_info)
         await self.pmac_ref().trajectory.append_profile.trigger()
 
@@ -204,6 +213,7 @@ class PmacTrajectoryTriggerLogic(
             motor_info,
             None if ramp_up_time else self._next_pvt,
             ramp_up_time=ramp_up_time,
+            turnaround_time=self._turnaround_time,
         )
 
         if path_length == 0:

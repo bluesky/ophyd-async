@@ -72,7 +72,7 @@ class EnumSoftConverter(SoftConverter[EnumT]):
     def write_value(self, value: Any) -> EnumT:
         return (
             self.datatype(value)
-            if value
+            if value is not None
             else list(self.datatype.__members__.values())[0]
         )
 

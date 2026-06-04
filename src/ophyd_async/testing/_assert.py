@@ -277,17 +277,18 @@ class StatusWatcher(Watcher[T]):
         time_remaining: float | Any = None,
     ):
         await asyncio.wait_for(self._event.wait(), timeout=1)
-        assert self.mock.call_count == 1
-        assert self.mock.call_args == call(
-            current=current,
-            initial=initial,
-            target=target,
-            name=name,
-            unit=unit,
-            precision=precision,
-            fraction=fraction,
-            time_elapsed=time_elapsed,
-            time_remaining=time_remaining,
-        )
+        assert list(self.mock.call_args_list) == [
+            call(
+                current=current,
+                initial=initial,
+                target=target,
+                name=name,
+                unit=unit,
+                precision=precision,
+                fraction=fraction,
+                time_elapsed=time_elapsed,
+                time_remaining=time_remaining,
+            )
+        ]
         self.mock.reset_mock()
         self._event.clear()

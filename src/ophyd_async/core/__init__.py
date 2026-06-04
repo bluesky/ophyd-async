@@ -60,10 +60,13 @@ from ._mock_signal_utils import (
     get_mock_execute,
     get_mock_put,
     mock_puts_blocked,
+    set_mock_precision,
     set_mock_put_proceeds,
+    set_mock_units,
     set_mock_value,
     set_mock_values,
 )
+from ._movable import InstantMovableMock, MovableLogic, StandardMovable
 from ._path_providers import (
     AutoIncrementFilenameProvider,
     AutoIncrementingPathProvider,
@@ -175,6 +178,10 @@ __all__ = [
     "DeviceAnnotation",
     "DeviceVector",
     "init_devices",
+    # Movable
+    "MovableLogic",
+    "StandardMovable",
+    "InstantMovableMock",
     # Protocols
     "AsyncReadable",
     "AsyncConfigurable",
@@ -227,6 +234,8 @@ __all__ = [
     "callback_on_mock_execute",
     "mock_puts_blocked",
     "set_mock_put_proceeds",
+    "set_mock_units",
+    "set_mock_precision",
     # Signal utilities
     "observe_value",
     "observe_signals_value",
