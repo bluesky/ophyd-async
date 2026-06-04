@@ -35,6 +35,18 @@ def set_mock_value(signal: Signal[SignalDatatypeT], value: SignalDatatypeT):
     backend.set_value(value)
 
 
+def set_mock_units(signal: Signal, units: str):
+    """Set the units to be read back from a signal in mock mode."""
+    backend = _get_mock_signal_backend(signal)
+    backend.set_units(units)
+
+
+def set_mock_precision(signal: Signal, precision: int):
+    """Set the precision to be read back from a signal in mock mode."""
+    backend = _get_mock_signal_backend(signal)
+    backend.set_precision(precision)
+
+
 class _SetValuesIterator(Iterator[SignalDatatypeT]):
     # Garbage collected by the time __del__ is called unless we put it as a
     # global attrbute here.
