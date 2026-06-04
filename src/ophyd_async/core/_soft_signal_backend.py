@@ -200,9 +200,9 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         write_value = self.initial_value if value is None else value
         if self._setter is not None:
             result = await maybe_await(self._setter(value))
-            settled = result
-            if settled is not None:
-                self.set_value(settled)
+            written_value = result
+            if written_value is not None:
+                self.set_value(written_value)
             elif self._getter is not None:
                 await self._update_value_from_getter()
             else:
