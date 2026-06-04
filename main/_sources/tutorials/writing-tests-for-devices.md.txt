@@ -25,12 +25,42 @@ We will be writing a test using the pytest framework which encourages fixtures t
 :pyobject: mock_motor
 ```
 
-This will use [](#init_devices) to call [](#Device.connect) with `mock=True`. This will recursively replace the real connection to hardware with a mock that allows us to change the Signal's value that our code will see and capture any attempts to set the value from our code. In this case we know our tests will expect `units="mm"` and `precision=3`, so we use [](#set_mock_value) to those here.
+This fixture opts out of the [automatic mock behaviour](../explanations/when-to-extend-movable.md) by connecting with a plain [](#LazyMock), giving the tests control over when the readback updates mid-move. [](#set_mock_units) and [](#set_mock_precision) inject units and precision metadata directly on the readback signal, without needing dedicated child signals on the device.
 
 If we had any cleanup to do, we would do that after the yield statement.
 
+### Automatic mock behavior injection
+
+If you find yourself repeatedly using [](#callback_on_mock_put) to set up the same mock
+behavior for a Device type across many tests, you can define a [](#DeviceMock) subclass
+to automatically inject that behavior when the Device is connected in mock mode. This is
+especially useful for defining standard mock behavior alongside your Device definitions.
+
+For example:
+
+```{literalinclude} ../../src/ophyd_async/epics/motor.py
+:language: python
+:pyobject: InstantMotorMock
+```
+
+Then decorate the original class with [](#default_mock_class) so it is automatically
+used when connected in mock mode:
+
+```{literalinclude} ../../src/ophyd_async/epics/motor.py
+:language: python
+:start-at: default_mock_class(
+:end-at: class Motor
+```
+
+Now whenever a `Motor` is connected using [](#init_devices)`(mock=True)`, it will
+automatically use `InstantMotorMock` without any fixture setup. You can still override
+the automatic mock for specific tests by passing an explicit [](#DeviceMock) instance
+or a plain [](#LazyMock) directly to `connect()`, as the `mock_motor` fixture above does.
+
+### pytest-asyncio setup
+
 :::{note}
-This is an async fixture, and we will be using async tests, so we need to install and configure [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) in our projects's `pyproject.toml`:
+Fixtures and tests for async Devices must be `async`. To enable this, install and configure [pytest-asyncio](https://github.com/pytest-dev/pytest-asyncio) in your project's `pyproject.toml`:
 
 ```toml
 [project.optional-dependencies]
@@ -83,50 +113,10 @@ Here we call the verb, but don't wait for it to complete (as that would wait for
 
 There are a few other things we may wish to do in tests:
 - [](#set_mock_values) if you want to set a series of mock values, with repeated checks at each value
+- [](#set_mock_units) and [](#set_mock_precision) to set units and precision metadata on a Signal without needing dedicated child signals
 - [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal
 - [](#set_mock_put_proceeds) to block or unblock `Signal.set()` from completing
 - [](#mock_puts_blocked) a context manager that blocks put proceeds at the start, and unblocks at the end
-
-### Automatic mock behavior injection
-
-If you find yourself repeatedly using [](#callback_on_mock_put) to set up the same mock behavior for a Device type across many tests, you can define a [](#DeviceMock) subclass to automatically inject that behavior when the Device is connected in mock mode. This is especially useful for defining standard mock behavior alongside your Device definitions, making it easier to switch between hardware and mock modes.
-
-For example, if you have a device that needs automatic mock behavior, you can define:
-
-```{literalinclude} ../../src/ophyd_async/epics/motor.py
-:language: python
-:pyobject: InstantMotorMock
-```
-
-Then decorate the original class with [](#default_mock_class) so it is automatically used when connected in mock mode:
-
-```{literalinclude} ../../src/ophyd_async/epics/motor.py
-:language: python
-:start-at: default_mock_class(
-:end-at: class Motor
-```
-
-Now whenever a Motor is connected in mock mode using [](#init_devices)`(mock=True)`, it will automatically use `InstantMotorMock` and have this behavior:
-
-```python
-async with init_devices(mock=True):
-    motor = Motor("BLxxI-MO-TABLE-01:X")
-
-# No manual callback setup needed - the mock behavior is already active
-await motor.user_setpoint.set(50.0)
-assert await motor.user_readback.get_value() == 50.0
-```
-
-You can still override the automatic mock for specific tests by passing an explicit [](#DeviceMock) instance:
-
-```python
-# Use a plain DeviceMock without the automatic behavior
-custom_mock = DeviceMock()
-motor = Motor("TEST:MOTOR")
-await motor.connect(mock=custom_mock)
-```
-
-This approach keeps your mock logic close to your Device definition, reduces duplication across tests, and makes it easier to maintain consistent mock behavior.
 
 ## Tests that execute a bluesky plan
 

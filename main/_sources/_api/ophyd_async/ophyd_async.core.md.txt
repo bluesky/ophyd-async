@@ -35,6 +35,18 @@
   - ```{autodoc2-docstring} ophyd_async.core._device.DeviceVector
     :summary:
     ```
+* - {py:obj}`MovableLogic <ophyd_async.core._movable.MovableLogic>`
+  - ```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic
+    :summary:
+    ```
+* - {py:obj}`StandardMovable <ophyd_async.core._movable.StandardMovable>`
+  - ```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable
+    :summary:
+    ```
+* - {py:obj}`InstantMovableMock <ophyd_async.core._movable.InstantMovableMock>`
+  - ```{autodoc2-docstring} ophyd_async.core._movable.InstantMovableMock
+    :summary:
+    ```
 * - {py:obj}`AsyncReadable <ophyd_async.core._protocol.AsyncReadable>`
   - ```{autodoc2-docstring} ophyd_async.core._protocol.AsyncReadable
     :summary:
@@ -349,6 +361,14 @@
     ```
 * - {py:obj}`set_mock_put_proceeds <ophyd_async.core._mock_signal_utils.set_mock_put_proceeds>`
   - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_put_proceeds
+    :summary:
+    ```
+* - {py:obj}`set_mock_units <ophyd_async.core._mock_signal_utils.set_mock_units>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_units
+    :summary:
+    ```
+* - {py:obj}`set_mock_precision <ophyd_async.core._mock_signal_utils.set_mock_precision>`
+  - ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_precision
     :summary:
     ```
 * - {py:obj}`observe_value <ophyd_async.core._signal.observe_value>`
@@ -704,6 +724,191 @@ Bases: {py:obj}`collections.abc.MutableMapping`\[{py:obj}`int`\, {py:obj}`ophyd_
 ```{autodoc2-docstring} ophyd_async.core._device.init_devices
 ```
 ````
+
+`````{py:class} MovableLogic
+:canonical: ophyd_async.core._movable.MovableLogic
+
+Bases: {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\]
+
+```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic
+```
+
+````{py:attribute} setpoint
+:canonical: ophyd_async.core._movable.MovableLogic.setpoint
+:type: ~ophyd_async.core._signal.SignalRW[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic.setpoint
+```
+
+````
+
+````{py:attribute} readback
+:canonical: ophyd_async.core._movable.MovableLogic.readback
+:type: ~ophyd_async.core._signal.SignalR[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic.readback
+```
+
+````
+
+````{py:method} stop() -> None
+:canonical: ophyd_async.core._movable.MovableLogic.stop
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic.stop
+```
+
+````
+
+````{py:method} check_move(new_position: ~ophyd_async.core._signal_backend.SignalDatatypeT) -> None
+:canonical: ophyd_async.core._movable.MovableLogic.check_move
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic.check_move
+```
+
+````
+
+````{py:method} calculate_timeout(old_position: ~ophyd_async.core._signal_backend.SignalDatatypeT, new_position: ~ophyd_async.core._signal_backend.SignalDatatypeT) -> float
+:canonical: ophyd_async.core._movable.MovableLogic.calculate_timeout
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic.calculate_timeout
+```
+
+````
+
+````{py:method} get_units_precision() -> tuple[str | None, int | None]
+:canonical: ophyd_async.core._movable.MovableLogic.get_units_precision
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic.get_units_precision
+```
+
+````
+
+````{py:method} move(new_position: ~ophyd_async.core._signal_backend.SignalDatatypeT, timeout: float | None) -> None
+:canonical: ophyd_async.core._movable.MovableLogic.move
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.MovableLogic.move
+```
+
+````
+
+`````
+
+`````{py:class} StandardMovable(name: str = '', connector: ~ophyd_async.core._device.DeviceConnector | None = None)
+:canonical: ophyd_async.core._movable.StandardMovable
+
+Bases: {py:obj}`ophyd_async.core._device.Device`, {py:obj}`bluesky.protocols.Locatable`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`bluesky.protocols.Checkable`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`bluesky.protocols.Stoppable`, {py:obj}`bluesky.protocols.Subscribable`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\], {py:obj}`typing.Generic`\[{py:obj}`ophyd_async.core._signal_backend.SignalDatatypeT`\]
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable
+```
+
+````{py:method} movable_logic() -> ~ophyd_async.core._movable.MovableLogic
+:canonical: ophyd_async.core._movable.StandardMovable.movable_logic
+:abstractmethod:
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable.movable_logic
+```
+
+````
+
+````{py:method} check_value(value: ~ophyd_async.core._signal_backend.SignalDatatypeT) -> None
+:canonical: ophyd_async.core._movable.StandardMovable.check_value
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable.check_value
+```
+
+````
+
+````{py:method} set(new_position: ~ophyd_async.core._signal_backend.SignalDatatypeT, timeout: ~ophyd_async.core._utils.CalculatableTimeout = CALCULATE_TIMEOUT)
+:canonical: ophyd_async.core._movable.StandardMovable.set
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable.set
+```
+
+````
+
+````{py:method} stop(success=False)
+:canonical: ophyd_async.core._movable.StandardMovable.stop
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable.stop
+```
+
+````
+
+````{py:method} set_name(name: str, *, child_name_separator: str | None = None) -> None
+:canonical: ophyd_async.core._movable.StandardMovable.set_name
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable.set_name
+```
+
+````
+
+````{py:method} locate() -> ~bluesky.protocols.Location[~ophyd_async.core._signal_backend.SignalDatatypeT]
+:canonical: ophyd_async.core._movable.StandardMovable.locate
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable.locate
+```
+
+````
+
+````{py:method} subscribe_reading(function: ~ophyd_async.core._utils.Callback[dict[str, ~bluesky.protocols.Reading[~ophyd_async.core._signal_backend.SignalDatatypeT]]]) -> None
+:canonical: ophyd_async.core._movable.StandardMovable.subscribe_reading
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable.subscribe_reading
+```
+
+````
+
+````{py:attribute} subscribe
+:canonical: ophyd_async.core._movable.StandardMovable.subscribe
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable.subscribe
+```
+
+````
+
+````{py:method} clear_sub(function: ~ophyd_async.core._utils.Callback[dict[str, ~bluesky.protocols.Reading[~ophyd_async.core._signal_backend.SignalDatatypeT]]]) -> None
+:canonical: ophyd_async.core._movable.StandardMovable.clear_sub
+
+```{autodoc2-docstring} ophyd_async.core._movable.StandardMovable.clear_sub
+```
+
+````
+
+`````
+
+`````{py:class} InstantMovableMock(name: str = '', parent: ~ophyd_async.core._device.DeviceMock | None = None)
+:canonical: ophyd_async.core._movable.InstantMovableMock
+
+Bases: {py:obj}`ophyd_async.core._device.DeviceMock`\[{py:obj}`StandardMovable`\]
+
+```{autodoc2-docstring} ophyd_async.core._movable.InstantMovableMock
+```
+
+````{py:method} connect(device: ~ophyd_async.core._movable.StandardMovable) -> None
+:canonical: ophyd_async.core._movable.InstantMovableMock.connect
+:async:
+
+```{autodoc2-docstring} ophyd_async.core._movable.InstantMovableMock.connect
+```
+
+````
+
+`````
 
 `````{py:class} AsyncReadable
 :canonical: ophyd_async.core._protocol.AsyncReadable
@@ -1669,6 +1874,22 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 
 ````
 
+````{py:method} set_units(units: str)
+:canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.set_units
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.set_units
+```
+
+````
+
+````{py:method} set_precision(precision: int)
+:canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.set_precision
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_backend.MockSignalBackend.set_precision
+```
+
+````
+
 ````{py:method} source(name: str, read: bool) -> str
 :canonical: ophyd_async.core._mock_signal_backend.MockSignalBackend.source
 
@@ -1802,6 +2023,20 @@ Bases: {py:obj}`ophyd_async.core._signal_backend.SignalBackend`\[{py:obj}`ophyd_
 :canonical: ophyd_async.core._mock_signal_utils.set_mock_put_proceeds
 
 ```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_put_proceeds
+```
+````
+
+````{py:function} set_mock_units(signal: ~ophyd_async.core._signal.Signal, units: str)
+:canonical: ophyd_async.core._mock_signal_utils.set_mock_units
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_units
+```
+````
+
+````{py:function} set_mock_precision(signal: ~ophyd_async.core._signal.Signal, precision: int)
+:canonical: ophyd_async.core._mock_signal_utils.set_mock_precision
+
+```{autodoc2-docstring} ophyd_async.core._mock_signal_utils.set_mock_precision
 ```
 ````
 

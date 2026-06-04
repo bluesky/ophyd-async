@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Implementing Devices &#8212; ophyd-async 0.17a7.dev1+gfab63a8a8 documentation</title>
+    <title>Implementing Devices &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=b9881f17"></script>
+    <script src="../_static/documentation_options.js?v=d27fb2b8"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -572,8 +572,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
   
   
 </a></div>
@@ -1222,110 +1222,95 @@ FastCS</label><div class="sd-tab-content docutils">
 </section>
 <section id="demomotor">
 <h3><code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code><a class="headerlink" href="#demomotor" title="Link to this heading">#</a></h3>
-<p>Moving onto the motion side, we have <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>. This has a few more signals:</p>
+<p>Moving onto the motion side, we have <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code>. This has a few signals:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">readback</span></code>: the current position of the motor as a float</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">velocity</span></code>: a configuration parameter for the velocity in units/s</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">units</span></code>: the string units of the position</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">setpoint</span></code>: the position the motor has been requested to move to as a float, it returns as soon as it’s been set</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">precision</span></code>: the number of points after the decimal place of the position that are relevant</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setpoint</span></code>: the position the motor has been requested to move to as a float</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stop_</span></code>: an executable to stop the move immediately</p></li>
 </ul>
-<p>At each point in the scan it will report the <code class="docutils literal notranslate"><span class="pre">readback</span></code>, but we override the <code class="docutils literal notranslate"><span class="pre">set_name()</span></code> method so that it reports its position as <code class="docutils literal notranslate"><span class="pre">stage.x</span></code> rather than <code class="docutils literal notranslate"><span class="pre">stage.x.readback</span></code>.</p>
-<p>If we consider how we would use this in a scan, we could <code class="docutils literal notranslate"><span class="pre">bp.scan(stage.x.setpoint,</span> <span class="pre">...)</span></code> directly, but that would only start the motor moving, not wait for it to complete the move. To do this, we need to implement another protocol: <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Movable</span></code></span></a>. This requires implementing a <code class="docutils literal notranslate"><span class="pre">set()</span></code> method (again wrapped in an <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.AsyncStatus" title="ophyd_async.core.AsyncStatus"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">AsyncStatus</span></code></a>) that does the following:</p>
-<ul class="simple">
-<li><p>Work out where to move to</p></li>
-<li><p>Start the motor moving</p></li>
-<li><p>Optionally report back updates on how far the motor has moved so bluesky can provide a progress bar</p></li>
-<li><p>Wait until the motor is at the target position</p></li>
-</ul>
-<p>Finally, we implement <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Stoppable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Stoppable</span></code></span></a> which tells bluesky what to do if the user aborts a plan. This requires implementing <code class="docutils literal notranslate"><span class="pre">stop()</span></code> to execute the <code class="docutils literal notranslate"><span class="pre">stop_</span></code> signal and tell <code class="docutils literal notranslate"><span class="pre">set()</span></code> whether the move should be reported as successful completion, or if it should raise an error.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code> inherits from <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable" title="ophyd_async.core.StandardMovable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardMovable</span></code></a>, which provides the full
+<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Movable</span></code></span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Locatable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Locatable</span></code></span></a>,
+<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Stoppable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Stoppable</span></code></span></a>, and
+<a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Subscribable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">Subscribable</span></code></span></a> protocol surface, as well as
+<code class="docutils literal notranslate"><span class="pre">WatcherUpdate</span></code> progress-bar machinery. The device-specific parts — how to compute a
+timeout from velocity, how to execute a stop, and how to detect move completion — live
+in a separate <code class="docutils literal notranslate"><span class="pre">DemoMotorMoveLogic</span></code> dataclass that subclasses <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic" title="ophyd_async.core.MovableLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">MovableLogic</span></code></a>.</p>
+<p>At each point in the scan the device reports <code class="docutils literal notranslate"><span class="pre">readback</span></code> named the same as the device
+itself (e.g. <code class="docutils literal notranslate"><span class="pre">stage.x</span></code>), because <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.set_name" title="ophyd_async.core.StandardMovable.set_name"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardMovable.set_name</span></code></a> automatically renames
+the readback signal to match the device.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../explanations/when-to-extend-movable.html"><span class="std std-doc">When should a device extend movable</span></a> for how to decide when to use
+<code class="docutils literal notranslate"><span class="pre">StandardMovable</span></code> and how to implement <code class="docutils literal notranslate"><span class="pre">MovableLogic</span></code>.</p>
+</div>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-15" name="sd-tab-set-5" type="radio">
 <label class="sd-tab-label" data-sync-group="cs" data-sync-id="epics" for="sd-tab-item-15">
 EPICS</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
     <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
-    <span class="n">CalculatableTimeout</span><span class="p">,</span>
+    <span class="n">MovableLogic</span><span class="p">,</span>
     <span class="n">SignalR</span><span class="p">,</span>
     <span class="n">SignalRW</span><span class="p">,</span>
     <span class="n">SignalX</span><span class="p">,</span>
+    <span class="n">StandardMovable</span><span class="p">,</span>
     <span class="n">StandardReadable</span><span class="p">,</span>
-    <span class="n">WatchableAsyncStatus</span><span class="p">,</span>
-    <span class="n">WatcherUpdate</span><span class="p">,</span>
-    <span class="n">observe_value</span><span class="p">,</span>
+    <span class="n">set_and_wait_for_other_value</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">PvSuffix</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">DemoMotor</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Movable</span><span class="p">,</span> <span class="n">Stoppable</span><span class="p">):</span>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DemoMotorMoveLogic</span><span class="p">(</span><span class="n">MovableLogic</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+    <span class="n">velocity</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">stop_</span><span class="p">:</span> <span class="n">SignalX</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">calculate_timeout</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">old_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">velocity</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">velocity</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If we are close to the desired position then break</span>
+        <span class="k">await</span> <span class="n">set_and_wait_for_other_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span>
+            <span class="n">new_position</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">v</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">new_position</span><span class="p">)),</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DemoMotor</span><span class="p">(</span><span class="n">EpicsDevice</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">StandardMovable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity.&quot;&quot;&quot;</span>
 
-    <span class="c1"># Whether set() should complete successfully or not</span>
-    <span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="c1"># Define some signals</span>
     <span class="n">readback</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
     <span class="n">velocity</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Velocity&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
-    <span class="n">units</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback.EGU&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
     <span class="n">setpoint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Setpoint&quot;</span><span class="p">)]</span>
-    <span class="n">precision</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback.PREC&quot;</span><span class="p">)]</span>
     <span class="c1"># If a signal name clashes with a bluesky verb add _ to the attribute name</span>
     <span class="n">stop_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalX</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Stop.PROC&quot;</span><span class="p">)]</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="o">=</span><span class="n">child_name_separator</span><span class="p">)</span>
-        <span class="c1"># Readback should be named the same as its parent in read()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-
-    <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span>
-    <span class="p">):</span>
-        <span class="c1"># The move should complete successfully unless stop(success=False) is called</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="c1"># Get some variables for the progress bar reporting</span>
-        <span class="n">old_position</span><span class="p">,</span> <span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">velocity</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">movable_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MovableLogic</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DemoMotorMoveLogic</span><span class="p">(</span>
+            <span class="n">readback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span>
+            <span class="n">setpoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span>
+            <span class="n">velocity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span>
+            <span class="n">stop_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="c1"># If not supplied, calculate a suitable timeout for the move</span>
-        <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
-            <span class="n">timeout</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">velocity</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span>
-        <span class="c1"># Setting the setpoint starts the motion</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_position</span><span class="p">)</span>
-        <span class="c1"># Observe the readback Signal, and on each new position...</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="n">done_timeout</span><span class="o">=</span><span class="n">timeout</span>
-        <span class="p">):</span>
-            <span class="c1"># Emit a progress bar update</span>
-            <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
-                <span class="n">current</span><span class="o">=</span><span class="n">current_position</span><span class="p">,</span>
-                <span class="n">initial</span><span class="o">=</span><span class="n">old_position</span><span class="p">,</span>
-                <span class="n">target</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
-                <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="c1"># If we are at the desired position the break</span>
-            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">current_position</span><span class="p">,</span> <span class="n">new_position</span><span class="p">):</span>
-                <span class="k">break</span>
-        <span class="c1"># If we were told to stop and report an error then do so</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Motor was stopped&quot;</span><span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="n">success</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>

@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.17a7.dev1+gfab63a8a8 documentation</title>
+    <title>Declarative vs Procedural Devices &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=b9881f17"></script>
+    <script src="../_static/documentation_options.js?v=d27fb2b8"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Design goals and differences with ophyd sync" href="design-goals.html" />
-    <link rel="prev" title="16. Replace AreaDetector writer parameters with ADWriterFactory" href="decisions/0016-ad-writer-factory.html" />
+    <link rel="prev" title="17. Create StandardMovable with Composition-Based Logic" href="decisions/0017-standard-movable.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="main" />
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
   
   
 </a></div>
@@ -441,6 +441,7 @@
 <li class="toctree-l2"><a class="reference internal" href="decisions/0014-disarm-on-unstage-flag.html">14. Pass <code class="docutils literal notranslate"><span class="pre">on_unstage</span></code> to <code class="docutils literal notranslate"><span class="pre">DetectorArmLogic.disarm</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="decisions/0015-detector-acquire-logic-hooks.html">15. Replace <code class="docutils literal notranslate"><span class="pre">DetectorArmLogic</span></code> with <code class="docutils literal notranslate"><span class="pre">DetectorAcquireLogic</span></code> and four lifecycle hooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="decisions/0016-ad-writer-factory.html">16. Replace AreaDetector writer parameters with ADWriterFactory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0017-standard-movable.html">17. Create StandardMovable with Composition-Based Logic</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Declarative vs Procedural Devices</a></li>
@@ -536,24 +537,14 @@
         <span class="c1"># Define some signals</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_readback_set</span> <span class="o">=</span> <span class="n">soft_signal_r_and_setter</span><span class="p">(</span>
-                <span class="nb">float</span><span class="p">,</span> <span class="mi">0</span>
+                <span class="nb">float</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span>
             <span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_children_as_readables</span><span class="p">(</span><span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">instant</span> <span class="k">else</span> <span class="mf">1.0</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">acceleration_time</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_setpoint</span> <span class="o">=</span> <span class="n">soft_signal_rw</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
 
-        <span class="c1"># Whether set() should complete successfully or not</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_move_status</span><span class="p">:</span> <span class="n">AsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># Stored in prepare</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_info</span><span class="p">:</span> <span class="n">FlyMotorInfo</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="c1"># Set on kickoff(), complete when motor reaches end position</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fly_status</span><span class="p">:</span> <span class="n">WatchableAsyncStatus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
-
 </pre></div>
 </div>
 <p>It is explicit and obvious, but verbose. It also allows you to embed arbitrary python logic in the creation of signals, so is required for making soft signals and DeviceVectors with contents based on an argument passed to <code class="docutils literal notranslate"><span class="pre">__init__</span></code>. It also allows you to use the <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable.add_children_as_readables" title="ophyd_async.core.StandardReadable.add_children_as_readables"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">StandardReadable.add_children_as_readables</span></code></a> context manager which can save some typing.</p>
@@ -590,14 +581,10 @@
 <p>There is quite a large segment of Devices that could be written both ways, for instance <code class="docutils literal notranslate"><span class="pre">ophyd_async.epics.demo.DemoMotor</span></code>. This could be written in either style with roughly the same legibility, so is a matter of taste:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity.&quot;&quot;&quot;</span>
 
-    <span class="c1"># Whether set() should complete successfully or not</span>
-    <span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="c1"># Define some signals</span>
     <span class="n">readback</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
     <span class="n">velocity</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Velocity&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
-    <span class="n">units</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback.EGU&quot;</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
     <span class="n">setpoint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Setpoint&quot;</span><span class="p">)]</span>
-    <span class="n">precision</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Readback.PREC&quot;</span><span class="p">)]</span>
     <span class="c1"># If a signal name clashes with a bluesky verb add _ to the attribute name</span>
     <span class="n">stop_</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalX</span><span class="p">,</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;Stop.PROC&quot;</span><span class="p">)]</span>
 
@@ -621,12 +608,12 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="decisions/0016-ad-writer-factory.html"
+       href="decisions/0017-standard-movable.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">16. Replace AreaDetector writer parameters with ADWriterFactory</p>
+        <p class="prev-next-title">17. Create StandardMovable with Composition-Based Logic</p>
       </div>
     </a>
     <a class="right-next"

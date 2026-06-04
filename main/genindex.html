@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; ophyd-async 0.17a7.dev1+gfab63a8a8 documentation</title>
+    <title>Index &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="_static/documentation_options.js?v=b9881f17"></script>
+    <script src="_static/documentation_options.js?v=d27fb2b8"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
-    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
   
   
 </a></div>
@@ -1302,6 +1302,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.CALCULATE_TIMEOUT">CALCULATE_TIMEOUT (in module ophyd_async.core)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.calculate_timeout">calculate_timeout() (ophyd_async.core.MovableLogic method)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Callback">Callback (in module ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put">callback_on_mock_put() (in module ophyd_async.core)</a>
@@ -1326,7 +1328,9 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceFiller.check_filled">check_filled() (ophyd_async.core.DeviceFiller method)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.check_motor_limit">check_motor_limit() (ophyd_async.epics.motor.Motor method)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.check_move">check_move() (ophyd_async.core.MovableLogic method)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.check_value">check_value() (ophyd_async.core.StandardMovable method)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadableFormat.CHILD">CHILD (ophyd_async.core.StandardReadableFormat attribute)</a>
 </li>
@@ -1345,9 +1349,7 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.clear_sub">clear_sub() (ophyd_async.core.SignalR method)</a>
 
       <ul>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.clear_sub">(ophyd_async.epics.motor.Motor method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.clear_sub">(ophyd_async.sim.SimMotor method)</a>
+        <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.clear_sub">(ophyd_async.core.StandardMovable method)</a>
 </li>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.DevStateEnum.CLOSE">CLOSE (ophyd_async.tango.core.DevStateEnum attribute)</a>
@@ -1424,6 +1426,8 @@ window.runMermaid = runMermaid;</script>
 
       <ul>
         <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceMock.connect">(ophyd_async.core.DeviceMock method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.InstantMovableMock.connect">(ophyd_async.core.InstantMovableMock method)</a>
 </li>
         <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend.connect">(ophyd_async.core.MockSignalBackend method)</a>
 </li>
@@ -2192,6 +2196,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.get_unique">get_unique() (in module ophyd_async.core)</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.get_units_precision">get_units_precision() (ophyd_async.core.MovableLogic method)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend.get_value">get_value() (ophyd_async.core.MockSignalBackend method)</a>
 
       <ul>
@@ -2307,6 +2313,8 @@ window.runMermaid = runMermaid;</script>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.InstantMotorMock">InstantMotorMock (class in ophyd_async.epics.motor)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.InstantMovableMock">InstantMovableMock (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.NDAttributeDataType.INT">INT (ophyd_async.epics.adcore.NDAttributeDataType attribute)</a>
 </li>
@@ -2443,9 +2451,7 @@ window.runMermaid = runMermaid;</script>
       <ul>
         <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalRW.locate">(ophyd_async.core.SignalRW method)</a>
 </li>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.locate">(ophyd_async.epics.motor.Motor method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.locate">(ophyd_async.sim.SimMotor method)</a>
+        <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.locate">(ophyd_async.core.StandardMovable method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -2633,7 +2639,21 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.MotorLimitsError">MotorLimitsError</a>
 </li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.movable_logic">movable_logic() (ophyd_async.core.StandardMovable method)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.movable_logic">(ophyd_async.epics.demo.DemoMotor method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.movable_logic">(ophyd_async.epics.motor.Motor method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.movable_logic">(ophyd_async.sim.SimMotor method)</a>
+</li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.MovableBeamstop">MovableBeamstop (class in ophyd_async.testing)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic">MovableLogic (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.move">move() (ophyd_async.core.MovableLogic method)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.DevStateEnum.MOVING">MOVING (ophyd_async.tango.core.DevStateEnum attribute)</a>
 </li>
@@ -3217,8 +3237,6 @@ window.runMermaid = runMermaid;</script>
       <ul>
         <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.WatcherUpdate.precision">(ophyd_async.core.WatcherUpdate attribute)</a>
 </li>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.precision">(ophyd_async.epics.demo.DemoMotor attribute)</a>
-</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -3424,8 +3442,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.ReadableDataProvider">ReadableDataProvider (class in ophyd_async.core)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.readback">readback (ophyd_async.epics.demo.DemoMotor attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.readback">readback (ophyd_async.core.MovableLogic attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.readback">(ophyd_async.epics.demo.DemoMotor attribute)</a>
 </li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.testing.html#ophyd_async.testing.ReadOnlyBeamstop">ReadOnlyBeamstop (class in ophyd_async.testing)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADState.READOUT">READOUT (ophyd_async.epics.adcore.ADState attribute)</a>
@@ -3434,10 +3456,10 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adpilatus.html#ophyd_async.epics.adpilatus.PilatusTriggerLogic.readout_time">readout_time (ophyd_async.epics.adpilatus.PilatusTriggerLogic attribute)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Reference">Reference (class in ophyd_async.core)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Reference">Reference (class in ophyd_async.core)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoPolling.rel_change">rel_change (ophyd_async.tango.core.TangoPolling attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.SeqBlock.repeats">repeats (ophyd_async.fastcs.panda.SeqBlock attribute)</a>
@@ -3535,13 +3557,9 @@ window.runMermaid = runMermaid;</script>
       <ul>
         <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalW.set">(ophyd_async.core.SignalW method)</a>
 </li>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.set">(ophyd_async.epics.demo.DemoMotor method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.set">(ophyd_async.epics.motor.Motor method)</a>
+        <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.set">(ophyd_async.core.StandardMovable method)</a>
 </li>
         <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.HorizontalMirror.set">(ophyd_async.sim.HorizontalMirror method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.set">(ophyd_async.sim.SimMotor method)</a>
 </li>
         <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.VerticalMirror.set">(ophyd_async.sim.VerticalMirror method)</a>
 </li>
@@ -3564,9 +3582,13 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.set_callback">(ophyd_async.tango.core.TangoSignalBackend method)</a>
 </li>
       </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_precision">set_mock_precision() (in module ophyd_async.core)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend.set_mock_put_callback">set_mock_put_callback() (ophyd_async.core.MockSignalBackend method)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_put_proceeds">set_mock_put_proceeds() (in module ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_units">set_mock_units() (in module ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_value">set_mock_value() (in module ophyd_async.core)</a>
 </li>
@@ -3575,11 +3597,7 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.set_name">set_name() (ophyd_async.core.Device method)</a>
 
       <ul>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.set_name">(ophyd_async.epics.demo.DemoMotor method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.set_name">(ophyd_async.epics.motor.Motor method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.set_name">(ophyd_async.sim.SimMotor method)</a>
+        <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.set_name">(ophyd_async.core.StandardMovable method)</a>
 </li>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.set_polling">set_polling() (ophyd_async.tango.core.AttributeProxy method)</a>
@@ -3590,12 +3608,16 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.set_polling">(ophyd_async.tango.core.TangoSignalBackend method)</a>
 </li>
       </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend.set_precision">set_precision() (ophyd_async.core.MockSignalBackend method)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoDeviceConnector.set_trl">set_trl() (ophyd_async.tango.core.TangoDeviceConnector method)</a>
 
       <ul>
         <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.TangoSignalBackend.set_trl">(ophyd_async.tango.core.TangoSignalBackend method)</a>
 </li>
       </ul></li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend.set_units">set_units() (ophyd_async.core.MockSignalBackend method)</a>
+</li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MockSignalBackend.set_value">set_value() (ophyd_async.core.MockSignalBackend method)</a>
 
       <ul>
@@ -3606,8 +3628,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.PatternGenerator.set_y">set_y() (ophyd_async.sim.PatternGenerator method)</a>
 </li>
-      <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.setpoint">setpoint (ophyd_async.epics.demo.DemoMotor attribute)</a>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.setpoint">setpoint (ophyd_async.core.MovableLogic attribute)</a>
+
+      <ul>
+        <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.setpoint">(ophyd_async.epics.demo.DemoMotor attribute)</a>
 </li>
+      </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Settings">Settings (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SettingsProvider">SettingsProvider (class in ophyd_async.core)</a>
@@ -3700,6 +3726,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SoftSignalBackend">SoftSignalBackend (class in ophyd_async.core)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerMode.SOFTWARE">SOFTWARE (ophyd_async.epics.adandor.Andor2TriggerMode attribute)</a>
 
       <ul>
@@ -3708,8 +3736,6 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.epics.advimba.html#ophyd_async.epics.advimba.VimbaTriggerSource.SOFTWARE">(ophyd_async.epics.advimba.VimbaTriggerSource attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Signal.source">source (ophyd_async.core.Signal property)</a>
 
       <ul>
@@ -3757,6 +3783,8 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector">StandardDetector (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardFlyer">StandardFlyer (class in ophyd_async.core)</a>
+</li>
+      <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable">StandardMovable (class in ophyd_async.core)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable">StandardReadable (class in ophyd_async.core)</a>
 </li>
@@ -3819,13 +3847,13 @@ window.runMermaid = runMermaid;</script>
       <ul>
         <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.FlyerController.stop">(ophyd_async.core.FlyerController method)</a>
 </li>
+        <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.stop">(ophyd_async.core.MovableLogic method)</a>
+</li>
+        <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.stop">(ophyd_async.core.StandardMovable method)</a>
+</li>
         <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADHDFDataLogic.stop">(ophyd_async.epics.adcore.ADHDFDataLogic method)</a>
 </li>
         <li><a href="_api/ophyd_async/ophyd_async.epics.adcore.html#ophyd_async.epics.adcore.ADMultipartDataLogic.stop">(ophyd_async.epics.adcore.ADMultipartDataLogic method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.stop">(ophyd_async.epics.demo.DemoMotor method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.stop">(ophyd_async.epics.motor.Motor method)</a>
 </li>
         <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.TestingIOC.stop">(ophyd_async.epics.testing.TestingIOC method)</a>
 </li>
@@ -3836,8 +3864,6 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticPcompTriggerLogic.stop">(ophyd_async.fastcs.panda.StaticPcompTriggerLogic method)</a>
 </li>
         <li><a href="_api/ophyd_async/ophyd_async.fastcs.panda.html#ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic.stop">(ophyd_async.fastcs.panda.StaticSeqTableTriggerLogic method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.stop">(ophyd_async.sim.SimMotor method)</a>
 </li>
         <li><a href="_api/ophyd_async/ophyd_async.tango.demo.html#ophyd_async.tango.demo.TangoDetector.stop">(ophyd_async.tango.demo.TangoDetector method)</a>
 </li>
@@ -3895,9 +3921,7 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe">subscribe (ophyd_async.core.SignalR attribute)</a>
 
       <ul>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.subscribe">(ophyd_async.epics.motor.Motor attribute)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.subscribe">(ophyd_async.sim.SimMotor attribute)</a>
+        <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.subscribe">(ophyd_async.core.StandardMovable attribute)</a>
 </li>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.AttributeProxy.subscribe_callback">subscribe_callback() (ophyd_async.tango.core.AttributeProxy method)</a>
@@ -3909,9 +3933,7 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalR.subscribe_reading">subscribe_reading() (ophyd_async.core.SignalR method)</a>
 
       <ul>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.motor.html#ophyd_async.epics.motor.Motor.subscribe_reading">(ophyd_async.epics.motor.Motor method)</a>
-</li>
-        <li><a href="_api/ophyd_async/ophyd_async.sim.html#ophyd_async.sim.SimMotor.subscribe_reading">(ophyd_async.sim.SimMotor method)</a>
+        <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.subscribe_reading">(ophyd_async.core.StandardMovable method)</a>
 </li>
       </ul></li>
       <li><a href="_api/ophyd_async/ophyd_async.epics.testing.html#ophyd_async.epics.testing.EpicsTestCaDevice.subset_enum">subset_enum (ophyd_async.epics.testing.EpicsTestCaDevice attribute)</a>
@@ -4113,11 +4135,7 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.WatcherUpdate.unit">unit (ophyd_async.core.WatcherUpdate attribute)</a>
 </li>
       <li><a href="_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.SignalMetadata.units">units (ophyd_async.core.SignalMetadata attribute)</a>
-
-      <ul>
-        <li><a href="_api/ophyd_async/ophyd_async.epics.demo.html#ophyd_async.epics.demo.DemoMotor.units">(ophyd_async.epics.demo.DemoMotor attribute)</a>
 </li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_api/ophyd_async/ophyd_async.tango.core.html#ophyd_async.tango.core.DevStateEnum.UNKNOWN">UNKNOWN (ophyd_async.tango.core.DevStateEnum attribute)</a>

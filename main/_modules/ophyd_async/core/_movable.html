@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.epics.adandor &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
+    <title>ophyd_async.core._movable &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
   
   
   
@@ -483,7 +483,7 @@ mermaid.initialize(
 
 window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/epics/adandor';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/core/_movable';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -880,7 +880,7 @@ window.runMermaid = runMermaid;</script>
     
     <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.epics.adandor</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.core._movable</span></li>
   </ul>
 </nav>
 </div>
@@ -897,145 +897,249 @@ window.runMermaid = runMermaid;</script>
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.epics.adandor</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Support for the ADAndor areaDetector driver.</span>
-
-<span class="sd">https://github.com/areaDetector/ADAndor.</span>
-<span class="sd">&quot;&quot;&quot;</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+  <h1>Source code for ophyd_async.core._movable</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generic</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">DetectorTriggerLogic</span><span class="p">,</span>
-    <span class="n">SignalDict</span><span class="p">,</span>
-    <span class="n">SignalR</span><span class="p">,</span>
-    <span class="n">SignalRW</span><span class="p">,</span>
-    <span class="n">StrictEnum</span><span class="p">,</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bluesky.protocols</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Checkable</span><span class="p">,</span>
+    <span class="n">Locatable</span><span class="p">,</span>
+    <span class="n">Location</span><span class="p">,</span>
+    <span class="n">Reading</span><span class="p">,</span>
+    <span class="n">Stoppable</span><span class="p">,</span>
+    <span class="n">Subscribable</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.adcore</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ADAcquireLogic</span><span class="p">,</span>
-    <span class="n">ADBaseIO</span><span class="p">,</span>
-    <span class="n">ADWriterFactory</span><span class="p">,</span>
-    <span class="n">AreaDetector</span><span class="p">,</span>
-    <span class="n">NDPluginBaseIO</span><span class="p">,</span>
-    <span class="n">prepare_exposures</span><span class="p">,</span>
-    <span class="n">trigger_info_from_num_images</span><span class="p">,</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._device</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceMock</span><span class="p">,</span> <span class="n">default_mock_class</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._mock_signal_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">callback_on_mock_put</span><span class="p">,</span> <span class="n">set_mock_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">observe_value</span><span class="p">,</span> <span class="n">set_and_wait_for_other_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._signal_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SignalDatatypeT</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._status</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatus</span><span class="p">,</span> <span class="n">WatchableAsyncStatus</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">CalculatableTimeout</span><span class="p">,</span>
+    <span class="n">Callback</span><span class="p">,</span>
+    <span class="n">WatcherUpdate</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.epics.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">PvSuffix</span>
-
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;AndorDetector&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Andor2DriverIO&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Andor2TriggerLogic&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Andor2TriggerMode&quot;</span><span class="p">,</span>
-<span class="p">]</span>
-
-<span class="n">_MIN_DEAD_TIME</span> <span class="o">=</span> <span class="mf">0.1</span>
-<span class="n">_MAX_NUM_IMAGE</span> <span class="o">=</span> <span class="mi">999_999</span>
 
 
-<div class="viewcode-block" id="Andor2TriggerMode">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerMode">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Andor2TriggerMode</span><span class="p">(</span><span class="n">StrictEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger modes for ADAndor detector.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MovableLogic">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MovableLogic</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimum logic needed for controlling a ``StandardMovable``.</span>
 
-    <span class="n">INTERNAL</span> <span class="o">=</span> <span class="s2">&quot;Internal&quot;</span>
-    <span class="n">EXT_TRIGGER</span> <span class="o">=</span> <span class="s2">&quot;External&quot;</span>
-    <span class="n">EXT_START</span> <span class="o">=</span> <span class="s2">&quot;External Start&quot;</span>
-    <span class="n">EXT_EXPOSURE</span> <span class="o">=</span> <span class="s2">&quot;External Exposure&quot;</span>
-    <span class="n">EXT_FVP</span> <span class="o">=</span> <span class="s2">&quot;External FVP&quot;</span>
-    <span class="n">SOFTWARE</span> <span class="o">=</span> <span class="s2">&quot;Software&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="Andor2DriverIO">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2DriverIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">Andor2DriverIO</span><span class="p">(</span><span class="n">ADBaseIO</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Driver for andor model:DU897_BV as deployed on p99.</span>
-
-<span class="sd">    This mirrors the interface provided by AdAndor/db/andor.template.</span>
-<span class="sd">    https://areadetector.github.io/areaDetector/ADAndor/andorDoc.html</span>
+<span class="sd">    Can be inherited to add specialised logic for stop, checking if a move is valid,</span>
+<span class="sd">    calculate a valid timeout for a move, and add units and precision. Sub classes can</span>
+<span class="sd">    also override the ``get_move_status`` and ``move`` methods if more control is needed</span>
+<span class="sd">    to provide a custom AsyncStatus and to handle the move logic.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">trigger_mode</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="n">Andor2TriggerMode</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="o">.</span><span class="n">rbv</span><span class="p">(</span><span class="s2">&quot;TriggerMode&quot;</span><span class="p">)]</span>
-    <span class="n">andor_accumulate_period</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">PvSuffix</span><span class="p">(</span><span class="s2">&quot;AndorAccumulatePeriod_RBV&quot;</span><span class="p">)]</span></div>
+    <span class="n">setpoint</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span>
+    <span class="n">readback</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]</span>
+
+<div class="viewcode-block" id="MovableLogic.stop">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.stop">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optional hook to add logic on how to stop the motion.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
 
 
+<div class="viewcode-block" id="MovableLogic.check_move">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.check_move">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check_move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optional hook to validate the move.</span>
 
-<span class="c1"># The deadtime of an Andor2 controller varies depending on the exact model of camera.</span>
-<span class="c1"># Ideally we would maximize performance by dynamically retrieving the deadtime at</span>
-<span class="c1"># runtime. See https://github.com/bluesky/ophyd-async/issues/308</span>
-<div class="viewcode-block" id="Andor2TriggerLogic">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic">[docs]</a>
-<span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Andor2TriggerLogic</span><span class="p">(</span><span class="n">DetectorTriggerLogic</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Trigger logic for Andor2DriverIO.&quot;&quot;&quot;</span>
-
-    <span class="n">driver</span><span class="p">:</span> <span class="n">Andor2DriverIO</span>
-
-<div class="viewcode-block" id="Andor2TriggerLogic.get_deadtime">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic.get_deadtime">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_deadtime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_values</span><span class="p">:</span> <span class="n">SignalDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_MIN_DEAD_TIME</span></div>
+<span class="sd">        Should raise an exception if the move is not valid, e.g. if the new</span>
+<span class="sd">        position is outside soft limits.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
 
 
-<div class="viewcode-block" id="Andor2TriggerLogic.prepare_internal">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_internal">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_internal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">deadtime</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">Andor2TriggerMode</span><span class="o">.</span><span class="n">INTERNAL</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span> <span class="ow">or</span> <span class="n">_MAX_NUM_IMAGE</span><span class="p">,</span> <span class="n">livetime</span><span class="p">,</span> <span class="n">deadtime</span><span class="p">)</span></div>
+<div class="viewcode-block" id="MovableLogic.calculate_timeout">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.calculate_timeout">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">calculate_timeout</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">old_position</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="n">SignalDatatypeT</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optional hook to calculate valid timeout for a move.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DEFAULT_TIMEOUT</span></div>
 
 
-<div class="viewcode-block" id="Andor2TriggerLogic.prepare_edge">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic.prepare_edge">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">prepare_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">livetime</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">trigger_mode</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">Andor2TriggerMode</span><span class="o">.</span><span class="n">EXT_TRIGGER</span><span class="p">)</span>
-        <span class="k">await</span> <span class="n">prepare_exposures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">,</span> <span class="n">num</span> <span class="ow">or</span> <span class="n">_MAX_NUM_IMAGE</span><span class="p">,</span> <span class="n">livetime</span><span class="p">)</span></div>
+<div class="viewcode-block" id="MovableLogic.get_units_precision">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.get_units_precision">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_units_precision</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Optional hook to return the units and precision.&quot;&quot;&quot;</span>
+        <span class="n">datakey</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">describe</span><span class="p">())[</span><span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">datakey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;units&quot;</span><span class="p">),</span> <span class="n">datakey</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;precision&quot;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Andor2TriggerLogic.default_trigger_info">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.Andor2TriggerLogic.default_trigger_info">[docs]</a>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">default_trigger_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="k">await</span> <span class="n">trigger_info_from_num_images</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="p">)</span></div>
+<div class="viewcode-block" id="MovableLogic.move">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic.move">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move the device, waiting for the readback to reach the correct position.</span>
+
+<span class="sd">        ```{note}</span>
+<span class="sd">        The default implementation waits for the readback to be **exactly**</span>
+<span class="sd">        equal to ``new_position``. For floating-point positions this may never</span>
+<span class="sd">        be satisfied; override this method to use an appropriate tolerance</span>
+<span class="sd">        check (e.g. ``np.isclose``).</span>
+<span class="sd">        ```</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="n">set_and_wait_for_other_value</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span> <span class="n">new_position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+        <span class="p">)</span></div>
 </div>
 
 
 
-<div class="viewcode-block" id="AndorDetector">
-<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.epics.adandor.html#ophyd_async.epics.adandor.AndorDetector">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">AndorDetector</span><span class="p">(</span><span class="n">AreaDetector</span><span class="p">[</span><span class="n">Andor2DriverIO</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an ADAndor AreaDetector instance.</span>
+<div class="viewcode-block" id="InstantMovableMock">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.InstantMovableMock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InstantMovableMock</span><span class="p">(</span><span class="n">DeviceMock</span><span class="p">[</span><span class="s2">&quot;StandardMovable&quot;</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mock behaviour that instantly moves readback to setpoint.&quot;&quot;&quot;</span>
 
-<span class="sd">    :param prefix: EPICS PV prefix for the detector</span>
-<span class="sd">    :param writer_factories: Factories for file writer plugins and their data logics</span>
-<span class="sd">    :param driver_suffix: Suffix for the driver PV, defaults to &quot;cam1:&quot;</span>
-<span class="sd">    :param plugins: Additional areaDetector plugins to include</span>
-<span class="sd">    :param config_sigs: Additional signals to include in configuration</span>
-<span class="sd">    :param name: Name for the detector device</span>
+<div class="viewcode-block" id="InstantMovableMock.connect">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.InstantMovableMock.connect">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="s2">&quot;StandardMovable&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mock signals to do an instant move on setpoint write.&quot;&quot;&quot;</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_instant_move</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>  <span class="c1"># Arrive instantly</span>
+
+        <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span> <span class="n">_instant_move</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="StandardMovable">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable">[docs]</a>
+<span class="nd">@default_mock_class</span><span class="p">(</span><span class="n">InstantMovableMock</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">StandardMovable</span><span class="p">(</span>
+    <span class="n">Device</span><span class="p">,</span>
+    <span class="n">Locatable</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">Checkable</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">Stoppable</span><span class="p">,</span>
+    <span class="n">Subscribable</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+    <span class="n">Generic</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">],</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Device that provides standard logic for moving.</span>
+
+<span class="sd">    This class must be inherited and have a ``movable_logic`` @cached_property.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+    <span class="c1"># Whether set() should complete successfully or not</span>
+    <span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">movable_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MovableLogic</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The logic object that describes how this device moves.</span>
+
+<span class="sd">        This is intentionally public so that mock helpers (e.g.</span>
+<span class="sd">        `InstantMovableMock`) and subclasses can access the `setpoint` and</span>
+<span class="sd">        `readback` signals directly. Subclasses must implement this as a</span>
+<span class="sd">        `@cached_property` that returns a `MovableLogic` instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StandardMovable.check_value">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.check_value">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check the move is valid before doing it.&quot;&quot;&quot;</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">check_move</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardMovable.set">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.set">[docs]</a>
+    <span class="nd">@WatchableAsyncStatus</span><span class="o">.</span><span class="n">wrap</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">set</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="o">*</span><span class="n">writer_factories</span><span class="p">:</span> <span class="n">ADWriterFactory</span><span class="p">,</span>
-        <span class="n">driver_suffix</span><span class="o">=</span><span class="s2">&quot;cam1:&quot;</span><span class="p">,</span>
-        <span class="n">plugins</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">NDPluginBaseIO</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">config_sigs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">SignalR</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">new_position</span><span class="p">:</span> <span class="n">SignalDatatypeT</span><span class="p">,</span>
+        <span class="n">timeout</span><span class="p">:</span> <span class="n">CalculatableTimeout</span> <span class="o">=</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Move to the given value.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">old_position</span><span class="p">,</span> <span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">get_units_precision</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">check_move</span><span class="p">(</span><span class="n">new_position</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="n">CALCULATE_TIMEOUT</span><span class="p">:</span>
+            <span class="n">move_timeout</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">calculate_timeout</span><span class="p">(</span>
+                <span class="n">old_position</span><span class="p">,</span> <span class="n">new_position</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">move_timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="n">AsyncStatus</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">new_position</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">move_timeout</span><span class="p">)</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">move_status</span><span class="p">:</span>
+            <span class="k">async</span> <span class="k">for</span> <span class="n">current_position</span> <span class="ow">in</span> <span class="n">observe_value</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span>
+                <span class="n">done_status</span><span class="o">=</span><span class="n">move_status</span><span class="p">,</span>
+            <span class="p">):</span>
+                <span class="k">yield</span> <span class="n">WatcherUpdate</span><span class="p">(</span>
+                    <span class="n">current</span><span class="o">=</span><span class="n">current_position</span><span class="p">,</span>
+                    <span class="n">initial</span><span class="o">=</span><span class="n">old_position</span><span class="p">,</span>
+                    <span class="n">target</span><span class="o">=</span><span class="n">new_position</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                    <span class="n">precision</span><span class="o">=</span><span class="n">precision</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Device </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> was stopped.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardMovable.stop">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.stop">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Request to stop moving and return immediately.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_success</span> <span class="o">=</span> <span class="n">success</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="StandardMovable.set_name">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.set_name">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">child_name_separator</span><span class="o">=</span><span class="n">child_name_separator</span><span class="p">)</span>
+        <span class="c1"># Readback should be named the same as its parent in read()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardMovable.locate">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.locate">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">locate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Location</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the current setpoint and readback of the device.&quot;&quot;&quot;</span>
+        <span class="n">setpoint</span><span class="p">,</span> <span class="n">readback</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Location</span><span class="p">(</span><span class="n">setpoint</span><span class="o">=</span><span class="n">setpoint</span><span class="p">,</span> <span class="n">readback</span><span class="o">=</span><span class="n">readback</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StandardMovable.subscribe_reading">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.subscribe_reading">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">subscribe_reading</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">driver</span> <span class="o">=</span> <span class="n">Andor2DriverIO</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">driver_suffix</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">driver</span><span class="p">,</span>
-            <span class="n">prefix</span><span class="p">,</span>
-            <span class="o">*</span><span class="n">writer_factories</span><span class="p">,</span>
-            <span class="n">acquire_logic</span><span class="o">=</span><span class="n">ADAcquireLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
-            <span class="n">trigger_logic</span><span class="o">=</span><span class="n">Andor2TriggerLogic</span><span class="p">(</span><span class="n">driver</span><span class="p">),</span>
-            <span class="n">plugins</span><span class="o">=</span><span class="n">plugins</span><span class="p">,</span>
-            <span class="n">config_sigs</span><span class="o">=</span><span class="n">config_sigs</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-        <span class="p">)</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe to reading.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">subscribe_reading</span><span class="p">(</span><span class="n">function</span><span class="p">)</span></div>
+
+
+    <span class="n">subscribe</span> <span class="o">=</span> <span class="n">subscribe_reading</span>
+
+<div class="viewcode-block" id="StandardMovable.clear_sub">
+<a class="viewcode-back" href="../../../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable.clear_sub">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_sub</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">:</span> <span class="n">Callback</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Reading</span><span class="p">[</span><span class="n">SignalDatatypeT</span><span class="p">]]]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unsubscribe.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movable_logic</span><span class="o">.</span><span class="n">readback</span><span class="o">.</span><span class="n">clear_sub</span><span class="p">(</span><span class="n">function</span><span class="p">)</span></div>
+</div>
 
 </pre></div>
 

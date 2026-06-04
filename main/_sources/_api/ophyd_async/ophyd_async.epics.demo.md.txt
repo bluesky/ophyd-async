@@ -54,7 +54,7 @@
 `````{py:class} DemoMotor(prefix: str, with_pvi: bool = False, name: str = '')
 :canonical: ophyd_async.epics.demo._motor.DemoMotor
 
-Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Movable`, {py:obj}`bluesky.protocols.Stoppable`
+Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.core.StandardMovable`
 
 ```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor
 ```
@@ -81,17 +81,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.S
 
 ````
 
-````{py:attribute} units
-:canonical: ophyd_async.epics.demo._motor.DemoMotor.units
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[str], PvSuffix('~Readback.EGU'), ~ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.units
-```
-
-````
-
 ````{py:attribute} setpoint
 :canonical: ophyd_async.epics.demo._motor.DemoMotor.setpoint
 :type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], PvSuffix('Setpoint')]
@@ -99,17 +88,6 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.S
    None
 
 ```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.setpoint
-```
-
-````
-
-````{py:attribute} precision
-:canonical: ophyd_async.epics.demo._motor.DemoMotor.precision
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], PvSuffix('~Readback.PREC')]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.precision
 ```
 
 ````
@@ -125,28 +103,10 @@ Bases: {py:obj}`ophyd_async.epics.core.EpicsDevice`, {py:obj}`ophyd_async.core.S
 
 ````
 
-````{py:method} set_name(name: str, *, child_name_separator: str | None = None) -> None
-:canonical: ophyd_async.epics.demo._motor.DemoMotor.set_name
+````{py:method} movable_logic() -> ~ophyd_async.core.MovableLogic
+:canonical: ophyd_async.epics.demo._motor.DemoMotor.movable_logic
 
-```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.set_name
-```
-
-````
-
-````{py:method} set(new_position: float, timeout: ~ophyd_async.core.CalculatableTimeout = CALCULATE_TIMEOUT)
-:canonical: ophyd_async.epics.demo._motor.DemoMotor.set
-:async:
-
-```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.set
-```
-
-````
-
-````{py:method} stop(success=True)
-:canonical: ophyd_async.epics.demo._motor.DemoMotor.stop
-:async:
-
-```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.stop
+```{autodoc2-docstring} ophyd_async.epics.demo._motor.DemoMotor.movable_logic
 ```
 
 ````

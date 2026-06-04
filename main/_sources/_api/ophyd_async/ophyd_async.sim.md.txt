@@ -66,15 +66,15 @@
 `````{py:class} SimMotor(name: str = '', instant: bool = True, initial_value: float = 0.0, units: str = 'mm')
 :canonical: ophyd_async.sim._motor.SimMotor
 
-Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Stoppable`, {py:obj}`bluesky.protocols.Subscribable`\[{py:obj}`float`\], {py:obj}`bluesky.protocols.Locatable`\[{py:obj}`float`\]
+Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.core.StandardMovable`\[{py:obj}`float`\]
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor
 ```
 
-````{py:method} set_name(name: str, *, child_name_separator: str | None = None) -> None
-:canonical: ophyd_async.sim._motor.SimMotor.set_name
+````{py:method} movable_logic()
+:canonical: ophyd_async.sim._motor.SimMotor.movable_logic
 
-```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.set_name
+```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.movable_logic
 ```
 
 ````
@@ -84,41 +84,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.S
 :async:
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.prepare
-```
-
-````
-
-````{py:method} locate() -> ~bluesky.protocols.Location[float]
-:canonical: ophyd_async.sim._motor.SimMotor.locate
-:async:
-
-```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.locate
-```
-
-````
-
-````{py:method} subscribe_reading(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
-:canonical: ophyd_async.sim._motor.SimMotor.subscribe_reading
-
-```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.subscribe_reading
-```
-
-````
-
-````{py:attribute} subscribe
-:canonical: ophyd_async.sim._motor.SimMotor.subscribe
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.subscribe
-```
-
-````
-
-````{py:method} clear_sub(function: ~ophyd_async.core.Callback[dict[str, ~bluesky.protocols.Reading[float]]]) -> None
-:canonical: ophyd_async.sim._motor.SimMotor.clear_sub
-
-```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.clear_sub
 ```
 
 ````
@@ -136,24 +101,6 @@ Bases: {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.S
 :canonical: ophyd_async.sim._motor.SimMotor.complete
 
 ```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.complete
-```
-
-````
-
-````{py:method} set(value: float)
-:canonical: ophyd_async.sim._motor.SimMotor.set
-:async:
-
-```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.set
-```
-
-````
-
-````{py:method} stop(success=True)
-:canonical: ophyd_async.sim._motor.SimMotor.stop
-:async:
-
-```{autodoc2-docstring} ophyd_async.sim._motor.SimMotor.stop
 ```
 
 ````

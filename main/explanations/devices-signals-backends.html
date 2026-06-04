@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.17a7.dev1+gfab63a8a8 documentation</title>
+    <title>Devices, Signals and their Backends &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=b9881f17"></script>
+    <script src="../_static/documentation_options.js?v=d27fb2b8"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -572,8 +572,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
   
   
 </a></div>
@@ -877,6 +877,7 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l2"><a class="reference internal" href="decisions/0014-disarm-on-unstage-flag.html">14. Pass <code class="docutils literal notranslate"><span class="pre">on_unstage</span></code> to <code class="docutils literal notranslate"><span class="pre">DetectorArmLogic.disarm</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="decisions/0015-detector-acquire-logic-hooks.html">15. Replace <code class="docutils literal notranslate"><span class="pre">DetectorArmLogic</span></code> with <code class="docutils literal notranslate"><span class="pre">DetectorAcquireLogic</span></code> and four lifecycle hooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="decisions/0016-ad-writer-factory.html">16. Replace AreaDetector writer parameters with ADWriterFactory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="decisions/0017-standard-movable.html">17. Create StandardMovable with Composition-Based Logic</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="declarative-vs-procedural.html">Declarative vs Procedural Devices</a></li>
@@ -1088,11 +1089,13 @@ config:
 ---
 classDiagram
 Device &lt;|-- StandardReadable
+Device &lt;|-- StandardMovable
 Device &lt;|-- StandardDetector
 Device &lt;|-- StandardFlyer
     </pre><p>There are also some <code class="docutils literal notranslate"><span class="pre">Device</span></code> subclasses that provide helpers for implementing particular protocols, namely:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardReadable" title="ophyd_async.core.StandardReadable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardReadable</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Readable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst">Readable</span></a> protocol using the values of its children</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardMovable" title="ophyd_async.core.StandardMovable"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardMovable</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Movable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst">Movable</span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Locatable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst">Locatable</span></a>, <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Stoppable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst">Stoppable</span></a>, and <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Subscribable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst">Subscribable</span></a> protocols by composing a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.MovableLogic" title="ophyd_async.core.MovableLogic"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">MovableLogic</span></code></a> instance</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardDetector" title="ophyd_async.core.StandardDetector"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardDetector</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.WritesStreamAssets" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst">WritesStreamAssets</span></a> protocol using logic classes for the detector driver and writer</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.StandardFlyer" title="ophyd_async.core.StandardFlyer"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">StandardFlyer</span></code></a> that supports the <a class="reference external" href="https://blueskyproject.io/bluesky/main/hardware.html#bluesky.protocols.Flyable" title="bluesky 1.15.2.dev5+g8f4f530ce"><span class="xref myst">Flyable</span></a> protocol for motion and trigger systems</p></li>
 </ul>

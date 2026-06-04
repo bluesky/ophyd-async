@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Writing Tests for Devices &#8212; ophyd-async 0.17a7.dev1+gfab63a8a8 documentation</title>
+    <title>Writing Tests for Devices &#8212; ophyd-async 0.18.dev1+g4975caea5 documentation</title>
   
   
   
@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../_static/documentation_options.js?v=b9881f17"></script>
+    <script src="../_static/documentation_options.js?v=d27fb2b8"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -136,8 +136,8 @@
       
     
     
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
-    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.17a7.dev1+gfab63a8a8 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
+    <img src="../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.18.dev1+g4975caea5 documentation - Home"/>
   
   
 </a></div>
@@ -513,19 +513,64 @@
 <p>We will be writing a test using the pytest framework which encourages fixtures to setup and teardown the Devices we wish to test. In this case we will create the <code class="docutils literal notranslate"><span class="pre">DemoMotor</span></code> from the previous tutorial:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">mock_motor</span><span class="p">():</span>
-    <span class="k">async</span> <span class="k">with</span> <span class="n">init_devices</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">mock_motor</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoMotor</span><span class="p">(</span><span class="s2">&quot;BLxxI-MO-TABLE-01:X:&quot;</span><span class="p">)</span>
-    <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">units</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">)</span>
-    <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">precision</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="c1"># Connect with a plain LazyMock, rather than mock=True that will use</span>
+    <span class="c1"># a InstantMovableMock, so we can have full control of how the readback is set</span>
+    <span class="c1"># in the tests</span>
+    <span class="n">mock_motor</span> <span class="o">=</span> <span class="n">demo</span><span class="o">.</span><span class="n">DemoMotor</span><span class="p">(</span><span class="s2">&quot;BLxxI-MO-TABLE-01:X:&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mock_motor&quot;</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">mock_motor</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="n">LazyMock</span><span class="p">())</span>
+    <span class="n">set_mock_units</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="s2">&quot;mm&quot;</span><span class="p">)</span>
+    <span class="n">set_mock_precision</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
     <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">yield</span> <span class="n">mock_motor</span>
 </pre></div>
 </div>
-<p>This will use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.init_devices" title="ophyd_async.core.init_devices"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">init_devices</span></code></a> to call <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.Device.connect" title="ophyd_async.core.Device.connect"><code class="xref myst py py-meth docutils literal notranslate"><span class="pre">Device.connect</span></code></a> with <code class="docutils literal notranslate"><span class="pre">mock=True</span></code>. This will recursively replace the real connection to hardware with a mock that allows us to change the Signal’s value that our code will see and capture any attempts to set the value from our code. In this case we know our tests will expect <code class="docutils literal notranslate"><span class="pre">units=&quot;mm&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">precision=3</span></code>, so we use <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_value" title="ophyd_async.core.set_mock_value"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_value</span></code></a> to those here.</p>
+<p>This fixture opts out of the <a class="reference internal" href="../explanations/when-to-extend-movable.html"><span class="std std-doc">automatic mock behaviour</span></a> by connecting with a plain <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">LazyMock</span></code></a>, giving the tests control over when the readback updates mid-move. <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_units" title="ophyd_async.core.set_mock_units"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_units</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_precision" title="ophyd_async.core.set_mock_precision"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_precision</span></code></a> inject units and precision metadata directly on the readback signal, without needing dedicated child signals on the device.</p>
 <p>If we had any cleanup to do, we would do that after the yield statement.</p>
+</section>
+<section id="automatic-mock-behavior-injection">
+<h3>Automatic mock behavior injection<a class="headerlink" href="#automatic-mock-behavior-injection" title="Link to this heading">#</a></h3>
+<p>If you find yourself repeatedly using <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core.callback_on_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a> to set up the same mock
+behavior for a Device type across many tests, you can define a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceMock" title="ophyd_async.core.DeviceMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceMock</span></code></a> subclass
+to automatically inject that behavior when the Device is connected in mock mode. This is
+especially useful for defining standard mock behavior alongside your Device definitions.</p>
+<p>For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">InstantMotorMock</span><span class="p">(</span><span class="n">DeviceMock</span><span class="p">[</span><span class="s2">&quot;Motor&quot;</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mock behaviour that instantly moves readback to setpoint.&quot;&quot;&quot;</span>
+
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Motor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mock signals to do an instant move on setpoint write.&quot;&quot;&quot;</span>
+        <span class="c1"># Set sensible defaults to avoid runtime errors</span>
+        <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Prevent ZeroDivisionError</span>
+        <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Prevent ZeroDivisionError</span>
+
+        <span class="c1"># Motor starts in &quot;done&quot; state (not moving)</span>
+        <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># When setpoint is written to, immediately update readback and done flag</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_instant_move</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># Moving</span>
+            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>  <span class="c1"># Arrive instantly</span>
+            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Done</span>
+
+        <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_setpoint</span><span class="p">,</span> <span class="n">_instant_move</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then decorate the original class with <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.default_mock_class" title="ophyd_async.core.default_mock_class"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">default_mock_class</span></code></a> so it is automatically
+used when connected in mock mode:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@default_mock_class</span><span class="p">(</span><span class="n">InstantMotorMock</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span><span class="n">StandardMovable</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">Flyable</span><span class="p">,</span> <span class="n">Preparable</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>Now whenever a <code class="docutils literal notranslate"><span class="pre">Motor</span></code> is connected using <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.init_devices" title="ophyd_async.core.init_devices"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">init_devices</span></code></a><code class="docutils literal notranslate"><span class="pre">(mock=True)</span></code>, it will
+automatically use <code class="docutils literal notranslate"><span class="pre">InstantMotorMock</span></code> without any fixture setup. You can still override
+the automatic mock for specific tests by passing an explicit <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceMock" title="ophyd_async.core.DeviceMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceMock</span></code></a> instance
+or a plain <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.LazyMock" title="ophyd_async.core.LazyMock"><code class="xref myst py py-data docutils literal notranslate"><span class="pre">LazyMock</span></code></a> directly to <code class="docutils literal notranslate"><span class="pre">connect()</span></code>, as the <code class="docutils literal notranslate"><span class="pre">mock_motor</span></code> fixture above does.</p>
+</section>
+<section id="pytest-asyncio-setup">
+<h3>pytest-asyncio setup<a class="headerlink" href="#pytest-asyncio-setup" title="Link to this heading">#</a></h3>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This is an async fixture, and we will be using async tests, so we need to install and configure <a class="reference external" href="https://github.com/pytest-dev/pytest-asyncio">pytest-asyncio</a> in our projects’s <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>:</p>
+<p>Fixtures and tests for async Devices must be <code class="docutils literal notranslate"><span class="pre">async</span></code>. To enable this, install and configure <a class="reference external" href="https://github.com/pytest-dev/pytest-asyncio">pytest-asyncio</a> in your project’s <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[project.optional-dependencies]</span>
 <span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="s2">&quot;pytest-asyncio&quot;</span><span class="p">,</span>
@@ -551,11 +596,6 @@
     <span class="k">await</span> <span class="n">assert_configuration</span><span class="p">(</span>
         <span class="n">mock_motor</span><span class="p">,</span>
         <span class="p">{</span>
-            <span class="s2">&quot;mock_motor-units&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;mm&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span>
-                <span class="s2">&quot;alarm_severity&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="p">},</span>
             <span class="s2">&quot;mock_motor-velocity&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
                 <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">ANY</span><span class="p">,</span>
@@ -622,12 +662,13 @@
         <span class="n">target</span><span class="o">=</span><span class="mf">0.55</span><span class="p">,</span>
         <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">,</span>
         <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-        <span class="n">time_elapsed</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">abs</span><span class="o">=</span><span class="mf">0.08</span><span class="p">),</span>
+        <span class="n">time_elapsed</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">abs</span><span class="o">=</span><span class="mf">0.18</span><span class="p">),</span>
     <span class="p">)</span>
+    <span class="k">await</span> <span class="n">wait_for_pending_wakeups</span><span class="p">()</span>
     <span class="k">await</span> <span class="n">assert_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span> <span class="mf">0.55</span><span class="p">)</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">done</span>
     <span class="c1"># Wait a bit and give it an update, checking that the watcher is called with it</span>
-    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
     <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">watcher</span><span class="o">.</span><span class="n">wait_for_call</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mock_motor&quot;</span><span class="p">,</span>
@@ -636,7 +677,7 @@
         <span class="n">target</span><span class="o">=</span><span class="mf">0.55</span><span class="p">,</span>
         <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mm&quot;</span><span class="p">,</span>
         <span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-        <span class="n">time_elapsed</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="nb">abs</span><span class="o">=</span><span class="mf">0.08</span><span class="p">),</span>
+        <span class="n">time_elapsed</span><span class="o">=</span><span class="n">pytest</span><span class="o">.</span><span class="n">approx</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="nb">abs</span><span class="o">=</span><span class="mf">0.18</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="c1"># Make it almost get there and check that it completes</span>
     <span class="n">set_mock_value</span><span class="p">(</span><span class="n">mock_motor</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span> <span class="mf">0.5499999</span><span class="p">)</span>
@@ -652,58 +693,11 @@
 <p>There are a few other things we may wish to do in tests:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_values" title="ophyd_async.core.set_mock_values"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_values</span></code></a> if you want to set a series of mock values, with repeated checks at each value</p></li>
+<li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_units" title="ophyd_async.core.set_mock_units"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_units</span></code></a> and <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_precision" title="ophyd_async.core.set_mock_precision"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_precision</span></code></a> to set units and precision metadata on a Signal without needing dedicated child signals</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core.callback_on_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a> to allow setting a Signal to have side effects, like setting another Signal</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.set_mock_put_proceeds" title="ophyd_async.core.set_mock_put_proceeds"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">set_mock_put_proceeds</span></code></a> to block or unblock <code class="docutils literal notranslate"><span class="pre">Signal.set()</span></code> from completing</p></li>
 <li><p><a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.mock_puts_blocked" title="ophyd_async.core.mock_puts_blocked"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">mock_puts_blocked</span></code></a> a context manager that blocks put proceeds at the start, and unblocks at the end</p></li>
 </ul>
-<section id="automatic-mock-behavior-injection">
-<h3>Automatic mock behavior injection<a class="headerlink" href="#automatic-mock-behavior-injection" title="Link to this heading">#</a></h3>
-<p>If you find yourself repeatedly using <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.callback_on_mock_put" title="ophyd_async.core.callback_on_mock_put"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">callback_on_mock_put</span></code></a> to set up the same mock behavior for a Device type across many tests, you can define a <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceMock" title="ophyd_async.core.DeviceMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceMock</span></code></a> subclass to automatically inject that behavior when the Device is connected in mock mode. This is especially useful for defining standard mock behavior alongside your Device definitions, making it easier to switch between hardware and mock modes.</p>
-<p>For example, if you have a device that needs automatic mock behavior, you can define:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">InstantMotorMock</span><span class="p">(</span><span class="n">DeviceMock</span><span class="p">[</span><span class="s2">&quot;Motor&quot;</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mock behaviour that instantly moves readback to setpoint.&quot;&quot;&quot;</span>
-
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">Motor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mock signals to do an instant move on setpoint write.&quot;&quot;&quot;</span>
-        <span class="c1"># Set sensible defaults to avoid runtime errors</span>
-        <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Prevent ZeroDivisionError</span>
-        <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">max_velocity</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># Prevent ZeroDivisionError</span>
-
-        <span class="c1"># Motor starts in &quot;done&quot; state (not moving)</span>
-        <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-        <span class="c1"># When setpoint is written to, immediately update readback and done flag</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">_instant_move</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># Moving</span>
-            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_readback</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>  <span class="c1"># Arrive instantly</span>
-            <span class="n">set_mock_value</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">motor_done_move</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Done</span>
-
-        <span class="n">callback_on_mock_put</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">user_setpoint</span><span class="p">,</span> <span class="n">_instant_move</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Then decorate the original class with <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.default_mock_class" title="ophyd_async.core.default_mock_class"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">default_mock_class</span></code></a> so it is automatically used when connected in mock mode:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@default_mock_class</span><span class="p">(</span><span class="n">InstantMotorMock</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Motor</span><span class="p">(</span>
-</pre></div>
-</div>
-<p>Now whenever a Motor is connected in mock mode using <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.init_devices" title="ophyd_async.core.init_devices"><code class="xref myst py py-func docutils literal notranslate"><span class="pre">init_devices</span></code></a><code class="docutils literal notranslate"><span class="pre">(mock=True)</span></code>, it will automatically use <code class="docutils literal notranslate"><span class="pre">InstantMotorMock</span></code> and have this behavior:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">with</span> <span class="n">init_devices</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="n">motor</span> <span class="o">=</span> <span class="n">Motor</span><span class="p">(</span><span class="s2">&quot;BLxxI-MO-TABLE-01:X&quot;</span><span class="p">)</span>
-
-<span class="c1"># No manual callback setup needed - the mock behavior is already active</span>
-<span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">user_setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="mf">50.0</span><span class="p">)</span>
-<span class="k">assert</span> <span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">user_readback</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span> <span class="o">==</span> <span class="mf">50.0</span>
-</pre></div>
-</div>
-<p>You can still override the automatic mock for specific tests by passing an explicit <a class="reference internal" href="../_api/ophyd_async/ophyd_async.core.html#ophyd_async.core.DeviceMock" title="ophyd_async.core.DeviceMock"><code class="xref myst py py-class docutils literal notranslate"><span class="pre">DeviceMock</span></code></a> instance:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use a plain DeviceMock without the automatic behavior</span>
-<span class="n">custom_mock</span> <span class="o">=</span> <span class="n">DeviceMock</span><span class="p">()</span>
-<span class="n">motor</span> <span class="o">=</span> <span class="n">Motor</span><span class="p">(</span><span class="s2">&quot;TEST:MOTOR&quot;</span><span class="p">)</span>
-<span class="k">await</span> <span class="n">motor</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">mock</span><span class="o">=</span><span class="n">custom_mock</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This approach keeps your mock logic close to your Device definition, reduces duplication across tests, and makes it easier to maintain consistent mock behavior.</p>
-</section>
 </section>
 <section id="tests-that-execute-a-bluesky-plan">
 <h2>Tests that execute a bluesky plan<a class="headerlink" href="#tests-that-execute-a-bluesky-plan" title="Link to this heading">#</a></h2>
@@ -807,15 +801,14 @@
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tests-that-call-the-bluesky-verbs-directly">Tests that call the bluesky verbs directly</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-fixture-and-set-signal-values">Create a fixture and set signal values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#automatic-mock-behavior-injection">Automatic mock behavior injection</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pytest-asyncio-setup">pytest-asyncio setup</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-the-output-of-verbs-in-tests">Checking the output of verbs in tests</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-that-signals-were-changed">Checking that signals were changed</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checking-for-watcher-updates">Checking for watcher updates</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-test-utilities">Other test utilities</a><ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#automatic-mock-behavior-injection">Automatic mock behavior injection</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#other-test-utilities">Other test utilities</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tests-that-execute-a-bluesky-plan">Tests that execute a bluesky plan</a><ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-a-runengine-in-a-fixture">Create a RunEngine in a fixture</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#run-a-plan-and-inspect-the-documents-it-produces">Run a plan and inspect the documents it produces</a></li>
