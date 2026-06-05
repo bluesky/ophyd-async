@@ -18,6 +18,7 @@ from ._utils import (
     wait_for_connection,
 )
 
+T = TypeVar("T")
 DeviceT = TypeVar("DeviceT", bound="Device")
 
 
@@ -282,7 +283,7 @@ _not_device_attrs = {
 }
 
 
-class DeviceVector(MutableMapping[int, DeviceT], Device):
+class DeviceMap(MutableMapping[T, DeviceT], Device):
     """Defines a dictionary of Device children with arbitrary integer keys.
 
     :see-also: [](#implementing-devices) for examples of how to use this class.
@@ -290,33 +291,28 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
 
     def __init__(
         self,
-        children: Mapping[int, DeviceT] | None = None,
+        children: Mapping[T, DeviceT] | None = None,
         name: str = "",
         connector: DeviceConnector | None = None,
     ) -> None:
-        self._children: dict[int, DeviceT] = {}
+        self._children: dict[T, DeviceT] = {}
         self.update(children or {})
         super().__init__(name=name, connector=connector)
 
-    def __getitem__(self, key: int) -> DeviceT:
+    def __getitem__(self, key: T) -> DeviceT:
         return self._children[key]
 
-    def __setitem__(self, key: int, value: DeviceT) -> None:
-        # Check the types on entry to dict to make sure we can't accidentally
-        # make a non-integer named child
-        if not isinstance(key, int):
-            msg = f"Expected int, got {key}"
-            raise TypeError(msg)
+    def __setitem__(self, key: T, value: DeviceT) -> None:
         if not isinstance(value, Device):
             msg = f"Expected Device, got {value}"
             raise TypeError(msg)
         self._children[key] = value
         value.parent = self
 
-    def __delitem__(self, key: int) -> None:
+    def __delitem__(self, key: T) -> None:
         del self._children[key]
 
-    def __iter__(self) -> Iterator[int]:
+    def __iter__(self) -> Iterator[T]:
         yield from self._children
 
     def __len__(self) -> int:
@@ -329,6 +325,19 @@ class DeviceVector(MutableMapping[int, DeviceT], Device):
 
     def __hash__(self):  # to allow DeviceVector to be used as dict keys and in sets
         return hash(id(self))
+
+
+class DeviceVector(DeviceMap[int, DeviceT]):
+    """Defines a dictionary of Device children with arbitrary integer keys.
+
+    :see-also: [](#implementing-devices) for examples of how to use this class.
+    """
+
+    def __setitem__(self, key: T, value: DeviceT) -> None:
+        if not isinstance(key, int):
+            msg = f"Expected int, got {value}"
+            raise TypeError(msg)
+        super().__setitem__(key, value)
 
 
 class DeviceProcessor:

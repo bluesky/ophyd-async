@@ -10,6 +10,7 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     Device,
     DeviceFiller,
+    DeviceMap,
     DeviceVector,
     NotConnectedError,
     Reference,
@@ -37,7 +38,7 @@ class DummyDeviceGroup(Device):
     def __init__(self, name: str) -> None:
         self.child1 = DummyBaseDevice()
         self._child2 = DummyBaseDevice()
-        self.dict_with_children: DeviceVector[DummyBaseDevice] = DeviceVector(
+        self.dict_with_children: DeviceMap[int, DummyBaseDevice] = DeviceMap(
             {123: DummyBaseDevice()}
         )
         super().__init__(name)
@@ -97,9 +98,7 @@ def test_device_children(parent: DummyDeviceGroup):
     names = ["child1", "_child2", "dict_with_children"]
     for idx, (name, child) in enumerate(parent.children()):
         assert name == names[idx]
-        expected_type = (
-            DeviceVector if name == "dict_with_children" else DummyBaseDevice
-        )
+        expected_type = DeviceMap if name == "dict_with_children" else DummyBaseDevice
         assert type(child) is expected_type
         assert child.parent == parent
 
@@ -210,7 +209,7 @@ class MotorBundle(Device):
     def __init__(self, name: str) -> None:
         self.X = motor.Motor("BLxxI-MO-TABLE-01:X")
         self.Y = motor.Motor("BLxxI-MO-TABLE-01:Y")
-        self.V: DeviceVector[motor.Motor] = DeviceVector(
+        self.V: DeviceMap[int, motor.Motor] = DeviceMap(
             {
                 0: motor.Motor("BLxxI-MO-TABLE-21:X"),
                 1: motor.Motor("BLxxI-MO-TABLE-21:Y"),

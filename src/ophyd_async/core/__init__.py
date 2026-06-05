@@ -26,6 +26,7 @@ from ._detector import (
 from ._device import (
     Device,
     DeviceConnector,
+    DeviceMap,
     DeviceMock,
     DeviceVector,
     LazyMock,
@@ -164,6 +165,7 @@ __all__ = [
     "DeviceConnector",
     "DeviceFiller",
     "DeviceAnnotation",
+    "DeviceMap",
     "DeviceVector",
     "init_devices",
     # Movable
