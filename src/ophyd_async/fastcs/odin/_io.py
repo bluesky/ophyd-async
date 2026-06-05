@@ -1,10 +1,10 @@
-from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW, SignalX
+from ophyd_async.core import Device, DeviceVector, SignalR, SignalRW, TriggerableCommand
 
 
 class MetaWriterIO(Device):
     """Ophyd-async implementation of a MetaWriter Odin Subdevice."""
 
-    stop: SignalX
+    stop: TriggerableCommand
     file_prefix: SignalRW[str]
     directory: SignalRW[str]
     acquisition_id: SignalRW[str]
@@ -18,8 +18,8 @@ class FrameProcessorIO(Device):
 class FrameProcessorVectorIO(DeviceVector[FrameProcessorIO]):
     """Ophyd-async implementation of a FrameProcessorAdapter Odin Subdevice."""
 
-    start_writing: SignalX
-    stop_writing: SignalX
+    start_writing: TriggerableCommand
+    stop_writing: TriggerableCommand
     writing: SignalR[bool]
     frames_written: SignalR[int]
     frames: SignalRW[int]

@@ -89,15 +89,17 @@ We write an `async` test method so we can `await` our calls to verbs. We include
 Some of our tests produce timestamps, instead of checking their values we use [](#unittest.mock.ANY) to say that the timestamp just has to be present to pass.
 ```
 
-## Checking that signals were changed
+## Checking that commands and signals were called
 
-Now let's call some verbs and check that they do the right thing. We want to check that `stop()` triggers the [](#SignalX) `stop_`, waiting for it to complete:
+Now let's call some verbs and check that they do the right thing. We want to check that `stop()` triggers the [](#TriggerableCommand) `stop_`, waiting for it to complete:
 
 ```{literalinclude} ../../tests/unit_tests/epics/demo/test_epics_demo.py
 :pyobject: test_motor_stopped
 ```
 
-This time we use [](#get_mock_put) to get a [](#unittest.mock.Mock) that will be called every time `stop_.trigger()` is called. We check it hasn't been called, then call our method, then check it has been called with `None` (what a SignalX sends to tell the backend to put the value needed to trigger). We also show that we can call [](#get_mock) on the parent to see all of the mock calls that have been made on all it's children, useful to check ordering.
+This time we use [](#get_mock_execute) to get an [](#unittest.mock.AsyncMock) that will be called every time `stop_.trigger()` is called. We check it hasn't been called, then call our method, then check it has been called with no arguments. We also show that we can call [](#get_mock) on the parent to see all of the mock calls that have been made on all its children, useful to check ordering.
+
+For [](#Signal)s, the equivalent is [](#get_mock_put), which returns an `AsyncMock` that records every `Signal.set()` / `put()` call.
 
 ## Checking for watcher updates
 
@@ -109,12 +111,31 @@ Now let's pretend to be a progress bar and check that we get the right outputs. 
 
 Here we call the verb, but don't wait for it to complete (as that would wait forever). Instead we attach a [](#StatusWatcher) to the [](#WatchableAsyncStatus) that `set()` returns, and periodically call [](#set_mock_value) on the readback, checking that our watcher was called with the right values. When we give it a value that should make `set()` terminate, we call [](#wait_for_pending_wakeups) to make sure the background tasks get some time to finish correctly before checking the status completed successfully.
 
+## Setting side effects on mocks
+
+By default, a [](#Signal) connected in mock mode records all `put()` calls and stores the put value as the readback. Use [](#callback_on_mock_put) to inject side effects — for example, to propagate a setpoint write through to a readback:
+
+```python
+with callback_on_mock_put(motor.setpoint, lambda v: set_mock_value(motor.readback, v)):
+    await motor.setpoint.set(10.0)
+# motor.readback is now 10.0
+```
+
+The callback is cleared automatically when the context exits. For a persistent side effect across a whole test, call it as a plain function (without `with`).
+
+For a [](#Command) backed by [](#soft_command) and connected in mock mode, the original Python function is called by default — mock mode behaves identically to real mode unless you intervene. Use [](#get_mock_execute) to assert the call was made, or use [](#callback_on_mock_execute) to suppress the real function and return something else.
+
+For hardware-backed [](#Command)s (e.g. EPICS), there is no underlying Python function to call: mock mode returns a manufactured "empty" default for the declared return type (e.g. 0 for ints, [] for arrays). The same `callback_on_mock_execute` override applies.
+
 ## Other test utilities
 
 There are a few other things we may wish to do in tests:
 - [](#set_mock_values) if you want to set a series of mock values, with repeated checks at each value
 - [](#set_mock_units) and [](#set_mock_precision) to set units and precision metadata on a Signal without needing dedicated child signals
 - [](#callback_on_mock_put) to allow setting a Signal to have side effects, like setting another Signal
+- [](#callback_on_mock_execute) to override the function called when a Command is executed
+- [](#get_mock_put) to get the `AsyncMock` tracking `put()` calls on a Signal
+- [](#get_mock_execute) to get the `AsyncMock` tracking `execute()` calls on a Command
 - [](#set_mock_put_proceeds) to block or unblock `Signal.set()` from completing
 - [](#mock_puts_blocked) a context manager that blocks put proceeds at the start, and unblocks at the end
 

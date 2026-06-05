@@ -8,10 +8,11 @@ from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     AsyncStatus,
     CalculatableTimeout,
+    Command,
     SignalR,
     SignalRW,
-    SignalX,
     StandardReadable,
+    TriggerableCommand,
     WatchableAsyncStatus,
     WatcherUpdate,
     observe_value,
@@ -31,7 +32,8 @@ class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
     velocity: A[SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
     state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
     # If a tango name clashes with a bluesky verb, add a trailing underscore
-    stop_: SignalX
+    stop_: TriggerableCommand
+    move_to_position: Command[[float], bool]
 
     def __init__(self, trl: str = "", name=""):
         super().__init__(trl, name=name)
@@ -79,3 +81,9 @@ class TangoMover(TangoDevice, StandardReadable, Movable, Stoppable):
     def stop(self, success: bool = True) -> AsyncStatus:
         self._set_success = success
         return self.stop_.trigger()
+
+    async def move_me(self, value: float):
+        """An alternate way to move the motor using a command. Returns immediately."""
+        success = await self.move_to_position.execute(value)
+        if not success:
+            raise RuntimeError("Failed to move to position")

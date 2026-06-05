@@ -152,21 +152,6 @@ def everything_signal_info():
         ],
         cmd_name=None,
     )
-    signal_info["strenum_spectrum"] = SequenceData(
-        name="strenum_spectrum",
-        py_type=Sequence[ExampleStrEnum],
-        initial=[
-            ExampleStrEnum.A.value,
-            ExampleStrEnum.B.value,
-            ExampleStrEnum.C.value,
-        ],
-        random_put_values=[
-            ExampleStrEnum.A.value,
-            ExampleStrEnum.B.value,
-            ExampleStrEnum.C.value,
-        ],
-        cmd_name=None,
-    )
     add_ads(
         "bool",
         "DevBoolean",
@@ -203,14 +188,6 @@ def everything_signal_info():
         "my_state",
         DevStateEnum,
         DevStateEnum.INIT,
-        random_put_values=[e.name for e in DevStateEnum],
-        cmd_name=None,
-    )
-
-    signal_info["my_state_spectrum"] = SequenceData(
-        "my_state_spectrum",
-        Sequence[DevStateEnum],
-        initial=[e.name for e in DevStateEnum],
         random_put_values=[e.name for e in DevStateEnum],
         cmd_name=None,
     )

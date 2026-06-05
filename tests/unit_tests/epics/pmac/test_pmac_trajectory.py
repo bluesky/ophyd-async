@@ -6,6 +6,7 @@ from scanspec.specs import Fly, Line
 
 from ophyd_async.core import (
     get_mock,
+    get_mock_execute,
     set_and_wait_for_value,
     set_mock_value,
 )
@@ -346,7 +347,7 @@ async def test_pmac_trajectory_stage(sim_motors: tuple[PmacIO, Motor, Motor]):
         call.time_array.put(np.array(0)),
         call.user_array.put(np.array(8)),
         call.points_to_build.put(1),
-        call.build_profile.put(None),
+        call.build_profile.execute(),
         call.execute_profile.put(True),
     ]
 
@@ -362,12 +363,11 @@ async def test_pmac_trajectory_unstage(sim_motors: tuple[PmacIO, Motor, Motor]):
 async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor]):
     pmac_io, _, _ = sim_motors
     pmac_trajectory = PmacTrajectoryTriggerLogic(pmac_io)
-    mock_abort_profile = get_mock(pmac_io.trajectory.abort_profile)
-    mock_abort_profile.put = AsyncMock()
+    execute_mock = get_mock_execute(pmac_io.trajectory.abort_profile)
 
     # Method not called as no running trajectory
     await pmac_trajectory._stop_if_running()
-    mock_abort_profile.put.assert_not_called()
+    execute_mock.assert_not_awaited()
 
     # Mocking that trajectory is executing
     set_mock_value(
@@ -376,4 +376,4 @@ async def test_trajectory_stop_if_running(sim_motors: tuple[PmacIO, Motor, Motor
 
     # Method called as there is now a running trajectory
     await pmac_trajectory._stop_if_running()
-    mock_abort_profile.put.assert_called_once()
+    execute_mock.assert_awaited_once_with()

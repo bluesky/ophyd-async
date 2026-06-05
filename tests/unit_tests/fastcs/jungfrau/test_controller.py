@@ -10,7 +10,7 @@ from ophyd_async.core import (
     StaticFilenameProvider,
     StaticPathProvider,
     TriggerInfo,
-    callback_on_mock_put,
+    callback_on_mock_execute,
     get_mock,
     init_devices,
     set_mock_value,
@@ -72,12 +72,12 @@ async def test_arm(jungfrau: JungfrauDetector):
     mock = get_mock(jungfrau.detector)
     await jungfrau.prepare(TriggerInfo())
     mock.reset_mock()
-    callback_on_mock_put(
+    callback_on_mock_execute(
         jungfrau.detector.acquisition_start,
-        lambda v: set_mock_value(jungfrau.odin.fp.frames_written, 1),
+        lambda: set_mock_value(jungfrau.odin.fp.frames_written, 1),
     )
     await jungfrau.trigger()
-    assert_has_calls(jungfrau.detector, [call.acquisition_start.put(None)])
+    assert_has_calls(jungfrau.detector, [call.acquisition_start.execute()])
 
 
 async def test_disarm(jungfrau: JungfrauDetector):
@@ -85,7 +85,7 @@ async def test_disarm(jungfrau: JungfrauDetector):
     assert_has_calls(
         jungfrau.detector,
         [
-            call.acquisition_stop.put(None),
+            call.acquisition_stop.execute(),
             call.pedestal_mode_state.put(PedestalMode.OFF),
         ],
     )
@@ -148,7 +148,7 @@ async def test_signals_set_in_standard_external_mode(jungfrau: JungfrauDetector)
             call.frames_per_acq.put(10),
             call.period_between_frames.put(0.00102),
             call.exposure_time.put(0.001),
-            call.acquisition_start.put(None),
+            call.acquisition_start.execute(),
         ],
     )
 

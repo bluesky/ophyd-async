@@ -49,7 +49,7 @@ async def test_prepare_internal_calls_correct_parameters(
             call.od.fp.data_datatype.put("uint16"),
             call.od.fp.frames.put(0),
             call.od.block_size.put(100000),
-            call.od.fp.start_writing.put(None),
+            call.od.fp.start_writing.execute(),
         ],
         reset_after=False,
     )
