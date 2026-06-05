@@ -337,7 +337,7 @@ class DeviceMap(DeviceCollection[str, DeviceT]):
 
     def __setitem__(self, key: str, value: DeviceT) -> None:
         if not isinstance(key, str):
-            msg = f"Expected str, got {value}"
+            msg = f"Expected str, got {key}"
             raise TypeError(msg)
         super().__setitem__(key, value)
 
@@ -352,7 +352,7 @@ class DeviceVector(DeviceCollection[int, DeviceT]):
 
     def __setitem__(self, key: int, value: DeviceT) -> None:
         if not isinstance(key, int):
-            msg = f"Expected int, got {value}"
+            msg = f"Expected int, got {key}"
             raise TypeError(msg)
         super().__setitem__(key, value)
 
