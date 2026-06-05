@@ -43,6 +43,7 @@ from ophyd_async.tango.demo._tango._servers import (  # noqa: PLC2701
     DemoMultiChannelDetectorDevice,
     DemoPointDetectorChannelDevice,
 )
+from ophyd_async.tango.testing import TangoSubprocessDeviceServer
 from ophyd_async.testing import assert_reading
 
 T = TypeVar("T")
@@ -358,8 +359,8 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def tango_test_device(subprocess_helper):
-    with subprocess_helper(
+def tango_test_device():
+    with TangoSubprocessDeviceServer(
         [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
     ) as context:
         yield context.trls["test/device/1"]
@@ -367,22 +368,20 @@ def tango_test_device(subprocess_helper):
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def sim_test_context_trls(subprocess_helper):
-    args = [
-        {
-            "class": DemoMotorDevice,
-            "devices": [{"name": "sim/motor/1"}],
-        },
-        {
-            "class": DemoPointDetectorChannelDevice,
-            "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
-        },
-        {
-            "class": DemoMultiChannelDetectorDevice,
-            "devices": [{"name": "sim/detector/1"}],
-        },
-    ]
-    with subprocess_helper(args) as context:
+def sim_test_context_trls():
+    with TangoSubprocessDeviceServer(
+        [
+            {"class": DemoMotorDevice, "devices": [{"name": "sim/motor/1"}]},
+            {
+                "class": DemoPointDetectorChannelDevice,
+                "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
+            },
+            {
+                "class": DemoMultiChannelDetectorDevice,
+                "devices": [{"name": "sim/detector/1"}],
+            },
+        ]
+    ) as context:
         # Now connect the channel devices to the motor devices
         device_proxy = tango.DeviceProxy(context.trls["sim/counter/1"])
         device_proxy.locator_x = context.trls["sim/motor/1"]

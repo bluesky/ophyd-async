@@ -36,6 +36,7 @@ from ophyd_async.tango.core import (
     get_tango_trl,
     try_to_cast_as_float,
 )
+from ophyd_async.tango.testing import TangoSubprocessDeviceServer
 
 
 # --------------------------------------------------------------------
@@ -46,8 +47,8 @@ async def prepare_device(trl: str, pv: str, put_value: Any) -> None:
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def tango_test_device(subprocess_helper):
-    with subprocess_helper(
+def tango_test_device():
+    with TangoSubprocessDeviceServer(
         [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
     ) as context:
         yield context.trls["test/device/1"]

@@ -11,7 +11,7 @@ from tango.asyncio_executor import set_global_executor
 
 from ophyd_async.core import Array1D
 from ophyd_async.tango.core import DevStateEnum
-from ophyd_async.tango.testing import ExampleStrEnum, TangoSubprocessDeviceServer
+from ophyd_async.tango.testing import ExampleStrEnum
 from ophyd_async.testing import (
     float_array_value,
     int_array_value,
@@ -37,11 +37,6 @@ def pytest_collection_modifyitems(config, items):
                         reason="Ophyd-async is currently not tested on Windows + Tango"
                     )
                 )
-
-
-@pytest.fixture(scope="module")
-def subprocess_helper():
-    return TangoSubprocessDeviceServer
 
 
 @dataclass

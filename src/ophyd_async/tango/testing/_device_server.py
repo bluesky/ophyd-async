@@ -12,10 +12,26 @@ import socket
 import string
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import cast
+from typing import Any, NotRequired, TypedDict, cast
 
+from tango.server import Device
 from tango.test_context import MultiDeviceTestContext
+
+
+class TangoDeviceInfo(TypedDict):
+    """Configuration for a single Tango device instance for MultiDeviceTestContext."""
+
+    name: str
+    properties: NotRequired[dict[str, Any]]
+
+
+# "class" is a Python keyword, so we use the functional TypedDict form
+TangoClassConfig = TypedDict(
+    "TangoClassConfig",
+    {"class": type[Device], "devices": list[TangoDeviceInfo]},
+)
 
 _ACCEPT_TIMEOUT = 30.0  # seconds to wait for subprocess to connect back
 _COMMUNICATE_TIMEOUT = 10.0  # seconds to wait for subprocess to exit cleanly
@@ -48,7 +64,7 @@ def _recv_pickled(conn: socket.socket) -> object:
 
 
 class TangoSubprocessDeviceServer:
-    def __init__(self, args):
+    def __init__(self, args: Sequence[TangoClassConfig]):
         self._args = args
         self.trls: dict[str, str] = {}
 
@@ -91,15 +107,12 @@ if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(("127.0.0.1", port))
 
-    context_args = _recv_pickled(sock)
+    configs = cast(list[TangoClassConfig], _recv_pickled(sock))
 
-    device_names = []
-    for arg_dict in context_args:
-        for device in arg_dict["devices"]:
-            device_names.append(device["name"])
+    device_names = [d["name"] for cfg in configs for d in cfg["devices"]]
 
     trls = {}
-    with MultiDeviceTestContext(context_args, process=False) as context:
+    with MultiDeviceTestContext(configs, process=False) as context:
         for name in device_names:
             trls[name] = context.get_device_access(name)
         _send_pickled(sock, trls)

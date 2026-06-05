@@ -21,6 +21,7 @@ from ophyd_async.tango.core import (
 from ophyd_async.tango.testing import (
     ExampleStrEnum,
     OneOfEverythingTangoDevice,
+    TangoSubprocessDeviceServer,
 )
 
 TEST_PARAMS = [
@@ -68,8 +69,8 @@ TEST_PARAMS = [
 #               fixtures to run Echo device
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def everything_device_trl(subprocess_helper):
-    with subprocess_helper(
+def everything_device_trl():
+    with TangoSubprocessDeviceServer(
         [{"class": OneOfEverythingTangoDevice, "devices": [{"name": "test/device/2"}]}]
     ) as context:
         yield context.trls["test/device/2"]

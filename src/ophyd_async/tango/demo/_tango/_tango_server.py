@@ -19,27 +19,27 @@ def start_device_server_subprocess(
     :param prefix: The prefix for the IOC PVs.
     :param num_channels: The number of point detector channels to create.
     """
-    devices = [
-        {
-            "class": DemoMotorDevice,
-            "devices": [{"name": f"{prefix}/{suffix}"} for suffix in ["X", "Y"]],
-        },
-        {
-            "class": DemoPointDetectorChannelDevice,
-            "devices": [
-                {"name": f"{prefix}/C{channel}", "properties": {"channel": channel}}
-                for channel in range(1, num_channels + 1)
-            ],
-        },
-        {
-            "class": DemoMultiChannelDetectorDevice,
-            "devices": [
-                {"name": f"{prefix}/DET", "properties": {"channels": num_channels}}
-            ],
-        },
-    ]
-
-    tango_server = TangoSubprocessDeviceServer(devices)
+    tango_server = TangoSubprocessDeviceServer(
+        [
+            {
+                "class": DemoMotorDevice,
+                "devices": [{"name": f"{prefix}/{suffix}"} for suffix in ["X", "Y"]],
+            },
+            {
+                "class": DemoPointDetectorChannelDevice,
+                "devices": [
+                    {"name": f"{prefix}/C{channel}", "properties": {"channel": channel}}
+                    for channel in range(1, num_channels + 1)
+                ],
+            },
+            {
+                "class": DemoMultiChannelDetectorDevice,
+                "devices": [
+                    {"name": f"{prefix}/DET", "properties": {"channels": num_channels}}
+                ],
+            },
+        ]
+    )
     tango_server.connect()
 
     channel_locators = []
