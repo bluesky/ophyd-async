@@ -42,7 +42,7 @@ class PviDeviceConnector(DeviceConnector):
         hinted Signals are not present.
     """
 
-    mock_device_vector_len: int = 2
+    mock_device_vector_len: list[int] = [1, 2]
     pvi_tree: PviTree | None = None
 
     def __init__(self, prefix: str = "", error_hint: str = "") -> None:

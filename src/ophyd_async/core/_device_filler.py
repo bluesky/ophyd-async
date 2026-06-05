@@ -283,7 +283,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             dest = self._filled_connectors if filled else self._unfilled_connectors
             dest[_logical(name)] = connector
 
-    def create_device_map_entries_to_mock(self, num: int):
+    def create_device_map_entries_to_mock(self, entries: list[Any]):
         """Create num entries for each `DeviceMap`.
 
         This is used when the Device is being connected in mock mode.
@@ -299,7 +299,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         # Fill DeviceMap
         self.fill_child_device(self._device.name)
         # Then handle children
-        for i in range(1, num + 1):
+        for i in entries:
             if issubclass(base_cls, Signal):
                 self.fill_child_signal(self._device.name, hinted_child_cls, i)
             elif issubclass(base_cls, Device):
@@ -381,14 +381,14 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self,
         name: str,
         device_type: type[Device | DeviceMap] = Device,
-        vector_index: Any | None = None,
+        map_key: Any | None = None,
     ) -> DeviceConnectorT:
         """Mark a Device as filled, and return its connector for filling.
 
         :param name:
             The name without trailing underscore, the name in the control system
         :param device_type: The `Device` subclass to be created
-        :param vector_index: If the child is in a `DeviceMap` then what index is it
+        :param map_key: If the child is in a `DeviceMap` then what key is it
         :return: The DeviceConnector for the filled Device.
         """
         name = cast(LogicalName, name)
@@ -399,7 +399,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         elif name in self._filled_backends:
             # We made it and filled it so return for validation
             connector = self._filled_connectors[name]
-        elif vector_index is not None:
+        elif map_key is not None:
             # We need to add a new entry to a DeviceMap
             device_map = self._ensure_device_map()
             device_map_type = _get_device_map_child_datatype(device_map) or device_type
@@ -412,7 +412,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                     f"but {device_map_type} is not a subclass of `Device`",
                 )
             connector = self._device_connector_factory()
-            device_map[vector_index] = device_map_type(connector=connector)
+            device_map[map_key] = device_map_type(connector=connector)
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
