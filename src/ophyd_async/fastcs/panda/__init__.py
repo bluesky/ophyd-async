@@ -13,6 +13,9 @@ from ._block import (
     SeqBlock,
 )
 from ._detector import HDFPanda
+from ._data_logic import PandaHDFDataLogic
+from ._arm_logic import PandaArmLogic
+from ._trigger_logic import PandaTriggerLogic
 from ._fly_logic import (
     PcompInfo,
     PosOutScaleOffset,
@@ -56,4 +59,7 @@ __all__ = [
     "ScanSpecSeqTableTriggerLogic",
     "PosOutScaleOffset",
     "apply_panda_settings",
+    "PandaHDFDataLogic",
+    "PandaArmLogic",
+    "PandaTriggerLogic",
 ]
