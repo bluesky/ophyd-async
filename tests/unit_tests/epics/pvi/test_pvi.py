@@ -19,6 +19,7 @@ from ophyd_async.epics.core import PviDeviceConnector, SignalDetails
 
 
 class Block1(Device, HasHints):
+    # device_map_signal_r: DeviceMap[SignalRW[float]]
     device_vector_signal_x: DeviceVector[SignalX]
     device_vector_signal_rw: DeviceVector[SignalRW[float]]
     signal_x: SignalX

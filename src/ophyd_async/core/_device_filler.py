@@ -16,7 +16,7 @@ from typing import (
     runtime_checkable,
 )
 
-from ._device import Device, DeviceConnector, DeviceMap
+from ._device import Device, DeviceCollection, DeviceConnector
 from ._signal import Ignore, Signal, SignalX
 from ._signal_backend import SignalBackend, SignalDatatype
 from ._utils import cached_get_origin, cached_get_type_hints, get_origin_class
@@ -42,29 +42,29 @@ def _get_datatype(annotation: Any) -> type | None:
     return None
 
 
-def _get_device_map_child_datatype(map: Device | type[Device]) -> type | None:
+def _get_device_collection_child_datatype(map: Device | type[Device]) -> type | None:
     # If passed a Device, try to get the original class
-    # extracting DeviceMap[T, SomeDevice] from a <DeviceMap>
+    # extracting DeviceCollection[T, SomeDevice] from a <DeviceCollection>
     if generic_class := getattr(map, "__orig_class__", None):
-        # Type hinted DeviceMap
-        # e.g., DeviceMap[T, SomeDevice]
+        # Type hinted DeviceCollection
+        # e.g., DeviceCollection[T, SomeDevice]
         return _get_datatype(generic_class)
 
     for base in getattr(map, "__orig_bases__", ()):
-        # Sub class of type hinted DeviceMap
+        # Sub class of type hinted DeviceCollection
         # We must extract the original base, which we can do from a type or cls
-        # e.g., instance of `class CustomMap(DeviceMap[T, SomeDevice])`
+        # e.g., instance of `class CustomMap(DeviceCollection[T, SomeDevice])`
         origin = get_origin_class(base)
         if (
             origin is not None
             and isinstance(origin, type)
-            and issubclass(origin, DeviceMap)
+            and issubclass(origin, DeviceCollection)
         ):
             datatype = _get_datatype(base)
             if datatype is not None:
                 return datatype
 
-            datatype = _get_device_map_child_datatype(origin)
+            datatype = _get_device_collection_child_datatype(origin)
             if datatype is not None:
                 return datatype
 
@@ -185,31 +185,32 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 self._store_signal_datatype(name, annotation)
                 self._uncreated_signals[name] = origin
             # We either have an annotation of a Device, or we have a generic alias of
-            # a DeviceMap (i.e., DeviceMap[T, SomeDevice]), which must be callable
-            # and returns a DeviceMap.
+            # a DeviceCollection (i.e., DeviceCollection[T, SomeDevice]), which must be
+            # callable and returns a DeviceCollection.
             elif (isinstance(annotation, type) and issubclass(annotation, Device)) or (
                 isinstance(annotation, types.GenericAlias) and callable(annotation)
             ):
-                # Check for DeviceMap generic alias type hint
+                # Check for DeviceCollection generic alias type hint
                 # If this is a plain `type`, then _get_datatype will return None
                 if device_map_child_class := _get_datatype(annotation):
                     # Get the origin class of the type hint
                     child_origin = get_origin_class(device_map_child_class)
                     if child_origin and issubclass(child_origin, Signal):
-                        # This is a DeviceMap of Signals, so validate hint
+                        # This is a DeviceCollection of Signals, so validate hint
                         # i.e., Check that Signal hint contains datatype
                         self._validate_signal_datatype(name, device_map_child_class)
-                # We may have a sub-class of DeviceMap
+                # We may have a sub-class of DeviceCollection
                 # If it is not a sub-class, then its a Device, so continue
                 # if it is a sub-class, check for datatype, and raise if None
                 elif (
                     isinstance(annotation, type)
-                    and issubclass(annotation, DeviceMap)
-                    and not _get_device_map_child_datatype(annotation)
+                    and issubclass(annotation, DeviceCollection)
+                    and not _get_device_collection_child_datatype(annotation)
                 ):
-                    # DeviceMap has no type parameter
+                    # DeviceCollection has no type parameter
                     self._raise(
-                        name, f"Expected DeviceMap[T, SomeDevice], got {annotation}."
+                        name,
+                        f"Expected DeviceCollection[T, SomeDevice], got {annotation}.",
                     )
                 self._uncreated_devices[name] = annotation
 
@@ -283,12 +284,12 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             dest = self._filled_connectors if filled else self._unfilled_connectors
             dest[_logical(name)] = connector
 
-    def create_device_map_entries_to_mock(self, entries: list[Any]):
-        """Create num entries for each `DeviceMap`.
+    def create_device_collection_entries_to_mock(self, entries: list[Any]):
+        """Create num entries for each `DeviceCollection`.
 
         This is used when the Device is being connected in mock mode.
         """
-        hinted_child_cls = _get_device_map_child_datatype(self._device)
+        hinted_child_cls = _get_device_collection_child_datatype(self._device)
         if not hinted_child_cls:
             msg = "Malformed device map"
             raise TypeError(msg)
@@ -296,7 +297,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         # generic classes are not direct subclasses
         base_cls = get_origin_class(hinted_child_cls) or Device
 
-        # Fill DeviceMap
+        # Fill DeviceCollection
         self.fill_child_device(self._device.name)
         # Then handle children
         for i in entries:
@@ -326,16 +327,18 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 f"{self._device.name}: cannot provision {required} from {source}"
             )
 
-    def _ensure_device_map(self) -> DeviceMap:
-        if not isinstance(self._device, DeviceMap):
-            self._raise(self._device.name, f"Expected DeviceMap, got {self._device}")
+    def _ensure_device_collection(self) -> DeviceCollection:
+        if not isinstance(self._device, DeviceCollection):
+            self._raise(
+                self._device.name, f"Expected DeviceCollection, got {self._device}"
+            )
         return self._device
 
     def fill_child_signal(
         self,
         name: str,
         signal_type: type[Signal],
-        map_key: Any | None = None,
+        map_key: int | str | None = None,
     ) -> SignalBackendT:
         """Mark a Signal as filled, and return its backend for filling.
 
@@ -343,7 +346,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             The name without trailing underscore, the name in the control system
         :param signal_type:
             One of the types `SignalR`, `SignalW`, `SignalRW` or `SignalX`
-        :param map_key: If the child is in a `DeviceMap` then what key is it
+        :param map_key: If the child is in a `DeviceCollection` then what key is it
         :return: The SignalBackend for the filled Signal.
         """
         name = cast(LogicalName, name)
@@ -355,13 +358,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # We made it and filled it so return for validation
             backend, expected_signal_type = self._filled_backends[name]
         elif map_key:
-            # We need to add a new entry to a DeviceMap
+            # We need to add a new entry to a DeviceCollection
             backend = self._signal_backend_factory(_get_datatype(signal_type))
-            device_map = self._ensure_device_map()
+            device_collection = self._ensure_device_collection()
             expected_signal_type = (
-                _get_device_map_child_datatype(device_map) or signal_type
+                _get_device_collection_child_datatype(device_collection) or signal_type
             )
-            device_map[map_key] = signal_type(backend)
+            device_collection[map_key] = signal_type(backend)
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
@@ -380,7 +383,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
     def fill_child_device(
         self,
         name: str,
-        device_type: type[Device | DeviceMap] = Device,
+        device_type: type[Device | DeviceCollection] = Device,
         map_key: Any | None = None,
     ) -> DeviceConnectorT:
         """Mark a Device as filled, and return its connector for filling.
@@ -388,7 +391,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         :param name:
             The name without trailing underscore, the name in the control system
         :param device_type: The `Device` subclass to be created
-        :param map_key: If the child is in a `DeviceMap` then what key is it
+        :param map_key: If the child is in a `DeviceCollection` then what key is it
         :return: The DeviceConnector for the filled Device.
         """
         name = cast(LogicalName, name)
@@ -400,11 +403,13 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # We made it and filled it so return for validation
             connector = self._filled_connectors[name]
         elif map_key is not None:
-            # We need to add a new entry to a DeviceMap
-            device_map = self._ensure_device_map()
-            device_map_type = _get_device_map_child_datatype(device_map) or device_type
+            # We need to add a new entry to a DeviceCollection
+            device_map = self._ensure_device_collection()
+            device_map_type = (
+                _get_device_collection_child_datatype(device_map) or device_type
+            )
             if not issubclass(device_map_type, Device):
-                # Raise if adding Non-Device to DeviceMap
+                # Raise if adding Non-Device to DeviceCollection
                 self._raise(
                     name,
                     f"Expected {type(self._device).__name__}"

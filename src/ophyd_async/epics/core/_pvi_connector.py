@@ -14,7 +14,7 @@ from ophyd_async.core import (
     Device,
     DeviceConnector,
     DeviceFiller,
-    DeviceVector,
+    DeviceMap,
     LazyMock,
     Signal,
     SignalR,
@@ -42,7 +42,7 @@ class PviDeviceConnector(DeviceConnector):
         hinted Signals are not present.
     """
 
-    mock_device_vector_len: list[int] = [1, 2]
+    mock_device_map_entries: list[int] = [1, 2]
     pvi_tree: PviTree | None = None
 
     def __init__(self, prefix: str = "", error_hint: str = "") -> None:
@@ -68,8 +68,10 @@ class PviDeviceConnector(DeviceConnector):
             self.filler.check_created()
 
     async def connect_mock(self, device: Device, mock: LazyMock):
-        if isinstance(device, DeviceVector):
-            self.filler.create_device_map_entries_to_mock(self.mock_device_vector_len)
+        if isinstance(device, DeviceMap) or isinstance(device, DeviceMap):
+            self.filler.create_device_collection_entries_to_mock(
+                self.mock_device_map_entries
+            )
         # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_mock(device, mock)
@@ -88,7 +90,7 @@ class PviDeviceConnector(DeviceConnector):
             if device_sub_tree.vector_children:
                 # This is a DeviceVector
                 connector = self.filler.fill_child_device(
-                    device_name, device_type=DeviceVector
+                    device_name, device_type=DeviceMap
                 )
             else:
                 # This is a Device
@@ -118,7 +120,7 @@ class PviDeviceConnector(DeviceConnector):
                 # DeviceVector of devices
                 if isinstance(vector_child, PviTree):
                     connector = self.filler.fill_child_device(
-                        device.name, vector_index=vector_index
+                        device.name, map_key=vector_index
                     )
                     connector.pvi_tree = vector_child
                     connector.pvi_pv = vector_child.pvi_pv
@@ -269,7 +271,9 @@ class PviTree(ConfinedModel):
     pvi_pv: str = Field(default="")
     signals: Mapping[str, SignalDetails] = Field(default_factory=dict)
     sub_devices: Mapping[str, PviTree] = Field(default_factory=dict)
-    vector_children: Mapping[int, PviTree | SignalDetails] = Field(default_factory=dict)
+    vector_children: Mapping[str | int, PviTree | SignalDetails] = Field(
+        default_factory=dict
+    )
 
     @classmethod
     async def build_device_tree(cls, pvi_pv: str, timeout: float) -> PviTree:
@@ -305,7 +309,7 @@ class PviTree(ConfinedModel):
             }
         )
 
-        vector_children: dict[int, PviTree | SignalDetails] = {}
+        vector_children: dict[str | int, PviTree | SignalDetails] = {}
         # Filter vector children out of stand-alone devices
 
         for processed_entries in (sub_trees, signal_details):

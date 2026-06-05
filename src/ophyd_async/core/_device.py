@@ -283,11 +283,8 @@ _not_device_attrs = {
 }
 
 
-class DeviceMap(MutableMapping[T, DeviceT], Device):
-    """Defines a dictionary of Device children with arbitrary integer keys.
-
-    :see-also: [](#implementing-devices) for examples of how to use this class.
-    """
+class DeviceCollection(MutableMapping[T, DeviceT], Device):
+    """Defines a dictionary of Device children with arbitrary keys."""
 
     def __init__(
         self,
@@ -327,8 +324,28 @@ class DeviceMap(MutableMapping[T, DeviceT], Device):
         return hash(id(self))
 
 
-class DeviceVector(DeviceMap[int, DeviceT]):
+class DeviceMap(DeviceCollection[str, DeviceT]):
+    """Defines a dictionary of Device children with arbitrary str keys.
+
+    :see-also: [](#implementing-devices) for examples of how to use this class.
+    """
+
+    def __setattr__(self, name: str, value: Any):
+        if name not in _not_device_attrs and not "parent":
+            raise TypeError("Setting new attributes on DeviceMap not supported.")
+        super().__setattr__(name, value)
+
+    def __setitem__(self, key: str, value: DeviceT) -> None:
+        if not isinstance(key, str):
+            msg = f"Expected str, got {value}"
+            raise TypeError(msg)
+        super().__setitem__(key, value)
+
+
+class DeviceVector(DeviceCollection[int, DeviceT]):
     """Defines a dictionary of Device children with arbitrary integer keys.
+
+    Use DeviceVector subclass when you want named and numbered children.
 
     :see-also: [](#implementing-devices) for examples of how to use this class.
     """
