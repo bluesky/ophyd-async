@@ -9,9 +9,9 @@ from ophyd_async.core import (
     MovableLogic,
     SignalR,
     SignalRW,
-    SignalX,
     StandardMovable,
     StandardReadable,
+    TriggerableCommand,
     set_and_wait_for_other_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
@@ -21,7 +21,7 @@ from ophyd_async.epics.core import EpicsDevice, PvSuffix
 @dataclass
 class DemoMotorMoveLogic(MovableLogic[float]):
     velocity: SignalRW[float]
-    stop_: SignalX
+    stop_: TriggerableCommand
 
     async def stop(self):
         await self.stop_.trigger()
@@ -51,7 +51,7 @@ class DemoMotor(EpicsDevice, StandardReadable, StandardMovable):
     velocity: A[SignalRW[float], PvSuffix("Velocity"), Format.CONFIG_SIGNAL]
     setpoint: A[SignalRW[float], PvSuffix("Setpoint")]
     # If a signal name clashes with a bluesky verb add _ to the attribute name
-    stop_: A[SignalX, PvSuffix("Stop.PROC")]
+    stop_: A[TriggerableCommand, PvSuffix("Stop.PROC")]
 
     @cached_property
     def movable_logic(self) -> MovableLogic:

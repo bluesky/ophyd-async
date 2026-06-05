@@ -1,11 +1,44 @@
 (interact-with-signals)=
-# How to interact with signals while implementing bluesky verbs
+# How to interact with signals and commands while implementing bluesky verbs
 
-To implement bluesky verbs, you typically need to interact with Signals. This guide will show you how to do the following operations on a Signal:
-- Get the value
-- Set the value
+To implement bluesky verbs, you typically need to interact with Signals and Commands. This guide will show you how to do the following operations:
+- Execute a command
+- Get the value of a signal
+- Set the value of a signal
 - Observe every value change
 - Wait for the value to match some expected value
+
+## Execute a command
+
+A [](#TriggerableCommand) or typed [](#Command) is executed via [](#Command.execute), which returns an `AsyncStatus[T]`. Awaiting the status waits for completion and re-raises any exception:
+
+```python
+# Fire-and-forget style (begin execution, capture the status)
+status = device.start.execute()
+# ... do other work ...
+await status  # wait for completion
+
+# Or just await directly:
+await device.start.execute()
+```
+
+For a typed command, arguments are passed positionally:
+```python
+result = await device.move_to.execute(0.5)
+```
+
+The return value is also accessible from the status after it completes:
+```python
+status = device.move_to.execute(0.5)
+await status
+value = status.value
+```
+
+[](#TriggerableCommand) also has a [](#TriggerableCommand.trigger) method that satisfies the [Triggerable](#bluesky.protocols.Triggerable) protocol used by bluesky scan machinery:
+```python
+status = device.acquire.trigger()
+await status
+```
 
 ## Get the value
 

@@ -29,11 +29,11 @@ from ._utils import (
 
 @dataclass
 class MovableLogic(Generic[SignalDatatypeT]):
-    """Minimum logic needed for controlling a ``StandardMovable``.
+    """Minimum logic needed for controlling a `StandardMovable`.
 
     Can be inherited to add specialised logic for stop, checking if a move is valid,
     calculate a valid timeout for a move, and add units and precision. Sub classes can
-    also override the ``get_move_status`` and ``move`` methods if more control is needed
+    also override the `get_move_status` and `move` methods if more control is needed
     to provide a custom AsyncStatus and to handle the move logic.
     """
 
@@ -68,9 +68,9 @@ class MovableLogic(Generic[SignalDatatypeT]):
 
         ```{note}
         The default implementation waits for the readback to be **exactly**
-        equal to ``new_position``. For floating-point positions this may never
+        equal to `new_position`. For floating-point positions this may never
         be satisfied; override this method to use an appropriate tolerance
-        check (e.g. ``np.isclose``).
+        check (e.g. `np.isclose`).
         ```
         """
         await set_and_wait_for_other_value(
@@ -101,7 +101,7 @@ class StandardMovable(
 ):
     """Device that provides standard logic for moving.
 
-    This class must be inherited and have a ``movable_logic`` @cached_property.
+    This class must be inherited and have a `movable_logic` @cached_property.
     """
 
     # Whether set() should complete successfully or not

@@ -17,8 +17,8 @@ jobs:
 
       - name: Build sdist and wheel
         run: >
-          export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) &&
-          uvx --from build pyproject-build
+          export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) && uvx --from
+          build pyproject-build
 
       - name: Upload sdist and wheel as artifacts
         uses: actions/upload-artifact@v4
@@ -36,10 +36,15 @@ jobs:
         # If more than one module in src/ replace with module name to test
         run: python -m $(ls --hide='*.egg-info' src | head -1) --version
 
-      - name: Check APIs are importable
+      - name: Check APIs are importable with no extras
         run: |
           python -c "import ophyd_async"
           python -c "import ophyd_async.core"
           python -c "import ophyd_async.epics.core"
           python -c "import ophyd_async.epics.motor"
           python -c "import ophyd_async.plan_stubs"
+
+      - name: Check Tango APIs are importable with only tango
+        run: |
+          python -m pip install ophyd_async[tango]
+          python -c "import ophyd_async.tango.core"
