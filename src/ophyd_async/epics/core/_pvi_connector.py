@@ -69,9 +69,7 @@ class PviDeviceConnector(DeviceConnector):
 
     async def connect_mock(self, device: Device, mock: LazyMock):
         if isinstance(device, DeviceVector):
-            self.filler.create_device_vector_entries_to_mock(
-                self.mock_device_vector_len
-            )
+            self.filler.create_device_map_entries_to_mock(self.mock_device_vector_len)
         # Set the name of the device to name all children
         device.set_name(device.name)
         return await super().connect_mock(device, mock)

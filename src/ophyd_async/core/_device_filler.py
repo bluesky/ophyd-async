@@ -42,16 +42,19 @@ def _get_datatype(annotation: Any) -> type | None:
     return None
 
 
-def _get_device_vector_child_datatype(
-    vector: Device | type[Device],
-) -> type | None:
-
-    if generic_class := getattr(vector, "__orig_class__", None):
+def _get_device_map_child_datatype(map: Device | type[Device]) -> type | None:
+    # If passed a Device, try to get the original class
+    # extracting DeviceMap[T, SomeDevice] from a <DeviceMap>
+    if generic_class := getattr(map, "__orig_class__", None):
+        # Type hinted DeviceMap
+        # e.g., DeviceMap[T, SomeDevice]
         return _get_datatype(generic_class)
 
-    for base in getattr(vector, "__orig_bases__", ()):
+    for base in getattr(map, "__orig_bases__", ()):
+        # Sub class of type hinted DeviceMap
+        # We must extract the original base, which we can do from a type or cls
+        # e.g., instance of `class CustomMap(DeviceMap[T, SomeDevice])`
         origin = get_origin_class(base)
-
         if (
             origin is not None
             and isinstance(origin, type)
@@ -61,7 +64,7 @@ def _get_device_vector_child_datatype(
             if datatype is not None:
                 return datatype
 
-            datatype = _get_device_vector_child_datatype(origin)
+            datatype = _get_device_map_child_datatype(origin)
             if datatype is not None:
                 return datatype
 
@@ -107,7 +110,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self._uncreated_devices: dict[UniqueName, type[Device] | DeviceFactory] = {}
         self._extras: dict[UniqueName, Sequence[Any]] = {}
         self._signal_datatype: dict[LogicalName, type | None] = {}
-        self._vector_device_type: dict[LogicalName, type[Device] | None] = {}
+        self._device_map_type: dict[LogicalName, type[Device] | None] = {}
         self._optional_devices: set[str] = set()
         self.ignored_signals: set[str] = set()
         # Backends and Connectors stored ready for the connection phase
@@ -182,31 +185,31 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 self._store_signal_datatype(name, annotation)
                 self._uncreated_signals[name] = origin
             # We either have an annotation of a Device, or we have a generic alias of
-            # a DeviceVector (i.e., DeviceVector[SomeDevice]), which must be callable
-            # and returns a DeviceVector.
+            # a DeviceMap (i.e., DeviceMap[T, SomeDevice]), which must be callable
+            # and returns a DeviceMap.
             elif (isinstance(annotation, type) and issubclass(annotation, Device)) or (
                 isinstance(annotation, types.GenericAlias) and callable(annotation)
             ):
-                # Check for DeviceVector generic alias type hint
+                # Check for DeviceMap generic alias type hint
                 # If this is a plain `type`, then _get_datatype will return None
-                if vector_child_class := _get_datatype(annotation):
+                if device_map_child_class := _get_datatype(annotation):
                     # Get the origin class of the type hint
-                    child_origin = get_origin_class(vector_child_class)
+                    child_origin = get_origin_class(device_map_child_class)
                     if child_origin and issubclass(child_origin, Signal):
-                        # This is a DeviceVector of Signals, so validate hint
+                        # This is a DeviceMap of Signals, so validate hint
                         # i.e., Check that Signal hint contains datatype
-                        self._validate_signal_datatype(name, vector_child_class)
-                # We may have a sub-class of DeviceVector
+                        self._validate_signal_datatype(name, device_map_child_class)
+                # We may have a sub-class of DeviceMap
                 # If it is not a sub-class, then its a Device, so continue
                 # if it is a sub-class, check for datatype, and raise if None
                 elif (
                     isinstance(annotation, type)
                     and issubclass(annotation, DeviceMap)
-                    and not _get_device_vector_child_datatype(annotation)
+                    and not _get_device_map_child_datatype(annotation)
                 ):
-                    # DeviceVector has no type parameter
+                    # DeviceMap has no type parameter
                     self._raise(
-                        name, f"Expected DeviceVector[SomeDevice], got {annotation}."
+                        name, f"Expected DeviceMap[T, SomeDevice], got {annotation}."
                     )
                 self._uncreated_devices[name] = annotation
 
@@ -280,20 +283,20 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             dest = self._filled_connectors if filled else self._unfilled_connectors
             dest[_logical(name)] = connector
 
-    def create_device_vector_entries_to_mock(self, num: int):
-        """Create num entries for each `DeviceVector`.
+    def create_device_map_entries_to_mock(self, num: int):
+        """Create num entries for each `DeviceMap`.
 
         This is used when the Device is being connected in mock mode.
         """
-        hinted_child_cls = _get_device_vector_child_datatype(self._device)
+        hinted_child_cls = _get_device_map_child_datatype(self._device)
         if not hinted_child_cls:
-            msg = "Malformed device vector"
+            msg = "Malformed device map"
             raise TypeError(msg)
         # Get base class for subclass checks, as
         # generic classes are not direct subclasses
         base_cls = get_origin_class(hinted_child_cls) or Device
 
-        # Fill DeviceVector
+        # Fill DeviceMap
         self.fill_child_device(self._device.name)
         # Then handle children
         for i in range(1, num + 1):
@@ -323,7 +326,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
                 f"{self._device.name}: cannot provision {required} from {source}"
             )
 
-    def _ensure_device_vector(self) -> DeviceMap:
+    def _ensure_device_map(self) -> DeviceMap:
         if not isinstance(self._device, DeviceMap):
             self._raise(self._device.name, f"Expected DeviceMap, got {self._device}")
         return self._device
@@ -332,7 +335,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self,
         name: str,
         signal_type: type[Signal],
-        vector_index: int | None = None,
+        map_key: Any | None = None,
     ) -> SignalBackendT:
         """Mark a Signal as filled, and return its backend for filling.
 
@@ -340,7 +343,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             The name without trailing underscore, the name in the control system
         :param signal_type:
             One of the types `SignalR`, `SignalW`, `SignalRW` or `SignalX`
-        :param vector_index: If the child is in a `DeviceMap` then what index is it
+        :param map_key: If the child is in a `DeviceMap` then what key is it
         :return: The SignalBackend for the filled Signal.
         """
         name = cast(LogicalName, name)
@@ -351,14 +354,14 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         elif name in self._filled_backends:
             # We made it and filled it so return for validation
             backend, expected_signal_type = self._filled_backends[name]
-        elif vector_index:
+        elif map_key:
             # We need to add a new entry to a DeviceMap
             backend = self._signal_backend_factory(_get_datatype(signal_type))
-            vector = self._ensure_device_vector()
+            device_map = self._ensure_device_map()
             expected_signal_type = (
-                _get_device_vector_child_datatype(vector) or signal_type
+                _get_device_map_child_datatype(device_map) or signal_type
             )
-            vector[vector_index] = signal_type(backend)
+            device_map[map_key] = signal_type(backend)
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
@@ -378,7 +381,7 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
         self,
         name: str,
         device_type: type[Device | DeviceMap] = Device,
-        vector_index: int | None = None,
+        vector_index: Any | None = None,
     ) -> DeviceConnectorT:
         """Mark a Device as filled, and return its connector for filling.
 
@@ -397,21 +400,19 @@ class DeviceFiller(Generic[SignalBackendT, DeviceConnectorT]):
             # We made it and filled it so return for validation
             connector = self._filled_connectors[name]
         elif vector_index is not None:
-            # We need to add a new entry to a DeviceVector
-            vector = self._ensure_device_vector()
-            vector_device_type = (
-                _get_device_vector_child_datatype(vector) or device_type
-            )
-            if not issubclass(vector_device_type, Device):
-                # Raise if adding Non-Device to DeviceVector
+            # We need to add a new entry to a DeviceMap
+            device_map = self._ensure_device_map()
+            device_map_type = _get_device_map_child_datatype(device_map) or device_type
+            if not issubclass(device_map_type, Device):
+                # Raise if adding Non-Device to DeviceMap
                 self._raise(
                     name,
                     f"Expected {type(self._device).__name__}"
-                    f"[{vector_device_type.__name__}], "
-                    f"but {vector_device_type} is not a subclass of `Device`",
+                    f"[{device_map_type.__name__}], "
+                    f"but {device_map_type} is not a subclass of `Device`",
                 )
             connector = self._device_connector_factory()
-            vector[vector_index] = vector_device_type(connector=connector)
+            device_map[vector_index] = device_map_type(connector=connector)
         elif child := getattr(self._device, name, None):
             # There is an existing child, so raise
             self._raise(name, f"Cannot make child as it would shadow {child}")
