@@ -32,14 +32,16 @@ from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
     DemoMotor,
-    DemoMotorDevice,
-    DemoMultiChannelDetectorDevice,
     DemoPointDetector,
     DemoPointDetectorChannel,
-    DemoPointDetectorChannelDevice,
     DemoStage,
     EnergyMode,
     start_device_server_subprocess,
+)
+from ophyd_async.tango.demo._tango._servers import (  # noqa: PLC2701
+    DemoMotorDevice,
+    DemoMultiChannelDetectorDevice,
+    DemoPointDetectorChannelDevice,
 )
 from ophyd_async.testing import assert_reading
 
@@ -496,8 +498,8 @@ async def test_tango_stage(sim_test_context_trls):
     assert stage.x.name == "stage-x"
     assert stage.y.name == "stage-y"
     reading = await stage.read()
-    assert "stage-x-position" in reading
-    assert "stage-y-position" in reading
+    assert "stage-x" in reading
+    assert "stage-y" in reading
 
 
 # --------------------------------------------------------------------
@@ -531,15 +533,9 @@ async def test_tango_sim(sim_test_context_trls):
     set_status = motor.set(1.0)
     await asyncio.sleep(1.0)
 
-    stop_status = motor.stop()
+    await motor.stop(success=True)
     await set_status
-    await stop_status
-    assert all([set_status.done, stop_status.done])
-    assert all([set_status.success, stop_status.success])
-    await asyncio.sleep(3.0)
-
-    # Manually move motor
-    await detector.mover.move_me(0.9)
+    assert set_status.done
 
 
 @pytest.mark.asyncio

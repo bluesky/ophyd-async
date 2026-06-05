@@ -1,80 +1,61 @@
-import asyncio
+from dataclasses import dataclass
+from functools import cached_property
 from typing import Annotated as A
 
-from bluesky.protocols import Movable, Stoppable
-
 from ophyd_async.core import (
-    CALCULATE_TIMEOUT,
     DEFAULT_TIMEOUT,
-    AsyncStatus,
-    CalculatableTimeout,
-    Command,
+    MovableLogic,
     SignalR,
     SignalRW,
+    StandardMovable,
     StandardReadable,
     TriggerableCommand,
-    WatchableAsyncStatus,
-    WatcherUpdate,
-    observe_value,
     wait_for_value,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import DevStateEnum, TangoDevice, TangoPolling
 
 
-class DemoMotor(TangoDevice, StandardReadable, Movable, Stoppable):
-    """Tango moving device."""
+@dataclass
+class DemoMotorMoveLogic(MovableLogic[float]):
+    velocity: SignalRW[float]
+    stop_: TriggerableCommand
+    state: SignalR[DevStateEnum]
 
-    # Enter the name and type of the signals you want to use
+    async def stop(self):
+        await self.stop_.trigger()
+
+    async def calculate_timeout(
+        self, old_position: float, new_position: float
+    ) -> float:
+        velocity = await self.velocity.get_value()
+        return abs(new_position - old_position) / velocity + DEFAULT_TIMEOUT
+
+    async def move(self, new_position: float, timeout: float | None) -> None:
+        # Write the setpoint and wait for the motor state to return to ON,
+        # which happens whether the move completes normally or is stopped.
+        await self.setpoint.set(new_position, timeout=timeout)
+        await wait_for_value(self.state, DevStateEnum.ON, timeout=timeout)
+
+
+class DemoMotor(TangoDevice, StandardReadable, StandardMovable):
+    """A demo movable that moves based on velocity."""
+
     # If the server doesn't support events, the TangoPolling annotation gives
     # the parameters for ophyd to poll instead
-    position: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001), Format.HINTED_SIGNAL]
+    readback: A[SignalR[float], TangoPolling(0.1, 0.001, 0.001), Format.HINTED_SIGNAL]
     velocity: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001), Format.CONFIG_SIGNAL]
+    setpoint: A[SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
     state: A[SignalR[DevStateEnum], TangoPolling(0.1)]
     # If a tango name clashes with a bluesky verb, add a trailing underscore
     stop_: TriggerableCommand
-    move_to_position: Command[[float], bool]
 
-    @WatchableAsyncStatus.wrap
-    async def set(self, value: float, timeout: CalculatableTimeout = CALCULATE_TIMEOUT):
-        self._set_success = True
-        (old_position, velocity) = await asyncio.gather(
-            self.position.get_value(),
-            self.velocity.get_value(),
+    @cached_property
+    def movable_logic(self) -> MovableLogic:
+        return DemoMotorMoveLogic(
+            readback=self.readback,
+            setpoint=self.setpoint,
+            velocity=self.velocity,
+            stop_=self.stop_,
+            state=self.state,
         )
-        # TODO: check whether Tango does work with negative velocity
-        if timeout is CALCULATE_TIMEOUT and velocity == 0:
-            msg = "Motor has zero velocity"
-            raise ValueError(msg)
-        else:
-            timeout = abs(value - old_position) / velocity + DEFAULT_TIMEOUT
-
-        if not (isinstance(timeout, float) or timeout is None):
-            raise ValueError("Timeout must be a float or None")
-        # For this server, set returns immediately so this status should not be awaited
-        await self.position.set(value, timeout=timeout)
-        move_status = AsyncStatus(
-            wait_for_value(self.state, DevStateEnum.ON, timeout=timeout)
-        )
-        async with move_status:
-            async for current_position in observe_value(
-                self.position, done_status=move_status
-            ):
-                yield WatcherUpdate(
-                    current=current_position,
-                    initial=old_position,
-                    target=value,
-                    name=self.name,
-                )
-        if not self._set_success:
-            raise RuntimeError("Motor was stopped")
-
-    def stop(self, success: bool = True) -> AsyncStatus:
-        self._set_success = success
-        return self.stop_.trigger()
-
-    async def move_me(self, value: float):
-        """An alternate way to move the motor using a command. Returns immediately."""
-        success = await self.move_to_position.execute(value)
-        if not success:
-            raise RuntimeError("Failed to move to position")

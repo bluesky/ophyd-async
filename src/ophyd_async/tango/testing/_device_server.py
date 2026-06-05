@@ -7,15 +7,24 @@ the single device server instance.
 
 import os
 import pickle
+import random
 import socket
+import string
 import subprocess
 import sys
 from pathlib import Path
+from typing import cast
 
 from tango.test_context import MultiDeviceTestContext
 
 _ACCEPT_TIMEOUT = 30.0  # seconds to wait for subprocess to connect back
 _COMMUNICATE_TIMEOUT = 10.0  # seconds to wait for subprocess to exit cleanly
+
+
+def generate_random_trl_prefix() -> str:
+    """Generate a random Tango domain/family/member prefix for use in test devices."""
+    suffix = "".join(random.choice(string.ascii_lowercase) for _ in range(8))
+    return f"test/{suffix}"
 
 
 def _recv_all(conn: socket.socket, n: int) -> bytes:
@@ -41,6 +50,7 @@ def _recv_pickled(conn: socket.socket) -> object:
 class TangoSubprocessDeviceServer:
     def __init__(self, args):
         self._args = args
+        self.trls: dict[str, str] = {}
 
     def connect(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -56,7 +66,7 @@ class TangoSubprocessDeviceServer:
         self.conn, _ = self.sock.accept()
         self.sock.settimeout(None)
         _send_pickled(self.conn, self._args)
-        self.trls = _recv_pickled(self.conn)
+        self.trls = cast(dict[str, str], _recv_pickled(self.conn))
         return self
 
     def disconnect(self):

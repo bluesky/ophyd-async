@@ -8,8 +8,8 @@ from ophyd_async.core import (
     DeviceVector,
     SignalR,
     SignalRW,
-    SignalX,
     StandardReadable,
+    TriggerableCommand,
 )
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice
@@ -21,9 +21,9 @@ class DemoPointDetector(TangoDevice, StandardReadable, Triggerable):
     """A demo detector that produces a point values based on X and Y motors."""
 
     acquire_time: A[SignalRW[float], Format.CONFIG_SIGNAL]
-    start: SignalX
+    start: TriggerableCommand
     acquiring: SignalR[bool]
-    reset: SignalX
+    reset: TriggerableCommand
 
     def __init__(self, trl: str, channel_trls: list[str], name: str = "") -> None:
         with self.add_children_as_readables():

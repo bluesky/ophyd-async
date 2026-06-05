@@ -18,22 +18,18 @@ class DemoMotorDevice(Device):
     _stop = False
     DEVICE_CLASS_INITIAL_STATE = DevState.ON
 
-    @attribute(dtype=float, access=AttrWriteType.READ_WRITE, format="%6.3f")
-    async def position(self):
+    @attribute(dtype=float, access=AttrWriteType.READ, format="%6.3f")
+    async def readback(self):
         return self._position
 
-    async def write_position(self, new_position):
+    @attribute(dtype=float, access=AttrWriteType.READ_WRITE, format="%6.3f")
+    async def setpoint(self):
+        return self._setpoint
+
+    async def write_setpoint(self, new_position):
         self.set_state(DevState.MOVING)
         self._setpoint = new_position
         asyncio.create_task(self.move())
-
-    @command(dtype_in=float, dtype_out=bool)
-    async def move_to_position(self, new_position: float) -> bool:
-        if self.get_state() == DevState.ON:
-            self._setpoint = new_position
-            asyncio.create_task(self.move())
-            return True
-        return False
 
     @attribute(dtype=float, access=AttrWriteType.READ_WRITE)
     async def velocity(self):
@@ -189,8 +185,8 @@ class DemoPointDetectorChannelDevice(Device):
 
     async def write_elapsed(self, value: float):
         self._elapsed = value
-        x: float = await self._dp_x.position  # type: ignore
-        y: float = await self._dp_y.position  # type: ignore
+        x: float = await self._dp_x.readback  # type: ignore
+        y: float = await self._dp_y.readback  # type: ignore
         self._value = math.floor(
             (
                 math.sin(x) ** self.channel  # type: ignore
