@@ -207,13 +207,13 @@ TODO
 
 Moving up a level, we have the point detector itself. This also has some Signals to control acquisition which are created in the same way as above:
 - `acquire_time`: a configuration float saying how long each point should be acquired for
-- `start`: an executable to start a single acquisition
+- `start`: a [](#TriggerableCommand) to start a single acquisition
 - `acquiring`: a boolean that is True when acquiring
-- `reset`: an executable to reset the counts on all channels
+- `reset`: a [](#TriggerableCommand) to reset the counts on all channels
 
 We also have a [](#DeviceVector) called `channel` with `DemoPointDetectorChannel` instances within it. These will all contribute their configuration values at the start of scan, and their values at every point in the scan.
 
-Finally, we need to communicate to bluesky that it has to `trigger()` an acquisition before it can `read()` from the underlying channels. We do this by implementing the [`Triggerable`](#bluesky.protocols.Triggerable) protocol. This involves writing a `trigger()` method with the logic that must be run, calling [](#SignalX.trigger), [](#SignalW.set) and [](#SignalR.get_value) to manipulate the values of the underlying Signals, returning when complete. This is wrapped in an [](#AsyncStatus), which is used by bluesky to run this operation in the background and know when it is complete.
+Finally, we need to communicate to bluesky that it has to `trigger()` an acquisition before it can `read()` from the underlying channels. We do this by implementing the [`Triggerable`](#bluesky.protocols.Triggerable) protocol. This involves writing a `trigger()` method with the logic that must be run, calling [](#TriggerableCommand.trigger), [](#SignalW.set) and [](#SignalR.get_value) to manipulate the values of the underlying Signals and Commands, returning when complete. This is wrapped in an [](#AsyncStatus), which is used by bluesky to run this operation in the background and know when it is complete.
 
 ```{seealso}
 [](../how-to/interact-with-signals)
@@ -228,6 +228,8 @@ Finally, we need to communicate to bluesky that it has to `trigger()` an acquisi
 ```{literalinclude} ../../src/ophyd_async/epics/demo/_point_detector.py
 :language: python
 ```
+
+[](#TriggerableCommand) is used for `start` and `reset` rather than Signals because these are actions to fire on the hardware, not values to read or write. Calling `.trigger()` executes the action and waits for the hardware to acknowledge it.
 
 Although the Signals are declared via type hints, the DeviceVector requires explicit instantiation in an `__init__` method. This is because it requires the `num_channels` to be passed in to the constructor to know how many channels require creation. This means that we also need to do the PV concatenation ourselves, so if the PV prefix for the device as `PREFIX:` then the first channel would have prefix `PREFIX:CHAN1:`. We also register them with `StandardReadable` in a different way, adding them within a [](#StandardReadable.add_children_as_readables) context manager which adds all the children created within its body.
 
@@ -255,23 +257,28 @@ For more information on when to construct Devices declaratively using type hints
 
 ### `DemoMotor`
 
-Moving onto the motion side, we have `DemoMotor`. This has a few more signals:
+Moving onto the motion side, we have `DemoMotor`. This has a few signals:
 - `readback`: the current position of the motor as a float
 - `velocity`: a configuration parameter for the velocity in units/s
-- `units`: the string units of the position
 - `setpoint`: the position the motor has been requested to move to as a float, it returns as soon as it's been set
-- `precision`: the number of points after the decimal place of the position that are relevant
-- `stop_`: an executable to stop the move immediately
+- `stop_`: a [](#TriggerableCommand) to stop the move immediately
 
-At each point in the scan it will report the `readback`, but we override the `set_name()` method so that it reports its position as `stage.x` rather than `stage.x.readback`.
+`DemoMotor` inherits from [](#StandardMovable), which provides the full
+[`Movable`](#bluesky.protocols.Movable), [`Locatable`](#bluesky.protocols.Locatable),
+[`Stoppable`](#bluesky.protocols.Stoppable), and
+[`Subscribable`](#bluesky.protocols.Subscribable) protocol surface, as well as
+`WatcherUpdate` progress-bar machinery. The device-specific parts — how to compute a
+timeout from velocity, how to execute a stop, and how to detect move completion — live
+in a separate `DemoMotorMoveLogic` dataclass that subclasses [](#MovableLogic).
 
-If we consider how we would use this in a scan, we could `bp.scan(stage.x.setpoint, ...)` directly, but that would only start the motor moving, not wait for it to complete the move. To do this, we need to implement another protocol: [`Movable`](#bluesky.protocols.Movable). This requires implementing a `set()` method (again wrapped in an [](#AsyncStatus)) that does the following:
-- Work out where to move to
-- Start the motor moving
-- Optionally report back updates on how far the motor has moved so bluesky can provide a progress bar
-- Wait until the motor is at the target position
+At each point in the scan the device reports `readback` named the same as the device
+itself (e.g. `stage.x`), because [](#StandardMovable.set_name) automatically renames
+the readback signal to match the device.
 
-Finally, we implement [`Stoppable`](#bluesky.protocols.Stoppable) which tells bluesky what to do if the user aborts a plan. This requires implementing `stop()` to execute the `stop_` signal and tell `set()` whether the move should be reported as successful completion, or if it should raise an error.
+```{seealso}
+[](../explanations/when-to-extend-movable.md) for how to decide when to use
+`StandardMovable` and how to implement `MovableLogic`.
+```
 
 ::::{tab-set}
 :sync-group: cs

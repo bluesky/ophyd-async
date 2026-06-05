@@ -1,7 +1,7 @@
 from ophyd_async.core import (
     DEFAULT_TIMEOUT,
     DetectorAcquireLogic,
-    SignalX,
+    TriggerableCommand,
     wait_for_value,
 )
 
@@ -9,7 +9,9 @@ from ._io import EigerDetectorIO
 
 
 class EigerAcquireLogic(DetectorAcquireLogic):
-    def __init__(self, detector: EigerDetectorIO, arm_when_ready: SignalX) -> None:
+    def __init__(
+        self, detector: EigerDetectorIO, arm_when_ready: TriggerableCommand
+    ) -> None:
         self.detector = detector
         self.arm_when_ready = arm_when_ready
 
