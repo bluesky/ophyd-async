@@ -156,7 +156,7 @@ class TriggerableCommand(Command[[], None]):
     reset = epics_triggerable_command("PREFIX:Reset.PROC")
     ```
 
-    Satisfies the [Triggerable](#bluesky.protocols.Triggerable) protocol so
+    Satisfies the [](#bluesky.protocols.Triggerable) protocol so
     bluesky plans can call `.trigger()` on it directly.  It is the replacement
     for the deprecated [](#SignalX).
     """

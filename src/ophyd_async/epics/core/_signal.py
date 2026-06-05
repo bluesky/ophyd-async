@@ -230,8 +230,9 @@ def epics_signal_x(
 ) -> SignalX:
     """Create a `SignalX` backed by 1 EPICS PVs.
 
-    .. deprecated::
-        Use [](#epics_triggerable_command) instead.
+    ```{version-deprecated} 0.19
+    Use [](#epics_triggerable_command) instead.
+    ```
 
     :param write_pv: The PV to write its initial value to on trigger
     :param name: The name of the signal

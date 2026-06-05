@@ -315,8 +315,9 @@ class SignalRW(SignalR[SignalDatatypeT], SignalW[SignalDatatypeT], Locatable):
 class SignalX(Signal):
     """Signal that puts the default value.
 
-    .. deprecated::
-        Use [](#TriggerableCommand) instead.
+    ```{version-deprecated} 0.19
+    Use [](#TriggerableCommand) instead.
+    ```
     """
 
     def __init__(

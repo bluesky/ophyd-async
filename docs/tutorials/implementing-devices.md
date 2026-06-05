@@ -207,9 +207,9 @@ TODO
 
 Moving up a level, we have the point detector itself. This also has some Signals to control acquisition which are created in the same way as above:
 - `acquire_time`: a configuration float saying how long each point should be acquired for
-- `start`: a [`TriggerableCommand`] to start a single acquisition
+- `start`: a [](#TriggerableCommand) to start a single acquisition
 - `acquiring`: a boolean that is True when acquiring
-- `reset`: a [`TriggerableCommand`] to reset the counts on all channels
+- `reset`: a [](#TriggerableCommand) to reset the counts on all channels
 
 We also have a [](#DeviceVector) called `channel` with `DemoPointDetectorChannel` instances within it. These will all contribute their configuration values at the start of scan, and their values at every point in the scan.
 
@@ -229,7 +229,7 @@ Finally, we need to communicate to bluesky that it has to `trigger()` an acquisi
 :language: python
 ```
 
-[`TriggerableCommand`] is used for `start` and `reset` rather than Signals because these are actions to fire on the hardware, not values to read or write. Calling `.trigger()` executes the action and waits for the hardware to acknowledge it.
+[](#TriggerableCommand) is used for `start` and `reset` rather than Signals because these are actions to fire on the hardware, not values to read or write. Calling `.trigger()` executes the action and waits for the hardware to acknowledge it.
 
 Although the Signals are declared via type hints, the DeviceVector requires explicit instantiation in an `__init__` method. This is because it requires the `num_channels` to be passed in to the constructor to know how many channels require creation. This means that we also need to do the PV concatenation ourselves, so if the PV prefix for the device as `PREFIX:` then the first channel would have prefix `PREFIX:CHAN1:`. We also register them with `StandardReadable` in a different way, adding them within a [](#StandardReadable.add_children_as_readables) context manager which adds all the children created within its body.
 
@@ -261,7 +261,7 @@ Moving onto the motion side, we have `DemoMotor`. This has a few signals:
 - `readback`: the current position of the motor as a float
 - `velocity`: a configuration parameter for the velocity in units/s
 - `setpoint`: the position the motor has been requested to move to as a float, it returns as soon as it's been set
-- `stop_`: a [`TriggerableCommand`] to stop the move immediately
+- `stop_`: a [](#TriggerableCommand) to stop the move immediately
 
 `DemoMotor` inherits from [](#StandardMovable), which provides the full
 [`Movable`](#bluesky.protocols.Movable), [`Locatable`](#bluesky.protocols.Locatable),

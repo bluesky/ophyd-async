@@ -120,8 +120,9 @@ def tango_signal_x(
 ) -> SignalX:
     """Create a `SignalX` backed by 1 Tango Attribute/Command.
 
-    .. deprecated::
-        Use `tango_triggerable_command` instead.
+    ```{version-deprecated} 0.19
+    Use `tango_triggerable_command` instead.
+    ```
 
     Parameters
     ----------
