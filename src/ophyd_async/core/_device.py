@@ -333,7 +333,7 @@ class DeviceVector(DeviceMap[int, DeviceT]):
     :see-also: [](#implementing-devices) for examples of how to use this class.
     """
 
-    def __setitem__(self, key: T, value: DeviceT) -> None:
+    def __setitem__(self, key: int, value: DeviceT) -> None:
         if not isinstance(key, int):
             msg = f"Expected int, got {value}"
             raise TypeError(msg)
