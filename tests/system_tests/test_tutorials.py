@@ -28,7 +28,9 @@ def expected_scan_output():
     yield matches
 
 
-@pytest.mark.parametrize("module", ["ophyd_async.sim", "ophyd_async.epics.demo"])
+@pytest.mark.parametrize(
+    "module", ["ophyd_async.sim", "ophyd_async.epics.demo", "ophyd_async.tango.demo"]
+)
 def test_implementing_devices(module, capsys, expected_scan_output):
     with patch("matplotlib.get_backend"):
         with patch("bluesky.run_engine.autoawait_in_bluesky_event_loop") as autoawait:

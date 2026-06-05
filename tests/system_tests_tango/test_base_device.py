@@ -31,10 +31,19 @@ from ophyd_async.core import (
 from ophyd_async.core import StandardReadableFormat as Format
 from ophyd_async.tango.core import TangoDevice, get_full_attr_trl, get_python_type
 from ophyd_async.tango.demo import (
-    DemoCounter,
-    DemoMover,
-    TangoDetector,
+    DemoMotor,
+    DemoPointDetector,
+    DemoPointDetectorChannel,
+    DemoStage,
+    EnergyMode,
+    start_device_server_subprocess,
 )
+from ophyd_async.tango.demo._tango._servers import (  # noqa: PLC2701
+    DemoMotorDevice,
+    DemoMultiChannelDetectorDevice,
+    DemoPointDetectorChannelDevice,
+)
+from ophyd_async.tango.testing import TangoSubprocessDeviceServer
 from ophyd_async.testing import assert_reading
 
 T = TypeVar("T")
@@ -350,8 +359,8 @@ def get_test_descriptor(python_type: type[T], value: T, is_cmd: bool) -> dict:
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def tango_test_device(subprocess_helper):
-    with subprocess_helper(
+def tango_test_device():
+    with TangoSubprocessDeviceServer(
         [{"class": TestDevice, "devices": [{"name": "test/device/1"}]}]
     ) as context:
         yield context.trls["test/device/1"]
@@ -359,18 +368,36 @@ def tango_test_device(subprocess_helper):
 
 # --------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def sim_test_context_trls(subprocess_helper):
-    args = (
-        {
-            "class": DemoMover,
-            "devices": [{"name": "sim/motor/1"}],
-        },
-        {
-            "class": DemoCounter,
-            "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
-        },
-    )
-    with subprocess_helper(args) as context:
+def sim_test_context_trls():
+    with TangoSubprocessDeviceServer(
+        [
+            {"class": DemoMotorDevice, "devices": [{"name": "sim/motor/1"}]},
+            {
+                "class": DemoPointDetectorChannelDevice,
+                "devices": [{"name": "sim/counter/1"}, {"name": "sim/counter/2"}],
+            },
+            {
+                "class": DemoMultiChannelDetectorDevice,
+                "devices": [{"name": "sim/detector/1"}],
+            },
+        ]
+    ) as context:
+        # Now connect the channel devices to the motor devices
+        device_proxy = tango.DeviceProxy(context.trls["sim/counter/1"])
+        device_proxy.locator_x = context.trls["sim/motor/1"]
+        device_proxy.locator_y = context.trls["sim/motor/1"]
+        device_proxy.connect_devices()
+        device_proxy = tango.DeviceProxy(context.trls["sim/counter/2"])
+        device_proxy.locator_x = context.trls["sim/motor/1"]
+        device_proxy.locator_y = context.trls["sim/motor/1"]
+        device_proxy.connect_devices()
+        device_proxy = tango.DeviceProxy(context.trls["sim/detector/1"])
+        device_proxy.locators = [
+            context.trls["sim/counter/1"],
+            context.trls["sim/counter/2"],
+        ]
+        device_proxy.connect_devices()
+
         yield context.trls
 
 
@@ -433,36 +460,81 @@ async def test_with_bluesky(tango_test_device):
 
 # --------------------------------------------------------------------
 @pytest.mark.asyncio
+async def test_tango_demo():
+    server = start_device_server_subprocess("test/device", 3)
+    server.disconnect()
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.timeout(8.0)
+async def test_tango_enum_roundtrip(sim_test_context_trls):
+    channel = DemoPointDetectorChannel(
+        name="channel",
+        trl=sim_test_context_trls["sim/counter/1"],
+    )
+    await channel.connect()
+
+    # Write HIGH (index 1) and read it back
+    await channel.mode.set(EnergyMode.HIGH)
+    assert await channel.mode.get_value() == EnergyMode.HIGH
+
+    # Write LOW (index 0) and read it back
+    await channel.mode.set(EnergyMode.LOW)
+    assert await channel.mode.get_value() == EnergyMode.LOW
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
+@pytest.mark.timeout(8.0)
+async def test_tango_stage(sim_test_context_trls):
+    stage = DemoStage(
+        name="stage",
+        x_trl=sim_test_context_trls["sim/motor/1"],
+        y_trl=sim_test_context_trls["sim/motor/1"],
+    )
+    await stage.connect()
+    assert stage.x.name == "stage-x"
+    assert stage.y.name == "stage-y"
+    reading = await stage.read()
+    assert "stage-x" in reading
+    assert "stage-y" in reading
+
+
+# --------------------------------------------------------------------
+@pytest.mark.asyncio
 @pytest.mark.timeout(15.5)
 async def test_tango_sim(sim_test_context_trls):
-    detector = TangoDetector(
+    detector = DemoPointDetector(
         name="detector",
-        mover_trl=sim_test_context_trls["sim/motor/1"],
-        counter_trls=[
+        trl=sim_test_context_trls["sim/detector/1"],
+        channel_trls=[
             sim_test_context_trls["sim/counter/1"],
             sim_test_context_trls["sim/counter/2"],
         ],
     )
     await detector.connect()
+    await detector.acquire_time.set(0.1)
     await detector.trigger()
-    await detector.mover.velocity.set(0.5)
+    await detector.acquiring.read()
+    await detector.acquire_time.read()
+
+    motor = DemoMotor(name="motor", trl=sim_test_context_trls["sim/motor/1"])
+    await motor.connect()
+    await motor.velocity.set(0.5)
 
     RE = RunEngine()
 
     RE(bps.read(detector))
-    RE(bps.mv(detector, 0))
-    RE(bp.count(list(detector.counters.values())))
+    RE(bps.mv(motor, 0))
+    RE(bp.count(list(detector.channel.values())))
 
-    set_status = detector.set(1.0)
+    set_status = motor.set(1.0)
     await asyncio.sleep(1.0)
-    stop_status = detector.stop()
-    await set_status
-    await stop_status
-    assert all([set_status.done, stop_status.done])
-    assert all([set_status.success, stop_status.success])
 
-    # Manually move motor
-    await detector.mover.move_me(0.9)
+    await motor.stop(success=True)
+    await set_status
+    assert set_status.done
 
 
 @pytest.mark.asyncio
