@@ -113,7 +113,11 @@ def make_converter(datatype: type[SignalDatatype]) -> SoftConverter:
     raise TypeError(f"Can't make converter for {datatype}")
 
 
-Setter = Callable[[Any], SignalDatatypeT | None | Awaitable[SignalDatatypeT | None]]
+Setter = (
+    Callable[[SignalDatatypeT | None], SignalDatatypeT | None]
+    | Callable[[SignalDatatypeT | None], Awaitable[SignalDatatypeT | None]]
+    | None
+)
 Getter = Callable[[], SignalDatatypeT | Awaitable[SignalDatatypeT]]
 
 
@@ -147,7 +151,7 @@ class SoftSignalBackend(SignalBackend[SignalDatatypeT]):
         precision: int | None = None,
         *,
         getter: Getter[SignalDatatypeT] | None = None,
-        setter: Setter[Any] | None = None,
+        setter: Setter[SignalDatatypeT] | None = None,
         poll_period: float | None = None,
     ):
         if poll_period is not None and getter is None:
