@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.tango.testing._one_of_everything &#8212; ophyd-async 0.19.dev2+g325f6f95e documentation</title>
+    <title>ophyd_async.tango.testing._one_of_everything &#8212; ophyd-async 0.19.dev3+g2b648bc92 documentation</title>
   
   
   
@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
 <link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
 
-    <script src="../../../../_static/documentation_options.js?v=ac71a26a"></script>
+    <script src="../../../../_static/documentation_options.js?v=0d04660d"></script>
     <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -569,8 +569,8 @@ window.runMermaid = runMermaid;</script>
       
     
     
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev2+g325f6f95e documentation - Home"/>
-    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev2+g325f6f95e documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-light" alt="ophyd-async 0.19.dev3+g2b648bc92 documentation - Home"/>
+    <img src="../../../../_static/ophyd-async-logo.svg" class="logo__image only-dark pst-js-only" alt="ophyd-async 0.19.dev3+g2b648bc92 documentation - Home"/>
   
   
 </a></div>
@@ -1149,6 +1149,14 @@ window.runMermaid = runMermaid;</script>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_scalar_command</span><span class="p">(</span><span class="n">attr_data</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">attr_data</span><span class="o">.</span><span class="n">tango_type</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_spectrum_command</span><span class="p">(</span><span class="n">attr_data</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">attr_data</span><span class="o">.</span><span class="n">tango_type</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OneOfEverythingTangoDevice.float_to_bool_cmd">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.OneOfEverythingTangoDevice.float_to_bool_cmd">[docs]</a>
+    <span class="nd">@command</span><span class="p">(</span><span class="n">dtype_in</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">dtype_out</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">float_to_bool_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Command with float input and bool output (different in/out types).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
 
 
 <div class="viewcode-block" id="OneOfEverythingTangoDevice.reset_values">

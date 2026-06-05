@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.odin._io &#8212; ophyd-async 0.19.dev3+g2b648bc92 documentation</title>
+    <title>ophyd_async.tango.testing._device_server &#8212; ophyd-async 0.19.dev3+g2b648bc92 documentation</title>
   
   
   
@@ -483,7 +483,7 @@ mermaid.initialize(
 
 window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/fastcs/odin/_io';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/tango/testing/_device_server';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -880,7 +880,7 @@ window.runMermaid = runMermaid;</script>
     
     <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.fastcs.odin._io</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.tango.testing._device_server</span></li>
   </ul>
 </nav>
 </div>
@@ -897,64 +897,143 @@ window.runMermaid = runMermaid;</script>
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.fastcs.odin._io</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">TriggerableCommand</span>
+  <h1>Source code for ophyd_async.tango.testing._device_server</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Provides a mechanism for creating a Tango device server executed as a subprocess.</span>
+
+<span class="sd">The device server is run up using the Tango MultiDeviceTestContext which allows it</span>
+<span class="sd">to run standalone without a Tango Database.  Multiple Tango Devices can be loaded into</span>
+<span class="sd">the single device server instance.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">NotRequired</span><span class="p">,</span> <span class="n">TypedDict</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango.server</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tango.test_context</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiDeviceTestContext</span>
 
 
-<div class="viewcode-block" id="MetaWriterIO">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.MetaWriterIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">MetaWriterIO</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ophyd-async implementation of a MetaWriter Odin Subdevice.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="TangoDeviceInfo">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.TangoDeviceInfo">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TangoDeviceInfo</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for a single Tango device instance for MultiDeviceTestContext.&quot;&quot;&quot;</span>
 
-    <span class="n">stop</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
-    <span class="n">file_prefix</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">directory</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">acquisition_id</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">writing</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
-
-
-
-<div class="viewcode-block" id="FrameProcessorIO">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.FrameProcessorIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">FrameProcessorIO</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ophyd-async implementation of a FrameProcessor Odin Subdevice.&quot;&quot;&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="FrameProcessorVectorIO">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.FrameProcessorVectorIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">FrameProcessorVectorIO</span><span class="p">(</span><span class="n">DeviceVector</span><span class="p">[</span><span class="n">FrameProcessorIO</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ophyd-async implementation of a FrameProcessorAdapter Odin Subdevice.&quot;&quot;&quot;</span>
-
-    <span class="n">start_writing</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
-    <span class="n">stop_writing</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
-    <span class="n">writing</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="n">frames_written</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">frames</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_dims_0</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_dims_1</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_chunks_0</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_chunks_1</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_chunks_2</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">file_path</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">file_prefix</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">data_datatype</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">data_compression</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">process_frames_per_block</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span></div>
 
 
 
-<div class="viewcode-block" id="OdinIO">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.OdinIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">OdinIO</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-    <span class="n">fp</span><span class="p">:</span> <span class="n">FrameProcessorVectorIO</span>
-    <span class="n">mw</span><span class="p">:</span> <span class="n">MetaWriterIO</span>
-    <span class="n">writing</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="n">file_path</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">file_prefix</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">acquisition_id</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">block_size</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
+<span class="c1"># &quot;class&quot; is a Python keyword, so we use the functional TypedDict form</span>
+<span class="n">TangoClassConfig</span> <span class="o">=</span> <span class="n">TypedDict</span><span class="p">(</span>
+    <span class="s2">&quot;TangoClassConfig&quot;</span><span class="p">,</span>
+    <span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Device</span><span class="p">],</span> <span class="s2">&quot;devices&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TangoDeviceInfo</span><span class="p">]},</span>
+<span class="p">)</span>
 
+<span class="n">_ACCEPT_TIMEOUT</span> <span class="o">=</span> <span class="mf">30.0</span>  <span class="c1"># seconds to wait for subprocess to connect back</span>
+<span class="n">_COMMUNICATE_TIMEOUT</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c1"># seconds to wait for subprocess to exit cleanly</span>
+
+
+<div class="viewcode-block" id="generate_random_trl_prefix">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.generate_random_trl_prefix">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_random_trl_prefix</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a random Tango domain/family/member prefix for use in test devices.&quot;&quot;&quot;</span>
+    <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;test/</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_recv_all</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="s2">&quot;Connection closed before all bytes were received&quot;</span><span class="p">)</span>
+        <span class="n">buf</span> <span class="o">+=</span> <span class="n">chunk</span>
+    <span class="k">return</span> <span class="n">buf</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_send_pickled</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;big&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_recv_pickled</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">_recv_all</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;big&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">_recv_all</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="TangoSubprocessDeviceServer">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.TangoSubprocessDeviceServer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TangoSubprocessDeviceServer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TangoClassConfig</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trls</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="TangoSubprocessDeviceServer.connect">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.TangoSubprocessDeviceServer.connect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">getsockname</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">subprocess_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;_device_server.py&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="n">subprocess_path</span><span class="p">,</span> <span class="n">port</span><span class="p">],</span>
+            <span class="n">env</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="s2">&quot;PYTHONPATH&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">)},</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="n">_ACCEPT_TIMEOUT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">_send_pickled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trls</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">_recv_pickled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="TangoSubprocessDeviceServer.disconnect">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.testing.html#ophyd_async.tango.testing.TangoSubprocessDeviceServer.disconnect">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">_COMMUNICATE_TIMEOUT</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+    <span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+
+    <span class="n">configs</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="nb">list</span><span class="p">[</span><span class="n">TangoClassConfig</span><span class="p">],</span> <span class="n">_recv_pickled</span><span class="p">(</span><span class="n">sock</span><span class="p">))</span>
+
+    <span class="n">device_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">configs</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;devices&quot;</span><span class="p">]]</span>
+
+    <span class="n">trls</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">with</span> <span class="n">MultiDeviceTestContext</span><span class="p">(</span><span class="n">configs</span><span class="p">,</span> <span class="n">process</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">context</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">device_names</span><span class="p">:</span>
+            <span class="n">trls</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">get_device_access</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">_send_pickled</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">trls</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">pass</span>  <span class="c1"># when connection closes subprocess should end</span>
+    <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 
                 </article>

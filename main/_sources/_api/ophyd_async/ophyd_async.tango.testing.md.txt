@@ -23,6 +23,38 @@
   - ```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice
     :summary:
     ```
+* - {py:obj}`TangoDeviceInfo <ophyd_async.tango.testing._device_server.TangoDeviceInfo>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoDeviceInfo
+    :summary:
+    ```
+* - {py:obj}`TangoSubprocessDeviceServer <ophyd_async.tango.testing._device_server.TangoSubprocessDeviceServer>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoSubprocessDeviceServer
+    :summary:
+    ```
+````
+
+### Functions
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`generate_random_trl_prefix <ophyd_async.tango.testing._device_server.generate_random_trl_prefix>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._device_server.generate_random_trl_prefix
+    :summary:
+    ```
+````
+
+### Data
+
+````{list-table}
+:class: autosummary longtable
+:align: left
+
+* - {py:obj}`TangoClassConfig <ophyd_async.tango.testing._device_server.TangoClassConfig>`
+  - ```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoClassConfig
+    :summary:
+    ```
 ````
 
 ### API
@@ -159,6 +191,14 @@ Bases: {py:obj}`tango.server.Device`
 
 ````
 
+````{py:method} float_to_bool_cmd(value: float) -> bool
+:canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.float_to_bool_cmd
+
+```{autodoc2-docstring} ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.float_to_bool_cmd
+```
+
+````
+
 ````{py:method} reset_values()
 :canonical: ophyd_async.tango.testing._one_of_everything.OneOfEverythingTangoDevice.reset_values
 
@@ -194,3 +234,76 @@ Bases: {py:obj}`tango.server.Device`
 ````
 
 `````
+
+````{py:data} TangoClassConfig
+:canonical: ophyd_async.tango.testing._device_server.TangoClassConfig
+:value: >
+   'TypedDict(...)'
+
+```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoClassConfig
+```
+
+````
+
+`````{py:class} TangoDeviceInfo()
+:canonical: ophyd_async.tango.testing._device_server.TangoDeviceInfo
+
+Bases: {py:obj}`typing.TypedDict`
+
+```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoDeviceInfo
+```
+
+````{py:attribute} name
+:canonical: ophyd_async.tango.testing._device_server.TangoDeviceInfo.name
+:type: str
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoDeviceInfo.name
+```
+
+````
+
+````{py:attribute} properties
+:canonical: ophyd_async.tango.testing._device_server.TangoDeviceInfo.properties
+:type: ~typing.NotRequired[dict[str, ~typing.Any]]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoDeviceInfo.properties
+```
+
+````
+
+`````
+
+`````{py:class} TangoSubprocessDeviceServer(args: ~collections.abc.Sequence[~ophyd_async.tango.testing._device_server.TangoClassConfig])
+:canonical: ophyd_async.tango.testing._device_server.TangoSubprocessDeviceServer
+
+```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoSubprocessDeviceServer
+```
+
+````{py:method} connect()
+:canonical: ophyd_async.tango.testing._device_server.TangoSubprocessDeviceServer.connect
+
+```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoSubprocessDeviceServer.connect
+```
+
+````
+
+````{py:method} disconnect()
+:canonical: ophyd_async.tango.testing._device_server.TangoSubprocessDeviceServer.disconnect
+
+```{autodoc2-docstring} ophyd_async.tango.testing._device_server.TangoSubprocessDeviceServer.disconnect
+```
+
+````
+
+`````
+
+````{py:function} generate_random_trl_prefix() -> str
+:canonical: ophyd_async.tango.testing._device_server.generate_random_trl_prefix
+
+```{autodoc2-docstring} ophyd_async.tango.testing._device_server.generate_random_trl_prefix
+```
+````

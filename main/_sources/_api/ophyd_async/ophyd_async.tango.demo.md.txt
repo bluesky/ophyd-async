@@ -15,214 +15,232 @@
 :class: autosummary longtable
 :align: left
 
-* - {py:obj}`TangoCounter <ophyd_async.tango.demo._counter.TangoCounter>`
-  - ```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter
+* - {py:obj}`DemoMotor <ophyd_async.tango.demo._motor.DemoMotor>`
+  - ```{autodoc2-docstring} ophyd_async.tango.demo._motor.DemoMotor
     :summary:
     ```
-* - {py:obj}`TangoMover <ophyd_async.tango.demo._mover.TangoMover>`
-  - ```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover
+* - {py:obj}`DemoStage <ophyd_async.tango.demo._stage.DemoStage>`
+  - ```{autodoc2-docstring} ophyd_async.tango.demo._stage.DemoStage
     :summary:
     ```
-* - {py:obj}`TangoDetector <ophyd_async.tango.demo._detector.TangoDetector>`
-  - ```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector
+* - {py:obj}`EnergyMode <ophyd_async.tango.demo._point_detector_channel.EnergyMode>`
+  - ```{autodoc2-docstring} ophyd_async.tango.demo._point_detector_channel.EnergyMode
+    :summary:
+    ```
+* - {py:obj}`DemoPointDetectorChannel <ophyd_async.tango.demo._point_detector_channel.DemoPointDetectorChannel>`
+  - ```{autodoc2-docstring} ophyd_async.tango.demo._point_detector_channel.DemoPointDetectorChannel
+    :summary:
+    ```
+* - {py:obj}`DemoPointDetector <ophyd_async.tango.demo._point_detector.DemoPointDetector>`
+  - ```{autodoc2-docstring} ophyd_async.tango.demo._point_detector.DemoPointDetector
     :summary:
     ```
 ````
 
 ### API
 
-`````{py:class} TangoCounter(trl: str = '', support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
-:canonical: ophyd_async.tango.demo._counter.TangoCounter
+`````{py:class} DemoMotor(trl: str = '', support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
+:canonical: ophyd_async.tango.demo._motor.DemoMotor
 
-Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`
+Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`ophyd_async.core.StandardMovable`
 
-```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter
+```{autodoc2-docstring} ophyd_async.tango.demo._motor.DemoMotor
 ```
 
-````{py:attribute} counts
-:canonical: ophyd_async.tango.demo._counter.TangoCounter.counts
-:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], ~ophyd_async.core.StandardReadableFormat.HINTED_SIGNAL, TangoPolling(1.0, 0.1, 0.1)]
+````{py:attribute} readback
+:canonical: ophyd_async.tango.demo._motor.DemoMotor.readback
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[float], TangoPolling(0.1, 0.001, 0.001), ~ophyd_async.core.StandardReadableFormat.HINTED_SIGNAL]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.counts
-```
-
-````
-
-````{py:attribute} sample_time
-:canonical: ophyd_async.tango.demo._counter.TangoCounter.sample_time
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ~ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL, TangoPolling(0.1, 0.1, 0.1)]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.sample_time
-```
-
-````
-
-````{py:attribute} start
-:canonical: ophyd_async.tango.demo._counter.TangoCounter.start
-:type: ~ophyd_async.core.TriggerableCommand
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.start
-```
-
-````
-
-````{py:attribute} reset_
-:canonical: ophyd_async.tango.demo._counter.TangoCounter.reset_
-:type: ~ophyd_async.core.TriggerableCommand
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.reset_
-```
-
-````
-
-````{py:method} trigger() -> None
-:canonical: ophyd_async.tango.demo._counter.TangoCounter.trigger
-:async:
-
-```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.trigger
-```
-
-````
-
-````{py:method} reset() -> None
-:canonical: ophyd_async.tango.demo._counter.TangoCounter.reset
-:async:
-
-```{autodoc2-docstring} ophyd_async.tango.demo._counter.TangoCounter.reset
-```
-
-````
-
-`````
-
-`````{py:class} TangoMover(trl: str = '', name='')
-:canonical: ophyd_async.tango.demo._mover.TangoMover
-
-Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Movable`, {py:obj}`bluesky.protocols.Stoppable`
-
-```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover
-```
-
-````{py:attribute} position
-:canonical: ophyd_async.tango.demo._mover.TangoMover.position
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
-:value: >
-   None
-
-```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.position
+```{autodoc2-docstring} ophyd_async.tango.demo._motor.DemoMotor.readback
 ```
 
 ````
 
 ````{py:attribute} velocity
-:canonical: ophyd_async.tango.demo._mover.TangoMover.velocity
-:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], TangoPolling(0.1, 0.1, 0.1)]
+:canonical: ophyd_async.tango.demo._motor.DemoMotor.velocity
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], TangoPolling(0.1, 0.001, 0.001), ~ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.velocity
+```{autodoc2-docstring} ophyd_async.tango.demo._motor.DemoMotor.velocity
+```
+
+````
+
+````{py:attribute} setpoint
+:canonical: ophyd_async.tango.demo._motor.DemoMotor.setpoint
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], TangoPolling(0.1, 0.001, 0.001)]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.demo._motor.DemoMotor.setpoint
 ```
 
 ````
 
 ````{py:attribute} state
-:canonical: ophyd_async.tango.demo._mover.TangoMover.state
+:canonical: ophyd_async.tango.demo._motor.DemoMotor.state
 :type: ~typing.Annotated[~ophyd_async.core.SignalR[~ophyd_async.tango.core.DevStateEnum], TangoPolling(0.1)]
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.state
+```{autodoc2-docstring} ophyd_async.tango.demo._motor.DemoMotor.state
 ```
 
 ````
 
 ````{py:attribute} stop_
-:canonical: ophyd_async.tango.demo._mover.TangoMover.stop_
+:canonical: ophyd_async.tango.demo._motor.DemoMotor.stop_
 :type: ~ophyd_async.core.TriggerableCommand
 :value: >
    None
 
-```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.stop_
+```{autodoc2-docstring} ophyd_async.tango.demo._motor.DemoMotor.stop_
 ```
 
 ````
 
-````{py:attribute} move_to_position
-:canonical: ophyd_async.tango.demo._mover.TangoMover.move_to_position
-:type: ~ophyd_async.core.Command[[float], bool]
-:value: >
-   None
+````{py:method} movable_logic() -> ~ophyd_async.core.MovableLogic
+:canonical: ophyd_async.tango.demo._motor.DemoMotor.movable_logic
 
-```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.move_to_position
-```
-
-````
-
-````{py:method} set(value: float, timeout: ~ophyd_async.core.CalculatableTimeout = CALCULATE_TIMEOUT)
-:canonical: ophyd_async.tango.demo._mover.TangoMover.set
-:async:
-
-```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.set
-```
-
-````
-
-````{py:method} stop(success: bool = True) -> ~ophyd_async.core.AsyncStatus
-:canonical: ophyd_async.tango.demo._mover.TangoMover.stop
-
-```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.stop
-```
-
-````
-
-````{py:method} move_me(value: float)
-:canonical: ophyd_async.tango.demo._mover.TangoMover.move_me
-:async:
-
-```{autodoc2-docstring} ophyd_async.tango.demo._mover.TangoMover.move_me
+```{autodoc2-docstring} ophyd_async.tango.demo._motor.DemoMotor.movable_logic
 ```
 
 ````
 
 `````
 
-`````{py:class} TangoDetector(mover_trl: str, counter_trls: list[str], name='')
-:canonical: ophyd_async.tango.demo._detector.TangoDetector
+````{py:class} DemoStage(x_trl: str, y_trl: str, name='')
+:canonical: ophyd_async.tango.demo._stage.DemoStage
 
 Bases: {py:obj}`ophyd_async.core.StandardReadable`
 
-```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector
-```
-
-````{py:method} set(value)
-:canonical: ophyd_async.tango.demo._detector.TangoDetector.set
-
-```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector.set
+```{autodoc2-docstring} ophyd_async.tango.demo._stage.DemoStage
 ```
 
 ````
 
-````{py:method} stop(success: bool = True) -> ~ophyd_async.core.AsyncStatus
-:canonical: ophyd_async.tango.demo._detector.TangoDetector.stop
+`````{py:class} EnergyMode()
+:canonical: ophyd_async.tango.demo._point_detector_channel.EnergyMode
 
-```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector.stop
+Bases: {py:obj}`ophyd_async.core.StrictEnum`
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector_channel.EnergyMode
+```
+
+````{py:attribute} LOW
+:canonical: ophyd_async.tango.demo._point_detector_channel.EnergyMode.LOW
+:value: >
+   'Low Energy'
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector_channel.EnergyMode.LOW
+```
+
+````
+
+````{py:attribute} HIGH
+:canonical: ophyd_async.tango.demo._point_detector_channel.EnergyMode.HIGH
+:value: >
+   'High Energy'
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector_channel.EnergyMode.HIGH
+```
+
+````
+
+`````
+
+`````{py:class} DemoPointDetectorChannel(trl: str = '', support_events: bool = False, name: str = '', auto_fill_signals: bool = True)
+:canonical: ophyd_async.tango.demo._point_detector_channel.DemoPointDetectorChannel
+
+Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector_channel.DemoPointDetectorChannel
+```
+
+````{py:attribute} value
+:canonical: ophyd_async.tango.demo._point_detector_channel.DemoPointDetectorChannel.value
+:type: ~typing.Annotated[~ophyd_async.core.SignalR[int], TangoPolling(0.1, 0.1, 0.1), ~ophyd_async.core.StandardReadableFormat.HINTED_UNCACHED_SIGNAL]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector_channel.DemoPointDetectorChannel.value
+```
+
+````
+
+````{py:attribute} mode
+:canonical: ophyd_async.tango.demo._point_detector_channel.DemoPointDetectorChannel.mode
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[~ophyd_async.tango.demo._point_detector_channel.EnergyMode], TangoPolling(0.1, 0.1, 0.1), ~ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector_channel.DemoPointDetectorChannel.mode
+```
+
+````
+
+`````
+
+`````{py:class} DemoPointDetector(trl: str, channel_trls: list[str], name: str = '')
+:canonical: ophyd_async.tango.demo._point_detector.DemoPointDetector
+
+Bases: {py:obj}`ophyd_async.tango.core.TangoDevice`, {py:obj}`ophyd_async.core.StandardReadable`, {py:obj}`bluesky.protocols.Triggerable`
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector.DemoPointDetector
+```
+
+````{py:attribute} acquire_time
+:canonical: ophyd_async.tango.demo._point_detector.DemoPointDetector.acquire_time
+:type: ~typing.Annotated[~ophyd_async.core.SignalRW[float], ~ophyd_async.core.StandardReadableFormat.CONFIG_SIGNAL]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector.DemoPointDetector.acquire_time
+```
+
+````
+
+````{py:attribute} start
+:canonical: ophyd_async.tango.demo._point_detector.DemoPointDetector.start
+:type: ~ophyd_async.core.TriggerableCommand
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector.DemoPointDetector.start
+```
+
+````
+
+````{py:attribute} acquiring
+:canonical: ophyd_async.tango.demo._point_detector.DemoPointDetector.acquiring
+:type: ~ophyd_async.core.SignalR[bool]
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector.DemoPointDetector.acquiring
+```
+
+````
+
+````{py:attribute} reset
+:canonical: ophyd_async.tango.demo._point_detector.DemoPointDetector.reset
+:type: ~ophyd_async.core.TriggerableCommand
+:value: >
+   None
+
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector.DemoPointDetector.reset
 ```
 
 ````
 
 ````{py:method} trigger()
-:canonical: ophyd_async.tango.demo._detector.TangoDetector.trigger
+:canonical: ophyd_async.tango.demo._point_detector.DemoPointDetector.trigger
 :async:
 
-```{autodoc2-docstring} ophyd_async.tango.demo._detector.TangoDetector.trigger
+```{autodoc2-docstring} ophyd_async.tango.demo._point_detector.DemoPointDetector.trigger
 ```
 
 ````

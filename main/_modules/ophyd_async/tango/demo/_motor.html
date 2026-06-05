@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ophyd_async.fastcs.odin._io &#8212; ophyd-async 0.19.dev3+g2b648bc92 documentation</title>
+    <title>ophyd_async.tango.demo._motor &#8212; ophyd-async 0.19.dev3+g2b648bc92 documentation</title>
   
   
   
@@ -483,7 +483,7 @@ mermaid.initialize(
 
 window.addEventListener("load", load);
 window.runMermaid = runMermaid;</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/fastcs/odin/_io';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/ophyd_async/tango/demo/_motor';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.17.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://blueskyproject.io/ophyd-async/switcher.json';
@@ -880,7 +880,7 @@ window.runMermaid = runMermaid;</script>
     
     <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.fastcs.odin._io</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">ophyd_async.tango.demo._motor</span></li>
   </ul>
 </nav>
 </div>
@@ -897,63 +897,70 @@ window.runMermaid = runMermaid;</script>
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <h1>Source code for ophyd_async.fastcs.odin._io</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Device</span><span class="p">,</span> <span class="n">DeviceVector</span><span class="p">,</span> <span class="n">SignalR</span><span class="p">,</span> <span class="n">SignalRW</span><span class="p">,</span> <span class="n">TriggerableCommand</span>
+  <h1>Source code for ophyd_async.tango.demo._motor</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span> <span class="k">as</span> <span class="n">A</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+    <span class="n">MovableLogic</span><span class="p">,</span>
+    <span class="n">SignalR</span><span class="p">,</span>
+    <span class="n">SignalRW</span><span class="p">,</span>
+    <span class="n">StandardMovable</span><span class="p">,</span>
+    <span class="n">StandardReadable</span><span class="p">,</span>
+    <span class="n">TriggerableCommand</span><span class="p">,</span>
+    <span class="n">wait_for_value</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardReadableFormat</span> <span class="k">as</span> <span class="n">Format</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ophyd_async.tango.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">DevStateEnum</span><span class="p">,</span> <span class="n">TangoDevice</span><span class="p">,</span> <span class="n">TangoPolling</span>
 
 
-<div class="viewcode-block" id="MetaWriterIO">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.MetaWriterIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">MetaWriterIO</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ophyd-async implementation of a MetaWriter Odin Subdevice.&quot;&quot;&quot;</span>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DemoMotorMoveLogic</span><span class="p">(</span><span class="n">MovableLogic</span><span class="p">[</span><span class="nb">float</span><span class="p">]):</span>
+    <span class="n">velocity</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">stop_</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
+    <span class="n">state</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="n">DevStateEnum</span><span class="p">]</span>
 
-    <span class="n">stop</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
-    <span class="n">file_prefix</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">directory</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">acquisition_id</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">writing</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span></div>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_</span><span class="o">.</span><span class="n">trigger</span><span class="p">()</span>
 
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">calculate_timeout</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">old_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">velocity</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="n">new_position</span> <span class="o">-</span> <span class="n">old_position</span><span class="p">)</span> <span class="o">/</span> <span class="n">velocity</span> <span class="o">+</span> <span class="n">DEFAULT_TIMEOUT</span>
 
-
-<div class="viewcode-block" id="FrameProcessorIO">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.FrameProcessorIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">FrameProcessorIO</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ophyd-async implementation of a FrameProcessor Odin Subdevice.&quot;&quot;&quot;</span></div>
-
-
-
-<div class="viewcode-block" id="FrameProcessorVectorIO">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.FrameProcessorVectorIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">FrameProcessorVectorIO</span><span class="p">(</span><span class="n">DeviceVector</span><span class="p">[</span><span class="n">FrameProcessorIO</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ophyd-async implementation of a FrameProcessorAdapter Odin Subdevice.&quot;&quot;&quot;</span>
-
-    <span class="n">start_writing</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
-    <span class="n">stop_writing</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
-    <span class="n">writing</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="n">frames_written</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">frames</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_dims_0</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_dims_1</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_chunks_0</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_chunks_1</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">data_chunks_2</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-    <span class="n">file_path</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">file_prefix</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">data_datatype</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">data_compression</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">process_frames_per_block</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Write the setpoint and wait for the motor state to return to ON,</span>
+        <span class="c1"># which happens whether the move completes normally or is stopped.</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">new_position</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">wait_for_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">DevStateEnum</span><span class="o">.</span><span class="n">ON</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="DemoMotor">
+<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.tango.demo.html#ophyd_async.tango.demo.DemoMotor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DemoMotor</span><span class="p">(</span><span class="n">TangoDevice</span><span class="p">,</span> <span class="n">StandardReadable</span><span class="p">,</span> <span class="n">StandardMovable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A demo movable that moves based on velocity.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="OdinIO">
-<a class="viewcode-back" href="../../../../_api/ophyd_async/ophyd_async.fastcs.odin.html#ophyd_async.fastcs.odin.OdinIO">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">OdinIO</span><span class="p">(</span><span class="n">Device</span><span class="p">):</span>
-    <span class="n">fp</span><span class="p">:</span> <span class="n">FrameProcessorVectorIO</span>
-    <span class="n">mw</span><span class="p">:</span> <span class="n">MetaWriterIO</span>
-    <span class="n">writing</span><span class="p">:</span> <span class="n">SignalR</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-    <span class="n">file_path</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">file_prefix</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">acquisition_id</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">block_size</span><span class="p">:</span> <span class="n">SignalRW</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
+    <span class="c1"># If the server doesn&#39;t support events, the TangoPolling annotation gives</span>
+    <span class="c1"># the parameters for ophyd to poll instead</span>
+    <span class="n">readback</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">HINTED_SIGNAL</span><span class="p">]</span>
+    <span class="n">velocity</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">),</span> <span class="n">Format</span><span class="o">.</span><span class="n">CONFIG_SIGNAL</span><span class="p">]</span>
+    <span class="n">setpoint</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalRW</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)]</span>
+    <span class="n">state</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">SignalR</span><span class="p">[</span><span class="n">DevStateEnum</span><span class="p">],</span> <span class="n">TangoPolling</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)]</span>
+    <span class="c1"># If a tango name clashes with a bluesky verb, add a trailing underscore</span>
+    <span class="n">stop_</span><span class="p">:</span> <span class="n">TriggerableCommand</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">movable_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MovableLogic</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DemoMotorMoveLogic</span><span class="p">(</span>
+            <span class="n">readback</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">readback</span><span class="p">,</span>
+            <span class="n">setpoint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">setpoint</span><span class="p">,</span>
+            <span class="n">velocity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">velocity</span><span class="p">,</span>
+            <span class="n">stop_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stop_</span><span class="p">,</span>
+            <span class="n">state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
 </pre></div>
 
